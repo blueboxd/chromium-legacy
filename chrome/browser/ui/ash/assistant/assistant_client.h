@@ -97,7 +97,7 @@ class AssistantClient : chromeos::assistant::mojom::Client,
 
   // session_manager::SessionManagerObserver:
   void OnUserProfileLoaded(const AccountId& account_id) override;
-  void OnPrimaryUserSessionStarted() override;
+  void OnUserSessionStarted(bool is_primary_user) override;
 
   mojo::Binding<chromeos::assistant::mojom::Client> client_binding_{this};
 

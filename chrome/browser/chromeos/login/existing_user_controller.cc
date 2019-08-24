@@ -101,7 +101,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
-#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "components/vector_icons/vector_icons.h"
@@ -371,8 +370,6 @@ ExistingUserController* ExistingUserController::current_controller() {
 ExistingUserController::ExistingUserController()
     : cros_settings_(CrosSettings::Get()),
       network_state_helper_(new login::NetworkStateHelper) {
-  registrar_.Add(this, chrome::NOTIFICATION_USER_LIST_CHANGED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
@@ -410,6 +407,8 @@ ExistingUserController::ExistingUserController()
   minimum_version_policy_handler_ =
       std::make_unique<policy::MinimumVersionPolicyHandler>(cros_settings_);
   minimum_version_policy_handler_->AddObserver(this);
+
+  observed_user_manager_.Add(user_manager::UserManager::Get());
 }
 
 void ExistingUserController::Init(const user_manager::UserList& users) {
@@ -487,10 +486,6 @@ void ExistingUserController::Observe(
     // make sure no object would be used after session has started.
     // http://crbug.com/125276
     registrar_.RemoveAll();
-    return;
-  }
-  if (type == chrome::NOTIFICATION_USER_LIST_CHANGED) {
-    DeviceSettingsChanged();
     return;
   }
   if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
@@ -768,6 +763,11 @@ bool ExistingUserController::IsUserWhitelisted(const AccountId& account_id) {
 
   return cros_settings_->IsUserWhitelisted(account_id.GetUserEmail(),
                                            &wildcard_match);
+}
+
+void ExistingUserController::LocalStateChanged(
+    user_manager::UserManager* user_manager) {
+  DeviceSettingsChanged();
 }
 
 void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(

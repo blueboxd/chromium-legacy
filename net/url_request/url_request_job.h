@@ -108,8 +108,6 @@ class NET_EXPORT URLRequestJob {
   // URLRequest::StopCaching().
   virtual void StopCaching();
 
-  virtual bool GetFullRequestHeaders(HttpRequestHeaders* headers) const;
-
   // Get the number of bytes received from network. The values returned by this
   // will never decrease over the lifetime of the URLRequestJob.
   virtual int64_t GetTotalReceivedBytes() const;

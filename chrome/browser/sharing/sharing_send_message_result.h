@@ -8,6 +8,7 @@
 // Result of sending SharingMessage via sharing service.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.sharing
 enum class SharingSendMessageResult {
   kSuccessful = 0,
   kDeviceNotFound = 1,

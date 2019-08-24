@@ -4,6 +4,6 @@
 
 // https://immersive-web.github.io/webxr/#dictdef-xrsessioninit
 dictionary XRSessionInit {
-  sequence<DOMString> requiredFeatures;
-  sequence<DOMString> optionalFeatures;
+  sequence<any> requiredFeatures;
+  sequence<any> optionalFeatures;
 };

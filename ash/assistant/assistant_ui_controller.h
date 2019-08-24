@@ -86,7 +86,7 @@ class ASH_EXPORT AssistantUiController
 
   // AssistantSuggestionsModelObserver:
   void OnProactiveSuggestionsChanged(
-      const ProactiveSuggestions* proactive_suggestions) override;
+      scoped_refptr<const ProactiveSuggestions> proactive_suggestions) override;
 
   // AssistantScreenContextModelObserver:
   void OnScreenContextRequestStateChanged(
@@ -98,6 +98,8 @@ class ASH_EXPORT AssistantUiController
   // AssistantViewDelegateObserver:
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnMiniViewPressed() override;
+  void OnProactiveSuggestionsCloseButtonPressed() override;
+  void OnProactiveSuggestionsViewPressed() override;
 
   // HighlighterController::Observer:
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;

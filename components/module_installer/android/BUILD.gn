@@ -25,7 +25,7 @@ android_library("module_installer_java") {
     "//third_party/google_android_play_core:com_google_android_play_core_java",
   ]
 
-  srcjar_deps = [ ":module_installer_apk_build_config" ]
+  srcjar_deps = [ ":module_installer_build_config" ]
 
   jar_excluded_patterns = [ "*/ModuleInstallerConfig.class" ]
 
@@ -72,12 +72,21 @@ java_annotation_processor("module_interface_processor") {
   jacoco_never_instrument = true
 }
 
+# Use this one if your target needs to depend on ModuleInstallerConfig. The
+# other two targets are automatically added to build targets.
+java_cpp_template("module_installer_build_config") {
+  package_path = "org/chromium/components/module_installer"
+  sources = [
+    "build/ModuleInstallerConfig.template",
+  ]
+}
+
 java_cpp_template("module_installer_bundle_build_config") {
   package_path = "org/chromium/components/module_installer"
   sources = [
     "build/ModuleInstallerConfig.template",
   ]
-  defines = [ "IS_BUNDLE_ENABLED" ]
+  defines = [ "IS_BUNDLE_BUILD" ]
 }
 
 java_cpp_template("module_installer_apk_build_config") {
@@ -85,4 +94,5 @@ java_cpp_template("module_installer_apk_build_config") {
   sources = [
     "build/ModuleInstallerConfig.template",
   ]
+  defines = [ "IS_APK_BUILD" ]
 }

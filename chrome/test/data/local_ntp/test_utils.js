@@ -35,17 +35,6 @@ function setUpPage(templateId) {
 }
 
 /**
- * Aborts a test if a condition is not met.
- * @param {boolean} condition The condition that must be true.
- * @param {string=} opt_message A message to log if the condition is not met.
- */
-function assert(condition, opt_message) {
-  if (!condition) {
-    throw new Error(opt_message || 'Assertion failed');
-  }
-}
-
-/**
  * Aborts a test if |got| !== true.
  * @param {boolean} got The boolean that must be true.
  * @param {string=} opt_message A message to log if the condition is not met.
@@ -271,7 +260,7 @@ function MockClock() {
  * @param {!number} msec The time in milliseconds.
  */
 MockClock.prototype.setTime = function(msec) {
-  assert(this.time <= msec);
+  assertTrue(this.time <= msec);
   this.time = msec;
 };
 
@@ -280,7 +269,7 @@ MockClock.prototype.setTime = function(msec) {
  * @param {!number} msec The length of time to advance the current time by.
  */
 MockClock.prototype.advanceTime = function(msec) {
-  assert(msec >= 0);
+  assertTrue(msec >= 0);
   this.time += msec;
 };
 

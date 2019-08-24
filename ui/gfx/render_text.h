@@ -229,6 +229,8 @@ class GFX_EXPORT RenderText {
     return horizontal_alignment_;
   }
   void SetHorizontalAlignment(HorizontalAlignment alignment);
+
+  VerticalAlignment vertical_alignment() const { return vertical_alignment_; }
   void SetVerticalAlignment(VerticalAlignment alignment);
 
   const FontList& font_list() const { return font_list_; }

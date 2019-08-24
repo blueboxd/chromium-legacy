@@ -101,6 +101,15 @@ class StartSurfaceMediator
 
             // Set the initial state.
             updateIncognitoMode(tabModelSelector.isIncognitoSelected());
+
+            // Show explore surface if in TWO PANES mode and last visible pane was explore.
+            if (!onlyShowExploreSurface) {
+                boolean shouldShowExploreSurface =
+                        ReturnToStartSurfaceUtil.shouldShowExploreSurface();
+                mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, shouldShowExploreSurface);
+                mPropertyModel.set(
+                        BOTTOM_BAR_SELECTED_TAB_POSITION, (shouldShowExploreSurface ? 1 : 0));
+            }
         }
 
         mController.addOverviewModeObserver(this);
@@ -249,6 +258,7 @@ class StartSurfaceMediator
         // Update the 'BOTTOM_BAR_SELECTED_TAB_POSITION' property to reflect the change. This is
         // needed when clicking back button on the explore surface.
         mPropertyModel.set(BOTTOM_BAR_SELECTED_TAB_POSITION, isVisible ? 1 : 0);
+        ReturnToStartSurfaceUtil.setExploreSurfaceVisibleLast(isVisible);
     }
 
     private void updateIncognitoMode(boolean isIncognito) {

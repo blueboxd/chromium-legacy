@@ -10,6 +10,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/active_network_icon.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/logging.h"
 #include "base/run_loop.h"

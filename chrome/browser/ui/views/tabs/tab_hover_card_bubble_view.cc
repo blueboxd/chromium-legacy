@@ -237,14 +237,18 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
     current_bubble_bounds_ = bubble_delegate_->GetBubbleBounds();
   }
 
-  bool IsAnimating() { return slide_animation_->is_animating(); }
-
   gfx::Rect CalculateTargetBounds(views::View* desired_anchor_view) const {
     gfx::Rect anchor_bounds = desired_anchor_view->GetAnchorBoundsInScreen();
     anchor_bounds.Inset(bubble_delegate_->anchor_view_insets());
     return bubble_delegate_->GetBubbleFrameView()->GetUpdatedWindowBounds(
         anchor_bounds, bubble_delegate_->arrow(),
         bubble_delegate_->GetWidget()->client_view()->GetPreferredSize(), true);
+  }
+
+  bool is_animating() const { return slide_animation_->is_animating(); }
+  views::View* desired_anchor_view() { return desired_anchor_view_; }
+  const views::View* desired_anchor_view() const {
+    return desired_anchor_view_;
   }
 
  private:
@@ -411,7 +415,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   // If widget is already visible and anchored to the correct tab we should not
   // try to reset the anchor view or reshow.
   if (widget_->IsVisible() && GetAnchorView() == tab &&
-      !slide_animation_delegate_->IsAnimating()) {
+      !slide_animation_delegate_->is_animating()) {
     widget_->SetBounds(slide_animation_delegate_->CalculateTargetBounds(tab));
     slide_animation_delegate_->SetCurrentBounds();
     return;
@@ -459,6 +463,12 @@ void TabHoverCardBubbleView::FadeOutToHide() {
 
 bool TabHoverCardBubbleView::IsFadingOut() const {
   return fade_animation_delegate_->IsFadingOut();
+}
+
+views::View* TabHoverCardBubbleView::GetDesiredAnchorView() {
+  return slide_animation_delegate_->is_animating()
+             ? slide_animation_delegate_->desired_anchor_view()
+             : GetAnchorView();
 }
 
 void TabHoverCardBubbleView::RecordHoverCardsSeenRatioMetric() {
@@ -547,12 +557,14 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   }
   base::string16 domain;
   if (domain_url.SchemeIsFile()) {
+    title_label_->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
     title_label_->SetMultiLine(false);
     title_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
     domain = l10n_util::GetStringUTF16(IDS_HOVER_CARD_FILE_URL_SOURCE);
   } else {
     title_label_->SetElideBehavior(gfx::ELIDE_TAIL);
     title_label_->SetMultiLine(true);
+    title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
     domain = url_formatter::FormatUrl(
         domain_url,
         url_formatter::kFormatUrlOmitDefaults |

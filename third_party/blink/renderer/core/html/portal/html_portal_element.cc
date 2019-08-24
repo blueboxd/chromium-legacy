@@ -378,13 +378,8 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
 }
 
 void HTMLPortalElement::RemovedFrom(ContainerNode& node) {
+  DCHECK(!remote_portal_.is_bound());
   HTMLFrameOwnerElement::RemovedFrom(node);
-
-  Document& document = GetDocument();
-
-  if (node.IsInDocumentTree() && document.IsHTMLDocument()) {
-    ConsumePortal();
-  }
 }
 
 bool HTMLPortalElement::IsURLAttribute(const Attribute& attribute) const {

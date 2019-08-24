@@ -35,9 +35,10 @@
 #include <utility>
 
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
@@ -1546,8 +1547,8 @@ void LocalFrame::UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) {
 const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
     const {
   if (!reporting_service_) {
-    Platform::Current()->GetConnector()->BindInterface(
-        Platform::Current()->GetBrowserServiceName(), &reporting_service_);
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        mojo::MakeRequest(&reporting_service_));
   }
   return reporting_service_;
 }

@@ -191,12 +191,7 @@ class TestDelegate : public URLRequest::Delegate {
     return certificate_errors_are_fatal_;
   }
   bool auth_required_called() const { return auth_required_; }
-  bool have_full_request_headers() const { return have_full_request_headers_; }
   bool response_completed() const { return response_completed_; }
-  const HttpRequestHeaders& full_request_headers() const {
-    return full_request_headers_;
-  }
-  void ClearFullRequestHeaders();
   int request_status() const { return request_status_; }
 
   // URLRequest::Delegate:
@@ -247,8 +242,6 @@ class TestDelegate : public URLRequest::Delegate {
   bool certificate_errors_are_fatal_ = false;
   bool auth_required_ = false;
   std::string data_received_;
-  bool have_full_request_headers_ = false;
-  HttpRequestHeaders full_request_headers_;
   bool response_completed_ = false;
 
   // tracks status of request

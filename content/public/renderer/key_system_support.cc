@@ -19,8 +19,8 @@ bool IsKeySystemSupported(
 
   bool is_supported = false;
   media::mojom::KeySystemSupportPtr key_system_support;
-  content::RenderThread::Get()->GetConnector()->BindInterface(
-      mojom::kBrowserServiceName, mojo::MakeRequest(&key_system_support));
+  content::RenderThread::Get()->BindHostReceiver(
+      mojo::MakeRequest(&key_system_support));
 
   key_system_support->IsKeySystemSupported(key_system, &is_supported,
                                            key_system_capability);

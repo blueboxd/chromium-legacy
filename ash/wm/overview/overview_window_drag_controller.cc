@@ -27,6 +27,7 @@
 #include "ash/wm/window_util.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -442,7 +443,7 @@ void OverviewWindowDragController::ContinueNormalDrag(
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
   item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
   if (AreMultiDisplayOverviewAndSplitViewEnabled() && display_count_ > 1u)
-    item_->UpdatePhantomsForDragging(location_in_screen);
+    item_->UpdatePhantomsForDragging(is_touch_dragging_);
 }
 
 OverviewWindowDragController::DragResult
@@ -538,6 +539,15 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
                                                               gfx::Point());
 }
 
+gfx::Rect OverviewWindowDragController::GetWorkAreaOfDisplayBeingDraggedIn()
+    const {
+  return is_touch_dragging_
+             ? screen_util::
+                   GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+                       item_->root_window())
+             : Shell::Get()->cursor_manager()->GetDisplay().work_area();
+}
+
 bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
     const gfx::PointF& event_location) {
   auto snap_position = GetSnapPosition(event_location);
@@ -550,9 +560,7 @@ bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
 
   // Snap the window if it is less than |kDistanceFromEdgeDp| from the edge.
   const bool landscape = IsCurrentScreenOrientationLandscape();
-  gfx::Rect area(
-      screen_util::GetDisplayWorkAreaBoundsInParent(item_->GetWindow()));
-  ::wm::ConvertRectToScreen(item_->GetWindow()->GetRootWindow(), &area);
+  gfx::Rect area = GetWorkAreaOfDisplayBeingDraggedIn();
   area.Inset(kDistanceFromEdgeDp, kDistanceFromEdgeDp);
   const gfx::Point event_location_i = gfx::ToRoundedPoint(event_location);
   if ((landscape && (event_location_i.x() < area.x() ||
@@ -600,9 +608,7 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
     const gfx::PointF& location_in_screen) const {
   DCHECK(item_);
   DCHECK(should_allow_split_view_);
-  gfx::Rect area(
-      screen_util::GetDisplayWorkAreaBoundsInParent(item_->GetWindow()));
-  ::wm::ConvertRectToScreen(item_->GetWindow()->GetRootWindow(), &area);
+  gfx::Rect area = GetWorkAreaOfDisplayBeingDraggedIn();
 
   const bool is_landscape = IsCurrentScreenOrientationLandscape();
   const bool is_primary = IsCurrentScreenOrientationPrimary();

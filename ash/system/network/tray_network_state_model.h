@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -24,20 +25,11 @@ namespace ash {
 class ASH_EXPORT TrayNetworkStateModel
     : public chromeos::network_config::mojom::CrosNetworkConfigObserver {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    // The active networks changed or a device enabled state changed.
-    virtual void ActiveNetworkStateChanged();
-
-    // The list of networks changed. The frequency of this event is limited.
-    virtual void NetworkListChanged();
-  };
-
   TrayNetworkStateModel();
   ~TrayNetworkStateModel() override;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(TrayNetworkStateObserver* observer);
+  void RemoveObserver(TrayNetworkStateObserver* observer);
 
   // Returns DeviceStateProperties for |type| if it exists or null.
   const chromeos::network_config::mojom::DeviceStateProperties* GetDevice(
@@ -103,7 +95,7 @@ class ASH_EXPORT TrayNetworkStateModel
   mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<TrayNetworkStateObserver> observer_list_;
 
   // Frequency at which to push NetworkListChanged updates. This avoids
   // unnecessarily frequent UI updates (which can be expensive). We set this

@@ -1121,6 +1121,23 @@ TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
   EXPECT_LT(header1->x(), tab_strip_->tab_at(2)->x());
 }
 
+TEST_P(TabStripTest, UngroupedTabMovesLeftOfHeader) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 2; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  TabGroupId group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group);
+  CompleteAnimationAndLayout();
+
+  controller_->MoveTab(1, 0);
+  CompleteAnimationAndLayout();
+
+  // Header is right of tab 0.
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  EXPECT_LT(tab_strip_->tab_at(0)->x(), header->x());
+  EXPECT_LT(header->x(), tab_strip_->tab_at(1)->x());
+}
+
 // This can happen when a tab in the middle of a group starts to close.
 TEST_P(TabStripTest, DiscontinuousGroup) {
   tab_strip_->SetBounds(0, 0, 1000, 100);

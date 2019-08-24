@@ -5,6 +5,7 @@
 #include "ash/app_list/views/top_icon_animation_view.h"
 
 #include "ash/app_list/views/app_list_item_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -14,17 +15,19 @@
 
 namespace app_list {
 
-TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
+TopIconAnimationView::TopIconAnimationView(AppsGridView* grid,
+                                           const gfx::ImageSkia& icon,
                                            const base::string16& title,
                                            const gfx::Rect& scaled_rect,
                                            bool open_folder,
                                            bool item_in_folder_icon)
-    : icon_(nullptr),
+    : grid_(grid),
+      icon_(nullptr),
       title_(nullptr),
       scaled_rect_(scaled_rect),
       open_folder_(open_folder),
       item_in_folder_icon_(item_in_folder_icon) {
-  icon_size_ = AppListConfig::instance().grid_icon_size();
+  icon_size_ = grid->GetAppListConfig().grid_icon_size();
   DCHECK(!icon.isNull());
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST, icon_size_));
@@ -36,9 +39,9 @@ TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
   title_label->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_label->SetAutoColorReadabilityEnabled(false);
   title_label->SetHandlesTooltips(false);
-  title_label->SetFontList(AppListConfig::instance().app_title_font());
+  title_label->SetFontList(grid_->GetAppListConfig().app_title_font());
   title_label->SetLineHeight(
-      AppListConfig::instance().app_title_max_line_height());
+      grid_->GetAppListConfig().app_title_max_line_height());
   title_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_label->SetEnabledColor(SK_ColorBLACK);
   title_label->SetText(title);
@@ -80,7 +83,6 @@ void TopIconAnimationView::TransformView() {
   transform.Scale(
       static_cast<double>(scaled_rect_.width()) / bounds().width(),
       static_cast<double>(scaled_rect_.height()) / bounds().height());
-
   if (open_folder_) {
     // Transform to a scaled down icon inside the original folder icon.
     layer()->SetTransform(transform);
@@ -95,7 +97,7 @@ void TopIconAnimationView::TransformView() {
   settings.AddObserver(this);
   settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-      AppListConfig::instance().folder_transition_in_duration_ms()));
+      grid_->GetAppListConfig().folder_transition_in_duration_ms()));
   layer()->SetTransform(open_folder_ ? gfx::Transform() : transform);
   if (!item_in_folder_icon_)
     layer()->SetOpacity(open_folder_ ? 1.0f : 0.0f);
@@ -107,7 +109,7 @@ void TopIconAnimationView::TransformView() {
         title_->layer()->GetAnimator());
     title_settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     title_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        AppListConfig::instance().folder_transition_in_duration_ms()));
+        grid_->GetAppListConfig().folder_transition_in_duration_ms()));
     title_->layer()->SetOpacity(open_folder_ ? 1.0f : 0.0f);
   }
 }
@@ -117,8 +119,8 @@ const char* TopIconAnimationView::GetClassName() const {
 }
 
 gfx::Size TopIconAnimationView::CalculatePreferredSize() const {
-  return gfx::Size(AppListConfig::instance().grid_tile_width(),
-                   AppListConfig::instance().grid_tile_height());
+  return gfx::Size(grid_->GetAppListConfig().grid_tile_width(),
+                   grid_->GetAppListConfig().grid_tile_height());
 }
 
 void TopIconAnimationView::Layout() {
@@ -128,9 +130,9 @@ void TopIconAnimationView::Layout() {
     return;
 
   icon_->SetBoundsRect(AppListItemView::GetIconBoundsForTargetViewBounds(
-      rect, icon_->GetImage().size()));
+      grid_->GetAppListConfig(), rect, icon_->GetImage().size()));
   title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
-      rect, title_->GetPreferredSize()));
+      grid_->GetAppListConfig(), rect, title_->GetPreferredSize()));
 }
 
 void TopIconAnimationView::OnImplicitAnimationsCompleted() {

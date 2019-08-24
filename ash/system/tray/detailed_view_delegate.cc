@@ -119,8 +119,7 @@ void DetailedViewDelegate::CloseBubble() {
   tray_controller_->CloseBubble();
 }
 
-SkColor DetailedViewDelegate::GetBackgroundColor(
-    ui::NativeTheme* native_theme) {
+SkColor DetailedViewDelegate::GetBackgroundColor() {
   return SK_ColorTRANSPARENT;
 }
 

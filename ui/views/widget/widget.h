@@ -96,10 +96,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   using Widgets = std::set<Widget*>;
   using ShapeRects = std::vector<gfx::Rect>;
 
-  enum FrameType {
-    FRAME_TYPE_DEFAULT,         // Use whatever the default would be.
-    FRAME_TYPE_FORCE_CUSTOM,    // Force the custom frame.
-    FRAME_TYPE_FORCE_NATIVE     // Force the native frame.
+  enum class FrameType {
+    kDefault,      // Use whatever the default would be.
+    kForceCustom,  // Force the custom frame.
+    kForceNative   // Force the native frame.
   };
 
   // Result from RunMoveLoop().
@@ -1027,8 +1027,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool is_secondary_widget_ = true;
 
   // The current frame type in use by this window. Defaults to
-  // FRAME_TYPE_DEFAULT.
-  FrameType frame_type_ = FRAME_TYPE_DEFAULT;
+  // FrameType::kDefault.
+  FrameType frame_type_ = FrameType::kDefault;
 
   // Tracks whether the native widget is active.
   bool native_widget_active_ = false;

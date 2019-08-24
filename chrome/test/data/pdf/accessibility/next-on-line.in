@@ -35,9 +35,9 @@ stream
 BT
 /F1 10 Tf
 10 180 Td
-(<<     This     is     a     test     with     >>) Tj
+(This     is     a     test     with     multiple) Tj
 0 -10 Td
-(<<     multiple     lines     of     text.     >>) Tj
+(lines     of     text.) Tj
 0 -20 Td
 (Leaving a large space between words) Tj
 0 -10 Td

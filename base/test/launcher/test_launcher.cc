@@ -1244,9 +1244,9 @@ bool TestLauncher::Init(CommandLine* command_line) {
   } else if (BotModeEnabled(command_line) ||
              !(command_line->HasSwitch(kGTestFilterFlag) ||
                command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
-    // Retry failures 3 times by default if we are running all of the tests or
+    // Retry failures 1 time by default if we are running all of the tests or
     // in bot mode.
-    retry_limit_ = 3;
+    retry_limit_ = 1;
   }
 
   force_run_broken_tests_ =

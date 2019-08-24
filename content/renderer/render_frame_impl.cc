@@ -166,6 +166,7 @@
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
@@ -2592,8 +2593,7 @@ void RenderFrameImpl::OnCopyToFindPboard() {
   if (frame_->HasSelection()) {
     if (!clipboard_host_) {
       auto* platform = RenderThreadImpl::current_blink_platform_impl();
-      platform->GetConnector()->Connect(
-          platform->GetBrowserServiceName(),
+      platform->GetBrowserInterfaceBrokerProxy()->GetInterface(
           clipboard_host_.BindNewPipeAndPassReceiver());
       clipboard_host_.set_disconnect_handler(base::BindOnce(
           &RenderFrameImpl::OnClipboardHostError, base::Unretained(this)));
@@ -5215,10 +5215,11 @@ void RenderFrameImpl::DidBlockNavigation(
 }
 
 void RenderFrameImpl::NavigateBackForwardSoon(int offset,
-                                              bool has_user_gesture) {
+                                              bool has_user_gesture,
+                                              bool from_script) {
   render_view()->NavigateBackForwardSoon(offset, has_user_gesture);
   Send(new FrameHostMsg_GoToEntryAtOffset(GetRoutingID(), offset,
-                                          has_user_gesture));
+                                          has_user_gesture, from_script));
 }
 
 base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {

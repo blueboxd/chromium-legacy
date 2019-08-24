@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-
 #include <stddef.h>
 
 #include <map>
@@ -63,6 +61,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -529,16 +528,19 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     DevicePolicyCrosBrowserTest::TearDownOnMainThread();
   }
 
+  // user_manager::UserManager::Observer:
   void LocalStateChanged(user_manager::UserManager* user_manager) override {
-    if (run_loop_)
-      run_loop_->Quit();
+    if (local_state_changed_run_loop_)
+      local_state_changed_run_loop_->Quit();
   }
 
+  // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override {
     if (run_loop_)
       run_loop_->Quit();
   }
 
+  // extensions::AppWindowRegistry::Observer:
   void OnAppWindowAdded(extensions::AppWindow* app_window) override {
     if (run_loop_)
       run_loop_->Quit();
@@ -629,7 +631,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   void CheckPublicSessionPresent(const AccountId& account_id) {
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(account_id);
-    ASSERT_TRUE(user);
+    ASSERT_TRUE(user) << " account " << account_id.GetUserEmail()
+                      << " not found";
     EXPECT_EQ(account_id, user->GetAccountId());
     EXPECT_EQ(user_manager::USER_TYPE_PUBLIC_ACCOUNT, user->GetType());
   }
@@ -736,6 +739,13 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
                                           base::Bind(IsSessionStarted)).Wait();
   }
 
+  void WaitUntilLocalStateChanged() {
+    local_state_changed_run_loop_ = std::make_unique<base::RunLoop>();
+    user_manager::UserManager::Get()->AddObserver(this);
+    local_state_changed_run_loop_->Run();
+    user_manager::UserManager::Get()->RemoveObserver(this);
+  }
+
   void VerifyKeyboardLayoutMatchesLocale() {
     chromeos::input_method::InputMethodManager* input_method_manager =
         chromeos::input_method::InputMethodManager::Get();
@@ -783,6 +793,10 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
   std::string initial_language_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
+
+  // Specifically exists to assist with waiting for a LocalStateChanged()
+  // invocation.
+  std::unique_ptr<base::RunLoop> local_state_changed_run_loop_;
 
   UserPolicyBuilder device_local_account_policy_;
   chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
@@ -871,13 +885,47 @@ class ExtensionInstallObserver : public content::NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallObserver);
 };
 
+// Tests that the data associated with a device local account is removed when
+// that local account is no longer part of policy.
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PRE_DataIsRemoved) {
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitUntilLocalStateChanged();
+
+  EXPECT_TRUE(IsKnownUser(account_id_1_));
+  CheckPublicSessionPresent(account_id_1_);
+
+  // Data for the account is normally added after successful authentication.
+  // Shortcut that here.
+  DictionaryPrefUpdate given_name_update(g_browser_process->local_state(),
+                                         "UserGivenName");
+  given_name_update->SetKey(account_id_1_.GetUserEmail(),
+                            base::Value("Elaine"));
+
+  // Add some arbitrary data to make sure the "UserGivenName" dictionary isn't
+  // cleaning up itself.
+  given_name_update->SetKey("sanity.check@example.com", base::Value("Anne"));
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DataIsRemoved) {
+  // The device local account should have been removed.
+  EXPECT_FALSE(g_browser_process->local_state()
+                   ->GetDictionary("UserGivenName")
+                   ->FindKey(account_id_1_.GetUserEmail()));
+
+  // The arbitrary data remains.
+  const std::string* value = g_browser_process->local_state()
+                                 ->GetDictionary("UserGivenName")
+                                 ->FindStringKey("sanity.check@example.com");
+  ASSERT_TRUE(value);
+  EXPECT_EQ("Anne", *value);
+}
+
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
-  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                                        base::Bind(&IsKnownUser, account_id_1_))
-      .Wait();
+  WaitUntilLocalStateChanged();
+  EXPECT_TRUE(IsKnownUser(account_id_1_));
   EXPECT_TRUE(IsKnownUser(account_id_2_));
 
   CheckPublicSessionPresent(account_id_1_);
@@ -983,17 +1031,12 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
       kAccountId1).empty());
 }
 
-static bool IsNotKnownUser(const AccountId& account_id) {
-  return !IsKnownUser(account_id);
-}
-
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
-  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                                        base::Bind(&IsKnownUser, account_id_1_))
-      .Wait();
+  WaitUntilLocalStateChanged();
+  EXPECT_TRUE(IsKnownUser(account_id_1_));
   EXPECT_TRUE(IsKnownUser(account_id_2_));
 
   // Update policy to remove kAccountId2.
@@ -1013,10 +1056,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
   g_browser_process->policy_service()->RefreshPolicies(base::Closure());
 
   // Make sure the second device-local account disappears.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&IsNotKnownUser, account_id_2_))
-      .Wait();
+  WaitUntilLocalStateChanged();
+  EXPECT_FALSE(IsKnownUser(account_id_2_));
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
@@ -1512,11 +1553,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
           account_id_1_.GetUserEmail());
   ASSERT_TRUE(broker);
 
-  run_loop_.reset(new base::RunLoop);
-  user_manager::UserManager::Get()->AddObserver(this);
   broker->core()->store()->Load();
-  run_loop_->Run();
-  user_manager::UserManager::Get()->RemoveObserver(this);
+  WaitUntilLocalStateChanged();
 
   gfx::ImageSkia policy_image =
       chromeos::test::ImageLoader(

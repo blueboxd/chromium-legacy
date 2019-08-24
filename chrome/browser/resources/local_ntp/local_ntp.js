@@ -50,13 +50,13 @@ function disableIframesAndVoiceSearchForTesting() {
  *   theme.
  *
  * @type {{
- *   backgroundColor: Array<number>,
- *   darkBackgroundColor: Array<number>,
- *   iconBackgroundColor: Array<number>,
- *   iconDarkBackgroundColor: Array<number>,
+ *   backgroundColor: !Array<number>,
+ *   darkBackgroundColor: !Array<number>,
+ *   iconBackgroundColor: !Array<number>,
+ *   iconDarkBackgroundColor: !Array<number>,
  *   numTitleLines: number,
- *   titleColor: Array<number>,
- *   titleColorAgainstDark: Array<number>,
+ *   titleColor: !Array<number>,
+ *   titleColorAgainstDark: !Array<number>,
  * }}
  */
 const NTP_DESIGN = {
@@ -276,6 +276,7 @@ function overrideExecutableTimeoutForTesting(timeout) {
  * the page has notheme set, returns a fallback light-colored theme (or dark-
  * colored theme if dark mode is enabled). This is used when the doodle is
  * displayed after clicking the notifier.
+ * @return {?ThemeBackgroundInfo}
  */
 function getThemeBackgroundInfo() {
   if (history.state && history.state.notheme) {
@@ -295,7 +296,6 @@ function getThemeBackgroundInfo() {
                                NTP_DESIGN.titleColor),
       useTitleContainer: false,
       useWhiteAddIcon: isDarkModeEnabled,
-      usingDarkMode: isDarkModeEnabled,
       usingDefaultTheme: true,
     };
   }
@@ -376,9 +376,10 @@ function renderTheme() {
 
   if (info.customBackgroundConfigured) {
     // Do anything only if the custom background changed.
-    if (!$(IDS.CUSTOM_BG).style.backgroundImage.includes(info.imageUrl)) {
+    const imageUrl = assert(info.imageUrl);
+    if (!$(IDS.CUSTOM_BG).style.backgroundImage.includes(imageUrl)) {
       const imageWithOverlay = [
-        customize.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
+        customize.CUSTOM_BACKGROUND_OVERLAY, 'url(' + imageUrl + ')'
       ].join(',').trim();
       // If the theme update is because of uploading a local image then we
       // should close the customization menu. Closing the menu before the image
@@ -396,11 +397,12 @@ function renderTheme() {
       image.onload = function() {
         $(IDS.CUSTOM_BG).style.opacity = '1';
       };
-      image.src = info.imageUrl;
+      image.src = imageUrl;
 
       customize.clearAttribution();
       customize.setAttribution(
-          info.attribution1, info.attribution2, info.attributionActionUrl);
+          '' + info.attribution1, '' + info.attribution2,
+          '' + info.attributionActionUrl);
     }
   } else {
     $(IDS.CUSTOM_BG).style.opacity = '0';
@@ -466,7 +468,8 @@ function renderOneGoogleBarTheme() {
     const oneGoogleBarPromise = oneGoogleBarApi.bf();
     oneGoogleBarPromise.then(function(oneGoogleBar) {
       const setForegroundStyle = oneGoogleBar.pc.bind(oneGoogleBar);
-      setForegroundStyle(getThemeBackgroundInfo().isNtpBackgroundDark ? 1 : 0);
+      const themeInfo = getThemeBackgroundInfo();
+      setForegroundStyle(themeInfo && themeInfo.isNtpBackgroundDark ? 1 : 0);
     });
   } catch (err) {
     console.log('Failed setting OneGoogleBar theme:\n' + err);
@@ -505,8 +508,8 @@ function setCustomThemeStyle(themeInfo) {
 
 /**
  * Renders the attribution if the URL is present, otherwise hides it.
- * @param {string} url The URL of the attribution image, if any.
- * @param {string} themeBackgroundAlignment The alignment of the theme
+ * @param {string|undefined} url The URL of the attribution image, if any.
+ * @param {string|undefined} themeBackgroundAlignment The alignment of the theme
  *     background image. This is used to compute the attribution's alignment.
  */
 function updateThemeAttribution(url, themeBackgroundAlignment) {

@@ -22,8 +22,12 @@ class SessionManagerObserver : public base::CheckedObserver {
   // Invoked when a user profile is loaded.
   virtual void OnUserProfileLoaded(const AccountId& account_id) {}
 
-  // Invoked when the primary user session is started.
-  virtual void OnPrimaryUserSessionStarted() {}
+  // Invoked when a user session is started. If this is a new user on the
+  // machine this will not be called until after post-login steps are finished
+  // (for example a profile picture has been selected). In contrast,
+  // UserSessionStateObserver::OnActiveUserChanged() is invoked immediately
+  // after the user has logged in.
+  virtual void OnUserSessionStarted(bool is_primary_user) {}
 };
 
 }  // namespace session_manager

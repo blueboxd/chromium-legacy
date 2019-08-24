@@ -51,7 +51,6 @@ class MockUserManager : public ChromeUserManager {
   MOCK_CONST_METHOD1(GetUserDisplayName, base::string16(const AccountId&));
   MOCK_METHOD2(SaveUserDisplayEmail,
                void(const AccountId&, const std::string&));
-  MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const AccountId&));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserNew, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserNonCryptohomeDataEphemeral, bool(void));

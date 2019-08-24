@@ -26,9 +26,10 @@ AppListFolderItem::~AppListFolderItem() {
 }
 
 gfx::Rect AppListFolderItem::GetTargetIconRectInFolderForItem(
+    const AppListConfig& app_list_config,
     AppListItem* item,
     const gfx::Rect& folder_icon_bounds) {
-  return folder_image_.GetTargetIconRectInFolderForItem(item,
+  return folder_image_.GetTargetIconRectInFolderForItem(app_list_config, item,
                                                         folder_icon_bounds);
 }
 

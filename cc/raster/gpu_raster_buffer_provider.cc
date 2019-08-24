@@ -295,7 +295,19 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
       before_raster_sync_token_(backing->returned_sync_token),
       texture_target_(backing->texture_target),
       texture_is_overlay_candidate_(backing->overlay_candidate),
-      mailbox_(backing->mailbox) {}
+      mailbox_(backing->mailbox) {
+#if defined(OS_CHROMEOS)
+  // Only do this in Chrome OS with OOP-R because:
+  //   1) We will use this timestamp to measure raster scheduling delay and we
+  //      only need to collect that data to assess the impact of hardware
+  //      acceleration of image decodes which works only on Chrome OS with
+  //      OOP-R.
+  //   2) We use CLOCK_MONOTONIC in that OS to get timestamps, so we can assert
+  //      certain assumptions.
+  if (client_->enable_oop_rasterization_)
+    creation_time_ = base::TimeTicks::Now();
+#endif
+}
 
 GpuRasterBufferProvider::RasterBufferImpl::~RasterBufferImpl() {
   // This SyncToken was created on the worker context after rastering the
@@ -326,7 +338,8 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
       &mailbox_, texture_target_, texture_is_overlay_candidate_,
       before_raster_sync_token_, resource_size_, resource_format_, color_space_,
       resource_has_previous_content_, raster_source, raster_full_rect,
-      raster_dirty_rect, new_content_id, transform, playback_settings, url);
+      raster_dirty_rect, new_content_id, transform, playback_settings, url,
+      creation_time_);
 }
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
@@ -453,7 +466,8 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
     uint64_t new_content_id,
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
-    const GURL& url) {
+    const GURL& url,
+    base::TimeTicks raster_buffer_creation_time) {
   PendingRasterQuery query;
   gpu::SyncToken raster_finished_token = PlaybackOnWorkerThreadInternal(
       mailbox, texture_target, texture_is_overlay_candidate, sync_token,
@@ -462,7 +476,10 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
       raster_dirty_rect, new_content_id, transform, playback_settings, url,
       &query);
 
-  if (query.query_id != 0u) {
+  if (query.raster_duration_query_id) {
+    if (query.raster_start_query_id)
+      query.raster_buffer_creation_time = raster_buffer_creation_time;
+
     // Note that it is important to scope the raster context lock to
     // PlaybackOnWorkerThreadInternal and release it before acquiring this lock
     // to avoid a deadlock in CheckRasterFinishedQueries which acquires the
@@ -470,6 +487,7 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
     base::AutoLock hold(pending_raster_queries_lock_);
     pending_raster_queries_.push_back(query);
   }
+  DCHECK(!query.raster_start_query_id || query.raster_duration_query_id);
 
   return raster_finished_token;
 }
@@ -521,8 +539,26 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
 
   if (measure_raster_metric) {
     // Use a query to time the GPU side work for rasterizing this tile.
-    ri->GenQueriesEXT(1, &query->query_id);
-    ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, query->query_id);
+    ri->GenQueriesEXT(1, &query->raster_duration_query_id);
+    DCHECK_GT(query->raster_duration_query_id, 0u);
+    ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM,
+                      query->raster_duration_query_id);
+
+#if defined(OS_CHROMEOS)
+    // Use a query to detect when the GPU side is ready to start issuing raster
+    // work to the driver. We will use the resulting timestamp to measure raster
+    // scheduling delay. We only care about this in Chrome OS and when OOP-R is
+    // enabled because we will use this timestamp to measure raster scheduling
+    // delay and we only need to collect that data to assess the impact of
+    // hardware acceleration of image decodes which work only in Chrome OS with
+    // OOP-R.
+    if (enable_oop_rasterization_) {
+      ri->GenQueriesEXT(1, &query->raster_start_query_id);
+      DCHECK_GT(query->raster_start_query_id, 0u);
+      ri->QueryCounterEXT(query->raster_start_query_id,
+                          GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM);
+    }
+#endif
   }
 
   {
@@ -546,11 +582,11 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
                       ShouldUnpremultiplyAndDitherResource(resource_format),
                       max_tile_size_);
     }
-    if (measure_raster_metric)
-      query->worker_duration = timer->Elapsed();
+    if (measure_raster_metric) {
+      query->worker_raster_duration = timer->Elapsed();
+      ri->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+    }
   }
-
-  ri->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
 
   // Generate sync token for cross context synchronization.
   return viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);
@@ -582,34 +618,74 @@ bool GpuRasterBufferProvider::CheckRasterFinishedQueries() {
 
   auto it = pending_raster_queries_.begin();
   while (it != pending_raster_queries_.end()) {
-    GLuint complete = 1;
-    ri->GetQueryObjectuivEXT(it->query_id,
+    GLuint complete = 0;
+    ri->GetQueryObjectuivEXT(it->raster_duration_query_id,
                              GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT,
                              &complete);
     if (!complete)
       break;
 
-    GLuint gpu_duration = 0u;
-    ri->GetQueryObjectuivEXT(it->query_id, GL_QUERY_RESULT_EXT, &gpu_duration);
-    ri->DeleteQueriesEXT(1, &it->query_id);
+#if DCHECK_IS_ON()
+    if (it->raster_start_query_id) {
+      // We issued the GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM query prior to the
+      // GL_COMMANDS_ISSUED_CHROMIUM query. Therefore, if the result of the
+      // latter is available, the result of the former should be too.
+      complete = 0;
+      ri->GetQueryObjectuivEXT(it->raster_start_query_id,
+                               GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT,
+                               &complete);
+      DCHECK(complete);
+    }
+#endif
 
-    base::TimeDelta total_time =
-        it->worker_duration + base::TimeDelta::FromMicroseconds(gpu_duration);
+    GLuint gpu_raster_duration = 0u;
+    ri->GetQueryObjectuivEXT(it->raster_duration_query_id, GL_QUERY_RESULT_EXT,
+                             &gpu_raster_duration);
+    ri->DeleteQueriesEXT(1, &it->raster_duration_query_id);
+
+    base::TimeDelta raster_duration =
+        it->worker_raster_duration +
+        base::TimeDelta::FromMicroseconds(gpu_raster_duration);
 
     // It is safe to use the UMA macros here with runtime generated strings
     // because the client name should be initialized once in the process, before
     // recording any metrics here.
     const char* client_name = GetClientNameForMetrics();
+
+    if (it->raster_start_query_id) {
+      GLuint64 gpu_raster_start_time = 0u;
+      ri->GetQueryObjectui64vEXT(it->raster_start_query_id, GL_QUERY_RESULT_EXT,
+                                 &gpu_raster_start_time);
+      ri->DeleteQueriesEXT(1, &it->raster_start_query_id);
+
+      // The base::checked_cast<int64_t> should not crash as long as the GPU
+      // process was not compromised: that's because the result of the query
+      // should have been generated using base::TimeDelta::InMicroseconds()
+      // there, so the result should fit in an int64_t.
+      base::TimeDelta raster_scheduling_delay =
+          base::TimeDelta::FromMicroseconds(
+              base::checked_cast<int64_t>(gpu_raster_start_time)) -
+          it->raster_buffer_creation_time.since_origin();
+
+      // We expect the clock we're using to be monotonic, so we shouldn't get a
+      // negative scheduling delay.
+      DCHECK_GE(raster_scheduling_delay.InMicroseconds(), 0u);
+      UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
+          base::StringPrintf("Renderer4.%s.RasterTaskSchedulingDelay.All",
+                             client_name),
+          raster_scheduling_delay);
+    }
+
     if (enable_oop_rasterization_) {
       UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
           base::StringPrintf("Renderer4.%s.RasterTaskTotalDuration.Oop",
                              client_name),
-          total_time);
+          raster_duration);
     } else {
       UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
           base::StringPrintf("Renderer4.%s.RasterTaskTotalDuration.Gpu",
                              client_name),
-          total_time);
+          raster_duration);
     }
 
     it = pending_raster_queries_.erase(it);

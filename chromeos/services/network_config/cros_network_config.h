@@ -59,6 +59,10 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       SetNetworkTypeEnabledStateCallback callback) override;
   void SetCellularSimState(mojom::CellularSimStatePtr sim_state,
                            SetCellularSimStateCallback callback) override;
+  void SelectCellularMobileNetwork(
+      const std::string& guid,
+      const std::string& network_id,
+      SelectCellularMobileNetworkCallback callback) override;
   void RequestNetworkScan(mojom::NetworkType type) override;
 
  private:
@@ -77,6 +81,11 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
                             std::unique_ptr<base::DictionaryValue> error_data);
   void SetCellularSimStateSuccess(int callback_id);
   void SetCellularSimStateFailure(
+      int callback_id,
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
+  void SelectCellularMobileNetworkSuccess(int callback_id);
+  void SelectCellularMobileNetworkFailure(
       int callback_id,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
@@ -102,6 +111,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   base::flat_map<int, SetPropertiesCallback> set_properties_callbacks_;
   base::flat_map<int, SetCellularSimStateCallback>
       set_cellular_sim_state_callbacks_;
+  base::flat_map<int, SelectCellularMobileNetworkCallback>
+      select_cellular_mobile_network_callbacks_;
   base::WeakPtrFactory<CrosNetworkConfig> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrosNetworkConfig);

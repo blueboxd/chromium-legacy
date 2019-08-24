@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -63,6 +64,8 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/api/test.h"
+#include "extensions/common/extensions_client.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/common/verifier_formats.h"
@@ -2031,5 +2034,68 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
   custom_console_observer.Wait();
   // If we receive both messages, we passed!
 }
+
+class ServiceWorkerCheckBindingsTest
+    : public ServiceWorkerTest,
+      public testing::WithParamInterface<version_info::Channel> {
+ public:
+  ServiceWorkerCheckBindingsTest() : ServiceWorkerTest(GetParam()) {}
+  ~ServiceWorkerCheckBindingsTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCheckBindingsTest);
+};
+
+// Load an extension in each allowed channel and check that the expected
+// bindings are available.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerCheckBindingsTest, BindingsAvailability) {
+  scoped_refptr<const Extension> extension;
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Service Worker-based background script",
+           "version": "0.1",
+           "manifest_version": 2,
+           "description": "Test that bindings are available.",
+           "permissions": ["storage"],
+           "background": {"service_worker": "worker.js"}
+         })";
+  static constexpr char kScript[] =
+      R"(var chromeAPIAvailable = !!chrome;
+         var storageAPIAvailable = chromeAPIAvailable && !!chrome.storage;
+         var tabsAPIAvailable = chromeAPIAvailable && !!chrome.tabs;
+         var testAPIAvailable = chromeAPIAvailable && !!chrome.test;
+
+         if (chromeAPIAvailable && storageAPIAvailable && tabsAPIAvailable &&
+             testAPIAvailable) {
+           chrome.test.sendMessage('SUCCESS');
+         } else {
+           console.log('chromeAPIAvailable: ' + chromeAPIAvailable);
+           console.log('storageAPIAvailable: ' + storageAPIAvailable);
+           console.log('tabsAPIAvailable: ' + tabsAPIAvailable);
+           console.log('testAPIAvailable: ' + testAPIAvailable);
+           chrome.test.sendMessage('FAILURE');
+         })";
+
+  if (GetParam() <= version_info::Channel::CANARY) {
+    TestExtensionDir test_dir;
+    test_dir.WriteManifest(kManifest);
+    test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kScript);
+    const base::FilePath path = test_dir.UnpackedPath();
+
+    // Wait for the extension to load and the script to finish.
+    ExtensionTestMessageListener result_listener("SUCCESS", false);
+    result_listener.set_failure_message("FAILURE");
+
+    extension = LoadExtension(test_dir.UnpackedPath());
+    ASSERT_TRUE(extension.get());
+    EXPECT_TRUE(BackgroundInfo::IsServiceWorkerBased(extension.get()));
+    EXPECT_TRUE(result_listener.WaitUntilSatisfied());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(Unknown,
+                         ServiceWorkerCheckBindingsTest,
+                         ::testing::Values(version_info::Channel::UNKNOWN,
+                                           version_info::Channel::CANARY));
 
 }  // namespace extensions

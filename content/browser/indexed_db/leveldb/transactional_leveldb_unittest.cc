@@ -54,7 +54,7 @@ class SimpleLDBComparator : public leveldb::Comparator {
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
 OpenLevelDB(base::FilePath file_name) {
   return indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
-      file_name, SimpleLDBComparator::Get());
+      file_name, SimpleLDBComparator::Get(), /* create_if_missing=*/true);
 }
 
 class TransactionalLevelDBDatabaseTest : public testing::Test {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "chrome/browser/vr/test/fake_xr_session_request_consent_manager.h"
+#include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -11,124 +11,165 @@
 
 namespace vr {
 
-#if defined(OS_WIN)
-
-// Browser test class exclusively to test the consent dialog that's shown when
-// attempting to enter VR.
-class WebXrVrConsentDialogBrowserTest : public WebXrVrBrowserTestBase {
- public:
-  WebXrVrConsentDialogBrowserTest();
-
-  // Must be called first thing in the test. This cannot be part of SetUp()
-  // because the XRSessionRequestConsentManager::SetInstance() is not called
-  // in ChromeBrowserMain code by that time.
-  void SetupFakeConsentManager(
-      FakeXRSessionRequestConsentManager::UserResponse user_response);
-
- private:
-  std::unique_ptr<FakeXRSessionRequestConsentManager> fake_consent_manager_;
-};
-
-WebXrVrConsentDialogBrowserTest::WebXrVrConsentDialogBrowserTest() {
-  enable_features_.push_back(features::kOpenVR);
-  enable_features_.push_back(features::kWebXr);
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-  disable_features_.push_back(features::kWindowsMixedReality);
-#endif
-}
-
-void WebXrVrConsentDialogBrowserTest::SetupFakeConsentManager(
-    FakeXRSessionRequestConsentManager::UserResponse user_response) {
-  fake_consent_manager_.reset(new FakeXRSessionRequestConsentManager(
-      XRSessionRequestConsentManager::Instance(), user_response));
-  XRSessionRequestConsentManager::SetInstanceForTesting(
-      fake_consent_manager_.get());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    WebXrVrConsentDialogBrowserTest,
-    TestWebXrVrSucceedsWhenUserClicksConsentDialogAllowButton) {
-  SetupFakeConsentManager(
+// Tests that WebXR sessions can be created when the "Allow" button is pressed.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentAllowCreatesSession) {
+  t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("generic_webxr_page"));
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("generic_webxr_page"));
 
-  // These two functions below are exactly the same as
-  // WebXrVrBrowserTestBase::EnterSessionWithUserGesture, except that the base
-  // class' implementation replaces the FakeXRSessionRequestConsentManager
-  // set in the SetupFakeConsentManager call above, which should be avoided.
-  RunJavaScriptOrFail("onRequestSession()", GetCurrentWebContents());
-  PollJavaScriptBooleanOrFail(
-      "sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
-      kPollTimeoutLong, GetCurrentWebContents());
+  t->EnterSessionWithUserGestureOrFail();
 
-  RunJavaScriptOrFail(
-      "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
-      GetCurrentWebContents());
+  ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 1u)
+      << "Consent Dialog should have been shown once";
 }
 
-IN_PROC_BROWSER_TEST_F(
-    WebXrVrConsentDialogBrowserTest,
-    TestWebXrVrFailsWhenUserClicksConsentDialogCancelButton) {
-  SetupFakeConsentManager(
+// Tests that a session is not created if the user explicitly clicks the
+// cancel button.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentCancelFailsSessionCreation) {
+  t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickCancelButton);
 
-  LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile(
+  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(
       "webxr_test_presentation_promise_rejected_if_consent_not_granted"));
-  ExecuteStepAndWait("onImmersiveRequestWithConsent()");
-  EndTest();
+  t->ExecuteStepAndWait("onImmersiveRequestWithConsent()");
+
+  ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 1u)
+      << "Consent Dialog should have been shown once";
+  t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebXrVrConsentDialogBrowserTest,
-                       TestWebXrVrFailsWhenUserClosesConsentDialog) {
-  SetupFakeConsentManager(
+// Tests that a session is not created if the user explicitly closes the
+// dialog.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentCloseFailsSessionCreation) {
+  t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kCloseDialog);
 
-  LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile(
+  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(
       "webxr_test_presentation_promise_rejected_if_consent_not_granted"));
-  ExecuteStepAndWait("onImmersiveRequestWithConsent()");
-  EndTest();
+  t->ExecuteStepAndWait("onImmersiveRequestWithConsent()");
+
+  ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 1u)
+      << "Consent Dialog should have been shown once";
+  t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(
-    WebXrVrConsentDialogBrowserTest,
-    TestWebXrVrPersistsGrantedConsentWhenUserClicksAllowButton) {
-  SetupFakeConsentManager(
+// Tests that requesting a session with the same required level of consent
+// without a page reload, only prompts once.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentPersistsSameLevel) {
+  t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
 
-  LoadUrlAndAwaitInitialization(
-      GetFileUrlForHtmlTestFile("generic_webxr_page"));
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("generic_webxr_page"));
 
-  // These two functions below are exactly the same as
-  // WebXrVrBrowserTestBase::EnterSessionWithUserGesture, except that the base
-  // class' implementation replaces the FakeXRSessionRequestConsentManager
-  // set in the SetupFakeConsentManager call above, which should be avoided.
-  RunJavaScriptOrFail("onRequestSession()", GetCurrentWebContents());
-  PollJavaScriptBooleanOrFail(
-      "sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
-      kPollTimeoutLong, GetCurrentWebContents());
+  t->EnterSessionWithUserGestureOrFail();
+  t->EndSessionOrFail();
 
-  RunJavaScriptOrFail(
-      "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
-      GetCurrentWebContents());
-
-  // Now, reset the fake consent dialog manager to reject consent if prompted
-  // again. However, since the earlier prompt is persisted, requesting for
+  // Since the consent from the earlier prompt should be persisted, requesting
   // an XR session a second time should not prompt the user, but should create
   // a valid session.
-  SetupFakeConsentManager(
-      FakeXRSessionRequestConsentManager::UserResponse::kUnexpected);
-  RunJavaScriptOrFail("onRequestSession()", GetCurrentWebContents());
-  PollJavaScriptBooleanOrFail(
-      "sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
-      kPollTimeoutLong, GetCurrentWebContents());
+  t->EnterSessionWithUserGestureOrFail();
 
-  RunJavaScriptOrFail(
-      "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
-      GetCurrentWebContents());
+  // Validate that the consent prompt has only been shown once since the start
+  // of this test.
+  ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 1u)
+      << "Consent Dialog should have only been shown once";
 }
 
-#endif
+// Verify that inline with no session parameters doesn't prompt for consent.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentNotNeededForInline) {
+  // This ensures that we have a fresh consent manager with a new count.
+  t->SetupFakeConsentManager(
+      FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
+
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+  t->RunJavaScriptOrFail("requestMagicWindowSession()");
+
+  t->PollJavaScriptBooleanOrFail(
+      "sessionInfos[sessionTypes.MAGIC_WINDOW].currentSession != null",
+      WebXrVrBrowserTestBase::kPollTimeoutLong);
+
+  // Validate that the consent prompt has not been shown since this test began.
+  ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 0u)
+      << "Consent Dialog should not have been shown";
+}
+
+// Verify that if a higher level of consent is granted (e.g. bounded), that the
+// lower level does not re-prompt for consent.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentPersistsLowerLevel) {
+  // This ensures that we have a fresh consent manager with a new count.
+  t->SetupFakeConsentManager(
+      FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
+
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+
+  // Setup to ensure that we request a session that requires a high level of
+  // consent.
+  t->RunJavaScriptOrFail("setupImmersiveSessionToRequestBounded()");
+
+  t->EnterSessionWithUserGestureOrFail();
+  t->EndSessionOrFail();
+
+  // Since the (higher) consent from the earlier prompt should be persisted,
+  // requesting an XR session a second time, with a lower level of permissions
+  // expected should not prompt the user, but should create a valid session.
+  t->RunJavaScriptOrFail("setupImmersiveSessionToRequestHeight()");
+  t->EnterSessionWithUserGestureOrFail();
+
+  // Validate that the consent prompt has only been shown once since the start
+  // of this test.
+  ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 1u)
+      << "Consent Dialog should have only been shown once";
+}
+
+// Tests that if a higher level of consent than was previously granted is needed
+// that the user is re-prompted.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentRepromptsHigherLevel) {
+  // This ensures that we have a fresh consent manager with a new count.
+  t->SetupFakeConsentManager(
+      FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
+
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+
+  // First request an immersive session with a medium level of consent.
+  t->RunJavaScriptOrFail("setupImmersiveSessionToRequestHeight()");
+  t->EnterSessionWithUserGestureOrFail();
+  t->EndSessionOrFail();
+
+  // Now set up to request a session with a higher level of consent than
+  // previously granted.  This should cause the prompt to appear again, and then
+  // a new session be created.
+  t->RunJavaScriptOrFail("setupImmersiveSessionToRequestBounded()");
+  t->EnterSessionWithUserGestureOrFail();
+
+  // Validate that both request sessions showed a consent prompt.
+  ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 2u)
+      << "Consent Dialog should have been shown twice";
+}
+
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentRepromptsAfterReload) {
+  t->SetupFakeConsentManager(
+      FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton);
+
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("generic_webxr_page"));
+
+  t->EnterSessionWithUserGestureOrFail();
+  t->EndSessionOrFail();
+
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("generic_webxr_page"));
+
+  t->EnterSessionWithUserGestureOrFail();
+
+  // Validate that both request sessions showed a consent prompt.
+  ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 2u)
+      << "Consent Dialog should have been shown twice";
+}
 
 }  // namespace vr

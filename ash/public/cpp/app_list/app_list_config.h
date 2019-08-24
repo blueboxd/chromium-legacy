@@ -8,6 +8,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -20,10 +21,41 @@ namespace app_list {
 // obtain the AppListConfig.
 class ASH_PUBLIC_EXPORT AppListConfig {
  public:
+  // Constructor for the default, unscaled configuration.
   AppListConfig();
+
+  // |scale_x| - The scale at which apps grid tile should be scaled
+  // horizontally.
+  // |scale_y| - The scale at which apps grid tile should be scaled
+  // vertically.
+  // |inner_title_scale_y| - The scale to use to vertically scale dimensions
+  // within the apps grid tile. Different from |scale_y| because tile title
+  // height is not vertically scaled.
+  AppListConfig(float scale_x, float scale_y, float inner_tile_scale_y);
+
   ~AppListConfig();
 
-  static const AppListConfig& instance();
+  // Gets default app list configuration.
+  static AppListConfig& instance();
+
+  // Returns the app list config that should be used by an app list instance
+  // based on the app list display, and available size for the apps grid.
+  // Returns nullptr if the new app list config is the same as |current_config|.
+  // |work_area_size|: The work area size of the display showing the app list.
+  // |available_grid_size|: The size of the bounds available for the apps grid.
+  // |current_config|: If not null, the app list config currently used by the
+  // app list.
+  // NOTE: This should only be called on AppListConfig::instance().
+  std::unique_ptr<AppListConfig> CreateForAppListWidget(
+      const gfx::Size& display_work_area_size,
+      const gfx::Size& available_grid_size,
+      const AppListConfig* current_config);
+
+  // The scale values used for the config - used primarily to identify the
+  // configuration. Both default to 1 (for the config returned by
+  // AppListConfig::instance()).
+  float scale_x() const { return scale_x_; }
+  float scale_y() const { return scale_y_; }
 
   int grid_tile_width() const { return grid_tile_width_; }
   int grid_tile_height() const { return grid_tile_height_; }
@@ -165,8 +197,13 @@ class ASH_PUBLIC_EXPORT AppListConfig {
                      folder_unclipped_icon_dimension_);
   }
 
-  int folder_icon_insets() const {
-    return (folder_unclipped_icon_dimension_ - folder_icon_dimension_) / 2;
+  gfx::Insets folder_icon_insets() const {
+    int folder_icon_dimension_diff =
+        folder_unclipped_icon_dimension_ - folder_icon_dimension_;
+    return gfx::Insets(folder_icon_dimension_diff / 2,
+                       folder_icon_dimension_diff / 2,
+                       (folder_icon_dimension_diff + 1) / 2,
+                       (folder_icon_dimension_diff + 1) / 2);
   }
 
   gfx::Size item_icon_in_folder_icon_size() const {
@@ -182,6 +219,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int GetMaxNumOfItemsPerPage(int page) const;
 
  private:
+  // Current config scale values.
+  const float scale_x_;
+  const float scale_y_;
+
   // The tile view's width and height of the item in apps grid view.
   const int grid_tile_width_;
   const int grid_tile_height_;
@@ -366,6 +407,8 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // Max number of search result tiles in the launcher suggestion window.
   const size_t max_search_result_tiles_ = 6;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListConfig);
 };
 
 }  // namespace app_list

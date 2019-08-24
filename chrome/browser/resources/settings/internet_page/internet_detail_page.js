@@ -264,7 +264,6 @@ Polymer({
    * @param {string} guid
    * @param {!chrome.networkingPrivate.NetworkType} type
    * @param {string} name
-   * @private
    */
   init: function(guid, type, name) {
     this.guid = guid;

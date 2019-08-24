@@ -445,8 +445,7 @@ void WebViewHelper::Reset() {
     test_web_view_client_->DestroyChildViews();
   if (web_view_) {
     DCHECK(!TestWebFrameClient::IsLoading());
-    // This closes the WebView also.
-    web_view_->MainFrameWidget()->Close();
+    web_view_->Close();
     web_view_ = nullptr;
   }
   test_web_view_client_ = nullptr;

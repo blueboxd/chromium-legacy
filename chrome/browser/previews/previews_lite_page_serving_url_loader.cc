@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
@@ -391,6 +392,9 @@ void PreviewsLitePageServingURLLoader::OnStartLoadingResponseBody(
 
 void PreviewsLitePageServingURLLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
+  base::UmaHistogramSparse("Previews.ServerLitePage.ServerNetError",
+                           -status.error_code);
+
   if (forwarding_client_) {
     forwarding_client_->OnComplete(status);
     return;

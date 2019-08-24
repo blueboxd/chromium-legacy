@@ -343,6 +343,7 @@ jumbo_static_library("browser") {
     "proto:legacy_proto_bridge",
     "//base",
     "//base:i18n",
+    "//build:branding_buildflags",
     "//components/google/core/common",
     "//components/history/core/browser",
     "//components/infobars/core",

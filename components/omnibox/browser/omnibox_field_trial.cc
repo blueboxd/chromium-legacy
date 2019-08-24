@@ -241,21 +241,6 @@ std::string OmniboxFieldTrial::GetZeroSuggestVariant(
       page_classification);
 }
 
-// static
-// static
-std::string OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL() {
-  return base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnFocusSuggestions, kOnFocusSuggestionsEndpointURLParam);
-}
-
-// static
-int OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointExperimentId() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kOnFocusSuggestions,
-      kOnFocusSuggestionsEndpointExperimentIdParam,
-      /*default_value=*/-1);
-}
-
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
     OmniboxEventProto::PageClassification current_page_classification,
     int* max_relevance) {
@@ -768,11 +753,6 @@ const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam[] =
     "UIMaxAutocompleteMatches";
 const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam[] =
     "UIMaxAutocompleteMatchesByProvider";
-
-const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointExperimentIdParam[] =
-    "CustomEndpointExperimentID";
-const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam[] =
-    "CustomEndpointURL";
 
 // static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;

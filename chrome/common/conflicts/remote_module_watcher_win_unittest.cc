@@ -15,50 +15,26 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
-#include "content/public/common/service_names.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 class RemoteModuleWatcherTest : public testing::Test,
-                                public service_manager::Service,
                                 public mojom::ModuleEventSink {
  public:
-  RemoteModuleWatcherTest()
-      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        service_binding_(this,
-                         test_connector_factory_.RegisterInstance(
-                             content::mojom::kSystemServiceName)),
-        binding_(this) {}
-
+  RemoteModuleWatcherTest() = default;
   ~RemoteModuleWatcherTest() override = default;
 
-  // service_manager::Service:
-  void OnStart() override {
-    registry_.AddInterface(base::BindRepeating(
-        &RemoteModuleWatcherTest::BindModuleEventSinkRequest,
-        base::Unretained(this)));
-  }
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
+  mojo::PendingRemote<mojom::ModuleEventSink> Bind() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   // mojom::ModuleEventSink:
   void OnModuleEvents(
       const std::vector<uint64_t>& module_load_addresses) override {
     module_event_count_ += module_load_addresses.size();
-  }
-
-  // Returns a connector that may be used to connect to a ModuleEventSink
-  // implementation.
-  service_manager::Connector* GetConnector() {
-    return test_connector_factory_.GetDefaultConnector();
   }
 
   void LoadModule() {
@@ -93,21 +69,12 @@ class RemoteModuleWatcherTest : public testing::Test,
   int module_event_count() { return module_event_count_; }
 
  private:
-  void BindModuleEventSinkRequest(mojom::ModuleEventSinkRequest request) {
-    binding_.Bind(std::move(request));
-  }
-
   // Must be first.
-  base::test::TaskEnvironment task_environment_;
-
-  service_manager::TestConnectorFactory test_connector_factory_;
-
-  // Used to implement |service_manager::Service|.
-  service_manager::ServiceBinding service_binding_;
-  service_manager::BinderRegistry registry_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   // Binds a ModuleEventSinkRequest to this implementation of ModuleEventSink.
-  mojo::Binding<mojom::ModuleEventSink> binding_;
+  mojo::Receiver<mojom::ModuleEventSink> receiver_{this};
 
   // Holds a handle to a loaded module.
   HMODULE module_handle_ = nullptr;
@@ -121,8 +88,8 @@ class RemoteModuleWatcherTest : public testing::Test,
 }  // namespace
 
 TEST_F(RemoteModuleWatcherTest, ModuleEvents) {
-  auto remote_module_watcher = RemoteModuleWatcher::Create(
-      base::ThreadTaskRunnerHandle::Get(), GetConnector());
+  auto remote_module_watcher =
+      RemoteModuleWatcher::Create(base::ThreadTaskRunnerHandle::Get(), Bind());
 
   // Wait until the watcher is initialized and events for already loaded modules
   // are received.

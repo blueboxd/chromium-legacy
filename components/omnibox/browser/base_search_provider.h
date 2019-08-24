@@ -77,6 +77,10 @@ class BaseSearchProvider : public AutocompleteProvider {
       metrics::OmniboxEventProto::PageClassification page_classification,
       TemplateURLRef::SearchTermsArgs* search_terms_args);
 
+  // Returns whether the provided classification indicates some sort of NTP.
+  static bool IsNTPPage(
+      metrics::OmniboxEventProto::PageClassification classification);
+
   // AutocompleteProvider:
   void DeleteMatch(const AutocompleteMatch& match) override;
   void AddProviderInfo(ProvidersInfo* provider_info) const override;
@@ -112,10 +116,6 @@ class BaseSearchProvider : public AutocompleteProvider {
   typedef std::map<MatchKey, AutocompleteMatch> MatchMap;
   typedef std::vector<std::unique_ptr<SuggestionDeletionHandler>>
       SuggestionDeletionHandlers;
-
-  // Returns whether the provided classification indicates some sort of NTP.
-  static bool IsNTPPage(
-      metrics::OmniboxEventProto::PageClassification classification);
 
   // Returns an AutocompleteMatch with the given |autocomplete_provider|
   // for the search |suggestion|, which represents a search via |template_url|.

@@ -106,10 +106,11 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
   static std::unique_ptr<PageNodeImpl> Create(
       GraphImpl* graph,
       const WebContentsProxy& wc_proxy = WebContentsProxy(),
+      const std::string& browser_context_id = std::string(),
       bool is_visible = false,
       bool is_audible = false) {
-    return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible,
-                                          is_audible);
+    return std::make_unique<PageNodeImpl>(graph, wc_proxy, browser_context_id,
+                                          is_visible, is_audible);
   }
 };
 
@@ -121,9 +122,11 @@ struct TestNodeWrapper<WorkerNodeImpl>::Factory {
       GraphImpl* graph,
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
+      const std::string& browser_context_id = std::string(),
+      const GURL& url = GURL(),
       const base::UnguessableToken& token = base::UnguessableToken::Create()) {
-    return std::make_unique<WorkerNodeImpl>(graph, worker_type, process_node,
-                                            token);
+    return std::make_unique<WorkerNodeImpl>(
+        graph, browser_context_id, worker_type, process_node, url, token);
   }
 };
 

@@ -31,15 +31,6 @@ class AppShimHandler {
   // Set or un-set the default handler.
   static void Set(AppShimHandler* handler);
 
-  // Terminate Chrome if a browser window has never been opened, there are no
-  // shell windows, and the app list is not visible.
-  static void MaybeTerminate();
-
-  // Whether browser sessions should be restored right now. This is true if
-  // the browser has been quit but kept alive because Chrome Apps are still
-  // running.
-  static bool ShouldRestoreSession();
-
   // Request that the handler launch the app shim process.
   virtual void OnShimLaunchRequested(
       AppShimHost* host,

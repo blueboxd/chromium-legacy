@@ -66,14 +66,6 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
         mParentLayout.destroy();
     }
 
-    private void updateDialogContent(List<Tab> tabs) {
-        if (tabs != null) {
-            mMediator.onReset(tabs.get(0).getId());
-        } else {
-            mMediator.onReset(null);
-        }
-    }
-
     boolean isVisible() {
         return mMediator.isVisible();
     }
@@ -94,7 +86,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
     @Override
     public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
         mTabListCoordinator.resetWithListOfTabs(tabs);
-        updateDialogContent(tabs);
+        mMediator.onReset(tabs);
     }
 
     @Override

@@ -25,8 +25,6 @@ class SynchronousInterfacePtr;
 namespace base {
 namespace fuchsia {
 
-class ScopedServiceDirectoryClientForCurrentProcessForTest;
-
 // Helper for connecting to services from a supplied fuchsia.io.Directory.
 class BASE_EXPORT ServiceDirectoryClient {
  public:
@@ -71,7 +69,6 @@ class BASE_EXPORT ServiceDirectoryClient {
                                      zx::channel request) const;
 
  private:
-  friend class ScopedServiceDirectoryClientForCurrentProcessForTest;
   ServiceDirectoryClient();
 
   // Creates a ServiceDirectoryClient connected to the process' "/svc"
@@ -86,22 +83,6 @@ class BASE_EXPORT ServiceDirectoryClient {
   const fidl::InterfaceHandle<::fuchsia::io::Directory> directory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDirectoryClient);
-};
-
-// Replaces the current process' ServiceDirectoryClient with the supplied
-// |directory|, and restores it when going out-of-scope.
-class BASE_EXPORT ScopedServiceDirectoryClientForCurrentProcessForTest {
- public:
-  explicit ScopedServiceDirectoryClientForCurrentProcessForTest(
-      fidl::InterfaceHandle<::fuchsia::io::Directory> directory);
-  ~ScopedServiceDirectoryClientForCurrentProcessForTest();
-
- private:
-  ServiceDirectoryClient* client_;
-  std::unique_ptr<ServiceDirectoryClient> old_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      ScopedServiceDirectoryClientForCurrentProcessForTest);
 };
 
 }  // namespace fuchsia

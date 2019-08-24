@@ -64,7 +64,6 @@ class SESSION_EXPORT SessionManager {
 
   // Various helpers to notify observers.
   void NotifyUserProfileLoaded(const AccountId& account_id);
-  void NotifyPrimaryUserSessionStarted();
 
   SessionState session_state() const { return session_state_; }
   const std::vector<Session>& sessions() const { return sessions_; }

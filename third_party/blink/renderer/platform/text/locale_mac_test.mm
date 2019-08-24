@@ -38,7 +38,7 @@ namespace blink {
 
 class LocalePlatformSupport : public TestingPlatformSupport {
  public:
-  WebString QueryLocalizedString(WebLocalizedString::Name /*name*/) override {
+  WebString QueryLocalizedString(int /*resource_id*/) override {
     return WebString::FromUTF8("Week $2, $1");
   }
 };

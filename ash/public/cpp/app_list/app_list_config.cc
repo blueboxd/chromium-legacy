@@ -12,19 +12,38 @@
 
 namespace app_list {
 
-AppListConfig::AppListConfig()
-    : grid_tile_width_(112),
-      grid_tile_height_(120),
+namespace {
+
+// The minimum scale that can be used when scaling down the app list view UI.
+// Selected so the grid tile height does not get smaller than 80 dip.
+constexpr float kMinimumConfigScale = 80. / 120.;
+
+// Scales |value| using the smaller one of |scale_1| and |scale_2|.
+int MinScale(int value, float scale_1, float scale_2) {
+  return std::round(value * std::min(scale_1, scale_2));
+}
+
+}  // namespace
+
+AppListConfig::AppListConfig() : AppListConfig(1, 1, 1) {}
+
+AppListConfig::AppListConfig(float scale_x,
+                             float scale_y,
+                             float inner_tile_scale_y)
+    : scale_x_(scale_x),
+      scale_y_(scale_y),
+      grid_tile_width_(MinScale(112, scale_x, 1)),
+      grid_tile_height_(MinScale(120, scale_y, 1)),
       grid_tile_spacing_(0),
-      grid_icon_dimension_(64),
-      grid_icon_bottom_padding_(24),
-      grid_title_top_padding_(92),
-      grid_title_bottom_padding_(8),
-      grid_title_horizontal_padding_(8),
+      grid_icon_dimension_(MinScale(64, scale_x, inner_tile_scale_y)),
+      grid_icon_bottom_padding_(MinScale(24, inner_tile_scale_y, 1)),
+      grid_title_top_padding_(MinScale(92, inner_tile_scale_y, 1)),
+      grid_title_bottom_padding_(MinScale(8, inner_tile_scale_y, 1)),
+      grid_title_horizontal_padding_(MinScale(8, scale_x, 1)),
       grid_title_width_(grid_tile_width_),
       grid_title_color_(SK_ColorWHITE),
-      grid_focus_dimension_(80),
-      grid_focus_corner_radius_(12),
+      grid_focus_dimension_(MinScale(80, scale_x, inner_tile_scale_y)),
+      grid_focus_corner_radius_(MinScale(12, scale_x, inner_tile_scale_y)),
       search_tile_icon_dimension_(48),
       search_tile_badge_icon_dimension_(22),
       search_tile_badge_icon_offset_(5),
@@ -40,24 +59,25 @@ AppListConfig::AppListConfig()
       search_box_peeking_top_padding_(84),
       search_box_fullscreen_top_padding_(24),
       preferred_cols_(5),
-
       preferred_rows_(4),
       page_spacing_(48),
       expand_arrow_tile_height_(72),
-      folder_bubble_radius_(44),
+      folder_bubble_radius_(MinScale(44, scale_x, inner_tile_scale_y)),
       folder_bubble_y_offset_(0),
-      folder_header_height_(20),
-      folder_icon_dimension_(72),
-      folder_unclipped_icon_dimension_(88),
-      folder_icon_radius_(36),
-      folder_background_radius_(12),
+      folder_header_height_(MinScale(20, scale_y, 1)),
+      folder_icon_dimension_(MinScale(72, scale_x, inner_tile_scale_y)),
+      folder_unclipped_icon_dimension_(
+          MinScale(88, scale_x, inner_tile_scale_y)),
+      folder_icon_radius_(MinScale(36, scale_x, inner_tile_scale_y)),
+      folder_background_radius_(MinScale(12, scale_x, scale_y)),
       folder_bubble_color_(SkColorSetA(gfx::kGoogleGrey100, 0x7A)),
-      item_icon_in_folder_icon_dimension_(32),
-      folder_dropping_circle_radius_(44),
+      item_icon_in_folder_icon_dimension_(
+          MinScale(32, scale_x, inner_tile_scale_y)),
+      folder_dropping_circle_radius_(MinScale(44, scale_x, scale_y)),
       folder_dropping_delay_(0),
       folder_background_color_(gfx::kGoogleGrey100),
       page_flip_zone_size_(20),
-      grid_tile_spacing_in_folder_(8),
+      grid_tile_spacing_in_folder_(MinScale(8, scale_x, inner_tile_scale_y)),
       // TODO(manucornet): Share the value with ShelfConstants and use
       // 48 when the new shelf UI is turned off.
       shelf_height_(chromeos::switches::ShouldShowShelfDenseClamshell() ? 48
@@ -84,9 +104,63 @@ AppListConfig::AppListConfig()
 AppListConfig::~AppListConfig() = default;
 
 // static
-const AppListConfig& AppListConfig::instance() {
-  static const base::NoDestructor<AppListConfig> instance;
+AppListConfig& AppListConfig::instance() {
+  static base::NoDestructor<AppListConfig> instance;
   return *instance;
+}
+
+std::unique_ptr<AppListConfig> AppListConfig::CreateForAppListWidget(
+    const gfx::Size& display_work_area_size,
+    const gfx::Size& available_grid_size,
+    const AppListConfig* current_config) {
+  DCHECK_EQ(this, &instance());
+
+  const int min_grid_height =
+      (display_work_area_size.width() < display_work_area_size.height()
+           ? preferred_cols_
+           : preferred_rows_) *
+      grid_tile_height_;
+  const int min_grid_width =
+      (display_work_area_size.width() < display_work_area_size.height()
+           ? preferred_rows_
+           : preferred_cols_) *
+      grid_tile_width_;
+
+  float scale_x = 1;
+  float scale_y = 1;
+  float inner_tile_scale_y = 1;
+
+  if (available_grid_size.height() < min_grid_height) {
+    scale_y = std::max(
+        kMinimumConfigScale,
+        static_cast<float>(available_grid_size.height()) / min_grid_height);
+    // Adjust scale to reflect the fact the app list item title height does not
+    // get scaled. The adjustment is derived from:
+    // s * x + c = S * (x + c) and t = x + c
+    // With: S - the target grid scale,
+    //       x - scalable part of the tile (total title padding),
+    //       c - constant part of the tile,
+    //       t - tile height, and
+    //       s - the adjusted scale.
+    const int total_title_padding =
+        grid_title_bottom_padding_ + grid_title_top_padding_;
+    inner_tile_scale_y =
+        (grid_tile_height_ * (scale_y - 1) + total_title_padding) /
+        total_title_padding;
+  }
+
+  if (available_grid_size.width() < min_grid_width) {
+    scale_x = std::max(
+        kMinimumConfigScale,
+        static_cast<float>(available_grid_size.width()) / min_grid_width);
+  }
+
+  if (current_config && current_config->scale_x() == scale_x &&
+      current_config->scale_y() == scale_y) {
+    return nullptr;
+  }
+
+  return std::make_unique<AppListConfig>(scale_x, scale_y, inner_tile_scale_y);
 }
 
 int AppListConfig::GetPreferredIconDimension(

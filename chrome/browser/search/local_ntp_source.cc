@@ -76,6 +76,7 @@
 #include "ui/base/template_expressions.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "url/gurl.h"
 
 using search_provider_logos::EncodedLogo;
@@ -113,6 +114,7 @@ const struct Resource{
 } kResources[] = {
     {"animations.css", IDR_LOCAL_NTP_ANIMATIONS_CSS, "text/css"},
     {"animations.js", IDR_LOCAL_NTP_ANIMATIONS_JS, "application/javascript"},
+    {"assert.js", IDR_WEBUI_JS_ASSERT, "application/javascript"},
     {"local-ntp-common.css", IDR_LOCAL_NTP_COMMON_CSS, "text/css"},
     {"customize.css", IDR_LOCAL_NTP_CUSTOMIZE_CSS, "text/css"},
     {"customize.js", IDR_LOCAL_NTP_CUSTOMIZE_JS, "application/javascript"},
@@ -958,6 +960,8 @@ void LocalNtpSource::StartDataRequest(
 
     replacements["animationsIntegrity"] =
         base::StrCat({kSha256, ANIMATIONS_JS_INTEGRITY});
+    replacements["assertIntegrity"] =
+        base::StrCat({kSha256, ASSERT_JS_INTEGRITY});
     replacements["configDataIntegrity"] = base::StrCat(
         {kSha256, search_config_provider_->config_data_integrity()});
     replacements["localNtpCustomizeIntegrity"] =
@@ -1098,9 +1102,10 @@ std::string LocalNtpSource::GetContentSecurityPolicy() {
   // 'strict-dynamic' allows those scripts to load dependencies not listed here.
   std::string script_src_csp = base::StringPrintf(
       "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s' "
-      "'sha256-%s' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
-      ANIMATIONS_JS_INTEGRITY, CUSTOMIZE_JS_INTEGRITY, DOODLES_JS_INTEGRITY,
-      LOCAL_NTP_JS_INTEGRITY, UTILS_JS_INTEGRITY, VOICE_JS_INTEGRITY,
+      "'sha256-%s' 'sha256-%s' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
+      ANIMATIONS_JS_INTEGRITY, ASSERT_JS_INTEGRITY, CUSTOMIZE_JS_INTEGRITY,
+      DOODLES_JS_INTEGRITY, LOCAL_NTP_JS_INTEGRITY, UTILS_JS_INTEGRITY,
+      VOICE_JS_INTEGRITY,
       search_config_provider_->config_data_integrity().c_str());
 
   return GetContentSecurityPolicyObjectSrc() +

@@ -1286,6 +1286,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
                                           L"https://escrow.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
 
   GoogleMdmEnrolledStatusForTesting force_success(true);
 
@@ -1504,6 +1505,12 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
 
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
+  // SetGlobalFlagForTesting effectively deletes the registry when the provided
+  // registry value is empty. That implicitly enables escrow service without a
+  // registry override.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl, L""));
+
   if (escrow_service_url) {
     base::win::RegKey key;
     ASSERT_EQ(ERROR_SUCCESS,
@@ -1585,9 +1592,9 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
     CComPtr<ITestCredentialProvider> test_provider;
     ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
 
-    // Null or empty escrow service url will disable password
+    // Empty escrow service url will disable password
     // recovery and force the user to enter their password.
-    if (!escrow_service_url || escrow_service_url[0] == '\0') {
+    if (escrow_service_url && escrow_service_url[0] == '\0') {
       // Logon should not complete but there is no error message.
       EXPECT_EQ(test_provider->credentials_changed_fired(), false);
 

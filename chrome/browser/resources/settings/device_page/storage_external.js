@@ -10,4 +10,50 @@
 
 Polymer({
   is: 'settings-storage-external',
+
+  behaviors: [WebUIListenerBehavior],
+
+  properties: {
+    /**
+     * List of the plugged-in external storages.
+     * @private {Arrray<!settings.ExternalStorage>}
+     */
+    externalStorages_: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
+
+    /** @private {!chrome.settingsPrivate.PrefObject} */
+    externalStorageVisiblePref_: {
+      type: Object,
+      value: function() {
+        return /** @type {!chrome.settingsPrivate.PrefObject} */ ({});
+      },
+    },
+  },
+
+  /** @private {?settings.DevicePageBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.browserProxy_ = settings.DevicePageBrowserProxyImpl.getInstance();
+  },
+
+  /** @override */
+  attached: function() {
+    this.browserProxy_.setExternalStoragesUpdatedCallback(
+        this.handleExternalStoragesUpdated_.bind(this));
+    this.browserProxy_.updateExternalStorages();
+  },
+
+  /**
+   * @param {Array<!settings.ExternalStorage>} storages
+   * @private
+   */
+  handleExternalStoragesUpdated_: function(storages) {
+    this.externalStorages_ = storages;
+  },
 });

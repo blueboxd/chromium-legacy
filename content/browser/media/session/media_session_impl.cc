@@ -891,6 +891,9 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
 
   info->is_controllable = IsControllable();
 
+  // If the browser context is off the record then it should be sensitive.
+  info->is_sensitive = web_contents()->GetBrowserContext()->IsOffTheRecord();
+
   return info;
 }
 
@@ -927,7 +930,7 @@ void MediaSessionImpl::FinishSystemAudioFocusRequest(
 
   OnSystemAudioFocusRequested(result);
 
-  if (!result) {
+  if (!result && !HasPepper()) {
     switch (audio_focus_type) {
       case AudioFocusType::kGain:
         // If the gain audio focus request failed then we should suspend the
@@ -1061,7 +1064,9 @@ bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
                                        int player_id) {
   AudioFocusDelegate::AudioFocusResult result =
       RequestSystemAudioFocus(AudioFocusType::kGain);
-  DCHECK_NE(AudioFocusDelegate::AudioFocusResult::kFailed, result);
+
+  if (result == AudioFocusDelegate::AudioFocusResult::kFailed)
+    return false;
 
   pepper_players_.insert(PlayerIdentifier(observer, player_id));
 

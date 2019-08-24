@@ -1611,7 +1611,9 @@ public class ContextualSearchManager
             @Override
             public void tapGestureCommit() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.TAP_GESTURE_COMMIT);
-                if (!mPolicy.isTapSupported()) {
+                if (!mPolicy.isTapSupported()
+                        || mSelectionController.getSelectionType()
+                                == SelectionType.RESOLVING_LONG_PRESS) {
                     hideContextualSearch(StateChangeReason.UNKNOWN);
                     return;
                 }
@@ -1715,10 +1717,12 @@ public class ContextualSearchManager
             @Override
             public void showContextualSearchResolvingUi() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.SHOW_RESOLVING_UI);
-                boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
-                showContextualSearch(isTap ? StateChangeReason.TEXT_SELECT_TAP
-                                           : StateChangeReason.TEXT_SELECT_LONG_PRESS);
-                if (isTap) ContextualSearchUma.logRankerFeaturesAvailable(true);
+                if (mSelectionController.getSelectionType() != SelectionType.UNDETERMINED) {
+                    boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
+                    showContextualSearch(isTap ? StateChangeReason.TEXT_SELECT_TAP
+                                               : StateChangeReason.TEXT_SELECT_LONG_PRESS);
+                    if (isTap) ContextualSearchUma.logRankerFeaturesAvailable(true);
+                }
                 mInternalStateController.notifyFinishedWorkOn(InternalState.SHOW_RESOLVING_UI);
             }
 

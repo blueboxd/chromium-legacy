@@ -366,7 +366,7 @@ void AssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
 }
 
 void AssistantMainStage::OnResponseChanged(
-    const std::shared_ptr<ash::AssistantResponse>& response) {
+    const scoped_refptr<ash::AssistantResponse>& response) {
   MaybeHideGreetingLabel();
 
   using ash::assistant::util::CreateLayerAnimationSequence;

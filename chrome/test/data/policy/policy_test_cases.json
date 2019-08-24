@@ -5134,5 +5134,15 @@
   },
 
   "DomainsToNotCheckComplianceOfUploadedContent": {
+  },
+
+  "RendererCodeIntegrityEnabled": {
+    "os": ["win"],
+    "test_policy": { "RendererCodeIntegrityEnabled": true },
+    "pref_mappings": [
+      { "pref": "renderer_code_integrity_enabled",
+        "local_state": true
+      }
+    ]
   }
 }

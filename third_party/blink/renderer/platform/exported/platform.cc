@@ -38,8 +38,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -72,19 +72,34 @@ namespace blink {
 
 namespace {
 
-class DefaultConnector {
-  USING_FAST_MALLOC(DefaultConnector);
+class DefaultInterfaceProvider : public InterfaceProvider {
+  USING_FAST_MALLOC(DefaultInterfaceProvider);
 
  public:
-  DefaultConnector() {
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
-  }
+  DefaultInterfaceProvider() = default;
+  ~DefaultInterfaceProvider() = default;
 
-  service_manager::Connector* Get() { return connector_.get(); }
+  // InterfaceProvider implementation:
+  void GetInterface(const char* interface_name,
+                    mojo::ScopedMessagePipeHandle interface_pipe) override {
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        mojo::GenericPendingReceiver(interface_name,
+                                     std::move(interface_pipe)));
+  }
+};
+
+class DefaultBrowserInterfaceBrokerProxy
+    : public ThreadSafeBrowserInterfaceBrokerProxy {
+  USING_FAST_MALLOC(DefaultBrowserInterfaceBrokerProxy);
+
+ public:
+  DefaultBrowserInterfaceBrokerProxy() = default;
+
+  // ThreadSafeBrowserInterfaceBrokerProxy implementation:
+  void GetInterfaceImpl(mojo::GenericPendingReceiver receiver) override {}
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
+  ~DefaultBrowserInterfaceBrokerProxy() override = default;
 };
 
 class IdleDelayedTaskHelper : public base::SingleThreadTaskRunner {
@@ -275,13 +290,15 @@ Platform* Platform::Current() {
   return g_platform;
 }
 
-service_manager::Connector* Platform::GetConnector() {
-  DEFINE_STATIC_LOCAL(DefaultConnector, connector, ());
-  return connector.Get();
+InterfaceProvider* Platform::GetInterfaceProvider() {
+  DEFINE_STATIC_LOCAL(DefaultInterfaceProvider, provider, ());
+  return &provider;
 }
 
-InterfaceProvider* Platform::GetInterfaceProvider() {
-  return InterfaceProvider::GetEmptyInterfaceProvider();
+ThreadSafeBrowserInterfaceBrokerProxy*
+Platform::GetBrowserInterfaceBrokerProxy() {
+  DEFINE_STATIC_LOCAL(DefaultBrowserInterfaceBrokerProxy, proxy, ());
+  return &proxy;
 }
 
 std::unique_ptr<Thread> Platform::CreateThread(

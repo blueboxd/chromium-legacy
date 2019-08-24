@@ -17540,6 +17540,24 @@
       If this policy is not set or set to an empty list of domains, all content is checked for compliance.
       '''
     },
+    {
+      'name': 'RendererCodeIntegrityEnabled',
+      'owners': ['wfh@chromium.org', 'adetaylor@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:78-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 598,
+      'caption': '''Enable Renderer Code Integrity''',
+      'tags': ['system-security'],
+      'desc': '''If this policy is enabled or left unset, then Renderer Code Integrity is enabled. This should only be disabled if compatibility issues are encountered with third party software that must run inside Chrome's renderer processes.
+
+      Disabling this policy has a detrimental effect on Chrome's security and stability as unknown and potentially hostile code will be allowed to load inside Chrome's renderer processes. See https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox.md#Process-mitigation-policies for more info.''',
+    },
   ],
 
   'messages': {
@@ -18337,6 +18355,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 597,
+  'highest_id_currently_used': 598,
   'highest_atomic_group_id_currently_used': 37
 }

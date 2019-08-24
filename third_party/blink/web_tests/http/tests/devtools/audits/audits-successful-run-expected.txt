@@ -302,7 +302,7 @@ button-name: notApplicable
 bypass: notApplicable
 canonical: notApplicable
 color-contrast: notApplicable
-content-width: flaky
+content-width: fail
 critical-request-chains: notApplicable
 custom-controls-labels: manual
 custom-controls-roles: manual

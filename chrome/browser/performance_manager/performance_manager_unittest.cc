@@ -58,7 +58,8 @@ TEST_F(PerformanceManagerTest, InstantiateNodes) {
       performance_manager()->CreateProcessNode(RenderProcessHostProxy());
   EXPECT_NE(nullptr, process_node.get());
   std::unique_ptr<PageNodeImpl> page_node =
-      performance_manager()->CreatePageNode(WebContentsProxy(), false, false);
+      performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
+                                            false, false);
   EXPECT_NE(nullptr, page_node.get());
 
   // Create a node of each type.
@@ -78,7 +79,8 @@ TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
   std::unique_ptr<ProcessNodeImpl> process_node =
       performance_manager()->CreateProcessNode(RenderProcessHostProxy());
   std::unique_ptr<PageNodeImpl> page_node =
-      performance_manager()->CreatePageNode(WebContentsProxy(), false, false);
+      performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
+                                            false, false);
 
   std::unique_ptr<FrameNodeImpl> parent1_frame =
       performance_manager()->CreateFrameNode(
@@ -121,7 +123,8 @@ TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
 TEST_F(PerformanceManagerTest, CallOnGraph) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
-      performance_manager()->CreatePageNode(WebContentsProxy(), false, false);
+      performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
+                                            false, false);
 
   PerformanceManager::GraphCallback graph_callback = base::BindLambdaForTesting(
       [&page_node](GraphImpl* graph) { EXPECT_EQ(page_node->graph(), graph); });

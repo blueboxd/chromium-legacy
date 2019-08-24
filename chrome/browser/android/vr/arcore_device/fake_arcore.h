@@ -38,6 +38,7 @@ class FakeArCore : public ArCore {
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
 
   mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() override;
+  mojom::XRAnchorsDataPtr GetAnchorsData() override;
 
   void SetCameraAspect(float aspect) { camera_aspect_ = aspect; }
 

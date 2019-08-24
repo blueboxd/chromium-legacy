@@ -259,8 +259,6 @@ target(link_target_type, "renderer") {
     "menu_item_builder.h",
     "mhtml_handle_writer.cc",
     "mhtml_handle_writer.h",
-    "mojo/blink_interface_provider_impl.cc",
-    "mojo/blink_interface_provider_impl.h",
     "mojo/blink_interface_registry_impl.cc",
     "mojo/blink_interface_registry_impl.h",
     "mouse_lock_dispatcher.cc",

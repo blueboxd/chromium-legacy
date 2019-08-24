@@ -193,7 +193,7 @@ public class EphemeralTabPanel extends OverlayPanel {
 
     @Override
     protected float getPeekedHeight() {
-        return getBarHeightPeeking() * 1.5f;
+        return getBarHeight() * 1.5f;
     }
 
     @Override

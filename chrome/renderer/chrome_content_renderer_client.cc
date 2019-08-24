@@ -117,11 +117,11 @@
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_cache.h"
@@ -337,8 +337,6 @@ ChromeContentRendererClient::ChromeContentRendererClient()
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
-  DCHECK(!render_thread_connector_for_io_thread_ ||
-         !render_thread_connector_for_io_thread_->IsBound());
 }
 
 void ChromeContentRendererClient::RenderThreadStarted() {
@@ -360,12 +358,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   }
 
 #if defined(OS_WIN)
+  mojo::PendingRemote<mojom::ModuleEventSink> module_event_sink;
+  thread->BindHostReceiver(module_event_sink.InitWithNewPipeAndPassReceiver());
   remote_module_watcher_ = RemoteModuleWatcher::Create(
-      thread->GetIOTaskRunner(), thread->GetConnector());
+      thread->GetIOTaskRunner(), std::move(module_event_sink));
 #endif
 
-  io_thread_task_runner_ = thread->GetIOTaskRunner();
-  render_thread_connector_for_io_thread_ = thread->GetConnector()->Clone();
+  browser_interface_broker_ =
+      blink::Platform::Current()->GetBrowserInterfaceBrokerProxy();
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
   web_cache_impl_.reset(new web_cache::WebCacheImpl());
@@ -450,14 +450,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     ThreadProfiler::SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
     mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
-    service_manager::Connector* connector = nullptr;
-    if (content::ChildThread::Get())
-      connector = content::ChildThread::Get()->GetConnector();
-    if (connector) {
-      connector->Connect(content::mojom::kBrowserServiceName,
-                         collector.InitWithNewPipeAndPassReceiver());
-      ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
-    }
+    thread->BindHostReceiver(collector.InitWithNewPipeAndPassReceiver());
+    ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
   }
 }
 
@@ -1375,16 +1369,8 @@ ChromeRenderThreadObserver* ChromeContentRendererClient::GetChromeObserver()
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
-  if (content::RenderThread::Get()) {
-    return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
-        content::RenderThread::Get()->GetConnector());
-  }
-  if (io_thread_task_runner_->BelongsToCurrentThread()) {
-    return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
-        render_thread_connector_for_io_thread_.get());
-  }
-  NOTREACHED();
-  return nullptr;
+  return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
+      browser_interface_broker_.get());
 }
 
 std::unique_ptr<blink::WebSpeechSynthesizer>
@@ -1465,19 +1451,15 @@ ChromeContentRendererClient::CreateBrowserPluginDelegate(
 
 void ChromeContentRendererClient::RecordRappor(const std::string& metric,
                                                const std::string& sample) {
-  if (!rappor_recorder_) {
-    RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName, &rappor_recorder_);
-  }
+  if (!rappor_recorder_)
+    RenderThread::Get()->BindHostReceiver(mojo::MakeRequest(&rappor_recorder_));
   rappor_recorder_->RecordRappor(metric, sample);
 }
 
 void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
                                                   const GURL& url) {
-  if (!rappor_recorder_) {
-    RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName, &rappor_recorder_);
-  }
+  if (!rappor_recorder_)
+    RenderThread::Get()->BindHostReceiver(mojo::MakeRequest(&rappor_recorder_));
   rappor_recorder_->RecordRapporURL(metric, url);
 }
 
@@ -1593,16 +1575,8 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
 std::unique_ptr<content::URLLoaderThrottleProvider>
 ChromeContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType provider_type) {
-  if (content::RenderThread::Get()) {
-    return std::make_unique<URLLoaderThrottleProviderImpl>(
-        content::RenderThread::Get()->GetConnector(), provider_type, this);
-  }
-  if (io_thread_task_runner_->BelongsToCurrentThread()) {
-    return std::make_unique<URLLoaderThrottleProviderImpl>(
-        render_thread_connector_for_io_thread_.get(), provider_type, this);
-  }
-  NOTREACHED();
-  return nullptr;
+  return std::make_unique<URLLoaderThrottleProviderImpl>(
+      browser_interface_broker_.get(), provider_type, this);
 }
 
 blink::WebFrame* ChromeContentRendererClient::FindFrame(

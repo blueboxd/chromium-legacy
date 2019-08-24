@@ -17,6 +17,7 @@ class Label;
 
 namespace app_list {
 
+class AppsGridView;
 class TopIconAnimationView;
 
 // Observer for top icon animation completion.
@@ -37,13 +38,15 @@ class TopIconAnimationObserver {
 class TopIconAnimationView : public views::View,
                              public ui::ImplicitAnimationObserver {
  public:
+  // |grid|: The apps grid to which the icon animation view belongs.
   // |icon|: The icon image of the item icon of full scale size.
   // |title|: The title of the item.
   // |scaled_rect|: Bounds of the small icon inside folder icon.
   // |open_folder|: Specify open/close folder animation to perform.
   // |item_in_folder_icon|: True if the item is inside folder icon.
   // The view will be self-cleaned by the end of animation.
-  TopIconAnimationView(const gfx::ImageSkia& icon,
+  TopIconAnimationView(AppsGridView* grid,
+                       const gfx::ImageSkia& icon,
                        const base::string16& title,
                        const gfx::Rect& scaled_rect,
                        bool open_folder,
@@ -71,6 +74,7 @@ class TopIconAnimationView : public views::View,
   void OnImplicitAnimationsCompleted() override;
   bool RequiresNotificationWhenAnimatorDestroyed() const override;
 
+  const AppsGridView* grid_;  // Owned by views hierarchy.
   gfx::Size icon_size_;
   views::ImageView* icon_;  // Owned by views hierarchy.
   views::Label* title_;     // Owned by views hierarchy.

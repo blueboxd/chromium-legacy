@@ -213,6 +213,7 @@ class ASH_EXPORT AppListControllerImpl
       ash::AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       app_list::AppLaunchedMetricParams* metric_params) override;
+  gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);

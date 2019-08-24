@@ -10,7 +10,7 @@
     <dist:module
       dist:instant="false"
       dist:title="@string/vr_module_title">
-      <dist:fusing dist:include="false" />
+      <dist:fusing dist:include="true" />
       <dist:delivery>
         <dist:install-time>
           <dist:conditions>

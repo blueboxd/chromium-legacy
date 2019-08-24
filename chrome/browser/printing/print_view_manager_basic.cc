@@ -21,7 +21,14 @@ PrintViewManagerBasic::PrintViewManagerBasic(content::WebContents* web_contents)
 #endif
 }
 
-PrintViewManagerBasic::~PrintViewManagerBasic() = default;
+PrintViewManagerBasic::~PrintViewManagerBasic() {
+#if defined(OS_ANDROID)
+  // Must do this call here and not let ~PrintViewManagerBase do it as
+  // TerminatePrintJob() calls PdfWritingDone() and if that is done from
+  // ~PrintViewManagerBase then a pure virtual call is done.
+  DisconnectFromCurrentPrintJob();
+#endif
+}
 
 #if defined(OS_ANDROID)
 void PrintViewManagerBasic::PdfWritingDone(int page_count) {

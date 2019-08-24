@@ -24,6 +24,8 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+class GURL;
+
 namespace ukm {
 class MojoUkmRecorder;
 }  // namespace ukm
@@ -103,13 +105,16 @@ class PerformanceManager {
       FrameNodeCreationCallback creation_callback);
   std::unique_ptr<PageNodeImpl> CreatePageNode(
       const WebContentsProxy& contents_proxy,
+      const std::string& browser_context_id,
       bool is_visible,
       bool is_audible);
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode(
       RenderProcessHostProxy proxy);
   std::unique_ptr<WorkerNodeImpl> CreateWorkerNode(
+      const std::string& browser_context_id,
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
+      const GURL& url,
       const base::UnguessableToken& dev_tools_token);
 
   // Destroys a node returned from the creation functions above.

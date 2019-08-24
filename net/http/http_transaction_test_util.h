@@ -31,7 +31,6 @@
 
 namespace net {
 
-class HttpRequestHeaders;
 class IOBuffer;
 class SSLPrivateKey;
 class X509Certificate;
@@ -208,8 +207,6 @@ class MockNetworkTransaction
   void PopulateNetErrorDetails(NetErrorDetails* details) const override;
 
   void StopCaching() override;
-
-  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
 
   int64_t GetTotalReceivedBytes() const override;
 

@@ -589,6 +589,9 @@ if (is_android) {
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsActivity.java",
       "android/browsertests_apk/src/org/chromium/android_browsertests_apk/ChromeBrowserTestsApplication.java",
     ]
+    srcjar_deps = [
+      "//components/module_installer/android:module_installer_apk_build_config",
+    ]
   }
 
   jinja_template("android_browsertests_manifest") {
@@ -1836,6 +1839,7 @@ if (!is_android) {
         "../browser/ui/views/media_router/media_router_dialog_controller_views_browsertest.cc",
         "../browser/ui/views/media_router/media_router_ui_browsertest.cc",
         "../browser/ui/views/media_router/presentation_receiver_window_view_browsertest.cc",
+        "../browser/ui/views/native_file_system/native_file_system_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_directory_access_confirmation_view_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_permission_view_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_restricted_directory_dialog_view_browsertest.cc",
@@ -2064,8 +2068,6 @@ if (!is_android) {
         "../browser/chromeos/login/login_ui_keyboard_browsertest.cc",
         "../browser/chromeos/login/login_ui_shelf_visibility_browsertest.cc",
         "../browser/chromeos/login/login_utils_browsertest.cc",
-        "../browser/chromeos/login/mixin_based_in_process_browser_test.cc",
-        "../browser/chromeos/login/mixin_based_in_process_browser_test.h",
         "../browser/chromeos/login/oobe_browsertest.cc",
         "../browser/chromeos/login/oobe_interactive_ui_test.cc",
         "../browser/chromeos/login/oobe_localization_browsertest.cc",
@@ -3581,6 +3583,10 @@ test("unit_tests") {
     } else {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
+
+    srcjar_deps = [
+      "//components/module_installer/android:module_installer_apk_build_config",
+    ]
   } else {
     # !is_android
     sources += [
@@ -4651,7 +4657,11 @@ test("unit_tests") {
   }
 
   if (enable_basic_printing) {
-    sources += [ "../browser/printing/print_job_unittest.cc" ]
+    sources += [
+      "../browser/printing/print_job_unittest.cc",
+      "../browser/printing/print_test_utils.cc",
+      "../browser/printing/print_test_utils.h",
+    ]
 
     deps += [
       "//printing",
@@ -4663,8 +4673,6 @@ test("unit_tests") {
         "../browser/printing/print_preview_dialog_controller_unittest.cc",
         "../browser/printing/print_preview_test.cc",
         "../browser/printing/print_preview_test.h",
-        "../browser/printing/print_test_utils.cc",
-        "../browser/printing/print_test_utils.h",
         "../browser/printing/print_view_manager_unittest.cc",
         "../browser/printing/test_print_job.cc",
         "../browser/printing/test_print_job.h",
@@ -5171,6 +5179,8 @@ if (!is_android) {
       "base/in_process_browser_test_mac.mm",
       "base/javascript_browser_test.cc",
       "base/javascript_browser_test.h",
+      "base/mixin_based_in_process_browser_test.cc",
+      "base/mixin_based_in_process_browser_test.h",
       "base/mojo_web_ui_browser_test.cc",
       "base/mojo_web_ui_browser_test.h",
       "base/perf/performance_test.cc",

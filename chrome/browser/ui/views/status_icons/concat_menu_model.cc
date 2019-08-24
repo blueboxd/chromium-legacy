@@ -33,10 +33,6 @@ base::string16 ConcatMenuModel::GetLabelAt(int index) const {
   return GetterImpl(&ui::MenuModel::GetLabelAt, index);
 }
 
-base::string16 ConcatMenuModel::GetSublabelAt(int index) const {
-  return GetterImpl(&ui::MenuModel::GetSublabelAt, index);
-}
-
 base::string16 ConcatMenuModel::GetMinorTextAt(int index) const {
   return GetterImpl(&ui::MenuModel::GetMinorTextAt, index);
 }

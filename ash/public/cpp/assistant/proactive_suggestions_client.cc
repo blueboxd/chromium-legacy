@@ -25,9 +25,6 @@ ProactiveSuggestionsClient::ProactiveSuggestionsClient() {
 }
 
 ProactiveSuggestionsClient::~ProactiveSuggestionsClient() {
-  if (delegate_)
-    delegate_->OnProactiveSuggestionsClientDestroying();
-
   DCHECK_EQ(g_instance, this);
   g_instance = nullptr;
 }

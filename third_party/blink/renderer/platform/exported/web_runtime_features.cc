@@ -296,14 +296,6 @@ void WebRuntimeFeatures::EnableOrientationEvent(bool enable) {
   RuntimeEnabledFeatures::SetOrientationEventEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableOriginTrials(bool enable) {
-  RuntimeEnabledFeatures::SetOriginTrialsEnabled(enable);
-}
-
-bool WebRuntimeFeatures::IsOriginTrialsEnabled() {
-  return RuntimeEnabledFeatures::OriginTrialsEnabled();
-}
-
 void WebRuntimeFeatures::EnableOverflowIconsForMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetOverflowIconsForMediaControlsEnabled(enable);
 }

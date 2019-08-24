@@ -15,7 +15,6 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_handler.h"
@@ -57,7 +56,7 @@ WebRtcLoggingHandlerHost* WebRtcLoggingHandlerHost::FromRenderProcessHost(
 }
 
 void WebRtcLoggingHandlerHost::SetMetaData(
-    std::unique_ptr<MetaDataMap> meta_data,
+    std::unique_ptr<WebRtcLogMetaDataMap> meta_data,
     const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
@@ -139,7 +138,7 @@ void WebRtcLoggingHandlerHost::UploadStoredLog(
 
   // Make this a method call on log_uploader_
 
-  WebRtcLogUploadDoneData upload_data;
+  WebRtcLogUploader::UploadDoneData upload_data;
   upload_data.callback = callback;
   upload_data.local_log_id = log_id;
   upload_data.web_app_id = web_app_id_;
@@ -147,10 +146,10 @@ void WebRtcLoggingHandlerHost::UploadStoredLog(
   log_uploader_->background_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(
                      [](WebRtcLogUploader* log_uploader,
-                        WebRtcLogUploadDoneData upload_data,
+                        WebRtcLogUploader::UploadDoneData upload_data,
                         base::RepeatingCallback<base::FilePath(void)>
                             log_directory_getter) {
-                       upload_data.log_path = log_directory_getter.Run();
+                       upload_data.paths.directory = log_directory_getter.Run();
                        log_uploader->UploadStoredLog(upload_data);
                      },
                      log_uploader_, upload_data, log_directory_getter_));
@@ -215,14 +214,19 @@ void WebRtcLoggingHandlerHost::StoreLogContinue(
 
 void WebRtcLoggingHandlerHost::StartRtpDump(
     RtpDumpType type,
-    const GenericDoneCallback& callback,
-    const content::RenderProcessHost::WebRtcStopRtpDumpCallback&
-        stop_callback) {
+    const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(stop_rtp_dump_callback_.is_null() ||
-         stop_rtp_dump_callback_ == stop_callback);
+  DCHECK(stop_rtp_dump_callback_.is_null());
 
-  stop_rtp_dump_callback_ = stop_callback;
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
+
+  // This call cannot fail.
+  stop_rtp_dump_callback_ =
+      host->StartRtpDump(type == RTP_DUMP_INCOMING || type == RTP_DUMP_BOTH,
+                         type == RTP_DUMP_OUTGOING || type == RTP_DUMP_BOTH,
+                         base::Bind(&WebRtcLoggingHandlerHost::OnRtpPacket,
+                                    weak_factory_.GetWeakPtr()));
 
   if (!rtp_dump_handler_) {
     base::PostTaskAndReplyWithResult(
@@ -452,10 +456,10 @@ void WebRtcLoggingHandlerHost::StoreLogInDirectory(
     return;
   }
 
-  log_paths->log_path = directory;
+  log_paths->directory = directory;
 
   std::unique_ptr<WebRtcLogBuffer> log_buffer;
-  std::unique_ptr<MetaDataMap> meta_data;
+  std::unique_ptr<WebRtcLogMetaDataMap> meta_data;
   text_log_handler_->ReleaseLog(&log_buffer, &meta_data);
   CHECK(log_buffer.get()) << "State=" << text_log_handler_->GetState()
                           << ", uorc=" << upload_log_on_render_close_;
@@ -489,7 +493,7 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
     if (!channel_is_closing) {
       base::UmaHistogramSparse("WebRtcTextLogging.UploadFailed", web_app_id_);
       base::UmaHistogramSparse("WebRtcTextLogging.UploadFailureReason",
-                               UploadFailureReason::kInvalidState);
+                               WebRtcLogUploadFailureReason::kInvalidState);
     }
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, false, "",
@@ -497,14 +501,14 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
     return;
   }
 
-  WebRtcLogUploadDoneData upload_done_data;
-  upload_done_data.log_path = log_directory;
+  WebRtcLogUploader::UploadDoneData upload_done_data;
+  upload_done_data.paths.directory = log_directory;
   upload_done_data.callback = callback;
   upload_done_data.web_app_id = web_app_id_;
-  ReleaseRtpDumps(&upload_done_data);
+  ReleaseRtpDumps(&upload_done_data.paths);
 
   std::unique_ptr<WebRtcLogBuffer> log_buffer;
-  std::unique_ptr<MetaDataMap> meta_data;
+  std::unique_ptr<WebRtcLogMetaDataMap> meta_data;
   text_log_handler_->ReleaseLog(&log_buffer, &meta_data);
   CHECK(log_buffer.get()) << "State=" << text_log_handler_->GetState()
                           << ", uorc=" << upload_log_on_render_close_;

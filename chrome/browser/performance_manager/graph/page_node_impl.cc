@@ -33,11 +33,13 @@ size_t ToIndex(
 
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            const WebContentsProxy& contents_proxy,
+                           const std::string& browser_context_id,
                            bool is_visible,
                            bool is_audible)
     : TypedNodeBase(graph),
       contents_proxy_(contents_proxy),
       visibility_change_time_(PerformanceManagerClock::NowTicks()),
+      browser_context_id_(browser_context_id),
       is_visible_(is_visible),
       is_audible_(is_audible) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -214,6 +216,11 @@ uint64_t PageNodeImpl::private_footprint_kb_estimate() const {
   return private_footprint_kb_estimate_;
 }
 
+const std::string& PageNodeImpl::browser_context_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return browser_context_id_;
+}
+
 bool PageNodeImpl::page_almost_idle() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return page_almost_idle_.value();
@@ -314,6 +321,11 @@ void PageNodeImpl::LeaveGraph() {
   DCHECK_EQ(0u, frame_node_count_);
 
   NodeBase::LeaveGraph();
+}
+
+const std::string& PageNodeImpl::GetBrowserContextID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return browser_context_id();
 }
 
 bool PageNodeImpl::IsPageAlmostIdle() const {

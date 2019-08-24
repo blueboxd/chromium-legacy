@@ -113,11 +113,10 @@ class PDFiumEngine : public PDFEngine,
   int GetCharCount(int page_index) override;
   pp::FloatRect GetCharBounds(int page_index, int char_index) override;
   uint32_t GetCharUnicode(int page_index, int char_index) override;
-  void GetTextRunInfo(int page_index,
-                      int start_char_index,
-                      uint32_t* out_len,
-                      double* out_font_size,
-                      pp::FloatRect* out_bounds) override;
+  void GetTextRunInfo(
+      int page_index,
+      int start_char_index,
+      PP_PrivateAccessibilityTextRunInfo* text_run_info) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
   int GetDuplexType() override;

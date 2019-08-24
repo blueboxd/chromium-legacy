@@ -13,6 +13,7 @@ import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
 import org.chromium.content_public.browser.WebContents;
@@ -72,7 +73,8 @@ public class SmartSelectionClient implements SelectionClient {
         mCallback = callback;
         mSmartSelectionMetricLogger =
                 SmartSelectionMetricsLogger.create(windowAndroid.getContext().get());
-        mNativeSmartSelectionClient = nativeInit(webContents);
+        mNativeSmartSelectionClient =
+                SmartSelectionClientJni.get().init(SmartSelectionClient.this, webContents);
     }
 
     @CalledByNative
@@ -102,7 +104,8 @@ public class SmartSelectionClient implements SelectionClient {
     @Override
     public void cancelAllRequests() {
         if (mNativeSmartSelectionClient != 0) {
-            nativeCancelAllRequests(mNativeSmartSelectionClient);
+            SmartSelectionClientJni.get().cancelAllRequests(
+                    mNativeSmartSelectionClient, SmartSelectionClient.this);
         }
 
         mProvider.cancelAllRequests();
@@ -134,7 +137,8 @@ public class SmartSelectionClient implements SelectionClient {
             return;
         }
 
-        nativeRequestSurroundingText(mNativeSmartSelectionClient, NUM_EXTRA_CHARS, callbackData);
+        SmartSelectionClientJni.get().requestSurroundingText(mNativeSmartSelectionClient,
+                SmartSelectionClient.this, NUM_EXTRA_CHARS, callbackData);
     }
 
     @CalledByNative
@@ -173,8 +177,11 @@ public class SmartSelectionClient implements SelectionClient {
         return !TextUtils.isEmpty(text) && 0 <= start && start < end && end <= text.length();
     }
 
-    private native long nativeInit(WebContents webContents);
-    private native void nativeRequestSurroundingText(
-            long nativeSmartSelectionClient, int numExtraCharacters, int callbackData);
-    private native void nativeCancelAllRequests(long nativeSmartSelectionClient);
+    @NativeMethods
+    interface Natives {
+        long init(SmartSelectionClient caller, WebContents webContents);
+        void requestSurroundingText(long nativeSmartSelectionClient, SmartSelectionClient caller,
+                int numExtraCharacters, int callbackData);
+        void cancelAllRequests(long nativeSmartSelectionClient, SmartSelectionClient caller);
+    }
 }

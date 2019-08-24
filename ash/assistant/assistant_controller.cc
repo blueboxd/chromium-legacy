@@ -20,8 +20,10 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "services/content/public/mojom/constants.mojom.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {

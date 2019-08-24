@@ -42,6 +42,9 @@ const char kArcEnabled[] = "arc.enabled";
 // A preference to control if ARC can access removable media on the host side.
 const char kArcHasAccessToRemovableMedia[] =
     "arc.has_access_to_removable_media";
+// A preference to keep list of external storages which are visible to Android
+// apps. (i.e. can be read/written by Android apps.)
+const char kArcVisibleExternalStorages[] = "arc.visible_external_storages";
 // A preference that indicates that initial settings need to be applied. Initial
 // settings are applied only once per new OptIn once mojo settings instance is
 // ready. Each OptOut resets this preference. Note, its sense is close to
@@ -182,6 +185,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcSkippedReportingNotice, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
   registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
+  registry->RegisterListPref(kArcVisibleExternalStorages);
   registry->RegisterTimeDeltaPref(kEngagementTimeBackground, base::TimeDelta());
   registry->RegisterIntegerPref(kEngagementTimeDayId, 0);
   registry->RegisterTimeDeltaPref(kEngagementTimeForeground, base::TimeDelta());

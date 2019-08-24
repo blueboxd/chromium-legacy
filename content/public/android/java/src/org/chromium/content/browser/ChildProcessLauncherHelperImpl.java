@@ -23,6 +23,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.process_launcher.ChildConnectionAllocator;
@@ -155,7 +156,7 @@ public final class ChildProcessLauncherHelperImpl {
 
                     // Tell native launch result (whether getPid is 0).
                     if (mNativeChildProcessLauncherHelper != 0) {
-                        nativeOnChildProcessStarted(
+                        ChildProcessLauncherHelperImplJni.get().onChildProcessStarted(
                                 mNativeChildProcessLauncherHelper, connection.getPid());
                     }
                     mNativeChildProcessLauncherHelper = 0;
@@ -474,10 +475,11 @@ public final class ChildProcessLauncherHelperImpl {
         // is not thread safe, so this is the best we can do.
         int reverseRank = getReverseRankWhenConnectionLost();
         int bindingCounts[] = connection.remainingBindingStateCountsCurrentOrWhenDied();
-        nativeSetTerminationInfo(terminationInfoPtr, connection.bindingStateCurrentOrWhenDied(),
-                connection.isKilledByUs(), connection.hasCleanExit(),
-                bindingCounts[ChildBindingState.STRONG], bindingCounts[ChildBindingState.MODERATE],
-                bindingCounts[ChildBindingState.WAIVED], reverseRank);
+        ChildProcessLauncherHelperImplJni.get().setTerminationInfo(terminationInfoPtr,
+                connection.bindingStateCurrentOrWhenDied(), connection.isKilledByUs(),
+                connection.hasCleanExit(), bindingCounts[ChildBindingState.STRONG],
+                bindingCounts[ChildBindingState.MODERATE], bindingCounts[ChildBindingState.WAIVED],
+                reverseRank);
         LauncherThread.post(() -> mLauncher.stop());
     }
 
@@ -586,10 +588,6 @@ public final class ChildProcessLauncherHelperImpl {
             connection.dumpProcessStack();
         }
     }
-
-    // Can be called on a number of threads, including launcher, and binder.
-    private static native void nativeOnChildProcessStarted(
-            long nativeChildProcessLauncherHelper, int pid);
 
     private static boolean sLinkerInitialized;
     private static long sLinkerLoadAddress;
@@ -718,7 +716,13 @@ public final class ChildProcessLauncherHelperImpl {
         return connection == null ? null : connection.getConnection();
     }
 
-    private static native void nativeSetTerminationInfo(long termiantionInfoPtr,
-            @ChildBindingState int bindingState, boolean killedByUs, boolean cleanExit,
-            int remainingStrong, int remainingModerate, int remainingWaived, int reverseRank);
+    @NativeMethods
+    interface Natives {
+        // Can be called on a number of threads, including launcher, and binder.
+        void onChildProcessStarted(long nativeChildProcessLauncherHelper, int pid);
+
+        void setTerminationInfo(long termiantionInfoPtr, @ChildBindingState int bindingState,
+                boolean killedByUs, boolean cleanExit, int remainingStrong, int remainingModerate,
+                int remainingWaived, int reverseRank);
+    }
 }

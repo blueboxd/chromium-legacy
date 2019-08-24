@@ -20,6 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/test/task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -288,11 +289,11 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
                   &outgoing_dump_content[0],
                   outgoing_dump_content.size());
 
-  WebRtcLogUploadDoneData upload_done_data;
-  upload_done_data.log_path = temp_dir.GetPath().AppendASCII("log");
+  WebRtcLogUploader::UploadDoneData upload_done_data;
+  upload_done_data.paths.directory = temp_dir.GetPath().AppendASCII("log");
 
-  upload_done_data.incoming_rtp_dump = incoming_dump;
-  upload_done_data.outgoing_rtp_dump = outgoing_dump;
+  upload_done_data.paths.incoming_rtp_dump = incoming_dump;
+  upload_done_data.paths.outgoing_rtp_dump = outgoing_dump;
 
   std::unique_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
   log->SetComplete();
@@ -302,7 +303,7 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
       FROM_HERE,
       base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoUpload,
                      base::Unretained(webrtc_log_uploader.get()),
-                     std::move(log), std::make_unique<MetaDataMap>(),
+                     std::move(log), std::make_unique<WebRtcLogMetaDataMap>(),
                      upload_done_data),
       run_loop.QuitClosure());
   run_loop.Run();

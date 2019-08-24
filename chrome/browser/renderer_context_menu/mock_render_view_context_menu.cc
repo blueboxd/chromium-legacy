@@ -157,7 +157,7 @@ void MockRenderViewContextMenu::AppendSubMenuItems(ui::MenuModel* model) {
     sub_item.enabled = model->IsEnabledAt(i);
     sub_item.checked = model->IsItemCheckedAt(i);
     sub_item.hidden = false;
-    sub_item.title = model->GetSublabelAt(i);
+    sub_item.title = model->GetLabelAt(i);
     items_.push_back(sub_item);
   }
 }

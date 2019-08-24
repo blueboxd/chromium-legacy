@@ -71,6 +71,8 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
                                        multiplier);
   }
 
+  void ResetHasSessionBit() { controller_->has_session_ = false; }
+
   template <typename T>
   bool ReceivedMessagePlay() {
     const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
@@ -307,6 +309,18 @@ TEST_F(MediaSessionControllerTest, PositionState) {
     EXPECT_EQ(expected_position, controller_->GetPosition(
                                      controller_->get_player_id_for_testing()));
   }
+}
+
+TEST_F(MediaSessionControllerTest, RemovePlayerIfSessionReset) {
+  ASSERT_TRUE(controller_->Initialize(
+      true, false, media::MediaContentType::Persistent, nullptr));
+  EXPECT_TRUE(media_session()->IsActive());
+
+  ResetHasSessionBit();
+  EXPECT_TRUE(media_session()->IsActive());
+
+  controller_.reset();
+  EXPECT_FALSE(media_session()->IsActive());
 }
 
 }  // namespace content

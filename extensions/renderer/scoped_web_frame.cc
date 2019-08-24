@@ -30,7 +30,7 @@ ScopedWebFrame::ScopedWebFrame()
           nullptr)) {}
 
 ScopedWebFrame::~ScopedWebFrame() {
-  view_->MainFrameWidget()->Close();
+  view_->Close();
   blink::WebHeap::CollectAllGarbageForTesting();
 }
 

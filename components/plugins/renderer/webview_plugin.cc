@@ -273,7 +273,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
 }
 
 WebViewPlugin::WebViewHelper::~WebViewHelper() {
-  web_view_->MainFrameWidget()->Close();
+  web_view_->Close();
 }
 
 bool WebViewPlugin::WebViewHelper::AcceptsLoadDrops() {

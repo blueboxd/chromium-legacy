@@ -198,7 +198,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
     leveldb::Status s;
     std::tie(origin_state_handle_, s, std::ignore, data_loss_info_,
              std::ignore) =
-        idb_factory_->GetOrOpenOriginFactory(origin, idb_context_->data_path());
+        idb_factory_->GetOrOpenOriginFactory(origin, idb_context_->data_path(),
+                                             /*create_if_missing=*/true);
     if (!origin_state_handle_.IsHeld()) {
       backing_store_ = nullptr;
       return;

@@ -77,14 +77,14 @@ void EphemeralTabLayer::SetProperties(
     bool bar_border_visible,
     float bar_border_height,
     bool bar_shadow_visible,
-    float bar_shadow_opacity,
     int icon_color,
     int drag_handlebar_color,
     jfloat favicon_opacity,
     bool progress_bar_visible,
     float progress_bar_height,
     float progress_bar_opacity,
-    int progress_bar_completion) {
+    int progress_bar_completion,
+    int separator_line_color) {
   if (web_contents_ != web_contents) {
     web_contents_ = web_contents;
     if (web_contents_) {
@@ -107,8 +107,8 @@ void EphemeralTabLayer::SetProperties(
       dp_to_px, content_layer, bar_height, panel_x, panel_y, panel_width,
       panel_height, bar_background_color, bar_margin_side, bar_margin_top,
       bar_height, 0.0f, title_opacity, bar_border_visible, bar_border_height,
-      bar_shadow_visible, bar_shadow_opacity, icon_color, drag_handlebar_color,
-      1.0f /* icon opacity */);
+      bar_shadow_visible, icon_color, drag_handlebar_color,
+      1.0f /* icon opacity */, separator_line_color);
 
   SetupTextLayer(bar_top, bar_height, text_layer_min_height,
                  caption_view_resource_id, caption_animation_percentage,

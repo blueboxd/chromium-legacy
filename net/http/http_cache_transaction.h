@@ -131,7 +131,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
            int buf_len,
            CompletionOnceCallback callback) override;
   void StopCaching() override;
-  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   void DoneReading() override;
@@ -210,7 +209,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     int64_t total_sent_bytes = 0;
     ConnectionAttempts old_connection_attempts;
     IPEndPoint old_remote_endpoint;
-    HttpRequestHeaders full_request_headers;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkTransactionInfo);
   };

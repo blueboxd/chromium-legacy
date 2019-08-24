@@ -429,13 +429,13 @@ bool DesktopWindowTreeHostPlatform::ShouldWindowContentsBeTransparent() const {
 void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
   Widget::FrameType new_type =
       native_widget_delegate_->AsWidget()->frame_type();
-  if (new_type == Widget::FRAME_TYPE_DEFAULT) {
+  if (new_type == Widget::FrameType::kDefault) {
     // The default is determined by Widget::InitParams::remove_standard_frame
     // and does not change.
     return;
   }
   platform_window()->SetUseNativeFrame(new_type ==
-                                       Widget::FRAME_TYPE_FORCE_NATIVE);
+                                       Widget::FrameType::kForceNative);
   // Replace the frame and layout the contents. Even though we don't have a
   // swappable glass frame like on Windows, we still replace the frame because
   // the button assets don't update otherwise.

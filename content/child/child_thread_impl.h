@@ -31,7 +31,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
@@ -138,6 +138,13 @@ class CONTENT_EXPORT ChildThreadImpl
   void GetBackgroundTracingAgentProvider(
       mojo::PendingReceiver<tracing::mojom::BackgroundTracingAgentProvider>
           receiver);
+
+  // Returns a reference to the thread-safe SharedRemote<ChildProcessHost>
+  // interface endpoint.
+  const mojo::SharedRemote<mojom::ChildProcessHost>& child_process_host()
+      const {
+    return child_process_host_;
+  }
 
   virtual void RunService(
       const std::string& service_name,
@@ -254,7 +261,7 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
   // An interface to the browser's process host object.
-  mojo::Remote<mojom::ChildProcessHost> child_process_host_;
+  mojo::SharedRemote<mojom::ChildProcessHost> child_process_host_;
 
   base::WeakPtrFactory<ChildThreadImpl> weak_factory_{this};
 

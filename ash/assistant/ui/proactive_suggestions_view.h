@@ -6,26 +6,33 @@
 #define ASH_ASSISTANT_UI_PROACTIVE_SUGGESTIONS_VIEW_H_
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/controls/button/button.h"
+
+namespace views {
+class ImageButton;
+}  // namespace views
 
 namespace ash {
 
 class AssistantViewDelegate;
 
-// TODO(dmblack): Replace placeholder text with live text.
 // The view for proactive suggestions which serves as the feature's entry point.
 class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
-    : public views::WidgetDelegateView,
+    : public views::Button,
+      public views::ButtonListener,
       public AssistantUiModelObserver {
  public:
   explicit ProactiveSuggestionsView(AssistantViewDelegate* delegate);
   ~ProactiveSuggestionsView() override;
 
-  // views::WidgetDelegateView:
+  // views::Button:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // AssistantUiModelObserver:
   void OnUsableWorkAreaChanged(const gfx::Rect& usable_work_area) override;
@@ -36,6 +43,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
   void UpdateBounds();
 
   AssistantViewDelegate* const delegate_;
+
+  views::ImageButton* close_button_;  // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(ProactiveSuggestionsView);
 };

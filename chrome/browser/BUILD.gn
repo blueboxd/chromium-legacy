@@ -745,6 +745,8 @@ jumbo_split_static_library("browser") {
     "media/webrtc/webrtc_event_log_manager_remote.h",
     "media/webrtc/webrtc_event_log_uploader.cc",
     "media/webrtc/webrtc_event_log_uploader.h",
+    "media/webrtc/webrtc_log_buffer.cc",
+    "media/webrtc/webrtc_log_buffer.h",
     "media/webrtc/webrtc_log_uploader.cc",
     "media/webrtc/webrtc_log_uploader.h",
     "media/webrtc/webrtc_log_util.cc",
@@ -5728,6 +5730,14 @@ if (!is_android) {
 
     public_deps = [
       "//net:test_support",
+    ]
+  }
+}
+
+if (is_android) {
+  java_cpp_enum("sharing_send_message_result_generated_enum") {
+    sources = [
+      "sharing/sharing_send_message_result.h",
     ]
   }
 }

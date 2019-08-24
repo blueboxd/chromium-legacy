@@ -654,20 +654,23 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // multiple prefs and doesn't add much verification value.
 }
 
-TEST_F(ChromePasswordProtectionServiceTest,
-       VerifyPasswordReuseDetectedSecurityEventRecorded) {
-  EXPECT_CALL(*security_event_recorder_, RecordGaiaPasswordReuse(_))
-      .WillOnce(WithArg<0>([&](const auto& message) {
-        EXPECT_EQ(PasswordReuseLookup::REQUEST_SUCCESS,
-                  message.reuse_lookup().lookup_result());
-        EXPECT_EQ(PasswordReuseLookup::SAFE, message.reuse_lookup().verdict());
-        EXPECT_EQ("verdict_token", message.reuse_lookup().verdict_token());
-      }));
-  service_->MaybeLogPasswordReuseLookupResultWithVerdict(
-      web_contents(), PasswordType::OTHER_GAIA_PASSWORD,
-      PasswordReuseLookup::REQUEST_SUCCESS, PasswordReuseLookup::SAFE,
-      "verdict_token");
-}
+// TODO(crbug/914410): Renable once we know the SecurityEventRecorder won't
+// crash Chrome.
+// TEST_F(ChromePasswordProtectionServiceTest,
+//        VerifyPasswordReuseDetectedSecurityEventRecorded) {
+//   EXPECT_CALL(*security_event_recorder_, RecordGaiaPasswordReuse(_))
+//       .WillOnce(WithArg<0>([&](const auto& message) {
+//         EXPECT_EQ(PasswordReuseLookup::REQUEST_SUCCESS,
+//                   message.reuse_lookup().lookup_result());
+//         EXPECT_EQ(PasswordReuseLookup::SAFE,
+//         message.reuse_lookup().verdict()); EXPECT_EQ("verdict_token",
+//         message.reuse_lookup().verdict_token());
+//       }));
+//   service_->MaybeLogPasswordReuseLookupResultWithVerdict(
+//       web_contents(), PasswordType::OTHER_GAIA_PASSWORD,
+//       PasswordReuseLookup::REQUEST_SUCCESS, PasswordReuseLookup::SAFE,
+//       "verdict_token");
+// }
 
 // Check that the PaswordCapturedEvent timer is set for 1 min if password
 // hash is saved and no timer pref is set yet.

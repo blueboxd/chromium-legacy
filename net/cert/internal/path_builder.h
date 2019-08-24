@@ -192,6 +192,10 @@ class NET_EXPORT CertPathBuilder {
  private:
   void AddResultPath(std::unique_ptr<CertPathBuilderResultPath> result_path);
 
+  // |out_result_| may be referenced by other members, so should be initialized
+  // first.
+  Result out_result_;
+
   std::unique_ptr<CertPathIter> cert_path_iter_;
   CertPathBuilderDelegate* delegate_;
   const der::GeneralizedTime time_;
@@ -202,8 +206,6 @@ class NET_EXPORT CertPathBuilder {
   const InitialAnyPolicyInhibit initial_any_policy_inhibit_;
   uint32_t max_iteration_count_ = 0;
   base::TimeTicks deadline_;
-
-  Result out_result_;
 
   DISALLOW_COPY_AND_ASSIGN(CertPathBuilder);
 };

@@ -116,7 +116,6 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jboolean search_bar_border_visible,
     jfloat search_bar_border_height,
     jboolean search_bar_shadow_visible,
-    jfloat search_bar_shadow_opacity,
     jboolean quick_action_icon_visible,
     jboolean thumbnail_visible,
     jstring j_thumbnail_url,
@@ -139,7 +138,9 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jboolean touch_highlight_visible,
     jfloat touch_highlight_x_offset,
     jfloat touch_highlight_width,
-    const JavaRef<jobject>& j_profile) {
+    const JavaRef<jobject>& j_profile,
+    jint rounded_bar_top_resource_id,
+    jint separator_line_color) {
   // Load the thumbnail if necessary.
   std::string thumbnail_url =
       base::android::ConvertJavaStringToUTF8(env, j_thumbnail_url);
@@ -186,14 +187,15 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       search_term_caption_spacing, search_caption_animation_percentage,
       search_caption_visible, search_bar_border_visible,
       search_bar_border_height, search_bar_shadow_visible,
-      search_bar_shadow_opacity, quick_action_icon_visible, thumbnail_visible,
+      quick_action_icon_visible, thumbnail_visible,
       custom_image_visibility_percentage, bar_image_size, icon_color,
       drag_handlebar_color, arrow_icon_opacity, arrow_icon_rotation,
       close_icon_opacity, progress_bar_visible, progress_bar_height,
       progress_bar_opacity, progress_bar_completion,
       divider_line_visibility_percentage, divider_line_width,
       divider_line_height, divider_line_color, divider_line_x_offset,
-      touch_highlight_visible, touch_highlight_x_offset, touch_highlight_width);
+      touch_highlight_visible, touch_highlight_x_offset, touch_highlight_width,
+      rounded_bar_top_resource_id, separator_line_color);
 
   // Make the layer visible if it is not already.
   contextual_search_layer_->layer()->SetHideLayerAndSubtree(false);

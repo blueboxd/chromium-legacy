@@ -75,8 +75,9 @@ class IconStoreTest : public testing::Test {
     EXPECT_CALL(*icon_converter(), ConvertStringToIcon(_, _))
         .WillOnce(Invoke([&](std::vector<std::string> encoded_icons,
                              IconConverter::DecodeCallback callback) {
-          std::vector<SkBitmap> results(encoded_icons.size());
-          std::move(callback).Run(std::move(results));
+          std::vector<SkBitmap> icons(encoded_icons.size());
+          std::move(callback).Run(
+              std::make_unique<DecodeResult>(true, std::move(icons)));
         }));
     store()->LoadIcons(
         std::move(keys),
@@ -89,8 +90,9 @@ class IconStoreTest : public testing::Test {
     EXPECT_CALL(*icon_converter(), ConvertIconToString(_, _))
         .WillOnce(Invoke([&](std::vector<SkBitmap> icons,
                              IconConverter::EncodeCallback callback) {
-          std::vector<std::string> results(icons.size());
-          std::move(callback).Run(std::move(results));
+          std::vector<std::string> encoded_icons(icons.size());
+          std::move(callback).Run(
+              std::make_unique<EncodeResult>(true, std::move(encoded_icons)));
         }));
     store()->AddIcons(std::move(input), std::move(add_icons_callback));
   }

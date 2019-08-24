@@ -9,15 +9,16 @@
 #include <string>
 
 #include "base/synchronization/waitable_event.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -190,7 +191,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
       ThreadSafeSender* thread_safe_sender,
-      std::unique_ptr<service_manager::Connector> service_manager_connection);
+      mojo::SharedRemote<mojom::ChildProcessHost> process_host);
 
   ~WebWorkerFetchContextImpl() override;
 
@@ -310,7 +311,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
 
-  std::unique_ptr<service_manager::Connector> service_manager_connection_;
+  mojo::SharedRemote<mojom::ChildProcessHost> process_host_;
 
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 

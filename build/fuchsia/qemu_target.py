@@ -49,6 +49,8 @@ class QemuTarget(target.Target):
     self.Shutdown();
 
   def Start(self):
+    boot_data.AssertBootImagesExist(self._GetTargetSdkArch(), 'qemu')
+
     qemu_path = os.path.join(GetQemuRootForPlatform(), 'bin',
                              'qemu-system-' + self._GetTargetSdkLegacyArch())
     kernel_args = boot_data.GetKernelArgs(self._output_dir)

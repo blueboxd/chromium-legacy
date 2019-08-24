@@ -59,7 +59,6 @@
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -752,8 +751,7 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame() {
 mojom::WebTestBluetoothFakeAdapterSetter&
 BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   if (!bluetooth_fake_adapter_setter_) {
-    RenderThread::Get()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName,
+    RenderThread::Get()->BindHostReceiver(
         mojo::MakeRequest(&bluetooth_fake_adapter_setter_));
   }
   return *bluetooth_fake_adapter_setter_;

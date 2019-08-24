@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/guest_session_mixin.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util_enums.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_api.h"
@@ -13,14 +12,14 @@
 #include "chrome/browser/extensions/api/settings_private/settings_private_event_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace {
 
-class SettingsPrivateGuestModeTest
-    : public chromeos::MixinBasedInProcessBrowserTest {
+class SettingsPrivateGuestModeTest : public MixinBasedInProcessBrowserTest {
  protected:
   chromeos::GuestSessionMixin guest_session_{&mixin_host_};
 };

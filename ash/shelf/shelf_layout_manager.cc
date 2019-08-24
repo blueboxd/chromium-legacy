@@ -1158,13 +1158,17 @@ void ShelfLayoutManager::CalculateTargetBounds(
   int hotseat_width;
   int hotseat_height;
   if (shelf_->IsHorizontalAlignment()) {
-    hotseat_origin = gfx::Point(target_bounds->nav_bounds_in_shelf.right() +
-                                    ShelfConstants::home_button_edge_spacing(),
-                                0);
     hotseat_width = shelf_width -
                     target_bounds->nav_bounds_in_shelf.size().width() -
                     ShelfConstants::home_button_edge_spacing() -
                     kAppIconGroupMargin - status_size.width();
+    int start_x = base::i18n::IsRTL()
+                      ? target_bounds->nav_bounds_in_shelf.x() -
+                            ShelfConstants::home_button_edge_spacing() -
+                            hotseat_width
+                      : target_bounds->nav_bounds_in_shelf.right() +
+                            ShelfConstants::home_button_edge_spacing();
+    hotseat_origin = gfx::Point(start_x, 0);
     hotseat_height = shelf_height;
   } else {
     hotseat_origin =

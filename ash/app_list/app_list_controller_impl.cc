@@ -34,6 +34,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -1228,6 +1229,14 @@ void AppListControllerImpl::GetAppLaunchedMetricParams(
   metric_params->app_list_view_state = GetAppListViewState();
   metric_params->is_tablet_mode = IsTabletMode();
   metric_params->home_launcher_shown = presenter_.home_launcher_shown();
+}
+
+gfx::Rect AppListControllerImpl::SnapBoundsToDisplayEdge(
+    const gfx::Rect& bounds) {
+  app_list::AppListView* app_list_view = presenter_.GetView();
+  DCHECK(app_list_view && app_list_view->GetWidget());
+  aura::Window* window = app_list_view->GetWidget()->GetNativeView();
+  return ash::screen_util::SnapBoundsToDisplayEdge(bounds, window);
 }
 
 void AppListControllerImpl::RecordAppLaunched(

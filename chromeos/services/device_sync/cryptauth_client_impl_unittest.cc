@@ -58,6 +58,12 @@ const char kDeviceId2[] = "device_id2";
 const char kFeatureType1[] = "feature_type1";
 const char kFeatureType2[] = "feature_type2";
 const char kClientMetadataSessionId[] = "session_id";
+const int kLastActivityTimeSecs1 = 111;
+const int kLastActivityTimeSecs2 = 222;
+const cryptauthv2::OnlineStatus kOnlineStatus1 =
+    cryptauthv2::OnlineStatus::ONLINE;
+const cryptauthv2::OnlineStatus kOnlineStatus2 =
+    cryptauthv2::OnlineStatus::OFFLINE;
 
 // Values for the DeviceClassifier field.
 const int kDeviceOsVersionCode = 100;
@@ -892,6 +898,65 @@ TEST_F(DeviceSyncCryptAuthClientTest, BatchSetFeatureStatusesSuccess) {
   }
 
   EXPECT_TRUE(result.SerializeAsString().empty());
+}
+
+TEST_F(DeviceSyncCryptAuthClientTest, GetDevicesActivityStatusSuccess) {
+  ExpectGetRequest(
+      "https://cryptauthdevicesync.testgoogleapis.com/"
+      "v1:getDevicesActivityStatus");
+
+  cryptauthv2::GetDevicesActivityStatusRequest request;
+  request.mutable_context()->CopyFrom(cryptauthv2::BuildRequestContext(
+      cryptauthv2::kTestDeviceSyncGroupName,
+      BuildClientMetadata(2 /* retry_count */,
+                          cryptauthv2::ClientMetadata::MANUAL,
+                          kClientMetadataSessionId),
+      cryptauthv2::kTestInstanceId, cryptauthv2::kTestInstanceIdToken));
+
+  cryptauthv2::GetDevicesActivityStatusResponse result;
+  client_->GetDevicesActivityStatus(
+      request,
+      base::Bind(
+          &SaveResultConstRef<cryptauthv2::GetDevicesActivityStatusResponse>,
+          &result),
+      base::Bind(&NotCalled<NetworkRequestError>));
+  identity_test_environment_
+      .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+          kAccessToken, base::Time::Max());
+
+  std::vector<std::pair<std::string, std::string>>
+      expected_request_as_query_parameters = {
+          {"context.client_metadata.retry_count", "2"},
+          {"context.client_metadata.invocation_reason",
+           base::NumberToString(cryptauthv2::ClientMetadata::MANUAL)},
+          {"context.client_metadata.session_id", kClientMetadataSessionId},
+          {"context.group", cryptauthv2::kTestDeviceSyncGroupName},
+          {"context.device_id", cryptauthv2::kTestInstanceId},
+          {"context.device_id_token", cryptauthv2::kTestInstanceIdToken}};
+  EXPECT_EQ(expected_request_as_query_parameters, request_as_query_parameters_);
+
+  {
+    cryptauthv2::GetDevicesActivityStatusResponse response;
+    response.add_device_activity_statuses()->CopyFrom(
+        cryptauthv2::BuildDeviceActivityStatus(
+            kDeviceId1, kLastActivityTimeSecs1, kOnlineStatus1));
+    response.add_device_activity_statuses()->CopyFrom(
+        cryptauthv2::BuildDeviceActivityStatus(
+            kDeviceId2, kLastActivityTimeSecs2, kOnlineStatus2));
+
+    FinishApiCallFlow(&response);
+  }
+
+  ASSERT_EQ(2, result.device_activity_statuses_size());
+
+  EXPECT_EQ(kDeviceId1, result.device_activity_statuses(0).device_id());
+  ASSERT_EQ(kLastActivityTimeSecs1,
+            result.device_activity_statuses(0).last_activity_time_sec());
+  EXPECT_EQ(kOnlineStatus1, result.device_activity_statuses(0).online_status());
+  EXPECT_EQ(kDeviceId2, result.device_activity_statuses(1).device_id());
+  ASSERT_EQ(kLastActivityTimeSecs2,
+            result.device_activity_statuses(1).last_activity_time_sec());
+  EXPECT_EQ(kOnlineStatus2, result.device_activity_statuses(1).online_status());
 }
 
 TEST_F(DeviceSyncCryptAuthClientTest, FetchAccessTokenFailure) {

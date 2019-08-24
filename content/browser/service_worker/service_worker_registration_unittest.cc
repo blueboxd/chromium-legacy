@@ -38,6 +38,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -1190,7 +1191,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Unregister_Success) {
   // worker objects, otherwise the callbacks issued from |registration_host_ptr|
   // may wait for receiving the messages to them.
   info->request = nullptr;
-  info->waiting->request = nullptr;
+  info->waiting->receiver.reset();
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             FindRegistrationInStorage(registration_id, kScope));

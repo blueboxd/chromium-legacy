@@ -2,10 +2,13 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://resources/html/polymer.html">
+
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_lottie/cr_lottie.html">
 
 <iron-iconset-svg name="fingerprint-setup-32" size="32">
   <svg>
@@ -79,7 +82,15 @@
           [[i18nDynamic(locale, 'setupFingerprintScreenDescription')]]
       </div>
       <div slot="footer" class="layout vertical center">
-        <div id="sensorLocation"></div>
+        <div id="sensorLocationContainer">
+          <template is="dom-if" if="[[shouldUseLottieAnimation_]]">
+            <cr-lottie animation-url="fingerprint_scanner_animation.json">
+            </cr-lottie>
+          </template>
+          <template is="dom-if" if="[[!shouldUseLottieAnimation_]]">
+            <div id="sensorLocation"></div>
+          </template>
+        </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="setupFingerprintLater"

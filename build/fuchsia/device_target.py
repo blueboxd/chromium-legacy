@@ -206,6 +206,7 @@ class DeviceTarget(target.Target):
         should_provision = True
 
       if should_provision:
+        boot_data.AssertBootImagesExist(self._GetTargetSdkArch(), 'generic')
         self.__ProvisionDevice()
 
       assert self._node_name

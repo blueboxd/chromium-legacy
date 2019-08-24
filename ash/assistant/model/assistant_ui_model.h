@@ -28,8 +28,9 @@ enum class AssistantEntryPoint {
   kStylus = 7,
   kLauncherSearchResult = 8,
   kLauncherSearchBoxMic = 9,
+  kProactiveSuggestions = 10,
   // Special enumerator value used by histogram macros.
-  kMaxValue = kLauncherSearchBoxMic
+  kMaxValue = kProactiveSuggestions
 };
 
 // Enumeration of Assistant exit points. These values are persisted to logs.

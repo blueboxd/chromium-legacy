@@ -175,7 +175,7 @@ function getTextColor(params, isTitle) {
   // For backward compatibility with server-side NTP, look at themes directly
   // and use param.c for non-title or as fallback.
   const apiHandle = chrome.embeddedSearch.newTabPage;
-  const themeInfo = apiHandle.themeBackgroundInfo;
+  const themeInfo = assert(apiHandle.themeBackgroundInfo);
   let c = '#777';
   if (isTitle && themeInfo && !themeInfo.usingDefaultTheme) {
     // Read from theme directly

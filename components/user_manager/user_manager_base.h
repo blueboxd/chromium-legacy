@@ -79,7 +79,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   base::string16 GetUserDisplayName(const AccountId& account_id) const override;
   void SaveUserDisplayEmail(const AccountId& account_id,
                             const std::string& display_email) override;
-  std::string GetUserDisplayEmail(const AccountId& account_id) const override;
   void SaveUserType(const User* user) override;
   void UpdateUserAccountData(const AccountId& account_id,
                              const UserAccountData& account_data) override;

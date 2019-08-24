@@ -44,6 +44,7 @@
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_renderer_sink.h"
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -92,7 +93,6 @@ class Thread;
 }
 
 namespace service_manager {
-class Connector;
 class InterfaceProvider;
 }
 
@@ -113,6 +113,7 @@ class AsyncResolverFactory;
 
 namespace blink {
 
+class ThreadSafeBrowserInterfaceBrokerProxy;
 class InterfaceProvider;
 class Thread;
 struct ThreadCreationParams;
@@ -363,14 +364,14 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Resources -----------------------------------------------------------
 
   // Returns a localized string resource (with substitution parameters).
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name) {
+  virtual WebString QueryLocalizedString(int resource_id) {
     return WebString();
   }
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name,
+  virtual WebString QueryLocalizedString(int resource_id,
                                          const WebString& parameter) {
     return WebString();
   }
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name,
+  virtual WebString QueryLocalizedString(int resource_id,
                                          const WebString& parameter1,
                                          const WebString& parameter2) {
     return WebString();
@@ -687,11 +688,24 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Mojo ---------------------------------------------------------------
 
-  virtual service_manager::Connector* GetConnector();
-
+  // DEPRECATED: Use |GetBrowserInterfaceBrokerProxy()| instead. The same
+  // interfaces are reachable through either method.
   virtual InterfaceProvider* GetInterfaceProvider();
 
-  virtual const char* GetBrowserServiceName() const { return ""; }
+  // Callable from any thread. Asks the browser to bind an interface receiver on
+  // behalf of this renderer.
+  //
+  // Note that all GetInterface requests made on this object will hop to the IO
+  // thread before being passed to the browser process.
+  //
+  // Callers should consider scoping their interfaces to a more specific context
+  // before resorting to use of process-scoped interface bindings. Frames and
+  // workers have their own contexts, and their BrowserInterfaceBrokerProxy
+  // instances have less overhead since they don't need to be thread-safe.
+  // Using a more narrowly defined scope when possible is also generally better
+  // for security.
+  virtual ThreadSafeBrowserInterfaceBrokerProxy*
+  GetBrowserInterfaceBrokerProxy();
 
   // Media Capabilities --------------------------------------------------
 

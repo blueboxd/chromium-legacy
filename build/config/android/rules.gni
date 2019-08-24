@@ -2125,7 +2125,6 @@ if (enable_java_templates) {
   #   disable_r8_outlining: Turn off outlining during the proguard step.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
-    assert(defined(invoker.final_apk_path) || defined(invoker.name))
     assert(defined(invoker.android_manifest))
     _gen_dir = "$target_gen_dir/$target_name"
     _base_path = "$_gen_dir/$target_name"
@@ -2158,12 +2157,8 @@ if (enable_java_templates) {
         !defined(invoker.enable_multidex) || invoker.enable_multidex
     _final_dex_path = "$_gen_dir/classes.dex.zip"
 
-    if (defined(invoker.final_apk_path)) {
-      _final_apk_path = invoker.final_apk_path
-    } else {
-      _final_apk_path = "$root_build_dir/apks/${invoker.name}.apk"
-    }
     if (!_is_bundle_module) {
+      _final_apk_path = invoker.final_apk_path
       _final_rtxt_path = "${_final_apk_path}.R.txt"
     }
 
@@ -2177,11 +2172,13 @@ if (enable_java_templates) {
       _final_pathmap_path = "${_final_apk_path}.pathmap.txt"
     }
     _res_size_info_path = "$target_out_dir/$target_name.ap_.info"
-    _final_apk_path_no_ext_list =
-        process_file_template([ _final_apk_path ],
-                              "{{source_dir}}/{{source_name_part}}")
-    _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
-    assert(_final_apk_path_no_ext != "")  # Mark as used.
+    if (!_is_bundle_module) {
+      _final_apk_path_no_ext_list =
+          process_file_template([ _final_apk_path ],
+                                "{{source_dir}}/{{source_name_part}}")
+      _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
+      assert(_final_apk_path_no_ext != "")  # Mark as used.
+    }
 
     # Non-base bundle modules create only proto resources.
     if (!_is_bundle_module || _is_base_module) {
@@ -2344,7 +2341,7 @@ if (enable_java_templates) {
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
-    if (_proguard_enabled) {
+    if (!_is_bundle_module && _proguard_enabled) {
       _proguard_mapping_path = "$_final_apk_path.mapping"
     }
 
@@ -2815,7 +2812,9 @@ if (enable_java_templates) {
         if (_enable_main_dex_list) {
           proguard_configs += [ "//build/android/multidex.flags" ]
         }
-        proguard_mapping_path = _proguard_mapping_path
+        if (!_is_bundle_module) {
+          proguard_mapping_path = _proguard_mapping_path
+        }
       }
 
       # Don't depend on the runtime_deps target in order to avoid having to
@@ -3258,6 +3257,7 @@ if (enable_java_templates) {
     }
 
     group(target_name) {
+      forward_variables_from(invoker, [ "metadata" ])
       if (_incremental_allowed && incremental_apk_by_default) {
         deps = [
           ":${target_name}_incremental",
@@ -3313,6 +3313,7 @@ if (enable_java_templates) {
   #
   # Supports all variables of android_apk_or_module(), plus:
   #   apk_name: Name for final apk.
+  #   final_apk_path: (Optional) path to output APK.
   #
   # Example
   #   android_apk("foo_apk") {
@@ -3356,7 +3357,6 @@ if (enable_java_templates) {
                                "enable_chromium_linker_tests",
                                "enable_multidex",
                                "enable_native_mocks",
-                               "final_apk_path",
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "input_jars_paths",
@@ -3416,8 +3416,14 @@ if (enable_java_templates) {
                                "write_asset_list",
                              ])
       is_bundle_module = false
-      if (defined(invoker.apk_name)) {
-        name = invoker.apk_name
+      name = invoker.apk_name
+      if (defined(invoker.final_apk_path)) {
+        final_apk_path = invoker.final_apk_path
+      } else {
+        final_apk_path = "$root_build_dir/apks/${invoker.apk_name}.apk"
+      }
+      metadata = {
+        install_artifacts = [ final_apk_path ]
       }
     }
   }
@@ -3528,8 +3534,10 @@ if (enable_java_templates) {
       is_bundle_module = true
       generate_buildconfig_java = _is_base_module
       no_build_hooks = !_is_base_module
+
+      # TODO(tiborg): Remove module_name parameter.
       if (defined(invoker.module_name)) {
-        name = invoker.module_name
+        not_needed(invoker, [ "module_name" ])
       }
     }
   }
@@ -4888,6 +4896,37 @@ if (enable_java_templates) {
         public_deps += [ ":$_size_info_target" ]
       }
     }
+
+    _apks_path = "$root_build_dir/apks/$_bundle_name.apks"
+    action_with_pydeps("${target_name}_apks") {
+      script = "//build/android/gyp/create_app_bundle_apks.py"
+      inputs = [
+        _bundle_path,
+      ]
+      outputs = [
+        _apks_path,
+      ]
+      args = [
+        "--bundle",
+        _rebased_bundle_path,
+        "--output",
+        rebase_path(_apks_path, root_build_dir),
+        "--aapt2-path",
+        rebase_path(android_sdk_tools_bundle_aapt2, root_build_dir),
+        "--keystore-path",
+        rebase_path(android_keystore_path, root_build_dir),
+        "--keystore-name",
+        android_keystore_name,
+        "--keystore-password",
+        android_keystore_password,
+      ]
+      deps = [
+        ":$_bundle_target_name",
+      ]
+      metadata = {
+        install_artifacts = [ _apks_path ]
+      }
+    }
   }
 
   # Create an .apks file from an .aab file. The .apks file will contain the
@@ -4911,7 +4950,7 @@ if (enable_java_templates) {
                                "deps",
                                "testonly",
                              ])
-      script = "//build/android/gyp/create_app_bundle_minimal_apks.py"
+      script = "//build/android/gyp/create_app_bundle_apks.py"
       _dir = get_path_info(invoker.bundle_path, "dir")
       _name = get_path_info(invoker.bundle_path, "name")
       _output_path = "$_dir/$_name.minimal.apks"
@@ -4934,6 +4973,7 @@ if (enable_java_templates) {
         android_keystore_name,
         "--keystore-password",
         android_keystore_password,
+        "--minimal",
       ]
     }
   }

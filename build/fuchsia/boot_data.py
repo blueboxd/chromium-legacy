@@ -118,3 +118,13 @@ def GetBootImage(output_dir, target_arch, target_type):
 
 def GetKernelArgs(output_dir):
   return ['devmgr.epoch=%d' % time.time()]
+
+
+def AssertBootImagesExist(arch, platform):
+  assert os.path.exists(GetTargetFile('zircon-a.zbi', arch, platform)), \
+      'This checkout is missing the files necessary for\n' \
+      'booting this configuration of Fuchsia.\n' \
+      'To check out the files, add an entry to the\n' \
+      'entry in your .gclient file like this:\n\n' \
+      '    "checkout_fuchsia_boot_images": "%s.%s"\n\n' % \
+           (platform, arch)

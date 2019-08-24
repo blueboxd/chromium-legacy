@@ -88,7 +88,6 @@ class ContextualSearchSceneLayer : public SceneLayer,
       jboolean search_bar_border_visible,
       jfloat search_bar_border_height,
       jboolean search_bar_shadow_visible,
-      jfloat search_bar_shadow_opacity,
       jboolean quick_action_icon_visible,
       jboolean thumbnail_visible,
       jstring j_thumbnail_url,
@@ -111,7 +110,9 @@ class ContextualSearchSceneLayer : public SceneLayer,
       jboolean touch_highlight_visible,
       jfloat touch_highlight_x_offset,
       jfloat touch_highlight_width,
-      const base::android::JavaRef<jobject>& j_profile);
+      const base::android::JavaRef<jobject>& j_profile,
+      jint bar_background_resource_id,
+      jint separator_line_color);
 
   // Inherited from BitmapFetcherDelegate
   void OnFetchComplete(

@@ -6,9 +6,11 @@
 
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/skia_paint_util.h"
 
 namespace ash {
 
@@ -42,6 +44,11 @@ int GetUnit() {
   return ShelfConstants::button_size() + ShelfConstants::button_spacing();
 }
 
+// Length of the fade in/out zone.
+int GetFadeZoneLength() {
+  return GetUnit() - kArrowButtonGroupWidth;
+}
+
 // Decides whether the current first visible shelf icon of the scrollable shelf
 // should be hidden or fully shown when gesture scroll ends.
 int GetGestureDragThreshold() {
@@ -56,6 +63,80 @@ int CalculateOverflowPadding(int available_size) {
 }
 
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// GradientLayerDelegate
+
+class ScrollableShelfView::GradientLayerDelegate : public ui::LayerDelegate {
+ public:
+  struct FadeZone {
+    // Bounds of the fade in/out zone.
+    gfx::Rect zone_rect;
+
+    // Specifies the type of FadeZone: fade in or fade out.
+    bool fade_in = false;
+
+    // Indicates the drawing direction.
+    bool is_horizontal = false;
+  };
+
+  GradientLayerDelegate() : layer_(ui::LAYER_TEXTURED) {
+    layer_.set_delegate(this);
+    layer_.SetFillsBoundsOpaquely(false);
+  }
+
+  ~GradientLayerDelegate() override { layer_.set_delegate(nullptr); }
+
+  void set_fade_zone(const FadeZone& fade_zone) { fade_zone_ = fade_zone; }
+  ui::Layer* layer() { return &layer_; }
+
+ private:
+  // ui::LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    const gfx::Size size = layer()->size();
+
+    views::PaintInfo paint_info =
+        views::PaintInfo::CreateRootPaintInfo(context, size);
+    const auto& paint_recording_size = paint_info.paint_recording_size();
+
+    // Pass the scale factor when constructing PaintRecorder so the MaskLayer
+    // size is not incorrectly rounded (see https://crbug.com/921274).
+    ui::PaintRecorder recorder(
+        context, paint_info.paint_recording_size(),
+        static_cast<float>(paint_recording_size.width()) / size.width(),
+        static_cast<float>(paint_recording_size.height()) / size.height(),
+        nullptr);
+
+    gfx::Point start_point;
+    gfx::Point end_point;
+    if (fade_zone_.is_horizontal) {
+      start_point = gfx::Point(fade_zone_.zone_rect.x(), 0);
+      end_point = gfx::Point(fade_zone_.zone_rect.right(), 0);
+    } else {
+      start_point = gfx::Point(0, fade_zone_.zone_rect.y());
+      end_point = gfx::Point(0, fade_zone_.zone_rect.bottom());
+    }
+
+    gfx::Canvas* canvas = recorder.canvas();
+    canvas->DrawColor(SK_ColorBLACK, SkBlendMode::kSrc);
+    cc::PaintFlags flags;
+    flags.setBlendMode(SkBlendMode::kSrc);
+    flags.setAntiAlias(false);
+    flags.setShader(gfx::CreateGradientShader(
+        start_point, end_point,
+        fade_zone_.fade_in ? SK_ColorTRANSPARENT : SK_ColorBLACK,
+        fade_zone_.fade_in ? SK_ColorBLACK : SK_ColorTRANSPARENT));
+
+    canvas->DrawRect(fade_zone_.zone_rect, flags);
+  }
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
+
+  ui::Layer layer_;
+  FadeZone fade_zone_;
+
+  DISALLOW_COPY_AND_ASSIGN(GradientLayerDelegate);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // ScrollableShelfView
@@ -91,6 +172,9 @@ void ScrollableShelfView::Init() {
   shelf_container_view_ =
       AddChildView(std::make_unique<ShelfContainerView>(shelf_view_));
   shelf_container_view_->Initialize();
+
+  gradient_layer_delegate_ = std::make_unique<GradientLayerDelegate>();
+  layer()->SetMaskLayer(gradient_layer_delegate_->layer());
 }
 
 views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
@@ -246,6 +330,11 @@ void ScrollableShelfView::Layout() {
     shelf_container_bounds.Transpose();
   }
 
+  // Check the change in |right_arrow_|'s bounds or the visibility.
+  const bool is_right_arrow_changed =
+      (right_arrow_->bounds() != right_arrow_bounds) ||
+      (!right_arrow_bounds.IsEmpty() && !right_arrow_->GetVisible());
+
   // Layout |left_arrow| if it should show.
   left_arrow_->SetVisible(!left_arrow_bounds.IsEmpty());
   if (left_arrow_->GetVisible())
@@ -255,6 +344,11 @@ void ScrollableShelfView::Layout() {
   right_arrow_->SetVisible(!right_arrow_bounds.IsEmpty());
   if (right_arrow_->GetVisible())
     right_arrow_->SetBoundsRect(right_arrow_bounds);
+
+  // Bounds of the gradient zone are relative to the location of arrow buttons.
+  // So updates the gradient zone after the bounds of arrow buttons are set.
+  if (is_right_arrow_changed)
+    UpdateGradientZone();
 
   // Layout |shelf_container_view_|.
   shelf_container_view_->SetBoundsRect(shelf_container_bounds);
@@ -514,6 +608,41 @@ float ScrollableShelfView::CalculatePageScrollingOffset(bool forward) const {
     offset = -offset;
 
   return offset;
+}
+
+void ScrollableShelfView::UpdateGradientZone() {
+  gfx::Rect zone_rect;
+  bool fade_in;
+  const int zone_length = GetFadeZoneLength();
+  const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
+
+  // Calculates the bounds of the gradient zone based on the arrow buttons'
+  // location.
+  if (right_arrow_->GetVisible()) {
+    const gfx::Rect right_arrow_bounds = right_arrow_->bounds();
+    zone_rect = is_horizontal_alignment
+                    ? gfx::Rect(right_arrow_bounds.x() - zone_length, 0,
+                                zone_length, height())
+                    : gfx::Rect(0, right_arrow_bounds.y() - zone_length,
+                                width(), zone_length);
+    fade_in = false;
+  } else if (left_arrow_->GetVisible()) {
+    const gfx::Rect left_arrow_bounds = left_arrow_->bounds();
+    zone_rect =
+        is_horizontal_alignment
+            ? gfx::Rect(left_arrow_bounds.right(), 0, zone_length, height())
+            : gfx::Rect(0, left_arrow_bounds.bottom(), width(), zone_length);
+    fade_in = true;
+  } else {
+    zone_rect = gfx::Rect();
+    fade_in = false;
+  }
+
+  GradientLayerDelegate::FadeZone fade_zone = {zone_rect, fade_in,
+                                               is_horizontal_alignment};
+  gradient_layer_delegate_->set_fade_zone(fade_zone);
+  gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
+  SchedulePaint();
 }
 
 }  // namespace ash

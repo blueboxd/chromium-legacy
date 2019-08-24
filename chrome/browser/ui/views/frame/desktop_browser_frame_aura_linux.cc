@@ -70,7 +70,7 @@ bool DesktopBrowserFrameAuraLinux::UseCustomFrame() const {
 void DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged() {
   // Tell the window manager to add or remove system borders.
   browser_frame()->set_frame_type(UseCustomFrame()
-                                      ? views::Widget::FRAME_TYPE_FORCE_CUSTOM
-                                      : views::Widget::FRAME_TYPE_FORCE_NATIVE);
+                                      ? views::Widget::FrameType::kForceCustom
+                                      : views::Widget::FrameType::kForceNative);
   browser_frame()->FrameTypeChanged();
 }

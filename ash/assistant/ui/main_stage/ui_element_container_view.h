@@ -14,6 +14,7 @@
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/views/view_observer.h"
 
 namespace ash {
@@ -44,13 +45,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& query) override;
   void OnResponseChanged(
-      const std::shared_ptr<AssistantResponse>& response) override;
+      const scoped_refptr<AssistantResponse>& response) override;
   void OnResponseCleared() override;
 
  private:
   void InitLayout();
 
-  void OnResponseAdded(std::shared_ptr<const AssistantResponse> response);
+  void OnResponseAdded(scoped_refptr<const AssistantResponse> response);
   void OnCardElementAdded(const AssistantCardElement* card_element);
   void OnTextElementAdded(const AssistantTextElement* text_element);
   void OnAllUiElementsAdded();
@@ -64,8 +65,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   // pending response to be presented following the former's animated exit. We
   // use shared pointers to ensure that underlying UI elements are not destroyed
   // before we have an opportunity to remove their associated views.
-  std::shared_ptr<const AssistantResponse> response_;
-  std::shared_ptr<const AssistantResponse> pending_response_;
+  scoped_refptr<const AssistantResponse> response_;
+  scoped_refptr<const AssistantResponse> pending_response_;
 
   // Whether we should allow propagation of PreferredSizeChanged events. Because
   // we only animate views in/out in batches, we can prevent over-propagation of

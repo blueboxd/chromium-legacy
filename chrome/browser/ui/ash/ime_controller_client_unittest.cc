@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"

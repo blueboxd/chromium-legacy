@@ -190,6 +190,11 @@ void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
 void AppListTestViewDelegate::GetAppLaunchedMetricParams(
     app_list::AppLaunchedMetricParams* metric_params) {}
 
+gfx::Rect AppListTestViewDelegate::SnapBoundsToDisplayEdge(
+    const gfx::Rect& bounds) {
+  return bounds;
+}
+
 void AppListTestViewDelegate::RecordAppLaunched(
     ash::AppListLaunchedFrom launched_from) {
   app_list::RecordAppListAppLaunched(launched_from, model_->state_fullscreen(),

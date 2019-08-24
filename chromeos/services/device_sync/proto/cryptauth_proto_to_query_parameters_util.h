@@ -16,6 +16,7 @@ namespace cryptauthv2 {
 
 class BatchGetFeatureStatusesRequest;
 class BatchNotifyGroupDevicesRequest;
+class GetDevicesActivityStatusRequest;
 class ClientMetadata;
 class RequestContext;
 
@@ -76,6 +77,19 @@ BatchNotifyGroupDevicesRequestToQueryParameters(
 std::vector<std::pair<std::string, std::string>>
 BatchGetFeatureStatusesRequestToQueryParameters(
     const BatchGetFeatureStatusesRequest& request);
+
+// Example output:
+//   {
+//     {"context.client_metadata.retry_count", "2"},
+//     {"context.client_metadata.invocation_reason", "13"},
+//     {"context.client_metadata.session_id", "abc"}
+//     {"context.group", "DeviceSync:BetterTogether"},
+//     {"context.device_id", "123"},
+//     {"context.device_id_token", "123token"}};
+//   }
+std::vector<std::pair<std::string, std::string>>
+GetDevicesActivityStatusRequestToQueryParameters(
+    const GetDevicesActivityStatusRequest& request);
 
 }  // namespace cryptauthv2
 

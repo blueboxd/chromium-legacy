@@ -322,6 +322,9 @@ jumbo_static_library("rest_of_sync") {
     "nigori/nigori_local_change_processor.h",
     "nigori/nigori_model_type_processor.cc",
     "nigori/nigori_model_type_processor.h",
+    "nigori/nigori_storage.h",
+    "nigori/nigori_storage_impl.cc",
+    "nigori/nigori_storage_impl.h",
     "nigori/nigori_sync_bridge.h",
     "nigori/nigori_sync_bridge_impl.cc",
     "nigori/nigori_sync_bridge_impl.h",
@@ -420,6 +423,7 @@ jumbo_static_library("rest_of_sync") {
   ]
   deps = [
     "//base:i18n",
+    "//build:branding_buildflags",
     "//components/keyed_service/core",
     "//services/network/public/cpp",
     "//sql",
@@ -639,6 +643,7 @@ source_set("unit_tests") {
     "nigori/cryptographer_unittest.cc",
     "nigori/nigori_key_bag_unittest.cc",
     "nigori/nigori_model_type_processor_unittest.cc",
+    "nigori/nigori_storage_impl_unittest.cc",
     "nigori/nigori_sync_bridge_impl_unittest.cc",
     "nigori/nigori_unittest.cc",
     "protocol/proto_enum_conversions_unittest.cc",

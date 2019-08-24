@@ -25,6 +25,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/activity_data_service.h"
@@ -324,14 +325,14 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
 
 #if defined(OS_WIN)
   EXPECT_TRUE(request->FindKey("domainjoined"));
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const auto* updater = request->FindKey("updater");
   EXPECT_TRUE(updater);
   EXPECT_EQ("Omaha", updater->FindKey("name")->GetString());
   EXPECT_TRUE(updater->FindKey("autoupdatecheckenabled")->is_bool());
   EXPECT_TRUE(updater->FindKey("ismachine")->is_bool());
   EXPECT_TRUE(updater->FindKey("updatepolicy")->is_int());
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // OS_WIN
 
   // Sanity check the arguments of the callback after parsing.

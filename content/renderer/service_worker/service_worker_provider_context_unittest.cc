@@ -23,6 +23,7 @@
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -49,7 +50,7 @@ class MockServiceWorkerObjectHost
  public:
   explicit MockServiceWorkerObjectHost(int64_t version_id)
       : version_id_(version_id) {
-    bindings_.set_connection_error_handler(
+    receivers_.set_disconnect_handler(
         base::BindRepeating(&MockServiceWorkerObjectHost::OnConnectionError,
                             base::Unretained(this)));
   }
@@ -58,8 +59,9 @@ class MockServiceWorkerObjectHost
   blink::mojom::ServiceWorkerObjectInfoPtr CreateObjectInfo() {
     auto info = blink::mojom::ServiceWorkerObjectInfo::New();
     info->version_id = version_id_;
-    bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
-    info->request = mojo::MakeRequest(&remote_object_);
+    receivers_.Add(this,
+                   info->host_remote.InitWithNewEndpointAndPassReceiver());
+    info->receiver = remote_object_.BindNewEndpointAndPassReceiver();
     return info;
   }
 
@@ -73,7 +75,7 @@ class MockServiceWorkerObjectHost
     error_callback_ = std::move(error_callback);
   }
 
-  int GetBindingCount() const { return bindings_.size(); }
+  int GetReceiverCount() const { return receivers_.size(); }
 
  private:
   // Implements blink::mojom::ServiceWorkerObjectHost.
@@ -86,8 +88,8 @@ class MockServiceWorkerObjectHost
   }
 
   const int64_t version_id_;
-  mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
-  blink::mojom::ServiceWorkerObjectAssociatedPtr remote_object_;
+  mojo::AssociatedReceiverSet<blink::mojom::ServiceWorkerObjectHost> receivers_;
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerObject> remote_object_;
   base::OnceClosure error_callback_;
 };
 
@@ -306,10 +308,10 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
   {
     auto mock_service_worker_object_host =
         std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
-    ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+    ASSERT_EQ(0, mock_service_worker_object_host->GetReceiverCount());
     blink::mojom::ServiceWorkerObjectInfoPtr object_info =
         mock_service_worker_object_host->CreateObjectInfo();
-    EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+    EXPECT_EQ(1, mock_service_worker_object_host->GetReceiverCount());
 
     mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost>
         host_remote;
@@ -340,16 +342,16 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     provider_context = nullptr;
     base::RunLoop().RunUntilIdle();
     // ServiceWorkerObjectHost Mojo connection got broken.
-    EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+    EXPECT_EQ(0, mock_service_worker_object_host->GetReceiverCount());
   }
 
   {
     auto mock_service_worker_object_host =
         std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
-    ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+    ASSERT_EQ(0, mock_service_worker_object_host->GetReceiverCount());
     blink::mojom::ServiceWorkerObjectInfoPtr object_info =
         mock_service_worker_object_host->CreateObjectInfo();
-    EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+    EXPECT_EQ(1, mock_service_worker_object_host->GetReceiverCount());
 
     // (2) In the case there are both SWProviderContext and SWProviderClient for
     // the provider, the passed reference should be adopted by the provider
@@ -384,7 +386,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
 
     EXPECT_TRUE(client->was_set_controller_called());
     // ServiceWorkerObjectHost Mojo connection got broken.
-    EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+    EXPECT_EQ(0, mock_service_worker_object_host->GetReceiverCount());
   }
 }
 
@@ -435,10 +437,10 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // Make the object host for .controller.
   auto object_host1 =
       std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
-  EXPECT_EQ(0, object_host1->GetBindingCount());
+  EXPECT_EQ(0, object_host1->GetReceiverCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info1 =
       object_host1->CreateObjectInfo();
-  EXPECT_EQ(1, object_host1->GetBindingCount());
+  EXPECT_EQ(1, object_host1->GetReceiverCount());
 
   // Make the ControllerServiceWorkerInfo.
   FakeControllerServiceWorker fake_controller1;
@@ -480,10 +482,10 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // Setup the new controller.
   auto object_host2 =
       std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
-  ASSERT_EQ(0, object_host2->GetBindingCount());
+  ASSERT_EQ(0, object_host2->GetReceiverCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info2 =
       object_host2->CreateObjectInfo();
-  EXPECT_EQ(1, object_host2->GetBindingCount());
+  EXPECT_EQ(1, object_host2->GetReceiverCount());
   FakeControllerServiceWorker fake_controller2;
   auto controller_info2 = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller2;
@@ -500,7 +502,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   container_remote->SetController(std::move(controller_info2), true);
   container_remote.FlushForTesting();
   drop_binding_loop.Run();
-  EXPECT_EQ(0, object_host1->GetBindingCount());
+  EXPECT_EQ(0, object_host1->GetReceiverCount());
 
   // Subresource loader factory must be available, and should be the same
   // one as we got before.
@@ -539,7 +541,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // released.
   container_remote.FlushForTesting();
   drop_binding_loop2.Run();
-  EXPECT_EQ(0, object_host2->GetBindingCount());
+  EXPECT_EQ(0, object_host2->GetReceiverCount());
 
   // Subresource loader factory must not be available.
   EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactory());
@@ -569,10 +571,10 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // works.
   auto object_host4 =
       std::make_unique<MockServiceWorkerObjectHost>(202 /* version_id */);
-  ASSERT_EQ(0, object_host4->GetBindingCount());
+  ASSERT_EQ(0, object_host4->GetReceiverCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info4 =
       object_host4->CreateObjectInfo();
-  EXPECT_EQ(1, object_host4->GetBindingCount());
+  EXPECT_EQ(1, object_host4->GetReceiverCount());
   FakeControllerServiceWorker fake_controller4;
   auto controller_info4 = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller4;
@@ -651,10 +653,10 @@ TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
 TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   auto mock_service_worker_object_host =
       std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
-  ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+  ASSERT_EQ(0, mock_service_worker_object_host->GetReceiverCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info =
       mock_service_worker_object_host->CreateObjectInfo();
-  EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+  EXPECT_EQ(1, mock_service_worker_object_host->GetReceiverCount());
 
   mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainerHost> host_remote;
   mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
@@ -681,7 +683,7 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   // The passed reference should be owned by the provider client (but the
   // reference is immediately released by the mock provider client).
   EXPECT_TRUE(client->was_receive_message_called());
-  EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+  EXPECT_EQ(0, mock_service_worker_object_host->GetReceiverCount());
 }
 
 TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
@@ -767,10 +769,10 @@ TEST_F(ServiceWorkerProviderContextTest,
   // Make the object host for .controller.
   auto mock_service_worker_object_host =
       std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
-  ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+  ASSERT_EQ(0, mock_service_worker_object_host->GetReceiverCount());
   blink::mojom::ServiceWorkerObjectInfoPtr object_info =
       mock_service_worker_object_host->CreateObjectInfo();
-  EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+  EXPECT_EQ(1, mock_service_worker_object_host->GetReceiverCount());
 
   // Make the ControllerServiceWorkerInfo.
   FakeControllerServiceWorker fake_controller;

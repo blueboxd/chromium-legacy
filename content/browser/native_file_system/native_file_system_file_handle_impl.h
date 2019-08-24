@@ -58,18 +58,23 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   void CreateFileWriterImpl(bool keep_existing_data,
                             CreateFileWriterCallback callback);
   void CreateSwapFile(int count,
-                      const base::FilePath& base_swap_path,
                       bool keep_existing_data,
                       CreateFileWriterCallback callback);
-  void DidCreateSwapFile(int count,
-                         const base::FilePath& base_swap_path,
-                         const storage::FileSystemURL& swap_url,
-                         bool keep_existing_data,
-                         CreateFileWriterCallback callback,
-                         base::File::Error result);
-  void DidCopySwapFile(const storage::FileSystemURL& swap_url,
-                       CreateFileWriterCallback callback,
-                       base::File::Error result);
+  // |swap_file_system| is set to the isolated file system the swap url was
+  // created in (if any) as that file system might be different than the file
+  // system |this| was created from.
+  void DidCreateSwapFile(
+      int count,
+      const storage::FileSystemURL& swap_url,
+      storage::IsolatedContext::ScopedFSHandle swap_file_system,
+      bool keep_existing_data,
+      CreateFileWriterCallback callback,
+      base::File::Error result);
+  void DidCopySwapFile(
+      const storage::FileSystemURL& swap_url,
+      storage::IsolatedContext::ScopedFSHandle swap_file_system,
+      CreateFileWriterCallback callback,
+      base::File::Error result);
 
   // A FileWriter will write to a "swap" file until the `Close()` operation is
   // called to swap the file into the target path. For each writer, a new swap

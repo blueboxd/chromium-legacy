@@ -50,6 +50,7 @@ namespace app_list {
 class AppsContainerView;
 class ApplicationDragAndDropHost;
 class AppListBackgroundShieldView;
+class AppListConfig;
 class AppListMainView;
 class AppListModel;
 class AppsGridView;
@@ -313,9 +314,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   bool is_side_shelf() const { return is_side_shelf_; }
 
-  void set_shelf_has_rounded_corners(bool shelf_has_rounded_corners) {
-    shelf_has_rounded_corners_ = shelf_has_rounded_corners;
-  }
+  void SetShelfHasRoundedCorners(bool shelf_has_rounded_corners);
 
   bool shelf_has_rounded_corners() const { return shelf_has_rounded_corners_; }
 
@@ -326,6 +325,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   }
 
   views::View* GetAppListBackgroundShieldForTest();
+
+  // Gets the current app list configuration. Should not be used before the app
+  // list content has been initialized.
+  const AppListConfig& GetAppListConfig() const;
 
   SkColor GetAppListBackgroundShieldColorForTest();
 
@@ -338,6 +341,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
                            PresentationTimeRecordedForDragInTabletMode);
 
   class StateAnimationMetricsReporter;
+
+  // Updates the app list configuration that should be used by this app list
+  // view.
+  // |parent_window|: The window that contains the app list widget.
+  void UpdateAppListConfig(aura::Window* parent_window);
 
   // Updates the widget to be shown.
   void UpdateWidget();
@@ -497,6 +505,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // The state of the app list, controlled via SetState().
   ash::AppListViewState app_list_state_ = ash::AppListViewState::kClosed;
 
+  // The timestamp when the ongoing animation ends.
+  base::TimeTicks animation_end_timestamp_;
+
   // An observer to notify AppListView of bounds animation completion.
   std::unique_ptr<BoundsAnimationObserver> bounds_animation_observer_;
 
@@ -526,6 +537,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // to animation jank. However, updating child views in each animation frame is
   // expensive. So it is only applied in the limited scenarios.
   bool update_childview_each_frame_ = false;
+
+  // If set, the app list config that should be used within the app list view
+  // instead of the default instance.
+  std::unique_ptr<AppListConfig> app_list_config_;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_{this};
 

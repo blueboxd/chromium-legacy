@@ -5,8 +5,6 @@
 #include "ash/system/tray/tray_constants.h"
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/color_palette.h"
 
 namespace ash {
 

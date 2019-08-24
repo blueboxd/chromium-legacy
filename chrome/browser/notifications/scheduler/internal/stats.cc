@@ -49,6 +49,16 @@ void LogImpressionDbOperation(bool success) {
                         success);
 }
 
+void LogImpressionCount(int impression_count, SchedulerClientType type) {
+  std::string name("Notifications.Scheduler.Impression.Count.");
+  name.append(ToHistogramSuffix(type));
+  base::UmaHistogramCounts100(name, impression_count);
+}
+
+void LogImpressionrEvent(ImpressionEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Scheduler.Impression.Event", event);
+}
+
 void LogNotificationDbInit(bool success, int entry_count) {
   UMA_HISTOGRAM_BOOLEAN("Notifications.Scheduler.NotificationDb.InitResult",
                         success);

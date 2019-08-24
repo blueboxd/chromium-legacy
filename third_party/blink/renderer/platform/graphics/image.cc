@@ -349,6 +349,29 @@ SkBitmap Image::AsSkBitmapForCurrentFrame(
   return bitmap;
 }
 
+bool Image::GetBitmap(const FloatRect& src_rect, SkBitmap* bitmap) {
+  if (!src_rect.Width() || !src_rect.Height())
+    return false;
+
+  SkScalar sx = SkFloatToScalar(src_rect.X());
+  SkScalar sy = SkFloatToScalar(src_rect.Y());
+  SkScalar sw = SkFloatToScalar(src_rect.Width());
+  SkScalar sh = SkFloatToScalar(src_rect.Height());
+  SkRect src = {sx, sy, sx + sw, sy + sh};
+  SkRect dest = {0, 0, sw, sh};
+
+  if (!bitmap || !bitmap->tryAllocPixels(SkImageInfo::MakeN32(
+                     static_cast<int>(src_rect.Width()),
+                     static_cast<int>(src_rect.Height()), kPremul_SkAlphaType)))
+    return false;
+
+  SkCanvas canvas(*bitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
+  canvas.drawImageRect(PaintImageForCurrentFrame().GetSkImage(), src, dest,
+                       nullptr);
+  return true;
+}
+
 DarkModeClassification Image::GetDarkModeClassification(
     const FloatRect& src_rect) {
   // Assuming that multiple uses of the same sprite region all have the same

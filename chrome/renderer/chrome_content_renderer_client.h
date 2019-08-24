@@ -15,6 +15,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/common/plugin.mojom.h"
@@ -32,6 +33,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -294,12 +296,8 @@ class ChromeContentRendererClient
 #endif
 
   service_manager::BinderRegistry registry_;
-
-  // These are initialized in RenderThreadStarted() and used to create throttle
-  // providers on the IO thread.
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
-  std::unique_ptr<service_manager::Connector>
-      render_thread_connector_for_io_thread_;
+  scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
+      browser_interface_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClient);
 };

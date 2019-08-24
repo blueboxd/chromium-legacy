@@ -32,6 +32,7 @@ class OverlayPanelLayer : public Layer {
 
   void SetResourceIds(int bar_text_resource_id,
                       int panel_shadow_resource_id,
+                      int rounded_bar_top_resource_id,
                       int bar_shadow_resource_id,
                       int panel_icon_resource_id,
                       int drag_handlebar_resource_id,
@@ -54,10 +55,10 @@ class OverlayPanelLayer : public Layer {
                      bool bar_border_visible,
                      float bar_border_height,
                      bool bar_shadow_visible,
-                     float bar_shadow_opacity,
                      int icon_tint,
                      int drag_handlebar_tint,
-                     float icon_opacity);
+                     float icon_opacity,
+                     int separator_line_color);
 
   void SetProgressBar(int progress_bar_background_resource_id,
                       int progress_bar_resource_id,
@@ -81,6 +82,7 @@ class OverlayPanelLayer : public Layer {
   scoped_refptr<cc::Layer> layer_;
 
   scoped_refptr<cc::NinePatchLayer> panel_shadow_;
+  scoped_refptr<cc::NinePatchLayer> rounded_bar_top_;
   scoped_refptr<cc::SolidColorLayer> bar_background_;
   scoped_refptr<cc::UIResourceLayer> bar_text_;
   scoped_refptr<cc::UIResourceLayer> bar_shadow_;
@@ -97,6 +99,7 @@ class OverlayPanelLayer : public Layer {
   int panel_icon_resource_id_;
   int bar_text_resource_id_;
   int panel_shadow_resource_id_;
+  int rounded_bar_top_resource_id_;
   int bar_shadow_resource_id_;
   int drag_handlebar_resource_id_;
   int open_tab_icon_resource_id_;

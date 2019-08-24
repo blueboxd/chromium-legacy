@@ -1,0 +1,129 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/closure_compiler/compile_js.gni")
+
+js_type_check("closure_compile") {
+  deps = [
+    ":actions",
+    ":api_listener",
+    ":app_item",
+    ":app_management_page",
+    ":browser_proxy",
+    ":constants",
+    ":fake_page_handler",
+    ":main_view",
+    ":reducers",
+    ":store",
+    ":store_client",
+    ":types",
+    ":util",
+  ]
+}
+
+js_library("actions") {
+  deps = [
+    "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("api_listener") {
+  deps = [
+    ":actions",
+    ":store",
+    ":util",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("app_item") {
+  deps = [
+    ":actions",
+    ":store_client",
+    "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
+js_library("app_management_page") {
+  deps = [
+    ":actions",
+    ":browser_proxy",
+    ":main_view",
+    ":store",
+    ":store_client",
+  ]
+}
+
+js_library("browser_proxy") {
+  deps = [
+    ":fake_page_handler",
+    "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("constants") {
+}
+
+js_library("fake_page_handler") {
+  deps = [
+    ":constants",
+    ":types",
+    ":util",
+    "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("main_view") {
+  deps = [
+    ":app_item",
+    ":browser_proxy",
+    ":constants",
+    ":store_client",
+    "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
+js_library("reducers") {
+  deps = [
+    ":types",
+    ":util",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("store") {
+  deps = [
+    ":reducers",
+    ":util",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr/ui:store",
+  ]
+}
+
+js_library("store_client") {
+  deps = [
+    ":store",
+    ":types",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr/ui:store",
+    "//ui/webui/resources/js/cr/ui:store_client",
+  ]
+}
+
+js_library("types") {
+  deps = [
+    "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile",
+  ]
+}
+
+js_library("util") {
+  deps = [
+    ":constants",
+    ":types",
+    "//ui/webui/resources/js:cr",
+  ]
+}

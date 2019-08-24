@@ -419,6 +419,7 @@ android_library("chrome_java") {
     "//chrome:quick_action_category_enum_javagen",
     "//chrome:signin_metrics_enum_javagen",
     "//chrome/browser/notifications/scheduler/public:jni_enums",
+    "//chrome/browser:sharing_send_message_result_generated_enum",
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
     "//chrome/browser/ui:tab_model_enums_java",
     "//components/autofill_assistant/browser:autofill_assistant_enums_java",
@@ -725,6 +726,10 @@ junit_binary("chrome_junit_tests") {
     "//third_party/hamcrest:hamcrest_java",
     "//ui/android:ui_java",
     "//url/mojom:url_mojom_gurl_java",
+  ]
+
+  srcjar_deps = [
+    "//components/module_installer/android:module_installer_apk_build_config",
   ]
 
   package_name = chrome_public_manifest_package

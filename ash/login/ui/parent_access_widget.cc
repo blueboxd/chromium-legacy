@@ -16,19 +16,76 @@
 
 namespace ash {
 
+namespace {
+
+ParentAccessWidget* instance_ = nullptr;
+
+}  // namespace
+
+ParentAccessWidget::TestApi::TestApi(ParentAccessWidget* widget)
+    : parent_access_widget_(widget) {}
+
+ParentAccessWidget::TestApi::~TestApi() = default;
+
+ParentAccessView* ParentAccessWidget::TestApi::parent_access_view() {
+  return static_cast<ParentAccessView*>(
+      parent_access_widget_->widget_->widget_delegate());
+}
+
+void ParentAccessWidget::TestApi::SimulateValidationFinished(
+    bool access_granted) {
+  parent_access_widget_->OnExit(access_granted);
+}
+
+// static
+void ParentAccessWidget::Show(const AccountId& child_account_id,
+                              OnExitCallback callback,
+                              ParentAccessRequestReason reason,
+                              bool extra_dimmer,
+                              base::Time validation_time) {
+  if (instance_) {
+    VLOG(1) << "Showing existing instance of ParentAccessWidget.";
+    instance_->Show();
+    return;
+  }
+
+  instance_ = new ParentAccessWidget(child_account_id, std::move(callback),
+                                     reason, extra_dimmer, validation_time);
+}
+
+// static
+void ParentAccessWidget::Show(const AccountId& account_id,
+                              OnExitCallback callback,
+                              ParentAccessRequestReason reason) {
+  Show(account_id, std::move(callback), reason, false, base::Time());
+}
+
+// static
+ParentAccessWidget* ParentAccessWidget::Get() {
+  return instance_;
+}
+
+void ParentAccessWidget::Destroy() {
+  DCHECK_EQ(instance_, this);
+  widget_->Close();
+
+  delete instance_;
+  instance_ = nullptr;
+}
+
 ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
-                                       const OnExitCallback& callback,
+                                       OnExitCallback callback,
                                        ParentAccessRequestReason reason,
                                        bool extra_dimmer,
                                        base::Time validation_time)
-    : callback_(callback) {
+    : callback_(std::move(callback)) {
   views::Widget::InitParams widget_params;
   // Using window frameless to be able to get focus on the view input fields,
   // which does not work with popup type.
   widget_params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   widget_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget_params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   widget_params.accept_events = true;
 
   ShellWindowId parent_window_id =
@@ -45,22 +102,28 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
   widget_params.delegate =
       new ParentAccessView(account_id, callbacks, reason, validation_time);
 
-  if (extra_dimmer) {
+  if (extra_dimmer)
     dimmer_ = std::make_unique<WindowDimmer>(widget_params.parent);
-    dimmer_->window()->Show();
-  }
 
   widget_ = std::make_unique<views::Widget>();
   widget_->Init(std::move(widget_params));
-  widget_->Show();
+
+  Show();
 }
 
 ParentAccessWidget::~ParentAccessWidget() = default;
 
+void ParentAccessWidget::Show() {
+  if (dimmer_)
+    dimmer_->window()->Show();
+
+  DCHECK(widget_);
+  widget_->Show();
+}
+
 void ParentAccessWidget::OnExit(bool success) {
   callback_.Run(success);
-  widget_->Close();
-  dimmer_.reset();
+  Destroy();
 }
 
 }  // namespace ash

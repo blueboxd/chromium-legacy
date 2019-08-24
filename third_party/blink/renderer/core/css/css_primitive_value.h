@@ -162,7 +162,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
            unit == UnitType::kGradians || unit == UnitType::kTurns;
   }
   bool IsAngle() const;
-  bool IsFontRelativeLength() const;
   static bool IsViewportPercentageLength(UnitType type) {
     return type >= UnitType::kViewportWidth && type <= UnitType::kViewportMax;
   }

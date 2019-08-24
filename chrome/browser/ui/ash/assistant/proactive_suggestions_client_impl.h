@@ -11,6 +11,7 @@
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,6 +32,9 @@ class ProactiveSuggestionsClientImpl
  public:
   ProactiveSuggestionsClientImpl(AssistantClient* client, Profile* profile);
   ~ProactiveSuggestionsClientImpl() override;
+
+  // ash::ProactiveSuggestionsClient:
+  void SetDelegate(Delegate* delegate) override;
 
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
@@ -56,17 +60,19 @@ class ProactiveSuggestionsClientImpl
   void SetActiveContents(content::WebContents* contents);
   void SetActiveUrl(const GURL& url);
   void SetActiveProactiveSuggestions(
-      std::unique_ptr<ash::ProactiveSuggestions> proactive_suggestions);
+      scoped_refptr<ash::ProactiveSuggestions> proactive_suggestions);
 
   void UpdateActiveState();
 
   Profile* const profile_;
   ash::AssistantStateProxy assistant_state_;
 
+  Delegate* delegate_ = nullptr;
+
   Browser* active_browser_ = nullptr;
   content::WebContents* active_contents_ = nullptr;
   GURL active_url_;
-  size_t active_proactive_suggestions_hash_;
+  scoped_refptr<ash::ProactiveSuggestions> active_proactive_suggestions_;
 
   std::unique_ptr<ProactiveSuggestionsLoader> loader_;
 

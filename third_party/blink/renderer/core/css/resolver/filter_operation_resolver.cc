@@ -247,8 +247,10 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
     return operations;
   }
 
+  // TODO(layout-dev): Should document zoom factor apply for offscreen canvas?
+  float zoom = 1.0f;
   CSSToLengthConversionData::FontSizes font_sizes(
-      kOffScreenCanvasEmFontSize, kOffScreenCanvasRemFontSize, &font);
+      kOffScreenCanvasEmFontSize, kOffScreenCanvasRemFontSize, &font, zoom);
   CSSToLengthConversionData::ViewportSize viewport_size(0, 0);
   CSSToLengthConversionData conversion_data(nullptr,  // ComputedStyle
                                             font_sizes, viewport_size,

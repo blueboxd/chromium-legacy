@@ -101,9 +101,9 @@ constexpr SkColor kIconShadowColor = SkColorSetA(SK_ColorBLACK, 31);
 // The class clips the provided folder icon image.
 class ClippedFolderIconImageSource : public gfx::CanvasImageSource {
  public:
-  explicit ClippedFolderIconImageSource(const gfx::ImageSkia& image)
-      : gfx::CanvasImageSource(AppListConfig::instance().folder_icon_size()),
-        image_(image) {}
+  ClippedFolderIconImageSource(const gfx::Size& size,
+                               const gfx::ImageSkia& image)
+      : gfx::CanvasImageSource(size), image_(image) {}
   ~ClippedFolderIconImageSource() override = default;
 
   void Draw(gfx::Canvas* canvas) override {
@@ -162,17 +162,16 @@ class AppListItemView::IconImageView : public views::ImageView {
   // Update the rounded corner and insets with animation. |show| is true when
   // the target rounded corner radius and insets are for showing the indicator
   // circle.
-  void AnimateRoundedCornerAndInsets(bool show) {
+  void AnimateRoundedCornerAndInsets(const AppListConfig& config, bool show) {
     ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
     settings.SetTweenType(gfx::Tween::EASE_IN);
     settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         kDraggedViewHoverAnimationDurationForFolder));
 
     SetRoundedCornerAndInsets(
-        show ? AppListConfig::instance().folder_unclipped_icon_dimension() / 2
-             : AppListConfig::instance().folder_icon_dimension() / 2,
-        show ? gfx::Insets()
-             : gfx::Insets(AppListConfig::instance().folder_icon_insets()));
+        show ? config.folder_unclipped_icon_dimension() / 2
+             : config.folder_icon_dimension() / 2,
+        show ? gfx::Insets() : gfx::Insets(config.folder_icon_insets()));
   }
 
   // Sets the rounded corner and the clip insets.
@@ -239,8 +238,8 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     if (apps_grid_view_->IsTabletMode())
       SetBackgroundBlurEnabled(true);
     icon_->SetRoundedCornerAndInsets(
-        AppListConfig::instance().folder_icon_radius(),
-        gfx::Insets(AppListConfig::instance().folder_icon_insets()));
+        GetAppListConfig().folder_icon_radius(),
+        gfx::Insets(GetAppListConfig().folder_icon_insets()));
   }
 
   if (!is_in_folder && !is_folder_) {
@@ -254,11 +253,11 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
 
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_->SetHandlesTooltips(false);
-  title_->SetFontList(AppListConfig::instance().app_title_font());
+  title_->SetFontList(GetAppListConfig().app_title_font());
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetEnabledColor(apps_grid_view_->is_in_folder()
                               ? kFolderGridTitleColor
-                              : AppListConfig::instance().grid_title_color());
+                              : GetAppListConfig().grid_title_color());
   if (!is_in_folder) {
     gfx::ShadowValues title_shadow = gfx::ShadowValues(
         1,
@@ -300,8 +299,8 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
 
   gfx::ImageSkia resized = gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST,
-      is_folder_ ? AppListConfig::instance().folder_unclipped_icon_size()
-                 : AppListConfig::instance().grid_icon_size());
+      is_folder_ ? GetAppListConfig().folder_unclipped_icon_size()
+                 : GetAppListConfig().grid_icon_size());
   icon_->SetImage(resized);
 
   if (icon_shadow_) {
@@ -429,6 +428,10 @@ void AppListItemView::SilentlyRequestFocus() {
   DCHECK(!focus_silently_);
   base::AutoReset<bool> auto_reset(&focus_silently_, true);
   RequestFocus();
+}
+
+const AppListConfig& AppListItemView::GetAppListConfig() const {
+  return apps_grid_view_->GetAppListConfig();
 }
 
 void AppListItemView::SetItemName(const base::string16& display_name,
@@ -560,7 +563,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
     if (delegate_->KeyboardTraversalEngaged()) {
       flags.setColor(apps_grid_view_->is_in_folder()
                          ? kFolderGridFocusRingColor
-                         : AppListConfig::instance().grid_selected_color());
+                         : GetAppListConfig().grid_selected_color());
       flags.setStyle(cc::PaintFlags::kStroke_Style);
       flags.setStrokeWidth(kFocusRingWidth);
     } else {
@@ -572,8 +575,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
     AdaptBoundsForSelectionHighlight(&selection_highlight_bounds);
     canvas->DrawRoundRect(gfx::RectF(selection_highlight_bounds),
-                          AppListConfig::instance().grid_focus_corner_radius(),
-                          flags);
+                          GetAppListConfig().grid_focus_corner_radius(), flags);
   }
 
   const int preview_circle_radius = GetPreviewCircleRadius();
@@ -586,7 +588,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(AppListConfig::instance().folder_bubble_color());
+  flags.setColor(GetAppListConfig().folder_bubble_color());
   canvas->DrawCircle(center, preview_circle_radius, flags);
 }
 
@@ -616,18 +618,18 @@ void AppListItemView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  const gfx::Rect icon_bounds =
-      GetIconBoundsForTargetViewBounds(rect, icon_->GetImage().size());
+  const gfx::Rect icon_bounds = GetIconBoundsForTargetViewBounds(
+      GetAppListConfig(), rect, icon_->GetImage().size());
   icon_->SetBoundsRect(icon_bounds);
 
   if (icon_shadow_) {
-    const gfx::Rect icon_shadow_bounds =
-        GetIconBoundsForTargetViewBounds(rect, icon_shadow_->GetImage().size());
+    const gfx::Rect icon_shadow_bounds = GetIconBoundsForTargetViewBounds(
+        GetAppListConfig(), rect, icon_shadow_->size());
     icon_shadow_->SetBoundsRect(icon_shadow_bounds);
   }
 
-  gfx::Rect title_bounds =
-      GetTitleBoundsForTargetViewBounds(rect, title_->GetPreferredSize());
+  gfx::Rect title_bounds = GetTitleBoundsForTargetViewBounds(
+      GetAppListConfig(), rect, title_->GetPreferredSize());
   if (!apps_grid_view_->is_in_folder())
     title_bounds.Inset(title_shadow_margins_);
   title_->SetBoundsRect(title_bounds);
@@ -637,8 +639,8 @@ void AppListItemView::Layout() {
 }
 
 gfx::Size AppListItemView::CalculatePreferredSize() const {
-  return gfx::Size(AppListConfig::instance().grid_tile_width(),
-                   AppListConfig::instance().grid_tile_height());
+  return gfx::Size(GetAppListConfig().grid_tile_width(),
+                   GetAppListConfig().grid_tile_height());
 }
 
 bool AppListItemView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -777,7 +779,7 @@ base::string16 AppListItemView::GetTooltipText(const gfx::Point& p) const {
 
 void AppListItemView::OnDraggedViewEnter() {
   if (is_folder_) {
-    icon_->AnimateRoundedCornerAndInsets(true);
+    icon_->AnimateRoundedCornerAndInsets(GetAppListConfig(), true);
     return;
   }
   CreateDraggedViewHoverAnimation();
@@ -786,7 +788,7 @@ void AppListItemView::OnDraggedViewEnter() {
 
 void AppListItemView::OnDraggedViewExit() {
   if (is_folder_) {
-    icon_->AnimateRoundedCornerAndInsets(false);
+    icon_->AnimateRoundedCornerAndInsets(GetAppListConfig(), false);
     return;
   }
   CreateDraggedViewHoverAnimation();
@@ -797,8 +799,8 @@ void AppListItemView::SetBackgroundBlurEnabled(bool enabled) {
   DCHECK(is_folder_);
   if (enabled)
     icon_->EnsureLayer();
-  icon_->layer()->SetBackgroundBlur(
-      enabled ? AppListConfig::instance().blur_radius() : 0);
+  icon_->layer()->SetBackgroundBlur(enabled ? GetAppListConfig().blur_radius()
+                                            : 0);
 }
 
 void AppListItemView::EnsureLayer() {
@@ -813,7 +815,7 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
 
   preview_circle_radius_ = gfx::Tween::IntValueBetween(
       animation->GetCurrentValue(), 0,
-      AppListConfig::instance().folder_dropping_circle_radius());
+      GetAppListConfig().folder_dropping_circle_radius());
   SchedulePaint();
 }
 
@@ -845,7 +847,7 @@ gfx::Rect AppListItemView::GetIconBounds() const {
     // The folder icon is in unclipped size, so clip it before return.
     gfx::Rect folder_icon_bounds = icon_->bounds();
     folder_icon_bounds.ClampToCenteredSize(
-        AppListConfig::instance().folder_icon_size());
+        GetAppListConfig().folder_icon_size());
     return folder_icon_bounds;
   }
   return icon_->bounds();
@@ -862,7 +864,7 @@ gfx::ImageSkia AppListItemView::GetIconImage() const {
     return icon_->GetImage();
 
   return gfx::CanvasImageSource::MakeImageSkia<ClippedFolderIconImageSource>(
-      icon_->GetImage());
+      GetAppListConfig().folder_icon_size(), icon_->GetImage());
 }
 
 void AppListItemView::SetIconVisible(bool visible) {
@@ -877,24 +879,32 @@ void AppListItemView::SetDragUIState() {
 
 // static
 gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
+    const AppListConfig& config,
     const gfx::Rect& target_bounds,
     const gfx::Size& icon_size) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(0, 0, 0, AppListConfig::instance().grid_icon_bottom_padding());
+  rect.Inset(0, 0, 0, config.grid_icon_bottom_padding());
   rect.ClampToCenteredSize(icon_size);
   return rect;
 }
 
 // static
 gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
+    const AppListConfig& config,
     const gfx::Rect& target_bounds,
     const gfx::Size& title_size) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(AppListConfig::instance().grid_title_horizontal_padding(),
-             AppListConfig::instance().grid_title_top_padding(),
-             AppListConfig::instance().grid_title_horizontal_padding(),
-             AppListConfig::instance().grid_title_bottom_padding());
+  rect.Inset(config.grid_title_horizontal_padding(),
+             config.grid_title_top_padding(),
+             config.grid_title_horizontal_padding(),
+             config.grid_title_bottom_padding());
   rect.ClampToCenteredSize(title_size);
+  // Respect the title preferred height, to ensure the text does not get clipped
+  // due to padding if the item view gets too small.
+  if (rect.height() < title_size.height()) {
+    rect.set_y(rect.y() - (title_size.height() - rect.height()) / 2);
+    rect.set_height(title_size.height());
+  }
   return rect;
 }
 
@@ -950,8 +960,8 @@ void AppListItemView::CreateDraggedViewHoverAnimation() {
 }
 
 void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {
-  bounds->Inset(0, 0, 0, AppListConfig::instance().grid_icon_bottom_padding());
-  bounds->ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
+  bounds->Inset(0, 0, 0, GetAppListConfig().grid_icon_bottom_padding());
+  bounds->ClampToCenteredSize(GetAppListConfig().grid_focus_size());
 }
 
 }  // namespace app_list

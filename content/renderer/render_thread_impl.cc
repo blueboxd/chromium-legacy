@@ -390,18 +390,9 @@ scoped_refptr<viz::ContextProviderCommandBuffer> CreateOffscreenContext(
 // Hook that allows single-sample metric code from //components/metrics to
 // connect from the renderer process to the browser process.
 void CreateSingleSampleMetricsProvider(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    service_manager::Connector* connector,
+    mojo::SharedRemote<mojom::ChildProcessHost> process_host,
     metrics::mojom::SingleSampleMetricsProviderRequest request) {
-  if (task_runner->BelongsToCurrentThread()) {
-    connector->BindInterface(mojom::kBrowserServiceName, std::move(request));
-    return;
-  }
-
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateSingleSampleMetricsProvider, std::move(task_runner),
-                     connector, std::move(request)));
+  process_host->BindHostReceiver(std::move(request));
 }
 
 // This factory is used to defer binding of the InterfacePtr to the compositor
@@ -409,18 +400,18 @@ void CreateSingleSampleMetricsProvider(
 class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
  public:
   explicit UkmRecorderFactoryImpl(
-      std::unique_ptr<service_manager::Connector> connector)
-      : connector_(std::move(connector)) {
-    DCHECK(connector_);
-  }
+      mojo::SharedRemote<mojom::ChildProcessHost> process_host)
+      : process_host_(std::move(process_host)) {}
   ~UkmRecorderFactoryImpl() override = default;
 
   std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
-    return ukm::MojoUkmRecorder::Create(connector_.get());
+    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
+    process_host_->BindHostReceiver(mojo::MakeRequest(&recorder_ptr));
+    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
   }
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
+  const mojo::SharedRemote<mojom::ChildProcessHost> process_host_;
 };
 
 static const int kWaitForWorkersStatsTimeoutMS = 20;
@@ -736,17 +727,14 @@ void RenderThreadImpl::Init() {
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
 
-  metrics::InitializeSingleSampleMetricsFactory(
-      base::BindRepeating(&CreateSingleSampleMetricsProvider,
-                          main_thread_runner(), GetConnector()));
+  metrics::InitializeSingleSampleMetricsFactory(base::BindRepeating(
+      &CreateSingleSampleMetricsProvider, child_process_host()));
 
-  gpu_ = viz::Gpu::Create(GetConnector(), mojom::kBrowserServiceName,
-                          GetIOTaskRunner());
+  mojo::PendingRemote<viz::mojom::Gpu> remote_gpu;
+  BindHostReceiver(remote_gpu.InitWithNewPipeAndPassReceiver());
+  gpu_ = viz::Gpu::Create(std::move(remote_gpu), GetIOTaskRunner());
 
   resource_dispatcher_.reset(new ResourceDispatcher());
-  url_loader_throttle_provider_ =
-      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-          URLLoaderThrottleProviderType::kFrame);
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   InitializeWebKit(registry.get());
@@ -795,6 +783,10 @@ void RenderThreadImpl::Init() {
   }
 
   GetContentClient()->renderer()->RenderThreadStarted();
+
+  url_loader_throttle_provider_ =
+      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
+          URLLoaderThrottleProviderType::kFrame);
 
   StartServiceManagerConnection();
 
@@ -950,13 +942,10 @@ void RenderThreadImpl::Init() {
   needs_to_record_first_active_paint_ = false;
   was_backgrounded_time_ = base::TimeTicks::Min();
 
-  GetConnector()->BindInterface(mojom::kBrowserServiceName,
-                                mojo::MakeRequest(&frame_sink_provider_));
+  BindHostReceiver(mojo::MakeRequest(&frame_sink_provider_));
 
   if (!is_gpu_compositing_disabled_) {
-    GetConnector()->BindInterface(
-        mojom::kBrowserServiceName,
-        mojo::MakeRequest(&compositing_mode_reporter_));
+    BindHostReceiver(mojo::MakeRequest(&compositing_mode_reporter_));
 
     // Make |this| a CompositingModeWatcher for the
     // |compositing_mode_reporter_|.
@@ -1334,7 +1323,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 #endif  // defined(OS_WIN)
 
   media::mojom::InterfaceFactoryPtr interface_factory;
-  GetConnector()->BindInterface(mojom::kBrowserServiceName, &interface_factory);
+  BindHostReceiver(mojo::MakeRequest(&interface_factory));
 
   media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider;
   gpu_->CreateVideoEncodeAcceleratorProvider(mojo::MakeRequest(&vea_provider));
@@ -1570,7 +1559,7 @@ bool RenderThreadImpl::IsScrollAnimatorEnabled() {
 
 std::unique_ptr<cc::UkmRecorderFactory>
 RenderThreadImpl::CreateUkmRecorderFactory() {
-  return std::make_unique<UkmRecorderFactoryImpl>(GetConnector()->Clone());
+  return std::make_unique<UkmRecorderFactoryImpl>(child_process_host());
 }
 
 #ifdef OS_ANDROID

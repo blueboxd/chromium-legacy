@@ -163,6 +163,16 @@ void AssistantViewDelegateImpl::OnOptInButtonPressed() {
     observer.OnOptInButtonPressed();
 }
 
+void AssistantViewDelegateImpl::OnProactiveSuggestionsCloseButtonPressed() {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnProactiveSuggestionsCloseButtonPressed();
+}
+
+void AssistantViewDelegateImpl::OnProactiveSuggestionsViewPressed() {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnProactiveSuggestionsViewPressed();
+}
+
 void AssistantViewDelegateImpl::OnSuggestionChipPressed(
     const AssistantSuggestion* suggestion) {
   for (AssistantViewDelegateObserver& observer : view_delegate_observers_)

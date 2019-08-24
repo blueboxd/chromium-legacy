@@ -104,6 +104,21 @@ vars = {
   # e.g. with custom_vars.
   'checkout_ios_webkit': False,
 
+  # Fetches only the SDK boot images which match at least one of the whitelist
+  # entries in a comma-separated list.
+  #
+  # Only the X64 and ARM64 QEMU images are downloaded by default. Developers
+  # that need to boot on other target architectures or devices can opt to
+  # download more boot images. Example of images include:
+  #
+  # Emulation:
+  #   qemu.x64, qemu.arm64
+  # Hardware:
+  #   generic.x64, generic.arm64
+  #
+  # Wildcards are supported (e.g. "qemu.*").
+  'checkout_fuchsia_boot_images': "qemu.x64,qemu.arm64",
+
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
   'cros_board': '',
@@ -145,11 +160,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '65f775037b678f73826dd8a47e8dfed5d21306c5',
+  'skia_revision': 'e8a2c8053daa61907b1b14e4584c3d812d6c4267',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '2255b34fec744a219ca95e5b7369d0b2ad6e1bcc',
+  'v8_revision': '9551b47052296a86b3100669c7dd673173bee0e0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -157,11 +172,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '890a65b17d954d0d6a6a173cdca758c4d727ff73',
+  'angle_revision': '3c6b2e1613c844f7265895de5611c0528641d501',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '115cfe7a1b321abd9ab41d2b7754ec26f45b7931',
+  'swiftshader_revision': 'd6dc4b7e45334f493f49cf70114e939f7fc25fde',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -180,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling googletest
   # and whatever else without interference from each other.
-  'googletest_revision': 'fb49e6c164490a227bbb7cf5223b846c836a0305',
+  'googletest_revision': 'ed2eef654373c17b96bf5a007bb481a6e96ba629',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
@@ -276,11 +291,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '659a8ea9f3a9829999fed7af1bd86ae590b9a54a',
+  'shaderc_revision': '3367690414ae896453e97561a8a26c0c7515d5e6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '3f21e11e240ae44f1b49606d42b062eaf208a5e4',
+  'dawn_revision': '25cc723823e3aa9bf6d7edfcd308bb82ab05b0fc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -825,7 +840,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '082dfcd1ccbe570d36ddb037d6de6830995f0f8d',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '34a2b06a63d34403635bcf36195c236cf70603cb',
       'condition': 'checkout_linux',
   },
 
@@ -850,7 +865,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '90e930e2da74f78601bb968224ed3b15be2e36f5',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4016d1b393a1ea0530c5c243e9d26e20a5cb60b0',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1010,7 +1025,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + 'ecb3c4f4ce2c13278699489bd6356a31e1ee4d11',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '2b2ee7158675555acb4d0d0cbb5dff71c00e7c54',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '952ccb90fb669bb70015cabe64ce415708f125bf',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1223,7 +1238,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '07489b86416cd8cd1b0d270ba6ef96d3d8175a84',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '0a07831a9da9dbbf8d761a875336c92c55ca3dd6',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1432,7 +1447,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@72c32d717ae9f4cf9169c449140d6731ccbdf69c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@079ace40c74fd7a2bcf1c8e1c9ef9c2d32f05b9e',
     'condition': 'checkout_src_internal',
   },
 
@@ -3159,6 +3174,7 @@ hooks = [
     'action': [
       'python',
       'src/build/fuchsia/update_sdk.py',
+      '--boot-images={checkout_fuchsia_boot_images}',
     ],
   },
 

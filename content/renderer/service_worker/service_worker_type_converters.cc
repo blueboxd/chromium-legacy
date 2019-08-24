@@ -18,12 +18,12 @@ TypeConverter<blink::WebServiceWorkerObjectInfo,
     return blink::WebServiceWorkerObjectInfo(
         blink::mojom::kInvalidServiceWorkerVersionId,
         blink::mojom::ServiceWorkerState::kUnknown, blink::WebURL(),
-        mojo::ScopedInterfaceEndpointHandle() /* host_ptr_info */,
-        mojo::ScopedInterfaceEndpointHandle() /* request */);
+        mojo::ScopedInterfaceEndpointHandle() /* host_remote */,
+        mojo::ScopedInterfaceEndpointHandle() /* receiver */);
   }
   return blink::WebServiceWorkerObjectInfo(
       input->version_id, input->state, input->url,
-      input->host_ptr_info.PassHandle(), input->request.PassHandle());
+      input->host_remote.PassHandle(), input->receiver.PassHandle());
 }
 
 blink::WebServiceWorkerRegistrationObjectInfo
@@ -34,8 +34,8 @@ TypeConverter<blink::WebServiceWorkerRegistrationObjectInfo,
     return blink::WebServiceWorkerRegistrationObjectInfo(
         blink::mojom::kInvalidServiceWorkerRegistrationId, blink::WebURL(),
         blink::mojom::ServiceWorkerUpdateViaCache::kImports,
-        mojo::ScopedInterfaceEndpointHandle() /* host_ptr_info */,
-        mojo::ScopedInterfaceEndpointHandle() /* request */,
+        mojo::ScopedInterfaceEndpointHandle() /* host_remote */,
+        mojo::ScopedInterfaceEndpointHandle() /* receiver */,
         blink::mojom::ServiceWorkerObjectInfoPtr()
             .To<blink::WebServiceWorkerObjectInfo>() /* installing */,
         blink::mojom::ServiceWorkerObjectInfoPtr()

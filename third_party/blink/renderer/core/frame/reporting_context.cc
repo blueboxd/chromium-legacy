@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -106,8 +106,8 @@ void ReportingContext::CountReport(Report* report) {
 const mojom::blink::ReportingServiceProxyPtr&
 ReportingContext::GetReportingService() const {
   if (!reporting_service_) {
-    Platform::Current()->GetConnector()->BindInterface(
-        Platform::Current()->GetBrowserServiceName(), &reporting_service_);
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        mojo::MakeRequest(&reporting_service_));
   }
   return reporting_service_;
 }

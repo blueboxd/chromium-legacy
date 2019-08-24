@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -37,7 +38,7 @@ CardExpirationDateFixFlowViewDelegateMobile::
 }
 
 int CardExpirationDateFixFlowViewDelegateMobile::GetIconId() const {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
 #else
   return 0;

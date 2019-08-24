@@ -243,6 +243,12 @@ DEFINE_ENUM_CONVERTERS(gfx::HorizontalAlignment,
                         base::ASCIIToUTF16("ALIGN_TO_HEAD")})
 
 DEFINE_ENUM_CONVERTERS(
+    gfx::VerticalAlignment,
+    {gfx::VerticalAlignment::ALIGN_TOP, base::ASCIIToUTF16("ALIGN_TOP")},
+    {gfx::VerticalAlignment::ALIGN_MIDDLE, base::ASCIIToUTF16("ALIGN_MIDDLE")},
+    {gfx::VerticalAlignment::ALIGN_BOTTOM, base::ASCIIToUTF16("ALIGN_BOTTOM")})
+
+DEFINE_ENUM_CONVERTERS(
     gfx::ElideBehavior,
     {gfx::ElideBehavior::NO_ELIDE, base::ASCIIToUTF16("NO_ELIDE")},
     {gfx::ElideBehavior::TRUNCATE, base::ASCIIToUTF16("TRUNCATE")},

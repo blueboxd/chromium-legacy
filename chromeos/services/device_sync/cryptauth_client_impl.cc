@@ -65,6 +65,7 @@ const char kShareGroupPrivateKeyPath[] = "/v1:shareGroupPrivateKey";
 const char kBatchNotifyGroupDevicesPath[] = "/v1:batchNotifyGroupDevices";
 const char kBatchGetFeatureStatusesPath[] = "/v1:batchGetFeatureStatuses";
 const char kBatchSetFeatureStatusesPath[] = "/v1:batchSetFeatureStatuses";
+const char kGetDevicesActivityStatusPath[] = "/v1:getDevicesActivityStatus";
 
 const char kCryptAuthOAuth2Scope[] =
     "https://www.googleapis.com/auth/cryptauth";
@@ -575,6 +576,43 @@ void CryptAuthClientImpl::BatchSetFeatureStatuses(
               RequestType::kPost, request.SerializeAsString(),
               base::nullopt /* request_as_query_parameters */, callback,
               error_callback, partial_traffic_annotation);
+}
+
+// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
+// when method is used in codebase.
+void CryptAuthClientImpl::GetDevicesActivityStatus(
+    const cryptauthv2::GetDevicesActivityStatusRequest& request,
+    const GetDevicesActivityStatusCallback& callback,
+    const ErrorCallback& error_callback) {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_v2_devicesync_get_devices_activity_status",
+          "oauth2_api_call_flow",
+          R"(
+      semantics {
+        sender: "TBD"
+        description:
+          "The client queries CryptAuth for the activity of status of the"
+          "user's devices."
+        trigger: "TBD"
+        data: "User device ID."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(
+      CreateV2DeviceSyncRequestUrl(kGetDevicesActivityStatusPath),
+      RequestType::kGet, base::nullopt /* serialized_request */,
+      cryptauthv2::GetDevicesActivityStatusRequestToQueryParameters(request),
+      callback, error_callback, partial_traffic_annotation);
 }
 
 std::string CryptAuthClientImpl::GetAccessTokenUsed() {

@@ -270,8 +270,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     IndexedDBOriginStateHandle handle;
     leveldb::Status s;
     std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
-        context->GetIDBFactory()->GetOrOpenOriginFactory(origin,
-                                                         context->data_path());
+        context->GetIDBFactory()->GetOrOpenOriginFactory(
+            origin, context->data_path(), /*create_if_missing=*/true);
     CHECK(s.ok()) << s.ToString();
     CHECK(handle.IsHeld());
 

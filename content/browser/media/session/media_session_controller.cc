@@ -23,8 +23,6 @@ MediaSessionController::MediaSessionController(
 }
 
 MediaSessionController::~MediaSessionController() {
-  if (!has_session_)
-    return;
   media_session_->RemovePlayer(this, player_id_);
 }
 
@@ -66,10 +64,8 @@ bool MediaSessionController::Initialize(
   // we already have a session from a previous call, release it.
   if (!has_audio_ || is_remote ||
       media_web_contents_observer_->web_contents()->IsAudioMuted()) {
-    if (has_session_) {
-      has_session_ = false;
-      media_session_->RemovePlayer(this, player_id_);
-    }
+    has_session_ = false;
+    media_session_->RemovePlayer(this, player_id_);
     return true;
   }
 
@@ -148,7 +144,7 @@ void MediaSessionController::WebContentsMutedStateChanged(bool muted) {
   if (!muted && !has_session_) {
     if (media_session_->AddPlayer(this, player_id_, media_content_type_))
       has_session_ = true;
-  } else if (muted && has_session_) {
+  } else if (muted) {
     has_session_ = false;
     media_session_->RemovePlayer(this, player_id_);
   }

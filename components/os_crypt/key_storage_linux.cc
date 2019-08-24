@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/branding_buildflags.h"
 #include "components/os_crypt/key_storage_config_linux.h"
 #include "components/os_crypt/key_storage_util_linux.h"
 
@@ -25,7 +26,7 @@
 #include "components/os_crypt/key_storage_kwallet.h"
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char KeyStorageLinux::kFolderName[] = "Chrome Keys";
 const char KeyStorageLinux::kKey[] = "Chrome Safe Storage";
 #else

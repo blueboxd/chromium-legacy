@@ -125,9 +125,6 @@ class CORE_EXPORT TextRecordsManager {
            invisible_objects_.Contains(&object);
   }
 
-  size_t CountVisibleObjects() const { return visible_objects_.size(); }
-  size_t CountInvisibleObjects() const { return invisible_objects_.size(); }
-
   inline bool IsKnownVisible(const LayoutObject& object) const {
     return visible_objects_.Contains(&object);
   }
@@ -138,7 +135,6 @@ class CORE_EXPORT TextRecordsManager {
 
   void CleanUp();
   void CleanUpLargestTextPaint();
-  void StopRecordingLargestTextPaint();
 
   bool HasTextElementTiming() const { return text_element_timing_; }
   void SetTextElementTiming(TextElementTiming* text_element_timing) {

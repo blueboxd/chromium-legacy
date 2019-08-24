@@ -10,7 +10,6 @@
 #include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
@@ -54,7 +53,7 @@ using PageNodeImplDeathTest = PageNodeImplTest;
 
 TEST_F(PageNodeImplDeathTest, SafeDowncast) {
   auto page = CreateNode<PageNodeImpl>();
-  ASSERT_DEATH(FrameNodeImpl::FromNodeBase(page.get()), "Check failed: .*");
+  ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(page.get()), "");
 }
 
 TEST_F(PageNodeImplTest, AddFrameBasic) {
@@ -159,6 +158,17 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
   AdvanceClock(base::TimeDelta::FromSeconds(17));
   EXPECT_EQ(base::TimeDelta::FromSeconds(17),
             mock_graph.page->TimeSinceLastNavigation());
+}
+
+TEST_F(PageNodeImplTest, BrowserContextID) {
+  const std::string kTestBrowserContextId =
+      base::UnguessableToken::Create().ToString();
+  auto page_node =
+      CreateNode<PageNodeImpl>(WebContentsProxy(), kTestBrowserContextId);
+  const PageNode* public_page_node = page_node.get();
+
+  EXPECT_EQ(page_node->browser_context_id(), kTestBrowserContextId);
+  EXPECT_EQ(public_page_node->GetBrowserContextID(), kTestBrowserContextId);
 }
 
 TEST_F(PageNodeImplTest, IsLoading) {
@@ -519,6 +529,8 @@ TEST_F(PageNodeImplTest, PublicInterface) {
   // Simply test that the public interface impls yield the same result as their
   // private counterpart.
 
+  EXPECT_EQ(page_node->browser_context_id(),
+            public_page_node->GetBrowserContextID());
   EXPECT_EQ(page_node->page_almost_idle(),
             public_page_node->IsPageAlmostIdle());
   EXPECT_EQ(page_node->is_visible(), public_page_node->IsVisible());

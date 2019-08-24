@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"

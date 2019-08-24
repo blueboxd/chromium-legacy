@@ -84,7 +84,7 @@ class MockServiceWorkerObject : public blink::mojom::ServiceWorkerObject {
       blink::mojom::ServiceWorkerObjectInfoPtr info)
       : info_(std::move(info)),
         state_(info_->state),
-        binding_(this, std::move(info_->request)) {}
+        receiver_(this, std::move(info_->receiver)) {}
   ~MockServiceWorkerObject() override = default;
 
   blink::mojom::ServiceWorkerState state() const { return state_; }
@@ -97,7 +97,7 @@ class MockServiceWorkerObject : public blink::mojom::ServiceWorkerObject {
 
   blink::mojom::ServiceWorkerObjectInfoPtr info_;
   blink::mojom::ServiceWorkerState state_;
-  mojo::AssociatedBinding<blink::mojom::ServiceWorkerObject> binding_;
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerObject> receiver_;
 };
 
 class ServiceWorkerObjectHostTest : public testing::Test {
@@ -154,8 +154,8 @@ class ServiceWorkerObjectHostTest : public testing::Test {
                                                 std::move(callback));
   }
 
-  size_t GetBindingsCount(ServiceWorkerObjectHost* object_host) {
-    return object_host->bindings_.size();
+  size_t GetReceiverCount(ServiceWorkerObjectHost* object_host) {
+    return object_host->receivers_.size();
   }
 
   ServiceWorkerObjectHost* GetServiceWorkerObjectHost(
@@ -280,7 +280,7 @@ TEST_F(ServiceWorkerObjectHostTest,
           ->CreateCompleteObjectInfoToSend();
   ServiceWorkerObjectHost* object_host =
       GetServiceWorkerObjectHost(provider_host, version_->version_id());
-  EXPECT_EQ(1u, GetBindingsCount(object_host));
+  EXPECT_EQ(1u, GetReceiverCount(object_host));
 
   // Now simulate the service worker calling postMessage() to itself,
   // by calling DispatchExtendableMessageEvent on |object_host|.
@@ -298,7 +298,7 @@ TEST_F(ServiceWorkerObjectHostTest,
   // The dispatched ExtendableMessageEvent should be received
   // by the worker, and the source service worker object info
   // should be for its own version id.
-  EXPECT_EQ(2u, GetBindingsCount(object_host));
+  EXPECT_EQ(2u, GetReceiverCount(object_host));
   const std::vector<blink::mojom::ExtendableMessageEventPtr>& events =
       worker->events();
   EXPECT_EQ(1u, events.size());

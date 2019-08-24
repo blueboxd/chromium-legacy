@@ -127,10 +127,9 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
 
   // Check consecutive user actions, and generate impression result if no less
   // than |num_actions| count of user actions.
-  void CheckConsecutiveUserAction(
-      ClientState* client_state,
-      base::circular_deque<Impression*>* impressions,
-      size_t num_actions);
+  void CheckConsecutiveDismiss(ClientState* client_state,
+                               base::circular_deque<Impression*>* impressions,
+                               size_t num_actions);
 
   // Generates user impression result.
   void GenerateImpressionResult(Impression* impression);

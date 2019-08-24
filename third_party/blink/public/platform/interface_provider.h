@@ -29,8 +29,6 @@ class BLINK_PLATFORM_EXPORT InterfaceProvider {
   void GetInterface(mojo::PendingReceiver<Interface> receiver) {
     GetInterface(Interface::Name_, receiver.PassPipe());
   }
-
-  static InterfaceProvider* GetEmptyInterfaceProvider();
 };
 
 }  // namespace blink

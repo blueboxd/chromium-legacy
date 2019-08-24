@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -54,11 +55,11 @@ const PaymentRequestData kPaymentRequestData[]{
     {autofill::kVisaCard, "visa", IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
 };
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const PaymentRequestData kGooglePayBrandingRequestData = {
     "googlePay", "googlePay", IDR_AUTOFILL_GOOGLE_PAY,
     IDS_AUTOFILL_CC_GOOGLE_PAY};
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const PaymentRequestData kGenericPaymentRequestData = {
     autofill::kGenericCard, "generic", IDR_AUTOFILL_CC_GENERIC,
@@ -522,11 +523,11 @@ const PaymentRequestData& GetPaymentRequestData(
     if (issuer_network == data.issuer_network)
       return data;
   }
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (issuer_network == kGooglePayBrandingRequestData.issuer_network) {
     return kGooglePayBrandingRequestData;
   }
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return kGenericPaymentRequestData;
 }
 

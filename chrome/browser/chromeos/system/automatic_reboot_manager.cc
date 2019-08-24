@@ -246,7 +246,10 @@ void AutomaticRebootManager::OnUserActivity(const ui::Event* event) {
                  false));
 }
 
-void AutomaticRebootManager::OnPrimaryUserSessionStarted() {
+void AutomaticRebootManager::OnUserSessionStarted(bool is_primary_user) {
+  if (!is_primary_user)
+    return;
+
   // A session is starting. Stop listening for user activity as it no longer is
   // a relevant criterion.
   if (ui::UserActivityDetector::Get())

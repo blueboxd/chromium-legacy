@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -30,6 +31,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
 
   PageNodeImpl(GraphImpl* graph,
                const WebContentsProxy& contents_proxy,
+               const std::string& browser_context_id,
                bool is_visible,
                bool is_audible);
   ~PageNodeImpl() override;
@@ -71,6 +73,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   FrameNodeImpl* GetMainFrameNodeImpl() const;
 
   // Accessors.
+  const std::string& browser_context_id() const;
   bool is_visible() const;
   bool is_audible() const;
   bool is_loading() const;
@@ -133,6 +136,7 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   friend class PageAlmostIdleAccess;
 
   // PageNode implementation:
+  const std::string& GetBrowserContextID() const override;
   bool IsPageAlmostIdle() const override;
   bool IsVisible() const override;
   base::TimeDelta GetTimeSinceLastVisibilityChange() const override;
@@ -230,6 +234,9 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // immediately after document parsing, and the *last* value being set
   // is used as a signal that the frame has reported.
   size_t intervention_policy_frames_reported_ = 0;
+
+  // The unique ID of the browser context that this page belongs to.
+  const std::string browser_context_id_;
 
   // Page almost idle state. This is the output that is driven by the
   // PageAlmostIdleDecorator.

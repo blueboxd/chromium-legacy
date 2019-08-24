@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/realtime/policy_engine.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -54,7 +55,7 @@ ListInfos GetListInfos() {
 // - The list doesn't have hash prefixes to match. All requests lead to full
 //   hash checks. For instance: GetChromeUrlApiId()
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const bool kSyncOnlyOnChromeBuilds = true;
 #else
   const bool kSyncOnlyOnChromeBuilds = false;

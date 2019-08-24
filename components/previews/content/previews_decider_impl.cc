@@ -435,13 +435,16 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
       return PreviewsEligibilityReason::ALLOWED;
     }
 
-    if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
+    if (!previews_opt_guide_ || !previews_opt_guide_->IsReady())
       return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
     passed_reasons->push_back(
         PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
 
-    if (previews_opt_guide_->IsBlacklisted(navigation_handle, type))
+    if (!previews_opt_guide_->CanApplyOptimization(
+            previews_data, navigation_handle, type,
+            /*out_ect_threshold=*/nullptr)) {
       return PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER;
+    }
     passed_reasons->push_back(
         PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
   }
@@ -469,7 +472,7 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
     return PreviewsEligibilityReason::ALLOWED;
   }
 
-  if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
+  if (!previews_opt_guide_ || !previews_opt_guide_->IsReady())
     return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
   passed_reasons->push_back(
       PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
@@ -477,8 +480,8 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   // Check if request URL is whitelisted by the optimization guide.
   net::EffectiveConnectionType ect_threshold =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  if (!previews_opt_guide_->IsWhitelisted(previews_data, navigation_handle,
-                                          type, &ect_threshold)) {
+  if (!previews_opt_guide_->CanApplyOptimization(
+          previews_data, navigation_handle, type, &ect_threshold)) {
     return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
   }
   passed_reasons->push_back(

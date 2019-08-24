@@ -53,6 +53,7 @@ void InitializeRegistryOverrideForTesting(
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmUrl, L""));
   ASSERT_EQ(ERROR_SUCCESS,
             SetMachineGuidForTesting(L"f418a124-4d92-469b-afa5-0f8af537b965"));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmEscrowServiceServerUrl, L""));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

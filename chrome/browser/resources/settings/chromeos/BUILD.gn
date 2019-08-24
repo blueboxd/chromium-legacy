@@ -28,6 +28,13 @@ if (optimize_webui) {
       "crisper.js",
       "lazy_load.crisper.js",
     ]
+    excludes = [
+      "chrome://os-settings/app-management/app_management.mojom-lite.js",
+      "chrome://os-settings/app-management/bitmap.mojom-lite.js",
+      "chrome://os-settings/app-management/image_info.mojom-lite.js",
+      "chrome://os-settings/app-management/image.mojom-lite.js",
+      "chrome://os-settings/app-management/types.mojom-lite.js",
+    ]
 
     deps = [
       ":unpak",

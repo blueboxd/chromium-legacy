@@ -1067,6 +1067,9 @@ extern const char kSilentDebuggerExtensionApiDescription[];
 extern const char kSimplifyHttpsIndicatorName[];
 extern const char kSimplifyHttpsIndicatorDescription[];
 
+extern const char kStorageAccessAPIName[];
+extern const char kStorageAccessAPIDescription[];
+
 extern const char kIsolateOriginsName[];
 extern const char kIsolateOriginsDescription[];
 
@@ -1092,6 +1095,9 @@ extern const char kStopInBackgroundDescription[];
 
 extern const char kStopNonTimersInBackgroundName[];
 extern const char kStopNonTimersInBackgroundDescription[];
+
+extern const char kStoragePressureUIName[];
+extern const char kStoragePressureUIDescription[];
 
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];

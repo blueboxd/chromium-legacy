@@ -5,20 +5,15 @@
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
 
 // static
 std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(Delegate* delegate) {
-  // TODO(crbug.com/704136): Use GetInterfaceProvider() here.
-  if (!Platform::Current()->GetConnector())  // Can be true in unit tests.
-    return nullptr;
-
   mojo::Remote<mojom::blink::AecDumpManager> manager;
-  Platform::Current()->GetConnector()->Connect(
-      Platform::Current()->GetBrowserServiceName(),
+  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
       manager.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<AecDumpAgent> remote;

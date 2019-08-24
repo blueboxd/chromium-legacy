@@ -71,12 +71,10 @@ class MockTokenValidator : public TrialTokenValidator {
 
 }  // namespace
 
-class OriginTrialContextTest : public testing::Test,
-                               private ScopedOriginTrialsForTest {
+class OriginTrialContextTest : public testing::Test{
  protected:
   OriginTrialContextTest()
-      : ScopedOriginTrialsForTest(true),
-        token_validator_(new MockTokenValidator),
+      : token_validator_(new MockTokenValidator),
         execution_context_(MakeGarbageCollected<NullExecutionContext>(
             MakeGarbageCollected<OriginTrialContext>(
                 std::unique_ptr<MockTokenValidator>(token_validator_)))),

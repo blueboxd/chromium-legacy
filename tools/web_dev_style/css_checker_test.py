@@ -10,52 +10,31 @@ from sys import path as sys_path
 import unittest
 
 _HERE = os_path.dirname(os_path.abspath(__file__))
-sys_path.append(os_path.join(_HERE, '..', '..', 'build'))
+sys_path.append(os_path.join(_HERE, '..', '..'))
 
-import find_depot_tools  # pylint: disable=W0611
-from testing_support.super_mox import SuperMoxTestBase
+from PRESUBMIT_test_mocks import MockInputApi, MockOutputApi, MockFile
 
 
-class CssCheckerTest(SuperMoxTestBase):
+class CssCheckerTest(unittest.TestCase):
   def setUp(self):
-    SuperMoxTestBase.setUp(self)
+    super(CssCheckerTest, self).setUp()
 
-    self.fake_file = self.mox.CreateMockAnything()
-    # Actual calls to NewContents() and LocalPath() are defined in each test.
-    self.mox.StubOutWithMock(self.fake_file, 'LocalPath')
-    self.mox.StubOutWithMock(self.fake_file, 'NewContents')
-
-    self.input_api = self.mox.CreateMockAnything()
-    self.input_api.re = re
-    self.mox.StubOutWithMock(self.input_api, 'AffectedSourceFiles')
-    self.input_api.AffectedFiles(
-        include_deletes=False, file_filter=None).AndReturn([self.fake_file])
-
-    # Actual creations of PresubmitPromptWarning are defined in each test.
-    self.output_api = self.mox.CreateMockAnything()
-    self.mox.StubOutWithMock(self.output_api, 'PresubmitPromptWarning',
-                             use_mock_anything=True)
-
-    self.output_api = self.mox.CreateMockAnything()
-    self.mox.StubOutWithMock(self.output_api, 'PresubmitNotifyResult',
-                             use_mock_anything=True)
+    self.input_api = MockInputApi()
+    self.checker = css_checker.CSSChecker(self.input_api, MockOutputApi())
 
   def _create_file(self, contents, filename):
-    self.fake_file_name = filename
-    self.fake_file.LocalPath().AndReturn(self.fake_file_name)
-    self.fake_file.NewContents().AndReturn(contents.splitlines())
+    self.input_api.files.append(MockFile(filename, contents.splitlines()))
 
   def VerifyContentIsValid(self, contents, filename='fake.css'):
     self._create_file(contents, filename)
-    self.mox.ReplayAll()
-    css_checker.CSSChecker(self.input_api, self.output_api).RunChecks()
+    results = self.checker.RunChecks()
+    self.assertEqual(len(results), 0)
 
   def VerifyContentsProducesOutput(self, contents, output, filename='fake.css'):
     self._create_file(contents, filename)
-    self.output_api.PresubmitPromptWarning(
-        self.fake_file_name + ':\n' + output.strip()).AndReturn(None)
-    self.mox.ReplayAll()
-    css_checker.CSSChecker(self.input_api, self.output_api).RunChecks()
+    results = self.checker.RunChecks()
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].message, filename + ':\n' + output.strip())
 
   def testCssAlphaWithAtBlock(self):
     self.VerifyContentsProducesOutput("""
@@ -604,12 +583,7 @@ body.alternate-logo #logo {
 """, filename='test.html')
 
   def testRemoveAtBlocks(self):
-    self.mox.ReplayAll()
-    self.input_api.AffectedFiles(include_deletes=False, file_filter=None)
-
-    checker = css_checker.CSSChecker(self.input_api, self.output_api)
-
-    self.assertEqual(checker.RemoveAtBlocks("""
+    self.assertEqual(self.checker.RemoveAtBlocks("""
 @media (prefers-color-scheme: dark) {
   .magic {
     color: #000;
@@ -619,7 +593,7 @@ body.alternate-logo #logo {
     color: #000;
   }""")
 
-    self.assertEqual(checker.RemoveAtBlocks("""
+    self.assertEqual(self.checker.RemoveAtBlocks("""
 @media (prefers-color-scheme: dark) {
   .magic {
     --mixin-definition: {
@@ -633,7 +607,7 @@ body.alternate-logo #logo {
     };
   }""")
 
-    self.assertEqual(checker.RemoveAtBlocks("""
+    self.assertEqual(self.checker.RemoveAtBlocks("""
 @keyframes jiggle {
   from { left: 0; }
   50% { left: 100%; }
@@ -643,7 +617,7 @@ body.alternate-logo #logo {
   50% { left: 100%; }
   to { left: 10%; }""")
 
-    self.assertEqual(checker.RemoveAtBlocks("""
+    self.assertEqual(self.checker.RemoveAtBlocks("""
 @media print {
   .rule1 {
     color: black;
@@ -659,7 +633,7 @@ body.alternate-logo #logo {
     margin: 1in;
   }""")
 
-    self.assertEqual(checker.RemoveAtBlocks("""
+    self.assertEqual(self.checker.RemoveAtBlocks("""
 @media (prefers-color-scheme: dark) {
   .rule1 {
     color: gray;
@@ -681,7 +655,7 @@ body.alternate-logo #logo {
     0% { background: black; }
     100% { background: darkgray; }""")
 
-    self.assertEqual(checker.RemoveAtBlocks("""
+    self.assertEqual(self.checker.RemoveAtBlocks("""
 @-webkit-keyframe anim {
   0% { /* Ignore key frames */
     width: 0px;

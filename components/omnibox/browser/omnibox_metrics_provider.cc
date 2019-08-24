@@ -24,71 +24,6 @@ using metrics::OmniboxEventProto;
 
 namespace {
 
-OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
-    AutocompleteMatch::Type type) {
-  switch (type) {
-    case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
-      return OmniboxEventProto::Suggestion::URL_WHAT_YOU_TYPED;
-    case AutocompleteMatchType::HISTORY_URL:
-      return OmniboxEventProto::Suggestion::HISTORY_URL;
-    case AutocompleteMatchType::HISTORY_TITLE:
-      return OmniboxEventProto::Suggestion::HISTORY_TITLE;
-    case AutocompleteMatchType::HISTORY_BODY:
-      return OmniboxEventProto::Suggestion::HISTORY_BODY;
-    case AutocompleteMatchType::HISTORY_KEYWORD:
-      return OmniboxEventProto::Suggestion::HISTORY_KEYWORD;
-    case AutocompleteMatchType::NAVSUGGEST:
-      return OmniboxEventProto::Suggestion::NAVSUGGEST;
-    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
-      return OmniboxEventProto::Suggestion::SEARCH_WHAT_YOU_TYPED;
-    case AutocompleteMatchType::SEARCH_HISTORY:
-      return OmniboxEventProto::Suggestion::SEARCH_HISTORY;
-    case AutocompleteMatchType::SEARCH_SUGGEST:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST;
-    case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_ENTITY;
-    case AutocompleteMatchType::SEARCH_SUGGEST_TAIL:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_TAIL;
-    case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_PERSONALIZED;
-    case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:
-      return OmniboxEventProto::Suggestion::SEARCH_SUGGEST_PROFILE;
-    case AutocompleteMatchType::CALCULATOR:
-      return OmniboxEventProto::Suggestion::CALCULATOR;
-    case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
-      return OmniboxEventProto::Suggestion::SEARCH_OTHER_ENGINE;
-    case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
-      return OmniboxEventProto::Suggestion::EXTENSION_APP;
-    case AutocompleteMatchType::BOOKMARK_TITLE:
-      return OmniboxEventProto::Suggestion::BOOKMARK_TITLE;
-    case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
-      return OmniboxEventProto::Suggestion::NAVSUGGEST_PERSONALIZED;
-    case AutocompleteMatchType::CLIPBOARD_URL:
-      return OmniboxEventProto::Suggestion::CLIPBOARD_URL;
-    case AutocompleteMatchType::DOCUMENT_SUGGESTION:
-      return OmniboxEventProto::Suggestion::DOCUMENT;
-    case AutocompleteMatchType::PEDAL:
-      // TODO(orinj): Add a new OmniboxEventProto type for Pedals.
-      // return OmniboxEventProto::Suggestion::PEDAL;
-      return OmniboxEventProto::Suggestion::NAVSUGGEST;
-    case AutocompleteMatchType::CLIPBOARD_TEXT:
-      return OmniboxEventProto::Suggestion::CLIPBOARD_TEXT;
-    case AutocompleteMatchType::CLIPBOARD_IMAGE:
-      return OmniboxEventProto::Suggestion::CLIPBOARD_IMAGE;
-    case AutocompleteMatchType::VOICE_SUGGEST:
-      // VOICE_SUGGEST matches are only used in Java and are not logged,
-      // so we should never reach this case.
-    case AutocompleteMatchType::CONTACT_DEPRECATED:
-    case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
-    case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
-    case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
-    case AutocompleteMatchType::NUM_TYPES:
-      break;
-  }
-  NOTREACHED();
-  return OmniboxEventProto::Suggestion::UNKNOWN_RESULT_TYPE;
-}
-
 }  // namespace
 
 OmniboxMetricsProvider::OmniboxMetricsProvider() {}
@@ -162,7 +97,7 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     OmniboxEventProto::Suggestion* suggestion = omnibox_event->add_suggestion();
     const auto provider_type = i->provider->AsOmniboxEventProviderType();
     suggestion->set_provider(provider_type);
-    suggestion->set_result_type(AsOmniboxEventResultType(i->type));
+    suggestion->set_result_type(i->AsOmniboxEventResultType());
     suggestion->set_relevance(i->relevance);
     if (i->typed_count != -1)
       suggestion->set_typed_count(i->typed_count);

@@ -1015,6 +1015,30 @@ TEST_F(LockScreenMediaControlsViewTest, Histogram_Shown_Visible) {
               .size());
 }
 
+TEST_F(LockScreenMediaControlsViewTest, Histogram_Shown_SessionSensitive) {
+  base::HistogramTester tester;
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  session_info->is_sensitive = true;
+
+  media_controls_view_->MediaSessionChanged(base::UnguessableToken::Create());
+  media_controls_view_->MediaSessionInfoChanged(session_info.Clone());
+
+  SimulateSessionUnlock();
+
+  tester.ExpectUniqueSample(
+      LockScreenMediaControlsView::kMediaControlsShownHistogramName,
+      LockScreenMediaControlsView::Shown::kNotShownSessionSensitive, 1);
+  EXPECT_EQ(
+      0U, tester
+              .GetAllSamples(
+                  LockScreenMediaControlsView::kMediaControlsHideHistogramName)
+              .size());
+}
+
 TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_SessionChanged) {
   base::HistogramTester tester;
 

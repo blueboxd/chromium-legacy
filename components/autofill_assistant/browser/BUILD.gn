@@ -175,6 +175,7 @@ source_set("unit_tests") {
   sources = [
     "actions/autofill_action_unittest.cc",
     "actions/configure_bottom_sheet_action_unittest.cc",
+    "actions/get_payment_information_action_unittest.cc",
     "actions/mock_action_delegate.cc",
     "actions/mock_action_delegate.h",
     "actions/popup_message_action_unittest.cc",
@@ -189,6 +190,8 @@ source_set("unit_tests") {
     "fake_script_executor_delegate.h",
     "mock_controller_observer.cc",
     "mock_controller_observer.h",
+    "mock_personal_data_manager.cc",
+    "mock_personal_data_manager.h",
     "mock_service.cc",
     "mock_service.h",
     "mock_web_controller.cc",

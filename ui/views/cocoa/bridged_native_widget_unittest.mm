@@ -632,7 +632,7 @@ void BridgedNativeWidgetTest::SetHandleKeyEventCallback(
 void BridgedNativeWidgetTest::SetUp() {
   BridgedNativeWidgetTestBase::SetUp();
 
-  view_.reset(new views::internal::RootView(widget_.get()));
+  view_ = std::make_unique<views::internal::RootView>(widget_.get());
   base::scoped_nsobject<NSWindow> window([bridge_window() retain]);
 
   // The delegate should exist before setting the root view.
@@ -865,7 +865,7 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
 
   // Prepares a new |window_| and |widget_| for a call to PerformInit().
   void CreateNewWidgetToInit() {
-    widget_.reset(new Widget);
+    widget_ = std::make_unique<Widget>();
     native_widget_mac_ = new MockNativeWidgetMac(widget_.get());
   }
 

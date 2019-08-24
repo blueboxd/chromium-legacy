@@ -42,6 +42,7 @@ extern const char kContextualCardsSimplifiedServerWithDiagnosticChar[];
 extern const char kLongpressResolveParamName[];
 extern const char kLongpressResolveHideOnScroll[];
 extern const char kLongpressResolvePrivacyAggressive[];
+extern const char kLongpressResolvePreserveTap[];
 
 }  // namespace contextual_search
 

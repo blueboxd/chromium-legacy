@@ -20,6 +20,8 @@
 #include "third_party/pdfium/public/fpdf_text.h"
 #include "ui/gfx/geometry/point_f.h"
 
+struct PP_PrivateAccessibilityTextRunInfo;
+
 namespace chrome_pdf {
 
 class PDFiumEngine;
@@ -43,12 +45,11 @@ class PDFiumPage {
   FPDF_TEXTPAGE GetTextPage();
 
   // Given a start char index, find the longest continuous run of text that's
-  // in a single direction and with the same style and font size. Return the
-  // length of that sequence and its font size and bounding box.
+  // in a single direction and with the same style and font size. Fill the
+  // |text_run_info| with the length of that sequence, text direction, bounding
+  // box and font size.
   void GetTextRunInfo(int start_char_index,
-                      uint32_t* out_len,
-                      double* out_font_size,
-                      pp::FloatRect* out_bounds);
+                      PP_PrivateAccessibilityTextRunInfo* text_run_info);
   // Get a unicode character from the page.
   uint32_t GetCharUnicode(int char_index);
   // Get the bounds of a character in page pixels.

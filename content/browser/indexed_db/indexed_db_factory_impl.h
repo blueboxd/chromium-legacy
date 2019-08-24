@@ -132,7 +132,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
              IndexedDBDataLossInfo,
              /*was_cold_open=*/bool>
   GetOrOpenOriginFactory(const url::Origin& origin,
-                         const base::FilePath& data_directory);
+                         const base::FilePath& data_directory,
+                         bool create_if_missing);
 
   void OnDatabaseError(const url::Origin& origin,
                        leveldb::Status s,
@@ -186,7 +187,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                                      base::FilePath blob_path,
                                      LevelDBScopesOptions scopes_options,
                                      LevelDBScopesFactory* scopes_factory,
-                                     bool is_first_attempt);
+                                     bool is_first_attempt,
+                                     bool create_if_missing);
 
   void RemoveOriginState(const url::Origin& origin);
 

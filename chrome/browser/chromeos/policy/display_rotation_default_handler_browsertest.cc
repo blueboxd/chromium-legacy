@@ -15,13 +15,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -256,7 +256,7 @@ INSTANTIATE_TEST_SUITE_P(PolicyDisplayRotationDefault,
 // Thus, DeviceSettingsProvider falls back on the cached values (using
 // device_settings_cache::Retrieve()).
 class DisplayRotationBootTest
-    : public chromeos::MixinBasedInProcessBrowserTest,
+    : public MixinBasedInProcessBrowserTest,
       public testing::WithParamInterface<display::Display::Rotation> {
  protected:
   DisplayRotationBootTest() {
@@ -268,8 +268,7 @@ class DisplayRotationBootTest
     // Override FakeSessionManagerClient. This will be shut down by the browser.
     chromeos::SessionManagerClient::InitializeFakeInMemory();
     ash::DisplayConfigurationController::DisableAnimatorForTest();
-    chromeos::MixinBasedInProcessBrowserTest::
-        SetUpInProcessBrowserTestFixture();
+    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
   policy::DevicePolicyCrosTestHelper test_helper_;

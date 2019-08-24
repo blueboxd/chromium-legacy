@@ -47,15 +47,15 @@ void FakeServiceWorker::InitializeGlobalScope(
   mojo::AssociateWithDisconnectedPipe(registration_info->request.PassHandle());
   if (registration_info->installing) {
     mojo::AssociateWithDisconnectedPipe(
-        registration_info->installing->request.PassHandle());
+        registration_info->installing->receiver.PassHandle());
   }
   if (registration_info->waiting) {
     mojo::AssociateWithDisconnectedPipe(
-        registration_info->waiting->request.PassHandle());
+        registration_info->waiting->receiver.PassHandle());
   }
   if (registration_info->active) {
     mojo::AssociateWithDisconnectedPipe(
-        registration_info->active->request.PassHandle());
+        registration_info->active->receiver.PassHandle());
   }
 
   registration_info_ = std::move(registration_info);

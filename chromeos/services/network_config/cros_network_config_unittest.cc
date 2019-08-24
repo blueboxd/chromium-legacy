@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -243,6 +244,22 @@ class CrosNetworkConfigTest : public testing::Test {
     base::RunLoop run_loop;
     cros_network_config()->SetCellularSimState(
         mojom::CellularSimState::New(current_pin_or_puk, new_pin, require_pin),
+        base::BindOnce(
+            [](bool* successp, base::OnceClosure quit_closure, bool success) {
+              *successp = success;
+              std::move(quit_closure).Run();
+            },
+            &success, run_loop.QuitClosure()));
+    run_loop.Run();
+    return success;
+  }
+
+  bool SelectCellularMobileNetwork(const std::string& guid,
+                                   const std::string& network_id) {
+    bool success = false;
+    base::RunLoop run_loop;
+    cros_network_config()->SelectCellularMobileNetwork(
+        guid, network_id,
         base::BindOnce(
             [](bool* successp, base::OnceClosure quit_closure, bool success) {
               *successp = success;
@@ -661,6 +678,41 @@ TEST_F(CrosNetworkConfigTest, SetCellularSimState) {
   cellular = GetDeviceStateFromList(mojom::NetworkType::kCellular);
   ASSERT_TRUE(cellular && cellular->sim_lock_status);
   EXPECT_TRUE(cellular->sim_lock_status->lock_type.empty());
+}
+
+TEST_F(CrosNetworkConfigTest, SelectCellularMobileNetwork) {
+  // Create fake list of found networks.
+  base::Optional<base::Value> found_networks_list =
+      base::JSONReader::Read(base::StringPrintf(
+          R"([{"network_id": "network1", "technology": "GSM",
+               "status": "current"},
+              {"network_id": "network2", "technology": "GSM",
+               "status": "available"}])"));
+  helper().device_test()->SetDeviceProperty(
+      kCellularDevicePath, shill::kFoundNetworksProperty, *found_networks_list,
+      /*notify_changed=*/true);
+
+  // Assert initial state
+  mojom::ManagedPropertiesPtr properties =
+      GetManagedProperties("cellular_guid");
+  ASSERT_TRUE(properties->cellular);
+  ASSERT_TRUE(properties->cellular->found_networks);
+  const std::vector<mojom::FoundNetworkPropertiesPtr>& found_networks1 =
+      *(properties->cellular->found_networks);
+  ASSERT_EQ(2u, found_networks1.size());
+  EXPECT_EQ("current", found_networks1[0]->status);
+  EXPECT_EQ("available", found_networks1[1]->status);
+
+  // Select "network2"
+  EXPECT_TRUE(SelectCellularMobileNetwork("cellular_guid", "network2"));
+  properties = GetManagedProperties("cellular_guid");
+  ASSERT_TRUE(properties->cellular);
+  ASSERT_TRUE(properties->cellular->found_networks);
+  const std::vector<mojom::FoundNetworkPropertiesPtr>& found_networks2 =
+      *(properties->cellular->found_networks);
+  ASSERT_EQ(2u, found_networks2.size());
+  EXPECT_EQ("available", found_networks2[0]->status);
+  EXPECT_EQ("current", found_networks2[1]->status);
 }
 
 TEST_F(CrosNetworkConfigTest, RequestNetworkScan) {

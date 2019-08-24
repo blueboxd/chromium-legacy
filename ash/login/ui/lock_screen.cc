@@ -147,7 +147,7 @@ void LockScreen::FocusPreviousUser() {
 }
 
 void LockScreen::ShowParentAccessDialog() {
-  contents_view_->ShowParentAccessDialog(true);
+  contents_view_->ShowParentAccessDialog();
 }
 
 void LockScreen::RequestSecurityTokenPin(SecurityTokenPinRequest request) {

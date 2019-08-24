@@ -28,7 +28,9 @@ public class KitKatWebContentsAccessibility extends WebContentsAccessibilityImpl
     @Override
     protected void onNativeInit() {
         super.onNativeInit();
-        mSupportedHtmlElementTypes = nativeGetSupportedHtmlElementTypes(mNativeObj);
+        mSupportedHtmlElementTypes =
+                WebContentsAccessibilityImplJni.get().getSupportedHtmlElementTypes(
+                        mNativeObj, KitKatWebContentsAccessibility.this);
     }
 
     @Override

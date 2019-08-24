@@ -15,6 +15,7 @@
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/scroll_view.h"
 
@@ -51,7 +52,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
 
   // AssistantInteractionModelObserver:
   void OnResponseChanged(
-      const std::shared_ptr<AssistantResponse>& response) override;
+      const scoped_refptr<AssistantResponse>& response) override;
   void OnResponseCleared() override;
 
   // AssistantSuggestionsModelObserver:

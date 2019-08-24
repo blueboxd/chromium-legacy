@@ -1326,7 +1326,6 @@ test("content_browsertests") {
       "//content/shell:content_shell_lib",
       "//content/shell/android:content_shell_assets",
       "//content/shell/android:content_shell_jni_headers",
-      "//services/tracing:test_utils",
       "//testing/android/native_test:native_test_support",
       "//ui/android:android",
       "//ui/touch_selection:touch_selection",

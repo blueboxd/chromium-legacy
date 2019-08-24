@@ -19,6 +19,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "components/google/core/common/google_switches.h"
 #include "components/google/core/common/google_tld_list.h"
 #include "components/url_formatter/url_fixer.h"
@@ -29,7 +30,7 @@
 // Only use Link Doctor on official builds.  It uses an API key, too, but
 // seems best to just disable it, for more responsive error pages and to reduce
 // server load.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define LINKDOCTOR_SERVER_REQUEST_URL "https://www.googleapis.com/rpc"
 #else
 #define LINKDOCTOR_SERVER_REQUEST_URL ""

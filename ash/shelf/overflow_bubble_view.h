@@ -114,6 +114,9 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   // ui::EventHandler:
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
+  Shelf* GetShelf();
+  const Shelf* GetShelf() const;
+
   mutable LayoutStrategy layout_strategy_;
 
   // Child views Owned by views hierarchy.
@@ -122,7 +125,6 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   OverflowShelfContainerView* shelf_container_view_ = nullptr;
 
   // Not owned.
-  Shelf* shelf_;
   ShelfView* shelf_view_;
 
   gfx::Vector2dF scroll_offset_;

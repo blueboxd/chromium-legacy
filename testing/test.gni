@@ -99,6 +99,7 @@ template("test") {
         "min_sdk_version",
         "proguard_configs",
         "proguard_enabled",
+        "srcjar_deps",
         "target_sdk_version",
         "use_default_launcher",
         "use_native_activity",

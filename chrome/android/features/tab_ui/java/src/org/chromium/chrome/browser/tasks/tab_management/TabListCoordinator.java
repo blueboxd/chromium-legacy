@@ -213,7 +213,7 @@ public class TabListCoordinator implements Destroyable {
      */
     boolean updateThumbnailLocation() {
         Rect rect = mRecyclerView.getRectOfCurrentThumbnail(
-                mMediator.indexOfSelected(), mMediator.selectedTabId());
+                mMediator.indexOfTab(mMediator.selectedTabId()), mMediator.selectedTabId());
         if (rect == null) return false;
         mThumbnailLocationOfCurrentTab.set(rect);
         return true;
@@ -240,6 +240,10 @@ public class TabListCoordinator implements Destroyable {
 
     boolean resetWithListOfTabs(@Nullable List<Tab> tabs) {
         return resetWithListOfTabs(tabs, false, false);
+    }
+
+    int indexOfTab(int tabId) {
+        return mMediator.indexOfTab(tabId);
     }
 
     void softCleanup() {

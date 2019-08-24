@@ -54,7 +54,7 @@ TEST_F(FrameNodeImplDeathTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
   auto frame = CreateNode<FrameNodeImpl>(process.get(), page.get());
-  ASSERT_DEATH(PageNodeImpl::FromNodeBase(frame.get()), "Check failed: .*");
+  ASSERT_DEATH_IF_SUPPORTED(PageNodeImpl::FromNodeBase(frame.get()), "");
 }
 
 TEST_F(FrameNodeImplTest, AddFrameHierarchyBasic) {

@@ -62,7 +62,7 @@ using SystemNodeImplDeathTest = SystemNodeImplTest;
 
 TEST_F(SystemNodeImplDeathTest, SafeDowncast) {
   auto system = CreateNode<SystemNodeImpl>();
-  ASSERT_DEATH(PageNodeImpl::FromNodeBase(system.get()), "Check failed: .*");
+  ASSERT_DEATH_IF_SUPPORTED(PageNodeImpl::FromNodeBase(system.get()), "");
 }
 
 namespace {

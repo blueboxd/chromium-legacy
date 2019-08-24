@@ -499,6 +499,12 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
     OptimizationGuideKeyedServiceCommandLineOverridesTest::SetUpCommandLine(
         cmd);
 
+    // Remove DataSaver switch in case it was added before. This ensures that
+    // the other implementation does not also run the hints fetch at the same
+    // time since we have not yet isolated the paths using the
+    // OptimizationGuideKeyedService feature yet.
+    cmd->RemoveSwitch("enable-spdy-proxy-auth");
+
     cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
     cmd->AppendSwitchASCII(
         optimization_guide::switches::kOptimizationGuideServiceURL,
@@ -509,7 +515,9 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
     OptimizationGuideKeyedServiceCommandLineOverridesTest::SetUpOnMainThread();
 
     api_server_->StartAcceptingConnections();
+  }
 
+  void WaitForHintsFetchToComplete() {
     // Expect that the browser initialization will record at least one sample
     // in each of the follow histograms as OnePlatform Hints are enabled.
     EXPECT_EQ(
@@ -519,7 +527,7 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
         1);
 
     // There should be 2 sites passed via command line.
-    histogram_tester_.ExpectBucketCount(
+    histogram_tester_.ExpectUniqueSample(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
 
     EXPECT_EQ(RetryForHistogramUntilCountReached(
@@ -593,10 +601,16 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
 };
 
 // TODO(crbug/969558): Figure out why hints fetcher not fetching on ChromeOS.
-// TODO(crbug/997106): Flaky on Win, Mac and Linux.
+#if defined(OS_CHROMEOS)
+#define DISABLE_ON_CHROMEOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_CHROMEOS(x) x
+#endif
+
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
-                       DISABLED_ClearFetchedHints) {
+                       DISABLE_ON_CHROMEOS(ClearFetchedHints)) {
   PushHintsComponentAndWaitForCompletion();
+  WaitForHintsFetchToComplete();
 
   RegisterWithKeyedService();
 

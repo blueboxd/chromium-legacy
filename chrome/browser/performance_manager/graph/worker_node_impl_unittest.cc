@@ -41,7 +41,37 @@ TEST_F(WorkerNodeImplDeathTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto worker = CreateNode<WorkerNodeImpl>(WorkerNode::WorkerType::kDedicated,
                                            process.get());
-  ASSERT_DEATH(FrameNodeImpl::FromNodeBase(worker.get()), "Check failed: .*");
+  ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(worker.get()), "");
+}
+
+TEST_F(WorkerNodeImplTest, ConstProperties) {
+  const WorkerNode::WorkerType kWorkerType = WorkerNode::WorkerType::kShared;
+  const std::string kTestBrowserContextId =
+      base::UnguessableToken::Create().ToString();
+  auto process = CreateNode<ProcessNodeImpl>();
+  static const GURL kTestUrl("testurl.com");
+  static const base::UnguessableToken kTestDevToolsToken =
+      base::UnguessableToken::Create();
+
+  auto worker_impl = CreateNode<WorkerNodeImpl>(kWorkerType, process.get(),
+                                                kTestBrowserContextId, kTestUrl,
+                                                kTestDevToolsToken);
+
+  // Test private interface.
+  EXPECT_EQ(worker_impl->browser_context_id(), kTestBrowserContextId);
+  EXPECT_EQ(worker_impl->worker_type(), kWorkerType);
+  EXPECT_EQ(worker_impl->process_node(), process.get());
+  EXPECT_EQ(worker_impl->url(), kTestUrl);
+  EXPECT_EQ(worker_impl->dev_tools_token(), kTestDevToolsToken);
+
+  // Test public interface.
+  const WorkerNode* worker = worker_impl.get();
+
+  EXPECT_EQ(worker->GetBrowserContextID(), kTestBrowserContextId);
+  EXPECT_EQ(worker->GetWorkerType(), kWorkerType);
+  EXPECT_EQ(worker->GetProcessNode(), process.get());
+  EXPECT_EQ(worker->GetURL(), kTestUrl);
+  EXPECT_EQ(worker->GetDevToolsToken(), kTestDevToolsToken);
 }
 
 // Create a worker of each type and register the frame as a client of each.

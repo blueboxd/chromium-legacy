@@ -6,6 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/channel.h"
@@ -29,6 +30,15 @@ class ManifestV3BrowserTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  // Loads and returns an extension while ignoring warnings.
+  const Extension* LoadMv3Extension(const base::FilePath& path) {
+    // We ignore the manifest warnings on the extension because it includes the
+    // "manifest v3 ain't quite ready yet" warning.
+    // TODO(devlin): We should probably introduce a flag to specifically ignore
+    // *that* warning, but no others.
+    return LoadExtensionWithFlags(path, kFlagIgnoreManifestWarnings);
   }
 
  private:
@@ -76,12 +86,7 @@ IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ProgrammaticScriptInjection) {
   test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorker);
 
   ExtensionTestMessageListener listener("ready", /*will_reply=*/false);
-  // We ignore the manifest warnings on the extension because it includes the
-  // "manifest v3 ain't quite ready yet" warning.
-  // TODO(devlin): We should probably introduce a flag to specifically ignore
-  // *that* warning, but no others.
-  const Extension* extension = LoadExtensionWithFlags(
-      test_dir.UnpackedPath(), kFlagIgnoreManifestWarnings);
+  const Extension* extension = LoadMv3Extension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
@@ -92,6 +97,43 @@ IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ProgrammaticScriptInjection) {
 
   EXPECT_EQ(base::ASCIIToUTF16("My New Title"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+}
+
+// A simple end-to-end test exercising the new action API in Manifest V3.
+// More robust tests for the action API are in extension_action_apitest.cc.
+IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ActionAPI) {
+  constexpr char kManifest[] =
+      R"({
+           "name": "Action API",
+           "manifest_version": 3,
+           "version": "0.1",
+           "background": { "service_worker": "worker.js" },
+           "action": {}
+         })";
+  constexpr char kWorker[] =
+      R"(chrome.action.onClicked.addListener((tab) => {
+           chrome.test.assertTrue(!!tab);
+           chrome.test.notifyPass();
+         });
+         chrome.test.sendMessage('ready');)";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorker);
+
+  ExtensionTestMessageListener listener("ready", /*will_reply=*/false);
+  const Extension* extension = LoadMv3Extension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  std::unique_ptr<BrowserActionTestUtil> action_test_util =
+      BrowserActionTestUtil::Create(browser());
+  ASSERT_EQ(1, action_test_util->NumberOfBrowserActions());
+  EXPECT_EQ(extension->id(), action_test_util->GetExtensionId(0));
+
+  ResultCatcher catcher;
+  action_test_util->Press(0);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 }  // namespace extensions

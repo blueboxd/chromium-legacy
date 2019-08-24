@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 
 /**
@@ -34,12 +35,14 @@ public class RenderWidgetHostViewImpl implements RenderWidgetHostView {
     @Override
     public boolean isReady() {
         checkNotDestroyed();
-        return nativeIsReady(getNativePtr());
+        return RenderWidgetHostViewImplJni.get().isReady(
+                getNativePtr(), RenderWidgetHostViewImpl.this);
     }
 
     @Override
     public int getBackgroundColor() {
-        return nativeGetBackgroundColor(getNativePtr());
+        return RenderWidgetHostViewImplJni.get().getBackgroundColor(
+                getNativePtr(), RenderWidgetHostViewImpl.this);
     }
 
     /**
@@ -47,7 +50,8 @@ public class RenderWidgetHostViewImpl implements RenderWidgetHostView {
      */
     public void dismissTextHandles() {
         if (isDestroyed()) return;
-        nativeDismissTextHandles(getNativePtr());
+        RenderWidgetHostViewImplJni.get().dismissTextHandles(
+                getNativePtr(), RenderWidgetHostViewImpl.this);
     }
 
     /**
@@ -57,20 +61,23 @@ public class RenderWidgetHostViewImpl implements RenderWidgetHostView {
      */
     public void showContextMenuAtTouchHandle(int x, int y) {
         checkNotDestroyed();
-        nativeShowContextMenuAtTouchHandle(getNativePtr(), x, y);
+        RenderWidgetHostViewImplJni.get().showContextMenuAtTouchHandle(
+                getNativePtr(), RenderWidgetHostViewImpl.this, x, y);
     }
 
     @Override
     public void onViewportInsetBottomChanged() {
         checkNotDestroyed();
-        nativeOnViewportInsetBottomChanged(getNativePtr());
+        RenderWidgetHostViewImplJni.get().onViewportInsetBottomChanged(
+                getNativePtr(), RenderWidgetHostViewImpl.this);
     }
 
     @Override
     public void writeContentBitmapToDiskAsync(
             int width, int height, String path, Callback<String> callback) {
         if (isDestroyed()) callback.onResult("RWHVA already destroyed!");
-        nativeWriteContentBitmapToDiskAsync(getNativePtr(), width, height, path, callback);
+        RenderWidgetHostViewImplJni.get().writeContentBitmapToDiskAsync(
+                getNativePtr(), RenderWidgetHostViewImpl.this, width, height, path, callback);
     }
 
     //====================
@@ -97,12 +104,19 @@ public class RenderWidgetHostViewImpl implements RenderWidgetHostView {
                 "Native RenderWidgetHostViewAndroid already destroyed", mNativeDestroyThrowable);
     }
 
-    private native boolean nativeIsReady(long nativeRenderWidgetHostViewAndroid);
-    private native int nativeGetBackgroundColor(long nativeRenderWidgetHostViewAndroid);
-    private native void nativeDismissTextHandles(long nativeRenderWidgetHostViewAndroid);
-    private native void nativeShowContextMenuAtTouchHandle(
-            long nativeRenderWidgetHostViewAndroid, int x, int y);
-    private native void nativeOnViewportInsetBottomChanged(long nativeRenderWidgetHostViewAndroid);
-    private native void nativeWriteContentBitmapToDiskAsync(long nativeRenderWidgetHostViewAndroid,
-            int width, int height, String path, Callback<String> callback);
+    @NativeMethods
+    interface Natives {
+        boolean isReady(long nativeRenderWidgetHostViewAndroid, RenderWidgetHostViewImpl caller);
+        int getBackgroundColor(
+                long nativeRenderWidgetHostViewAndroid, RenderWidgetHostViewImpl caller);
+        void dismissTextHandles(
+                long nativeRenderWidgetHostViewAndroid, RenderWidgetHostViewImpl caller);
+        void showContextMenuAtTouchHandle(long nativeRenderWidgetHostViewAndroid,
+                RenderWidgetHostViewImpl caller, int x, int y);
+        void onViewportInsetBottomChanged(
+                long nativeRenderWidgetHostViewAndroid, RenderWidgetHostViewImpl caller);
+        void writeContentBitmapToDiskAsync(long nativeRenderWidgetHostViewAndroid,
+                RenderWidgetHostViewImpl caller, int width, int height, String path,
+                Callback<String> callback);
+    }
 }

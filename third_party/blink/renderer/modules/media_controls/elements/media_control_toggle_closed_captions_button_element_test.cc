@@ -20,10 +20,10 @@ const char kEnglishLabel[] = "English";
 
 class LocalePlatformSupport : public TestingPlatformSupport {
  public:
-  WebString QueryLocalizedString(WebLocalizedString::Name name) override {
-    if (name == WebLocalizedString::kTextTracksOff)
+  WebString QueryLocalizedString(int resource_id) override {
+    if (resource_id == WebLocalizedString::kTextTracksOff)
       return kTextTracksOffString;
-    return TestingPlatformSupport::QueryLocalizedString(name);
+    return TestingPlatformSupport::QueryLocalizedString(resource_id);
   }
 };
 

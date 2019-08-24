@@ -378,6 +378,31 @@ class ChromeDriverBaseTestWithWebServer(ChromeDriverBaseTest):
     ChromeDriverBaseTestWithWebServer._http_server = webserver.WebServer(
         chrome_paths.GetTestData())
     ChromeDriverBaseTestWithWebServer._sync_server = webserver.SyncWebServer()
+    cert_path = os.path.join(chrome_paths.GetTestData(),
+                             'chromedriver/invalid_ssl_cert.pem')
+    ChromeDriverBaseTestWithWebServer._https_server = webserver.WebServer(
+        chrome_paths.GetTestData(), cert_path)
+
+    def respondWithUserAgentString(request):
+      return {}, """
+        <html>
+        <body>%s</body>
+        </html>""" % request.GetHeader('User-Agent')
+
+    def respondWithUserAgentStringUseDeviceWidth(request):
+      return {}, """
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width,minimum-scale=1.0">
+        </head>
+        <body>%s</body>
+        </html>""" % request.GetHeader('User-Agent')
+
+    ChromeDriverBaseTestWithWebServer._http_server.SetCallbackForPath(
+        '/userAgent', respondWithUserAgentString)
+    ChromeDriverBaseTestWithWebServer._http_server.SetCallbackForPath(
+        '/userAgentUseDeviceWidth', respondWithUserAgentStringUseDeviceWidth)
+
     if _ANDROID_PACKAGE_KEY:
       ChromeDriverBaseTestWithWebServer._device = (
           device_utils.DeviceUtils.HealthyDevices()[0])
@@ -385,8 +410,11 @@ class ChromeDriverBaseTestWithWebServer(ChromeDriverBaseTest):
           ChromeDriverBaseTestWithWebServer._http_server._server.server_port)
       sync_host_port = (
           ChromeDriverBaseTestWithWebServer._sync_server._server.server_port)
+      https_host_port = (
+          ChromeDriverBaseTestWithWebServer._https_server._server.server_port)
       forwarder.Forwarder.Map(
-          [(http_host_port, http_host_port), (sync_host_port, sync_host_port)],
+          [(http_host_port, http_host_port), (sync_host_port, sync_host_port),
+           (https_host_port, https_host_port)],
           ChromeDriverBaseTestWithWebServer._device)
 
   @staticmethod
@@ -394,6 +422,7 @@ class ChromeDriverBaseTestWithWebServer(ChromeDriverBaseTest):
     if _ANDROID_PACKAGE_KEY:
       forwarder.Forwarder.UnmapAllDevicePorts(ChromeDriverTest._device)
     ChromeDriverBaseTestWithWebServer._http_server.Shutdown()
+    ChromeDriverBaseTestWithWebServer._https_server.Shutdown()
 
   @staticmethod
   def GetHttpUrlForFile(file_path):
@@ -2018,24 +2047,13 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals('test report message', report['body']['message']);
 
 # Tests that require a secure context.
-class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
+class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
   # The example attestation private key from the U2F spec at
   # https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-example
   # PKCS.8 encoded without encryption, as a base64url string.
   privateKey = ("MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg8_zMDQDYAxlU-Q"
                 "hk1Dwkf0v18GZca1DMF3SaJ9HPdmShRANCAASNYX5lyVCOZLzFZzrIKmeZ2jwU"
                 "RmgsJYxGP__fWN_S-j5sN4tT15XEpN_7QZnt14YvI6uvAgO0uJEboFaZlOEB")
-
-  @staticmethod
-  def GlobalSetUp():
-    cert_path = os.path.join(chrome_paths.GetTestData(),
-                             'chromedriver/invalid_ssl_cert.pem')
-    ChromeDriverSecureContextTest._https_server = webserver.WebServer(
-        chrome_paths.GetTestData(), cert_path)
-
-  @staticmethod
-  def GlobalTearDown():
-    ChromeDriverSecureContextTest._https_server.Shutdown()
 
   @staticmethod
   def GetHttpsUrlForFile(file_path, host=None):
@@ -3004,7 +3022,7 @@ class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
     self.assertFalse(driver.IsAlertOpen())
 
 
-class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
+class ChromeExtensionsCapabilityTest(ChromeDriverBaseTestWithWebServer):
   """Tests that chromedriver properly processes chromeOptions.extensions."""
 
   def _PackExtension(self, ext_path):
@@ -3024,10 +3042,9 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
 
   def testWaitsForExtensionToLoad(self):
     did_load_event = threading.Event()
-    server = webserver.SyncWebServer()
     def RunServer():
       time.sleep(5)
-      server.RespondWithContent('<html>iframe</html>')
+      self._sync_server.RespondWithContent('<html>iframe</html>')
       did_load_event.set()
 
     thread = threading.Thread(target=RunServer)
@@ -3035,7 +3052,7 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     thread.start()
     crx = os.path.join(_TEST_DATA_DIR, 'ext_slow_loader.crx')
     driver = self.CreateDriver(
-        chrome_switches=['user-agent=' + server.GetUrl()],
+        chrome_switches=['user-agent=' + self._sync_server.GetUrl()],
         chrome_extensions=[self._PackExtension(crx)])
     self.assertTrue(did_load_event.is_set())
 
@@ -3121,40 +3138,12 @@ class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
     self.assertTrue(self.LOG_MESSAGE in open(tmp_log_path.name).read())
 
 
-class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
+class MobileEmulationCapabilityTest(ChromeDriverBaseTestWithWebServer):
   """Tests that ChromeDriver processes chromeOptions.mobileEmulation.
 
   Makes sure the device metrics are overridden in DevTools and user agent is
   overridden in Chrome.
   """
-
-  @staticmethod
-  def GlobalSetUp():
-    def respondWithUserAgentString(request):
-      return {}, """
-        <html>
-        <body>%s</body>
-        </html>""" % request.GetHeader('User-Agent')
-
-    def respondWithUserAgentStringUseDeviceWidth(request):
-      return {}, """
-        <html>
-        <head>
-        <meta name="viewport" content="width=device-width,minimum-scale=1.0">
-        </head>
-        <body>%s</body>
-        </html>""" % request.GetHeader('User-Agent')
-
-    MobileEmulationCapabilityTest._http_server = webserver.WebServer(
-        chrome_paths.GetTestData())
-    MobileEmulationCapabilityTest._http_server.SetCallbackForPath(
-        '/userAgent', respondWithUserAgentString)
-    MobileEmulationCapabilityTest._http_server.SetCallbackForPath(
-        '/userAgentUseDeviceWidth', respondWithUserAgentStringUseDeviceWidth)
-
-  @staticmethod
-  def GlobalTearDown():
-    MobileEmulationCapabilityTest._http_server.Shutdown()
 
   # Run in Legacy mode
   def testDeviceMetricsWithStandardWidth(self):
@@ -3727,33 +3716,13 @@ class PerfTest(ChromeDriverBaseTest):
     self._RunDriverPerfTest('cold exe js', Run)
 
 
-class HeadlessInvalidCertificateTest(ChromeDriverBaseTest):
+class HeadlessInvalidCertificateTest(ChromeDriverBaseTestWithWebServer):
   """End to end tests for ChromeDriver."""
 
   @staticmethod
-  def GlobalSetUp():
-    cert_path = os.path.join(chrome_paths.GetTestData(),
-                             'chromedriver/invalid_ssl_cert.pem')
-    HeadlessInvalidCertificateTest._https_server = webserver.WebServer(
-        chrome_paths.GetTestData(), cert_path)
-    if _ANDROID_PACKAGE_KEY:
-      HeadlessInvalidCertificateTest._device = device_utils.DeviceUtils\
-                                                           .HealthyDevices()[0]
-      https_host_port = HeadlessInvalidCertificateTest._https_server._server\
-                                                      .server_port
-      forwarder.Forwarder.Map([(https_host_port, https_host_port)],
-                              ChromeDriverTest._device)
-
-  @staticmethod
-  def GlobalTearDown():
-    if _ANDROID_PACKAGE_KEY:
-      forwarder.Forwarder.UnmapAllDevicePorts(
-          HeadlessInvalidCertificateTest._device)
-    HeadlessInvalidCertificateTest._https_server.Shutdown()
-
-  @staticmethod
   def GetHttpsUrlForFile(file_path):
-    return HeadlessInvalidCertificateTest._https_server.GetUrl() + file_path
+    return (
+      HeadlessInvalidCertificateTest._https_server.GetUrl() + file_path)
 
   def setUp(self):
     self._driver = self.CreateDriver(chrome_switches = ["--headless"],
@@ -3920,18 +3889,9 @@ if __name__ == '__main__':
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
-  # TODO(johnchen@chromium.org): Investigate feasibility of combining
-  # multiple GlobalSetup and GlobalTearDown, and reducing the number of HTTP
-  # servers used for the test.
   ChromeDriverBaseTestWithWebServer.GlobalSetUp()
-  ChromeDriverSecureContextTest.GlobalSetUp()
-  HeadlessInvalidCertificateTest.GlobalSetUp()
-  MobileEmulationCapabilityTest.GlobalSetUp()
   result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
   ChromeDriverBaseTestWithWebServer.GlobalTearDown()
-  ChromeDriverSecureContextTest.GlobalTearDown()
-  HeadlessInvalidCertificateTest.GlobalTearDown()
-  MobileEmulationCapabilityTest.GlobalTearDown()
 
   if options.isolated_script_test_output:
     util.WriteResultToJSONFile(tests, result,

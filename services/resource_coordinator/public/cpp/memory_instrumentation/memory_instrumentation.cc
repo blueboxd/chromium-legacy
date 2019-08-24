@@ -9,7 +9,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace memory_instrumentation {
-
 namespace {
 MemoryInstrumentation* g_instance = nullptr;
 
@@ -50,7 +49,7 @@ MemoryInstrumentation::~MemoryInstrumentation() {
 void MemoryInstrumentation::RequestGlobalDump(
     const std::vector<std::string>& allocator_dump_names,
     RequestGlobalDumpCallback callback) {
-  const auto& coordinator = GetCoordinatorBindingForCurrentThread();
+  const auto& coordinator = GetCoordinatorBindingForCurrentSequence();
   coordinator->RequestGlobalMemoryDump(
       MemoryDumpType::SUMMARY_ONLY, MemoryDumpLevelOfDetail::BACKGROUND,
       allocator_dump_names,
@@ -60,7 +59,7 @@ void MemoryInstrumentation::RequestGlobalDump(
 void MemoryInstrumentation::RequestPrivateMemoryFootprint(
     base::ProcessId pid,
     RequestGlobalDumpCallback callback) {
-  const auto& coordinator = GetCoordinatorBindingForCurrentThread();
+  const auto& coordinator = GetCoordinatorBindingForCurrentSequence();
   coordinator->RequestPrivateMemoryFootprint(
       pid, base::BindOnce(&WrapGlobalMemoryDump, std::move(callback)));
 }
@@ -69,7 +68,7 @@ void MemoryInstrumentation::RequestGlobalDumpForPid(
     base::ProcessId pid,
     const std::vector<std::string>& allocator_dump_names,
     RequestGlobalDumpCallback callback) {
-  const auto& coordinator = GetCoordinatorBindingForCurrentThread();
+  const auto& coordinator = GetCoordinatorBindingForCurrentSequence();
   coordinator->RequestGlobalMemoryDumpForPid(
       pid, allocator_dump_names,
       base::BindOnce(&WrapGlobalMemoryDump, std::move(callback)));
@@ -79,18 +78,16 @@ void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
     RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
-  const auto& coordinator = GetCoordinatorBindingForCurrentThread();
+  const auto& coordinator = GetCoordinatorBindingForCurrentSequence();
   coordinator->RequestGlobalMemoryDumpAndAppendToTrace(
       dump_type, level_of_detail, std::move(callback));
 }
 
 const mojom::CoordinatorPtr&
-MemoryInstrumentation::GetCoordinatorBindingForCurrentThread() {
-  mojom::CoordinatorPtr* coordinator = tls_coordinator_.Get();
+MemoryInstrumentation::GetCoordinatorBindingForCurrentSequence() {
+  auto* coordinator = sequence_storage_coordinator_.GetValuePointer();
   if (!coordinator) {
-    auto new_coordinator = std::make_unique<mojom::CoordinatorPtr>();
-    coordinator = new_coordinator.get();
-    tls_coordinator_.Set(std::move(new_coordinator));
+    coordinator = sequence_storage_coordinator_.emplace();
     mojom::CoordinatorRequest coordinator_req = mojo::MakeRequest(coordinator);
 
     // The connector is not thread safe and BindInterface must be called on its
@@ -102,7 +99,6 @@ MemoryInstrumentation::GetCoordinatorBindingForCurrentThread() {
             &MemoryInstrumentation::BindCoordinatorRequestOnConnectorThread,
             base::Unretained(this), std::move(coordinator_req)));
   }
-  DCHECK(*coordinator);
   return *coordinator;
 }
 

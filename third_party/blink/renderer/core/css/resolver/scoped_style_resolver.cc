@@ -270,8 +270,6 @@ void ScopedStyleResolver::CollectMatchingPartPseudoRules(
     ElementRuleCollector& collector,
     PartNames& part_names,
     ShadowV0CascadeOrder cascade_order) {
-  if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
-    return;
   wtf_size_t sheet_index = 0;
   for (auto sheet : author_style_sheets_) {
     DCHECK(sheet->ownerNode() || sheet->IsConstructed());

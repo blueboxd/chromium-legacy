@@ -35,8 +35,10 @@ static const int kDefaultVideoUnderflowThresholdMs = 3000;
 
 class RendererImpl::RendererClientInternal final : public RendererClient {
  public:
-  RendererClientInternal(DemuxerStream::Type type, RendererImpl* renderer)
-      : type_(type), renderer_(renderer) {
+  RendererClientInternal(DemuxerStream::Type type,
+                         RendererImpl* renderer,
+                         MediaResource* media_resource)
+      : type_(type), renderer_(renderer), media_resource_(media_resource) {
     DCHECK((type_ == DemuxerStream::AUDIO) || (type_ == DemuxerStream::VIDEO));
   }
 
@@ -67,9 +69,14 @@ class RendererImpl::RendererClientInternal final : public RendererClient {
     renderer_->OnVideoOpacityChange(opaque);
   }
 
+  bool IsVideoStreamAvailable() override {
+    return media_resource_->GetFirstStream(::media::DemuxerStream::VIDEO);
+  }
+
  private:
   DemuxerStream::Type type_;
   RendererImpl* renderer_;
+  MediaResource* media_resource_;
 };
 
 RendererImpl::RendererImpl(
@@ -369,7 +376,7 @@ void RendererImpl::InitializeAudioRenderer() {
   current_audio_stream_ = audio_stream;
 
   audio_renderer_client_.reset(
-      new RendererClientInternal(DemuxerStream::AUDIO, this));
+      new RendererClientInternal(DemuxerStream::AUDIO, this, media_resource_));
   // Note: After the initialization of a renderer, error events from it may
   // happen at any time and all future calls must guard against STATE_ERROR.
   audio_renderer_->Initialize(audio_stream, cdm_context_,
@@ -420,7 +427,7 @@ void RendererImpl::InitializeVideoRenderer() {
   current_video_stream_ = video_stream;
 
   video_renderer_client_.reset(
-      new RendererClientInternal(DemuxerStream::VIDEO, this));
+      new RendererClientInternal(DemuxerStream::VIDEO, this, media_resource_));
   video_renderer_->Initialize(
       video_stream, cdm_context_, video_renderer_client_.get(),
       base::Bind(&RendererImpl::GetWallClockTimes, base::Unretained(this)),

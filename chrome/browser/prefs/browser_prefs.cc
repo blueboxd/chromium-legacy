@@ -697,6 +697,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if defined(OS_WIN)
+  registry->RegisterBooleanPref(prefs::kRendererCodeIntegrityEnabled, true);
   component_updater::RegisterPrefsForSwReporter(registry);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(registry);

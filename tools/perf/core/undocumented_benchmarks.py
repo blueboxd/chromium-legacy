@@ -15,8 +15,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'jetstream',
   'kraken',
   'load_library_perf_tests',
-  'media.desktop',
-  'media.mobile',
   'media_perftests',
   'memory.desktop',
   'net_perftests',

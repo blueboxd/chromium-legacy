@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/test/offline_gaia_test_mixin.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/settings/cros_settings_names.h"

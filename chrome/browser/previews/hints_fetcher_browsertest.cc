@@ -17,14 +17,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
@@ -32,9 +32,6 @@
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
-#include "components/previews/content/previews_decider_impl.h"
-#include "components/previews/content/previews_optimization_guide.h"
-#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -151,22 +148,14 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
             optimization_guide::proto::NOSCRIPT, {hint_setup_url.host()}, "*",
             {});
 
-    // Register a QuitClosure for when the next hint update is started below.
-    base::RunLoop run_loop;
-    PreviewsServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetBrowserContext()))
-        ->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    base::HistogramTester histogram_tester;
 
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
 
-    run_loop.Run();
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
   }
 
   void SetNetworkConnectionOffline() {

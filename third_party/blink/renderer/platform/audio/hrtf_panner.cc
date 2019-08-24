@@ -139,19 +139,13 @@ void HRTFPanner::Pan(double desired_azimuth,
                      AudioBus::ChannelInterpretation channel_interpretation) {
   unsigned num_input_channels = input_bus ? input_bus->NumberOfChannels() : 0;
 
-  bool is_input_good =
-      input_bus && num_input_channels >= 1 && num_input_channels <= 2;
-  DCHECK(is_input_good);
+  DCHECK(input_bus);
+  DCHECK_GE(num_input_channels, 1u);
+  DCHECK_LE(num_input_channels, 2u);
 
-  bool is_output_good = output_bus && output_bus->NumberOfChannels() == 2 &&
-                        frames_to_process <= output_bus->length();
-  DCHECK(is_output_good);
-
-  if (!is_input_good || !is_output_good) {
-    if (output_bus)
-      output_bus->Zero();
-    return;
-  }
+  DCHECK(output_bus);
+  DCHECK_EQ(output_bus->NumberOfChannels(), 2u);
+  DCHECK_LE(frames_to_process, output_bus->length());
 
   HRTFDatabase* database = database_loader_->Database();
   if (!database) {
@@ -163,12 +157,8 @@ void HRTFPanner::Pan(double desired_azimuth,
   // panner's notion of azimuth.
   double azimuth = -desired_azimuth;
 
-  bool is_azimuth_good = azimuth >= -180.0 && azimuth <= 180.0;
-  DCHECK(is_azimuth_good);
-  if (!is_azimuth_good) {
-    output_bus->Zero();
-    return;
-  }
+  DCHECK_GE(azimuth, -180.0);
+  DCHECK_LE(azimuth, 180.0);
 
   // Normally, we'll just be dealing with mono sources.
   // If we have a stereo input, implement stereo panning with left source
@@ -251,13 +241,10 @@ void HRTFPanner::Pan(double desired_azimuth,
                                              elevation2_, kernel_l2, kernel_r2,
                                              frame_delay_l2, frame_delay_r2);
 
-    bool are_kernels_good = kernel_l1 && kernel_r1 && kernel_l2 && kernel_r2;
-    DCHECK(are_kernels_good);
-    if (!are_kernels_good) {
-      output_bus->Zero();
-      return;
-    }
-
+    DCHECK(kernel_l1);
+    DCHECK(kernel_r1);
+    DCHECK(kernel_l2);
+    DCHECK(kernel_r2);
     DCHECK_LT(frame_delay_l1 / SampleRate(), kMaxDelayTimeSeconds);
     DCHECK_LT(frame_delay_r1 / SampleRate(), kMaxDelayTimeSeconds);
     DCHECK_LT(frame_delay_l2 / SampleRate(), kMaxDelayTimeSeconds);

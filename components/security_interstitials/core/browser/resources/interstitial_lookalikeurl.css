@@ -18,14 +18,3 @@
     filter: invert(1);
   }
 }
-
-.lookalike-url #subnav-wrapper {
-  padding: 25px 0 0;
-  margin: 0;
-}
-
-.lookalike-url #details-link {
-  text-transform: uppercase;
-  text-decoration: none;
-  font-size: .875em;
-}

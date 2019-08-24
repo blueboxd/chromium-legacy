@@ -33,7 +33,7 @@ using ProcessNodeImplDeathTest = ProcessNodeImplTest;
 
 TEST_F(ProcessNodeImplDeathTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
-  ASSERT_DEATH(FrameNodeImpl::FromNodeBase(process.get()), "Check failed: .*");
+  ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(process.get()), "");
 }
 
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {

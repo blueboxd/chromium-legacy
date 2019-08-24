@@ -72,7 +72,7 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
     // Initialize the world to the single monitor case.
     std::vector<display::Display> displays;
     displays.emplace_back(kFirstDisplay, gfx::Rect(0, 0, 640, 480));
-    screen_.reset(new DesktopScreenX11);
+    screen_ = std::make_unique<DesktopScreenX11>();
     UpdateDisplayListForTest(displays);
     screen_->AddObserver(this);
   }

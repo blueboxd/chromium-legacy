@@ -52,7 +52,7 @@ class AssistantSuggestionsController
   // ProactiveSuggestionsClient::Delegate:
   void OnProactiveSuggestionsClientDestroying() override;
   void OnProactiveSuggestionsChanged(
-      std::unique_ptr<ProactiveSuggestions> proactive_suggestions) override;
+      scoped_refptr<ProactiveSuggestions> proactive_suggestions) override;
 
  private:
   // DefaultVoiceInteractionObserver:

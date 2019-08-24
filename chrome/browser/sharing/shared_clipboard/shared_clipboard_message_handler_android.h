@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_MESSAGE_HANDLER_ANDROID_H_
 #define CHROME_BROWSER_SHARING_SHARED_CLIPBOARD_SHARED_CLIPBOARD_MESSAGE_HANDLER_ANDROID_H_
 
+#include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 
@@ -19,6 +20,12 @@ class SharedClipboardMessageHandler : public SharingMessageHandler {
   // SharingMessageHandler implementation:
   void OnMessage(
       const chrome_browser_sharing::SharingMessage& message) override;
+
+  void SendMessageToDevice(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& j_guid,
+      const base::android::JavaParamRef<jstring>& j_message,
+      const base::android::JavaParamRef<jobject>& j_runnable);
 
  private:
   SharingService* sharing_service_ = nullptr;

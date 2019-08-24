@@ -24,10 +24,10 @@ struct ServiceWorkerObjectInfo {
   url.mojom.Url url;
 
   // This object's host in the browser process.
-  associated ServiceWorkerObjectHost host_ptr_info;
+  pending_associated_remote<ServiceWorkerObjectHost> host_remote;
 
   // This object in the renderer process.
-  associated ServiceWorkerObject& request;
+  pending_associated_receiver<ServiceWorkerObject> receiver;
 };
 
 // The browser-side host of one ServiceWorker JavaScript object. The renderer

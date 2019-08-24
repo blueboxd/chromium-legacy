@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/resolver/viewport_style_resolver.h"
 
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
@@ -262,9 +263,12 @@ float ViewportStyleResolver::ViewportArgumentValue(CSSPropertyID id) const {
   if (primitive_value->IsNumber() || primitive_value->IsPx())
     return primitive_value->GetFloatValue();
 
-  if (primitive_value->IsFontRelativeLength()) {
-    return primitive_value->GetFloatValue() *
-           initial_style_->GetFontDescription().ComputedSize();
+  if (const auto* numeric_literal =
+          DynamicTo<CSSNumericLiteralValue>(primitive_value)) {
+    if (numeric_literal->IsFontRelativeLength()) {
+      return primitive_value->GetFloatValue() *
+             initial_style_->GetFontDescription().ComputedSize();
+    }
   }
 
   if (primitive_value->IsPercentage()) {

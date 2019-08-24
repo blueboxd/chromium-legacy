@@ -38,8 +38,9 @@ namespace blink {
 
 CSSToLengthConversionData::FontSizes::FontSizes(float em,
                                                 float rem,
-                                                const Font* font)
-    : em_(em), rem_(rem), font_(font) {
+                                                const Font* font,
+                                                float zoom)
+    : em_(em), rem_(rem), font_(font), zoom_(zoom) {
   // FIXME: Improve RAII of StyleResolverState to use const Font&.
   DCHECK(font_);
 }
@@ -48,16 +49,13 @@ CSSToLengthConversionData::FontSizes::FontSizes(const ComputedStyle* style,
                                                 const ComputedStyle* root_style)
     : FontSizes(style->ComputedFontSize(),
                 root_style ? root_style->ComputedFontSize() : 1.0f,
-                &style->GetFont()) {}
+                &style->GetFont(),
+                style->EffectiveZoom()) {}
 
 float CSSToLengthConversionData::FontSizes::Ex() const {
   DCHECK(font_);
   const SimpleFontData* font_data = font_->PrimaryFont();
   DCHECK(font_data);
-
-  // FIXME: We have a bug right now where the zoom will be applied twice to EX
-  // units. We really need to compute EX using fontMetrics for the original
-  // specifiedSize and not use our actual constructed layoutObject font.
   if (!font_data || !font_data->GetFontMetrics().HasXHeight())
     return em_ / 2.0f;
   return font_data->GetFontMetrics().XHeight();
@@ -68,6 +66,10 @@ float CSSToLengthConversionData::FontSizes::Ch() const {
   const SimpleFontData* font_data = font_->PrimaryFont();
   DCHECK(font_data);
   return font_data ? font_data->GetFontMetrics().ZeroWidth() : 0;
+}
+
+float CSSToLengthConversionData::FontSizes::Zoom() const {
+  return zoom_ ? zoom_ : 1;
 }
 
 CSSToLengthConversionData::ViewportSize::ViewportSize(

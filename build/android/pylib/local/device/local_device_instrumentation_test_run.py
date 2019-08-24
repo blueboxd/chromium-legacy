@@ -398,9 +398,8 @@ class LocalDeviceInstrumentationTestRun(
         if self._test_instance.package_info:
           cmdline_file = self._test_instance.package_info.cmdline_file
         else:
-          logging.warning(
-              'No PackageInfo found, falling back to using flag file %s',
-              cmdline_file)
+          raise Exception('No PackageInfo found but'
+                          '--use-apk-under-test-flags-file is specified.')
       self._flag_changers[str(device)] = flag_changer.FlagChanger(
           device, cmdline_file)
 

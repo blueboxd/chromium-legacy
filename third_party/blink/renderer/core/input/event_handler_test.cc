@@ -1048,7 +1048,7 @@ class NavigationCapturingFrameClient : public EmptyLocalFrameClient {
  public:
   NavigationCapturingFrameClient() = default;
 
-  bool NavigateBackForward(int offset) const override {
+  bool NavigateBackForward(int offset, bool from_script) const override {
     offset_ = offset;
     return true;
   }

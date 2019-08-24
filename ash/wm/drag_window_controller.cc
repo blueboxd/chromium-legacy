@@ -28,6 +28,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
@@ -37,6 +38,37 @@ namespace {
 
 // The maximum opacity of the drag phantom window.
 constexpr float kDragPhantomMaxOpacity = 0.8f;
+
+// Computes an opacity value for |dragged_window| or for a drag window that
+// represents |dragged_window| on |root_window|.
+float GetDragWindowOpacity(aura::Window* root_window,
+                           aura::Window* dragged_window,
+                           bool is_touch_dragging) {
+  // For touch dragging, the present function should only need to be used for
+  // the drag windows; the opacity of the original window can simply be set to 1
+  // in the constructor and reverted in the destructor.
+  DCHECK(!is_touch_dragging || dragged_window->GetRootWindow() != root_window);
+  // For mouse dragging, if the mouse is in |root_window|, then return 1.
+  if (!is_touch_dragging && Shell::Get()->cursor_manager()->GetDisplay().id() ==
+                                display::Screen::GetScreen()
+                                    ->GetDisplayNearestWindow(root_window)
+                                    .id()) {
+    return 1.f;
+  }
+
+  // Return an opacity value based on what fraction of |dragged_window| is
+  // contained in |root_window|.
+  gfx::Rect dragged_window_bounds = dragged_window->bounds();
+  ::wm::ConvertRectToScreen(dragged_window->parent(), &dragged_window_bounds);
+  gfx::RectF transformed_dragged_window_bounds(dragged_window_bounds);
+  gfx::TransformAboutPivot(dragged_window_bounds.origin(),
+                           dragged_window->transform())
+      .TransformRect(&transformed_dragged_window_bounds);
+  gfx::RectF visible_bounds(root_window->GetBoundsInScreen());
+  visible_bounds.Intersect(transformed_dragged_window_bounds);
+  return kDragPhantomMaxOpacity * visible_bounds.size().GetArea() /
+         transformed_dragged_window_bounds.size().GetArea();
+}
 
 }  // namespace
 
@@ -53,10 +85,9 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     DCHECK(!drag_window_);
   }
 
-  void Update(aura::Window* original_window,
-              const gfx::Point& drag_location_in_screen) {
-    const float opacity = GetDragWindowOpacity(root_window_, original_window,
-                                               drag_location_in_screen);
+  void Update(aura::Window* original_window, bool is_touch_dragging) {
+    const float opacity =
+        GetDragWindowOpacity(root_window_, original_window, is_touch_dragging);
     if (opacity == 0.f) {
       delete drag_window_;
       // Make sure drag_window_ is reset so that new drag window will be created
@@ -173,32 +204,16 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(DragWindowDetails);
 };
 
-// static
-float DragWindowController::GetDragWindowOpacity(
-    aura::Window* root_window,
-    aura::Window* dragged_window,
-    const gfx::Point& drag_location_in_screen) {
-  const gfx::Rect root_bounds = root_window->GetBoundsInScreen();
-  if (root_bounds.Contains(drag_location_in_screen))
-    return 1.f;
-
-  gfx::Rect dragged_window_bounds = dragged_window->bounds();
-  ::wm::ConvertRectToScreen(dragged_window->parent(), &dragged_window_bounds);
-  gfx::RectF transformed_dragged_window_bounds(dragged_window_bounds);
-  gfx::TransformAboutPivot(dragged_window_bounds.origin(),
-                           dragged_window->transform())
-      .TransformRect(&transformed_dragged_window_bounds);
-  gfx::RectF visible_bounds(root_bounds);
-  visible_bounds.Intersect(transformed_dragged_window_bounds);
-  return kDragPhantomMaxOpacity * visible_bounds.size().GetArea() /
-         transformed_dragged_window_bounds.size().GetArea();
-}
-
-DragWindowController::DragWindowController(aura::Window* window)
-    : window_(window) {
+DragWindowController::DragWindowController(aura::Window* window,
+                                           bool is_touch_dragging)
+    : window_(window),
+      is_touch_dragging_(is_touch_dragging),
+      old_opacity_(window->layer()->opacity()) {
   DCHECK(drag_windows_.empty());
   display::Screen* screen = display::Screen::GetScreen();
   display::Display current = screen->GetDisplayNearestWindow(window_);
+
+  window->layer()->SetOpacity(1.f);
 
   for (const display::Display& display : screen->GetAllDisplays()) {
     if (current.id() == display.id())
@@ -208,11 +223,20 @@ DragWindowController::DragWindowController(aura::Window* window)
   }
 }
 
-DragWindowController::~DragWindowController() = default;
+DragWindowController::~DragWindowController() {
+  window_->layer()->SetOpacity(old_opacity_);
+}
 
-void DragWindowController::Update(const gfx::Point& drag_location_in_screen) {
+void DragWindowController::Update() {
+  // For mouse dragging, update the opacity of the original window. For touch
+  // dragging, just leave that opacity at 1.
+  if (!is_touch_dragging_) {
+    window_->layer()->SetOpacity(GetDragWindowOpacity(
+        window_->GetRootWindow(), window_, /*is_touch_dragging=*/false));
+  }
+
   for (std::unique_ptr<DragWindowDetails>& details : drag_windows_)
-    details->Update(window_, drag_location_in_screen);
+    details->Update(window_, is_touch_dragging_);
 }
 
 int DragWindowController::GetDragWindowsCountForTest() const {

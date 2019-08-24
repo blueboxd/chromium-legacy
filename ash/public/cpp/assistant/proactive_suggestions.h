@@ -10,16 +10,17 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/hash/hash.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 
 namespace ash {
 
 // An immutable data structure to represent a renderable set of proactive
 // suggestions. Note that instances of ProactiveSuggestions are considered
 // equivalent if they hash to the same value.
-class ASH_PUBLIC_EXPORT ProactiveSuggestions {
+class ASH_PUBLIC_EXPORT ProactiveSuggestions
+    : public base::RefCounted<ProactiveSuggestions> {
  public:
   ProactiveSuggestions(const std::string& description, const std::string& html);
-  ~ProactiveSuggestions();
 
   // Returns true if |a| is considered equivalent to |b|.
   static bool AreEqual(const ProactiveSuggestions* a,
@@ -32,6 +33,10 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions {
   const std::string html() const { return html_; }
 
  private:
+  // Destruction only allowed by base::RefCounted<ProactiveSuggestions>.
+  friend class base::RefCounted<ProactiveSuggestions>;
+  ~ProactiveSuggestions();
+
   const std::string description_;
   const std::string html_;
 

@@ -663,7 +663,8 @@ void LocalFrameClientImpl::LoadErrorPage(int reason) {
     web_frame_->Client()->LoadErrorPage(reason);
 }
 
-bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
+bool LocalFrameClientImpl::NavigateBackForward(int offset,
+                                               bool from_script) const {
   WebViewImpl* webview = web_frame_->ViewImpl();
   DCHECK(webview->Client());
   DCHECK(web_frame_->Client());
@@ -676,7 +677,8 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
 
   bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(web_frame_->GetFrame());
-  web_frame_->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
+  web_frame_->Client()->NavigateBackForwardSoon(offset, has_user_gesture,
+                                                from_script);
   return true;
 }
 

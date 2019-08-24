@@ -1043,9 +1043,8 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
       "disabled", !service || disallowed_by_policy ||
                       !service->GetUserSettings()->IsSyncAllowedByPlatform());
   sync_status->SetBoolean("signedIn", identity_manager->HasPrimaryAccount());
-  sync_status->SetString(
-      "signedInUsername",
-      signin_ui_util::GetAuthenticatedUsername(identity_manager));
+  sync_status->SetString("signedInUsername",
+                         signin_ui_util::GetAuthenticatedUsername(profile_));
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
   return sync_status;

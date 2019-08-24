@@ -53,6 +53,7 @@ static_library("ntp_tiles") {
     "//components/suggestions",
   ]
   deps = [
+    "//build:branding_buildflags",
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/google/core/common",
@@ -85,6 +86,7 @@ source_set("unit_tests") {
   deps = [
     ":ntp_tiles",
     "//base/test:test_support",
+    "//build:branding_buildflags",
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/history/core/test",

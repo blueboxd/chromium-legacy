@@ -32,6 +32,9 @@ ProactiveSuggestionsClientImpl::ProactiveSuggestionsClientImpl(
 }
 
 ProactiveSuggestionsClientImpl::~ProactiveSuggestionsClientImpl() {
+  if (delegate_)
+    delegate_->OnProactiveSuggestionsClientDestroying();
+
   WebContentsObserver::Observe(nullptr);
 
   if (active_browser_)
@@ -39,6 +42,19 @@ ProactiveSuggestionsClientImpl::~ProactiveSuggestionsClientImpl() {
 
   BrowserList::RemoveObserver(this);
   assistant_state_.RemoveObserver(this);
+}
+
+void ProactiveSuggestionsClientImpl::SetDelegate(Delegate* delegate) {
+  if (delegate == delegate_)
+    return;
+
+  delegate_ = delegate;
+
+  // When a |delegate_| is set, we need to notify it of the active set of
+  // proactive suggestions, if such a set exists. Failure to do so will leave
+  // the |delegate_| without an update until the active browser context changes.
+  if (delegate_ && active_proactive_suggestions_)
+    delegate_->OnProactiveSuggestionsChanged(active_proactive_suggestions_);
 }
 
 void ProactiveSuggestionsClientImpl::OnBrowserRemoved(Browser* browser) {
@@ -135,16 +151,16 @@ void ProactiveSuggestionsClientImpl::SetActiveUrl(const GURL& url) {
 }
 
 void ProactiveSuggestionsClientImpl::SetActiveProactiveSuggestions(
-    std::unique_ptr<ash::ProactiveSuggestions> proactive_suggestions) {
-  size_t proactive_suggestions_hash =
-      ash::ProactiveSuggestions::ToHash(proactive_suggestions.get());
-  if (proactive_suggestions_hash == active_proactive_suggestions_hash_)
+    scoped_refptr<ash::ProactiveSuggestions> proactive_suggestions) {
+  if (ash::ProactiveSuggestions::AreEqual(
+          proactive_suggestions.get(), active_proactive_suggestions_.get())) {
     return;
+  }
 
-  active_proactive_suggestions_hash_ = proactive_suggestions_hash;
+  active_proactive_suggestions_ = std::move(proactive_suggestions);
 
   if (delegate_)
-    delegate_->OnProactiveSuggestionsChanged(std::move(proactive_suggestions));
+    delegate_->OnProactiveSuggestionsChanged(active_proactive_suggestions_);
 }
 
 void ProactiveSuggestionsClientImpl::UpdateActiveState() {

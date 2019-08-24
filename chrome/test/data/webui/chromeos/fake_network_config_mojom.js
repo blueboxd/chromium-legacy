@@ -85,7 +85,7 @@ class FakeNetworkConfig {
   getDeviceStateList() {
     return new Promise(resolve => {
       this.extensionApi_.getDeviceStates(devices => {
-        let result = devices.map(device => this.deviceToMojo_(device));
+        let result = devices.map(device => this.deviceToMojo(device));
         resolve({result: result});
       });
     });
@@ -124,11 +124,18 @@ class FakeNetworkConfig {
   }
 
   /**
+   * @param {string} type
+   * @return {?chrome.networkingPrivate.DeviceStateProperties}
+   */
+  getDeviceStateForTest(type) {
+    return this.deviceToMojo(this.extensionApi_.getDeviceStateForTest(type));
+  }
+
+  /**
    * @param {!chrome.networkingPrivate.DeviceStateProperties} device
    * @return {!chromeos.networkConfig.mojom.DeviceStateProperties}
-   * @private
    */
-  deviceToMojo_(device) {
+  deviceToMojo(device) {
     return {
       deviceState: OncMojo.getDeviceStateTypeFromString(device.State),
       type: OncMojo.getNetworkTypeFromString(device.Type),

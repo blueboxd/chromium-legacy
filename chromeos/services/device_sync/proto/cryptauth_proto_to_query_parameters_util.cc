@@ -33,6 +33,8 @@ const char kBatchGetFeatureStatusesRequestContext[] = "context";
 const char kBatchGetFeatureStatusesRequestDeviceIds[] = "device_ids";
 const char kBatchGetFeatureStatusesRequestFeatureTypes[] = "feature_types";
 
+const char kGetDevicesActivityStatusRequestContext[] = "context";
+
 }  // namespace
 
 std::vector<std::pair<std::string, std::string>>
@@ -104,6 +106,18 @@ BatchGetFeatureStatusesRequestToQueryParameters(
     pairs.emplace_back(kBatchGetFeatureStatusesRequestFeatureTypes,
                        feature_type);
   }
+
+  return pairs;
+}
+
+std::vector<std::pair<std::string, std::string>>
+GetDevicesActivityStatusRequestToQueryParameters(
+    const GetDevicesActivityStatusRequest& request) {
+  std::vector<std::pair<std::string, std::string>> pairs =
+      RequestContextToQueryParameters(
+          request.context(),
+          std::string(kGetDevicesActivityStatusRequestContext) +
+              kSubFieldDelimiter);
 
   return pairs;
 }

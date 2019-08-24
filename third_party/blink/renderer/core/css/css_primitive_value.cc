@@ -100,12 +100,6 @@ bool CSSPrimitiveValue::IsCalculatedPercentageWithLength() const {
          To<CSSMathFunctionValue>(this)->Category() == kCalcPercentLength;
 }
 
-bool CSSPrimitiveValue::IsFontRelativeLength() const {
-  // TODO(crbug.com/979895): Move this function to |CSSNumericLiteralValue|.
-  return IsNumericLiteralValue() &&
-         To<CSSNumericLiteralValue>(this)->IsFontRelativeLength();
-}
-
 bool CSSPrimitiveValue::IsResolution() const {
   // TODO(crbug.com/983613): Either support math functions on resolutions; or
   // provide a justification for not supporting it, and move this function to

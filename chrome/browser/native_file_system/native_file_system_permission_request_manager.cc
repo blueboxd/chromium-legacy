@@ -88,6 +88,11 @@ void NativeFileSystemPermissionRequestManager::DequeueAndShowRequest() {
   current_request_ = std::move(queued_requests_.front());
   queued_requests_.pop_front();
 
+  if (auto_response_for_test_) {
+    OnPermissionDialogResult(*auto_response_for_test_);
+    return;
+  }
+
   ShowNativeFileSystemPermissionDialog(
       current_request_->data.origin, current_request_->data.path,
       current_request_->data.is_directory,

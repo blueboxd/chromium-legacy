@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_data_dispatcher.h"
+#include "ash/login/ui/parent_access_widget.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
@@ -46,11 +47,6 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   // succeeded/failed.
   using OnAuthenticateCallback =
       base::OnceCallback<void(base::Optional<bool> success)>;
-  // Callback for Parent Access Code validations. It is called when the widget
-  // is about to be dismissed. |success| tells whether the validation was
-  // successful.
-  using OnParentAccessWidgetFinished =
-      base::RepeatingCallback<void(bool success)>;
 
   explicit LoginScreenController(SystemTrayNotifier* system_tray_notifier);
   ~LoginScreenController() override;
@@ -121,7 +117,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void ShowGuestButtonInOobe(bool show) override;
   void ShowParentAccessButton(bool show) override;
   void ShowParentAccessWidget(const AccountId& child_account_id,
-                              OnParentAccessWidgetFinished callback,
+                              ParentAccessWidget::OnExitCallback callback,
                               ParentAccessRequestReason reason,
                               bool extra_dimmer,
                               base::Time validation_time) override;
@@ -162,8 +158,6 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
 
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
-
-  std::unique_ptr<ParentAccessWidget> parent_access_widget_;
 
   base::WeakPtrFactory<LoginScreenController> weak_factory_{this};
 

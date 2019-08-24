@@ -215,7 +215,7 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
 
 bool ChromeExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers()
     const {
-  return GetCurrentChannel() == version_info::Channel::UNKNOWN;
+  return GetCurrentChannel() <= version_info::Channel::CANARY;
 }
 
 void ChromeExtensionsClient::AddOriginAccessPermissions(

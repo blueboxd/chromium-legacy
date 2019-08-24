@@ -56,6 +56,8 @@ const ViewModifiersTestData kViewModifiersTestData[] = {
      IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIMEZONE,
      IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION}};
 
+// TODO(crbug.com/996828): Make (at least some of) the tests use
+// ParentAccessWidget.
 class ParentAccessViewTest : public LoginTestBase {
  protected:
   ParentAccessViewTest()

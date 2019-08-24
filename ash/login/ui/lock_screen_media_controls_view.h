@@ -71,7 +71,8 @@ class ASH_EXPORT LockScreenMediaControlsView
     kNotShownNoSession,
     kNotShownSessionPaused,
     kShown,
-    kMaxValue = kShown
+    kNotShownSessionSensitive,
+    kMaxValue = kNotShownSessionSensitive
   };
 
   struct Callbacks {

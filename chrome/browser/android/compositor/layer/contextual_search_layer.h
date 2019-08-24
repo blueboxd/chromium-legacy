@@ -76,7 +76,6 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      bool search_bar_border_visible,
                      float search_bar_border_height,
                      bool search_bar_shadow_visible,
-                     float search_bar_shadow_opacity,
                      bool quick_action_icon_visible,
                      bool thumbnail_visible,
                      float custom_image_visibility_percentage,
@@ -97,7 +96,9 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float divider_line_x_offset,
                      bool touch_highlight_visible,
                      float touch_highlight_x_offset,
-                     float touch_highlight_width);
+                     float touch_highlight_width,
+                     int rounded_bar_top_resource_id,
+                     int separator_line_color);
 
   void SetThumbnail(const SkBitmap* thumbnail);
 

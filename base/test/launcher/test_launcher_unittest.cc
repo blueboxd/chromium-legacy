@@ -278,6 +278,7 @@ TEST_F(TestLauncherTest, RunningMultipleIterations) {
 TEST_F(TestLauncherTest, SuccessOnRetryTests) {
   AddMockedTests("Test", {"firstTest"});
   SetUpExpectCalls();
+  command_line->AppendSwitchASCII("test-launcher-retry-limit", "2");
   using ::testing::_;
   std::vector<std::string> tests_names = {"Test.firstTest"};
   EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
@@ -292,11 +293,12 @@ TEST_F(TestLauncherTest, SuccessOnRetryTests) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
-// Test TestLauncher will retry continuing failing test 3 times by default,
+// Test TestLauncher will retry continuing failing test up to retry limit,
 // before eventually failing and returning false.
 TEST_F(TestLauncherTest, FailOnRetryTests) {
   AddMockedTests("Test", {"firstTest"});
   SetUpExpectCalls();
+  command_line->AppendSwitchASCII("test-launcher-retry-limit", "2");
   using ::testing::_;
   std::vector<std::string> tests_names = {"Test.firstTest"};
   EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
@@ -304,7 +306,7 @@ TEST_F(TestLauncherTest, FailOnRetryTests) {
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
                                  _))
-      .Times(4)
+      .Times(3)
       .WillRepeatedly(OnTestResult(&test_launcher, "Test.firstTest",
                                    TestResult::TEST_FAILURE));
   EXPECT_FALSE(test_launcher.Run(command_line.get()));
@@ -314,6 +316,7 @@ TEST_F(TestLauncherTest, FailOnRetryTests) {
 TEST_F(TestLauncherTest, RetryPreTests) {
   AddMockedTests("Test", {"firstTest", "PRE_PRE_firstTest", "PRE_firstTest"});
   SetUpExpectCalls();
+  command_line->AppendSwitchASCII("test-launcher-retry-limit", "2");
   std::vector<TestResult> results = {
       GenerateTestResult("Test.PRE_PRE_firstTest", TestResult::TEST_SUCCESS),
       GenerateTestResult("Test.PRE_firstTest", TestResult::TEST_FAILURE),
@@ -703,13 +706,13 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   // will need to change accordingly.
   std::string file_name = "../../base/test/launcher/test_launcher_unittest.cc";
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_PassTest", file_name, 657));
+      val, "MockUnitTests.DISABLED_PassTest", file_name, 660));
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_FailTest", file_name, 661));
+      val, "MockUnitTests.DISABLED_FailTest", file_name, 664));
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_CrashTest", file_name, 665));
+      val, "MockUnitTests.DISABLED_CrashTest", file_name, 668));
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_NoRunTest", file_name, 669));
+      val, "MockUnitTests.DISABLED_NoRunTest", file_name, 672));
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);

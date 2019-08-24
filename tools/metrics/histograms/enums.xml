@@ -6758,6 +6758,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Timed out"/>
 </enum>
 
+<enum name="BooleanToggled">
+  <int value="0" label="Toggled off"/>
+  <int value="1" label="Toggled on"/>
+</enum>
+
 <enum name="BooleanTooMany">
   <int value="0" label="Correct"/>
   <int value="1" label="Too many"/>
@@ -17841,6 +17846,7 @@ Called by update_net_error_codes.py.-->
   <int value="595" label="CaretHighlightEnabled"/>
   <int value="596" label="MonoAudioEnabled"/>
   <int value="597" label="AutoclickEnabled"/>
+  <int value="598" label="RendererCodeIntegrity"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -34191,6 +34197,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Not shown - no session"/>
   <int value="2" label="Not shown - session paused"/>
   <int value="3" label="Shown"/>
+  <int value="4" label="Not shown - session sensitive"/>
 </enum>
 
 <enum name="LockScreenNoteAppStatusOnLaunch">
@@ -34263,6 +34270,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2142665444" label="ScrollableTabStrip:disabled"/>
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
   <int value="-2141247271" label="AndroidOmniboxPreviewsBadge:enabled"/>
+  <int value="-2139379065" label="StoragePressureUI:enabled"/>
   <int value="-2138883960" label="AutofillRejectCompanyBirthyearName:disabled"/>
   <int value="-2136259447" label="PasswordManagerOnboardingAndroid:disabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
@@ -34389,6 +34397,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1996233283"
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
   <int value="-1992319691" label="AvoidFlashBetweenNavigation:enabled"/>
+  <int value="-1990614981" label="StoragePressureUI:disabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
   <int value="-1985239289" label="AutofillRichMetadataQueries:enabled"/>
@@ -34637,6 +34646,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1670137340"
       label="OptimizeLoadingIPCForSmallResources:disabled"/>
   <int value="-1669486359" label="ImportantSitesInCBD:enabled"/>
+  <int value="-1664795930" label="StorageAccessAPI:disabled"/>
   <int value="-1663410466" label="top-document-isolation"/>
   <int value="-1663125441" label="OptInImeMenu:enabled"/>
   <int value="-1662646099" label="NTPOfflinePageSuggestions:enabled"/>
@@ -35197,6 +35207,7 @@ from previous Chrome versions.
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
   <int value="-957200826" label="enable-spdy-proxy-auth"/>
   <int value="-956696029" label="scheduler-configuration"/>
+  <int value="-953215709" label="StorageAccessAPI:enabled"/>
   <int value="-951394314" label="top-chrome-md"/>
   <int value="-950793721" label="TranslateUI2016Q2:disabled"/>
   <int value="-950384924" label="OmniboxDisableInstantExtendedLimit:enabled"/>
@@ -43396,6 +43407,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Chrome process launch failed"/>
 </enum>
 
+<enum name="NotificationSchedulerImpressionEvent">
+  <int value="0" label="New suppression"/>
+  <int value="1" label="Suppression released"/>
+  <int value="2" label="Suppression expired"/>
+</enum>
+
 <enum name="NotificationSchedulerUserActionType">
   <int value="0" label="Click"/>
   <int value="1" label="Button Click"/>
@@ -48875,6 +48892,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="tapdown"/>
   <int value="2" label="tapunconfirmed"/>
   <int value="3" label="tapdown + tapunconfirmed"/>
+</enum>
+
+<enum name="PreviewOrOriginServerConnection">
+  <int value="0" label="Connected to the origin server"/>
+  <int value="1" label="Connected to the preview server"/>
 </enum>
 
 <enum name="PreviewsContextMenuActionLoFi">

@@ -280,7 +280,6 @@ void ResourceDispatcher::OnRequestComplete(
   }
 
   network::URLLoaderCompletionStatus renderer_status(status);
-  // TODO(toyoshim): Consider to convert status.cors_preflight_timing_info here.
   if (status.completion_time.is_null()) {
     // No completion timestamp is provided, leave it as is.
   } else if (request_info->remote_request_start.is_null() ||

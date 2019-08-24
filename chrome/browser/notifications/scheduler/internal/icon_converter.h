@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_ICON_CONVERTER_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_ICON_CONVERTER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/notifications/scheduler/internal/icon_converter_result.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace notifications {
@@ -18,8 +20,10 @@ namespace notifications {
 // and to decode strings to icons.
 class IconConverter {
  public:
-  using EncodeCallback = base::OnceCallback<void(std::vector<std::string>)>;
-  using DecodeCallback = base::OnceCallback<void(std::vector<SkBitmap>)>;
+  using EncodeCallback =
+      base::OnceCallback<void(std::unique_ptr<EncodeResult>)>;
+  using DecodeCallback =
+      base::OnceCallback<void(std::unique_ptr<DecodeResult>)>;
 
   // Converts SkBitmap icons to strings.
   virtual void ConvertIconToString(std::vector<SkBitmap> images,

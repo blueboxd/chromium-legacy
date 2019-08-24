@@ -95,10 +95,6 @@ class AutocompleteProviderClient {
   // most commonly-used URLs from that set.
   virtual std::vector<base::string16> GetBuiltinsToProvideAsUserTypes() = 0;
 
-  // The timestamp for the last visit of the page being displayed in the current
-  // tab.
-  virtual base::Time GetCurrentVisitTimestamp() const = 0;
-
   // TODO(crbug/925072): clean up component update service if it's confirmed
   // it's not needed for on device head provider.
   // The component update service instance which will be used by on device

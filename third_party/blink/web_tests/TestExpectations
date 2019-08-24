@@ -3257,6 +3257,9 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webxr/xrStationaryReferenceSpace_floorlevel_updates.https.html [ Failure Timeout ]
@@ -6127,7 +6130,6 @@ crbug.com/835943 [ Release ] http/tests/appcache/non-html.xhtml [ Crash Pass Fai
 
 # Sheriff 2019-03-28
 crbug.com/946890 external/wpt/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure Pass Crash ]
-crbug.com/946990 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 crbug.com/946719 http/tests/serviceworker/resolve-after-window-close.html [ Crash Pass ]
 crbug.com/946714 [ Release ] http/tests/devtools/elements/styles-4/styles-live-locations-leak.js [ Pass Timeout ]
 crbug.com/946699 [ Release ] http/tests/devtools/network/network-filter-service-worker.js [ Pass Timeout ]
@@ -6524,6 +6526,7 @@ crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/canvas-large-p
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canvas.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
+crbug.com/997149 [ Linux ] external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Pass Failure ]
 
 crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
 crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]

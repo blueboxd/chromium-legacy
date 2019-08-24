@@ -58,20 +58,5 @@ ServiceDirectoryClient::ProcessInstance() {
   return service_directory_client_ptr.get();
 }
 
-ScopedServiceDirectoryClientForCurrentProcessForTest::
-    ScopedServiceDirectoryClientForCurrentProcessForTest(
-        fidl::InterfaceHandle<::fuchsia::io::Directory> directory)
-    : old_client_(std::move(*ServiceDirectoryClient::ProcessInstance())) {
-  *ServiceDirectoryClient::ProcessInstance() =
-      std::make_unique<ServiceDirectoryClient>(std::move(directory));
-  client_ = ServiceDirectoryClient::ProcessInstance()->get();
-}
-
-ScopedServiceDirectoryClientForCurrentProcessForTest::
-    ~ScopedServiceDirectoryClientForCurrentProcessForTest() {
-  DCHECK_EQ(ServiceDirectoryClient::ProcessInstance()->get(), client_);
-  *ServiceDirectoryClient::ProcessInstance() = std::move(old_client_);
-}
-
 }  // namespace fuchsia
 }  // namespace base

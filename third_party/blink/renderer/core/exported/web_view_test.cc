@@ -523,8 +523,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
   EXPECT_EQ(SK_ColorBLUE, host->background_color());
 
-  // This closes the WebView also.
-  web_view->MainFrameWidget()->Close();
+  web_view->Close();
 }
 
 TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
@@ -2658,8 +2657,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(event)));
-  // This also closes the WebView.
-  web_view->MainFrameWidget()->Close();
+  web_view->Close();
 }
 
 TEST_F(WebViewTest, LongPressEmptyDiv) {

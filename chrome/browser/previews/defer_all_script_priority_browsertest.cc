@@ -16,22 +16,18 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
-#include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_optimization_guide.h"
-#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/test/browser_test.h"
@@ -196,21 +192,14 @@ class DeferAllScriptPriorityBrowserTest
   // processed before returning.
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
-    // Register a QuitClosure for when the next hint update is started below.
-    base::RunLoop run_loop;
-    PreviewsServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetBrowserContext()))
-        ->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    base::HistogramTester histogram_tester;
 
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
-    run_loop.Run();
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
   }
 
   // Performs a navigation to |url| and waits for the the url's host's hints to

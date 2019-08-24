@@ -1,0 +1,29 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="actions.html">
+<link rel="import" href="browser_proxy.html">
+<link rel="import" href="main_view.html">
+<link rel="import" href="store_client.html">
+<link rel="import" href="store.html">
+<link rel="import" href="../../../settings_shared_css.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<!-- Load api_listener after other assets have initialized. -->
+<link rel="import" href="api_listener.html">
+
+<dom-module id="settings-app-management-page">
+  <template>
+    <style include="settings-shared"></style>
+    <div id="main-container">
+      <!-- TODO: enable dom-switch after main-view is working -->
+      <!-- <app-management-dom-switch id="view-selector"
+          route="[[selectRouteId_(currentPage_, searchTerm_)]]">
+        <template> -->
+          <app-management-main-view route-id="main-view">
+          </app-management-main-view>
+        <!-- </template>
+      </app-management-dom-switch> -->
+    </div>
+  </template>
+  <script src="app_management_page.js"></script>
+</dom-module>

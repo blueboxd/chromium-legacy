@@ -347,6 +347,9 @@ cr.define('settings_about_page', function() {
         await initNewPage();
         await checkReleaseNotesOnline(true);
         await checkReleaseNotesOffline(false);
+
+        page.$$('#releaseNotesOnline').click();
+        return aboutBrowserProxy.whenCalled('launchReleaseNotes');
       });
 
       test('RegulatoryInfo', async () => {

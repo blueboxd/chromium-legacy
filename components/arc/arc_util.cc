@@ -57,9 +57,8 @@ void OnSetArcVmCpuRestriction(
     LOG(ERROR) << "Failed to call SetVmCpuRestriction";
     return;
   }
-  if (response->success())
-    return;
-  // TODO(yusukes): Add logging here once Concierge side is ready.
+  if (!response->success())
+    LOG(ERROR) << "SetVmCpuRestriction for ARCVM failed";
 }
 
 void SetArcVmCpuRestriction(bool do_restrict) {
@@ -77,6 +76,19 @@ void SetArcVmCpuRestriction(bool do_restrict) {
 
   client->SetVmCpuRestriction(request,
                               base::BindOnce(&OnSetArcVmCpuRestriction));
+}
+
+void SetArcContainerCpuRestriction(bool do_restrict) {
+  if (!chromeos::SessionManagerClient::Get()) {
+    LOG(WARNING) << "SessionManagerClient is not available";
+    return;
+  }
+
+  const login_manager::ContainerCpuRestrictionState state =
+      do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
+                  : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
+  chromeos::SessionManagerClient::Get()->SetArcCpuRestriction(
+      state, base::BindOnce(SetArcCpuRestrictionCallback, state));
 }
 
 }  // namespace
@@ -243,19 +255,9 @@ void SetArcCpuRestriction(bool do_restrict) {
 
   if (IsArcVmEnabled()) {
     SetArcVmCpuRestriction(do_restrict);
-    // TODO(yusukes): Add return; here once Concierge side is ready.
+  } else {
+    SetArcContainerCpuRestriction(do_restrict);
   }
-
-  if (!chromeos::SessionManagerClient::Get()) {
-    LOG(WARNING) << "SessionManagerClient is not available";
-    return;
-  }
-
-  const login_manager::ContainerCpuRestrictionState state =
-      do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
-                  : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
-  chromeos::SessionManagerClient::Get()->SetArcCpuRestriction(
-      state, base::BindOnce(SetArcCpuRestrictionCallback, state));
 }
 
 bool IsArcForceCacheAppIcon() {

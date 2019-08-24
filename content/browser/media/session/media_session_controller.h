@@ -68,6 +68,8 @@ class CONTENT_EXPORT MediaSessionController
       const media_session::MediaPosition& position);
 
  private:
+  friend class MediaSessionControllerTest;
+
   const MediaPlayerId id_;
 
   // Non-owned pointer; |media_web_contents_observer_| is the owner of |this|.

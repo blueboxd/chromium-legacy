@@ -42,6 +42,15 @@ DarkModeClassification DarkModeImageClassifier::Classify(
   if (result != DarkModeClassification::kNotClassified)
     return result;
 
+  // TODO(v.paturi): This is a limitation that arises because of the way
+  // GetSamples() is implemented. Try to get rid of this limitation.
+  if (src_rect.Width() <= kBlocksCount1D ||
+      src_rect.Height() <= kBlocksCount1D) {
+    result = DarkModeClassification::kDoNotApplyFilter;
+    image->AddDarkModeClassification(src_rect, result);
+    return result;
+  }
+
   result = image->CheckTypeSpecificConditionsForDarkMode(src_rect, this);
   if (result != DarkModeClassification::kNotClassified) {
     image->AddDarkModeClassification(src_rect, result);
@@ -62,7 +71,7 @@ DarkModeClassification DarkModeImageClassifier::Classify(
 base::Optional<DarkModeImageClassifier::Features>
 DarkModeImageClassifier::GetFeatures(Image* image, const FloatRect& src_rect) {
   SkBitmap bitmap;
-  if (!image->GetImageBitmap(src_rect, &bitmap))
+  if (!image->GetBitmap(src_rect, &bitmap))
     return base::nullopt;
 
   if (pixels_to_sample_ > src_rect.Width() * src_rect.Height())

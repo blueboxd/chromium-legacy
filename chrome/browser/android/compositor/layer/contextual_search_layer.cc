@@ -78,7 +78,6 @@ void ContextualSearchLayer::SetProperties(
     bool search_bar_border_visible,
     float search_bar_border_height,
     bool search_bar_shadow_visible,
-    float search_bar_shadow_opacity,
     bool quick_action_icon_visible,
     bool thumbnail_visible,
     float custom_image_visibility_percentage,
@@ -99,7 +98,9 @@ void ContextualSearchLayer::SetProperties(
     float divider_line_x_offset,
     bool touch_highlight_visible,
     float touch_highlight_x_offset,
-    float touch_highlight_width) {
+    float touch_highlight_width,
+    int rounded_bar_top_resource_id,
+    int separator_line_color) {
   // Round values to avoid pixel gap between layers.
   search_bar_height = floor(search_bar_height);
 
@@ -110,9 +111,9 @@ void ContextualSearchLayer::SetProperties(
 
   OverlayPanelLayer::SetResourceIds(
       search_term_resource_id, panel_shadow_resource_id,
-      search_bar_shadow_resource_id, search_provider_icon_resource_id,
-      drag_handlebar_resource_id, open_tab_icon_resource_id,
-      close_icon_resource_id);
+      rounded_bar_top_resource_id, search_bar_shadow_resource_id,
+      search_provider_icon_resource_id, drag_handlebar_resource_id,
+      open_tab_icon_resource_id, close_icon_resource_id);
 
   float content_view_top = search_bar_bottom + search_promo_height;
   float should_render_bar_border = search_bar_border_visible
@@ -126,9 +127,8 @@ void ContextualSearchLayer::SetProperties(
       search_panel_width, search_panel_height, search_bar_background_color,
       search_bar_margin_side, search_bar_margin_top, search_bar_height,
       search_bar_top, search_term_opacity, should_render_bar_border,
-      search_bar_border_height, search_bar_shadow_visible,
-      search_bar_shadow_opacity, icon_color, drag_handlebar_color,
-      close_icon_opacity);
+      search_bar_border_height, search_bar_shadow_visible, icon_color,
+      drag_handlebar_color, close_icon_opacity, separator_line_color);
 
   bool is_rtl = l10n_util::IsLayoutRtl();
 

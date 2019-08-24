@@ -476,8 +476,8 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-bool ShellContentBrowserClient::PreSpawnRenderer(
-    sandbox::TargetPolicy* policy) {
+bool ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                                 RendererSpawnFlags flags) {
   // Add sideloaded font files for testing. See also DIR_WINDOWS_FONTS
   // addition in |StartSandboxedProcess|.
   std::vector<std::string> font_files = switches::GetSideloadFontFiles();

@@ -175,19 +175,15 @@ void ReverbConvolver::ProcessInBackground() {
 void ReverbConvolver::Process(const AudioChannel* source_channel,
                               AudioChannel* destination_channel,
                               uint32_t frames_to_process) {
-  bool is_safe = source_channel && destination_channel &&
-                 source_channel->length() >= frames_to_process &&
-                 destination_channel->length() >= frames_to_process;
-  DCHECK(is_safe);
-  if (!is_safe)
-    return;
+  DCHECK(source_channel);
+  DCHECK(destination_channel);
+  DCHECK_GE(source_channel->length(), frames_to_process);
+  DCHECK_GE(destination_channel->length(), frames_to_process);
 
   const float* source = source_channel->Data();
   float* destination = destination_channel->MutableData();
-  bool is_data_safe = source && destination;
-  DCHECK(is_data_safe);
-  if (!is_data_safe)
-    return;
+  DCHECK(source);
+  DCHECK(destination);
 
   // Feed input buffer (read by all threads)
   input_buffer_.Write(source, frames_to_process);

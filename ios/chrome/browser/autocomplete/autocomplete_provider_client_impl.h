@@ -54,9 +54,6 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
   std::string GetEmbedderRepresentationOfAboutScheme() const override;
   std::vector<base::string16> GetBuiltinURLs() override;
   std::vector<base::string16> GetBuiltinsToProvideAsUserTypes() override;
-  // GetCurrentVisitTimestamp is only used by the contextual zero suggest
-  // suggestions for desktop users. This implementation returns base::Time().
-  base::Time GetCurrentVisitTimestamp() const override;
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
   bool IsOffTheRecord() const override;

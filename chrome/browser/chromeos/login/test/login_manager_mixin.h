@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/session_flags_manager.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
 

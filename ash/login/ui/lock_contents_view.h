@@ -24,6 +24,7 @@
 #include "ash/session/session_observer.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -91,10 +92,6 @@ class ASH_EXPORT LockContentsView
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
 
-    // Simulates that parent access code validation finished with the result
-    // specified in |access_granted|.
-    void SimulateParentAccessValidationFinished(bool access_granted);
-
    private:
     LockContentsView* const view_;
   };
@@ -130,7 +127,7 @@ class ASH_EXPORT LockContentsView
 
   void FocusNextUser();
   void FocusPreviousUser();
-  void ShowParentAccessDialog(bool show);
+  void ShowParentAccessDialog();
   void RequestSecurityTokenPin(SecurityTokenPinRequest request);
   void ClearSecurityTokenPinRequest();
 
@@ -320,8 +317,10 @@ class ASH_EXPORT LockContentsView
   // Called when the easy unlock icon is tapped.
   void OnEasyUnlockIconTapped();
 
-  // Called when parent access validation finished.
-  void OnParentAccessValidationFinished(bool access_granted);
+  // Called when parent access validation finished for the user with
+  // |account_id|.
+  void OnParentAccessValidationFinished(const AccountId& account_id,
+                                        bool access_granted);
 
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not
@@ -435,6 +434,8 @@ class ASH_EXPORT LockContentsView
   // the auto-login timer can be reset.
   std::unique_ptr<AutoLoginUserActivityHandler>
       auto_login_user_activity_handler_;
+
+  base::WeakPtrFactory<LockContentsView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockContentsView);
 };

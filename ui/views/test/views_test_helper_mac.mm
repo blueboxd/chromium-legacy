@@ -48,10 +48,12 @@ void ViewsTestHelperMac::SetUp() {
   // activations and fullscreen mode. This allows interactive_ui_tests to test
   // the actual OS window activation and fullscreen codepaths.
   if (!ui_controls::IsUIControlsEnabled()) {
-    faked_focus_.reset(new ui::test::ScopedFakeNSWindowFocus);
-    faked_fullscreen_.reset(new ui::test::ScopedFakeNSWindowFullscreen);
+    faked_focus_ = std::make_unique<ui::test::ScopedFakeNSWindowFocus>();
+    faked_fullscreen_ =
+        std::make_unique<ui::test::ScopedFakeNSWindowFullscreen>();
   }
-  faked_full_keyboard_access_.reset(new ui::test::ScopedFakeFullKeyboardAccess);
+  faked_full_keyboard_access_ =
+      std::make_unique<ui::test::ScopedFakeFullKeyboardAccess>();
 }
 
 void ViewsTestHelperMac::TearDown() {

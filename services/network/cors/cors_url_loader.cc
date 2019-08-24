@@ -398,10 +398,7 @@ void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   // to expect it also happens even during redirect handling.
   DCHECK(!deferred_redirect_url_ || status.error_code != net::OK);
 
-  URLLoaderCompletionStatus modified_status(status);
-  if (status.error_code == net::OK)
-    modified_status.cors_preflight_timing_info.swap(preflight_timing_info_);
-  HandleComplete(modified_status);
+  HandleComplete(status);
 }
 
 void CorsURLLoader::StartRequest() {
@@ -453,7 +450,7 @@ void CorsURLLoader::StartRequest() {
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin
   // of the url is equal to the origin of the request.
   if (!fetch_cors_flag_ || !NeedsPreflight(request_)) {
-    StartNetworkRequest(net::OK, base::nullopt, base::nullopt);
+    StartNetworkRequest(net::OK, base::nullopt);
     return;
   }
 
@@ -466,17 +463,13 @@ void CorsURLLoader::StartRequest() {
 
 void CorsURLLoader::StartNetworkRequest(
     int error_code,
-    base::Optional<CorsErrorStatus> status,
-    base::Optional<PreflightTimingInfo> preflight_timing_info) {
+    base::Optional<CorsErrorStatus> status) {
   if (error_code != net::OK) {
     HandleComplete(status ? URLLoaderCompletionStatus(*status)
                           : URLLoaderCompletionStatus(error_code));
     return;
   }
   DCHECK(!status);
-
-  if (preflight_timing_info)
-    preflight_timing_info_.push_back(*preflight_timing_info);
 
   // Here we overwrite the credentials mode sent to URLLoader because
   // network::URLLoader doesn't understand |kSameOrigin|.

@@ -957,8 +957,10 @@ static const char kExpectedPDFAXTreePattern[] =
     "          inlineTextBox '1 '\n"
     "          inlineTextBox 'First Section'\n"
     "      paragraph\n"
-    "        staticText 'This is the *rst section.1'\n"
+    "        staticText 'This is the *rst section.'\n"
     "          inlineTextBox 'This is the *rst section.'\n"
+    "      paragraph\n"
+    "        staticText '1'\n"
     "          inlineTextBox '1'\n"
     "    region 'Page 2'\n"
     "      paragraph\n"
@@ -966,8 +968,10 @@ static const char kExpectedPDFAXTreePattern[] =
     "          inlineTextBox '1.1 '\n"
     "          inlineTextBox 'First Subsection'\n"
     "      paragraph\n"
-    "        staticText 'This is the *rst subsection.2'\n"
+    "        staticText 'This is the *rst subsection.'\n"
     "          inlineTextBox 'This is the *rst subsection.'\n"
+    "      paragraph\n"
+    "        staticText '2'\n"
     "          inlineTextBox '2'\n"
     "    region 'Page 3'\n"
     "      paragraph\n"
@@ -1152,78 +1156,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
   WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
 }
 #endif
-
-// Test that Previous/NextOnLineId attributes are present and properly linked on
-// InlineTextBoxes within a line.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityNextOnLine) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-
-  GURL test_pdf_url(
-      embedded_test_server()->GetURL("/pdf/accessibility/next-on-line.pdf"));
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
-
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
-  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
-
-  // The test file contains several lines delimited with '<<' and '>>' markers.
-  // We loop over the content looking for these markers, and ensure that the
-  // NextOnLine and PreviousOnLine attributes are properly linked for all
-  // InlineTextBoxes within each delimited line.
-  int current_line = 0;
-  bool currently_in_delimited_line = false;
-  int32_t previous_node_id = 0;
-  int32_t previous_node_next_id = 0;
-
-  for (const auto& node : ax_tree.nodes) {
-    if (node.role != ax::mojom::Role::kInlineTextBox)
-      continue;
-
-    std::string name =
-        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
-    base::StringPiece trimmed_name =
-        base::TrimWhitespaceASCII(name, base::TRIM_ALL);
-
-    ASSERT_FALSE(trimmed_name.starts_with("<<") && trimmed_name.ends_with(">>"))
-        << "test is not useful if the runs have been pre-merged; consider "
-           "changing the input file";
-
-    if (trimmed_name.starts_with("<<")) {
-      // Started a delimited line; there should be no PreviousOnLine id.
-      ASSERT_FALSE(currently_in_delimited_line);
-      current_line++;
-      currently_in_delimited_line = true;
-      ASSERT_FALSE(
-          node.HasIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId))
-          << "line " << current_line;
-    } else if (currently_in_delimited_line) {
-      // We're in the middle of a delimited line; the previous node's
-      // NextOnLineId should point to us, and our PreviousOnLine id should point
-      // to the previous node.
-      ASSERT_EQ(node.id, previous_node_next_id) << "line " << current_line;
-      int32_t prev_id =
-          node.GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId);
-      ASSERT_EQ(prev_id, previous_node_id) << "line " << current_line;
-    }
-
-    if (trimmed_name.ends_with(">>")) {
-      // This is the end of a delimited line; there should be no NextOnLine id.
-      // (The previous node ids were already checked above.)
-      ASSERT_TRUE(currently_in_delimited_line);
-      currently_in_delimited_line = false;
-      ASSERT_FALSE(node.HasIntAttribute(ax::mojom::IntAttribute::kNextOnLineId))
-          << "line " << current_line;
-    }
-
-    // Keep track of the previous node & its NextOnLine id so that we can test
-    // against them when we encounter the next node.
-    previous_node_id = node.id;
-    previous_node_next_id =
-        node.GetIntAttribute(ax::mojom::IntAttribute::kNextOnLineId);
-  }
-  ASSERT_FALSE(currently_in_delimited_line);
-  ASSERT_EQ(current_line, 2);
-}
 
 // Test that if the plugin tries to load a URL that redirects then it will fail
 // to load. This is to avoid the source origin of the document changing during
@@ -2291,6 +2223,156 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DidStopLoading) {
   content::WaitForLoadStop(web_contents);
 }
 
+// This test suite does a simple text-extraction based on the accessibility
+// internals, breaking lines & paragraphs where appropriate.  Unlike
+// TreeDumpTests, this allows us to verify the kNextOnLine and kPreviousOnLine
+// relationships.
+class PDFExtensionAccessibilityTextExtractionTest : public PDFExtensionTest {
+ public:
+  PDFExtensionAccessibilityTextExtractionTest() = default;
+  ~PDFExtensionAccessibilityTextExtractionTest() override = default;
+
+  void RunTextExtractionTest(const base::FilePath::CharType* pdf_file) {
+    base::FilePath test_path = ui_test_utils::GetTestFilePath(
+        base::FilePath(FILE_PATH_LITERAL("pdf")),
+        base::FilePath(FILE_PATH_LITERAL("accessibility")));
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath pdf_path = test_path.Append(pdf_file);
+
+    RunTest(pdf_path, "pdf/accessibility");
+  }
+
+ private:
+  class TestExpectationsLocator
+      : public content::AccessibilityTestExpectationsLocator {
+   public:
+    TestExpectationsLocator() = default;
+    ~TestExpectationsLocator() override = default;
+
+    base::FilePath::StringType GetExpectedFileSuffix() override {
+      return FILE_PATH_LITERAL("-expected.txt");
+    }
+    base::FilePath::StringType GetVersionSpecificExpectedFileSuffix() override {
+      return FILE_PATH_LITERAL("");
+    }
+  };
+
+  void RunTest(const base::FilePath& test_file_path, const char* file_dir) {
+    // Load the expectation file.
+    TestExpectationsLocator locator;
+    content::DumpAccessibilityTestHelper test_helper(&locator);
+    base::Optional<base::FilePath> expected_file_path =
+        test_helper.GetExpectationFilePath(test_file_path);
+    ASSERT_TRUE(expected_file_path) << "No expectation file present.";
+
+    base::Optional<std::vector<std::string>> expected_lines =
+        test_helper.LoadExpectationFile(*expected_file_path);
+    ASSERT_TRUE(expected_lines) << "Couldn't load expectation file.";
+
+    // Enable accessibility and load the test file.
+    content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+    GURL test_pdf_url(embedded_test_server()->GetURL(
+        "/" + std::string(file_dir) + "/" +
+        test_file_path.BaseName().MaybeAsASCII()));
+    WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+    ASSERT_TRUE(guest_contents);
+    WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
+
+    // Extract the text content.
+    ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
+    auto actual_lines = CollectLines(ax_tree);
+
+    // Validate the dump against the expectation file.
+    EXPECT_TRUE(test_helper.ValidateAgainstExpectation(
+        test_file_path, *expected_file_path, actual_lines, *expected_lines));
+  }
+
+ private:
+  std::vector<std::string> CollectLines(ui::AXTreeUpdate ax_tree) {
+    std::vector<std::string> lines;
+
+    int previous_node_id = 0;
+    int previous_node_next_id = 0;
+    std::string line;
+    bool found_embedded_object = false;
+    for (const auto& node : ax_tree.nodes) {
+      // Ignore everything before the embedded object (the root of the PDF).
+      if (node.role == ax::mojom::Role::kEmbeddedObject)
+        found_embedded_object = true;
+      if (!found_embedded_object)
+        continue;
+
+      // StaticText begins a new paragraph.
+      if (node.role == ax::mojom::Role::kStaticText && !line.empty()) {
+        lines.push_back(line);
+        lines.push_back("\u00b6");  // pilcrow/paragraph mark, Alt+0182
+        line.clear();
+      }
+
+      // We collect all inline text boxes within the paragraph.
+      if (node.role != ax::mojom::Role::kInlineTextBox)
+        continue;
+
+      std::string name =
+          node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+      base::StringPiece trimmed_name =
+          base::TrimString(name, "\r\n", base::TRIM_TRAILING);
+      int prev_id =
+          node.GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId);
+      if (previous_node_next_id == node.id) {
+        // Previous node pointed to us, so we are part of the same line.
+        EXPECT_EQ(previous_node_id, prev_id)
+            << "Expect this node to point to previous node.";
+        trimmed_name.AppendToString(&line);
+      } else {
+        // Not linked with the previous node; this is a new line.
+        EXPECT_EQ(previous_node_next_id, 0)
+            << "Previous node pointed to something unexpected.";
+        EXPECT_EQ(prev_id, 0)
+            << "Our back pointer points to something unexpected.";
+        if (!line.empty())
+          lines.push_back(line);
+        line = trimmed_name.as_string();
+      }
+
+      previous_node_id = node.id;
+      previous_node_next_id =
+          node.GetIntAttribute(ax::mojom::IntAttribute::kNextOnLineId);
+    }
+    if (!line.empty())
+      lines.push_back(line);
+    return lines;
+  }
+};
+
+// Test that Previous/NextOnLineId attributes are present and properly linked on
+// InlineTextBoxes within a line.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       NextOnLine) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("next-on-line.pdf"));
+}
+
+// Test that a drop-cap is grouped with the correct line.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest, DropCap) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("drop-cap.pdf"));
+}
+
+// Test that simulated superscripts and subscripts don't cause a line break.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       SuperscriptSubscript) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("superscript-subscript.pdf"));
+}
+
+// Test that simple font and font-size changes in the middle of a line don't
+// cause line breaks.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       FontChange) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("font-change.pdf"));
+}
+
 class PDFExtensionAccessibilityTreeDumpTest
     : public PDFExtensionTest,
       public ::testing::WithParamInterface<size_t> {
@@ -2325,13 +2407,44 @@ class PDFExtensionAccessibilityTreeDumpTest
  private:
   using PropertyFilter = content::AccessibilityTreeFormatter::PropertyFilter;
 
+  //  See chrome/test/data/pdf/accessibility/readme.md for more info.
+  void ParsePdfForExtraDirectives(
+      const std::string& pdf_contents,
+      content::AccessibilityTreeFormatter* formatter,
+      std::vector<PropertyFilter>* property_filters) {
+    const char kCommentMark = '%';
+    for (const std::string& line : base::SplitString(
+             pdf_contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      if (line.size() > 1 && line[0] == kCommentMark) {
+        // Remove first character since it's the comment mark.
+        std::string trimmed_line = line.substr(1);
+        const std::string& allow_str = formatter->GetAllowString();
+        if (base::StartsWith(trimmed_line, allow_str,
+                             base::CompareCase::SENSITIVE)) {
+          property_filters->push_back(PropertyFilter(
+              base::UTF8ToUTF16(trimmed_line.substr(allow_str.size())),
+              PropertyFilter::ALLOW));
+        }
+      }
+    }
+  }
+
   void RunTest(const base::FilePath& test_file_path, const char* file_dir) {
-    // Set up the tree formatter.
+    std::string pdf_contents;
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::ReadFileToString(test_file_path, &pdf_contents));
+    }
+
+    // Set up the tree formatter. Parse filters and other directives in the test
+    // file.
     std::unique_ptr<content::AccessibilityTreeFormatter> formatter =
         test_pass_.create_formatter();
     std::vector<PropertyFilter> property_filters;
     formatter->AddDefaultFilters(&property_filters);
     AddDefaultFilters(&property_filters);
+    ParsePdfForExtraDirectives(pdf_contents, formatter.get(),
+                               &property_filters);
     formatter->SetPropertyFilters(property_filters);
 
     // Exit without running the test if we can't find an expectation file or if
@@ -2449,4 +2562,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, MultiPage) {
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
                        DirectionalTextRuns) {
   RunPDFTest(FILE_PATH_LITERAL("directional-text-runs.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextDirection) {
+  RunPDFTest(FILE_PATH_LITERAL("text-direction.pdf"));
 }

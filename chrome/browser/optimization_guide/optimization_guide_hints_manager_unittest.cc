@@ -844,6 +844,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   CreateServiceAndHintsManager(/*top_host_provider=*/nullptr);
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
 
   // Force timer to expire and schedule a hints fetch.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
@@ -861,6 +862,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   EXPECT_CALL(*top_host_provider, GetTopHosts(testing::_)).Times(0);
 
   CreateServiceAndHintsManager(top_host_provider.get());
+  InitializeWithDefaultConfig("1.0.0");
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -879,6 +881,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
 
   // Force timer to expire and schedule a hints fetch.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
@@ -896,6 +899,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherEnabledNoHostsToFetch) {
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
 
   // Force timer to expire and schedule a hints fetch.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
@@ -919,6 +923,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
+  InitializeWithDefaultConfig("1.0.0");
 
   // Force timer to expire and schedule a hints fetch.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
@@ -947,6 +952,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchFailed));
+  InitializeWithDefaultConfig("1.0.0");
 
   // Force timer to expire and schedule a hints fetch - first time.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
@@ -975,6 +981,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerFetchSucceeds) {
   CreateServiceAndHintsManager(top_host_provider.get());
   hints_manager()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+  InitializeWithDefaultConfig("1.0.0");
 
   // Force timer to expire and schedule a hints fetch that succeeds.
   MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));

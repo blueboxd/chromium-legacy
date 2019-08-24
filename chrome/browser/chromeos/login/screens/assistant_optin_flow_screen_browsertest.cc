@@ -15,7 +15,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
@@ -344,7 +344,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    chromeos::MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     // This prevents assistant setup flow dialog popping up immediately on user
     // start - the test will show a different dialog once the setup is done.
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);

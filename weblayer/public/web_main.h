@@ -46,12 +46,14 @@ struct WebMainParams {
   std::string major_version;
 };
 
-int WebMain(WebMainParams params,
+int WebMain(WebMainParams params
 #if defined(OS_WIN)
 #if !defined(WIN_CONSOLE_APP)
+            ,
             HINSTANCE instance
 #endif
 #else
+            ,
             int argc,
             const char** argv
 #endif

@@ -7,10 +7,10 @@ suite('InternetDetailPage', function() {
   let internetDetailPage = null;
 
   /** @type {NetworkingPrivate} */
-  let api_;
+  let api_ = null;
 
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
-  let mojoApi_;
+  let mojoApi_ = null;
 
   /** @type {Object} */
   let prefs_ = {
@@ -70,14 +70,14 @@ suite('InternetDetailPage', function() {
 
   function flushAsync() {
     Polymer.dom.flush();
-    return new Promise(resolve => {
-      internetDetailPage.async(resolve);
-    });
+    // Use setTimeout to wait for the next macrotask.
+    return new Promise(resolve => setTimeout(resolve));
   }
 
   function setNetworksForTest(networks) {
     api_.resetForTest();
     api_.addNetworksForTest(networks);
+    api_.onNetworkListChanged.callListeners();
   }
 
   function getAllowSharedProxy() {

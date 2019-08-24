@@ -81,6 +81,10 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // closing the folder.
   bool IsAnimationRunning() const;
 
+  // Helper for getting current app list config from the parents in the app list
+  // view hierarchy.
+  const AppListConfig& GetAppListConfig() const;
+
   AppsGridView* items_grid_view() { return items_grid_view_; }
 
   FolderHeaderView* folder_header_view() { return folder_header_view_; }

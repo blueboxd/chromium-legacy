@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.Referrer;
@@ -520,12 +521,15 @@ public class LoadUrlParams {
         if (mBaseUrlForDataUrl == null && mLoadUrlType == LoadURLType.DATA) {
             return true;
         }
-        return nativeIsDataScheme(mBaseUrlForDataUrl);
+        return LoadUrlParamsJni.get().isDataScheme(mBaseUrlForDataUrl);
     }
 
-    /**
-     * Parses |url| as a GURL on the native side, and
-     * returns true if it's scheme is data:.
-     */
-    private static native boolean nativeIsDataScheme(String url);
+    @NativeMethods
+    interface Natives {
+        /**
+         * Parses |url| as a GURL on the native side, and
+         * returns true if it's scheme is data:.
+         */
+        boolean isDataScheme(String url);
+    }
 }

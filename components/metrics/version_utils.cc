@@ -5,6 +5,7 @@
 #include "components/metrics/version_utils.h"
 
 #include "base/logging.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/version_info/version_info.h"
 
@@ -20,7 +21,7 @@ std::string GetVersionString() {
   version += "-64";
 #endif  // defined(ARCH_CPU_64_BITS)
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   bool is_chrome_branded = true;
 #else
   bool is_chrome_branded = false;

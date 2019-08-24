@@ -1574,16 +1574,21 @@ void RenderViewContextMenu::AppendCopyItem() {
                                   IDS_CONTENT_CONTEXT_COPY);
 }
 
+// Context menu item for shared clipboard on selected text.
 void RenderViewContextMenu::AppendSharedClipboardItems() {
-  // Context menu item for shared clipboard on selected text.
-  if (ShouldOfferSharedClipboard(browser_context_, params_.selection_text)) {
-    if (!shared_clipboard_context_menu_observer_) {
-      shared_clipboard_context_menu_observer_ =
-          std::make_unique<SharedClipboardContextMenuObserver>(this);
-      observers_.AddObserver(shared_clipboard_context_menu_observer_.get());
-    }
-    shared_clipboard_context_menu_observer_->InitMenu(params_);
+  if (!ShouldOfferSharedClipboard(browser_context_, params_.selection_text))
+    return;
+
+  // Do not show shared clipboard items for item that show click to call.
+  if (ShouldOfferClickToCallForURL(browser_context_, params_.link_url))
+    return;
+
+  if (!shared_clipboard_context_menu_observer_) {
+    shared_clipboard_context_menu_observer_ =
+        std::make_unique<SharedClipboardContextMenuObserver>(this);
+    observers_.AddObserver(shared_clipboard_context_menu_observer_.get());
   }
+  shared_clipboard_context_menu_observer_->InitMenu(params_);
 }
 
 void RenderViewContextMenu::AppendPrintItem() {
@@ -1819,8 +1824,7 @@ void RenderViewContextMenu::AppendPictureInPictureItem() {
 
 void RenderViewContextMenu::MaybeAppendClickToCallItem() {
   base::Optional<std::string> phone_number;
-  if (!params_.link_url.is_empty() &&
-      ShouldOfferClickToCallForURL(browser_context_, params_.link_url)) {
+  if (ShouldOfferClickToCallForURL(browser_context_, params_.link_url)) {
     phone_number = GetUnescapedURLContent(params_.link_url);
   } else if (!params_.selection_text.empty()) {
     phone_number = ExtractPhoneNumberForClickToCall(

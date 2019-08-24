@@ -63,7 +63,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
                 "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
                 "650-253-0000", "jon.doe@gmail.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
+                "4111111111111111", "1111", "12", "2050", "amex", R.drawable.amex_card,
                 CardType.UNKNOWN, profile1, "" /* serverId */));
         String profile2 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
                 "Rob Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
@@ -98,7 +98,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
 
         // This card has no billing address selected.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jane Doe",
-                "4242424242424242", "1111", "12", "2050", "visa", R.drawable.visa_card,
+                "4242424242424242", "1111", "12", "2050", "amex", R.drawable.amex_card,
                 CardType.UNKNOWN, profile6, "" /* serverId */));
 
         // Assign use stats so that incomplete profiles have the highest frecency, profile2 has the

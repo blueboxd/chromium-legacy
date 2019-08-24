@@ -19,10 +19,12 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/mojom/storage_manager.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"
+#include "third_party/re2/src/re2/re2.h"
 
 class Profile;
 
@@ -40,7 +42,8 @@ namespace settings {
 class StorageHandler
     : public ::settings::SettingsPageUIHandler,
       public arc::ConnectionObserver<arc::mojom::StorageManagerInstance>,
-      public arc::ArcSessionManager::Observer {
+      public arc::ArcSessionManager::Observer,
+      public chromeos::disks::DiskMountManager::Observer {
  public:
   // Enumeration for device state about remaining space. These values must be
   // kept in sync with settings.StorageSpaceState in JS code.
@@ -65,6 +68,12 @@ class StorageHandler
   // arc::ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
+  // chromeos::disks::DiskMountManager::Observer:
+  void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
+                    chromeos::MountError error_code,
+                    const chromeos::disks::DiskMountManager::MountPointInfo&
+                        mount_info) override;
+
  private:
   // Handlers of JS messages.
   void HandleUpdateAndroidEnabled(const base::ListValue* unused_args);
@@ -72,6 +81,7 @@ class StorageHandler
   void HandleOpenDownloads(const base::ListValue* unused_args);
   void HandleOpenArcStorage(const base::ListValue* unused_args);
   void HandleClearDriveCache(const base::ListValue* unused_args);
+  void HandleUpdateExternalStorages(const base::ListValue* unused_args);
 
   // Callback called when clearing Drive cache is done.
   void OnClearDriveCacheDone(bool success);
@@ -125,6 +135,13 @@ class StorageHandler
   // Callback to save the fetched user sizes and update the UI.
   void OnGetOtherUserSize(base::Optional<cryptohome::BaseReply> reply);
 
+  // Updates list of external storages.
+  void UpdateExternalStorages();
+
+  // Returns true if the volume from |source_path| can be used as Android
+  // storage.
+  bool IsEligibleForAndroidStorage(std::string source_path);
+
   // Total size of cache data in browsing data.
   int64_t browser_cache_size_;
 
@@ -163,6 +180,7 @@ class StorageHandler
   const std::string source_name_;
   ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManager::Observer>
       arc_observer_;
+  const re2::RE2 special_volume_path_pattern_;
 
   base::WeakPtrFactory<StorageHandler> weak_ptr_factory_{this};
 

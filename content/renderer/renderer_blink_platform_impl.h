@@ -50,7 +50,6 @@ class SharedURLLoaderFactory;
 }
 
 namespace content {
-class BlinkInterfaceProviderImpl;
 class ChildURLLoaderFactoryBundle;
 class ThreadSafeSender;
 
@@ -173,8 +172,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::Platform::GraphicsInfo* gl_info) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
-  service_manager::Connector* GetConnector() override;
-  blink::InterfaceProvider* GetInterfaceProvider() override;
   void SetDisplayThreadPriority(base::PlatformThreadId thread_id) override;
   blink::BlameContext* GetTopLevelBlameContext() override;
   void RecordRappor(const char* metric,
@@ -224,7 +221,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Return the mojo interface for making CodeCache calls.
   blink::mojom::CodeCacheHost& GetCodeCacheHost();
 
-  std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
@@ -247,8 +243,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::scheduler::WebThreadScheduler* main_thread_scheduler_;
 
   TopLevelBlameContext top_level_blame_context_;
-
-  std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 
   blink::mojom::CodeCacheHostPtrInfo code_cache_host_info_;
   scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;

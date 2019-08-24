@@ -30,7 +30,6 @@
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -189,7 +188,7 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
               ->renderer()
               ->CreateWebSocketHandshakeThrottleProvider(),
           ChildThreadImpl::current()->thread_safe_sender(),
-          ChildThreadImpl::current()->GetConnector()->Clone()));
+          ChildThreadImpl::current()->child_process_host()));
   if (provider_context) {
     worker_fetch_context->set_controller_service_worker_mode(
         provider_context->GetControllerServiceWorkerMode());
@@ -217,7 +216,7 @@ WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
     ThreadSafeSender* thread_safe_sender,
-    std::unique_ptr<service_manager::Connector> service_manager_connection)
+    mojo::SharedRemote<mojom::ChildProcessHost> process_host)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
       service_worker_worker_client_registry_info_(
@@ -233,7 +232,7 @@ WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
-      service_manager_connection_(std::move(service_manager_connection)) {}
+      process_host_(std::move(process_host)) {}
 
 WebWorkerFetchContextImpl::~WebWorkerFetchContextImpl() {}
 
@@ -359,8 +358,7 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
   }
 
   blink::mojom::BlobRegistryPtr blob_registry_ptr;
-  service_manager_connection_->BindInterface(
-      mojom::kBrowserServiceName, mojo::MakeRequest(&blob_registry_ptr));
+  process_host_->BindHostReceiver(mojo::MakeRequest(&blob_registry_ptr));
   blob_registry_ =
       base::MakeRefCounted<base::RefCountedData<blink::mojom::BlobRegistryPtr>>(
           std::move(blob_registry_ptr));
@@ -560,7 +558,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorkerInternal(
           ? websocket_handshake_throttle_provider_->Clone(
                 std::move(task_runner))
           : nullptr,
-      thread_safe_sender_.get(), service_manager_connection_->Clone()));
+      thread_safe_sender_.get(), process_host_));
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
   new_context->ancestor_frame_id_ = ancestor_frame_id_;
   new_context->frame_request_blocker_ = frame_request_blocker_;

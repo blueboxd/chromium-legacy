@@ -201,7 +201,7 @@ public class AutofillAssistantPaymentRequestTestHelper {
 
         PersonalDataManager.CreditCard creditCard = new PersonalDataManager.CreditCard("",
                 "https://example.com", true, true, profileName, "4111111111111111", "1111", "12",
-                "2050", "visa", org.chromium.chrome.autofill_assistant.R.drawable.visa_card,
+                "2050", "amex", org.chromium.chrome.autofill_assistant.R.drawable.amex_card,
                 CardType.UNKNOWN, billingAddressId, "" /* serverId */);
         return setCreditCard(creditCard);
     }

@@ -18,6 +18,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -427,6 +428,11 @@ void AutocompleteController::Stop(bool clear_result) {
 void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.SupportsDeletion());
 
+  // This formula combines provider and result type into a single enum as
+  // defined in OmniboxProviderAndResultType in enums.xml.
+  auto combined_type = match.provider->AsOmniboxEventProviderType() * 100 +
+                       match.AsOmniboxEventResultType();
+
   // Delete duplicate matches attached to the main match first.
   for (auto it(match.duplicate_matches.begin());
        it != match.duplicate_matches.end(); ++it) {
@@ -434,8 +440,11 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
       it->provider->DeleteMatch(*it);
   }
 
-  if (match.deletable)
+  if (match.deletable) {
+    base::UmaHistogramSparse("Omnibox.SuggestionDeleted.ProviderAndResultType",
+                             combined_type);
     match.provider->DeleteMatch(match);
+  }
 
   OnProviderUpdate(true);
 

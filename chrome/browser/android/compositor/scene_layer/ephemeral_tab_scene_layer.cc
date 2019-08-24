@@ -59,16 +59,18 @@ void EphemeralTabSceneLayer::CreateEphemeralTabLayer(
 void EphemeralTabSceneLayer::SetResourceIds(JNIEnv* env,
                                             const JavaParamRef<jobject>& object,
                                             jint text_resource_id,
-                                            jint bar_background_resource_id,
+                                            jint panel_shadow_resource_id,
+                                            jint rounded_bar_top_resource_id,
                                             jint bar_shadow_resource_id,
                                             jint panel_icon_resource_id,
                                             jint drag_handlebar_resource_id,
                                             jint open_tab_icon_resource_id,
                                             jint close_icon_resource_id) {
   ephemeral_tab_layer_->SetResourceIds(
-      text_resource_id, bar_background_resource_id, bar_shadow_resource_id,
-      panel_icon_resource_id, drag_handlebar_resource_id,
-      open_tab_icon_resource_id, close_icon_resource_id);
+      text_resource_id, panel_shadow_resource_id, rounded_bar_top_resource_id,
+      bar_shadow_resource_id, panel_icon_resource_id,
+      drag_handlebar_resource_id, open_tab_icon_resource_id,
+      close_icon_resource_id);
 }
 
 void EphemeralTabSceneLayer::Update(JNIEnv* env,
@@ -96,14 +98,14 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
                                     jboolean bar_border_visible,
                                     jfloat bar_border_height,
                                     jboolean bar_shadow_visible,
-                                    jfloat bar_shadow_opacity,
                                     jint icon_color,
                                     jint drag_handlebar_color,
                                     jfloat favicon_opacity,
                                     jboolean progress_bar_visible,
                                     jfloat progress_bar_height,
                                     jfloat progress_bar_opacity,
-                                    jint progress_bar_completion) {
+                                    jint progress_bar_completion,
+                                    jint separator_line_color) {
   // NOTE(mdjones): It is possible to render the panel before content has been
   // created. If this is the case, do not attempt to access the WebContents
   // and instead pass null.
@@ -130,10 +132,10 @@ void EphemeralTabSceneLayer::Update(JNIEnv* env,
       progress_bar_background_resource_id, progress_bar_resource_id, dp_to_px,
       content_layer, panel_x, panel_y, panel_width, panel_height,
       bar_background_color, bar_margin_side, bar_margin_top, bar_height,
-      bar_border_visible, bar_border_height, bar_shadow_visible,
-      bar_shadow_opacity, icon_color, drag_handlebar_color, favicon_opacity,
-      progress_bar_visible, progress_bar_height, progress_bar_opacity,
-      progress_bar_completion);
+      bar_border_visible, bar_border_height, bar_shadow_visible, icon_color,
+      drag_handlebar_color, favicon_opacity, progress_bar_visible,
+      progress_bar_height, progress_bar_opacity, progress_bar_completion,
+      separator_line_color);
   // Make the layer visible if it is not already.
   ephemeral_tab_layer_->layer()->SetHideLayerAndSubtree(false);
 }

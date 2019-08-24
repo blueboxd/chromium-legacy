@@ -214,6 +214,12 @@ bool IsInLitePageRedirectControl() {
       features::kLitePageServerPreviews, "control_group", false);
 }
 
+bool LitePageRedirectPreviewShouldPreconnect() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "preconnect_on_slow_connections",
+      false);
+}
+
 bool LitePageRedirectPreviewShouldPresolve() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "preresolve_on_slow_connections",
@@ -234,9 +240,10 @@ GURL LitePageRedirectProbeURL() {
   return GURL("https://litepages.googlezip.net/e2e_probe");
 }
 
-base::TimeDelta LitePageRedirectPreviewPresolveInterval() {
+base::TimeDelta LitePageRedirectPreviewPreresolvePreconnectInterval() {
   return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-      features::kLitePageServerPreviews, "preresolve_interval_in_seconds", 60));
+      features::kLitePageServerPreviews,
+      "preresolveconnect_interval_in_seconds", 60));
 }
 
 base::TimeDelta LitePageRedirectPreviewProbeInterval() {

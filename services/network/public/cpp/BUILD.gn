@@ -107,8 +107,6 @@ jumbo_component("cpp_base") {
   sources = [
     "cors/cors_error_status.cc",
     "cors/cors_error_status.h",
-    "cors/preflight_timing_info.cc",
-    "cors/preflight_timing_info.h",
     "data_element.cc",
     "data_element.h",
     "http_raw_request_response_info.cc",
@@ -197,8 +195,8 @@ source_set("tests") {
     "cors/preflight_cache_unittest.cc",
     "cors/preflight_result_unittest.cc",
     "cross_thread_shared_url_loader_factory_info_unittest.cc",
-    "digitally_signed_mojom_traits_unittest.cc",
     "default_credentials_mojom_traits_unittest.cc",
+    "digitally_signed_mojom_traits_unittest.cc",
     "header_util_unittest.cc",
     "host_resolver_mojom_traits_unittest.cc",
     "ip_address_mojom_traits_unittest.cc",

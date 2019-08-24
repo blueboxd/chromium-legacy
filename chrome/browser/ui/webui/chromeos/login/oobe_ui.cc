@@ -181,10 +181,11 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
 
 void AddFingerprintResources(content::WebUIDataSource* source) {
   int animation_id;
+  bool is_lottie_animation = false;
   switch (quick_unlock::GetFingerprintLocation()) {
     case quick_unlock::FingerprintLocation::TABLET_POWER_BUTTON:
-      animation_id =
-          IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_POWER_BUTTON_ANIMATION;
+      is_lottie_animation = true;
+      animation_id = IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION;
       break;
     case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
       animation_id =
@@ -194,7 +195,20 @@ void AddFingerprintResources(content::WebUIDataSource* source) {
       animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_TOP_RIGHT_ANIMATION;
       break;
   }
-  source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);
+  if (is_lottie_animation) {
+    source->AddResourcePath("fingerprint_scanner_animation.json", animation_id);
+
+    // To use lottie, the worker-src CSP needs to be updated for the web ui that
+    // is using it. Since as of now there are only a couple of webuis using
+    // lottie animations, this update has to be performed manually. As the usage
+    // increases, set this as the default so manual override is no longer
+    // required.
+    source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+  } else {
+    source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);
+  }
+
+  source->AddBoolean("useLottieAnimationForFingerprint", is_lottie_animation);
 }
 
 // Default and non-shared resource definition for kOobeDisplay display type.

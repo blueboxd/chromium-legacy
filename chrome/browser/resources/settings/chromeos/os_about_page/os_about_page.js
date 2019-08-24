@@ -253,7 +253,7 @@ Polymer({
 
   /** @private */
   onReleaseNotesTap_: function() {
-    this.aboutBrowserProxy_.showReleaseNotes();
+    this.aboutBrowserProxy_.launchReleaseNotes();
   },
 
   /** @private */

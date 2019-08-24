@@ -98,9 +98,14 @@ class ArCoreImpl : public ArCore {
       const base::span<const float> uvs) override;
   gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update(bool* camera_updated) override;
+
   mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() override;
+
+  mojom::XRAnchorsDataPtr GetAnchorsData() override;
+
   void Pause() override;
   void Resume() override;
+
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
 
@@ -120,12 +125,22 @@ class ArCoreImpl : public ArCore {
 
   // List of trackables - used for retrieving planes detected by ARCore. The
   // list will initially be null - call EnsureArCorePlanesList() before using
-  // it. Instead of creating it in every call to GetUpdatedPlanesData(), the
-  // list can be reused as it will be cleaned by calls to ArCore SDK.
+  // it.
+  // Allows reuse of the list across updates; ARCore clears the list on each
+  // call to the ARCore SDK.
   internal::ScopedArCoreObject<ArTrackableList*> arcore_planes_;
+
+  // List of anchors - used for retrieving anchors tracked by ARCore. The list
+  // will initially be null - call EnsureArCoreAnchorsList() before using it.
+  // Allows reuse of the list across updates; ARCore clears the list on each
+  // call to the ARCore SDK.
+  internal::ScopedArCoreObject<ArAnchorList*> arcore_anchors_;
 
   // Initializes |arcore_planes_| list.
   void EnsureArCorePlanesList();
+
+  // Initializes |arcore_anchors_| list.
+  void EnsureArCoreAnchorsList();
 
   // Returns vector containing information about all planes updated in current
   // frame, assigning IDs for newly detected planes as needed.
@@ -137,17 +152,34 @@ class ArCoreImpl : public ArCore {
   // and unchanged planes. It excludes planes that are no longer being tracked.
   std::vector<int32_t> GetAllPlaneIds();
 
+  // Returns vector containing information about all anchors updated in the
+  // current frame.
+  std::vector<mojom::XRAnchorDataPtr> GetUpdatedAnchorsData();
+
+  // The result will contain IDs of all anchors still tracked in the current
+  // frame.
+  std::vector<int32_t> GetAllAnchorIds();
+
   int32_t next_id_ = 1;
   std::unordered_map<void*, int32_t> ar_plane_address_to_id_;
+  std::unordered_map<void*, int32_t> ar_anchor_address_to_id_;
 
   // Returns tuple containing plane id and a boolean signifying that the plane
-  // was created.
-  std::pair<int32_t, bool> CreateOrGetPlaneId(void* plane_address);
+  // was created. The result will be a nullopt in case the ID should be assigned
+  // but next ID would result in an integer overflow.
+  base::Optional<std::pair<int32_t, bool>> CreateOrGetPlaneId(
+      void* plane_address);
+  base::Optional<std::pair<int32_t, bool>> CreateOrGetAnchorId(
+      void* anchor_address);
 
   // Executes |fn| for each still tracked, non-subsumed plane present in
   // |arcore_planes_|.
   template <typename FunctionType>
   void ForEachArCorePlane(FunctionType fn);
+
+  // Executes |fn| for each still tracked anchor present in |arcore_anchors_|.
+  template <typename FunctionType>
+  void ForEachArCoreAnchor(FunctionType fn);
 
   // Must be last.
   base::WeakPtrFactory<ArCoreImpl> weak_ptr_factory_{this};

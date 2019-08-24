@@ -50,7 +50,6 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
-#include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
@@ -81,9 +80,11 @@
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -179,10 +180,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   // RenderThread may not exist in some tests.
   if (RenderThreadImpl::current()) {
     io_runner_ = RenderThreadImpl::current()->GetIOTaskRunner();
-    connector_ = RenderThreadImpl::current()
-                     ->GetServiceManagerConnection()
-                     ->GetConnector()
-                     ->Clone();
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
 #if defined(OS_LINUX)
     mojo::PendingRemote<font_service::mojom::FontService> font_service;
@@ -192,15 +189,19 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
         sk_make_sp<font_service::FontLoader>(std::move(font_service));
     SkFontConfigInterface::SetGlobal(font_loader_);
 #endif
-  } else {
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
   }
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   if (sandboxEnabled()) {
 #if defined(OS_MACOSX)
-    sandbox_support_.reset(new WebSandboxSupportMac(connector_.get()));
+    std::unique_ptr<service_manager::Connector> sandbox_connector;
+    if (auto* thread = RenderThreadImpl::current()) {
+      sandbox_connector = thread->GetConnector()->Clone();
+    } else {
+      service_manager::mojom::ConnectorRequest request;
+      sandbox_connector = service_manager::Connector::Create(&request);
+    }
+    sandbox_support_.reset(new WebSandboxSupportMac(sandbox_connector.get()));
 #else
     sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
 #endif
@@ -209,12 +210,10 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   }
 #endif
 
-  blink_interface_provider_.reset(
-      new BlinkInterfaceProviderImpl(connector_.get()));
   top_level_blame_context_.Initialize();
   main_thread_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
 
-  GetInterfaceProvider()->GetInterface(
+  GetBrowserInterfaceBrokerProxy()->GetInterface(
       mojo::MakeRequest(&code_cache_host_info_));
 }
 
@@ -282,7 +281,7 @@ RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
   network::mojom::URLLoaderFactoryPtr factory_ptr;
-  connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
+  ChildThread::Get()->BindHostReceiver(mojo::MakeRequest(&factory_ptr));
   return factory_ptr;
 }
 
@@ -884,14 +883,6 @@ void RendererBlinkPlatformImpl::RecordRappor(const char* metric,
 void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
                                                 const blink::WebURL& url) {
   GetContentClient()->renderer()->RecordRapporURL(metric, url);
-}
-
-service_manager::Connector* RendererBlinkPlatformImpl::GetConnector() {
-  return connector_.get();
-}
-
-blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
-  return blink_interface_provider_.get();
 }
 
 //------------------------------------------------------------------------------

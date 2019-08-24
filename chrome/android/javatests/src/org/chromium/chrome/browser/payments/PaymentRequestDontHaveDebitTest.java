@@ -54,7 +54,7 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
 
         // Should be available, but never pre-selected:
         helper.addServerCreditCard(new CreditCard("", "https://example.com", false, true, "Jon Doe",
-                "6011111111111117", "1117", "12", "2050", "discover", R.drawable.discover_card,
+                "6011111111111117", "1117", "12", "2050", "diners", R.drawable.diners_card,
                 CardType.UNKNOWN, billingAddressId, "server-id-2"));
 
         // Should not be available:
@@ -62,7 +62,7 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
                 "378282246310005", "0005", "12", "2050", "amex", R.drawable.amex_card,
                 CardType.CREDIT, billingAddressId, "server-id-3"));
         helper.addServerCreditCard(new CreditCard("", "https://example.com", false, true, "Jon Doe",
-                "5555555555554444", "4444", "12", "2050", "mastercard", R.drawable.mc_card,
+                "5555555555554444", "4444", "12", "2050", "jcb", R.drawable.jcb_card,
                 CardType.PREPAID, billingAddressId, "server-id-4"));
     }
 

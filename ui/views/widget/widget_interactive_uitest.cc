@@ -966,7 +966,7 @@ TEST_F(WidgetTestInteractive, FullscreenMaximizedWindowBounds) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.native_widget = new DesktopNativeWidgetAura(&widget);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.set_frame_type(Widget::FRAME_TYPE_FORCE_CUSTOM);
+  widget.set_frame_type(Widget::FrameType::kForceCustom);
   widget.Init(std::move(params));
   widget.SetBounds(gfx::Rect(0, 0, 200, 200));
   widget.Show();

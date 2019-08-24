@@ -243,3 +243,6 @@ crbug.com/983600 [ mojave amd-0x6821 ] Pixel_CSSFilterEffects_NoOverlays [ Retry
 [ linux ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
 [ mac ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
 [ mac ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+
+# Producing incorrect image on Win10 Intel HD 630 w/ 26.20.100.6912 drivers.
+crbug.com/997313 [ win intel-0x5912 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]

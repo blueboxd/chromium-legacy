@@ -71,10 +71,8 @@ namespace {
 constexpr wchar_t kDefaultMdmUrl[] =
     L"https://deviceenrollmentforwindows.googleapis.com/v1/discovery";
 
-// TODO(crbug.com/973115): Empty escrow service url will implicitly disable the
-// feature. It can be enabled by setting kRegMdmEscrowServiceServerUrl. When the
-// feature is ready, this url should be updated to production endpoint.
-constexpr wchar_t kDefaultEscrowServiceServerUrl[] = L"";
+constexpr wchar_t kDefaultEscrowServiceServerUrl[] =
+    L"https://devicepasswordescrowforwindows-pa.googleapis.com";
 
 template <typename T>
 T GetMdmFunctionPointer(const base::ScopedNativeLibrary& library,

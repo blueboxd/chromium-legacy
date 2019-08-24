@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/plugins/plugin_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -53,22 +53,14 @@ class FakePluginRegistryImpl : public mojom::blink::PluginRegistry {
 }  // namespace
 
 ScopedFakePluginRegistry::ScopedFakePluginRegistry() {
-  const char* interface_name = mojom::blink::PluginRegistry::Name_;
-  service_manager::Connector* connector = Platform::Current()->GetConnector();
-  auto browser_service_filter = service_manager::ServiceFilter::ByName(
-      Platform::Current()->GetBrowserServiceName());
-  DCHECK(!connector->HasBinderOverrideForTesting(browser_service_filter,
-                                                 interface_name));
-  connector->OverrideBinderForTesting(
-      browser_service_filter, interface_name,
+  Platform::Current()->GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+      mojom::blink::PluginRegistry::Name_,
       WTF::BindRepeating(&FakePluginRegistryImpl::Bind));
 }
 
 ScopedFakePluginRegistry::~ScopedFakePluginRegistry() {
-  Platform::Current()->GetConnector()->ClearBinderOverrideForTesting(
-      service_manager::ServiceFilter::ByName(
-          Platform::Current()->GetBrowserServiceName()),
-      mojom::blink::PluginRegistry::Name_);
+  Platform::Current()->GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+      mojom::blink::PluginRegistry::Name_, {});
 }
 
 }  // namespace blink

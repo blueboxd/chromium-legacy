@@ -600,8 +600,6 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       return selector;
     }
     case CSSSelector::kPseudoPart: {
-      if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
-        return nullptr;
       const CSSParserToken& ident = block.ConsumeIncludingWhitespace();
       if (ident.GetType() != kIdentToken || !block.AtEnd())
         return nullptr;

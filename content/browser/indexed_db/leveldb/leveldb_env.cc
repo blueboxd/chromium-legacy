@@ -32,13 +32,14 @@ namespace indexed_db {
 
 leveldb_env::Options GetLevelDBOptions(leveldb::Env* env,
                                        const leveldb::Comparator* comparator,
+                                       bool create_if_missing,
                                        size_t write_buffer_size,
                                        bool paranoid_checks) {
   static const leveldb::FilterPolicy* kIDBFilterPolicy =
       leveldb::NewBloomFilterPolicy(10);
   leveldb_env::Options options;
   options.comparator = comparator;
-  options.create_if_missing = true;
+  options.create_if_missing = create_if_missing;
   options.paranoid_checks = paranoid_checks;
   options.filter_policy = kIDBFilterPolicy;
   options.compression = leveldb::kSnappyCompression;
@@ -78,7 +79,8 @@ DefaultLevelDBFactory::OpenDB(const leveldb_env::Options& options,
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
 DefaultLevelDBFactory::OpenLevelDBState(
     const base::FilePath& file_name,
-    const leveldb::Comparator* ldb_comparator) {
+    const leveldb::Comparator* ldb_comparator,
+    bool create_if_missing) {
   // Please see docs/open_and_verify_leveldb_database.code2flow, and the
   // generated pdf (from https://code2flow.com).
   // The intended strategy here is to have this function match that flowchart,
@@ -90,19 +92,21 @@ DefaultLevelDBFactory::OpenLevelDBState(
   std::unique_ptr<leveldb::DB> db;
 
   if (file_name.empty()) {
+    if (!create_if_missing)
+      return {nullptr, leveldb::Status::NotFound("", ""), false};
+
     std::unique_ptr<leveldb::Env> in_memory_env =
         leveldb_chrome::NewMemEnv("indexed-db", LevelDBEnv::Get());
 
     constexpr int64_t kBytesInOneMegabyte = 1024 * 1024;
-    leveldb_env::Options in_memory_options =
-        GetLevelDBOptions(in_memory_env.get(), ldb_comparator,
-                          /* default of 4MB */ 4 * kBytesInOneMegabyte,
-                          /*paranoid_checks=*/false);
+    leveldb_env::Options in_memory_options = GetLevelDBOptions(
+        in_memory_env.get(), ldb_comparator, create_if_missing,
+        /* default of 4MB */ 4 * kBytesInOneMegabyte,
+        /*paranoid_checks=*/false);
     std::tie(db, status) = OpenDB(in_memory_options, std::string());
     if (!status.ok()) {
       LOG(ERROR) << "Failed to open in-memory LevelDB database: "
                  << status.ToString();
-      // Must match the other returns in this function for RVO.
       return {nullptr, status, false};
     }
 
@@ -113,7 +117,7 @@ DefaultLevelDBFactory::OpenLevelDBState(
   }
 
   leveldb_env::Options options =
-      GetLevelDBOptions(LevelDBEnv::Get(), ldb_comparator,
+      GetLevelDBOptions(LevelDBEnv::Get(), ldb_comparator, create_if_missing,
                         leveldb_env::WriteBufferSize(
                             base::SysInfo::AmountOfTotalDiskSpace(file_name)),
                         /*paranoid_checks=*/true);
@@ -121,6 +125,9 @@ DefaultLevelDBFactory::OpenLevelDBState(
   // ChromiumEnv assumes UTF8, converts back to FilePath before using.
   std::tie(db, status) = OpenDB(options, file_name.AsUTF8Unsafe());
   if (!status.ok()) {
+    if (!create_if_missing)
+      return {nullptr, leveldb::Status::NotFound("", ""), false};
+
     ReportLevelDBError("WebCore.IndexedDB.LevelDBOpenErrors", status);
 
     constexpr int64_t kBytesInOneKilobyte = 1024;
@@ -135,14 +142,12 @@ DefaultLevelDBFactory::OpenLevelDBState(
 
     LOG(ERROR) << "Failed to open LevelDB database from "
                << file_name.AsUTF8Unsafe() << "," << status.ToString();
-    // Must match the other returns in this function for RVO.
     return {nullptr, status, is_disk_full};
   }
 
   UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.IndexedDB.LevelDB.OpenTime",
                              base::TimeTicks::Now() - begin_time);
 
-  // Must match the other returns in this function for RVO.
   return {LevelDBState::CreateForDiskDB(ldb_comparator, std::move(db),
                                         std::move(file_name)),
           status, false};

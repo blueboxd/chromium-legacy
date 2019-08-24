@@ -45,9 +45,9 @@ class PLATFORM_EXPORT Locale {
   static Locale& DefaultLocale();
   static void ResetDefaultLocale();
 
-  String QueryString(WebLocalizedString::Name);
-  String QueryString(WebLocalizedString::Name, const String& parameter);
-  String QueryString(WebLocalizedString::Name,
+  String QueryString(int resource_id);
+  String QueryString(int resource_id, const String& parameter);
+  String QueryString(int resource_id,
                      const String& parameter1,
                      const String& parameter2);
   String ValidationMessageTooLongText(unsigned value_length, int max_length);

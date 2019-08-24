@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"

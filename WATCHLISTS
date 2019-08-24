@@ -881,9 +881,6 @@
     'dbus': {
       'filepath': 'dbus/',
     },
-    'deep_memory_profiler': {
-      'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
-    },
     'device_bluetooth': {
       'filepath': 'device/.*bluetooth'
     },
@@ -1687,9 +1684,6 @@
     'tbmv2_metrics': {
       'filepath': 'third_party/catapult/tracing/tracing/metrics'
     },
-    'tcmalloc': {
-      'filepath': 'third_party/tcmalloc'
-    },
     'telemetry': {
       'filepath': 'tools/perf/'
     },
@@ -2004,8 +1998,7 @@
                 'hanxi+watch@chromium.org',
                 'pkotwicz+watch@chromium.org'],
     'base': ['vmpstr+watch@chromium.org'],
-    'base_allocator': ['dmikurube@chromium.org',
-                       'wfh+watch@chromium.org'],
+    'base_allocator': ['wfh+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
     'base_scheduler': ['scheduler-bugs+base@chromium.org'],
     'base_thread_pool': ['fdoray+watch@chromium.org',
@@ -2250,7 +2243,6 @@
                            'stevenjb+watch@chromium.org'],
     'chromevox': ['anastasi+watch@google.com'],
     'clang_update': ['dcheng@chromium.org',
-                     'dmikurube+clang@chromium.org',
                      'eugenis+clang@chromium.org',
                      'gbiv+clang@chromium.org',
                      'glider+clang@chromium.org',
@@ -2303,7 +2295,6 @@
                     'pshmakov+watch@chromium.org'],
     'data_decoder': ['mbarowsky+watch-data-decoder@chromium.org'],
     'dbus': ['hashimoto+watch@chromium.org'],
-    'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_bluetooth': ['mattreynolds+watch@chromium.org',
                          'ortuno+watch@chromium.org'],
     'device_chooser': ['juncai+watch@chromium.org',
@@ -2605,7 +2596,6 @@
                                  'gogerald@chromium.org',
                                  'mattsimmons@chromium.org'],
     'tbmv2_metrics': ['speed-metrics-reviews@chromium.org'],
-    'tcmalloc': ['dmikurube@chromium.org'],
     'telemetry': ['telemetry-reviews@chromium.org'],
     'test_runner': ['jochen+watch@chromium.org',
                     'mlamouri+watch-test-runner@chromium.org',

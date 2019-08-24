@@ -24,22 +24,22 @@ struct WebServiceWorkerObjectInfo {
   WebServiceWorkerObjectInfo(int64_t version_id,
                              mojom::ServiceWorkerState state,
                              WebURL url,
-                             mojo::ScopedInterfaceEndpointHandle host_ptr_info,
-                             mojo::ScopedInterfaceEndpointHandle request)
+                             mojo::ScopedInterfaceEndpointHandle host_remote,
+                             mojo::ScopedInterfaceEndpointHandle receiver)
       : version_id(version_id),
         state(state),
         url(std::move(url)),
-        host_ptr_info(std::move(host_ptr_info)),
-        request(std::move(request)) {}
+        host_remote(std::move(host_remote)),
+        receiver(std::move(receiver)) {}
   WebServiceWorkerObjectInfo(WebServiceWorkerObjectInfo&& other) = default;
 
   int64_t version_id;
   mojom::ServiceWorkerState state;
   WebURL url;
-  // For blink::mojom::ServiceWorkerObjectHostAssociatedPtrInfo.
-  mojo::ScopedInterfaceEndpointHandle host_ptr_info;
-  // For blink::mojom::ServiceWorkerObjectAssociatedRequest.
-  mojo::ScopedInterfaceEndpointHandle request;
+  // For PendingAssociatedRemote<blink::mojom::ServiceWorkerObjectHost>.
+  mojo::ScopedInterfaceEndpointHandle host_remote;
+  // For AssociatedReceiver<blink::mojom::ServiceWorkerObject>.
+  mojo::ScopedInterfaceEndpointHandle receiver;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerObjectInfo);
 };

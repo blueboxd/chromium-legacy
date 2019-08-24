@@ -13,6 +13,7 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/renderer/extension_throttle_manager.h"
@@ -20,10 +21,6 @@
 
 namespace data_reduction_proxy {
 class DataReductionProxyThrottleManager;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 class ChromeContentRendererClient;
@@ -34,7 +31,7 @@ class URLLoaderThrottleProviderImpl
     : public content::URLLoaderThrottleProvider {
  public:
   URLLoaderThrottleProviderImpl(
-      service_manager::Connector* connector,
+      blink::ThreadSafeBrowserInterfaceBrokerProxy* broker,
       content::URLLoaderThrottleProviderType type,
       ChromeContentRendererClient* chrome_content_renderer_client);
 

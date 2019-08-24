@@ -5,6 +5,7 @@
 package org.chromium.chromium_linker_test_apk;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.Linker;
 
 /**
@@ -19,10 +20,13 @@ public class LinkerTests implements Linker.TestRunner {
 
     @Override
     public boolean runChecks(boolean isBrowserProcess) {
-        return nativeCheckForSharedRelros(isBrowserProcess);
+        return LinkerTestsJni.get().checkForSharedRelros(isBrowserProcess);
     }
 
-    // Check that there are shared RELRO sections in the current process,
-    // and that they are properly mapped read-only. Returns true on success.
-    private static native boolean nativeCheckForSharedRelros(boolean isBrowserProcess);
+    @NativeMethods
+    interface Natives {
+        // Check that there are shared RELRO sections in the current process,
+        // and that they are properly mapped read-only. Returns true on success.
+        boolean checkForSharedRelros(boolean isBrowserProcess);
+    }
 }

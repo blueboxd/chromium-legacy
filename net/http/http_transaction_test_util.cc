@@ -368,11 +368,6 @@ void MockNetworkTransaction::StopCaching() {
     transaction_factory_->TransactionStopCaching();
 }
 
-bool MockNetworkTransaction::GetFullRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  return false;
-}
-
 int64_t MockNetworkTransaction::GetTotalReceivedBytes() const {
   return received_bytes_;
 }

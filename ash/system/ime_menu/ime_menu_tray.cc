@@ -298,10 +298,6 @@ class ImeMenuListView : public ImeListView {
     // DetailedViewDelegate:
     void TransitionToMainView(bool restore_focus) override {}
     void CloseBubble() override {}
-    SkColor GetBackgroundColor(ui::NativeTheme* native_theme) override {
-      return native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_BubbleBackground);
-    }
     bool IsOverflowIndicatorEnabled() const override { return true; }
 
    private:

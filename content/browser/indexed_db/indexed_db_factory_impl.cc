@@ -183,7 +183,8 @@ void IndexedDBFactoryImpl::GetDatabaseInfo(
   // Note: Any data loss information here is not piped up to the renderer, and
   // will be lost.
   std::tie(origin_state_handle, s, error, std::ignore, std::ignore) =
-      GetOrOpenOriginFactory(origin, data_directory);
+      GetOrOpenOriginFactory(origin, data_directory,
+                             /*create_if_missing=*/true);
   if (!origin_state_handle.IsHeld() || !origin_state_handle.origin_state()) {
     callbacks->OnError(error);
     if (s.IsCorruption())
@@ -221,9 +222,14 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
   // Note: Any data loss information here is not piped up to the renderer, and
   // will be lost.
   std::tie(origin_state_handle, s, error, std::ignore, std::ignore) =
-      GetOrOpenOriginFactory(origin, data_directory);
+      GetOrOpenOriginFactory(origin, data_directory,
+                             /*create_if_missing=*/false);
   if (!origin_state_handle.IsHeld() || !origin_state_handle.origin_state()) {
-    callbacks->OnError(error);
+    if (s.IsNotFound()) {
+      callbacks->OnSuccess(std::vector<base::string16>());
+    } else {
+      callbacks->OnError(error);
+    }
     if (s.IsCorruption())
       HandleBackingStoreCorruption(origin, error);
     return;
@@ -260,7 +266,8 @@ void IndexedDBFactoryImpl::Open(
   IndexedDBDatabaseError error;
   std::tie(origin_state_handle, s, error, connection->data_loss_info,
            connection->was_cold_open) =
-      GetOrOpenOriginFactory(origin, data_directory);
+      GetOrOpenOriginFactory(origin, data_directory,
+                             /*create_if_missing=*/true);
   if (!origin_state_handle.IsHeld() || !origin_state_handle.origin_state()) {
     connection->callbacks->OnError(error);
     if (s.IsCorruption())
@@ -316,7 +323,8 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   // Note: Any data loss information here is not piped up to the renderer, and
   // will be lost.
   std::tie(origin_state_handle, s, error, std::ignore, std::ignore) =
-      GetOrOpenOriginFactory(origin, data_directory);
+      GetOrOpenOriginFactory(origin, data_directory,
+                             /*create_if_missing=*/true);
   if (!origin_state_handle.IsHeld() || !origin_state_handle.origin_state()) {
     callbacks->OnError(error);
     if (s.IsCorruption())
@@ -624,7 +632,8 @@ std::tuple<IndexedDBOriginStateHandle,
            /*is_cold_open=*/bool>
 IndexedDBFactoryImpl::GetOrOpenOriginFactory(
     const Origin& origin,
-    const base::FilePath& data_directory) {
+    const base::FilePath& data_directory,
+    bool create_if_missing) {
   IDB_TRACE("indexed_db::GetOrOpenOriginFactory");
   // Please see docs/open_and_verify_leveldb_database.code2flow, and the
   // generated pdf (from https://code2flow.com).
@@ -676,7 +685,7 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
         OpenAndVerifyIndexedDBBackingStore(
             origin, data_directory, database_path, blob_path,
             std::move(scopes_options), &scopes_factory,
-            /*is_first_attempt=*/i == 0);
+            /*is_first_attempt=*/i == 0, create_if_missing);
     if (LIKELY(s.ok()))
       break;
     DCHECK(!backing_store);
@@ -761,7 +770,8 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
     base::FilePath blob_path,
     LevelDBScopesOptions scopes_options,
     LevelDBScopesFactory* scopes_factory,
-    bool is_first_attempt) {
+    bool is_first_attempt,
+    bool create_if_missing) {
   // Please see docs/open_and_verify_leveldb_database.code2flow, and the
   // generated pdf (from https://code2flow.com).
   // The intended strategy here is to have this function match that flowchart,
@@ -810,7 +820,8 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
 
   // Open the leveldb database.
   std::tie(state, status, is_disk_full) = leveldb_factory_->OpenLevelDBState(
-      database_path, indexed_db::GetDefaultLevelDBComparator());
+      database_path, indexed_db::GetDefaultLevelDBComparator(),
+      create_if_missing);
 
   if (UNLIKELY(!status.ok()))
     return {nullptr, status, IndexedDBDataLossInfo(), is_disk_full};

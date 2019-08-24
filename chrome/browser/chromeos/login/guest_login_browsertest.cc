@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/login_screen_test_api.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/user_manager/user_manager.h"
 

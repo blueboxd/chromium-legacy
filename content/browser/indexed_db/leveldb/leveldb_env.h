@@ -54,6 +54,7 @@ namespace indexed_db {
 CONTENT_EXPORT leveldb_env::Options GetLevelDBOptions(
     leveldb::Env* env,
     const leveldb::Comparator* comparator,
+    bool create_if_missing,
     size_t write_buffer_size,
     bool paranoid_checks);
 
@@ -79,11 +80,14 @@ class CONTENT_EXPORT LevelDBFactory {
 
   // Opens a leveldb database with the given comparators and populates it in
   // |output_state|. If the |file_name| is empty, then the database will be
-  // in-memory. The comparator names must match.
+  // in-memory. The comparator names must match. If |create_if_missing| is
+  // false and the database doesn't exist, then the returned tuple will be
+  // {nullptr, leveldb::Status::NotFound("", ""), false}.
   virtual std::
       tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
       OpenLevelDBState(const base::FilePath& file_name,
-                       const leveldb::Comparator* ldb_comparator) = 0;
+                       const leveldb::Comparator* ldb_comparator,
+                       bool create_if_missing) = 0;
 
   // All calls to the LevelDBDatabase class should be done on |task_runner|.
   virtual std::unique_ptr<TransactionalLevelDBDatabase> CreateLevelDBDatabase(
@@ -130,7 +134,8 @@ class CONTENT_EXPORT DefaultLevelDBFactory : public LevelDBFactory {
 
   std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
   OpenLevelDBState(const base::FilePath& file_name,
-                   const leveldb::Comparator* ldb_comparator) override;
+                   const leveldb::Comparator* ldb_comparator,
+                   bool create_if_missing) override;
   std::unique_ptr<TransactionalLevelDBDatabase> CreateLevelDBDatabase(
       scoped_refptr<LevelDBState> state,
       std::unique_ptr<LevelDBScopes> scopes,

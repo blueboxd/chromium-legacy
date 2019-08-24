@@ -36,8 +36,6 @@ namespace {
 constexpr int kNormalButtonRadius = 4;
 constexpr int kSelectedButtonRadius = 5;
 constexpr int kInkDropRadius = 16;
-constexpr int kMaxButtonRadius = 16;
-constexpr int kPreferredButtonStripWidth = kMaxButtonRadius * 2;
 constexpr SkScalar kStrokeWidth = SkIntToScalar(2);
 
 // Constants for the button strip that grows vertically.
@@ -82,7 +80,8 @@ class PageSwitcherButton : public views::Button {
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(kMaxButtonRadius * 2, kMaxButtonRadius * 2);
+    return gfx::Size(PageSwitcher::kMaxButtonRadius * 2,
+                     PageSwitcher::kMaxButtonRadius * 2);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
@@ -106,9 +105,10 @@ class PageSwitcherButton : public views::Button {
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     gfx::Point center = GetLocalBounds().CenterPoint();
-    gfx::Rect bounds(center.x() - kMaxButtonRadius,
-                     center.y() - kMaxButtonRadius, 2 * kMaxButtonRadius,
-                     2 * kMaxButtonRadius);
+    gfx::Rect bounds(center.x() - PageSwitcher::kMaxButtonRadius,
+                     center.y() - PageSwitcher::kMaxButtonRadius,
+                     2 * PageSwitcher::kMaxButtonRadius,
+                     2 * PageSwitcher::kMaxButtonRadius);
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
         GetInkDropCenterBasedOnLastEvent(), kVerticalInkDropRippleColor, 1.0f);

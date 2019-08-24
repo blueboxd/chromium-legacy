@@ -5,6 +5,7 @@
 #include "components/ntp_tiles/popular_sites_impl.h"
 
 #include <stddef.h>
+
 #include <map>
 #include <memory>
 #include <utility>
@@ -18,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/google/core/common/google_util.h"
 #include "components/ntp_tiles/features.h"
@@ -195,7 +197,8 @@ std::map<SectionType, PopularSites::SitesVector> ParseSites(
   return ParseVersion5(list);
 }
 
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_ANDROID) || defined(OS_IOS))
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
+    (defined(OS_ANDROID) || defined(OS_IOS))
 void SetDefaultResourceForSite(int index,
                                int resource_id,
                                base::ListValue* sites) {
@@ -224,7 +227,7 @@ base::Value DefaultPopularSites() {
     base::DictionaryValue& dict = static_cast<base::DictionaryValue&>(site);
     dict.SetBoolean("baked_in", true);
   }
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   int index = 0;
   for (int icon_resource :
        {IDR_DEFAULT_POPULAR_SITES_ICON0, IDR_DEFAULT_POPULAR_SITES_ICON1,
@@ -233,7 +236,7 @@ base::Value DefaultPopularSites() {
         IDR_DEFAULT_POPULAR_SITES_ICON6, IDR_DEFAULT_POPULAR_SITES_ICON7}) {
     SetDefaultResourceForSite(index++, icon_resource, sites.get());
   }
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return base::Value::FromUniquePtrValue(std::move(sites));
 #endif  // OS_ANDROID || OS_IOS
 }

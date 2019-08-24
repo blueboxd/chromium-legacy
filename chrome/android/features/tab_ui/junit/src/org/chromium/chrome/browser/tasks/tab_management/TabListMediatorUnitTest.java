@@ -1085,6 +1085,37 @@ public class TabListMediatorUnitTest {
                 .setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
     }
 
+    @Test
+    public void resetWithListOfTabs_MruOrder() {
+        List<Tab> tabs = new ArrayList<>();
+        for (int i = 0; i < mTabModel.getCount(); i++) {
+            tabs.add(mTabModel.getTabAt(i));
+        }
+        assertThat(tabs.size(), equalTo(2));
+
+        long timestamp1 = 1;
+        long timestamp2 = 2;
+        doReturn(timestamp1).when(mTab1).getTimestampMillis();
+        doReturn(timestamp2).when(mTab2).getTimestampMillis();
+        mMediator.resetWithListOfTabs(tabs, /*quickMode =*/false, /*mruMode =*/true);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mModel.get(1).get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mMediator.indexOfTab(TAB1_ID), equalTo(1));
+        assertThat(mMediator.indexOfTab(TAB2_ID), equalTo(0));
+
+        doReturn(timestamp2).when(mTab1).getTimestampMillis();
+        doReturn(timestamp1).when(mTab2).getTimestampMillis();
+        mMediator.resetWithListOfTabs(tabs, /*quickMode =*/false, /*mruMode =*/true);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(1).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mMediator.indexOfTab(TAB1_ID), equalTo(0));
+        assertThat(mMediator.indexOfTab(TAB2_ID), equalTo(1));
+    }
+
     private void initAndAssertAllProperties() {
         List<Tab> tabs = new ArrayList<>();
         for (int i = 0; i < mTabModel.getCount(); i++) {

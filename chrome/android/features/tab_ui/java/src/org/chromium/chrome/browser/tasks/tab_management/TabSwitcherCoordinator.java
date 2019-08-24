@@ -229,7 +229,8 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
         return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
     }
 
-    private TabGridDialogParent.AnimationParams getTabGridDialogAnimationParams(int index) {
+    private TabGridDialogParent.AnimationParams getTabGridDialogAnimationParams(int tabId) {
+        int index = mTabListCoordinator.indexOfTab(tabId);
         View itemView = mTabListCoordinator.getContainerView()
                                 .findViewHolderForAdapterPosition(index)
                                 .itemView;

@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "base/metrics/field_trial_params.h"
-#include "chrome/common/chrome_features.h"
 #include "components/grit/components_resources.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/common_string_util.h"
@@ -22,13 +20,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using security_interstitials::MetricsHelper;
-
-namespace {
-
-const base::FeatureParam<bool> kEnableAdvancedSection{
-    &features::kLookalikeUrlNavigationSuggestionsUI, "show_advanced", false};
-
-}  // namespace
 
 // static
 const content::InterstitialPageDelegate::TypeID
@@ -96,10 +87,6 @@ void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
   security_interstitials::common_string_util::PopulateDarkModeDisplaySetting(
       load_time_data);
 
-  auto formatted_hostname =
-      security_interstitials::common_string_util::GetFormattedHostName(
-          request_url());
-
   load_time_data->SetString(
       "tabTitle",
       l10n_util::GetStringFUTF16(
@@ -107,50 +94,19 @@ void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
           security_interstitials::common_string_util::GetFormattedHostName(
               request_url())));
   load_time_data->SetString(
-      "heading", l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_HEADING,
-                                            formatted_hostname));
+      "heading",
+      l10n_util::GetStringFUTF16(
+          IDS_LOOKALIKE_URL_HEADING,
+          security_interstitials::common_string_util::GetFormattedHostName(
+              request_url())));
+  load_time_data->SetString(
+      "primaryParagraph",
+      l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH));
   load_time_data->SetString(
       "proceedButtonText", l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_IGNORE));
   load_time_data->SetString(
       "primaryButtonText",
       l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_CONTINUE));
-  load_time_data->SetString(
-      "openDetails", l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_SHOW_DETAILS));
-  load_time_data->SetString(
-      "closeDetails",
-      l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_HIDE_DETAILS));
-  load_time_data->SetString(
-      "finalParagraph",
-      l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_FINAL_PARAGRAPH,
-                                 formatted_hostname));
-
-  switch (match_type_) {
-    case MatchType::kNone:  // kNone used by chrome://interstitials
-    case MatchType::kTopSite:
-      load_time_data->SetString(
-          "primaryParagraph",
-          l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH_TOP));
-      load_time_data->SetString(
-          "explanationParagraph",
-          l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_EXPLANATION_TOP,
-                                     formatted_hostname));
-      break;
-    case MatchType::kSiteEngagement:
-      load_time_data->SetString(
-          "primaryParagraph",
-          l10n_util::GetStringUTF16(
-              IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH_ENGAGEMENT));
-      load_time_data->SetString(
-          "explanationParagraph",
-          l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_EXPLANATION_ENGAGEMENT,
-                                     formatted_hostname));
-      break;
-    case MatchType::kEditDistance:
-    case MatchType::kEditDistanceSiteEngagement:
-      NOTREACHED();
-  }
-
-  load_time_data->SetBoolean("show_advanced", kEnableAdvancedSection.Get());
 }
 
 void LookalikeUrlInterstitialPage::OnInterstitialClosing() {
@@ -186,12 +142,9 @@ void LookalikeUrlInterstitialPage::CommandReceived(const std::string& command) {
       ReportUkmIfNeeded(UserAction::kClickThrough);
       controller()->Proceed();
       break;
-    case security_interstitials::CMD_SHOW_MORE_SECTION:
-      controller()->metrics_helper()->RecordUserInteraction(
-          MetricsHelper::SHOW_ADVANCED);
-      break;
     case security_interstitials::CMD_DO_REPORT:
     case security_interstitials::CMD_DONT_REPORT:
+    case security_interstitials::CMD_SHOW_MORE_SECTION:
     case security_interstitials::CMD_OPEN_DATE_SETTINGS:
     case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
     case security_interstitials::CMD_OPEN_WHITEPAPER:
@@ -223,6 +176,7 @@ void LookalikeUrlInterstitialPage::PopulateStringsForSharedHTML(
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
 
   load_time_data->SetString("recurrentErrorParagraph", "");
+  load_time_data->SetString("openDetails", "");
   load_time_data->SetString("explanationParagraph", "");
   load_time_data->SetString("finalParagraph", "");
 

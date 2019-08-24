@@ -130,13 +130,11 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
   void DidStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void DidFinishLoading(
-      base::TimeTicks response_end,
-      int64_t encoded_data_length,
-      int64_t encoded_body_length,
-      int64_t decoded_body_length,
-      bool should_report_corb_blocking,
-      const WebVector<network::cors::PreflightTimingInfo>&) override;
+  void DidFinishLoading(base::TimeTicks response_end,
+                        int64_t encoded_data_length,
+                        int64_t encoded_body_length,
+                        int64_t decoded_body_length,
+                        bool should_report_corb_blocking) override;
   void DidFail(const WebURLError&,
                int64_t encoded_data_length,
                int64_t encoded_body_length,
@@ -240,7 +238,6 @@ class PLATFORM_EXPORT ResourceLoader final
   struct DeferredFinishLoadingInfo {
     base::TimeTicks response_end;
     bool should_report_corb_blocking;
-    WebVector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };
   base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_body_loader_;

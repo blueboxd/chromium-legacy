@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -25,8 +25,14 @@ void RendererResourceCoordinator::MaybeInitialize() {
   blink::Platform* platform = Platform::Current();
   DCHECK(IsMainThread());
   DCHECK(platform);
-  g_renderer_resource_coordinator = new RendererResourceCoordinator(
-      platform->GetConnector(), platform->GetBrowserServiceName());
+
+  mojo::PendingRemote<
+      resource_coordinator::mojom::blink::ProcessCoordinationUnit>
+      remote;
+  platform->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      remote.InitWithNewPipeAndPassReceiver());
+  g_renderer_resource_coordinator =
+      new RendererResourceCoordinator(std::move(remote));
 }
 
 // static
@@ -42,9 +48,9 @@ RendererResourceCoordinator* RendererResourceCoordinator::Get() {
 }
 
 RendererResourceCoordinator::RendererResourceCoordinator(
-    service_manager::Connector* connector,
-    const std::string& service_name) {
-  connector->BindInterface(service_name, &service_);
+    mojo::PendingRemote<
+        resource_coordinator::mojom::blink::ProcessCoordinationUnit> remote) {
+  service_.Bind(std::move(remote));
 }
 
 RendererResourceCoordinator::RendererResourceCoordinator() = default;

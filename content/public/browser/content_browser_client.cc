@@ -638,7 +638,8 @@ std::unique_ptr<NavigationUIData> ContentBrowserClient::GetNavigationUIData(
 }
 
 #if defined(OS_WIN)
-bool ContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy) {
+bool ContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                            RendererSpawnFlags flags) {
   return true;
 }
 
@@ -651,6 +652,11 @@ base::string16 ContentBrowserClient::GetAppContainerSidForSandboxType(
       L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
       L"924012148-129201922");
 }
+
+bool ContentBrowserClient::IsRendererCodeIntegrityEnabled() {
+  return false;
+}
+
 #endif  // defined(OS_WIN)
 
 void ContentBrowserClient::RunServiceInstance(

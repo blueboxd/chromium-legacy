@@ -479,7 +479,10 @@ std::string SupervisedUser::display_email() const {
 }
 
 PublicAccountUser::PublicAccountUser(const AccountId& account_id)
-    : DeviceLocalAccountUserBase(account_id) {}
+    : DeviceLocalAccountUserBase(account_id) {
+  // Public accounts do not have a real email address, so they do not set
+  // |display_email_|.
+}
 
 PublicAccountUser::~PublicAccountUser() {
 }

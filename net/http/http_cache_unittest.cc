@@ -2432,6 +2432,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationCouldntConditionalize) {
     range_transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 ";
     ReadAndVerifyTransaction(c->trans.get(), range_transaction);
   }
+  context_list.clear();
 }
 
 // Tests a 200 request and a simultaneous range request where conditionalization
@@ -2516,6 +2517,7 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationCouldConditionalize) {
 
   range_transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 ";
   ReadAndVerifyTransaction(c1->trans.get(), range_transaction);
+  context_list.clear();
 }
 
 // Tests parallel validation on range requests with overlapping ranges.
@@ -9867,6 +9869,111 @@ TEST_F(HttpCacheTest, SplitCacheWithFrameOrigin) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimplePOST_Transaction,
                                 post_info, &response);
   EXPECT_FALSE(response.was_cached);
+}
+
+TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyCSS) {
+  base::HistogramTester histograms;
+  MockHttpCache cache;
+  HttpResponseInfo response;
+
+  url::Origin origin_a = url::Origin::Create(GURL(kSimpleGET_Transaction.url));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
+
+  ScopedMockTransaction transaction(kSimpleGET_Transaction);
+  transaction.response_headers = "Content-Type: text/css\n";
+
+  MockHttpRequest trans_info = MockHttpRequest(transaction);
+
+  // Requesting with the same top-frame origin should not count as third-party
+  // but should still be recorded as CSS
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
+                                &response);
+
+  histograms.ExpectTotalCount("HttpCache.Pattern", 1);
+  histograms.ExpectTotalCount("HttpCache.Pattern.CSS", 1);
+  histograms.ExpectTotalCount("HttpCache.Pattern.CSSThirdParty", 0);
+
+  // Requesting with a different top-frame origin should count as third-party
+  // and recorded as CSS
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
+
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
+                                &response);
+  histograms.ExpectTotalCount("HttpCache.Pattern", 2);
+  histograms.ExpectTotalCount("HttpCache.Pattern.CSS", 2);
+  histograms.ExpectTotalCount("HttpCache.Pattern.CSSThirdParty", 1);
+}
+
+TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyJavaScript) {
+  base::HistogramTester histograms;
+  MockHttpCache cache;
+  HttpResponseInfo response;
+
+  url::Origin origin_a = url::Origin::Create(GURL(kSimpleGET_Transaction.url));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
+
+  ScopedMockTransaction transaction(kSimpleGET_Transaction);
+  transaction.response_headers = "Content-Type: application/javascript\n";
+
+  MockHttpRequest trans_info = MockHttpRequest(transaction);
+
+  // Requesting with the same top-frame origin should not count as third-party
+  // but should still be recorded as JavaScript
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
+                                &response);
+
+  histograms.ExpectTotalCount("HttpCache.Pattern", 1);
+  histograms.ExpectTotalCount("HttpCache.Pattern.JavaScript", 1);
+  histograms.ExpectTotalCount("HttpCache.Pattern.JavaScriptThirdParty", 0);
+
+  // Requesting with a different top-frame origin should count as third-party
+  // and recorded as JavaScript
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
+
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
+                                &response);
+  histograms.ExpectTotalCount("HttpCache.Pattern", 2);
+  histograms.ExpectTotalCount("HttpCache.Pattern.JavaScript", 2);
+  histograms.ExpectTotalCount("HttpCache.Pattern.JavaScriptThirdParty", 1);
+}
+
+TEST_F(HttpCacheTest, HttpCacheProfileThirdPartyFont) {
+  base::HistogramTester histograms;
+  MockHttpCache cache;
+  HttpResponseInfo response;
+
+  url::Origin origin_a = url::Origin::Create(GURL(kSimpleGET_Transaction.url));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
+
+  ScopedMockTransaction transaction(kSimpleGET_Transaction);
+  transaction.response_headers = "Content-Type: font/otf\n";
+
+  MockHttpRequest trans_info = MockHttpRequest(transaction);
+
+  // Requesting with the same top-frame origin should not count as third-party
+  // but should still be recorded as a font
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
+                                &response);
+
+  histograms.ExpectTotalCount("HttpCache.Pattern", 1);
+  histograms.ExpectTotalCount("HttpCache.Pattern.Font", 1);
+  histograms.ExpectTotalCount("HttpCache.Pattern.FontThirdParty", 0);
+
+  // Requesting with a different top-frame origin should count as third-party
+  // and recorded as a font
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
+
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, trans_info,
+                                &response);
+  histograms.ExpectTotalCount("HttpCache.Pattern", 2);
+  histograms.ExpectTotalCount("HttpCache.Pattern.Font", 2);
+  histograms.ExpectTotalCount("HttpCache.Pattern.FontThirdParty", 1);
 }
 
 TEST_F(HttpCacheTest, SplitCache) {

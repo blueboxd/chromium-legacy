@@ -39,8 +39,7 @@ using namespace vector_math;
 
 void AudioChannel::ResizeSmaller(size_t new_length) {
   DCHECK_LE(new_length, length_);
-  if (new_length <= length_)
-    length_ = new_length;
+  length_ = new_length;
 }
 
 void AudioChannel::Scale(float scale) {
@@ -51,10 +50,8 @@ void AudioChannel::Scale(float scale) {
 }
 
 void AudioChannel::CopyFrom(const AudioChannel* source_channel) {
-  bool is_safe = (source_channel && source_channel->length() >= length());
-  DCHECK(is_safe);
-  if (!is_safe)
-    return;
+  DCHECK(source_channel);
+  DCHECK_GE(source_channel->length(), length());
 
   if (source_channel->IsSilent()) {
     Zero();
@@ -68,21 +65,16 @@ void AudioChannel::CopyFromRange(const AudioChannel* source_channel,
                                  unsigned start_frame,
                                  unsigned end_frame) {
   // Check that range is safe for reading from sourceChannel.
-  bool is_range_safe = source_channel && start_frame < end_frame &&
-                       end_frame <= source_channel->length();
-  DCHECK(is_range_safe);
-  if (!is_range_safe)
-    return;
+  DCHECK(source_channel);
+  DCHECK_LT(start_frame, end_frame);
+  DCHECK_LE(end_frame, source_channel->length());
 
   if (source_channel->IsSilent() && IsSilent())
     return;
 
   // Check that this channel has enough space.
   size_t range_length = end_frame - start_frame;
-  bool is_range_length_safe = range_length <= length();
-  DCHECK(is_range_length_safe);
-  if (!is_range_length_safe)
-    return;
+  DCHECK_LE(range_length, length());
 
   const float* source = source_channel->Data();
   float* destination = MutableData();
@@ -100,10 +92,8 @@ void AudioChannel::CopyFromRange(const AudioChannel* source_channel,
 }
 
 void AudioChannel::SumFrom(const AudioChannel* source_channel) {
-  bool is_safe = source_channel && source_channel->length() >= length();
-  DCHECK(is_safe);
-  if (!is_safe)
-    return;
+  DCHECK(source_channel);
+  DCHECK_GE(source_channel->length(), length());
 
   if (source_channel->IsSilent())
     return;

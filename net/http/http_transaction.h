@@ -128,14 +128,6 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // ignore.
   virtual void StopCaching() = 0;
 
-  // Gets the full request headers sent to the server.  This is guaranteed to
-  // work only if Start returns success and the underlying transaction supports
-  // it.  (Right now, this is only network transactions, not cache ones.)
-  //
-  // Returns true and overwrites headers if it can get the request headers;
-  // otherwise, returns false and does not modify headers.
-  virtual bool GetFullRequestHeaders(HttpRequestHeaders* headers) const = 0;
-
   // Get the number of bytes received from network.
   virtual int64_t GetTotalReceivedBytes() const = 0;
 

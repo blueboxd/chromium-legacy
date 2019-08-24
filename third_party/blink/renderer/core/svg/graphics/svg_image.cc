@@ -847,7 +847,7 @@ DarkModeClassification SVGImage::CheckTypeSpecificConditionsForDarkMode(
     const FloatRect& src_rect,
     DarkModeImageClassifier* classifier) {
   classifier->SetImageType(DarkModeImageClassifier::ImageType::kSvg);
-  return DarkModeClassification::kApplyFilter;
+  return DarkModeClassification::kNotClassified;
 }
 
 }  // namespace blink

@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_NETWORK_VPN_FEATURE_POD_CONTROLLER_H_
 #define ASH_SYSTEM_NETWORK_VPN_FEATURE_POD_CONTROLLER_H_
 
-#include "ash/system/network/tray_network_state_model.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -16,7 +16,7 @@ class UnifiedSystemTrayController;
 
 // Controller of vpn feature pod button.
 class VPNFeaturePodController : public FeaturePodControllerBase,
-                                public TrayNetworkStateModel::Observer {
+                                public TrayNetworkStateObserver {
  public:
   VPNFeaturePodController(UnifiedSystemTrayController* tray_controller);
   ~VPNFeaturePodController() override;
@@ -26,7 +26,7 @@ class VPNFeaturePodController : public FeaturePodControllerBase,
   void OnIconPressed() override;
   SystemTrayItemUmaType GetUmaType() const override;
 
-  // TrayNetworkStateModel::Observer:
+  // TrayNetworkStateObserver:
   void ActiveNetworkStateChanged() override;
 
  private:

@@ -22,13 +22,17 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_utils.h"
-#include "components/user_manager/user_manager.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -56,20 +60,19 @@ void CreateDiceTurnSyncOnHelper(
 
 namespace signin_ui_util {
 
-base::string16 GetAuthenticatedUsername(
-    const signin::IdentityManager* identity_manager) {
+base::string16 GetAuthenticatedUsername(Profile* profile) {
+  DCHECK(profile);
   std::string user_display_name;
-
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   if (identity_manager->HasPrimaryAccount()) {
     user_display_name = identity_manager->GetPrimaryAccountInfo().email;
-
 #if defined(OS_CHROMEOS)
-    if (user_manager::UserManager::IsInitialized()) {
-      // On CrOS user email is sanitized and then passed to the identity
-      // manager. Original email (containing dots) is stored as "display email".
-      user_display_name = user_manager::UserManager::Get()->GetUserDisplayEmail(
-          AccountId::FromUserEmail(user_display_name));
-    }
+    // See https://crbug.com/994798 for details.
+    user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+    // |user| may be null in tests.
+    if (user)
+      user_display_name = user->GetDisplayEmail();
 #endif  // defined(OS_CHROMEOS)
   }
 

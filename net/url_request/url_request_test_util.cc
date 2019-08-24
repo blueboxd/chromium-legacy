@@ -217,20 +217,12 @@ void TestDelegate::RunUntilAuthRequired() {
   run_loop.Run();
 }
 
-void TestDelegate::ClearFullRequestHeaders() {
-  full_request_headers_.Clear();
-  have_full_request_headers_ = false;
-}
-
 void TestDelegate::OnReceivedRedirect(URLRequest* request,
                                       const RedirectInfo& redirect_info,
                                       bool* defer_redirect) {
   EXPECT_TRUE(request->is_redirecting());
 
   redirect_info_ = redirect_info;
-
-  have_full_request_headers_ =
-      request->GetFullRequestHeaders(&full_request_headers_);
 
   received_redirect_count_++;
   if (on_redirect_) {
@@ -274,9 +266,6 @@ void TestDelegate::OnResponseStarted(URLRequest* request, int net_error) {
   // It doesn't make sense for the request to have IO pending at this point.
   DCHECK_NE(ERR_IO_PENDING, net_error);
   EXPECT_FALSE(request->is_redirecting());
-
-  have_full_request_headers_ =
-      request->GetFullRequestHeaders(&full_request_headers_);
 
   response_started_count_++;
   request_status_ = net_error;

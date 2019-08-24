@@ -72,9 +72,9 @@ void SessionManager::SessionStarted() {
 
   session_started_ = true;
 
-  // SessionStarted() could be called in tests without any session created.
-  if (sessions_.size() == 1)
-    NotifyPrimaryUserSessionStarted();
+  bool is_primary = sessions_.size() == 1;
+  for (auto& observer : observers_)
+    observer.OnUserSessionStarted(is_primary);
 }
 
 bool SessionManager::HasSessionForAccountId(
@@ -108,11 +108,6 @@ void SessionManager::RemoveObserver(SessionManagerObserver* observer) {
 void SessionManager::NotifyUserProfileLoaded(const AccountId& account_id) {
   for (auto& observer : observers_)
     observer.OnUserProfileLoaded(account_id);
-}
-
-void SessionManager::NotifyPrimaryUserSessionStarted() {
-  for (auto& observer : observers_)
-    observer.OnPrimaryUserSessionStarted();
 }
 
 void SessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,

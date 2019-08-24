@@ -251,7 +251,7 @@ void AssistantClient::OnUserProfileLoaded(const AccountId& account_id) {
     return;
 
   // Initialize Assistant when primary user profile is loaded so that it could
-  // be used in post oobe steps. OnPrimaryUserSessionStarted() is too late
+  // be used in post oobe steps. OnUserSessionStarted() is too late
   // because it happens after post oobe steps
   Profile* user_profile =
       chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
@@ -261,7 +261,7 @@ void AssistantClient::OnUserProfileLoaded(const AccountId& account_id) {
   MaybeInit(user_profile);
 }
 
-void AssistantClient::OnPrimaryUserSessionStarted() {
-  if (!chromeos::switches::ShouldSkipOobePostLogin())
+void AssistantClient::OnUserSessionStarted(bool is_primary_user) {
+  if (is_primary_user && !chromeos::switches::ShouldSkipOobePostLogin())
     MaybeStartAssistantOptInFlow();
 }

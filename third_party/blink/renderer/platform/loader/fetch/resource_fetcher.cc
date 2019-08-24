@@ -1749,14 +1749,11 @@ Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
   return urls;
 }
 
-void ResourceFetcher::HandleLoaderFinish(
-    Resource* resource,
-    base::TimeTicks response_end,
-    LoaderFinishType type,
-    uint32_t inflight_keepalive_bytes,
-    bool should_report_corb_blocking,
-    const WebVector<network::cors::PreflightTimingInfo>&
-        cors_preflight_timing_info) {
+void ResourceFetcher::HandleLoaderFinish(Resource* resource,
+                                         base::TimeTicks response_end,
+                                         LoaderFinishType type,
+                                         uint32_t inflight_keepalive_bytes,
+                                         bool should_report_corb_blocking) {
   DCHECK(resource);
 
   DCHECK_LE(inflight_keepalive_bytes, inflight_keepalive_bytes_);
@@ -1798,31 +1795,6 @@ void ResourceFetcher::HandleLoaderFinish(
       if (resource->Options().request_initiator_context == kDocumentContext)
         Context().AddResourceTiming(*info);
       resource->ReportResourceTimingToClients(*info);
-    }
-
-    // Store additional timing info if CORS preflights are performed.
-    for (const auto& timing_info : cors_preflight_timing_info) {
-      // InitiatorType and InitialURL should be the same with each of the
-      // original request.
-      scoped_refptr<ResourceTimingInfo> preflight_info =
-          ResourceTimingInfo::Create(info->InitiatorType(),
-                                     timing_info.start_time);
-      preflight_info->SetInitialURL(info->InitialURL());
-      preflight_info->SetLoadResponseEnd(timing_info.response_end);
-      preflight_info->AddFinalTransferSize(timing_info.transfer_size);
-
-      // Set a provisional response to provide possible other information.
-      ResourceResponse response(info->InitialURL());
-      response.SetAlpnNegotiatedProtocol(
-          WebString::FromUTF8(timing_info.alpn_negotiated_protocol));
-      response.SetConnectionInfo(timing_info.connection_info);
-      response.SetHttpHeaderField(
-          http_names::kTimingAllowOrigin,
-          WebString::FromUTF8(timing_info.timing_allow_origin));
-      response.SetEncodedDataLength(timing_info.transfer_size);
-      preflight_info->SetFinalResponse(response);
-
-      Context().AddResourceTiming(*preflight_info);
     }
   }
 

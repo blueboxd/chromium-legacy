@@ -49,18 +49,6 @@ class HoverHighlightView : public ActionableView {
   // detailed views.
   void AddIconAndLabel(const gfx::ImageSkia& image, const base::string16& text);
 
-  // Convenience function for populating the view with an icon, a main label,
-  // and a sub label. This also sets the accessible name based on the main
-  // label. Used for scrollable rows in detailed views.
-  void AddIconAndLabels(const gfx::ImageSkia& image,
-                        const base::string16& text,
-                        const base::string16& sub_text);
-
-  // A convenience function for populating the view with an icon and a label for
-  // a system menu default view row.
-  void AddIconAndLabelForDefaultView(const gfx::ImageSkia& image,
-                                     const base::string16& text);
-
   // Populates the view with a text label, inset on the left by the horizontal
   // space that would normally be occupied by an icon.
   void AddLabelRow(const base::string16& text);
@@ -115,14 +103,6 @@ class HoverHighlightView : public ActionableView {
   void DoAddIconAndLabel(const gfx::ImageSkia& image,
                          const base::string16& text,
                          TrayPopupItemStyle::FontStyle font_style);
-
-  // Adds the image, main label and sub label to the row with the main label
-  // being styled using |font_style| and the sub label being styled using
-  // FontStyle::CAPTION and ColorStyle::INACTIVE.
-  void DoAddIconAndLabels(const gfx::ImageSkia& image,
-                          const base::string16& text,
-                          TrayPopupItemStyle::FontStyle font_style,
-                          const base::string16& sub_text);
 
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;

@@ -160,10 +160,6 @@ AutocompleteProviderClientImpl::GetBuiltinsToProvideAsUserTypes() {
           base::ASCIIToUTF16(kChromeUIVersionURL)};
 }
 
-base::Time AutocompleteProviderClientImpl::GetCurrentVisitTimestamp() const {
-  return base::Time();
-}
-
 component_updater::ComponentUpdateService*
 AutocompleteProviderClientImpl::GetComponentUpdateService() {
   return GetApplicationContext()->GetComponentUpdateService();

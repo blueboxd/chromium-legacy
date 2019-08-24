@@ -164,7 +164,6 @@
 #include "content/public/browser/webrtc_log.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -196,6 +195,10 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/screen_orientation.mojom.h"
+#include "services/device/public/mojom/time_zone_monitor.mojom.h"
+#include "services/metrics/public/mojom/constants.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -242,6 +245,7 @@
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
+#include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/display/win/dpi.h"
@@ -377,7 +381,13 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
 class RendererSandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
-  RendererSandboxedProcessLauncherDelegate() {}
+  RendererSandboxedProcessLauncherDelegate()
+#if defined(OS_WIN)
+      : renderer_code_integrity_enabled_(
+            GetContentClient()->browser()->IsRendererCodeIntegrityEnabled())
+#endif
+  {
+  }
 
   ~RendererSandboxedProcessLauncherDelegate() override {}
 
@@ -390,8 +400,11 @@ class RendererSandboxedProcessLauncherDelegate
             GetSandboxType());
     if (!sid.empty())
       service_manager::SandboxWin::AddAppContainerPolicy(policy, sid.c_str());
-
-    return GetContentClient()->browser()->PreSpawnRenderer(policy);
+    ContentBrowserClient::RendererSpawnFlags flags(
+        ContentBrowserClient::RendererSpawnFlags::NONE);
+    if (renderer_code_integrity_enabled_)
+      flags = ContentBrowserClient::RendererSpawnFlags::RENDERER_CODE_INTEGRITY;
+    return GetContentClient()->browser()->PreSpawnRenderer(policy, flags);
   }
 #endif  // OS_WIN
 
@@ -410,6 +423,11 @@ class RendererSandboxedProcessLauncherDelegate
   service_manager::SandboxType GetSandboxType() override {
     return service_manager::SANDBOX_TYPE_RENDERER;
   }
+
+#if defined(OS_WIN)
+ private:
+  const bool renderer_code_integrity_enabled_;
+#endif
 };
 
 const char kSessionStorageHolderKey[] = "kSessionStorageHolderKey";
@@ -1193,94 +1211,6 @@ size_t GetPlatformProcessLimit() {
 
 }  // namespace
 
-// Held by the RPH and used to control an (unowned) ConnectionFilterImpl from
-// any thread.
-class RenderProcessHostImpl::ConnectionFilterController
-    : public base::RefCountedThreadSafe<ConnectionFilterController> {
- public:
-  // |filter| is not owned by this object.
-  explicit ConnectionFilterController(ConnectionFilterImpl* filter)
-      : filter_(filter) {}
-
-  void DisableFilter();
-
- private:
-  friend class base::RefCountedThreadSafe<ConnectionFilterController>;
-  friend class ConnectionFilterImpl;
-
-  ~ConnectionFilterController() {}
-
-  void Detach() {
-    base::AutoLock lock(lock_);
-    filter_ = nullptr;
-  }
-
-  base::Lock lock_;
-  ConnectionFilterImpl* filter_ PT_GUARDED_BY(lock_);
-};
-
-// Held by the RPH's BrowserContext's ServiceManagerConnection, ownership
-// transferred back to RPH upon RPH destruction.
-class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
- public:
-  ConnectionFilterImpl(
-      const service_manager::Identity& child_identity,
-      std::unique_ptr<service_manager::BinderRegistry> registry)
-      : child_identity_(child_identity),
-        registry_(std::move(registry)),
-        controller_(new ConnectionFilterController(this)) {
-    // Registration of this filter may race with browser shutdown, in which case
-    // it's possible for this filter to be destroyed on the main thread. This
-    // is fine as long as the filter hasn't been used on the IO thread yet. We
-    // detach the ThreadChecker initially and the first use of the filter will
-    // bind it.
-    thread_checker_.DetachFromThread();
-  }
-
-  ~ConnectionFilterImpl() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    controller_->Detach();
-  }
-
-  scoped_refptr<ConnectionFilterController> controller() { return controller_; }
-
-  void Disable() {
-    base::AutoLock lock(enabled_lock_);
-    enabled_ = false;
-  }
-
- private:
-  // ConnectionFilter:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle* interface_pipe,
-                       service_manager::Connector* connector) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    // We only fulfill connections from the renderer we host.
-    if (source_info.identity != child_identity_)
-      return;
-
-    base::AutoLock lock(enabled_lock_);
-    if (!enabled_)
-      return;
-
-    registry_->TryBindInterface(interface_name, interface_pipe);
-  }
-
-  base::ThreadChecker thread_checker_;
-  service_manager::Identity child_identity_;
-  std::unique_ptr<service_manager::BinderRegistry> registry_;
-  scoped_refptr<ConnectionFilterController> controller_;
-
-  base::Lock enabled_lock_;
-  bool enabled_ GUARDED_BY(enabled_lock_) = true;
-
-  base::WeakPtrFactory<ConnectionFilterImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
-};
-
 // A RenderProcessHostImpl's IO thread implementation of the
 // |mojom::ChildProcessHost| interface. This exists to allow the process host
 // to bind incoming receivers on the IO-thread without a main-thread hop if
@@ -1291,10 +1221,12 @@ class RenderProcessHostImpl::IOThreadHostImpl
  public:
   IOThreadHostImpl(int render_process_id,
                    base::WeakPtr<RenderProcessHostImpl> weak_host,
+                   std::unique_ptr<service_manager::BinderRegistry> binders,
                    mojo::PendingReceiver<mojom::ChildProcessHostBootstrap>
                        bootstrap_receiver)
       : render_process_id_(render_process_id),
         weak_host_(std::move(weak_host)),
+        binders_(std::move(binders)),
         bootstrap_receiver_(this, std::move(bootstrap_receiver)) {}
   ~IOThreadHostImpl() override = default;
 
@@ -1314,6 +1246,12 @@ class RenderProcessHostImpl::IOThreadHostImpl
     }
 #endif
 
+    std::string interface_name = *receiver.interface_name();
+    mojo::ScopedMessagePipeHandle pipe = receiver.PassPipe();
+    if (binders_->TryBindInterface(interface_name, &pipe))
+      return;
+
+    receiver = mojo::GenericPendingReceiver(interface_name, std::move(pipe));
     GetContentClient()->browser()->BindHostReceiverForRendererOnIOThread(
         render_process_id_, &receiver);
     if (!receiver)
@@ -1333,17 +1271,12 @@ class RenderProcessHostImpl::IOThreadHostImpl
 
   const int render_process_id_;
   const base::WeakPtr<RenderProcessHostImpl> weak_host_;
+  std::unique_ptr<service_manager::BinderRegistry> binders_;
   mojo::Receiver<mojom::ChildProcessHostBootstrap> bootstrap_receiver_;
   mojo::Receiver<mojom::ChildProcessHost> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadHostImpl);
 };
-
-void RenderProcessHostImpl::ConnectionFilterController::DisableFilter() {
-  base::AutoLock lock(lock_);
-  if (filter_)
-    filter_->Disable();
-}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderProcessHostImpl::GetInProcessRendererThreadTaskRunnerForTesting() {
@@ -1831,12 +1764,6 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
       this,
       mojom::ChildProcessRequest(child_process_.BindNewPipeAndPassReceiver()));
 
-  mojo::PendingRemote<mojom::ChildProcessHostBootstrap> bootstrap_remote;
-  io_thread_host_impl_.emplace(
-      io_task_runner, GetID(), instance_weak_factory_->GetWeakPtr(),
-      bootstrap_remote.InitWithNewPipeAndPassReceiver());
-  child_process_->Initialize(std::move(bootstrap_remote));
-
   ResetChannelProxy();
 
   // Do NOT expand ifdef or run time condition checks here! Synchronous
@@ -2023,6 +1950,22 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
+      base::BindRepeating(&ForwardRequest<device::mojom::TimeZoneMonitor>,
+                          device::mojom::kServiceName));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&ForwardRequest<ukm::mojom::UkmRecorderInterface>,
+                          metrics::mojom::kMetricsServiceName));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &ForwardRequest<device::mojom::ScreenOrientationListener>,
+          device::mojom::kServiceName));
+
+  AddUIThreadInterface(
+      registry.get(),
       base::BindRepeating(
           &RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider,
           base::Unretained(this)));
@@ -2089,6 +2032,16 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
         base::BindRepeating(&FontUniqueNameLookupService::Create),
         FontUniqueNameLookupService::GetTaskRunner());
   }
+#endif
+
+#if defined(OS_WIN)
+  registry->AddInterface(
+      base::BindRepeating([](blink::mojom::DWriteFontProxyRequest request) {
+        DWriteFontProxyImpl::Create(std::move(request), {});
+      }),
+      base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                       base::TaskPriority::USER_BLOCKING,
+                                       base::MayBlock()}));
 #endif
 
   registry->AddInterface(
@@ -2228,19 +2181,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   GetContentClient()->browser()->ExposeInterfacesToRenderer(
       registry.get(), associated_interfaces_.get(), this);
 
-  ServiceManagerConnection* service_manager_connection =
-      BrowserContext::GetServiceManagerConnectionFor(browser_context_);
-  if (connection_filter_id_ !=
-      ServiceManagerConnection::kInvalidConnectionFilterId) {
-    connection_filter_controller_->DisableFilter();
-    service_manager_connection->RemoveConnectionFilter(connection_filter_id_);
-  }
-  std::unique_ptr<ConnectionFilterImpl> connection_filter =
-      std::make_unique<ConnectionFilterImpl>(
-          child_connection_->child_identity(), std::move(registry));
-  connection_filter_controller_ = connection_filter->controller();
-  connection_filter_id_ = service_manager_connection->AddConnectionFilter(
-      std::move(connection_filter));
+  mojo::PendingRemote<mojom::ChildProcessHostBootstrap> bootstrap_remote;
+  io_thread_host_impl_.emplace(
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}), GetID(),
+      instance_weak_factory_->GetWeakPtr(), std::move(registry),
+      bootstrap_remote.InitWithNewPipeAndPassReceiver());
+  child_process_->Initialize(std::move(bootstrap_remote));
 }
 
 void RenderProcessHostImpl::BindRouteProvider(
@@ -3486,16 +3432,6 @@ void RenderProcessHostImpl::Cleanup() {
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_TERMINATED,
       Source<RenderProcessHost>(this), NotificationService::NoDetails());
-
-  if (connection_filter_id_ !=
-        ServiceManagerConnection::kInvalidConnectionFilterId) {
-    ServiceManagerConnection* service_manager_connection =
-        BrowserContext::GetServiceManagerConnectionFor(browser_context_);
-    connection_filter_controller_->DisableFilter();
-    service_manager_connection->RemoveConnectionFilter(connection_filter_id_);
-    connection_filter_id_ =
-        ServiceManagerConnection::kInvalidConnectionFilterId;
-  }
 
 #ifndef NDEBUG
   is_self_deleted_ = true;

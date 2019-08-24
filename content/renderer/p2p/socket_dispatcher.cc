@@ -13,7 +13,6 @@
 #include "content/renderer/p2p/socket_client_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -76,8 +75,8 @@ void P2PSocketDispatcher::RequestInterfaceIfNecessary() {
   if (!p2p_socket_manager_request_.is_pending())
     return;
 
-  ChildThreadImpl::current()->GetConnector()->BindInterface(
-      mojom::kBrowserServiceName, std::move(p2p_socket_manager_request_));
+  ChildThreadImpl::current()->BindHostReceiver(
+      std::move(p2p_socket_manager_request_));
 }
 
 void P2PSocketDispatcher::RequestNetworkEventsIfNecessary() {

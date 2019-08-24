@@ -274,11 +274,9 @@ TEST_F(GcpCredentialProviderTest, AutoLogonBeforeUserRefresh) {
 }
 
 TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
-  // Set up such that MDM is enabled, mulit-users is not, and a user already
+  // Set up such that multi-users is not enabled, and a user already
   // exists.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
-  GoogleMdmEnrolledStatusForTesting forced_status(true);
 
   const wchar_t kDummyUsername[] = L"username";
   const wchar_t kDummyPassword[] = L"password";
@@ -369,8 +367,7 @@ TEST_P(GcpCredentialProviderSetSerializationTest, CheckAutoLogon) {
   const bool valid_token_handles = std::get<0>(GetParam());
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<1>(GetParam());
 
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  GoogleMdmEnrolledStatusForTesting forced_status(true);
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
 
   CComBSTR first_sid;
   constexpr wchar_t first_username[] = L"username";
@@ -434,61 +431,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Bool(),
                        ::testing::Values(CPUS_UNLOCK_WORKSTATION, CPUS_LOGON)));
 
-// Tests the effect of the MDM settings on the credential provider.
-// Parameters:
-//    bool: whether the MDM URL is configured.
-//    int: whether multi-users is supported:
-//        0: set registry to 0
-//        1: set registry to 1
-//        2: don't set at all
-//    bool: whether an existing user exists.
-class GcpCredentialProviderMdmTest
-    : public GcpCredentialProviderTest,
-      public ::testing::WithParamInterface<std::tuple<bool, int, bool>> {};
-
-TEST_P(GcpCredentialProviderMdmTest, Basic) {
-  const bool config_mdm_url = std::get<0>(GetParam());
-  const int supports_multi_users = std::get<1>(GetParam());
-  const bool user_exists = std::get<2>(GetParam());
-  const DWORD expected_credential_count =
-      config_mdm_url && supports_multi_users != 1 && user_exists ? 0 : 1;
-
-  bool mdm_enrolled = false;
-  if (config_mdm_url) {
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-    mdm_enrolled = true;
-  }
-
-  GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
-
-  if (supports_multi_users != 2) {
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser,
-                                            supports_multi_users));
-  }
-
-  if (user_exists) {
-    CComBSTR sid;
-    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
-                        L"username", L"password", L"full name", L"comment",
-                        L"gaia-id", L"foo@gmail.com", &sid));
-  }
-
-  CComPtr<ICredentialProviderCredential> cred;
-  CComPtr<ICredentialProvider> provider;
-  DWORD count = 0;
-  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
-
-  ASSERT_EQ(expected_credential_count, count);
-
-  // Deactivate the CP.
-  ASSERT_EQ(S_OK, provider->UnAdvise());
-}
-
-INSTANTIATE_TEST_SUITE_P(GcpCredentialProviderMdmTest,
-                         GcpCredentialProviderMdmTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Range(0, 3),
-                                            ::testing::Bool()));
 
 // Check that reauth credentials only exist when the token handle for the
 // associated user is no longer valid and internet is available.

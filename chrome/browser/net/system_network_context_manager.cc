@@ -94,7 +94,13 @@ void GetStubResolverConfig(
   *insecure_stub_resolver_enabled =
       local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
 
-  std::string doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
+  std::string doh_mode;
+  if (!local_state->FindPreference(prefs::kDnsOverHttpsMode)->IsManaged() &&
+      ShouldDisableDohForManaged())
+    doh_mode = kDnsOverHttpsModeOff;
+  else
+    doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
+
   if (doh_mode == kDnsOverHttpsModeSecure)
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
   else if (doh_mode == kDnsOverHttpsModeAutomatic)

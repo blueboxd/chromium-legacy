@@ -104,6 +104,10 @@ class CryptAuthClientImpl : public CryptAuthClient {
       const cryptauthv2::BatchSetFeatureStatusesRequest& request,
       const BatchSetFeatureStatusesCallback& callback,
       const ErrorCallback& error_callback) override;
+  void GetDevicesActivityStatus(
+      const cryptauthv2::GetDevicesActivityStatusRequest& request,
+      const GetDevicesActivityStatusCallback& callback,
+      const ErrorCallback& error_callback) override;
   std::string GetAccessTokenUsed() override;
 
  private:

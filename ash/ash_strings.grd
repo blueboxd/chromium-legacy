@@ -1910,6 +1910,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_CHIP_PLAY_MUSIC" desc="Message shown on suggestion chip in Assistant UI to initiate a query to play music.">
         Play music
       </message>
+      <message name="IDS_ASH_ASSISTANT_CHIP_SEARCH" desc="Message shown on suggestion chip in Assistant UI to initiate a query for search results.">
+        Search
+      </message>
       <message name="IDS_ASH_ASSISTANT_CHIP_SEND_AN_EMAIL" desc="Message shown on suggestion chip in Assistant UI to initiate a query to send an email.">
         Send an email
       </message>

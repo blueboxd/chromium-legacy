@@ -23,5 +23,8 @@ js_library("local_ntp") {
     "utils.js",
     "voice.js",
   ]
+  deps = [
+    "//ui/webui/resources/js:assert",
+  ]
   externs_list = [ "externs.js" ]
 }

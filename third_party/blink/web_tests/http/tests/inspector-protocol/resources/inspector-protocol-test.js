@@ -413,6 +413,8 @@ TestRunner.Session = class {
   }
 };
 
+// TODO(johannes): Delete this (can't do it right now since I have
+// 2 PRs going in that remove the last usages).
 class WorkerProtocol {
   constructor(dp, sessionId) {
     this._sessionId = sessionId;

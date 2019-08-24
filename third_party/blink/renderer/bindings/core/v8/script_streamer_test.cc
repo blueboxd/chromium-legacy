@@ -174,8 +174,7 @@ class ScriptStreamingTest : public testing::Test {
   }
 
   void Finish() {
-    resource_->Loader()->DidFinishLoading(base::TimeTicks(), 0, 0, 0, false,
-                                          {});
+    resource_->Loader()->DidFinishLoading(base::TimeTicks(), 0, 0, 0, false);
     data_pipe_.producer_handle.reset();
     resource_->SetStatus(ResourceStatus::kCached);
   }

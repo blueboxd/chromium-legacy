@@ -286,6 +286,8 @@ void ScreenTimeController::OnScreenLockByPolicy(
                             GetScreenTimeDuration()));
 
   // Add parent access code button.
+  // TODO(agawronska): Once feature flag is removed, showing shelf button could
+  // be moved to ash.
   if (base::FeatureList::IsEnabled(features::kParentAccessCode))
     ash::LoginScreen::Get()->ShowParentAccessButton(true);
 
@@ -302,6 +304,9 @@ void ScreenTimeController::OnScreenLockByPolicyEnd() {
           ->GetUserByProfile(Profile::FromBrowserContext(context_))
           ->GetAccountId();
   ScreenLocker::default_screen_locker()->EnableAuthForUser(account_id);
+
+  // TODO(agawronska): Once feature flag is removed, showing shelf button could
+  // be moved to ash.
   if (base::FeatureList::IsEnabled(features::kParentAccessCode))
     ash::LoginScreen::Get()->ShowParentAccessButton(false);
 }

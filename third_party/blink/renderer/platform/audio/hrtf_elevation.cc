@@ -80,8 +80,6 @@ static scoped_refptr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
     scoped_refptr<AudioBus> concatenated_impulse_responses(
         AudioBus::GetDataResource(subject_resource_id, kResponseSampleRate));
     DCHECK(concatenated_impulse_responses);
-    if (!concatenated_impulse_responses)
-      return nullptr;
 
     bus = concatenated_impulse_responses;
     audio_bus_map.Set(subject_resource_id, bus);
@@ -93,11 +91,8 @@ static scoped_refptr<AudioBus> GetConcatenatedImpulseResponsesForSubject(
       static_cast<size_t>(kTotalNumberOfResponses * kResponseFrameSize);
 
   // Check number of channels and length. For now these are fixed and known.
-  bool is_bus_good =
-      response_length == expected_length && bus->NumberOfChannels() == 2;
-  DCHECK(is_bus_good);
-  if (!is_bus_good)
-    return nullptr;
+  DCHECK_EQ(response_length, expected_length);
+  DCHECK_EQ(bus->NumberOfChannels(), 2u);
 
   return bus;
 }
@@ -112,17 +107,13 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   // Valid values for azimuth are 0 -> 345 in 15 degree increments.
   // Valid values for elevation are -45 -> +90 in 15 degree increments.
 
-  bool is_azimuth_good =
-      azimuth >= 0 && azimuth <= 345 && (azimuth / 15) * 15 == azimuth;
-  DCHECK(is_azimuth_good);
-  if (!is_azimuth_good)
-    return false;
+  DCHECK_GE(azimuth, 0);
+  DCHECK_LE(azimuth, 345);
+  DCHECK_EQ((azimuth / 15) * 15, azimuth);
 
-  bool is_elevation_good =
-      elevation >= -45 && elevation <= 90 && (elevation / 15) * 15 == elevation;
-  DCHECK(is_elevation_good);
-  if (!is_elevation_good)
-    return false;
+  DCHECK_GE(elevation, -45);
+  DCHECK_LE(elevation, 90);
+  DCHECK_EQ((elevation / 15) * 15, elevation);
 
   int positive_elevation = elevation < 0 ? elevation + 360 : elevation;
 
@@ -142,11 +133,8 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
     }
   }
 
-  bool is_elevation_index_good =
-      (elevation_index >= 0) && (elevation_index < kElevationIndexTableSize);
-  DCHECK(is_elevation_index_good);
-  if (!is_elevation_index_good)
-    return false;
+  DCHECK_GE(elevation_index, 0);
+  DCHECK_LT(elevation_index, kElevationIndexTableSize);
 
   // The concatenated impulse response is a bus containing all
   // the elevations per azimuth, for all azimuths by increasing
@@ -155,10 +143,7 @@ bool HRTFElevation::CalculateKernelsForAzimuthElevation(
   unsigned index =
       ((azimuth / kAzimuthSpacing) * HRTFDatabase::kNumberOfRawElevations) +
       elevation_index;
-  bool is_index_good = index < kTotalNumberOfResponses;
-  DCHECK(is_index_good);
-  if (!is_index_good)
-    return false;
+  DCHECK_LE(index, kTotalNumberOfResponses);
 
   // Extract the individual impulse response from the concatenated
   // responses and potentially sample-rate convert it to the desired
@@ -222,11 +207,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateForSubject(
     int subject_resource_id,
     int elevation,
     float sample_rate) {
-  bool is_elevation_good =
-      elevation >= -45 && elevation <= 90 && (elevation / 15) * 15 == elevation;
-  DCHECK(is_elevation_good);
-  if (!is_elevation_good)
-    return nullptr;
+  DCHECK_GE(elevation, -45);
+  DCHECK_LE(elevation, 90);
+  DCHECK_EQ((elevation / 15) * 15, elevation);
 
   std::unique_ptr<HRTFKernelList> kernel_list_l =
       std::make_unique<HRTFKernelList>(kNumberOfTotalAzimuths);
@@ -279,8 +262,6 @@ std::unique_ptr<HRTFElevation> HRTFElevation::CreateByInterpolatingSlices(
     float sample_rate) {
   DCHECK(hrtf_elevation1);
   DCHECK(hrtf_elevation2);
-  if (!hrtf_elevation1 || !hrtf_elevation2)
-    return nullptr;
 
   DCHECK_GE(x, 0.0);
   DCHECK_LT(x, 1.0);
@@ -319,20 +300,12 @@ void HRTFElevation::GetKernelsFromAzimuth(double azimuth_blend,
                                           HRTFKernel*& kernel_r,
                                           double& frame_delay_l,
                                           double& frame_delay_r) {
-  bool check_azimuth_blend = azimuth_blend >= 0.0 && azimuth_blend < 1.0;
-  DCHECK(check_azimuth_blend);
-  if (!check_azimuth_blend)
-    azimuth_blend = 0.0;
+  DCHECK_GE(azimuth_blend, 0.0);
+  DCHECK_LT(azimuth_blend, 1.0);
 
   unsigned num_kernels = kernel_list_l_->size();
 
-  bool is_index_good = azimuth_index < num_kernels;
-  DCHECK(is_index_good);
-  if (!is_index_good) {
-    kernel_l = nullptr;
-    kernel_r = nullptr;
-    return;
-  }
+  DCHECK_LT(azimuth_index, num_kernels);
 
   // Return the left and right kernels.
   kernel_l = kernel_list_l_->at(azimuth_index).get();

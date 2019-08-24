@@ -541,8 +541,7 @@ void ChildThreadImpl::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
   mojom::FieldTrialRecorderPtr field_trial_recorder;
-  GetConnector()->BindInterface(mojom::kSystemServiceName,
-                                &field_trial_recorder);
+  BindHostReceiver(mojo::MakeRequest(&field_trial_recorder));
   field_trial_recorder->FieldTrialActivated(trial_name);
 }
 
@@ -618,7 +617,10 @@ void ChildThreadImpl::Init(const Options& options) {
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
                          GetIOTaskRunner());
 
-  auto host_receiver = child_process_host_.BindNewPipeAndPassReceiver();
+  mojo::PendingRemote<mojom::ChildProcessHost> remote_host;
+  auto host_receiver = remote_host.InitWithNewPipeAndPassReceiver();
+  child_process_host_ = mojo::SharedRemote<mojom::ChildProcessHost>(
+      std::move(remote_host), GetIOTaskRunner());
   registry->AddInterface(
       base::BindRepeating(&BindChildProcessImpl,
                           base::ThreadTaskRunnerHandle::Get(),

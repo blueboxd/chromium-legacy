@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.ui.UiUtils;
 
@@ -256,7 +257,8 @@ public class StatusBarColorController
             if (!ChromeFeatureList.isInitialized()
                     || (!ChromeFeatureList.isEnabled(
                                 ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                            && !DeviceClassManager.enableAccessibilityLayout())) {
+                            && !DeviceClassManager.enableAccessibilityLayout()
+                            && !FeatureUtilities.isGridTabSwitcherEnabled())) {
                 return mStandardPrimaryBgColor;
             }
 

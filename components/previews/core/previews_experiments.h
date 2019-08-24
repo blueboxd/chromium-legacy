@@ -130,7 +130,10 @@ bool LitePagePreviewsOverridePageHints();
 // a navigation.
 size_t LitePageRedirectPreviewMaxNavigationRestarts();
 
-// Whether we should preresolve the lite page redirect server.
+// Whether we should preconnect to the lite page redirect server or the origin.
+bool LitePageRedirectPreviewShouldPreconnect();
+
+// Whether we should preresolve the lite page redirect server or the origin.
 bool LitePageRedirectPreviewShouldPresolve();
 
 // Whether to only trigger a lite page preview if there has been a successful
@@ -142,8 +145,9 @@ bool LitePageRedirectOnlyTriggerOnSuccessfulProbe();
 // The URL to probe on the lite pages server.
 GURL LitePageRedirectProbeURL();
 
-// The duration in between preresolving the lite page redirect server.
-base::TimeDelta LitePageRedirectPreviewPresolveInterval();
+// The duration in between preresolving or preconnecting the lite page redirect
+// server or the origin.
+base::TimeDelta LitePageRedirectPreviewPreresolvePreconnectInterval();
 
 // The duration in between probes to the lite page redirect server.
 base::TimeDelta LitePageRedirectPreviewProbeInterval();

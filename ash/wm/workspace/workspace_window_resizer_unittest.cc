@@ -624,6 +624,10 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
     resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
     int bottom =
         screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();

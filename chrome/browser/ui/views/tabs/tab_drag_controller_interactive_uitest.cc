@@ -2408,6 +2408,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
                           start.y() + GetDetachY(tab_strip));
   ASSERT_TRUE(second_display.bounds().Contains(target));
 
+  // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+  // without having to call |CursorManager::SetDisplay|.
+  ash::Shell::Get()->cursor_manager()->SetDisplay(second_display);
   DragTabAndNotify(
       tab_strip,
       base::BindOnce(&DragSingleTabToSeparateWindowInSecondDisplayStep2, this,

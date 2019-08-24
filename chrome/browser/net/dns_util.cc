@@ -4,6 +4,9 @@
 
 #include "chrome/browser/net/dns_util.h"
 
+#include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "url/gurl.h"
 
@@ -34,4 +37,12 @@ bool IsValidDoHTemplate(const std::string& server_template,
   *server_method =
       (vars_found.find("dns") == vars_found.end()) ? "POST" : "GET";
   return true;
+}
+
+bool ShouldDisableDohForManaged() {
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  return g_browser_process->browser_policy_connector()
+      ->HasMachineLevelPolicies();
+#endif
+  return false;
 }

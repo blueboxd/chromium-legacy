@@ -165,6 +165,7 @@ void ImpressionHistoryTrackerImpl::OnStoreInitialized(
         impression_map_.emplace(impression.guid, &impressions.back());
       }
     }
+    stats::LogImpressionCount(impressions.size(), type);
     entry->impressions.swap(impressions);
     client_states_.emplace(type, std::move(*it));
     MaybeUpdateDb(type);
@@ -218,8 +219,8 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
             &dismisses, impression->create_time - config_.dismiss_duration);
 
         // Three consecutive dismisses will result in suppression.
-        CheckConsecutiveUserAction(client_state, &dismisses,
-                                   config_.dismiss_count);
+        CheckConsecutiveDismiss(client_state, &dismisses,
+                                config_.dismiss_count);
         break;
       case UserFeedback::kClick:
         OnClickInternal(impression->guid, false /*update_db*/);
@@ -311,7 +312,7 @@ void ImpressionHistoryTrackerImpl::UpdateThrottling(ClientState* client_state,
   }
 }
 
-void ImpressionHistoryTrackerImpl::CheckConsecutiveUserAction(
+void ImpressionHistoryTrackerImpl::CheckConsecutiveDismiss(
     ClientState* client_state,
     base::circular_deque<Impression*>* impressions,
     size_t num_actions) {
@@ -322,6 +323,7 @@ void ImpressionHistoryTrackerImpl::CheckConsecutiveUserAction(
   // generates negative impressions.
   for (size_t i = 0, size = impressions->size(); i < size; ++i) {
     Impression* impression = (*impressions)[i];
+    DCHECK_EQ(impression->feedback, UserFeedback::kDismiss);
     if (impression->integrated)
       continue;
 
@@ -347,6 +349,7 @@ void ImpressionHistoryTrackerImpl::ApplyPositiveImpression(
     client_state->current_max_daily_show =
         client_state->suppression_info->recover_goal;
     client_state->suppression_info.reset();
+    stats::LogImpressionrEvent(stats::ImpressionEvent::kSuppressionRelease);
     return;
   }
 
@@ -371,6 +374,7 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
   SuppressionInfo supression_info(clock_->Now(), config_.suppression_duration);
   client_state->suppression_info = std::move(supression_info);
   client_state->current_max_daily_show = 0;
+  stats::LogImpressionrEvent(stats::ImpressionEvent::kNewSuppression);
 }
 
 void ImpressionHistoryTrackerImpl::CheckSuppressionExpiration(
@@ -393,6 +397,7 @@ void ImpressionHistoryTrackerImpl::CheckSuppressionExpiration(
   // Clear suppression if fully recovered.
   client_state->suppression_info.reset();
   SetNeedsUpdate(client_state->type, true);
+  stats::LogImpressionrEvent(stats::ImpressionEvent::kSuppressionExpired);
 }
 
 bool ImpressionHistoryTrackerImpl::MaybeUpdateDb(SchedulerClientType type) {

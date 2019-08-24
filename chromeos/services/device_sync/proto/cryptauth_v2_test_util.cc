@@ -87,6 +87,17 @@ DeviceFeatureStatus BuildDeviceFeatureStatus(
   return device_feature_status;
 }
 
+DeviceActivityStatus BuildDeviceActivityStatus(
+    const std::string& device_id,
+    int64_t last_activity_time_sec,
+    const OnlineStatus online_status) {
+  DeviceActivityStatus device_activity_status;
+  device_activity_status.set_device_id(device_id);
+  device_activity_status.set_last_activity_time_sec(last_activity_time_sec);
+  device_activity_status.set_online_status(online_status);
+  return device_activity_status;
+}
+
 BeaconSeed BuildBeaconSeedForTest(int64_t start_time_millis,
                                   int64_t end_time_millis) {
   BeaconSeed seed;

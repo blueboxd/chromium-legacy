@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.v13.view.inputmethod.EditorInfoCompat;
 import android.support.v4.view.accessibility.AccessibilityEventCompat;
 import android.text.Editable;
 import android.text.InputType;
@@ -24,6 +25,8 @@ import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -178,6 +181,15 @@ public class FindToolbar extends LinearLayout {
             }
             return super.onTextContextMenuItem(id);
         }
+
+        @Override
+        public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+            InputConnection connection = super.onCreateInputConnection(outAttrs);
+            if (mFindToolbar.isIncognito()) {
+                outAttrs.imeOptions |= EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
+            }
+            return connection;
+        }
     }
 
     public FindToolbar(Context context, AttributeSet attrs) {
@@ -214,7 +226,7 @@ public class FindToolbar extends LinearLayout {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 deactivate();
-                updateVisualsForTabModel(newModel.isIncognito());
+                updateVisualsForTabModel(isIncognito());
             }
         };
 
@@ -281,7 +293,7 @@ public class FindToolbar extends LinearLayout {
                     setPrevNextEnabled(false);
                 }
 
-                if (!mCurrentTab.isIncognito()) {
+                if (!isIncognito()) {
                     mLastUserSearch = s.toString();
                 }
             }
@@ -517,7 +529,7 @@ public class FindToolbar extends LinearLayout {
     /** The find toolbar's container must provide access to its TabModel. */
     public void setTabModelSelector(TabModelSelector modelSelector) {
         mTabModelSelector = modelSelector;
-        updateVisualsForTabModel(modelSelector != null && modelSelector.isIncognitoSelected());
+        updateVisualsForTabModel(isIncognito());
     }
 
     /**
@@ -596,7 +608,7 @@ public class FindToolbar extends LinearLayout {
         showKeyboard();
         // Always show the bar to make the FindToolbar more distinct from the Omnibox.
         setResultsBarVisibility(true);
-        updateVisualsForTabModel(mTabModelSelector.isIncognitoSelected());
+        updateVisualsForTabModel(isIncognito());
 
         setCurrentState(FindLocationBarState.SHOWN);
     }
@@ -716,7 +728,7 @@ public class FindToolbar extends LinearLayout {
         String findText = null;
         if (mSettingFindTextProgrammatically) {
             findText = mFindInPageBridge.getPreviousFindText();
-            if (findText.isEmpty() && !mCurrentTab.isIncognito()) {
+            if (findText.isEmpty() && !isIncognito()) {
                 findText = mLastUserSearch;
             }
             mSearchKeyShouldTriggerSearch = true;
@@ -752,8 +764,7 @@ public class FindToolbar extends LinearLayout {
     private void setStatus(String text, boolean failed) {
         mFindStatus.setText(text);
         mFindStatus.setContentDescription(null);
-        boolean incognito = mTabModelSelector != null && mTabModelSelector.isIncognitoSelected();
-        mFindStatus.setTextColor(getStatusColor(failed, incognito));
+        mFindStatus.setTextColor(getStatusColor(failed, isIncognito()));
     }
 
     /**
@@ -787,5 +798,9 @@ public class FindToolbar extends LinearLayout {
             return;
         }
         mWindowAndroid.getKeyboardDelegate().showKeyboard(mFindQuery);
+    }
+
+    protected boolean isIncognito() {
+        return mTabModelSelector != null && mTabModelSelector.isIncognitoSelected();
     }
 }

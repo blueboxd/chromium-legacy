@@ -1351,6 +1351,11 @@ TEST_F(ClientControlledShellSurfaceDisplayTest, MoveToAnotherDisplayByDrag) {
 
   // Drag the pointer to the right. Once it reaches the right edge of the
   // primary display, it warps to the secondary.
+  display::Display secondary_display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
+  // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+  // without having to call |CursorManager::SetDisplay|.
+  ash::Shell::Get()->cursor_manager()->SetDisplay(secondary_display);
   resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
 
   shell_surface->set_bounds_changed_callback(base::BindRepeating(
@@ -1367,8 +1372,6 @@ TEST_F(ClientControlledShellSurfaceDisplayTest, MoveToAnotherDisplayByDrag) {
   EXPECT_EQ(gfx::Rect(-150, 10, 200, 200), requested_bounds()[0]);
   EXPECT_EQ(gfx::Rect(-150, 10, 200, 200), requested_bounds()[1]);
 
-  display::Display secondary_display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
   EXPECT_EQ(secondary_display.id(), requested_display_ids()[0]);
   EXPECT_EQ(secondary_display.id(), requested_display_ids()[1]);
 }

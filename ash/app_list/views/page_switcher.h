@@ -22,6 +22,9 @@ class PageSwitcher : public views::View,
                      public views::ButtonListener,
                      public ash::PaginationModelObserver {
  public:
+  static constexpr int kMaxButtonRadius = 16;
+  static constexpr int kPreferredButtonStripWidth = kMaxButtonRadius * 2;
+
   PageSwitcher(ash::PaginationModel* model, bool vertical, bool is_tablet_mode);
   ~PageSwitcher() override;
 

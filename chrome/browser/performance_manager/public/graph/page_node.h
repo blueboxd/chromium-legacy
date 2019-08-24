@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 
+#include <string>
+
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
@@ -30,6 +32,9 @@ class PageNode : public Node {
 
   PageNode();
   ~PageNode() override;
+
+  // Returns the unique ID of the browser context that this page belongs to.
+  virtual const std::string& GetBrowserContextID() const = 0;
 
   // Returns the page almost idle state of this page.
   // See PageNodeObserver::OnPageAlmostIdleChanged.

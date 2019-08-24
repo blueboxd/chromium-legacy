@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "google_apis/gaia/fake_gaia.h"
 
 namespace base {

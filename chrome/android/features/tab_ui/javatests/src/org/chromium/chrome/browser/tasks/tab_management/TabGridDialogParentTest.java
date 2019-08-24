@@ -118,6 +118,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
 
     @Test
     @SmallTest
+    @UiThreadTest
     public void testResetDialog() throws Exception {
         mTabGridDialogContainer.removeAllViews();
         View toolbarView = new View(getActivity());
@@ -339,8 +340,12 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
     public void testDialog_FadeInFadeOut() throws Exception {
         // Setup the the basic fade-in and fade-out animation.
         mTabGridDialogParent.setupDialogAnimation(null);
-        mBackgroundFrameView.setAlpha(1f);
-        mAnimationCardView.setAlpha(1f);
+
+        // Specifically set alpha of animation-related views.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBackgroundFrameView.setAlpha(1f);
+            mAnimationCardView.setAlpha(1f);
+        });
 
         // Show the dialog with basic fade-in animation.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -359,9 +364,13 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         Assert.assertTrue(mAnimationCardView.getAlpha() == 0f);
         Assert.assertTrue(mBackgroundFrameView.getAlpha() == 0f);
 
+        // Restore alpha of animation-related views.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBackgroundFrameView.setAlpha(1f);
+            mAnimationCardView.setAlpha(1f);
+        });
+
         // Hide the dialog with basic fade-out animation.
-        mBackgroundFrameView.setAlpha(1f);
-        mAnimationCardView.setAlpha(1f);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTabGridDialogParent.hideDialog();
             if (areAnimatorsEnabled()) {

@@ -14,6 +14,7 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/render_process_user_data.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
@@ -36,6 +37,7 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
       performance_manager_(PerformanceManager::GetInstance()) {
   page_node_ = performance_manager_->CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
+      web_contents->GetBrowserContext()->UniqueId(),
       web_contents->GetVisibility() == content::Visibility::VISIBLE,
       web_contents->IsCurrentlyAudible());
 

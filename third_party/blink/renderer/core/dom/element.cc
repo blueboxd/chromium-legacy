@@ -2008,15 +2008,11 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   } else if (name == html_names::kNameAttr) {
     SetHasName(!params.new_value.IsNull());
   } else if (name == html_names::kPartAttr) {
-    if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
-      part().DidUpdateAttributeValue(params.old_value, params.new_value);
-      GetDocument().GetStyleEngine().PartChangedForElement(*this);
-    }
+    part().DidUpdateAttributeValue(params.old_value, params.new_value);
+    GetDocument().GetStyleEngine().PartChangedForElement(*this);
   } else if (name == html_names::kExportpartsAttr) {
-    if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
-      EnsureElementRareData().SetPartNamesMap(params.new_value);
-      GetDocument().GetStyleEngine().ExportpartsChangedForElement(*this);
-    }
+    EnsureElementRareData().SetPartNamesMap(params.new_value);
+    GetDocument().GetStyleEngine().ExportpartsChangedForElement(*this);
   } else if (IsStyledElement()) {
     if (name == kStyleAttr) {
       StyleAttributeChanged(params.new_value, params.reason);
@@ -5768,8 +5764,6 @@ void Element::Trace(Visitor* visitor) {
 }
 
 bool Element::HasPart() const {
-  if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
-    return false;
   if (HasRareData()) {
     if (auto* part = GetElementRareData()->GetPart()) {
       return part->length() > 0;
@@ -5779,9 +5773,7 @@ bool Element::HasPart() const {
 }
 
 DOMTokenList* Element::GetPart() const {
-  return RuntimeEnabledFeatures::CSSPartPseudoElementEnabled() && HasRareData()
-             ? GetElementRareData()->GetPart()
-             : nullptr;
+  return HasRareData() ? GetElementRareData()->GetPart() : nullptr;
 }
 
 DOMTokenList& Element::part() {
@@ -5800,9 +5792,7 @@ bool Element::HasPartNamesMap() const {
 }
 
 const NamesMap* Element::PartNamesMap() const {
-  return RuntimeEnabledFeatures::CSSPartPseudoElementEnabled() && HasRareData()
-             ? GetElementRareData()->PartNamesMap()
-             : nullptr;
+  return HasRareData() ? GetElementRareData()->PartNamesMap() : nullptr;
 }
 
 bool Element::StyleRecalcBlockedByDisplayLock(

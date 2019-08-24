@@ -27,18 +27,17 @@
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom-forward.h"
 
 class PrefRegistrySimple;
 

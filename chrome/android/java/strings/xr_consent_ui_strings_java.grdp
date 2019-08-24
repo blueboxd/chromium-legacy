@@ -15,10 +15,10 @@ found in the LICENSE file.
     Make sure you trust this site before entering VR.
   </message>
   <!-- NOTE for the below: It seems as though the leading whitespace from the
-  first line will be removed. However, leading whitespace on subsequent lines
-  isn't. This is aligned it's current way to ensure proper alignment when
-  displayed -->
-<message name="IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES" desc="Body of the user consent dialog displayed before allowing a website to start a VR presentation, when physical features may be exposed. The 'make sure you trust this site' line is intended to align with the 'while you are in VR' line, and as such no additional indentation is currently applied.">
+       first line will be removed. However, leading whitespace on subsequent
+       lines isn't. This is aligned it's current way to ensure proper alignment
+       when displayed. -->
+  <message name="IDS_XR_CONSENT_DIALOG_DESCRIPTION_PHYSICAL_FEATURES" desc="Body of the user consent dialog displayed before allowing a website to start a VR presentation, when physical features may be exposed. The 'make sure you trust this site' line is intended to align with the 'while you are in VR' line, and as such no additional indentation is currently applied.">
 While you are in VR, this site may be able to learn about:
   -  your physical features, such as height
 

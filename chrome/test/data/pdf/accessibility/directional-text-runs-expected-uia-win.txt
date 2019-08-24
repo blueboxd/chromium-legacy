@@ -2,4 +2,6 @@ group
 ++document
 ++++region Name='Page 1'
 ++++++group
-++++++++description Name='Hello,<newline> world!<newline><newline>Goodbye,<newline> world!'
+++++++++description Name='Hello,<newline> world!<newline><newline>Goodbye,<newline> world!<newline>'
+++++++group
+++++++++description Name='This is some text abc<newline>def'

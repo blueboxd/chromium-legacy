@@ -61,10 +61,8 @@ class JSChecker(object):
 
     # Extract paths to be passed to ESLint.
     affected_js_files_paths = []
-    presubmit_path = self.input_api.PresubmitLocalPath()
     for f in affected_js_files:
-      affected_js_files_paths.append(
-          os_path.relpath(f.AbsoluteLocalPath(), presubmit_path))
+      affected_js_files_paths.append(f.AbsoluteLocalPath())
 
     args = ['--color', '--format', format, '--ignore-pattern \'!.eslintrc.js\'']
     args += affected_js_files_paths

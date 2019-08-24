@@ -164,6 +164,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   }
 
  private:
+  friend class NativeFileSystemFileHandleImpl;
+
   ~NativeFileSystemManagerImpl() override;
   void DidOpenSandboxedFileSystem(const BindingContext& binding_context,
                                   GetSandboxedFileSystemCallback callback,

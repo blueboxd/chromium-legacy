@@ -3365,6 +3365,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING_RECOMMENDED" desc="The 'ask before sending' label in site settings -- a recommended setting for some categories, such as when sites want to send push notifications.">
     Ask before sending (recommended)
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATICALLY_BLOCKED_NOTIFICATIONS" desc="The label in notifications site settings -- a setting that is automatically set when the user declines notification permission prompts a few times.">
+    Automatically blocked because you declined notifications a few times
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_DONT_SHOW_IMAGES" desc="Label for the global 'Do not show any images' toggle (category default) in site settings.">
     Do not show any images
   </message>
@@ -4789,6 +4792,9 @@
     </message>
     <message name="IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE" desc="Label for the additional note for the subpage for setting preferences for external storage.">
       Google Play Store applications may require access to external storage devices in order to read and write files and folders on them.
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER" desc="Header of the list of external storage devices for the subpage for setting preferences for external storage.">
+      Available USB devices will appear here.
     </message>
 
     <!-- Power -->

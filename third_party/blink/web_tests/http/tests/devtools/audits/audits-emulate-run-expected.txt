@@ -1,0 +1,20 @@
+Tests that mobile emulation works.
+
+
+========== Audits Start Audit State ==========
+[x] Performance
+[x] Progressive Web App
+[x] Best practices
+[x] Accessibility
+[x] SEO
+[x] Clear storage
+Run audits: enabled visible
+
+=============== Lighthouse Results ===============
+URL: http://127.0.0.1:8000/devtools/audits/resources/audits-emulate-pass.html
+Version: 5.2.0
+TestedAsMobileDevice: true
+
+
+content-width: pass 
+

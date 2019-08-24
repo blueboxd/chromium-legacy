@@ -12,13 +12,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
@@ -120,7 +119,7 @@ bool IsSystemSlotAvailable(Profile* profile) {
 }  // namespace
 
 class UserAffiliationBrowserTest
-    : public chromeos::MixinBasedInProcessBrowserTest,
+    : public MixinBasedInProcessBrowserTest,
       public ::testing::WithParamInterface<Params> {
  public:
   UserAffiliationBrowserTest() {
@@ -138,7 +137,7 @@ class UserAffiliationBrowserTest
  protected:
   // MixinBasedInProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    chromeos::MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     if (content::IsPreTest()) {
       AffiliationTestHelper::AppendCommandLineSwitchesForLoginManager(
           command_line);
@@ -154,8 +153,7 @@ class UserAffiliationBrowserTest
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    chromeos::MixinBasedInProcessBrowserTest::
-        SetUpInProcessBrowserTestFixture();
+    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // Initialize clients here so they are available during setup. They will be
     // shutdown in ChromeBrowserMain.
@@ -193,8 +191,7 @@ class UserAffiliationBrowserTest
 
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override {
-    chromeos::MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(
-        browser_main_parts);
+    MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
 
     login_ui_visible_waiter_ =
         std::make_unique<content::WindowedNotificationObserver>(
@@ -203,7 +200,7 @@ class UserAffiliationBrowserTest
   }
 
   void SetUpOnMainThread() override {
-    chromeos::MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     if (content::IsPreTest()) {
       // Wait for the login manager UI to be available before continuing.
       // This is a workaround for chrome crashing when running with DCHECKS when
@@ -214,7 +211,7 @@ class UserAffiliationBrowserTest
   }
 
   void TearDownOnMainThread() override {
-    chromeos::MixinBasedInProcessBrowserTest::TearDownOnMainThread();
+    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
 
     TearDownTestSystemSlot();
   }

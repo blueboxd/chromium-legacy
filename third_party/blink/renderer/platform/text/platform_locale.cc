@@ -198,22 +198,21 @@ void Locale::ResetDefaultLocale() {
 
 Locale::~Locale() = default;
 
-String Locale::QueryString(WebLocalizedString::Name name) {
+String Locale::QueryString(int resource_id) {
   // FIXME: Returns a string locazlied for this locale.
-  return Platform::Current()->QueryLocalizedString(name);
+  return Platform::Current()->QueryLocalizedString(resource_id);
 }
 
-String Locale::QueryString(WebLocalizedString::Name name,
-                           const String& parameter) {
+String Locale::QueryString(int resource_id, const String& parameter) {
   // FIXME: Returns a string locazlied for this locale.
-  return Platform::Current()->QueryLocalizedString(name, parameter);
+  return Platform::Current()->QueryLocalizedString(resource_id, parameter);
 }
 
-String Locale::QueryString(WebLocalizedString::Name name,
+String Locale::QueryString(int resource_id,
                            const String& parameter1,
                            const String& parameter2) {
   // FIXME: Returns a string locazlied for this locale.
-  return Platform::Current()->QueryLocalizedString(name, parameter1,
+  return Platform::Current()->QueryLocalizedString(resource_id, parameter1,
                                                    parameter2);
 }
 

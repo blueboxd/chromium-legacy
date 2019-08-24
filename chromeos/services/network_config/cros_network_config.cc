@@ -1705,6 +1705,56 @@ void CrosNetworkConfig::SetCellularSimStateFailure(
   set_cellular_sim_state_callbacks_.erase(iter);
 }
 
+void CrosNetworkConfig::SelectCellularMobileNetwork(
+    const std::string& guid,
+    const std::string& network_id,
+    SelectCellularMobileNetworkCallback callback) {
+  const DeviceState* device_state = nullptr;
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkStateFromGuid(guid);
+  if (network_state) {
+    device_state =
+        network_state_handler_->GetDeviceState(network_state->device_path());
+  }
+  if (!device_state) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  int callback_id = callback_id_++;
+  select_cellular_mobile_network_callbacks_[callback_id] = std::move(callback);
+
+  network_device_handler_->RegisterCellularNetwork(
+      device_state->path(), network_id,
+      base::Bind(&CrosNetworkConfig::SelectCellularMobileNetworkSuccess,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::SelectCellularMobileNetworkFailure,
+                 weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CrosNetworkConfig::SelectCellularMobileNetworkSuccess(int callback_id) {
+  auto iter = select_cellular_mobile_network_callbacks_.find(callback_id);
+  if (iter == select_cellular_mobile_network_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
+    return;
+  }
+  std::move(iter->second).Run(true);
+  select_cellular_mobile_network_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::SelectCellularMobileNetworkFailure(
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = select_cellular_mobile_network_callbacks_.find(callback_id);
+  if (iter == select_cellular_mobile_network_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
+    return;
+  }
+  std::move(iter->second).Run(false);
+  select_cellular_mobile_network_callbacks_.erase(iter);
+}
+
 void CrosNetworkConfig::RequestNetworkScan(mojom::NetworkType type) {
   network_state_handler_->RequestScan(MojoTypeToPattern(type));
 }

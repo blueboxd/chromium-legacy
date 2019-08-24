@@ -23,6 +23,7 @@
 #include "printing/print_settings.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_image.h"
@@ -91,8 +92,7 @@ void CopyImageAtAndCapturePixels(
     int y,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   mojo::Remote<blink::mojom::ClipboardHost> clipboard;
-  blink::Platform::Current()->GetConnector()->Connect(
-      blink::Platform::Current()->GetBrowserServiceName(),
+  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
       clipboard.BindNewPipeAndPassReceiver());
 
   uint64_t sequence_number_before = 0;

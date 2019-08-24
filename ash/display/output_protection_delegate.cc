@@ -33,7 +33,10 @@ OutputProtectionDelegate::OutputProtectionDelegate(aura::Window* window)
     : window_(window),
       display_id_(
           display::Screen::GetScreen()->GetDisplayNearestWindow(window).id()) {
-  DCHECK(window_);
+  // TODO(domlaskowski): OutputProtectionImpl passes null if the RenderFrameHost
+  // no longer exists. Investigate removing this check in crbug.com/997270.
+  if (!window_)
+    return;
 
   window_->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);

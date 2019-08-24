@@ -133,6 +133,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public void start(boolean forward, boolean showCloseIndicator) {
+        if (mBottomSheetController.get() == null) return;
         mForward = forward;
         mShowCloseIndicator = showCloseIndicator;
         setVisible(false);
@@ -142,6 +143,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public void onScroll(float delta, float overscroll) {
+        if (mBottomSheetController.get() == null) return;
         if (mShowCloseIndicator) return;
         if (overscroll > mPeekSheetThreshold) {
             if (isHidden() && Math.abs(delta) > 2.f) {
@@ -155,6 +157,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public void release() {
+        if (mBottomSheetController.get() == null) return;
         mHandler.removeCallbacks(mSheetPeekRunnable);
         // Show navigation sheet if released at peek state.
         if (mSheetTriggered) {
@@ -198,6 +201,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public boolean isPeeked() {
+        if (mBottomSheetController.get() == null) return false;
         return isVisible() && getTargetOrCurrentState() == SheetState.PEEK;
     }
 

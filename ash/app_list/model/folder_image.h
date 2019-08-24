@@ -21,6 +21,7 @@ class Rect;
 
 namespace app_list {
 
+class AppListConfig;
 class AppListItem;
 class AppListItemList;
 
@@ -58,7 +59,10 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.
   // Returns the bounds of top item icons based on total number of items.
+  // |app_list_config| is the app list configuration for which bounds are being
+  // calculated.
   static std::vector<gfx::Rect> GetTopIconsBounds(
+      const AppListConfig& app_list_config,
       const gfx::Rect& folder_icon_bounds,
       size_t num_items);
 
@@ -68,7 +72,10 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   // the target icon bounds is centered at the |folder_icon_bounds| with
   // the same size of the top item icon.
   // The Rect returned is in the same coordinates of |folder_icon_bounds|.
+  // |app_list_config| is the app list configuration for which bounds are being
+  // calculated.
   gfx::Rect GetTargetIconRectInFolderForItem(
+      const AppListConfig& app_list_config,
       AppListItem* item,
       const gfx::Rect& folder_icon_bounds) const;
 

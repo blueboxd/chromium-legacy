@@ -34,10 +34,7 @@ class BackgroundTracingActiveScenario::TracingTimer {
  public:
   TracingTimer(BackgroundTracingActiveScenario* scenario,
                BackgroundTracingManager::StartedFinalizingCallback callback)
-      : scenario_(scenario), callback_(callback) {
-    DCHECK_NE(scenario->GetConfig()->tracing_mode(),
-              BackgroundTracingConfigImpl::SYSTEM);
-  }
+      : scenario_(scenario), callback_(callback) {}
   ~TracingTimer() = default;
 
   void StartTimer(int seconds) {
@@ -302,13 +299,11 @@ void BackgroundTracingActiveScenario::SetState(State new_state) {
     // which means that we're left in a state where the Mojo interface doesn't
     // think we're tracing but TraceLog is still enabled. If that's the case,
     // we abort tracing here.
-    DCHECK_NE(config_->tracing_mode(), BackgroundTracingConfigImpl::SYSTEM);
     base::trace_event::TraceLog::GetInstance()->SetDisabled(
         base::trace_event::TraceLog::GetInstance()->enabled_modes());
   }
 
   if (scenario_state_ == State::kAborted) {
-    DCHECK_NE(config_->tracing_mode(), BackgroundTracingConfigImpl::SYSTEM);
     tracing_session_.reset();
     std::move(on_aborted_callback_).Run();
   }
@@ -339,7 +334,6 @@ void BackgroundTracingActiveScenario::StartTracingIfConfigNeedsIt() {
 }
 
 bool BackgroundTracingActiveScenario::StartTracing() {
-  DCHECK_NE(config_->tracing_mode(), BackgroundTracingConfigImpl::SYSTEM);
   TraceConfig chrome_config = config_->GetTraceConfig();
 
   // If the tracing controller is tracing, i.e. DevTools or about://tracing,
@@ -383,7 +377,6 @@ bool BackgroundTracingActiveScenario::StartTracing() {
 
 void BackgroundTracingActiveScenario::BeginFinalizing(
     BackgroundTracingManager::StartedFinalizingCallback callback) {
-  DCHECK_NE(config_->tracing_mode(), BackgroundTracingConfigImpl::SYSTEM);
   triggered_named_event_handle_ = -1;
   tracing_timer_.reset();
 
@@ -484,12 +477,6 @@ void BackgroundTracingActiveScenario::AbortScenario() {
           }
         },
         weak_ptr_factory_.GetWeakPtr()));
-  } else if (config_->tracing_mode() == BackgroundTracingConfig::SYSTEM) {
-    // We can't 'abort' system tracing since we aren't the consumer. Instead we
-    // send a trigger into the system tracing so that we can tell the time the
-    // scenario stopped.
-    tracing::PerfettoTracedProcess::Get()->ActivateSystemTriggers(
-        {"org.chromium.bg_tracing.scenario_aborted"});
   } else {
     // Setting the kAborted state will cause |this| to be destroyed.
     SetState(State::kAborted);
@@ -550,55 +537,41 @@ void BackgroundTracingActiveScenario::OnRuleTriggered(
 
   int trace_delay = triggered_rule->GetTraceDelay();
 
-  switch (config_->tracing_mode()) {
-    case BackgroundTracingConfigImpl::REACTIVE:
-      // In reactive mode, a trigger starts tracing, or finalizes tracing
-      // immediately if it's already running.
-      BackgroundTracingManagerImpl::RecordMetric(Metrics::REACTIVE_TRIGGERED);
+  if (config_->tracing_mode() == BackgroundTracingConfigImpl::REACTIVE) {
+    // In reactive mode, a trigger starts tracing, or finalizes tracing
+    // immediately if it's already running.
+    BackgroundTracingManagerImpl::RecordMetric(Metrics::REACTIVE_TRIGGERED);
 
-      if (state() != State::kTracing) {
-        // It was not already tracing, start a new trace.
-        if (!StartTracing()) {
-          return;
-        }
-      } else {
-        // Some reactive configs that trigger again while tracing should just
-        // end right away (to not capture multiple navigations, for example).
-        // For others we just want to ignore the repeated trigger.
-        if (triggered_rule->stop_tracing_on_repeated_reactive()) {
-          trace_delay = -1;
-        } else {
-          if (!callback.is_null()) {
-            std::move(callback).Run(false);
-          }
-          return;
-        }
+    if (state() != State::kTracing) {
+      // It was not already tracing, start a new trace.
+      if (!StartTracing()) {
+        return;
       }
-      break;
-    case BackgroundTracingConfigImpl::PREEMPTIVE:
-      // In preemptive mode, a trigger starts finalizing a trace if one is
-      // running and we haven't got a finalization timer running,
-      // otherwise we do nothing.
-      if ((state() != State::kTracing) || tracing_timer_) {
+    } else {
+      // Some reactive configs that trigger again while tracing should just
+      // end right away (to not capture multiple navigations, for example).
+      // For others we just want to ignore the repeated trigger.
+      if (triggered_rule->stop_tracing_on_repeated_reactive()) {
+        trace_delay = -1;
+      } else {
         if (!callback.is_null()) {
           std::move(callback).Run(false);
         }
         return;
       }
-
-      BackgroundTracingManagerImpl::RecordMetric(Metrics::PREEMPTIVE_TRIGGERED);
-      break;
-    case BackgroundTracingConfigImpl::SYSTEM:
-      BackgroundTracingManagerImpl::RecordMetric(Metrics::SYSTEM_TRIGGERED);
-      tracing::PerfettoTracedProcess::Get()->ActivateSystemTriggers(
-          {triggered_rule->rule_id()});
-      if (!rule_triggered_callback_for_testing_.is_null()) {
-        rule_triggered_callback_for_testing_.Run();
+    }
+  } else {
+    // In preemptive mode, a trigger starts finalizing a trace if one is
+    // running and we haven't got a finalization timer running,
+    // otherwise we do nothing.
+    if ((state() != State::kTracing) || tracing_timer_) {
+      if (!callback.is_null()) {
+        std::move(callback).Run(false);
       }
-      // We drop |callback| on the floor because we won't know when the system
-      // service starts finalizing the trace and the callback isn't relevant to
-      // this scenario.
       return;
+    }
+
+    BackgroundTracingManagerImpl::RecordMetric(Metrics::PREEMPTIVE_TRIGGERED);
   }
 
   if (trace_delay < 0) {

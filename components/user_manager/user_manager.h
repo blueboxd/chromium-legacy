@@ -22,6 +22,10 @@ namespace user_manager {
 class ScopedUserManager;
 class RemoveUserDelegate;
 
+// A list pref of the the regular users known on this device, arranged in LRU
+// order, stored in local state.
+USER_MANAGER_EXPORT extern const char kRegularUsersPref[];
+
 // Interface for UserManagerBase - that provides base implementation for
 // Chrome OS user management. Typical features:
 // * Get list of all know users (who have logged into this Chrome OS device)
@@ -236,12 +240,6 @@ class USER_MANAGER_EXPORT UserManager {
   // Ignored If there is no such user.
   virtual void SaveUserDisplayEmail(const AccountId& account_id,
                                     const std::string& display_email) = 0;
-
-  // Returns the display email for user |account_id| if it is known (was
-  // previously set by a |SaveUserDisplayEmail| call).
-  // Otherwise, returns |account_id| itself.
-  virtual std::string GetUserDisplayEmail(
-      const AccountId& account_id) const = 0;
 
   // Saves user's type for |user| into local state preferences.
   virtual void SaveUserType(const User* user) = 0;

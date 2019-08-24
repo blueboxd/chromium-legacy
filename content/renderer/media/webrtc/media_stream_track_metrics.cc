@@ -12,7 +12,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/render_thread_impl.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
@@ -265,8 +264,8 @@ uint64_t MediaStreamTrackMetrics::MakeUniqueId(const std::string& track_id,
 blink::mojom::MediaStreamTrackMetricsHostPtr&
 MediaStreamTrackMetrics::GetMediaStreamTrackMetricsHost() {
   if (!track_metrics_host_) {
-    ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, &track_metrics_host_);
+    ChildThreadImpl::current()->BindHostReceiver(
+        mojo::MakeRequest(&track_metrics_host_));
   }
   return track_metrics_host_;
 }

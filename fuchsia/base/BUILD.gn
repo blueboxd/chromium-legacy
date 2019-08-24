@@ -39,6 +39,7 @@ source_set("modular") {
   ]
   public_deps = [
     "//third_party/fuchsia-sdk/sdk:modular",
+    "//third_party/fuchsia-sdk/sdk:sys_cpp",
   ]
 }
 

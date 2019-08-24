@@ -9,6 +9,7 @@
 #include "base/sanitizer_buildflags.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/version_info/version_info_values.h"
 
@@ -52,7 +53,7 @@ std::string GetOSType() {
 #elif defined(OS_MACOSX)
   return "Mac OS X";
 #elif defined(OS_CHROMEOS)
-# if defined(GOOGLE_CHROME_BUILD)
+# if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return "Chrome OS";
 # else
   return "Chromium OS";

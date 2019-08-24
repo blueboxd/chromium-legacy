@@ -4,7 +4,9 @@
 
 #include "base/threading/sequence_bound.h"
 
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -69,6 +71,29 @@ class SequenceBoundTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   Value value = kInitialValue;
+};
+
+class BoxedValue {
+ public:
+  explicit BoxedValue(int initial_value) : value_(initial_value) {}
+
+  ~BoxedValue() {
+    if (destruction_callback_)
+      std::move(destruction_callback_).Run();
+  }
+
+  void set_destruction_callback(base::OnceClosure callback) {
+    destruction_callback_ = std::move(callback);
+  }
+
+  int value() const { return value_; }
+  void set_value(int value) { value_ = value; }
+
+ private:
+  int value_ = 0;
+  base::OnceClosure destruction_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoxedValue);
 };
 
 #if defined(OS_IOS) && !TARGET_OS_SIMULATOR
@@ -342,6 +367,43 @@ TEST_F(SequenceBoundTest, LvalueConstructionParameter) {
     run_loop.Run();
     EXPECT_EQ(value, kDerivedDtorValue);
   }
+}
+
+TEST_F(SequenceBoundTest, PostTaskWithThisObject) {
+  constexpr int kTestValue1 = 42;
+  constexpr int kTestValue2 = 42;
+  base::SequenceBound<BoxedValue> value(task_runner_, kTestValue1);
+  base::RunLoop loop;
+  value.PostTaskWithThisObject(
+      FROM_HERE, base::BindLambdaForTesting([&](const BoxedValue& v) {
+        EXPECT_EQ(kTestValue1, v.value());
+      }));
+  value.PostTaskWithThisObject(
+      FROM_HERE, base::BindLambdaForTesting(
+                     [&](BoxedValue* v) { v->set_value(kTestValue2); }));
+  value.PostTaskWithThisObject(
+      FROM_HERE, base::BindLambdaForTesting([&](const BoxedValue& v) {
+        EXPECT_EQ(kTestValue2, v.value());
+        loop.Quit();
+      }));
+  loop.Run();
+}
+
+TEST_F(SequenceBoundTest, ResetWithCallbackAfterDestruction) {
+  base::SequenceBound<BoxedValue> value(task_runner_, 0);
+
+  // Verify that the callback passed to ResetWithCallbackAfterDestruction always
+  // does happen *after* destruction.
+  bool destroyed = false;
+  value.Post(FROM_HERE, &BoxedValue::set_destruction_callback,
+             base::BindLambdaForTesting([&] { destroyed = true; }));
+
+  base::RunLoop loop;
+  value.ResetWithCallbackAfterDestruction(base::BindLambdaForTesting([&] {
+    EXPECT_TRUE(destroyed);
+    loop.Quit();
+  }));
+  loop.Run();
 }
 
 }  // namespace base

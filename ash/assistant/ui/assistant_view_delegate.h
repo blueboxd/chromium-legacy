@@ -61,6 +61,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
   // Invoked when the opt in button is pressed.
   virtual void OnOptInButtonPressed() {}
 
+  // Invoked when the proactive suggestions close button is pressed.
+  virtual void OnProactiveSuggestionsCloseButtonPressed() {}
+
+  // Invoked when the proactive suggestions view is pressed.
+  virtual void OnProactiveSuggestionsViewPressed() {}
+
   // Invoked when a suggestion chip is pressed.
   virtual void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) {}
 };
@@ -161,6 +167,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   // Invoked when the opt in button is pressed.
   virtual void OnOptInButtonPressed() {}
+
+  // Invoked when the proactive suggestions close button is pressed.
+  virtual void OnProactiveSuggestionsCloseButtonPressed() {}
+
+  // Invoked when the proactive suggestions view is pressed.
+  virtual void OnProactiveSuggestionsViewPressed() {}
 
   // Invoked when suggestion chip is pressed.
   virtual void OnSuggestionChipPressed(

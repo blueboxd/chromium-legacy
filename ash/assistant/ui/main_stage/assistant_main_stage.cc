@@ -479,7 +479,7 @@ void AssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
 }
 
 void AssistantMainStage::OnResponseChanged(
-    const std::shared_ptr<AssistantResponse>& response) {
+    const scoped_refptr<AssistantResponse>& response) {
   using assistant::util::CreateLayerAnimationSequence;
   using assistant::util::CreateOpacityElement;
 

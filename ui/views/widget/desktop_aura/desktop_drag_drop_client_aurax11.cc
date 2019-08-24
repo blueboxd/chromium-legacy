@@ -1273,7 +1273,7 @@ void DesktopDragDropClientAuraX11::CreateDragWidget(
                         drag_widget_offset_;
   params.bounds = gfx::Rect(location, image.size());
   widget->set_focus_on_creation(false);
-  widget->set_frame_type(Widget::FRAME_TYPE_FORCE_NATIVE);
+  widget->set_frame_type(Widget::FrameType::kForceNative);
   widget->Init(std::move(params));
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW)
     widget->SetOpacity(kDragWidgetOpacity);

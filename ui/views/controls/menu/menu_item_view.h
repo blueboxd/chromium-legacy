@@ -151,7 +151,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* AddMenuItemAt(int index,
                               int item_id,
                               const base::string16& label,
-                              const base::string16& sublabel,
                               const base::string16& minor_text,
                               const gfx::VectorIcon* minor_icon,
                               const gfx::ImageSkia& icon,
@@ -215,7 +214,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
                                    const base::string16& label,
-                                   const base::string16& sublabel,
                                    const base::string16& minor_text,
                                    const gfx::VectorIcon* minor_icon,
                                    const gfx::ImageSkia& icon,
@@ -242,9 +240,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Sets/Gets the title.
   void SetTitle(const base::string16& title);
   const base::string16& title() const { return title_; }
-
-  // Sets the subtitle.
-  void SetSubtitle(const base::string16& subtitle);
 
   // Sets the minor text.
   void SetMinorText(const base::string16& minor_text);
@@ -456,7 +451,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void DestroyAllMenuHosts();
 
   // Returns the text that should be displayed on the end (right) of the menu
-  // item. This will be the accelerator (if one exists), otherwise |subtitle_|.
+  // item. This will be the accelerator (if one exists).
   base::string16 GetMinorText() const;
 
   // Returns the icon that should be displayed to the left of the minor text.
@@ -546,9 +541,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Title.
   base::string16 title_;
-
-  // Subtitle/sublabel.
-  base::string16 subtitle_;
 
   // Minor text.
   base::string16 minor_text_;

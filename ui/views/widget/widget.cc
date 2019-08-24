@@ -927,8 +927,8 @@ NonClientFrameView* Widget::CreateNonClientFrameView() {
 }
 
 bool Widget::ShouldUseNativeFrame() const {
-  if (frame_type_ != FRAME_TYPE_DEFAULT)
-    return frame_type_ == FRAME_TYPE_FORCE_NATIVE;
+  if (frame_type_ != FrameType::kDefault)
+    return frame_type_ == FrameType::kForceNative;
   return native_widget_->ShouldUseNativeFrame();
 }
 
@@ -937,12 +937,13 @@ bool Widget::ShouldWindowContentsBeTransparent() const {
 }
 
 void Widget::DebugToggleFrameType() {
-  if (frame_type_ == FRAME_TYPE_DEFAULT) {
-    frame_type_ = ShouldUseNativeFrame() ? FRAME_TYPE_FORCE_CUSTOM :
-        FRAME_TYPE_FORCE_NATIVE;
+  if (frame_type_ == FrameType::kDefault) {
+    frame_type_ = ShouldUseNativeFrame() ? FrameType::kForceCustom
+                                         : FrameType::kForceNative;
   } else {
-    frame_type_ = frame_type_ == FRAME_TYPE_FORCE_CUSTOM ?
-        FRAME_TYPE_FORCE_NATIVE : FRAME_TYPE_FORCE_CUSTOM;
+    frame_type_ = frame_type_ == FrameType::kForceCustom
+                      ? FrameType::kForceNative
+                      : FrameType::kForceCustom;
   }
   FrameTypeChanged();
 }

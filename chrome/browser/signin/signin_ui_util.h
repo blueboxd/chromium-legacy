@@ -14,14 +14,10 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
-#include "components/signin/public/identity_manager/account_info.h"
 
-class Profile;
+struct AccountInfo;
 class Browser;
-
-namespace signin {
-class IdentityManager;
-}
+class Profile;
 
 // Utility functions to gather status information from the various signed in
 // services and construct messages suitable for showing in UI.
@@ -32,8 +28,7 @@ const int kUpgradeWelcomeTutorialShowMax = 1;
 
 // Returns the username of the authenticated user or an empty string if there is
 // no authenticated user.
-base::string16 GetAuthenticatedUsername(
-    const signin::IdentityManager* identity_manager);
+base::string16 GetAuthenticatedUsername(Profile* profile);
 
 // Initializes signin-related preferences.
 void InitializePrefsForProfile(Profile* profile);

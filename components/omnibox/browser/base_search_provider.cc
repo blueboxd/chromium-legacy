@@ -205,6 +205,17 @@ void BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
   }
 }
 
+// static
+bool BaseSearchProvider::IsNTPPage(
+    metrics::OmniboxEventProto::PageClassification classification) {
+  using OEP = metrics::OmniboxEventProto;
+  return (classification == OEP::NTP) ||
+         (classification == OEP::OBSOLETE_INSTANT_NTP) ||
+         (classification == OEP::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
+         (classification == OEP::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) ||
+         (classification == OEP::NTP_REALBOX);
+}
+
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
@@ -255,16 +266,6 @@ const char BaseSearchProvider::kTrue[] = "true";
 const char BaseSearchProvider::kFalse[] = "false";
 
 BaseSearchProvider::~BaseSearchProvider() {}
-
-// static
-bool BaseSearchProvider::IsNTPPage(
-    metrics::OmniboxEventProto::PageClassification classification) {
-  using OEP = metrics::OmniboxEventProto;
-  return (classification == OEP::NTP) ||
-         (classification == OEP::OBSOLETE_INSTANT_NTP) ||
-         (classification == OEP::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
-         (classification == OEP::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
-}
 
 // static
 AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(

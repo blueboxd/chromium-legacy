@@ -9685,6 +9685,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
 class SandboxedNavigationControllerBrowserTest
     : public NavigationControllerBrowserTest {
  protected:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        features::kHistoryPreventSandboxedNavigation);
+    NavigationControllerBrowserTest::SetUp();
+  }
+
   void SetupNavigation() {
     NavigationControllerImpl& controller =
         static_cast<NavigationControllerImpl&>(
@@ -9721,6 +9727,7 @@ class SandboxedNavigationControllerBrowserTest
     std::string script = "document.getElementById('test_anchor').click()";
     EXPECT_TRUE(ExecJs(root->child_at(1), script));
     ASSERT_EQ(5, controller.GetEntryCount());
+    EXPECT_EQ(4, controller.GetCurrentEntryIndex());
 
     // History should now be:
     // [preload_url, main(simple1, sandbox(simple1)),
@@ -9730,6 +9737,9 @@ class SandboxedNavigationControllerBrowserTest
 
   static constexpr const char* kWithinSubtreeHistogram =
       "Navigation.SandboxFrameBackForwardStaysWithinSubtree";
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests navigations which occur from a sandboxed frame are tracked
@@ -9747,25 +9757,63 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
   std::string back_script = "history.back();";
   std::string forward_script = "history.forward();";
 
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
   // Navigate sandbox frame back same-document.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 1);
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 0);
+  EXPECT_EQ(3, controller.GetCurrentEntryIndex());
 
   // Navigate innermost frame back cross-document.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 0);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
-  // Navigate sibling frame back cross-document.
+  // Navigate sibling frame back cross-document. It should fail.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 1);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
-  // Navigate main frame back cross-document.
+  // Try it again and it should fail.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+
+  // Do it browser initiated. Make sure histograms don't change.
+  ASSERT_TRUE(controller.CanGoBack());
+  controller.GoBack();
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 2);
+
+  // Go forward to reset state, then a mouse back button navigation.
+  // Using the mouse back button should be allowed because it is a
+  // UA level default action even though it originates from the
+  // renderer side. The sandbox policy shouldn't be applied when it
+  // doesn't originate from a script.
+  controller.GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  root->child_at(1)
+      ->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->ForwardMouseEvent(blink::WebMouseEvent(
+          blink::WebInputEvent::Type::kMouseUp, blink::WebFloatPoint(),
+          blink::WebFloatPoint(), blink::WebPointerProperties::Button::kBack, 0,
+          0, base::TimeTicks::Now()));
+  RunUntilInputProcessed(
+      root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
 }
 
 // Tests navigations that occur inside a doubly nested sandbox
@@ -9827,6 +9875,75 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
   // the main frame though.
   EXPECT_TRUE(ExecJs(root, forward_script));
   histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+}
+
+class SandboxedNavigationControllerPopupBrowserTest
+    : public NavigationControllerBrowserTest {
+ protected:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        features::kHistoryPreventSandboxedNavigation);
+    NavigationControllerBrowserTest::SetUp();
+  }
+
+  void SetupNavigation() {
+    EXPECT_EQ(1u, Shell::windows().size());
+    NavigationControllerImpl& controller =
+        static_cast<NavigationControllerImpl&>(
+            shell()->web_contents()->GetController());
+    GURL preload_url(embedded_test_server()->GetURL(
+        "/navigation_controller/page_with_sandboxed_iframe_popup.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), preload_url));
+    ASSERT_EQ(1, controller.GetEntryCount());
+
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    ASSERT_EQ(1U, root->child_count());
+    ASSERT_NE(nullptr, root->child_at(0));
+    ShellAddedObserver new_shell_observer;
+    // Click link inside sandboxed iframe, causing popup open.
+    std::string script = "document.getElementById('test_link').click()";
+    EXPECT_TRUE(ExecJs(root->child_at(0), script));
+
+    popup_shell_ = new_shell_observer.GetShell();
+    EXPECT_TRUE(WaitForLoadStop(popup_shell_->web_contents()));
+    FrameTreeNode* popup_root =
+        static_cast<WebContentsImpl*>(popup_shell_->web_contents())
+            ->GetFrameTree()
+            ->root();
+    // Click link inside sandboxed popup, causing the frame to have an
+    // additional entry in history state.
+    std::string popup_script = "document.getElementById('test_anchor').click()";
+    EXPECT_TRUE(ExecJs(popup_root, popup_script));
+  }
+
+ protected:
+  Shell* popup_shell_ = nullptr;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests navigations that sandboxed top level frames still
+// can navigate.
+IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerPopupBrowserTest,
+                       NavigateSelf) {
+  SetupNavigation();
+
+  std::string back_script = "history.back();";
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(popup_shell_->web_contents())
+          ->GetFrameTree()
+          ->root();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      popup_shell_->web_contents()->GetController());
+  ASSERT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  // Navigate sandboxed top frame back.
+  EXPECT_TRUE(ExecJs(root, back_script));
+  EXPECT_TRUE(WaitForLoadStop(popup_shell_->web_contents()));
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
 }
 
 class NavigationControllerMainDocumentSequenceNumberBrowserTest

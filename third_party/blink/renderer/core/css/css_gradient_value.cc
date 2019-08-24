@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -98,7 +99,10 @@ bool CSSGradientColorStop::IsCacheable() const {
       return false;
   }
 
-  return !offset_ || !offset_->IsFontRelativeLength();
+  // TODO(crbug.com/979895): This is the result of a refactoring, which might
+  // have revealed an existing bug with calculated lengths. Investigate.
+  return !offset_ || offset_->IsMathFunctionValue() ||
+         !To<CSSNumericLiteralValue>(*offset_).IsFontRelativeLength();
 }
 
 void CSSGradientColorStop::Trace(blink::Visitor* visitor) {

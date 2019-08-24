@@ -10,21 +10,16 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace android_webview {
 
 AwURLLoaderThrottleProvider::AwURLLoaderThrottleProvider(
-    service_manager::Connector* connector,
+    blink::ThreadSafeBrowserInterfaceBrokerProxy* broker,
     content::URLLoaderThrottleProviderType type)
     : type_(type) {
-  DCHECK(connector);
   DETACH_FROM_THREAD(thread_checker_);
-
-  connector->BindInterface(content::mojom::kBrowserServiceName,
-                           mojo::MakeRequest(&safe_browsing_info_));
+  broker->GetInterface(mojo::MakeRequest(&safe_browsing_info_));
 }
 
 AwURLLoaderThrottleProvider::AwURLLoaderThrottleProvider(

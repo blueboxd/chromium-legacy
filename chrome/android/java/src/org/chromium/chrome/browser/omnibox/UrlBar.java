@@ -14,6 +14,7 @@ import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v13.view.inputmethod.EditorInfoCompat;
 import android.support.v4.text.BidiFormatter;
 import android.text.Editable;
 import android.text.InputType;
@@ -73,11 +74,6 @@ public class UrlBar extends AutocompleteEditText {
         int COPY = 1;
         int SHARE = 2;
     }
-
-    // TODO(tedchoc): Replace with EditorInfoCompat#IME_FLAG_NO_PERSONALIZED_LEARNING or
-    //                EditorInfo#IME_FLAG_NO_PERSONALIZED_LEARNING as soon as either is available in
-    //                all build config types.
-    private static final int IME_FLAG_NO_PERSONALIZED_LEARNING = 0x1000000;
 
     // TextView becomes very slow on long strings, so we limit maximum length
     // of what is displayed to the user, see limitDisplayableLength().
@@ -858,7 +854,7 @@ public class UrlBar extends AutocompleteEditText {
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         InputConnection connection = super.onCreateInputConnection(outAttrs);
         if (mUrlBarDelegate == null || !mUrlBarDelegate.allowKeyboardLearning()) {
-            outAttrs.imeOptions |= IME_FLAG_NO_PERSONALIZED_LEARNING;
+            outAttrs.imeOptions |= EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
         }
         return connection;
     }

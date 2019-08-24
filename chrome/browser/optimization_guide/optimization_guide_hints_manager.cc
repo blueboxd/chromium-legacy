@@ -300,8 +300,6 @@ void OptimizationGuideHintsManager::OnHintCacheInitialized() {
     UpdateComponentHints(base::DoNothing(), std::move(hint_update_data));
   }
 
-  MaybeScheduleHintsFetch();
-
   // Register as an observer regardless of hint proto override usage. This is
   // needed as a signal during testing.
   optimization_guide_service_->AddObserver(this);
@@ -330,7 +328,7 @@ void OptimizationGuideHintsManager::UpdateComponentHints(
 
 void OptimizationGuideHintsManager::OnComponentHintsUpdated(
     base::OnceClosure update_closure,
-    bool hints_updated) const {
+    bool hints_updated) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Record the result of updating the hints. This is used as a signal for the
@@ -338,6 +336,8 @@ void OptimizationGuideHintsManager::OnComponentHintsUpdated(
   LOCAL_HISTOGRAM_BOOLEAN(
       optimization_guide::kComponentHintsUpdatedResultHistogramString,
       hints_updated);
+
+  MaybeScheduleHintsFetch();
 
   MaybeRunUpdateClosure(std::move(update_closure));
 }

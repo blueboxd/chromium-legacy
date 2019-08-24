@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
@@ -32,12 +32,10 @@ struct NetworkInfo {
   base::string16 tooltip;
   gfx::ImageSkia image;
   bool disable = false;
-  chromeos::network_config::mojom::ConnectionStateType connection_state =
-      chromeos::network_config::mojom::ConnectionStateType::kNotConnected;
-  chromeos::network_config::mojom::NetworkType type =
-      chromeos::network_config::mojom::NetworkType::kWiFi;
-  chromeos::network_config::mojom::OncSource source =
-      chromeos::network_config::mojom::OncSource::kNone;
+  // Initialized in .cc file because full (non-forward) mojom headers are large.
+  chromeos::network_config::mojom::ConnectionStateType connection_state;
+  chromeos::network_config::mojom::NetworkType type;
+  chromeos::network_config::mojom::OncSource source;
   int battery_percentage = 0;
   std::string captive_portal_provider_name;
 };

@@ -31,7 +31,6 @@
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
-#include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -56,7 +55,6 @@ class FetchContext;
 class FrameScheduler;
 class MHTMLArchive;
 class KURL;
-class PreflightTimingInfo;
 class Resource;
 class ResourceError;
 class ResourceLoadObserver;
@@ -209,9 +207,7 @@ class PLATFORM_EXPORT ResourceFetcher
                           base::TimeTicks finish_time,
                           LoaderFinishType,
                           uint32_t inflight_keepalive_bytes,
-                          bool should_report_corb_blocking,
-                          const WebVector<network::cors::PreflightTimingInfo>&
-                              cors_preflight_timing_info);
+                          bool should_report_corb_blocking);
   void HandleLoaderError(Resource*,
                          const ResourceError&,
                          uint32_t inflight_keepalive_bytes);

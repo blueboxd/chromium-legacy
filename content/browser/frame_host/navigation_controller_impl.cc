@@ -2594,7 +2594,6 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
     UMA_HISTOGRAM_BOOLEAN(
         "Navigation.SandboxFrameBackForwardStaysWithinSubtree",
         navigates_inside_tree);
-
     // Also count the navigations as web use counters so we can determine
     // the number of pages that trigger this.
     FrameTreeNode* sandbox_source_frame_tree_node =
@@ -2606,6 +2605,18 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
               ? blink::mojom::WebFeature::kSandboxBackForwardStaysWithinSubtree
               : blink::mojom::WebFeature::
                     kSandboxBackForwardAffectsFramesOutsideSubtree);
+    }
+
+    // If the navigation occurred outside the tree discard it because
+    // the sandboxed frame didn't have permission to navigate outside
+    // its tree. If it is possible that the navigation is both inside and
+    // outside the frame tree and we discard it entirely because we don't
+    // want to end up in a history state that didn't exist before.
+    if (base::FeatureList::IsEnabled(
+            features::kHistoryPreventSandboxedNavigation) &&
+        !navigates_inside_tree) {
+      DiscardPendingEntry(false);
+      return;
     }
   }
 

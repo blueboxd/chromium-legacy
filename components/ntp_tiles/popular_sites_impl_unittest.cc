@@ -21,6 +21,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/pref_names.h"
@@ -308,7 +309,7 @@ TEST_F(PopularSitesTest, AddsIconResourcesToDefaultPages) {
   ASSERT_FALSE(sites.empty());
   for (const auto& site : sites) {
     EXPECT_TRUE(site.baked_in);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     EXPECT_THAT(site.default_icon_resource, Gt(0));
 #endif
   }

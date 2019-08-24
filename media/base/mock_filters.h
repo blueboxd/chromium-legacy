@@ -290,6 +290,7 @@ class MockRendererClient : public RendererClient {
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
   MOCK_METHOD1(OnDurationChange, void(base::TimeDelta));
   MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
+  MOCK_METHOD0(IsVideoStreamAvailable, bool());
 };
 
 class MockVideoRenderer : public VideoRenderer {

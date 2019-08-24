@@ -1654,6 +1654,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "enable-storage-pressure-ui",
+    "owners": [ "jarrydg"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-streamlined-usb-printer-setup",
     "owners": [ "baileyberro" ],
     "expiry_milestone": 77
@@ -2714,7 +2719,7 @@
   {
     "name": "overscroll-history-navigation",
      "owners": [ "mohsen", "jinsukkim" ],
-     "expiry_milestone": 77
+     "expiry_milestone": 80
   },
   {
     "name": "passive-event-listeners-due-to-fling",
@@ -3005,6 +3010,11 @@
     "name": "stop-non-timers-in-background",
     "owners": [ "fdoray" ],
     "expiry_milestone": 75
+  },
+  {
+    "name": "storage-access-api",
+    "owners": [ "brandm@microsoft.com" ],
+    "expiry_milestone": 80
   },
   {
     "name": "strict-origin-isolation",

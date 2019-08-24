@@ -889,6 +889,11 @@ extern const char kThirdPartyBlockingEnabled[];
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
+// Windows mitigation policies.
+#if defined(OS_WIN)
+extern const char kRendererCodeIntegrityEnabled[];
+#endif  // defined(OS_WIN)
+
 extern const char kSettingsResetPromptPromptWave[];
 extern const char kSettingsResetPromptLastTriggeredForDefaultSearch[];
 extern const char kSettingsResetPromptLastTriggeredForStartupUrls[];

@@ -169,6 +169,10 @@ Polymer({
       this.stopScanning_();
       return;
     }
+    this.init();
+  },
+
+  init: function() {
     // Clear any stale data.
     this.networkStateList_ = [];
     this.thirdPartyVpns_ = {};

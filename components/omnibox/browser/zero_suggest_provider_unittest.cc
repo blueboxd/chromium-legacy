@@ -515,37 +515,3 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   EXPECT_EQ(empty_response,
             prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }
-
-TEST_F(ZeroSuggestProviderTest, CustomEndpoint) {
-  // Coverage for the URL-specific page. (Regression test for a DCHECK).
-  // This is exercising RemoteSuggestionsService::CreateExperimentalRequest,
-  // and to do that, ZeroSuggestProvider needs to be looking for
-  // REMOTE_SEND_URL results (which needs various personalization
-  // experiments off, IsPersonalizedDataCollectionActive true), and the
-  // custom on-focus suggestions endpoint enabled.
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeatureWithParameters(
-      omnibox::kOnFocusSuggestions,
-      {
-          {std::string(OmniboxFieldTrial::kZeroSuggestVariantRule) + ":*:*",
-           ZeroSuggestProvider::kRemoteSendUrlVariant},
-          {OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam,
-           "https://valid-but-fake-endpoint.com/fakepath"},
-      });
-
-  EXPECT_CALL(*client_, IsAuthenticated())
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
-      .WillRepeatedly(testing::Return(true));
-
-  std::string url("http://www.cnn.com/");
-  AutocompleteInput input(base::ASCIIToUTF16(url),
-                          metrics::OmniboxEventProto::OTHER,
-                          TestSchemeClassifier());
-  input.set_current_url(GURL(url));
-  input.set_from_omnibox_focus(true);
-  provider_->Start(input, false);
-  EXPECT_TRUE(test_loader_factory()->IsPending(
-      "https://valid-but-fake-endpoint.com/fakepath"));
-  base::RunLoop().RunUntilIdle();
-}

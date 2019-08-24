@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/core/mojo/test/mojo_interface_interceptor.h"
 
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -60,28 +61,22 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
-    service_manager::Connector* connector = Platform::Current()->GetConnector();
-    auto browser_service_filter = service_manager::ServiceFilter::ByName(
-        Platform::Current()->GetBrowserServiceName());
-    if (connector->HasBinderOverrideForTesting(browser_service_filter,
-                                               interface_name)) {
+    ThreadSafeBrowserInterfaceBrokerProxy* proxy =
+        Platform::Current()->GetBrowserInterfaceBrokerProxy();
+    started_ = true;
+    if (!proxy->SetBinderForTesting(
+            interface_name,
+            WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                               WrapWeakPersistent(this)))) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidModificationError,
           "Interface " + interface_name_ +
               " is already intercepted by another MojoInterfaceInterceptor.");
-      return;
     }
 
-    started_ = true;
-    connector->OverrideBinderForTesting(
-        browser_service_filter, interface_name,
-        WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
-                           WrapWeakPersistent(this)));
     return;
   }
 
-  // This should replace TestApi usage below when all InterfaceProvider clients
-  // are converted to use BrowserInterfaceBroker. See crbug.com/936482.
   if (use_browser_interface_broker_) {
     ExecutionContext* context = GetExecutionContext();
 
@@ -90,8 +85,8 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
 
     BrowserInterfaceBrokerProxy* proxy =
         context->GetBrowserInterfaceBrokerProxy();
-
     CHECK(proxy);
+
     started_ = true;
     proxy->SetBinderForTesting(
         interface_name,
@@ -125,12 +120,8 @@ void MojoInterfaceInterceptor::stop() {
   std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
-    auto filter = service_manager::ServiceFilter::ByName(
-        Platform::Current()->GetBrowserServiceName());
-    service_manager::Connector::TestApi test_api(
-        Platform::Current()->GetConnector());
-    DCHECK(test_api.HasBinderOverride(filter, interface_name));
-    test_api.ClearBinderOverride(filter, interface_name);
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+        interface_name, {});
     return;
   }
 

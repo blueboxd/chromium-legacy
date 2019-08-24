@@ -1079,10 +1079,14 @@ const FeatureEntry::FeatureParam kLongpressResolveHideOnScroll = {
 const FeatureEntry::FeatureParam kLongpressResolvePrivacyAggressive = {
     contextual_search::kLongpressResolveParamName,
     contextual_search::kLongpressResolvePrivacyAggressive};
+const FeatureEntry::FeatureParam kLongpressResolvePreserveTap = {
+    contextual_search::kLongpressResolveParamName,
+    contextual_search::kLongpressResolvePreserveTap};
 const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
     {"and hide on scroll", &kLongpressResolveHideOnScroll, 1, nullptr},
     {"and allow privacy-aggressive behavior",
      &kLongpressResolvePrivacyAggressive, 1, nullptr},
+    {"and preserve Tap behavior", &kLongpressResolvePreserveTap, 1, nullptr},
 };
 
 #endif  // defined(OS_ANDROID)
@@ -1655,12 +1659,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kVirtualDesks)},
     {"trim-on-all-frames-frozen", flag_descriptions::kTrimOnFreezeName,
      flag_descriptions::kTrimOnFreezeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         performance_manager::features::chromeos::kTrimOnFreeze)},
+     FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnFreeze)},
     {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         performance_manager::features::chromeos::kTrimOnMemoryPressure)},
+     FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnMemoryPressure)},
     {"system-tray-pagination", flag_descriptions::kSystemTrayPaginationName,
      flag_descriptions::kSystemTrayPaginationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemTrayFeaturePodsPagination)},
@@ -1940,8 +1942,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(USE_TCMALLOC)
     {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
      flag_descriptions::kDynamicTcmallocDescription, kOsCrOS | kOsLinux,
-     FEATURE_VALUE_TYPE(
-         performance_manager::features::os_linux::kDynamicTcmallocTuning)},
+     FEATURE_VALUE_TYPE(performance_manager::features::kDynamicTcmallocTuning)},
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // OS_CHROMEOS || OS_LINUX
 #if defined(OS_ANDROID)
@@ -3099,6 +3100,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
+    {"enable-storage-pressure-ui", flag_descriptions::kStoragePressureUIName,
+     flag_descriptions::kStoragePressureUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kStoragePressureUI)},
+
     {"enable-network-logging-to-file",
      flag_descriptions::kEnableNetworkLoggingToFileName,
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
@@ -4063,6 +4068,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMacSystemMediaPermissionsInfoUiDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMacSystemMediaPermissionsInfoUi)},
 #endif  // defined(OS_MACOSX)
+
+    {"storage-access-api", flag_descriptions::kStorageAccessAPIName,
+     flag_descriptions::kStorageAccessAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kStorageAccessAPI)},
 
     {"same-site-by-default-cookies",
      flag_descriptions::kSameSiteByDefaultCookiesName,

@@ -417,12 +417,13 @@ void FakeLevelDBFactory::EnqueueNextOpenLevelDBStateResult(
 }
 
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /*disk_full*/>
-FakeLevelDBFactory::OpenLevelDBState(
-    const base::FilePath& file_name,
-    const leveldb::Comparator* ldb_comparator) {
+FakeLevelDBFactory::OpenLevelDBState(const base::FilePath& file_name,
+                                     const leveldb::Comparator* ldb_comparator,
+                                     bool create_if_missing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (next_leveldb_states_.empty()) {
-    return DefaultLevelDBFactory::OpenLevelDBState(file_name, ldb_comparator);
+    return DefaultLevelDBFactory::OpenLevelDBState(file_name, ldb_comparator,
+                                                   create_if_missing);
   }
   auto tuple = std::move(next_leveldb_states_.front());
   next_leveldb_states_.pop();

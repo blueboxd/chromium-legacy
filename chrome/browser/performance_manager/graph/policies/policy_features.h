@@ -20,7 +20,6 @@ namespace features {
 // TODO(bgeffon): The WorkingSetTrimmer for windows feature should also be moved
 // from resource manager to here.
 #if defined(OS_CHROMEOS)
-namespace chromeos {
 
 // The trim on Memory Pressure feature will trim a process nodes working set
 // according to the parameters below.
@@ -55,11 +54,9 @@ struct TrimOnMemoryPressureParams {
   base::TimeDelta node_trim_backoff_time;
 };
 
-}  // namespace chromeos
 #endif
 
 #if defined(OS_LINUX)
-namespace os_linux {
 
 #if BUILDFLAG(USE_TCMALLOC)
 // If enabled then tcmalloc will be tuned dynamically based on system memory
@@ -72,9 +69,8 @@ extern const base::FeatureParam<int> kDynamicTuningTimeSec;
 // The time in seconds a frame needs to be invisible before being further scaled
 // down, -1 will disable this.
 extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec;
-#endif
+#endif  // BUILDFLAG(USE_TCMALLOC)
 
-}  // namespace os_linux
 #endif  // defined(OS_LINUX)
 
 }  // namespace features

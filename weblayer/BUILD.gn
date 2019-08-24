@@ -50,6 +50,8 @@ jumbo_static_library("weblayer_lib") {
     "browser/web_profile_impl.h",
     "common/web_content_client.cc",
     "common/web_content_client.h",
+    "public/navigation.h",
+    "public/navigation_observer.h",
     "public/web_browser_controller.h",
     "public/web_main.h",
     "public/web_navigation_controller.h",
@@ -75,9 +77,9 @@ jumbo_static_library("weblayer_lib") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/public/app:both",
+    "//content/public/child:child",
     "//content/public/common",
     "//content/public/common:service_names",
-    "//content/public/child:child",
     "//net",
     "//net:net_resources",
     "//sandbox",
@@ -111,6 +113,9 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_win) {
     deps += [ "//content:sandbox_helper_win" ]
+    if (win_console_app) {
+      defines = [ "WIN_CONSOLE_APP" ]
+    }
   }
 
   if (is_linux) {

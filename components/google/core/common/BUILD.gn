@@ -17,6 +17,7 @@ static_library("common") {
   ]
 
   deps = [
+    "//build:branding_buildflags",
     "//components/url_formatter",
   ]
 }

@@ -23,9 +23,9 @@ BrowserDesktopWindowTreeHostX11::BrowserDesktopWindowTreeHostX11(
     : DesktopWindowTreeHostX11(native_widget_delegate,
                                desktop_native_widget_aura),
       browser_view_(browser_view) {
-  browser_frame->set_frame_type(
-      browser_frame->UseCustomFrame() ? views::Widget::FRAME_TYPE_FORCE_CUSTOM
-                                      : views::Widget::FRAME_TYPE_FORCE_NATIVE);
+  browser_frame->set_frame_type(browser_frame->UseCustomFrame()
+                                    ? views::Widget::FrameType::kForceCustom
+                                    : views::Widget::FrameType::kForceNative);
 }
 
 BrowserDesktopWindowTreeHostX11::~BrowserDesktopWindowTreeHostX11() {

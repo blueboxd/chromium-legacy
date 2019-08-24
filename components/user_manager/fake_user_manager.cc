@@ -213,11 +213,6 @@ base::string16 FakeUserManager::GetUserDisplayName(
   return base::string16();
 }
 
-std::string FakeUserManager::GetUserDisplayEmail(
-    const AccountId& account_id) const {
-  return std::string();
-}
-
 bool FakeUserManager::IsCurrentUserOwner() const {
   return false;
 }

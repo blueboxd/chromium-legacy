@@ -23,24 +23,17 @@ class LayerTreeOwner;
 
 namespace ash {
 
-// DragWindowController is responsible for showing a semi-transparent window
-// while dragging a window across displays.
+// Handles visuals for window dragging as it relates to multi-display support.
+// Phantom windows called "drag windows" represent the window on other displays.
 class ASH_EXPORT DragWindowController {
  public:
-  // Returns 1 if |drag_location_in_screen| is contained in |root_window|.
-  // Otherwise, returns an opacity value based on what fraction of
-  // |dragged_window| is contained in |root_window|.
-  static float GetDragWindowOpacity(aura::Window* root_window,
-                                    aura::Window* dragged_window,
-                                    const gfx::Point& drag_location_in_screen);
-
-  explicit DragWindowController(aura::Window* window);
+  DragWindowController(aura::Window* window, bool is_touch_dragging);
   virtual ~DragWindowController();
 
-  // This is used to update the bounds and opacity for the drag window
-  // immediately.
-  // This also creates/destorys the drag window when necessary.
-  void Update(const gfx::Point& drag_location_in_screen);
+  // Updates bounds and opacity for the drag windows, and creates/destroys each
+  // drag window so that it only exists when it would have nonzero opacity. Also
+  // updates the opacity of the original window.
+  void Update();
 
  private:
   class DragWindowDetails;
@@ -59,9 +52,16 @@ class ASH_EXPORT DragWindowController {
   // Call Layer::OnPaintLayer on all layers under the drag_windows_.
   void RequestLayerPaintForTest();
 
-  // Window the drag window is placed beneath.
+  // The original window.
   aura::Window* window_;
 
+  // Indicates touch dragging, as opposed to mouse dragging.
+  const bool is_touch_dragging_;
+
+  // |window_|'s opacity before the drag. Used to revert opacity after the drag.
+  const float old_opacity_;
+
+  // Phantom windows to visually represent |window_| on other displays.
   std::vector<std::unique_ptr<DragWindowDetails>> drag_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowController);

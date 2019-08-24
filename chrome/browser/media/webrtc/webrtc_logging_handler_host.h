@@ -19,6 +19,7 @@
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/rtp_dump_type.h"
+#include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/media/webrtc/webrtc_text_log_handler.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
 #include "content/public/browser/render_process_host.h"
@@ -30,14 +31,6 @@ class WebRtcRtpDumpHandler;
 namespace content {
 class BrowserContext;
 }  // namespace content
-
-struct WebRtcLogPaths {
-  base::FilePath log_path;  // todo: rename to directory.
-  base::FilePath incoming_rtp_dump;
-  base::FilePath outgoing_rtp_dump;
-};
-
-typedef std::map<std::string, std::string> MetaDataMap;
 
 // WebRtcLoggingHandlerHost handles operations regarding the WebRTC logging:
 // - Opens a connection to a WebRtcLoggingAgent that runs in the render process
@@ -51,9 +44,8 @@ typedef std::map<std::string, std::string> MetaDataMap;
 class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
                                  public chrome::mojom::WebRtcLoggingClient {
  public:
-  typedef base::Callback<void(bool, const std::string&)> GenericDoneCallback;
-  typedef base::Callback<void(bool, const std::string&, const std::string&)>
-      UploadDoneCallback;
+  typedef WebRtcLogUploader::GenericDoneCallback GenericDoneCallback;
+  typedef WebRtcLogUploader::UploadDoneCallback UploadDoneCallback;
   typedef base::Callback<void(const std::string&, const std::string&)>
       LogsDirectoryCallback;
   typedef base::Callback<void(const std::string&)> LogsDirectoryErrorCallback;
@@ -65,15 +57,6 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
       void(bool, const std::string&, const std::string&)>
       StartEventLoggingCallback;
 
-  // Upload failure reasons used for UMA stats. A failure reason can be one of
-  // those listed here or a response code for the upload HTTP request. The
-  // values in this list must be less than 100 and cannot be changed.
-  enum UploadFailureReason {
-    kInvalidState = 0,
-    kStoredLogNotFound = 1,
-    kNetworkError = 2,
-  };
-
   static void AttachToRenderProcessHost(content::RenderProcessHost* host,
                                         WebRtcLogUploader* log_uploader);
   static WebRtcLoggingHandlerHost* FromRenderProcessHost(
@@ -82,7 +65,7 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
   // Sets meta data that will be uploaded along with the log and also written
   // in the beginning of the log. Must be called on the IO thread before calling
   // StartLogging.
-  void SetMetaData(std::unique_ptr<MetaDataMap> meta_data,
+  void SetMetaData(std::unique_ptr<WebRtcLogMetaDataMap> meta_data,
                    const GenericDoneCallback& callback);
 
   // Opens a log and starts logging. Must be called on the IO thread.
@@ -101,10 +84,6 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
   void UploadStoredLog(const std::string& log_id,
                        const UploadDoneCallback& callback);
 
-  // Called by WebRtcLogUploader when uploading has finished. Must be called on
-  // the IO thread.
-  void UploadLogDone();
-
   // Discards the log and the RTP dumps. May only be called after logging has
   // stopped. Must be called on the IO thread.
   void DiscardLog(const GenericDoneCallback& callback);
@@ -120,16 +99,12 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
   }
 
   // Starts dumping the RTP headers for the specified direction. Must be called
-  // on the IO thread. |type| specifies which direction(s) of RTP packets should
+  // on the UI thread. |type| specifies which direction(s) of RTP packets should
   // be dumped. |callback| will be called when starting the dump is done.
-  // |stop_callback| will be called when StopRtpDump is called.
-  void StartRtpDump(RtpDumpType type,
-                    const GenericDoneCallback& callback,
-                    const content::RenderProcessHost::WebRtcStopRtpDumpCallback&
-                        stop_callback);
+  void StartRtpDump(RtpDumpType type, const GenericDoneCallback& callback);
 
   // Stops dumping the RTP headers for the specified direction. Must be called
-  // on the IO thread. |type| specifies which direction(s) of RTP packet dumping
+  // on the UI thread. |type| specifies which direction(s) of RTP packet dumping
   // should be stopped. |callback| will be called when stopping the dump is
   // done.
   void StopRtpDump(RtpDumpType type, const GenericDoneCallback& callback);
@@ -166,10 +141,6 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
   void OnAddMessages(
       std::vector<chrome::mojom::WebRtcLoggingMessagePtr> messages) override;
   void OnStopped() override;
-
-  base::WeakPtr<WebRtcLoggingHandlerHost> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
 
  private:
   WebRtcLoggingHandlerHost(int render_process_id,
@@ -241,11 +212,11 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
   // the browser context directory path associated with our renderer process.
   base::RepeatingCallback<base::FilePath(void)> log_directory_getter_;
 
-  // Only accessed on the IO thread.
+  // True if we should upload whatever log we have when the renderer closes.
   bool upload_log_on_render_close_;
 
   // The text log handler owns the WebRtcLogBuffer object and keeps track of
-  // the logging state. It is a scoped_refptr to allow posting tasks.
+  // the logging state.
   std::unique_ptr<WebRtcTextLogHandler> text_log_handler_;
 
   // The RTP dump handler responsible for creating the RTP header dump files.
@@ -260,7 +231,7 @@ class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
 
   // Web app id used for statistics. Created as the hash of the value of a
   // "client" meta data key, if exists. 0 means undefined, and is the hash of
-  // the empty string. Must only be accessed on the IO thread.
+  // the empty string.
   int web_app_id_ = 0;
 
   base::WeakPtrFactory<WebRtcLoggingHandlerHost> weak_factory_{this};

@@ -14,21 +14,6 @@ _NEGATIVE_FILTER = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2858
-    'ElementFindingTest.testFindingMultipleElementsByInvalidClassNameShouldThrow',
-    'ElementFindingTest.testFindingMultipleElementsByCompoundClassNameShouldThrow',
-    'ElementFindingTest.testFindingMultipleElementsByEmptyIdShouldReturnEmptyList',
-    'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
-    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
-    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
-    'DragAndDropTest.testDragAndDropElementWithOffsetInScrolledDiv',
-    'DragAndDropTest.canDragAnElementNotVisibleInTheCurrentViewportDueToAParentOverflow',
-    'LocationContextTest.testShouldSetAndGetLatitude',
-    'LocationContextTest.testShouldSetAndGetLongitude',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
-    'CombinedInputActionsTest.testChordControlCutAndPaste',
 ]
 
 _READY_TO_RUN_FILTER = [
@@ -45,6 +30,7 @@ _READY_TO_RUN_FILTER = [
     'ContentEditableTest.testShouldAppendToTinyMCE',
     'ContentEditableTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
     'CookieImplementationTest.canHandleHttpOnlyCookie',
+    'DragAndDropTest.canDragAnElementNotVisibleInTheCurrentViewportDueToAParentOverflow',
     'ExecutingJavascriptTest.testShouldBeAbleToReturnADateObject',
     'PageLoadingTest.testEagerStrategyShouldNotWaitForResources',
     'PageLoadingTest.testEagerStrategyShouldNotWaitForResourcesOnRefresh',

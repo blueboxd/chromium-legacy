@@ -23,7 +23,7 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -321,9 +321,9 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
       return false;
 
     if (!clipboard_) {
-      blink::Platform::Current()->GetConnector()->Connect(
-          blink::Platform::Current()->GetBrowserServiceName(),
-          clipboard_.BindNewPipeAndPassReceiver());
+      blink::Platform::Current()
+          ->GetBrowserInterfaceBrokerProxy()
+          ->GetInterface(clipboard_.BindNewPipeAndPassReceiver());
     }
     base::string16 markup;
     base::string16 text;
@@ -348,9 +348,9 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
       return false;
 
     if (!clipboard_) {
-      blink::Platform::Current()->GetConnector()->Connect(
-          blink::Platform::Current()->GetBrowserServiceName(),
-          clipboard_.BindNewPipeAndPassReceiver());
+      blink::Platform::Current()
+          ->GetBrowserInterfaceBrokerProxy()
+          ->GetInterface(clipboard_.BindNewPipeAndPassReceiver());
     }
     base::string16 text;
     clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &text);

@@ -58,6 +58,25 @@ constexpr float kSuggestionChipOpacityEndProgress = 1;
 
 }  // namespace
 
+// static
+gfx::Size AppsContainerView::GetNonAppsGridSize() {
+  gfx::Size size;
+
+  // Enlarge with the apps grid view insets and margin.
+  size.Enlarge(kAppsGridMinimumMargin * 2,
+               AppsGridView::kFadeoutZoneHeight * 2);
+
+  // Enlarge with suggestion chips.
+  size.Enlarge(0, kSuggestionChipFullscreenY + kSuggestionChipContainerHeight);
+
+  // Enlarge with page switcher.
+  size.Enlarge((kAppsGridPageSwitcherSpacing +
+                PageSwitcher::kPreferredButtonStripWidth) *
+                   2,
+               0);
+  return size;
+}
+
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
                                      AppListModel* model)
     : contents_view_(contents_view) {
@@ -375,20 +394,8 @@ gfx::Size AppsContainerView::GetMinimumSize() const {
                        : AppListConfig::instance().preferred_rows();
   gfx::Size min_size = apps_grid_view_->GetMinimumTileGridSize(cols, rows);
 
-  // Calculate the minimum size based on the Layout().
-  // Enlarge with the insets and margin.
-  min_size.Enlarge(
-      kAppsGridMinimumMargin * 2,
-      std::max(apps_grid_view_->GetInsets().top(), kAppsGridMinimumMargin) * 2);
-
-  // Enlarge with suggestion chips.
-  min_size.Enlarge(0,
-                   kSuggestionChipFullscreenY + kSuggestionChipContainerHeight);
-
-  // Enlarge with page switcher.
-  min_size.Enlarge((kAppsGridPageSwitcherSpacing +
-                    page_switcher_->GetPreferredSize().width()) * 2,
-                   0);
+  const gfx::Size non_apps_grid_size = GetNonAppsGridSize();
+  min_size.Enlarge(non_apps_grid_size.width(), non_apps_grid_size.height());
   return min_size;
 }
 

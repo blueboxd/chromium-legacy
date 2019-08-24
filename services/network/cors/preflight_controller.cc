@@ -11,7 +11,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -216,8 +215,7 @@ class PreflightController::PreflightLoader final {
 
     std::move(completion_callback_)
         .Run(net::ERR_FAILED,
-             CorsErrorStatus(mojom::CorsError::kPreflightDisallowedRedirect),
-             base::nullopt);
+             CorsErrorStatus(mojom::CorsError::kPreflightDisallowedRedirect));
 
     RemoveFromController();
     // |this| is deleted here.
@@ -226,16 +224,6 @@ class PreflightController::PreflightLoader final {
   void HandleResponseHeader(const GURL& final_url,
                             const ResourceResponseHead& head) {
     FinalizeLoader();
-
-    timing_info_.start_time = head.request_start;
-    timing_info_.response_end = base::TimeTicks::Now();
-    timing_info_.alpn_negotiated_protocol = head.alpn_negotiated_protocol;
-    timing_info_.connection_info = head.connection_info;
-    auto timing_allow_origin =
-        GetHeaderString(head.headers, "Timing-Allow-Origin");
-    if (timing_allow_origin)
-      timing_info_.timing_allow_origin = *timing_allow_origin;
-    timing_info_.transfer_size = head.encoded_data_length;
 
     base::Optional<CorsErrorStatus> detected_error_status;
     std::unique_ptr<PreflightResult> result = CreatePreflightResult(
@@ -254,12 +242,9 @@ class PreflightController::PreflightLoader final {
                                  original_request_.url, std::move(result));
     }
 
-    base::Optional<PreflightTimingInfo> timing_info;
-    if (!detected_error_status)
-      timing_info = std::move(timing_info_);
     std::move(completion_callback_)
         .Run(detected_error_status ? net::ERR_FAILED : net::OK,
-             detected_error_status, std::move(timing_info));
+             detected_error_status);
 
     RemoveFromController();
     // |this| is deleted here.
@@ -273,7 +258,7 @@ class PreflightController::PreflightLoader final {
     const int error = loader_->NetError();
     DCHECK_NE(error, net::OK);
     FinalizeLoader();
-    std::move(completion_callback_).Run(error, base::nullopt, base::nullopt);
+    std::move(completion_callback_).Run(error, base::nullopt);
     RemoveFromController();
     // |this| is deleted here.
   }
@@ -292,8 +277,6 @@ class PreflightController::PreflightLoader final {
 
   // Holds SimpleURLLoader instance for the CORS-preflight request.
   std::unique_ptr<SimpleURLLoader> loader_;
-
-  PreflightTimingInfo timing_info_;
 
   // Holds caller's information.
   PreflightController::CompletionCallback completion_callback_;
@@ -341,7 +324,7 @@ void PreflightController::PerformPreflightCheck(
           request.request_initiator->Serialize(), request.url,
           request.credentials_mode, request.method, request.headers,
           request.is_revalidating)) {
-    std::move(callback).Run(net::OK, base::nullopt, base::nullopt);
+    std::move(callback).Run(net::OK, base::nullopt);
     return;
   }
 

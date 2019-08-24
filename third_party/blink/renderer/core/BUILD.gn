@@ -1599,6 +1599,10 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/core/fileapi:unit_tests",
   ]
 
+  data_deps = [
+    ":unit_tests_data",
+  ]
+
   # FIXME: Enable mojo unittests on Android after fixing data dependency.
   # crbug.com/741925
   if (!is_android) {
@@ -1615,6 +1619,15 @@ jumbo_source_set("unit_tests") {
   if (use_aura) {
     sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
   }
+}
+
+group("unit_tests_data") {
+  data = [
+    "//third_party/blink/web_tests/svg/animations/path-animation.svg",
+    "//third_party/blink/web_tests/svg/stroke/zero-length-path-linecap-rendering.svg",
+    "//third_party/blink/web_tests/svg/foreignObject/fixed-position.svg",
+    "//third_party/blink/web_tests/svg/clip-path/clip-in-mask.svg",
+  ]
 }
 
 jumbo_source_set("perf_tests") {

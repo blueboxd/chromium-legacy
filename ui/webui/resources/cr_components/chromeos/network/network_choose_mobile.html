@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
@@ -18,18 +17,21 @@
     <div class="property-box first two-line">
       <div class="flex layout vertical">
         <div>[[i18n('networkChooseMobile')]]</div>
-        <div class="secondary">[[getSecondaryText_(networkProperties)]]</div>
+        <div class="secondary">
+          [[getSecondaryText_(managedProperties, deviceState)]]
+        </div>
       </div>
       <cr-button on-click="onScanTap_"
-          disabled="[[!getEnableScanButton_(networkProperties)]]">
+          disabled="[[!getEnableScanButton_(managedProperties, deviceState)]]">
         [[i18n('networkCellularScan')]]
       </cr-button>
       <select class="md-select" on-change="onChange_"
           value="[[selectedMobileNetworkId_]]"
-          disabled="[[!getEnableSelectNetwork_(networkProperties)]]"
+          disabled="[[!getEnableSelectNetwork_(managedProperties,
+              deviceState)]]"
           aria-label="[[i18n('networkChooseMobile')]]">
         <template is="dom-repeat" items="[[mobileNetworkList_]]">
-          <option value="[[item.NetworkId]]"
+          <option value="[[item.networkId]]"
               disabled="[[getMobileNetworkIsDisabled_(item)]]">
             [[getName_(item)]]
           </option>

@@ -12,7 +12,6 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
-#include "chrome/browser/notifications/scheduler/internal/icon_converter_impl.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_store.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_schedule_service_impl.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
+#include "chrome/browser/notifications/scheduler/internal/png_icon_converter_impl.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
@@ -65,7 +65,7 @@ KeyedService* CreateNotificationScheduleService(
       leveldb_proto::ProtoDbType::NOTIFICATION_SCHEDULER_ICON_STORE,
       icon_store_dir, task_runner);
   auto icon_store = std::make_unique<IconProtoDbStore>(
-      std::move(icon_db), std::make_unique<IconConverterImpl>());
+      std::move(icon_db), std::make_unique<PngIconConverterImpl>());
 
   // Build impression tracker.
   base::FilePath impression_store_dir = storage_dir.Append(kImpressionDBName);

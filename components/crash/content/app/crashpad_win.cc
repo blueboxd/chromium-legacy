@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_export_thunks.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -37,7 +38,7 @@ void GetPlatformCrashpadAnnotations(
       exe_file, &product_name, &version, &special_build, &channel_name);
   (*annotations)["prod"] = base::UTF16ToUTF8(product_name);
   (*annotations)["ver"] = base::UTF16ToUTF8(version);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Empty means stable.
   const bool allow_empty_channel = true;
 #else
@@ -83,7 +84,7 @@ base::FilePath PlatformCrashpadInitialization(
     std::map<std::string, std::string> process_annotations;
     GetPlatformCrashpadAnnotations(&process_annotations);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     std::string url = "https://clients2.google.com/cr/report";
 #else
     std::string url;

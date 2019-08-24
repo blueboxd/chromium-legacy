@@ -1768,6 +1768,8 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
           owning_layer_.GetLayoutObject().UniqueId(),
           CompositorElementIdNamespace::kEffectMask);
       mask_layer_->SetElementId(element_id);
+      mask_layer_->CcLayer()->SetLayerMaskType(
+          cc::Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
       layer_changed = true;
     }
   } else if (mask_layer_) {

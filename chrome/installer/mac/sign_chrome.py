@@ -51,6 +51,8 @@ def create_config(config_args, development):
 
             @property
             def run_spctl_assess(self):
+                # Self-signed or ad-hoc signed signing identities won't pass
+                # spctl assessment so don't do it.
                 return False
 
         config_class = DevelopmentCodeSignConfig

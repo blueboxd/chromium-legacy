@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+testRunner.setUseMockTheme(false);
+testRunner.waitUntilDone();
+</script>
+<script src='../../../forms/resources/picker-common.js'></script>
+</head>
+<body>
+<input type='color' id='color' value='#EA5FB0'>
+
+<p id='description' style='opacity: 0'></p>
+<div id='console' style='opacity: 0'></div>
+
+<script>
+openPicker(document.getElementById('color'), openPickerSuccessfulCallback, () => testRunner.notifyDone());
+
+function openPickerSuccessfulCallback() {
+  popupWindow.focus();
+  const popupDocument = popupWindow.document;
+  const colorWell = popupDocument.querySelector('color-well');
+  const colorWellRect = colorWell.getBoundingClientRect();
+  const colorWellSelectionRing = popupDocument.querySelector('color-well > color-selection-ring');
+  const colorWellSelectionRingRect = colorWellSelectionRing.getBoundingClientRect();
+  eventSender.mouseMoveTo(colorWellSelectionRingRect.left + (colorWellSelectionRingRect.width / 2),
+      colorWellSelectionRingRect.top + (colorWellSelectionRingRect.height / 2));
+  eventSender.mouseDown();
+  eventSender.mouseMoveTo(colorWellSelectionRingRect.left + (colorWellSelectionRingRect.width / 2), colorWellRect.bottom);
+  eventSender.mouseUp();
+  for (let i = 0; i < 5; i++) {
+    eventSender.keyDown('ArrowUp');
+  }
+  for (let i = 0; i < 3; i++) {
+    eventSender.keyDown('ArrowUp', ['ctrlKey']);
+  }
+  testRunner.notifyDone();
+}
+</script>
+</body>
+</html>

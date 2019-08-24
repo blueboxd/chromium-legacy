@@ -120,7 +120,7 @@ class ContextualSearchPolicy {
                        || ContextualSearchFieldTrial.getSwitch(
                                ContextualSearchSwitch
                                        .IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED))
-                ? true
+                ? !isTapDisabledDueToLongpress()
                 : (getPromoTapsRemaining() != 0);
     }
 
@@ -282,6 +282,15 @@ class ContextualSearchPolicy {
                 ChromeFeatureList.getFieldTrialParamByFeature(
                         ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
                         ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PARAM_NAME));
+    }
+
+    /** @return whether Tap is disabled due to the longpress experiment. */
+    private boolean isTapDisabledDueToLongpress() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
+                && !ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PRESERVE_TAP.equals(
+                        ChromeFeatureList.getFieldTrialParamByFeature(
+                                ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
+                                ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PARAM_NAME));
     }
 
     /**

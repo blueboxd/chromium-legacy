@@ -426,7 +426,7 @@ void NativeWidgetMacNSWindowHost::InitWindow(const Widget::InitParams& params) {
   // native on Mac, so nothing should ever want one in Widget form.
   DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
   widget_type_ = params.type;
-  tooltip_manager_.reset(new TooltipManagerMac(GetNSWindowMojo()));
+  tooltip_manager_ = std::make_unique<TooltipManagerMac>(GetNSWindowMojo());
 
   // Initialize the window.
   {
@@ -530,8 +530,8 @@ void NativeWidgetMacNSWindowHost::SetRootView(views::View* root_view) {
   if (root_view_) {
     // TODO(ccameron): Drag-drop functionality does not yet run over mojo.
     if (in_process_ns_window_bridge_) {
-      drag_drop_client_.reset(new DragDropClientMac(
-          in_process_ns_window_bridge_.get(), root_view_));
+      drag_drop_client_ = std::make_unique<DragDropClientMac>(
+          in_process_ns_window_bridge_.get(), root_view_);
     }
   } else {
     drag_drop_client_.reset();

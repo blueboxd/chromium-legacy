@@ -28,6 +28,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
@@ -239,7 +240,7 @@ bool GetInstanceManipulations(const net::HttpResponseHeaders* headers,
 // Variations seed fetching is only enabled in official Chrome builds, if a URL
 // is specified on the command line, and for testing.
 bool IsFetchingEnabled() {
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kVariationsServerURL) &&
       !g_should_fetch_for_testing) {

@@ -40,21 +40,7 @@ AndroidSystemProducer::~AndroidSystemProducer() {
 }
 
 void AndroidSystemProducer::SetDisallowPreAndroidPieForTesting(bool disallow) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   disallow_pre_android_pie = disallow;
-  if (!disallow && state_ == State::kUninitialized) {
-    // If previously we would not have connected, we now attempt to connect
-    // since we are now skipping a check.
-    Connect();
-  }
-}
-
-void AndroidSystemProducer::SetNewSocketForTesting(const char* socket) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  socket_name_ = socket;
-  // Disconnect if we are connected and switch sockets.
-  DisconnectWithReply(base::BindOnce(&AndroidSystemProducer::DelayedReconnect,
-                                     base::Unretained(this)));
 }
 
 bool AndroidSystemProducer::IsTracingActive() {
@@ -342,12 +328,9 @@ AndroidSystemProducer::GetInProcessShmemArbiter() {
   return GetSharedMemoryArbiter();
 }
 
-void AndroidSystemProducer::ActivateTriggers(
-    const std::vector<std::string>& triggers) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (state_ == State::kConnected) {
-    service_->ActivateTriggers(triggers);
-  }
+void AndroidSystemProducer::ActivateTriggers(const std::vector<std::string>&) {
+  // Never called by SharedMemoryArbiter/TraceWriter.
+  NOTREACHED();
 }
 
 void AndroidSystemProducer::ConnectSocket() {

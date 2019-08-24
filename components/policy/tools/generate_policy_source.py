@@ -1011,6 +1011,7 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
           '\n'
           '#include "base/logging.h"\n'
           '#include "base/stl_util.h"  // base::size()\n'
+          '#include "build/branding_buildflags.h"\n'
           '#include "components/policy/core/common/policy_types.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'
           '#include "components/policy/proto/cloud_policy.pb.h"\n'
@@ -1082,7 +1083,7 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
   f.write('}  // namespace\n\n')
 
   if target_platform == 'win':
-    f.write('#if defined(GOOGLE_CHROME_BUILD)\n'
+    f.write('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)\n'
             'const wchar_t kRegistryChromePolicyKey[] = '
             'L"' + CHROME_POLICY_KEY + '";\n'
             '#else\n'

@@ -25,8 +25,8 @@ constexpr uint32_t kTransparentMask = 0xffffffff;
 constexpr int kDefaultHeight = 20;
 // Masks are monochromatic.
 constexpr size_t kNumberOfColors = 2;
-const size_t KHeaderAndPalette =
-      sizeof(BITMAPINFOHEADER) + kNumberOfColors * sizeof(RGBQUAD);
+const size_t kHeaderAndPalette =
+    sizeof(BITMAPINFOHEADER) + kNumberOfColors * sizeof(RGBQUAD);
 
 HeightStorage* cached_heights = nullptr;
 
@@ -40,10 +40,11 @@ PixelData GetBitmapData(HBITMAP handle, const BITMAPINFO& info, HDC hdc) {
 
   // When getting pixel data palette is appended to memory pointed by
   // BITMAPINFO passed so allocate additional memory to store additional data.
-  std::unique_ptr<char[]> header(new char[KHeaderAndPalette]);
+  auto header = std::make_unique<char[]>(kHeaderAndPalette);
   memcpy(header.get(), &(info.bmiHeader), sizeof(info.bmiHeader));
 
-  data.reset(new uint32_t[info.bmiHeader.biSizeImage / sizeof(uint32_t)]);
+  data = std::make_unique<uint32_t[]>(info.bmiHeader.biSizeImage /
+                                      sizeof(uint32_t));
 
   int result = GetDIBits(hdc,
                          handle,

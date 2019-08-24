@@ -109,7 +109,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   void OnUserActivity(const ui::Event* event) override;
 
   // session_manager::SessionManagerObserver:
-  void OnPrimaryUserSessionStarted() override;
+  void OnUserSessionStarted(bool is_primary_user) override;
 
   // content::NotificationObserver:
   void Observe(int type,

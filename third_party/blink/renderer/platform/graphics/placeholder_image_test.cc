@@ -209,10 +209,10 @@ class TestingUnitsPlatform : public TestingPlatformSupport {
   TestingUnitsPlatform() {}
   ~TestingUnitsPlatform() override;
 
-  WebString QueryLocalizedString(WebLocalizedString::Name name,
+  WebString QueryLocalizedString(int resource_id,
                                  const WebString& parameter) override {
     String p = parameter;
-    switch (name) {
+    switch (resource_id) {
       case WebLocalizedString::kUnitsKibibytes:
         return String(p + " KB");
       case WebLocalizedString::kUnitsMebibytes:

@@ -360,6 +360,8 @@ class AssociatedUserValidatorUserAccessBlockingTest
                      bool,
                      bool,
                      bool,
+                     bool,
+                     bool,
                      bool>> {
  private:
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
@@ -371,7 +373,13 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const bool mdm_url_set = std::get<2>(GetParam());
   const bool mdm_enrolled = std::get<3>(GetParam());
   const bool internet_available = std::get<4>(GetParam());
+  const bool password_recovery_enabled = std::get<5>(GetParam());
+  const bool contains_stored_password = std::get<6>(GetParam());
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
+
+#if !defined(GOOGLE_CHROME_BUILD)
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
+#endif
 
   FakeAssociatedUserValidator validator;
   fake_internet_checker()->SetHasInternetConnection(
@@ -380,6 +388,11 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
 
   if (mdm_url_set)
     ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+
+  if (password_recovery_enabled) {
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+                                            L"https://escrow.com"));
+  }
 
   bool should_user_locking_be_enabled =
       internet_available && mdm_url_set &&
@@ -394,6 +407,14 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
                       username, L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
 
+  if (contains_stored_password) {
+    base::string16 store_key = GetUserPasswordLsaStoreKey(OLE2W(sid));
+    auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+    EXPECT_TRUE(SUCCEEDED(
+        policy->StorePrivateData(store_key.c_str(), L"encrypted_data")));
+    EXPECT_TRUE(policy->PrivateDataExists(store_key.c_str()));
+  }
+
   // Token handle fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(AssociatedUserValidator::kTokenInfoUrl),
@@ -406,10 +427,14 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   DWORD reg_value = 0;
 
   bool should_user_be_blocked =
-      should_user_locking_be_enabled && (!mdm_enrolled || !token_handle_valid);
+      should_user_locking_be_enabled &&
+      (!mdm_enrolled || !token_handle_valid ||
+       (password_recovery_enabled && !contains_stored_password));
 
   EXPECT_EQ(!internet_available || (!mdm_url_set && token_handle_valid) ||
-                (mdm_url_set && mdm_enrolled && token_handle_valid),
+                (mdm_url_set && mdm_enrolled && token_handle_valid &&
+                 (!password_recovery_enabled ||
+                  password_recovery_enabled && contains_stored_password)),
             validator.IsTokenHandleValidForUser(OLE2W(sid)));
   EXPECT_EQ(should_user_be_blocked,
             validator.IsUserAccessBlockedForTesting(OLE2W(sid)));
@@ -430,6 +455,8 @@ INSTANTIATE_TEST_SUITE_P(
                                          CPUS_UNLOCK_WORKSTATION,
                                          CPUS_CHANGE_PASSWORD,
                                          CPUS_CREDUI),
+                       ::testing::Bool(),
+                       ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool(),

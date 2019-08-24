@@ -22,6 +22,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -59,13 +60,10 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 
   last_mouse_location_ = location;
   // Show a phantom window for dragging in another root window.
-  if (display::Screen::GetScreen()->GetNumDisplays() > 1) {
-    gfx::Point location_in_screen = location;
-    ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
-    UpdateDragWindow(location_in_screen);
-  } else {
+  if (display::Screen::GetScreen()->GetNumDisplays() > 1)
+    UpdateDragWindow();
+  else
     drag_window_controller_.reset();
-  }
 }
 
 void DragWindowResizer::CompleteDrag() {
@@ -75,9 +73,7 @@ void DragWindowResizer::CompleteDrag() {
 
 void DragWindowResizer::RevertDrag() {
   next_window_resizer_->RevertDrag();
-
   drag_window_controller_.reset();
-  GetTarget()->layer()->SetOpacity(details().initial_opacity);
 }
 
 void DragWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
@@ -103,17 +99,15 @@ DragWindowResizer::DragWindowResizer(
   instance_ = this;
 }
 
-void DragWindowResizer::UpdateDragWindow(
-    const gfx::Point& drag_location_in_screen) {
+void DragWindowResizer::UpdateDragWindow() {
   if (details().window_component != HTCAPTION || !ShouldAllowMouseWarp())
     return;
 
-  if (!drag_window_controller_)
-    drag_window_controller_.reset(new DragWindowController(GetTarget()));
-
-  GetTarget()->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
-      GetTarget()->GetRootWindow(), GetTarget(), drag_location_in_screen));
-  drag_window_controller_->Update(drag_location_in_screen);
+  if (!drag_window_controller_) {
+    drag_window_controller_ = std::make_unique<DragWindowController>(
+        GetTarget(), details().source == wm::WINDOW_MOVE_SOURCE_TOUCH);
+  }
+  drag_window_controller_->Update();
 }
 
 bool DragWindowResizer::ShouldAllowMouseWarp() {
@@ -123,7 +117,6 @@ bool DragWindowResizer::ShouldAllowMouseWarp() {
 }
 
 void DragWindowResizer::EndDragImpl() {
-  GetTarget()->layer()->SetOpacity(details().initial_opacity);
   drag_window_controller_.reset();
 
   // TODO(malaykeshav) - This is temporary fix/workaround that keeps performance
@@ -131,43 +124,45 @@ void DragWindowResizer::EndDragImpl() {
   RecursiveSchedulePainter(GetTarget()->layer());
 
   // Check if the destination is another display.
+  if (details().source == wm::WINDOW_MOVE_SOURCE_TOUCH)
+    return;
+  aura::Window* root_window = GetTarget()->GetRootWindow();
+  const display::Display dst_display =
+      Shell::Get()->cursor_manager()->GetDisplay();
+  if (dst_display.id() ==
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window).id()) {
+    return;
+  }
+
+  // Adjust the size and position so that it doesn't exceed the size of work
+  // area.
+  const gfx::Size& size = dst_display.work_area().size();
+  gfx::Rect bounds = GetTarget()->bounds();
+  if (bounds.width() > size.width()) {
+    int diff = bounds.width() - size.width();
+    bounds.set_x(bounds.x() + diff / 2);
+    bounds.set_width(size.width());
+  }
+  if (bounds.height() > size.height())
+    bounds.set_height(size.height());
+
+  gfx::Rect dst_bounds = bounds;
+  ::wm::ConvertRectToScreen(GetTarget()->parent(), &dst_bounds);
+
+  // Adjust the position so that the cursor is on the window.
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
-  display::Screen* screen = display::Screen::GetScreen();
-  const display::Display dst_display =
-      screen->GetDisplayNearestPoint(last_mouse_location_in_screen);
-
-  if (dst_display.id() !=
-      screen->GetDisplayNearestWindow(GetTarget()->GetRootWindow()).id()) {
-    // Adjust the size and position so that it doesn't exceed the size of
-    // work area.
-    const gfx::Size& size = dst_display.work_area().size();
-    gfx::Rect bounds = GetTarget()->bounds();
-    if (bounds.width() > size.width()) {
-      int diff = bounds.width() - size.width();
-      bounds.set_x(bounds.x() + diff / 2);
-      bounds.set_width(size.width());
-    }
-    if (bounds.height() > size.height())
-      bounds.set_height(size.height());
-
-    gfx::Rect dst_bounds = bounds;
-    ::wm::ConvertRectToScreen(GetTarget()->parent(), &dst_bounds);
-
-    // Adjust the position so that the cursor is on the window.
-    if (!dst_bounds.Contains(last_mouse_location_in_screen)) {
-      if (last_mouse_location_in_screen.x() < dst_bounds.x())
-        dst_bounds.set_x(last_mouse_location_in_screen.x());
-      else if (last_mouse_location_in_screen.x() > dst_bounds.right())
-        dst_bounds.set_x(last_mouse_location_in_screen.x() -
-                         dst_bounds.width());
-    }
-    AdjustBoundsToEnsureMinimumWindowVisibility(dst_display.bounds(),
-                                                &dst_bounds);
-
-    GetTarget()->SetBoundsInScreen(dst_bounds, dst_display);
+  if (!dst_bounds.Contains(last_mouse_location_in_screen)) {
+    if (last_mouse_location_in_screen.x() < dst_bounds.x())
+      dst_bounds.set_x(last_mouse_location_in_screen.x());
+    else if (last_mouse_location_in_screen.x() > dst_bounds.right())
+      dst_bounds.set_x(last_mouse_location_in_screen.x() - dst_bounds.width());
   }
+  AdjustBoundsToEnsureMinimumWindowVisibility(dst_display.bounds(),
+                                              &dst_bounds);
+
+  GetTarget()->SetBoundsInScreen(dst_bounds, dst_display);
 }
 
 }  // namespace ash

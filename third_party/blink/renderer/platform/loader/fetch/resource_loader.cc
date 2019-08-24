@@ -38,6 +38,7 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
@@ -456,8 +457,11 @@ void ResourceLoader::Start() {
   }
 
   if (request.IsAutomaticUpgrade()) {
+    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        mojo::MakeRequest(&recorder_ptr));
     auto recorder =
-        ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
+        std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kStarted,
                                base::nullopt, request.GetUkmSourceId(),
                                recorder.get(), resource_);
@@ -504,15 +508,11 @@ void ResourceLoader::DidFinishLoadingBody() {
 
   const ResourceResponse& response = resource_->GetResponse();
   if (deferred_finish_loading_info_) {
-    // Create a copy to pass a reference.
-    const WebVector<network::cors::PreflightTimingInfo>
-        cors_preflight_timing_info =
-            deferred_finish_loading_info_->cors_preflight_timing_info;
-    DidFinishLoading(deferred_finish_loading_info_->response_end,
-                     response.EncodedDataLength(), response.EncodedBodyLength(),
-                     response.DecodedBodyLength(),
-                     deferred_finish_loading_info_->should_report_corb_blocking,
-                     cors_preflight_timing_info);
+    DidFinishLoading(
+        deferred_finish_loading_info_->response_end,
+        response.EncodedDataLength(), response.EncodedBodyLength(),
+        response.DecodedBodyLength(),
+        deferred_finish_loading_info_->should_report_corb_blocking);
   }
 }
 
@@ -892,8 +892,11 @@ void ResourceLoader::DidReceiveResponseInternal(
   const ResourceRequest& request = resource_->GetResourceRequest();
 
   if (request.IsAutomaticUpgrade()) {
+    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        mojo::MakeRequest(&recorder_ptr));
     auto recorder =
-        ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
+        std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kResponseReceived,
                                response.HttpStatusCode(),
                                request.GetUkmSourceId(), recorder.get(),
@@ -1113,17 +1116,14 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
 
   fetcher_->HandleLoaderFinish(resource_.Get(), base::TimeTicks(),
                                ResourceFetcher::kDidFinishFirstPartInMultipart,
-                               0, false, {});
+                               0, false);
 }
 
-void ResourceLoader::DidFinishLoading(
-    base::TimeTicks response_end,
-    int64_t encoded_data_length,
-    int64_t encoded_body_length,
-    int64_t decoded_body_length,
-    bool should_report_corb_blocking,
-    const WebVector<network::cors::PreflightTimingInfo>&
-        cors_preflight_timing_info) {
+void ResourceLoader::DidFinishLoading(base::TimeTicks response_end,
+                                      int64_t encoded_data_length,
+                                      int64_t encoded_body_length,
+                                      int64_t decoded_body_length,
+                                      bool should_report_corb_blocking) {
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
@@ -1133,8 +1133,8 @@ void ResourceLoader::DidFinishLoading(
       (is_downloading_to_blob_ && !blob_finished_ && blob_response_started_)) {
     // If the body is still being loaded, we defer the completion until all the
     // body is received.
-    deferred_finish_loading_info_ = DeferredFinishLoadingInfo{
-        response_end, should_report_corb_blocking, cors_preflight_timing_info};
+    deferred_finish_loading_info_ =
+        DeferredFinishLoadingInfo{response_end, should_report_corb_blocking};
 
     if (data_pipe_completion_notifier_)
       data_pipe_completion_notifier_->SignalComplete();
@@ -1158,8 +1158,7 @@ void ResourceLoader::DidFinishLoading(
 
   fetcher_->HandleLoaderFinish(
       resource_.Get(), response_end, ResourceFetcher::kDidFinishLoading,
-      inflight_keepalive_bytes_, should_report_corb_blocking,
-      cors_preflight_timing_info);
+      inflight_keepalive_bytes_, should_report_corb_blocking);
 }
 
 void ResourceLoader::DidFail(const WebURLError& error,
@@ -1169,8 +1168,11 @@ void ResourceLoader::DidFail(const WebURLError& error,
   const ResourceRequest& request = resource_->GetResourceRequest();
 
   if (request.IsAutomaticUpgrade()) {
+    ukm::mojom::UkmRecorderInterfacePtr recorder_ptr;
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        mojo::MakeRequest(&recorder_ptr));
     auto recorder =
-        ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
+        std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder_ptr));
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kFailed,
                                error.reason(), request.GetUkmSourceId(),
                                recorder.get(), resource_);
@@ -1290,7 +1292,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     FinishedCreatingBlob(blob);
   }
   DidFinishLoading(base::TimeTicks::Now(), encoded_data_length,
-                   encoded_body_length, decoded_body_length, false, {});
+                   encoded_body_length, decoded_body_length, false);
 }
 
 void ResourceLoader::RequestAsynchronously(const ResourceRequest& request) {
@@ -1400,11 +1402,11 @@ void ResourceLoader::FinishedCreatingBlob(
   blob_finished_ = true;
   if (deferred_finish_loading_info_) {
     const ResourceResponse& response = resource_->GetResponse();
-    DidFinishLoading(deferred_finish_loading_info_->response_end,
-                     response.EncodedDataLength(), response.EncodedBodyLength(),
-                     response.DecodedBodyLength(),
-                     deferred_finish_loading_info_->should_report_corb_blocking,
-                     deferred_finish_loading_info_->cors_preflight_timing_info);
+    DidFinishLoading(
+        deferred_finish_loading_info_->response_end,
+        response.EncodedDataLength(), response.EncodedBodyLength(),
+        response.DecodedBodyLength(),
+        deferred_finish_loading_info_->should_report_corb_blocking);
   }
 }
 
@@ -1474,8 +1476,7 @@ void ResourceLoader::HandleDataUrl() {
   // DidFinishLoading() may deferred until the response body loader reaches to
   // end.
   DidFinishLoading(base::TimeTicks::Now(), data_size, data_size, data_size,
-                   false /* should_report_corb_blocking */,
-                   {} /* cors_preflight_timing_info */);
+                   false /* should_report_corb_blocking */);
 }
 
 bool ResourceLoader::ShouldCheckCorsInResourceLoader() const {

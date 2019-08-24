@@ -23,6 +23,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
+#include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -33,6 +34,7 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -42,6 +44,24 @@ namespace {
 constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
 
 // Helpers ---------------------------------------------------------------------
+
+// Creates a suggestion to initiate a Google search for the specified |query|.
+chromeos::assistant::mojom::AssistantSuggestionPtr CreateSearchSuggestion(
+    const std::string& query) {
+  constexpr char kIconUrl[] =
+      "https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png";
+  constexpr char kSearchUrl[] = "https://www.google.com/search";
+  constexpr char kQueryParamKey[] = "q";
+
+  chromeos::assistant::mojom::AssistantSuggestionPtr suggestion =
+      chromeos::assistant::mojom::AssistantSuggestion::New();
+  suggestion->text = l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_SEARCH);
+  suggestion->icon_url = GURL(kIconUrl),
+  suggestion->action_url = net::AppendOrReplaceQueryParameter(
+      GURL(kSearchUrl), kQueryParamKey, query);
+
+  return suggestion;
+}
 
 // Returns true if device is in tablet mode, false otherwise.
 bool IsTabletMode() {
@@ -396,7 +416,7 @@ void AssistantInteractionController::OnInteractionStarted(
   }
 
   // Start caching a new Assistant response for the interaction.
-  model_.SetPendingResponse(std::make_unique<AssistantResponse>());
+  model_.SetPendingResponse(base::MakeRefCounted<AssistantResponse>());
 }
 
 void AssistantInteractionController::OnInteractionFinished(
@@ -595,7 +615,7 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
     // It is possible that an error Tts could be sent in addition to server Tts.
     // In that case, the pending_response may have already been finalized.
     if (!model_.pending_response())
-      model_.SetPendingResponse(std::make_unique<AssistantResponse>());
+      model_.SetPendingResponse(base::MakeRefCounted<AssistantResponse>());
 
     // Add an error message to the response.
     model_.pending_response()->AddUiElement(
@@ -727,6 +747,23 @@ void AssistantInteractionController::OnUiVisible(
     return;
   }
 
+  if (entry_point == AssistantEntryPoint::kProactiveSuggestions) {
+    should_attempt_warmer_welcome_ = false;
+    // When entering Assistant with a proactive suggestions interaction, there
+    // will be no server latency as the response for the interaction has already
+    // been cached on the client. To avoid jank, we need to post a task to start
+    // our interaction to give the Assistant UI a chance to initialize itself.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AssistantInteractionController::
+                           StartProactiveSuggestionsInteraction,
+                       weak_factory_.GetWeakPtr(),
+                       assistant_controller_->suggestions_controller()
+                           ->model()
+                           ->GetProactiveSuggestions()));
+    return;
+  }
+
   if (entry_point == AssistantEntryPoint::kStylus) {
     should_attempt_warmer_welcome_ = false;
     // When the embedded Assistant feature is enabled, we call ShowUi(kStylus)
@@ -786,6 +823,36 @@ void AssistantInteractionController::StartMetalayerInteraction(
       AssistantQuerySource::kStylus));
 
   assistant_->StartMetalayerInteraction(region);
+}
+
+void AssistantInteractionController::StartProactiveSuggestionsInteraction(
+    scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {
+  // For a proactive suggestions interaction, we've already cached the response
+  // but we still need to spoof lifecycle events. This is only safe to do if we
+  // aren't already in the midst of an interaction.
+  DCHECK_EQ(InteractionState::kInactive, model_.interaction_state());
+
+  // To be extra protective of interaction lifecycle when DCHECK is disabled,
+  // we'll ignore any attempts to start a proactive suggestions interaction if
+  // an interaction is already in progress.
+  if (model_.interaction_state() != InteractionState::kInactive)
+    return;
+
+  const std::string& query = proactive_suggestions->description();
+
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(query));
+
+  OnInteractionStarted(AssistantInteractionMetadata::New(
+      /*type=*/AssistantInteractionType::kText, /*query=*/query));
+
+  OnHtmlResponse(proactive_suggestions->html(), /*fallback=*/std::string());
+
+  // TODO(dmblack): Support suggestion chips from the server when available.
+  std::vector<AssistantSuggestionPtr> suggestions;
+  suggestions.push_back(CreateSearchSuggestion(query));
+  OnSuggestionsResponse(std::move(suggestions));
+
+  OnInteractionFinished(AssistantInteractionResolution::kNormal);
 }
 
 void AssistantInteractionController::StartScreenContextInteraction(

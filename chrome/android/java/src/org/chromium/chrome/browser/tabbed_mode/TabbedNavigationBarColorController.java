@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.UiUtils;
@@ -182,7 +183,8 @@ class TabbedNavigationBarColorController implements VrModeObserver {
         boolean useLightNavigation;
         if (ChromeFeatureList.isInitialized()
                 && (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                        || DeviceClassManager.enableAccessibilityLayout())) {
+                        || DeviceClassManager.enableAccessibilityLayout()
+                        || FeatureUtilities.isGridTabSwitcherEnabled())) {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected();
         } else {
             useLightNavigation = !mTabModelSelector.isIncognitoSelected() || overviewVisible;

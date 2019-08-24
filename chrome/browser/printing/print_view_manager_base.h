@@ -90,6 +90,10 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // impossible to create a new print job.
   virtual bool CreateNewPrintJob(std::unique_ptr<PrinterQuery> query);
 
+  // Makes sure the current print_job_ has all its data before continuing, and
+  // disconnect from it.
+  void DisconnectFromCurrentPrintJob();
+
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;
 
@@ -166,10 +170,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // notification. The inner message loop is created was created by
   // RenderAllMissingPagesNow().
   void ShouldQuitFromInnerMessageLoop();
-
-  // Makes sure the current print_job_ has all its data before continuing, and
-  // disconnect from it.
-  void DisconnectFromCurrentPrintJob();
 
   // Terminates the print job. No-op if no print job has been created. If
   // |cancel| is true, cancel it instead of waiting for the job to finish. Will

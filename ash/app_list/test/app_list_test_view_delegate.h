@@ -114,6 +114,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       ash::AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       app_list::AppLaunchedMetricParams* metric_params) override;
+  gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

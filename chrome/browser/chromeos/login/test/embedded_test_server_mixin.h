@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_EMBEDDED_TEST_SERVER_MIXIN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_EMBEDDED_TEST_SERVER_MIXIN_H_
 
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace chromeos {

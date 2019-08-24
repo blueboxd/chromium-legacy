@@ -294,12 +294,14 @@ bool PreviewsHints::IsWhitelisted(
     if (optimization.has_previews_metadata()) {
       *out_inflation_percent =
           optimization.previews_metadata().inflation_percent();
-      *out_ect_threshold =
-          optimization_guide::ConvertProtoEffectiveConnectionType(
-              optimization.previews_metadata().max_ect_trigger());
+      if (out_ect_threshold) {
+        *out_ect_threshold =
+            optimization_guide::ConvertProtoEffectiveConnectionType(
+                optimization.previews_metadata().max_ect_trigger());
+      }
     } else {
       *out_inflation_percent = optimization.inflation_percent();
-      if (matched_page_hint->has_max_ect_trigger()) {
+      if (out_ect_threshold && matched_page_hint->has_max_ect_trigger()) {
         *out_ect_threshold =
             optimization_guide::ConvertProtoEffectiveConnectionType(
                 matched_page_hint->max_ect_trigger());

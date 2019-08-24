@@ -121,6 +121,7 @@ source_set("test_headers") {
 source_set("blink_headers") {
   sources = [
     "common/browser_interface_broker_proxy.h",
+    "common/thread_safe_browser_interface_broker_proxy.h",
     "platform/audio/web_audio_device_source_type.h",
     "platform/blame_context.h",
     "platform/code_cache_loader.h",

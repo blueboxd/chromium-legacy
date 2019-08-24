@@ -40,6 +40,10 @@ class AvailableOfflineContentHelper {
   // Abort previous requests and free the mojo connection.
   void Reset();
 
+  using Binder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<chrome::mojom::AvailableOfflineContentProvider>)>;
+  static void OverrideBinderForTesting(Binder binder);
+
  private:
   void AvailableContentReceived(
       AvailableContentCallback callback,

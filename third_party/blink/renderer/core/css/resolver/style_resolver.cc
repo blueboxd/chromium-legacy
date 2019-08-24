@@ -347,9 +347,6 @@ void StyleResolver::MatchPseudoPartRulesForUAHost(
 
 void StyleResolver::MatchPseudoPartRules(const Element& element,
                                          ElementRuleCollector& collector) {
-  if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
-    return;
-
   MatchPseudoPartRulesForUAHost(element, collector);
   DOMTokenList* part = element.GetPart();
   if (!part)

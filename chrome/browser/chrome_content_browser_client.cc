@@ -3621,8 +3621,8 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
   return base::string16();
 }
 
-bool ChromeContentBrowserClient::PreSpawnRenderer(
-    sandbox::TargetPolicy* policy) {
+bool ChromeContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                                  RendererSpawnFlags flags) {
   // Allow the server side of a pipe restricted to the "chrome.nacl."
   // namespace so that it cannot impersonate other system or other chrome
   // service pipes. This is also done in nacl_broker_listener.cc.
@@ -3638,6 +3638,8 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
 // ASAN has not yet fully initialized its instrumentation by the time the CIG
 // intercepts run.
 #if !defined(COMPONENT_BUILD) && !defined(ADDRESS_SANITIZER)
+  if ((flags & RendererSpawnFlags::RENDERER_CODE_INTEGRITY) == 0)
+    return true;
   if (!base::FeatureList::IsEnabled(kRendererCodeIntegrity))
     return true;
 
@@ -3674,6 +3676,16 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
 
   return true;
 }
+
+bool ChromeContentBrowserClient::IsRendererCodeIntegrityEnabled() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state &&
+      local_state->HasPrefPath(prefs::kRendererCodeIntegrityEnabled) &&
+      !local_state->GetBoolean(prefs::kRendererCodeIntegrityEnabled))
+    return false;
+  return true;
+}
+
 #endif  // defined(OS_WIN)
 
 void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
@@ -3737,14 +3749,15 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   // processes to notify the browser of modules in their address space. The
   // process handle is not yet available at this point so pass in a callback
   // to allow to retrieve a duplicate at the time the interface is actually
-  // created. It is safe to pass a raw pointer to |render_process_host|: the
-  // callback will be invoked during the Mojo initialization, which occurs while
-  // the |render_process_host| is alive.
+  // created.
   auto get_process = base::BindRepeating(
-      [](content::RenderProcessHost* host) -> base::Process {
-        return host->GetProcess().Duplicate();
+      [](int id) -> base::Process {
+        auto* host = content::RenderProcessHost::FromID(id);
+        if (host)
+          return host->GetProcess().Duplicate();
+        return base::Process();
       },
-      base::Unretained(render_process_host));
+      render_process_host->GetID());
   registry->AddInterface(
       base::BindRepeating(
           &ModuleEventSinkImpl::Create, std::move(get_process),

@@ -23,7 +23,6 @@ class ConcatMenuModel : public ui::MenuModel {
   ui::MenuSeparatorType GetSeparatorTypeAt(int index) const override;
   int GetCommandIdAt(int index) const override;
   base::string16 GetLabelAt(int index) const override;
-  base::string16 GetSublabelAt(int index) const override;
   base::string16 GetMinorTextAt(int index) const override;
   const gfx::VectorIcon* GetMinorIconAt(int index) const override;
   bool IsItemDynamicAt(int index) const override;

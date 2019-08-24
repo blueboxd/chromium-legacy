@@ -12,7 +12,6 @@
 #include "jingle/glue/utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/webrtc/rtc_base/ip_address.h"
 
 namespace content {
@@ -44,9 +43,7 @@ MdnsResponderAdapter::MdnsResponderAdapter() {
   thread_safe_client_ =
       network::mojom::ThreadSafeMdnsResponderPtr::Create(std::move(client));
   DCHECK(ChildThreadImpl::current());
-  DCHECK(ChildThreadImpl::current()->GetConnector());
-  ChildThreadImpl::current()->GetConnector()->BindInterface(
-      mojom::kBrowserServiceName, std::move(request));
+  ChildThreadImpl::current()->BindHostReceiver(std::move(request));
 }
 
 MdnsResponderAdapter::~MdnsResponderAdapter() = default;

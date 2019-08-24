@@ -181,7 +181,7 @@ test.speech.testSpeechRecognitionInitSettings = function() {
   assertFalse(speech.recognition_.continuous);
   assertEquals('en-ZA', speech.recognition_.lang);
   assertEquals(1, speech.recognition_.maxAlternatives);
-  assert(!!speech.recognition_);
+  assertTrue(!!speech.recognition_);
   test.speech.validateInactive();
 };
 
@@ -269,12 +269,12 @@ test.speech.testClickHandlingWithUnitializedSpeechRecognition = function() {
   test.speech.initSpeech();
   speech.recognition_ = undefined;
   assertEquals(speech.State_.READY, speech.currentState_);
-  assert(!speech.recognition_);
+  assertTrue(!speech.recognition_);
   speech.start();
 
   assertEquals(1, test.speech.recognitionActiveCount);
   assertEquals(1, test.speech.viewActiveCount);
-  assert(!!speech.recognition_);
+  assertTrue(!!speech.recognition_);
 };
 
 /**
@@ -350,7 +350,7 @@ test.speech.testHandleFinalSpeechResponse = function() {
   speech.recognition_.onresult(responseEvent);
 
   test.speech.validateInactive();
-  assert(!!test.speech.locationUrl);
+  assertTrue(!!test.speech.locationUrl);
   assertEquals(
       test.speech.TEST_BASE_URL + 'search?q=high&gs_ivs=1',
       test.speech.locationUrl.href);
@@ -585,7 +585,7 @@ test.speech.testEnterToSubmit = function() {
   speech.onKeyDown(keyEvent);
 
   test.speech.validateInactive();
-  assert(!!test.speech.locationUrl);
+  assertTrue(!!test.speech.locationUrl);
   assertEquals(
       test.speech.TEST_BASE_URL + 'search?q=test+query&gs_ivs=1',
       test.speech.locationUrl.href);
@@ -607,7 +607,7 @@ test.speech.testClickToSubmit = function() {
       /*submitQuery=*/true, /*shouldRetry=*/false, /*navigatingAway=*/false);
 
   test.speech.validateInactive();
-  assert(!!test.speech.locationUrl);
+  assertTrue(!!test.speech.locationUrl);
   assertEquals(
       test.speech.TEST_BASE_URL + 'search?q=test+query&gs_ivs=1',
       test.speech.locationUrl.href);
@@ -891,7 +891,7 @@ test.speech.testIdleTimeoutWithConfidentSpeechResults = function() {
   test.speech.clock.pendingTimeouts.shift().callback();
 
   test.speech.validateInactive();
-  assert(!!test.speech.locationUrl);
+  assertTrue(!!test.speech.locationUrl);
   assertEquals(
       test.speech.TEST_BASE_URL + 'search?q=high&gs_ivs=1',
       test.speech.locationUrl.href);
@@ -934,7 +934,7 @@ test.speech.testIdleTimeoutWithNonConfidentSpeechResults = function() {
   test.speech.clock.advanceTime(3000);
   test.speech.clock.pendingTimeouts.shift().callback();
   test.speech.validateInactive();
-  assert(
+  assertTrue(
       !test.speech.locationUrl ||
       !test.speech.locationUrl.href.startsWith(test.speech.TEST_BASE_URL));
 };
@@ -950,7 +950,7 @@ test.speech.testQueryEncoding = function() {
   speech.finalResult_ = '🔍t&qôr 文字+weird*chär%?s?';
   speech.submitFinalResult_();
 
-  assert(!!test.speech.locationUrl);
+  assertTrue(!!test.speech.locationUrl);
   // To encode query: encodeURIComponent(queryText).replace(/%20/g, '+')
   assertEquals(
       test.speech.TEST_BASE_URL + 'search?q=%F0%9F%94%8Dt%26q%C3%B4r+' +

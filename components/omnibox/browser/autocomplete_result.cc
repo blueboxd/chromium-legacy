@@ -22,6 +22,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
+#include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/match_compare.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
@@ -167,11 +168,12 @@ void AutocompleteResult::SortAndCull(
 
 #if !(defined(OS_ANDROID) || defined(OS_IOS))
   // Do not cull the tail suggestions for zero prefix query suggetions of
-  // chromeOS launcher case, since there won't be any default match in this
+  // chromeOS launcher or NTP, since there won't be any default match in this
   // scenario.
   if (!(input.text().empty() &&
-        input.current_page_classification() ==
-            metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
+        (input.current_page_classification() ==
+             metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
+         BaseSearchProvider::IsNTPPage(input.current_page_classification())))) {
     // Wipe tail suggestions if not exclusive (minus default match).
     MaybeCullTailSuggestions(&matches_);
   }

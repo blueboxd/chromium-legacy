@@ -160,6 +160,8 @@ void ModuleEventSinkImpl::Create(
     mojom::ModuleEventSinkRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Process process = get_process.Run();
+  if (!process.IsValid())
+    return;
   auto module_event_sink_impl = std::make_unique<ModuleEventSinkImpl>(
       std::move(process), process_type, on_module_load_callback);
   mojo::MakeStrongBinding(std::move(module_event_sink_impl),

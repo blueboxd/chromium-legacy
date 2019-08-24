@@ -116,10 +116,8 @@ CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData(
     const ComputedStyle* font_style) const {
   float em = font_style->SpecifiedFontSize();
   float rem = RootElementStyle() ? RootElementStyle()->SpecifiedFontSize() : 1;
-  // TODO(fs): Since 'ch' and 'ex' are still accessed directly from the font,
-  // they will still have zoom applied.
-  CSSToLengthConversionData::FontSizes font_sizes(em, rem,
-                                                  &font_style->GetFont());
+  CSSToLengthConversionData::FontSizes font_sizes(
+      em, rem, &font_style->GetFont(), font_style->EffectiveZoom());
   CSSToLengthConversionData::ViewportSize viewport_size(
       GetDocument().GetLayoutView());
 

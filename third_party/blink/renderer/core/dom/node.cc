@@ -2826,13 +2826,13 @@ void Node::DefaultEventHandler(Event& event) {
     if (mouse_event.button() ==
         static_cast<int16_t>(WebPointerProperties::Button::kBack)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
-        if (frame->Client()->NavigateBackForward(-1))
+        if (frame->Client()->NavigateBackForward(-1, false))
           event.SetDefaultHandled();
       }
     } else if (mouse_event.button() ==
                static_cast<int16_t>(WebPointerProperties::Button::kForward)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
-        if (frame->Client()->NavigateBackForward(1))
+        if (frame->Client()->NavigateBackForward(1, false))
           event.SetDefaultHandled();
       }
     }

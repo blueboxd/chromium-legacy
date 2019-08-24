@@ -33,9 +33,9 @@
       }
 
       .banner {
-        @apply --cr-card-elevation;
         align-items: center;
         background-color: var(--cr-card-background-color);
+        border: var(--cr-hairline);
         border-radius: var(--cr-card-border-radius);
         display: flex;
         margin-bottom: var(--cr-section-vertical-margin);
@@ -66,7 +66,12 @@
         font-weight: 500;
       }
 
+      #browserSettingsBanner > div {
+        margin-bottom: 0;
+      }
+
       #openInNewBrowserSettingsIcon {
+        fill: var(--cr-link-color);
         margin-inline-start: 0;
       }
 

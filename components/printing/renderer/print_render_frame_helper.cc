@@ -728,7 +728,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   frame->PrintPage(0, canvas);
   frame->PrintEnd();
 
-  web_view->MainFrameWidget()->Close();
+  web_view->Close();
 }
 
 // static - Not anonymous so that platform implementations can use it.
@@ -1031,7 +1031,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
     if (owns_web_view_) {
       DCHECK(!frame->IsLoading());
       owns_web_view_ = false;
-      web_view->MainFrameWidget()->Close();
+      web_view->Close();
     }
   }
   navigation_control_ = nullptr;

@@ -151,15 +151,48 @@ suite('settings-fingerprint-list', function() {
         });
   });
 
+  test('EnrollingFingerprintLottieAnimation', function() {
+    loadTimeData.overrideValues({
+      fingerprintUnlockEnabled: true,
+      fingerprintReaderLocation:
+          settings.FingerprintLocation.TABLET_POWER_BUTTON,
+    });
+    openDialog();
+    return browserProxy.whenCalled('startEnroll').then(function() {
+      assertTrue(dialog.$$('#dialog').open);
+      assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
+      assertFalse(dialog.$$('#scannerLocationLottie').hidden);
+    });
+  });
+
+  test('EnrollingFingerprintPNG', function() {
+    loadTimeData.overrideValues({
+      fingerprintUnlockEnabled: true,
+      fingerprintReaderLocation:
+          settings.FingerprintLocation.KEYBOARD_TOP_RIGHT,
+    });
+    openDialog();
+    return browserProxy.whenCalled('startEnroll').then(function() {
+      assertTrue(dialog.$$('#dialog').open);
+      assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
+      assertFalse(dialog.$$('#scannerLocation').hidden);
+    });
+  });
+
   // Verify running through the enroll session workflow
   // (settings-setup-fingerprint-dialog) works as expected.
   test('EnrollingFingerprint', function() {
+    loadTimeData.overrideValues({
+      fingerprintUnlockEnabled: true,
+      fingerprintReaderLocation:
+          settings.FingerprintLocation.KEYBOARD_BOTTOM_RIGHT,
+    });
     openDialog();
     return browserProxy.whenCalled('startEnroll').then(function() {
       assertTrue(dialog.$$('#dialog').open);
       assertEquals(0, dialog.percentComplete_);
       assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
-      assertFalse(dialog.$$('#scannerLocationLottie').hidden);
+      assertFalse(dialog.$$('#scannerLocation').hidden);
       assertTrue(dialog.$$('#arc').hidden);
       // Message should be shown for LOCATE_SCANNER step.
       assertEquals(
@@ -171,7 +204,7 @@ suite('settings-fingerprint-list', function() {
           settings.FingerprintResultType.SUCCESS, false, 20 /* percent */);
       assertEquals(20, dialog.percentComplete_);
       assertEquals(settings.FingerprintSetupStep.MOVE_FINGER, dialog.step_);
-      assertTrue(dialog.$$('#scannerLocationLottie').hidden);
+      assertTrue(dialog.$$('#scannerLocation').hidden);
       assertFalse(dialog.$$('#arc').hidden);
 
       // Verify that by sending a scan problem, the div that contains the
@@ -217,6 +250,11 @@ suite('settings-fingerprint-list', function() {
   // Verify enrolling a fingerprint, then enrolling another without closing the
   // dialog works as intended.
   test('EnrollingAnotherFingerprint', function() {
+    loadTimeData.overrideValues({
+      fingerprintUnlockEnabled: true,
+      fingerprintReaderLocation:
+          settings.FingerprintLocation.KEYBOARD_TOP_RIGHT,
+    });
     openDialog();
     return browserProxy.whenCalled('startEnroll')
         .then(function() {
@@ -254,7 +292,7 @@ suite('settings-fingerprint-list', function() {
           assertTrue(dialog.$$('#dialog').open);
           assertFalse(isVisible(addAnotherButton));
           assertEquals(settings.FingerprintSetupStep.MOVE_FINGER, dialog.step_);
-          assertTrue(dialog.$$('#scannerLocationLottie').hidden);
+          assertTrue(dialog.$$('#scannerLocation').hidden);
           assertFalse(dialog.$$('#arc').hidden);
 
           browserProxy.scanReceived(

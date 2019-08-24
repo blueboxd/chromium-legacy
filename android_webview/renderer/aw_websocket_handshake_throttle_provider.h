@@ -11,10 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
-
-namespace service_manager {
-class Connector;
-}
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 
 namespace android_webview {
 
@@ -23,7 +20,8 @@ namespace android_webview {
 class AwWebSocketHandshakeThrottleProvider final
     : public content::WebSocketHandshakeThrottleProvider {
  public:
-  AwWebSocketHandshakeThrottleProvider(service_manager::Connector* connector);
+  explicit AwWebSocketHandshakeThrottleProvider(
+      blink::ThreadSafeBrowserInterfaceBrokerProxy* broker);
   ~AwWebSocketHandshakeThrottleProvider() override;
 
   // Implements content::WebSocketHandshakeThrottleProvider.

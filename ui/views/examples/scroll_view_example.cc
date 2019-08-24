@@ -52,8 +52,8 @@ class ScrollViewExample::ScrollableView : public View {
 
   void OnPaintBackground(gfx::Canvas* canvas) override {
     cc::PaintFlags flags;
-    flags.setShader(
-        gfx::CreateGradientShader(0, height(), from_color_, to_color_));
+    flags.setShader(gfx::CreateGradientShader(
+        gfx::Point(), gfx::Point(0, height()), from_color_, to_color_));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawRect(GetLocalBounds(), flags);
   }

@@ -12,6 +12,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -194,7 +195,8 @@ class TtsPlatformImpl {
     protected void sendEndEventOnUiThread(final String utteranceId) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (mNativeTtsPlatformImplAndroid != 0) {
-                nativeOnEndEvent(mNativeTtsPlatformImplAndroid, Integer.parseInt(utteranceId));
+                TtsPlatformImplJni.get().onEndEvent(mNativeTtsPlatformImplAndroid,
+                        TtsPlatformImpl.this, Integer.parseInt(utteranceId));
             }
         });
     }
@@ -205,7 +207,8 @@ class TtsPlatformImpl {
     protected void sendErrorEventOnUiThread(final String utteranceId) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (mNativeTtsPlatformImplAndroid != 0) {
-                nativeOnErrorEvent(mNativeTtsPlatformImplAndroid, Integer.parseInt(utteranceId));
+                TtsPlatformImplJni.get().onErrorEvent(mNativeTtsPlatformImplAndroid,
+                        TtsPlatformImpl.this, Integer.parseInt(utteranceId));
             }
         });
     }
@@ -216,7 +219,8 @@ class TtsPlatformImpl {
     protected void sendStartEventOnUiThread(final String utteranceId) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (mNativeTtsPlatformImplAndroid != 0) {
-                nativeOnStartEvent(mNativeTtsPlatformImplAndroid, Integer.parseInt(utteranceId));
+                TtsPlatformImplJni.get().onStartEvent(mNativeTtsPlatformImplAndroid,
+                        TtsPlatformImpl.this, Integer.parseInt(utteranceId));
             }
         });
     }
@@ -262,7 +266,7 @@ class TtsPlatformImpl {
 
     /**
      * Note: we enforce that this method is called on the UI thread, so
-     * we can call nativeVoicesChanged directly.
+     * we can call TtsPlatformImplJni.get().voicesChanged directly.
      */
     private void initialize() {
         TraceEvent.begin("TtsPlatformImpl:initialize");
@@ -304,7 +308,8 @@ class TtsPlatformImpl {
                 mVoices = voices;
                 mInitialized = true;
 
-                nativeVoicesChanged(mNativeTtsPlatformImplAndroid);
+                TtsPlatformImplJni.get().voicesChanged(
+                        mNativeTtsPlatformImplAndroid, TtsPlatformImpl.this);
 
                 if (mPendingUtterance != null) mPendingUtterance.speak();
 
@@ -313,8 +318,13 @@ class TtsPlatformImpl {
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private native void nativeVoicesChanged(long nativeTtsPlatformImplAndroid);
-    private native void nativeOnEndEvent(long nativeTtsPlatformImplAndroid, int utteranceId);
-    private native void nativeOnStartEvent(long nativeTtsPlatformImplAndroid, int utteranceId);
-    private native void nativeOnErrorEvent(long nativeTtsPlatformImplAndroid, int utteranceId);
+    @NativeMethods
+    interface Natives {
+        void voicesChanged(long nativeTtsPlatformImplAndroid, TtsPlatformImpl caller);
+        void onEndEvent(long nativeTtsPlatformImplAndroid, TtsPlatformImpl caller, int utteranceId);
+        void onStartEvent(
+                long nativeTtsPlatformImplAndroid, TtsPlatformImpl caller, int utteranceId);
+        void onErrorEvent(
+                long nativeTtsPlatformImplAndroid, TtsPlatformImpl caller, int utteranceId);
+    }
 }

@@ -195,7 +195,7 @@ void History::go(ScriptState* script_state,
     return;
 
   if (delta) {
-    GetFrame()->Client()->NavigateBackForward(delta);
+    GetFrame()->Client()->NavigateBackForward(delta, true);
   } else {
     // We intentionally call reload() for the current frame if delta is zero.
     // Otherwise, navigation happens on the root frame.

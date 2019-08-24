@@ -23,12 +23,13 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/note_action_launch_button.h"
-#include "ash/login/ui/parent_access_view.h"
+#include "ash/login/ui/parent_access_widget.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -41,6 +42,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
@@ -367,11 +369,6 @@ views::View* LockContentsView::TestApi::main_view() const {
   return view_->main_view_;
 }
 
-void LockContentsView::TestApi::SimulateParentAccessValidationFinished(
-    bool access_granted) {
-  view_->OnParentAccessValidationFinished(access_granted);
-}
-
 LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
     : account_id(user_info.basic_user_info.account_id) {
   fingerprint_state = user_info.fingerprint_state;
@@ -560,18 +557,19 @@ void LockContentsView::FocusPreviousUser() {
   }
 }
 
-void LockContentsView::ShowParentAccessDialog(bool show) {
-  if (!primary_big_view_)
-    return;
+void LockContentsView::ShowParentAccessDialog() {
+  // ParentAccessDialog should only be shown on lock screen from here.
+  DCHECK(primary_big_view_);
+  const AccountId account_id =
+      CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id;
 
-  if (show) {
-    primary_big_view_->ShowParentAccessView();
-    Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
-  } else {
-    primary_big_view_->HideParentAccessView();
-  }
-
-  Layout();
+  DCHECK(!ParentAccessWidget::Get());
+  ParentAccessWidget::Show(
+      account_id,
+      base::BindRepeating(&LockContentsView::OnParentAccessValidationFinished,
+                          weak_ptr_factory_.GetWeakPtr(), account_id),
+      ParentAccessRequestReason::kUnlockTimeLimits);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
 }
 
 void LockContentsView::RequestSecurityTokenPin(
@@ -1846,10 +1844,12 @@ void LockContentsView::OnEasyUnlockIconTapped() {
   }
 }
 
-void LockContentsView::OnParentAccessValidationFinished(bool access_granted) {
-  ShowParentAccessDialog(false);
+void LockContentsView::OnParentAccessValidationFinished(
+    const AccountId& account_id,
+    bool access_granted) {
+  LockContentsView::UserState* state = FindStateForUser(account_id);
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(
-      !access_granted);
+      state && state->disable_auth && !access_granted);
 }
 
 keyboard::KeyboardUIController* LockContentsView::GetKeyboardControllerForView()
@@ -1915,14 +1915,8 @@ LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
       base::BindRepeating(&LockContentsView::OnPublicAccountTapped,
                           base::Unretained(this), is_primary);
 
-  ParentAccessView::Callbacks parent_access_callbacks;
-  parent_access_callbacks.on_finished =
-      base::BindRepeating(&LockContentsView::OnParentAccessValidationFinished,
-                          base::Unretained(this));
-
   return new LoginBigUserView(user, auth_user_callbacks,
-                              public_account_callbacks,
-                              parent_access_callbacks);
+                              public_account_callbacks);
 }
 
 LoginBigUserView* LockContentsView::TryToFindBigUser(const AccountId& user,

@@ -1062,7 +1062,9 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"storageAndroidAppsExternalDrives",
        IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES},
       {"storageAndroidAppsExternalDrivesNote",
-       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE}};
+       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE},
+      {"storageExternalStorageListHeader",
+       IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER}};
   AddLocalizedStringsBulk(html_source, kStorageStrings,
                           base::size(kStorageStrings));
 

@@ -10,20 +10,15 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 
 namespace android_webview {
 
 AwWebSocketHandshakeThrottleProvider::AwWebSocketHandshakeThrottleProvider(
-    service_manager::Connector* connector) {
-  DCHECK(connector);
+    blink::ThreadSafeBrowserInterfaceBrokerProxy* broker) {
   DETACH_FROM_THREAD(thread_checker_);
-
-  connector->BindInterface(content::mojom::kBrowserServiceName,
-                           mojo::MakeRequest(&safe_browsing_info_));
+  broker->GetInterface(mojo::MakeRequest(&safe_browsing_info_));
 }
 
 AwWebSocketHandshakeThrottleProvider::~AwWebSocketHandshakeThrottleProvider() {

@@ -397,13 +397,14 @@ EventGeneratorDelegateMac::EventGeneratorDelegateMac(
                       withObject:[window.GetNativeNSWindow() firstResponder]];
 
   if (owner_) {
-    swizzle_pressed_.reset(new base::mac::ScopedObjCClassSwizzler(
-        [NSEvent class], [NSEventDonor class], @selector(pressedMouseButtons)));
-    swizzle_location_.reset(new base::mac::ScopedObjCClassSwizzler(
-        [NSEvent class], [NSEventDonor class], @selector(mouseLocation)));
-    swizzle_current_event_.reset(new base::mac::ScopedObjCClassSwizzler(
-        [NSApplication class], [NSApplicationDonor class],
-        @selector(currentEvent)));
+    swizzle_pressed_ = std::make_unique<base::mac::ScopedObjCClassSwizzler>(
+        [NSEvent class], [NSEventDonor class], @selector(pressedMouseButtons));
+    swizzle_location_ = std::make_unique<base::mac::ScopedObjCClassSwizzler>(
+        [NSEvent class], [NSEventDonor class], @selector(mouseLocation));
+    swizzle_current_event_ =
+        std::make_unique<base::mac::ScopedObjCClassSwizzler>(
+            [NSApplication class], [NSApplicationDonor class],
+            @selector(currentEvent));
   }
 }
 

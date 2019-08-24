@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/login_status.h"
-#include "ash/system/network/tray_network_state_model.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -20,12 +20,14 @@ class Button;
 }
 
 namespace ash {
+class TrayNetworkStateModel;
+
 namespace tray {
 
 // Exported for tests.
 class ASH_EXPORT NetworkStateListDetailedView
     : public TrayDetailedView,
-      public TrayNetworkStateModel::Observer {
+      public TrayNetworkStateObserver {
  public:
   ~NetworkStateListDetailedView() override;
 
@@ -59,7 +61,7 @@ class ASH_EXPORT NetworkStateListDetailedView
  private:
   class InfoBubble;
 
-  // TrayNetworkStateModel::Observer:
+  // TrayNetworkStateObserver:
   void ActiveNetworkStateChanged() override;
   void NetworkListChanged() override;
 

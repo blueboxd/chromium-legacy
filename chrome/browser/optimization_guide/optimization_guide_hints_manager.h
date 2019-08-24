@@ -162,7 +162,7 @@ class OptimizationGuideHintsManager
   // Called when the hints have been fully updated with the latest hints from
   // the Component Updater. This is used as a signal during tests.
   void OnComponentHintsUpdated(base::OnceClosure update_closure,
-                               bool hints_updated) const;
+                               bool hints_updated);
 
   // Method to decide whether to fetch new hints for user's top sites and
   // proceeds to schedule the fetch.

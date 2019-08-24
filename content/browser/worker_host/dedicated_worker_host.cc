@@ -21,6 +21,7 @@
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -265,12 +266,12 @@ void DedicatedWorkerHost::DidStartScriptLoad(
   // Prepare the controller service worker info to pass to the renderer.
   // |object_info| can be nullptr when the service worker context or the
   // service worker version is gone during dedicated worker startup.
-  blink::mojom::ServiceWorkerObjectAssociatedPtrInfo
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerObject>
       service_worker_remote_object;
   blink::mojom::ServiceWorkerState service_worker_state;
   if (controller && controller->object_info) {
-    controller->object_info->request =
-        mojo::MakeRequest(&service_worker_remote_object);
+    controller->object_info->receiver =
+        service_worker_remote_object.InitWithNewEndpointAndPassReceiver();
     service_worker_state = controller->object_info->state;
   }
 
@@ -279,10 +280,9 @@ void DedicatedWorkerHost::DidStartScriptLoad(
                                std::move(subresource_loader_factories),
                                std::move(controller));
 
-  // |service_worker_remote_object| is an associated interface ptr, so calls
-  // can't be made on it until its request endpoint is sent. Now that the
-  // request endpoint was sent, it can be used, so add it to
-  // ServiceWorkerObjectHost.
+  // |service_worker_remote_object| is an associated remote, so calls can't be
+  // made on it until its receiver is sent. Now that the receiver was sent, it
+  // can be used, so add it to ServiceWorkerObjectHost.
   if (service_worker_remote_object) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},

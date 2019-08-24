@@ -408,6 +408,7 @@ bool UpdateGamepadFromControllerData(
     const NintendoController::SwitchCalibrationData& cal,
     Gamepad& pad) {
   bool buttons_changed =
+      pad.buttons_length != SWITCH_BUTTON_INDEX_COUNT ||
       pad.buttons[BUTTON_INDEX_PRIMARY].pressed != data.button_b ||
       pad.buttons[BUTTON_INDEX_SECONDARY].pressed != data.button_a ||
       pad.buttons[BUTTON_INDEX_TERTIARY].pressed != data.button_y ||
@@ -435,6 +436,7 @@ bool UpdateGamepadFromControllerData(
       pad.buttons[SWITCH_BUTTON_INDEX_RIGHT_SR].pressed != data.button_right_sr;
 
   if (buttons_changed) {
+    pad.buttons_length = SWITCH_BUTTON_INDEX_COUNT;
     pad.buttons[BUTTON_INDEX_PRIMARY].pressed = data.button_b;
     pad.buttons[BUTTON_INDEX_PRIMARY].value = data.button_b ? 1.0 : 0.0;
     pad.buttons[BUTTON_INDEX_SECONDARY].pressed = data.button_a;
@@ -510,11 +512,13 @@ bool UpdateGamepadFromControllerData(
       rdead ? 0.0 : NormalizeAndClampAxis(axis_rx, cal.rx_min, cal.rx_max);
   double ry =
       rdead ? 0.0 : -NormalizeAndClampAxis(axis_ry, cal.ry_min, cal.ry_max);
-  bool axes_changed = pad.axes[device::AXIS_INDEX_LEFT_STICK_X] != lx ||
+  bool axes_changed = pad.axes_length != AXIS_INDEX_COUNT ||
+                      pad.axes[device::AXIS_INDEX_LEFT_STICK_X] != lx ||
                       pad.axes[device::AXIS_INDEX_LEFT_STICK_Y] != ly ||
                       pad.axes[device::AXIS_INDEX_RIGHT_STICK_X] != rx ||
                       pad.axes[device::AXIS_INDEX_RIGHT_STICK_Y] != ry;
   if (axes_changed) {
+    pad.axes_length = AXIS_INDEX_COUNT;
     pad.axes[device::AXIS_INDEX_LEFT_STICK_X] = lx;
     pad.axes[device::AXIS_INDEX_LEFT_STICK_Y] = ly;
     pad.axes[device::AXIS_INDEX_RIGHT_STICK_X] = rx;
@@ -1076,10 +1080,14 @@ void NintendoController::UpdateLeftGamepadState(Gamepad& pad,
   };
   const size_t kLeftAxisIndicesSize = base::size(kLeftAxisIndices);
 
-  for (size_t i = 0; i < kLeftButtonIndicesSize; ++i)
-    UpdateButtonForLeftSide(pad_, pad, kLeftButtonIndices[i], horizontal);
-  for (size_t i = 0; i < kLeftAxisIndicesSize; ++i)
-    UpdateAxisForLeftSide(pad_, pad, kLeftAxisIndices[i], horizontal);
+  if (pad_.buttons_length == SWITCH_BUTTON_INDEX_COUNT) {
+    for (size_t i = 0; i < kLeftButtonIndicesSize; ++i)
+      UpdateButtonForLeftSide(pad_, pad, kLeftButtonIndices[i], horizontal);
+  }
+  if (pad_.axes_length == AXIS_INDEX_COUNT) {
+    for (size_t i = 0; i < kLeftAxisIndicesSize; ++i)
+      UpdateAxisForLeftSide(pad_, pad, kLeftAxisIndices[i], horizontal);
+  }
   pad.timestamp = std::max(pad.timestamp, pad_.timestamp);
   if (!pad_.connected)
     pad.connected = false;
@@ -1110,10 +1118,14 @@ void NintendoController::UpdateRightGamepadState(Gamepad& pad,
   };
   const size_t kRightAxisIndicesSize = base::size(kRightAxisIndices);
 
-  for (size_t i = 0; i < kRightButtonIndicesSize; ++i)
-    UpdateButtonForRightSide(pad_, pad, kRightButtonIndices[i], horizontal);
-  for (size_t i = 0; i < kRightAxisIndicesSize; ++i)
-    UpdateAxisForRightSide(pad_, pad, kRightAxisIndices[i], horizontal);
+  if (pad_.buttons_length == SWITCH_BUTTON_INDEX_COUNT) {
+    for (size_t i = 0; i < kRightButtonIndicesSize; ++i)
+      UpdateButtonForRightSide(pad_, pad, kRightButtonIndices[i], horizontal);
+  }
+  if (pad_.axes_length == AXIS_INDEX_COUNT) {
+    for (size_t i = 0; i < kRightAxisIndicesSize; ++i)
+      UpdateAxisForRightSide(pad_, pad, kRightAxisIndices[i], horizontal);
+  }
   pad.timestamp = std::max(pad.timestamp, pad_.timestamp);
   if (!pad_.connected)
     pad.connected = false;

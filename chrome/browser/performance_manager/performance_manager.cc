@@ -170,10 +170,12 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
     const WebContentsProxy& contents_proxy,
+    const std::string& browser_context_id,
     bool is_visible,
     bool is_audible) {
   return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
-                                      contents_proxy, is_visible, is_audible);
+                                      contents_proxy, browser_context_id,
+                                      is_visible, is_audible);
 }
 
 std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode(
@@ -183,12 +185,14 @@ std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode(
 }
 
 std::unique_ptr<WorkerNodeImpl> PerformanceManager::CreateWorkerNode(
+    const std::string& browser_context_id,
     WorkerNode::WorkerType worker_type,
     ProcessNodeImpl* process_node,
+    const GURL& url,
     const base::UnguessableToken& dev_tools_token) {
   return CreateNodeImpl<WorkerNodeImpl>(
-      base::OnceCallback<void(WorkerNodeImpl*)>(), worker_type, process_node,
-      dev_tools_token);
+      base::OnceCallback<void(WorkerNodeImpl*)>(), browser_context_id,
+      worker_type, process_node, url, dev_tools_token);
 }
 
 void PerformanceManager::BatchDeleteNodes(
@@ -340,8 +344,7 @@ void PerformanceManager::OnStartImpl(
 
 #if defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)
-  if (base::FeatureList::IsEnabled(
-          features::os_linux::kDynamicTcmallocTuning)) {
+  if (base::FeatureList::IsEnabled(features::kDynamicTcmallocTuning)) {
     graph_.PassToGraph(std::make_unique<policies::DynamicTcmallocPolicy>());
   }
 #endif  // BUILDFLAG(USE_TCMALLOC)

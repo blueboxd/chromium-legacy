@@ -96,7 +96,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  bool PreSpawnRenderer(sandbox::TargetPolicy* policy) override;
+  bool PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                        RendererSpawnFlags flags) override;
 #endif
 
   network::mojom::NetworkContextPtr CreateNetworkContext(

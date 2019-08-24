@@ -47,6 +47,7 @@ enum ThemeBackgroundImageTiling {
 // Theme background settings for the NTP.
 struct ThemeBackgroundInfo {
   ThemeBackgroundInfo();
+  ThemeBackgroundInfo(const ThemeBackgroundInfo& other);
   ~ThemeBackgroundInfo();
 
   bool operator==(const ThemeBackgroundInfo& rhs) const;

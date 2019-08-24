@@ -11,7 +11,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/child_accounts/child_account_test_utils.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -50,7 +50,7 @@ constexpr char kTestRefreshToken[] = "fake-refresh-token";
 namespace policy {
 
 class UserCloudPolicyManagerTest
-    : public chromeos::MixinBasedInProcessBrowserTest,
+    : public MixinBasedInProcessBrowserTest,
       public testing::WithParamInterface<std::vector<base::Feature>> {
  protected:
   UserCloudPolicyManagerTest() {

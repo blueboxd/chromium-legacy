@@ -62,6 +62,8 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void OnNotificationButtonPressed(const std::string& notification_id,
                                    int notification_button_index) override;
   void OnOptInButtonPressed() override;
+  void OnProactiveSuggestionsCloseButtonPressed() override;
+  void OnProactiveSuggestionsViewPressed() override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
   void OpenUrlFromView(const GURL& url) override;
 

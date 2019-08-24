@@ -143,16 +143,13 @@ void Reverb::Process(const AudioBus* source_bus,
   // Do a fairly comprehensive sanity check.
   // If these conditions are satisfied, all of the source and destination
   // pointers will be valid for the various matrixing cases.
-  bool is_safe_to_process = source_bus && destination_bus &&
-                            source_bus->NumberOfChannels() > 0 &&
-                            destination_bus->NumberOfChannels() > 0 &&
-                            frames_to_process <= kMaxFrameSize &&
-                            frames_to_process <= source_bus->length() &&
-                            frames_to_process <= destination_bus->length();
-
-  DCHECK(is_safe_to_process);
-  if (!is_safe_to_process)
-    return;
+  DCHECK(source_bus);
+  DCHECK(destination_bus);
+  DCHECK_GT(source_bus->NumberOfChannels(), 0u);
+  DCHECK_GT(destination_bus->NumberOfChannels(), 0u);
+  DCHECK_LE(frames_to_process, kMaxFrameSize);
+  DCHECK_LE(frames_to_process, source_bus->length());
+  DCHECK_LE(frames_to_process, destination_bus->length());
 
   // For now only handle mono or stereo output
   if (destination_bus->NumberOfChannels() > 2) {

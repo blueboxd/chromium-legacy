@@ -201,6 +201,16 @@ void ArCoreImpl::EnsureArCorePlanesList() {
   }
 }
 
+void ArCoreImpl::EnsureArCoreAnchorsList() {
+  if (!arcore_anchors_.is_valid()) {
+    ArAnchorList_create(
+        arcore_session_.get(),
+        internal::ScopedArCoreObject<ArAnchorList*>::Receiver(arcore_anchors_)
+            .get());
+    DCHECK(arcore_anchors_.is_valid());
+  }
+}
+
 template <typename FunctionType>
 void ArCoreImpl::ForEachArCorePlane(FunctionType fn) {
   DCHECK(arcore_planes_.is_valid());
@@ -253,6 +263,99 @@ void ArCoreImpl::ForEachArCorePlane(FunctionType fn) {
   }
 }  // namespace device
 
+std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
+  EnsureArCoreAnchorsList();
+
+  std::vector<mojom::XRAnchorDataPtr> result;
+
+  ArFrame_getUpdatedAnchors(arcore_session_.get(), arcore_frame_.get(),
+                            arcore_anchors_.get());
+
+  ForEachArCoreAnchor([this, &result](ArAnchor* ar_anchor) {
+    // pose
+    internal::ScopedArCoreObject<ArPose*> anchor_pose;
+    ArPose_create(
+        arcore_session_.get(), nullptr,
+        internal::ScopedArCoreObject<ArPose*>::Receiver(anchor_pose).get());
+    ArAnchor_getPose(arcore_session_.get(), ar_anchor, anchor_pose.get());
+    mojom::VRPosePtr pose =
+        GetMojomPoseFromArPose(arcore_session_.get(), std::move(anchor_pose));
+
+    // ID
+    auto maybe_pair_with_anchor_id_and_created = CreateOrGetAnchorId(ar_anchor);
+    if (!maybe_pair_with_anchor_id_and_created) {
+      // Skip the anchor - we have run out of IDs and there is not much we can
+      // do about it.
+      return;
+    }
+
+    int32_t anchor_id;
+    bool created;
+    std::tie(anchor_id, created) = *maybe_pair_with_anchor_id_and_created;
+
+    result.push_back(mojom::XRAnchorData::New(anchor_id, std::move(pose)));
+  });
+
+  return result;
+}
+
+std::vector<int32_t> ArCoreImpl::GetAllAnchorIds() {
+  EnsureArCoreAnchorsList();
+
+  std::vector<int32_t> result;
+
+  ArSession_getAllAnchors(arcore_session_.get(), arcore_anchors_.get());
+
+  ForEachArCoreAnchor([this, &result](ArAnchor* ar_anchor) {
+    // ID
+    auto maybe_pair_with_anchor_id_and_created = CreateOrGetAnchorId(ar_anchor);
+    if (!maybe_pair_with_anchor_id_and_created) {
+      // Skip the anchor - we have run out of IDs and there is not much we can
+      // do about it.
+      return;
+    }
+
+    int32_t anchor_id;
+    bool created;
+    std::tie(anchor_id, created) = *maybe_pair_with_anchor_id_and_created;
+
+    // TODO(https://crbug.com/992033): Add explanation for the below DCHECK when
+    // implementing anchor creation.
+    DCHECK(!created);
+
+    result.emplace_back(anchor_id);
+  });
+
+  return result;
+}
+
+template <typename FunctionType>
+void ArCoreImpl::ForEachArCoreAnchor(FunctionType fn) {
+  DCHECK(arcore_anchors_.is_valid());
+
+  int32_t anchor_list_size;
+  ArAnchorList_getSize(arcore_session_.get(), arcore_anchors_.get(),
+                       &anchor_list_size);
+
+  for (int i = 0; i < anchor_list_size; i++) {
+    internal::ScopedArCoreObject<ArAnchor*> anchor;
+    ArAnchorList_acquireItem(
+        arcore_session_.get(), arcore_anchors_.get(), i,
+        internal::ScopedArCoreObject<ArAnchor*>::Receiver(anchor).get());
+
+    ArTrackingState tracking_state;
+    ArAnchor_getTrackingState(arcore_session_.get(), anchor.get(),
+                              &tracking_state);
+
+    if (tracking_state != ArTrackingState::AR_TRACKING_STATE_TRACKING) {
+      // Skip all anchors that are not currently tracked.
+      continue;
+    }
+
+    fn(anchor.get());
+  }
+}
+
 std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
   EnsureArCorePlanesList();
 
@@ -293,10 +396,17 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
           mojom::XRPlanePointData::New(vertices_raw[i], vertices_raw[i + 1]));
     }
 
-    // id
+    // ID
+    auto maybe_pair_with_plane_id_and_created = CreateOrGetPlaneId(ar_plane);
+    if (!maybe_pair_with_plane_id_and_created) {
+      // Skip the plane - we have run out of IDs and there is not much we can
+      // do about it.
+      return;
+    }
+
     int32_t plane_id;
     bool created;
-    std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
+    std::tie(plane_id, created) = *maybe_pair_with_plane_id_and_created;
 
     result.push_back(mojom::XRPlaneData::New(
         plane_id,
@@ -317,13 +427,20 @@ std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
                              arcore_planes_.get());
 
   ForEachArCorePlane([this, &result](ArPlane* ar_plane) {
-    // id
+    // ID
+    auto maybe_pair_with_plane_id_and_created = CreateOrGetPlaneId(ar_plane);
+    if (!maybe_pair_with_plane_id_and_created) {
+      // Skip the plane - we have run out of IDs and there is not much we can
+      // do about it.
+      return;
+    }
+
     int32_t plane_id;
     bool created;
-    std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
+    std::tie(plane_id, created) = *maybe_pair_with_plane_id_and_created;
 
-    // Newly detected planes should be handled by GetUpdatedPlanesData().
-    DCHECK(!created);
+    DCHECK(!created)
+        << "Newly detected planes should be handled by GetUpdatedPlanesData().";
 
     result.emplace_back(plane_id);
   });
@@ -341,17 +458,45 @@ mojom::XRPlaneDetectionDataPtr ArCoreImpl::GetDetectedPlanesData() {
                                           std::move(updated_planes));
 }
 
-std::pair<int32_t, bool> ArCoreImpl::CreateOrGetPlaneId(void* plane_address) {
+mojom::XRAnchorsDataPtr ArCoreImpl::GetAnchorsData() {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+
+  auto updated_anchors = GetUpdatedAnchorsData();
+  auto all_anchor_ids = GetAllAnchorIds();
+
+  return mojom::XRAnchorsData::New(all_anchor_ids, std::move(updated_anchors));
+}
+
+base::Optional<std::pair<int32_t, bool>> ArCoreImpl::CreateOrGetPlaneId(
+    void* plane_address) {
   auto it = ar_plane_address_to_id_.find(plane_address);
   if (it != ar_plane_address_to_id_.end()) {
     return std::make_pair(it->second, false);
   }
 
-  // Make sure that incrementing next_id_ won't cause an overflow.
-  CHECK(next_id_ != std::numeric_limits<int32_t>::max());
+  if (next_id_ == std::numeric_limits<int32_t>::max()) {
+    return base::nullopt;
+  }
 
   int32_t current_id = next_id_++;
   ar_plane_address_to_id_.emplace(plane_address, current_id);
+
+  return std::make_pair(current_id, true);
+}
+
+base::Optional<std::pair<int32_t, bool>> ArCoreImpl::CreateOrGetAnchorId(
+    void* anchor_address) {
+  auto it = ar_anchor_address_to_id_.find(anchor_address);
+  if (it != ar_anchor_address_to_id_.end()) {
+    return std::make_pair(it->second, false);
+  }
+
+  if (next_id_ == std::numeric_limits<int32_t>::max()) {
+    return base::nullopt;
+  }
+
+  int32_t current_id = next_id_++;
+  ar_anchor_address_to_id_.emplace(anchor_address, current_id);
 
   return std::make_pair(current_id, true);
 }

@@ -396,8 +396,10 @@ void TestGLES2Interface::GetQueryObjectuivEXT(GLuint id,
                                               GLenum pname,
                                               GLuint* params) {
   // If the context is lost, behave as if result is available.
-  if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
+  if (pname == GL_QUERY_RESULT_AVAILABLE_EXT ||
+      pname == GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT) {
     *params = 1;
+  }
 }
 
 void TestGLES2Interface::ProduceTextureDirectCHROMIUM(GLuint texture,

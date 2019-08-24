@@ -10,12 +10,16 @@
 namespace performance_manager {
 
 WorkerNodeImpl::WorkerNodeImpl(GraphImpl* graph,
+                               const std::string& browser_context_id,
                                WorkerType worker_type,
                                ProcessNodeImpl* process_node,
+                               const GURL& url,
                                const base::UnguessableToken& dev_tools_token)
     : TypedNodeBase(graph),
+      browser_context_id_(browser_context_id),
       worker_type_(worker_type),
       process_node_(process_node),
+      url_(url),
       dev_tools_token_(dev_tools_token) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(process_node);
@@ -91,6 +95,11 @@ void WorkerNodeImpl::RemoveClientWorker(WorkerNodeImpl* worker_node) {
   DCHECK_EQ(removed, 1u);
 }
 
+const std::string& WorkerNodeImpl::browser_context_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return browser_context_id_;
+}
+
 WorkerNode::WorkerType WorkerNodeImpl::worker_type() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_type_;
@@ -99,6 +108,16 @@ WorkerNode::WorkerType WorkerNodeImpl::worker_type() const {
 ProcessNodeImpl* WorkerNodeImpl::process_node() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return process_node_;
+}
+
+const GURL& WorkerNodeImpl::url() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return url_;
+}
+
+const base::UnguessableToken& WorkerNodeImpl::dev_tools_token() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return dev_tools_token_;
 }
 
 const base::flat_set<FrameNodeImpl*>& WorkerNodeImpl::client_frames() const {
@@ -131,14 +150,29 @@ void WorkerNodeImpl::LeaveGraph() {
   process_node_->RemoveWorker(this);
 }
 
-WorkerNode::WorkerType WorkerNodeImpl::GetType() const {
+WorkerNode::WorkerType WorkerNodeImpl::GetWorkerType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_type();
+}
+
+const std::string& WorkerNodeImpl::GetBrowserContextID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return browser_context_id();
 }
 
 const ProcessNode* WorkerNodeImpl::GetProcessNode() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return process_node();
+}
+
+const GURL& WorkerNodeImpl::GetURL() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return url();
+}
+
+const base::UnguessableToken& WorkerNodeImpl::GetDevToolsToken() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return dev_tools_token();
 }
 
 const base::flat_set<const FrameNode*> WorkerNodeImpl::GetClientFrames() const {

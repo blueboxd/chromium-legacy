@@ -33,7 +33,8 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_object_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -111,18 +112,17 @@ class MODULES_EXPORT ServiceWorker final
   bool was_stopped_;
   const KURL url_;
   mojom::blink::ServiceWorkerState state_;
-  // Both |host_| and |binding_| are associated with
+  // Both |host_| and |receiver_| are associated with
   // content.mojom.ServiceWorkerContainer interface for a Document, and
   // content.mojom.ServiceWorker interface for a ServiceWorkerGlobalScope.
   //
   // |host_| keeps the Mojo connection to the
   // browser-side ServiceWorkerObjectHost, whose lifetime is bound
   // to |host_| via the Mojo connection.
-  mojom::blink::ServiceWorkerObjectHostAssociatedPtr host_;
-  // |binding_| keeps the Mojo binding to serve its other Mojo endpoint (i.e.
-  // the caller end) held by the content::ServiceWorkerObjectHost in the browser
+  mojo::AssociatedRemote<mojom::blink::ServiceWorkerObjectHost> host_;
+  // Receives messages from the content::ServiceWorkerObjectHost in the browser
   // process.
-  mojo::AssociatedBinding<mojom::blink::ServiceWorkerObject> binding_;
+  mojo::AssociatedReceiver<mojom::blink::ServiceWorkerObject> receiver_{this};
 };
 
 }  // namespace blink

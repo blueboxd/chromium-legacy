@@ -60,7 +60,7 @@ enum {
   kGlobalCycleAuthErrorMessage,
   kGlobalToggleWarningBanner,
   kGlobalToggleManagedSessionDisclosure,
-  kGlobalToggleParentAccess,
+  kGlobalShowParentAccess,
   kPerUserTogglePin,
   kPerUserToggleTap,
   kPerUserCycleEasyUnlockState,
@@ -720,7 +720,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
             toggle_container);
   AddButton("Toggle warning banner", ButtonId::kGlobalToggleWarningBanner,
             toggle_container);
-  AddButton("Toggle parent access", ButtonId::kGlobalToggleParentAccess,
+  AddButton("Show parent access", ButtonId::kGlobalShowParentAccess,
             toggle_container);
 
   auto* kiosk_container = add_horizontal_container();
@@ -1035,11 +1035,11 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     Layout();
   }
 
-  // Toggle parent access view.
-  if (sender->GetID() == ButtonId::kGlobalToggleParentAccess) {
-    is_parent_access_shown_ = !is_parent_access_shown_;
-    lock_->ShowParentAccessDialog(is_parent_access_shown_);
-  }
+  // Show parent access dialog. It is modal dialog that blocks access to
+  // underlying UI. It is not possible to create another instance before the
+  // existing one is dismissed in dev overlay.
+  if (sender->GetID() == ButtonId::kGlobalShowParentAccess)
+    lock_->ShowParentAccessDialog();
 }
 
 void LockDebugView::UpdatePerUserActionContainer() {

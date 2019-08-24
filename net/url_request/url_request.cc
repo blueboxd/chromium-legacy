@@ -239,13 +239,6 @@ void URLRequest::SetExtraRequestHeaders(const HttpRequestHeaders& headers) {
   // for request headers are implemented.
 }
 
-bool URLRequest::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
-  if (!job_.get())
-    return false;
-
-  return job_->GetFullRequestHeaders(headers);
-}
-
 int64_t URLRequest::GetTotalReceivedBytes() const {
   if (!job_.get())
     return 0;

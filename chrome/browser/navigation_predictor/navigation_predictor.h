@@ -227,7 +227,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // The urls of the top anchor elements in the page, in a random order.
   // If there are 10 or more urls on the page, |top_urls_| contains 10 urls.
   // Otherwise, it contains all the urls.
-  std::vector<std::string> top_urls_;
+  std::vector<GURL> top_urls_;
 
   // Total number of anchors that: href has the same host as the document,
   // contains image, inside an iframe, href incremented by 1 from document url.

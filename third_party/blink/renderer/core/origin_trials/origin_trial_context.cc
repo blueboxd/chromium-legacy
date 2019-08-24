@@ -272,8 +272,6 @@ void OriginTrialContext::AddFeature(OriginTrialFeature feature) {
 }
 
 bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
-  if (!RuntimeEnabledFeatures::OriginTrialsEnabled())
-    return false;
 
   if (enabled_features_.Contains(feature) ||
       navigation_activated_features_.Contains(feature)) {
@@ -299,9 +297,6 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
 
 bool OriginTrialContext::IsNavigationFeatureActivated(
     OriginTrialFeature feature) const {
-  if (!RuntimeEnabledFeatures::OriginTrialsEnabled())
-    return false;
-
   return navigation_activated_features_.Contains(feature);
 }
 

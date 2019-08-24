@@ -24,7 +24,6 @@
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -53,8 +52,8 @@ namespace {
 
 blink::mojom::FileSystemManagerPtr GetFileSystemManager() {
   blink::mojom::FileSystemManagerPtr file_system_manager_ptr;
-  ChildThreadImpl::current()->GetConnector()->BindInterface(
-      mojom::kBrowserServiceName, mojo::MakeRequest(&file_system_manager_ptr));
+  ChildThreadImpl::current()->BindHostReceiver(
+      mojo::MakeRequest(&file_system_manager_ptr));
   return file_system_manager_ptr;
 }
 

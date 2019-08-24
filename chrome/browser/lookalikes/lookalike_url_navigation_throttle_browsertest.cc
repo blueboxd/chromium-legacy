@@ -1070,19 +1070,3 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                            embedded_test_server()->GetURL("example.net", "/"));
 }
 
-// Verify that displaying the advanced section records UMA.
-IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
-                       MetricsRecordedOnAdvancedShown) {
-  base::HistogramTester histograms;
-  LoadAndCheckInterstitialAt(browser(), GetURL("googlé.com"));
-  SendInterstitialCommand(browser()->tab_strip_model()->GetActiveWebContents(),
-                          SecurityInterstitialCommand::CMD_SHOW_MORE_SECTION);
-  SendInterstitialCommandSync(browser(),
-                              SecurityInterstitialCommand::CMD_PROCEED);
-
-  histograms.ExpectTotalCount(kInterstitialInteractionMetric, 2);
-  histograms.ExpectBucketCount(kInterstitialInteractionMetric,
-                               MetricsHelper::TOTAL_VISITS, 1);
-  histograms.ExpectBucketCount(kInterstitialInteractionMetric,
-                               MetricsHelper::SHOW_ADVANCED, 1);
-}

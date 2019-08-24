@@ -20,7 +20,6 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
 #include "components/version_info/version_info.h"
@@ -73,7 +72,7 @@ std::string Format(const std::string& message,
                             interval_ms % 1000, message.c_str());
 }
 
-std::string FormatMetaDataAsLogMessage(const MetaDataMap& meta_data) {
+std::string FormatMetaDataAsLogMessage(const WebRtcLogMetaDataMap& meta_data) {
   std::string message;
   for (auto& kv : meta_data) {
     message += kv.first + ": " + kv.second + '\n';
@@ -120,41 +119,6 @@ std::string IPAddressToSensitiveString(const net::IPAddress& address) {
 
 }  // namespace
 
-WebRtcLogBuffer::WebRtcLogBuffer()
-    : buffer_(),
-      circular_(&buffer_[0], sizeof(buffer_), sizeof(buffer_) / 2, false),
-      read_only_(false) {}
-
-WebRtcLogBuffer::~WebRtcLogBuffer() {
-#if DCHECK_IS_ON()
-  DCHECK(read_only_ || sequence_checker_.CalledOnValidSequence());
-#endif
-}
-
-void WebRtcLogBuffer::Log(const std::string& message) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!read_only_);
-  circular_.Write(message.c_str(), message.length());
-  const char eol = '\n';
-  circular_.Write(&eol, 1);
-}
-
-webrtc_logging::PartialCircularBuffer WebRtcLogBuffer::Read() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(read_only_);
-  return webrtc_logging::PartialCircularBuffer(&buffer_[0], sizeof(buffer_));
-}
-
-void WebRtcLogBuffer::SetComplete() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!read_only_) << "Already set? (programmer error)";
-  read_only_ = true;
-  // Detach from the current sequence so that we can check reads on a different
-  // sequence. This is to make sure that Read()s still happen on one sequence
-  // only.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
 WebRtcTextLogHandler::WebRtcTextLogHandler(int render_process_id)
     : render_process_id_(render_process_id), logging_state_(CLOSED) {}
 
@@ -175,8 +139,9 @@ bool WebRtcTextLogHandler::GetChannelIsClosing() const {
   return channel_is_closing_;
 }
 
-void WebRtcTextLogHandler::SetMetaData(std::unique_ptr<MetaDataMap> meta_data,
-                                       const GenericDoneCallback& callback) {
+void WebRtcTextLogHandler::SetMetaData(
+    std::unique_ptr<WebRtcLogMetaDataMap> meta_data,
+    const GenericDoneCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback.is_null());
 
@@ -236,7 +201,7 @@ bool WebRtcTextLogHandler::StartLogging(WebRtcLogUploader* log_uploader,
   DCHECK(!log_buffer_);
   log_buffer_.reset(new WebRtcLogBuffer());
   if (!meta_data_)
-    meta_data_.reset(new MetaDataMap());
+    meta_data_.reset(new WebRtcLogMetaDataMap());
 
   content::GetNetworkService()->GetNetworkList(
       net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
@@ -335,7 +300,7 @@ void WebRtcTextLogHandler::DiscardLog() {
 
 void WebRtcTextLogHandler::ReleaseLog(
     std::unique_ptr<WebRtcLogBuffer>* log_buffer,
-    std::unique_ptr<MetaDataMap>* meta_data) {
+    std::unique_ptr<WebRtcLogMetaDataMap>* meta_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(logging_state_ == STOPPED ||
          (channel_is_closing_ && logging_state_ != CLOSED));

@@ -75,7 +75,7 @@ AssistantSuggestionsController::AssistantSuggestionsController(
 AssistantSuggestionsController::~AssistantSuggestionsController() {
   auto* client = ProactiveSuggestionsClient::Get();
   if (client)
-    client->set_delegate(nullptr);
+    client->SetDelegate(nullptr);
 
   assistant_controller_->RemoveObserver(this);
   VoiceInteractionController::Get()->RemoveLocalObserver(this);
@@ -104,7 +104,7 @@ void AssistantSuggestionsController::OnAssistantReady() {
   // the ready signal before binding as its delegate.
   auto* client = ProactiveSuggestionsClient::Get();
   if (client)
-    client->set_delegate(this);
+    client->SetDelegate(this);
 }
 
 void AssistantSuggestionsController::OnUiVisibilityChanged(
@@ -126,11 +126,11 @@ void AssistantSuggestionsController::OnVoiceInteractionContextEnabled(
 void AssistantSuggestionsController::OnProactiveSuggestionsClientDestroying() {
   auto* client = ProactiveSuggestionsClient::Get();
   if (client)
-    client->set_delegate(nullptr);
+    client->SetDelegate(nullptr);
 }
 
 void AssistantSuggestionsController::OnProactiveSuggestionsChanged(
-    std::unique_ptr<ProactiveSuggestions> proactive_suggestions) {
+    scoped_refptr<ProactiveSuggestions> proactive_suggestions) {
   model_.SetProactiveSuggestions(std::move(proactive_suggestions));
 }
 

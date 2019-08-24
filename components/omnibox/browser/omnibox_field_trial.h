@@ -164,13 +164,6 @@ base::TimeDelta StopTimerFieldTrialDuration();
 std::string GetZeroSuggestVariant(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
-// Returns the server address associated with the current field trial.
-std::string GetOnFocusSuggestionsCustomEndpointURL();
-
-// Returns the server-side experiment ID to use for contextual suggestions.
-// Returns -1 if there is no associated experiment ID.
-int GetOnFocusSuggestionsCustomEndpointExperimentId();
-
 // ---------------------------------------------------------
 // For the ShortcutsScoringMaxRelevance experiment that's part of the
 // bundled omnibox field trial.
@@ -490,10 +483,6 @@ extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
 // Parameter names used by UI experiments.
 extern const char kUIMaxAutocompleteMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
-
-// Parameter names used by On Focus Suggestions Custom Endpoint.
-extern const char kOnFocusSuggestionsEndpointExperimentIdParam[];
-extern const char kOnFocusSuggestionsEndpointURLParam[];
 
 // The amount of time to wait before sending a new suggest request after the
 // previous one unless overridden by a field trial parameter.

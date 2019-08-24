@@ -33,7 +33,8 @@ class EphemeralTabSceneLayer : public SceneLayer {
   void SetResourceIds(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& object,
                       jint text_resource_id,
-                      jint bar_background_resource_id,
+                      jint panel_shadow_resource_id,
+                      jint rounded_bar_top_resource_id,
                       jint bar_shadow_resource_id,
                       jint panel_icon_resource_id,
                       jint drag_handlebar_resource_id,
@@ -65,14 +66,14 @@ class EphemeralTabSceneLayer : public SceneLayer {
               jboolean bar_border_visible,
               jfloat bar_border_height,
               jboolean bar_shadow_visible,
-              jfloat bar_shadow_opacity,
               jint icon_color,
               jint drag_handlebar_color,
               jfloat favicon_opacity,
               jboolean progress_bar_visible,
               jfloat progress_bar_height,
               jfloat progress_bar_opacity,
-              jint progress_bar_completion);
+              jint progress_bar_completion,
+              jint separator_line_color);
 
   void SetContentTree(
       JNIEnv* env,

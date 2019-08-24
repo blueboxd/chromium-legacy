@@ -1,12 +1,18 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="storage_external_entry.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-storage-external">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      h2 {
+        padding-inline-start: var(--cr-section-padding);
+      }
+
+    </style>
     <div class="settings-box first">
       <span>
         $i18n{storageAndroidAppsExternalDrivesNote}
@@ -16,6 +22,15 @@
         pref="{{prefs.arc.has_access_to_removable_media}}"
         label="$i18n{storageAndroidAppsExternalDrives}">
     </settings-toggle-button>
+    <h2>$i18n{storageExternalStorageListHeader}</h2>
+    <iron-list id="removableDevices" preserve-focus
+        items="[[externalStorages_]]">
+      <template>
+        <storage-external-entry uuid="[[item.uuid]]" label="[[item.label]]"
+            prefs="{{prefs}}">
+        </storage-external-entry>
+      </template>
+    </iron-list>
   </template>
   <script src="storage_external.js"></script>
 </dom-module>

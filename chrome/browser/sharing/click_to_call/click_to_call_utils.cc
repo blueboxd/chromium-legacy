@@ -61,8 +61,8 @@ struct ScopedUmaHistogramMicrosecondsTimer {
 
 bool ShouldOfferClickToCallForURL(content::BrowserContext* browser_context,
                                   const GURL& url) {
-  return url.SchemeIs(url::kTelScheme) && !url.GetContent().empty() &&
-         IsClickToCallEnabled(browser_context);
+  return !url.is_empty() && url.SchemeIs(url::kTelScheme) &&
+         !url.GetContent().empty() && IsClickToCallEnabled(browser_context);
 }
 
 base::Optional<std::string> ExtractPhoneNumberForClickToCall(

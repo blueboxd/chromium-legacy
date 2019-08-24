@@ -831,6 +831,29 @@ TEST_F(CastAudioOutputStreamTest, Volume) {
   stream->Close();
 }
 
+TEST_F(CastAudioOutputStreamTest, InvalidAudioDelay) {
+  ::media::AudioOutputStream* stream = CreateStream();
+  ASSERT_TRUE(stream);
+  ASSERT_TRUE(stream->Open());
+  RunThreadsUntilIdle();
+
+  FakeAudioDecoder* audio_decoder = GetAudioDecoder();
+  ASSERT_TRUE(audio_decoder);
+  audio_decoder->set_rendering_delay(
+      CmaBackend::AudioDecoder::RenderingDelay(-1, 0));
+
+  ::media::MockAudioSourceCallback source_callback;
+  const base::TimeDelta delay = base::TimeDelta();
+  EXPECT_CALL(source_callback, OnMoreData(delay, _, _, _))
+      .WillRepeatedly(Invoke(OnMoreData));
+
+  stream->Start(&source_callback);
+  RunThreadsUntilIdle();
+
+  stream->Stop();
+  stream->Close();
+}
+
 TEST_F(CastAudioOutputStreamTest, AudioDelay) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
@@ -844,9 +867,7 @@ TEST_F(CastAudioOutputStreamTest, AudioDelay) {
 
   ::media::MockAudioSourceCallback source_callback;
   const base::TimeDelta delay(base::TimeDelta::FromMicroseconds(kDelayUs));
-  const base::TimeTicks delay_timestamp(
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(kDelayTimestampUs));
-  EXPECT_CALL(source_callback, OnMoreData(delay, delay_timestamp, _, _))
+  EXPECT_CALL(source_callback, OnMoreData(delay, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
 
   stream->Start(&source_callback);

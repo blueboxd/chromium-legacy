@@ -442,20 +442,6 @@ void HttpCache::Transaction::StopCaching() {
   }
 }
 
-bool HttpCache::Transaction::GetFullRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
-  if (transaction) {
-    return transaction->GetFullRequestHeaders(headers);
-  } else if (!network_transaction_info_.full_request_headers.IsEmpty()) {
-    *headers = network_transaction_info_.full_request_headers;
-    return true;
-  }
-
-  // TODO(juliatuttle): Read headers from cache.
-  return false;
-}
-
 int64_t HttpCache::Transaction::GetTotalReceivedBytes() const {
   int64_t total_received_bytes = network_transaction_info_.total_received_bytes;
   const HttpTransaction* transaction = GetOwnedOrMovedNetworkTransaction();
@@ -3401,6 +3387,19 @@ void HttpCache::Transaction::RecordHistograms() {
       cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED ||
       cache_entry_status_ == CacheEntryStatus::ENTRY_UPDATED;
 
+  bool is_third_party = false;
+
+  // Given that cache_entry_status_ is not ENTRY_UNDEFINED, the request must
+  // have started and so request_ should exist.
+  DCHECK(request_);
+  if (!request_->network_isolation_key.IsEmpty()) {
+    const url::Origin& top_frame_origin =
+        request_->network_isolation_key.GetTopFrameOrigin().value();
+    url::Origin request_origin = url::Origin::Create(request_->url);
+
+    is_third_party = !top_frame_origin.IsSameOriginWith(request_origin);
+  }
+
   std::string mime_type;
   HttpResponseHeaders* response_headers = GetResponseInfo()->headers.get();
   if (response_headers && response_headers->GetMimeType(&mime_type)) {
@@ -3413,6 +3412,9 @@ void HttpCache::Transaction::RecordHistograms() {
     } else if (mime_type == "text/html") {
       CACHE_STATUS_HISTOGRAMS(".NonMainFrameHTML");
     } else if (mime_type == "text/css") {
+      if (is_third_party) {
+        CACHE_STATUS_HISTOGRAMS(".CSSThirdParty");
+      }
       CACHE_STATUS_HISTOGRAMS(".CSS");
     } else if (base::StartsWith(mime_type, "image/",
                                 base::CompareCase::SENSITIVE)) {
@@ -3427,8 +3429,14 @@ void HttpCache::Transaction::RecordHistograms() {
                               base::CompareCase::SENSITIVE) ||
                base::EndsWith(mime_type, "ecmascript",
                               base::CompareCase::SENSITIVE)) {
+      if (is_third_party) {
+        CACHE_STATUS_HISTOGRAMS(".JavaScriptThirdParty");
+      }
       CACHE_STATUS_HISTOGRAMS(".JavaScript");
     } else if (mime_type.find("font") != std::string::npos) {
+      if (is_third_party) {
+        CACHE_STATUS_HISTOGRAMS(".FontThirdParty");
+      }
       CACHE_STATUS_HISTOGRAMS(".Font");
     } else if (base::StartsWith(mime_type, "audio/",
                                 base::CompareCase::SENSITIVE)) {
@@ -3546,9 +3554,6 @@ void HttpCache::Transaction::SaveNetworkTransactionInfo(
     network_transaction_info_.old_connection_attempts.push_back(attempt);
   network_transaction_info_.old_remote_endpoint = IPEndPoint();
   transaction.GetRemoteEndpoint(&network_transaction_info_.old_remote_endpoint);
-
-  transaction.GetFullRequestHeaders(
-      &network_transaction_info_.full_request_headers);
 }
 
 void HttpCache::Transaction::OnIOComplete(int result) {

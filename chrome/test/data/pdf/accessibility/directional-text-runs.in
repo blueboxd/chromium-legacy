@@ -50,6 +50,16 @@ BT
 0 1 -1 0 72 95 Tm
 ( world!) Tj
 ET
+BT
+/F1 10 Tf
+10 30 Td
+(This is some text) Tj
+/F1 5 Tf
+69 -1 Td
+(abc) Tj
+0 5 Td
+(def) Tj
+ET
 endstream
 endobj
 {{xref}}

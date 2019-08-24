@@ -24,6 +24,7 @@ class Rect;
 
 namespace app_list {
 
+class AppListConfig;
 class AppListItemList;
 
 // AppListFolderItem implements the model/controller for folders.
@@ -50,6 +51,7 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem : public AppListItem,
   // the same size of the top item icon.
   // The Rect returned is in the same coordinates of |folder_icon_bounds|.
   gfx::Rect GetTargetIconRectInFolderForItem(
+      const AppListConfig& app_list_config,
       AppListItem* item,
       const gfx::Rect& folder_icon_bounds);
 

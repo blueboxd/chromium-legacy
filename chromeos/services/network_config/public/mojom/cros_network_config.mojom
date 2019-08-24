@@ -7,6 +7,9 @@
 // (ONC) documentation for detailed descriptions of properties:
 // components/onc/docs/onc_spec.md.
 
+// Currently this service is implemented in the Chrome Browser process with
+// clients in Chrome and WebUI.
+
 module chromeos.network_config.mojom;
 
 import "services/network/public/mojom/ip_address.mojom";
@@ -518,7 +521,6 @@ struct ManagedCellularProperties {
   string? network_technology;
   PaymentPortalProperties? payment_portal;
   string? roaming_state;
-  bool scanning = false;
   CellularProviderProperties? serving_operator;
   int32 signal_strength = 0;
   bool support_network_scan = false;
@@ -639,7 +641,8 @@ struct CellularSimState {
   bool require_pin;
 };
 
-// Interface for fetching and setting network configuration properties.
+// Interface for fetching and setting network configuration properties, e.g.
+// from Settings WebUI or the SystemTray.
 interface CrosNetworkConfig {
   AddObserver(CrosNetworkConfigObserver observer);
 
@@ -685,6 +688,12 @@ interface CrosNetworkConfig {
   //   * Otherwise attempts to set the pin required state to |pin_required|.
   //   * Returns true if the operation succeeded.
   SetCellularSimState(CellularSimState state) => (bool success);
+
+  // Selects which Cellular mobile network to use. |network_id| must match a
+  // FoundNetworkProperties.network_id for an entry in the
+  // ManagedProperties.found_networks property for the specified Cellular
+  // network. Returns true if the operation succeeded.
+  SelectCellularMobileNetwork(string guid, string network_id) => (bool success);
 
   // Requests a scan for new networks. If the list updates,
   // CrosNetworkConfigObserver::OnNetworkStateListChanged() will be signaled.

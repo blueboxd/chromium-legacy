@@ -11,23 +11,19 @@ import test_util
 import unittest
 
 _HERE = os_path.dirname(os_path.abspath(__file__))
-sys_path.append(os_path.join(_HERE, '..', '..', 'build'))
+sys_path.append(os_path.join(_HERE, '..', '..'))
 
-import find_depot_tools  # pylint: disable=W0611
-from testing_support.super_mox import SuperMoxTestBase
+from PRESUBMIT_test_mocks import MockInputApi, MockOutputApi
 
 
 _DECLARATION_METHODS = 'const', 'let', 'var'
 
 
-class JsCheckerTest(SuperMoxTestBase):
+class JsCheckerTest(unittest.TestCase):
   def setUp(self):
-    SuperMoxTestBase.setUp(self)
+    super(JsCheckerTest, self).setUp()
 
-    input_api = self.mox.CreateMockAnything()
-    input_api.re = re
-    output_api = self.mox.CreateMockAnything()
-    self.checker = js_checker.JSChecker(input_api, output_api)
+    self.checker = js_checker.JSChecker(MockInputApi(), MockOutputApi())
 
   def ShouldFailCommentCheck(self, line):
     """Checks that uncommented '<if>' and '<include>' are a style error."""

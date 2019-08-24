@@ -46,7 +46,7 @@ void WebURLLoaderTestDelegate::DidFinishLoading(
     int64_t total_decoded_body_length) {
   original_client->DidFinishLoading(finish_time, total_encoded_data_length,
                                     total_encoded_body_length,
-                                    total_decoded_body_length, false, {});
+                                    total_decoded_body_length, false);
 }
 
 }  // namespace blink

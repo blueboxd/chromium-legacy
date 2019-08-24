@@ -18,18 +18,21 @@ WebXrVrBrowserTestBase::WebXrVrBrowserTestBase() {
   enable_features_.push_back(features::kWebXr);
 }
 
+WebXrVrBrowserTestBase::~WebXrVrBrowserTestBase() = default;
+
 void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
     content::WebContents* web_contents) {
-#if defined(OS_WIN)
-  XRSessionRequestConsentManager::SetInstanceForTesting(&consent_manager_);
-  ON_CALL(consent_manager_, ShowDialogAndGetConsent(_, _, _))
-      .WillByDefault(Invoke(
-          [](content::WebContents*, XrConsentPromptLevel consent_level,
-             base::OnceCallback<void(XrConsentPromptLevel, bool)> callback) {
-            std::move(callback).Run(consent_level, true);
-            return nullptr;
-          }));
-#endif
+  if (!fake_consent_manager_) {
+    XRSessionRequestConsentManager::SetInstanceForTesting(&consent_manager_);
+    ON_CALL(consent_manager_, ShowDialogAndGetConsent(_, _, _))
+        .WillByDefault(Invoke(
+            [](content::WebContents*, XrConsentPromptLevel consent_level,
+               base::OnceCallback<void(XrConsentPromptLevel, bool)> callback) {
+              std::move(callback).Run(consent_level, true);
+              return nullptr;
+            }));
+  }
+
   // ExecuteScript runs with a user gesture, so we can just directly call
   // requestSession instead of having to do the hacky workaround the
   // instrumentation tests use of actually sending a click event to the canvas.
@@ -54,9 +57,9 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGestureOrFail(
 }
 
 void WebXrVrBrowserTestBase::EndSession(content::WebContents* web_contents) {
-#if defined(OS_WIN)
-  XRSessionRequestConsentManager::SetInstanceForTesting(nullptr);
-#endif
+  if (!fake_consent_manager_)
+    XRSessionRequestConsentManager::SetInstanceForTesting(nullptr);
+
   RunJavaScriptOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
       web_contents);
@@ -72,6 +75,14 @@ void WebXrVrBrowserTestBase::EndSessionOrFail(
 
 gfx::Vector3dF WebXrVrBrowserTestBase::GetControllerOffset() const {
   return gfx::Vector3dF();
+}
+
+void WebXrVrBrowserTestBase::SetupFakeConsentManager(
+    FakeXRSessionRequestConsentManager::UserResponse user_response) {
+  fake_consent_manager_.reset(new FakeXRSessionRequestConsentManager(
+      XRSessionRequestConsentManager::Instance(), user_response));
+  XRSessionRequestConsentManager::SetInstanceForTesting(
+      fake_consent_manager_.get());
 }
 
 WebXrVrRuntimelessBrowserTest::WebXrVrRuntimelessBrowserTest() {

@@ -385,17 +385,6 @@ void CheckSSLInfo(const SSLInfo& ssl_info) {
   EXPECT_NE(0U, cipher_suite);
 }
 
-void CheckFullRequestHeaders(const HttpRequestHeaders& headers,
-                             const GURL& host_url) {
-  std::string sent_value;
-
-  EXPECT_TRUE(headers.GetHeader("Host", &sent_value));
-  EXPECT_EQ(GetHostAndOptionalPort(host_url), sent_value);
-
-  EXPECT_TRUE(headers.GetHeader("Connection", &sent_value));
-  EXPECT_EQ("keep-alive", sent_value);
-}
-
 // A network delegate that allows the user to choose a subset of request stages
 // to block in. When blocking, the delegate can do one of the following:
 //  * synchronously return a pre-specified error code, or
@@ -932,9 +921,6 @@ TEST_F(URLRequestTest, AboutBlankTest) {
     EXPECT_EQ(d.bytes_received(), 0);
     EXPECT_TRUE(r->GetResponseRemoteEndpoint().address().empty());
     EXPECT_EQ(0, r->GetResponseRemoteEndpoint().port());
-
-    HttpRequestHeaders headers;
-    EXPECT_FALSE(r->GetFullRequestHeaders(&headers));
   }
 }
 
@@ -975,9 +961,6 @@ TEST_F(URLRequestTest, DataURLImageTest) {
     EXPECT_EQ(d.bytes_received(), 911);
     EXPECT_TRUE(r->GetResponseRemoteEndpoint().address().empty());
     EXPECT_EQ(0, r->GetResponseRemoteEndpoint().port());
-
-    HttpRequestHeaders headers;
-    EXPECT_FALSE(r->GetFullRequestHeaders(&headers));
   }
 }
 
@@ -1006,9 +989,6 @@ TEST_F(URLRequestTest, FileTest) {
     EXPECT_EQ(d.bytes_received(), static_cast<int>(sizeof(kTestFileContent)));
     EXPECT_TRUE(r->GetResponseRemoteEndpoint().address().empty());
     EXPECT_EQ(0, r->GetResponseRemoteEndpoint().port());
-
-    HttpRequestHeaders headers;
-    EXPECT_FALSE(r->GetFullRequestHeaders(&headers));
   }
 }
 
@@ -4860,43 +4840,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateOnAuthRequiredSyncNoAction) {
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 }
 
-TEST_F(URLRequestTestHTTP,
-    NetworkDelegateOnAuthRequiredSyncNoAction_GetFullRequestHeaders) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  BlockingNetworkDelegate network_delegate(
-      BlockingNetworkDelegate::SYNCHRONOUS);
-
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&network_delegate);
-  context.Init();
-
-  d.set_credentials(AuthCredentials(kUser, kSecret));
-
-  {
-    GURL url(http_test_server()->GetURL("/auth-basic"));
-    std::unique_ptr<URLRequest> r(context.CreateRequest(
-        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-
-    d.RunUntilComplete();
-
-    {
-      HttpRequestHeaders headers;
-      EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
-      EXPECT_TRUE(headers.HasHeader("Authorization"));
-    }
-
-    EXPECT_EQ(OK, d.request_status());
-    EXPECT_EQ(200, r->GetResponseCode());
-    EXPECT_TRUE(d.auth_required_called());
-    EXPECT_EQ(1, network_delegate.created_requests());
-    EXPECT_EQ(0, network_delegate.destroyed_requests());
-  }
-  EXPECT_EQ(1, network_delegate.destroyed_requests());
-}
-
 // Tests that the network delegate can synchronously complete OnAuthRequired
 // by setting credentials.
 TEST_F(URLRequestTestHTTP, NetworkDelegateOnAuthRequiredSyncSetAuth) {
@@ -4927,47 +4870,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateOnAuthRequiredSyncSetAuth) {
     EXPECT_FALSE(d.auth_required_called());
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
-  }
-  EXPECT_EQ(1, network_delegate.destroyed_requests());
-}
-
-// Same as above, but also tests that GetFullRequestHeaders returns the proper
-// headers (for the first or second request) when called at the proper times.
-TEST_F(URLRequestTestHTTP,
-    NetworkDelegateOnAuthRequiredSyncSetAuth_GetFullRequestHeaders) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  BlockingNetworkDelegate network_delegate(
-      BlockingNetworkDelegate::SYNCHRONOUS);
-  network_delegate.set_block_on(BlockingNetworkDelegate::ON_AUTH_REQUIRED);
-  network_delegate.set_auth_retval(
-      NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH);
-
-  network_delegate.set_auth_credentials(AuthCredentials(kUser, kSecret));
-
-  TestURLRequestContext context(true);
-  context.set_network_delegate(&network_delegate);
-  context.Init();
-
-  {
-    GURL url(http_test_server()->GetURL("/auth-basic"));
-    std::unique_ptr<URLRequest> r(context.CreateRequest(
-        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->Start();
-    d.RunUntilComplete();
-
-    EXPECT_EQ(OK, d.request_status());
-    EXPECT_EQ(200, r->GetResponseCode());
-    EXPECT_FALSE(d.auth_required_called());
-    EXPECT_EQ(1, network_delegate.created_requests());
-    EXPECT_EQ(0, network_delegate.destroyed_requests());
-
-    {
-      HttpRequestHeaders headers;
-      EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
-      EXPECT_TRUE(headers.HasHeader("Authorization"));
-    }
   }
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 }
@@ -5430,36 +5332,6 @@ TEST_F(URLRequestTestHTTP, GetTest) {
               r->GetResponseRemoteEndpoint().ToStringWithoutPort());
     EXPECT_EQ(http_test_server()->host_port_pair().port(),
               r->GetResponseRemoteEndpoint().port());
-  }
-}
-
-TEST_F(URLRequestTestHTTP, GetTest_GetFullRequestHeaders) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  {
-    GURL test_url(http_test_server()->GetURL("/defaultresponse"));
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    HttpRequestHeaders headers;
-    EXPECT_FALSE(r->GetFullRequestHeaders(&headers));
-
-    r->Start();
-    EXPECT_TRUE(r->is_pending());
-
-    d.RunUntilComplete();
-
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_NE(0, d.bytes_received());
-    EXPECT_EQ(http_test_server()->host_port_pair().host(),
-              r->GetResponseRemoteEndpoint().ToStringWithoutPort());
-    EXPECT_EQ(http_test_server()->host_port_pair().port(),
-              r->GetResponseRemoteEndpoint().port());
-
-    EXPECT_TRUE(d.have_full_request_headers());
-    CheckFullRequestHeaders(d.full_request_headers(), test_url);
   }
 }
 
@@ -8180,53 +8052,12 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
     d.RunUntilRedirect();
 
     EXPECT_EQ(1, d.received_redirect_count());
-    EXPECT_TRUE(d.have_full_request_headers());
-    CheckFullRequestHeaders(d.full_request_headers(), test_url);
-    d.ClearFullRequestHeaders();
 
     req->FollowDeferredRedirect(base::nullopt /* removed_headers */,
                                 base::nullopt /* modified_headers */);
     d.RunUntilComplete();
 
     EXPECT_EQ(1, d.response_started_count());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(OK, d.request_status());
-
-    base::FilePath path;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.Append(kTestFilePath);
-    path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
-
-    std::string contents;
-    EXPECT_TRUE(base::ReadFileToString(path, &contents));
-    EXPECT_EQ(contents, d.data_received());
-  }
-}
-
-TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  {
-    GURL test_url(http_test_server()->GetURL("/redirect-test.html"));
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-        test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-
-    EXPECT_FALSE(d.have_full_request_headers());
-
-    req->Start();
-    d.RunUntilRedirect();
-
-    EXPECT_EQ(1, d.received_redirect_count());
-
-    req->FollowDeferredRedirect(base::nullopt /* removed_headers */,
-                                base::nullopt /* modified_headers */);
-    d.RunUntilComplete();
-
-    GURL target_url(http_test_server()->GetURL("/with-headers.html"));
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_TRUE(d.have_full_request_headers());
-    CheckFullRequestHeaders(d.full_request_headers(), target_url);
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(OK, d.request_status());
 
@@ -8242,6 +8073,13 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
 }
 
 TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedHeaders) {
+  test_server::HttpRequest http_request;
+  int num_observed_requests = 0;
+  http_test_server()->RegisterRequestMonitor(
+      base::BindLambdaForTesting([&](const test_server::HttpRequest& request) {
+        http_request = request;
+        ++num_observed_requests;
+      }));
   ASSERT_TRUE(http_test_server()->Start());
 
   TestDelegate d;
@@ -8259,15 +8097,10 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedHeaders) {
 
     // Initial request should only have initial headers.
     EXPECT_EQ(1, d.received_redirect_count());
-    EXPECT_TRUE(d.have_full_request_headers());
-    const HttpRequestHeaders& sent_headers1 = d.full_request_headers();
-    std::string sent_value;
-    EXPECT_TRUE(sent_headers1.GetHeader("Header1", &sent_value));
-    EXPECT_EQ("Value1", sent_value);
-    EXPECT_TRUE(sent_headers1.GetHeader("Header2", &sent_value));
-    EXPECT_EQ("Value2", sent_value);
-    EXPECT_FALSE(sent_headers1.GetHeader("Header3", &sent_value));
-    d.ClearFullRequestHeaders();
+    EXPECT_EQ(1, num_observed_requests);
+    EXPECT_EQ("Value1", http_request.headers["Header1"]);
+    EXPECT_EQ("Value2", http_request.headers["Header2"]);
+    EXPECT_EQ(0u, http_request.headers.count("Header3"));
 
     // Overwrite Header2 and add Header3.
     net::HttpRequestHeaders modified_headers;
@@ -8283,18 +8116,22 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedHeaders) {
     EXPECT_EQ(OK, d.request_status());
 
     // Redirected request should also have modified headers.
-    EXPECT_TRUE(d.have_full_request_headers());
-    const HttpRequestHeaders& sent_headers2 = d.full_request_headers();
-    EXPECT_TRUE(sent_headers2.GetHeader("Header1", &sent_value));
-    EXPECT_EQ("Value1", sent_value);
-    EXPECT_TRUE(sent_headers2.GetHeader("Header2", &sent_value));
-    EXPECT_EQ("", sent_value);
-    EXPECT_TRUE(sent_headers2.GetHeader("Header3", &sent_value));
-    EXPECT_EQ("Value3", sent_value);
+    EXPECT_EQ(2, num_observed_requests);
+    EXPECT_EQ("Value1", http_request.headers["Header1"]);
+    EXPECT_EQ(1u, http_request.headers.count("Header2"));
+    EXPECT_EQ("", http_request.headers["Header2"]);
+    EXPECT_EQ("Value3", http_request.headers["Header3"]);
   }
 }
 
 TEST_F(URLRequestTestHTTP, DeferredRedirect_RemovedHeaders) {
+  test_server::HttpRequest http_request;
+  int num_observed_requests = 0;
+  http_test_server()->RegisterRequestMonitor(
+      base::BindLambdaForTesting([&](const test_server::HttpRequest& request) {
+        http_request = request;
+        ++num_observed_requests;
+      }));
   ASSERT_TRUE(http_test_server()->Start());
 
   TestDelegate d;
@@ -8312,14 +8149,9 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_RemovedHeaders) {
 
     // Initial request should have initial headers.
     EXPECT_EQ(1, d.received_redirect_count());
-    EXPECT_TRUE(d.have_full_request_headers());
-    const HttpRequestHeaders& sent_headers1 = d.full_request_headers();
-    std::string sent_value;
-    EXPECT_TRUE(sent_headers1.GetHeader("Header1", &sent_value));
-    EXPECT_EQ("Value1", sent_value);
-    EXPECT_TRUE(sent_headers1.GetHeader("Header2", &sent_value));
-    EXPECT_EQ("Value2", sent_value);
-    d.ClearFullRequestHeaders();
+    EXPECT_EQ(1, num_observed_requests);
+    EXPECT_EQ("Value1", http_request.headers["Header1"]);
+    EXPECT_EQ("Value2", http_request.headers["Header2"]);
 
     // Keep Header1 and remove Header2.
     std::vector<std::string> removed_headers({"Header2"});
@@ -8331,12 +8163,10 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_RemovedHeaders) {
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(OK, d.request_status());
 
-    // Redirected request should also have
-    EXPECT_TRUE(d.have_full_request_headers());
-    const HttpRequestHeaders& sent_headers2 = d.full_request_headers();
-    EXPECT_TRUE(sent_headers2.GetHeader("Header1", &sent_value));
-    EXPECT_EQ("Value1", sent_value);
-    EXPECT_FALSE(sent_headers2.GetHeader("Header2", &sent_value));
+    // Redirected request should have modified headers.
+    EXPECT_EQ(2, num_observed_requests);
+    EXPECT_EQ("Value1", http_request.headers["Header1"]);
+    EXPECT_EQ(0u, http_request.headers.count("Header2"));
   }
 }
 

@@ -2161,6 +2161,9 @@ bool LayoutBlock::RecalcChildLayoutOverflow() {
 void LayoutBlock::RecalcChildVisualOverflow() {
   DCHECK(!IsTable());
 
+  if (PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
+
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
     To<LayoutBlockFlow>(this)->RecalcInlineChildrenVisualOverflow();

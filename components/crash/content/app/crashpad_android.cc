@@ -31,6 +31,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/crash/android/jni_headers/PackagePaths_jni.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -407,7 +408,7 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
 
   SetBuildInfoAnnotations(process_annotations);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Empty means stable.
   const bool allow_empty_channel = true;
 #else

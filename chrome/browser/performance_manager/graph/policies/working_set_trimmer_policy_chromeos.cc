@@ -18,13 +18,13 @@ namespace policies {
 
 WorkingSetTrimmerPolicyChromeOS::WorkingSetTrimmerPolicyChromeOS() {
   trim_on_memory_pressure_enabled_ =
-      base::FeatureList::IsEnabled(features::chromeos::kTrimOnMemoryPressure);
+      base::FeatureList::IsEnabled(features::kTrimOnMemoryPressure);
   trim_on_freeze_enabled_ =
-      base::FeatureList::IsEnabled(features::chromeos::kTrimOnFreeze);
+      base::FeatureList::IsEnabled(features::kTrimOnFreeze);
 
   if (trim_on_memory_pressure_enabled_) {
     trim_on_memory_pressure_params_ =
-        features::chromeos::TrimOnMemoryPressureParams::GetParams();
+        features::TrimOnMemoryPressureParams::GetParams();
   }
 }
 
@@ -89,7 +89,7 @@ void WorkingSetTrimmerPolicyChromeOS::OnPassedToGraph(Graph* graph) {
     // We wait to register the memory pressure listener so we're on the
     // right sequence.
     trim_on_memory_pressure_params_ =
-        features::chromeos::TrimOnMemoryPressureParams::GetParams();
+        features::TrimOnMemoryPressureParams::GetParams();
     memory_pressure_listener_.emplace(
         base::BindRepeating(&WorkingSetTrimmerPolicyChromeOS::OnMemoryPressure,
                             base::Unretained(this)));

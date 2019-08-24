@@ -95,8 +95,8 @@ class TooltipControllerTest : public ViewsTestBase {
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
     if (root_window) {
       tooltip_aura_ = new views::corewm::TooltipAura();
-      controller_.reset(new TooltipController(
-          std::unique_ptr<views::corewm::Tooltip>(tooltip_aura_)));
+      controller_ = std::make_unique<TooltipController>(
+          std::unique_ptr<views::corewm::Tooltip>(tooltip_aura_));
       root_window->AddPreTargetHandler(controller_.get());
       SetTooltipClient(root_window, controller_.get());
     }

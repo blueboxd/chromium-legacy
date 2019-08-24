@@ -71,7 +71,7 @@ class NativeWidgetMacInteractiveUITest::Observer : public TestWidgetObserver {
 // Test that showing a window causes it to attain global keyWindow status.
 TEST_P(NativeWidgetMacInteractiveUITest, ShowAttainsKeyStatus) {
   Widget* widget = MakeWidget();
-  observer_.reset(new Observer(this, widget));
+  observer_ = std::make_unique<Observer>(this, widget);
 
   EXPECT_FALSE(widget->IsActive());
   EXPECT_EQ(0, activation_count_);

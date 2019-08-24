@@ -6,7 +6,10 @@
 
 ThemeBackgroundInfo::ThemeBackgroundInfo() = default;
 
-ThemeBackgroundInfo::~ThemeBackgroundInfo() {}
+ThemeBackgroundInfo::ThemeBackgroundInfo(const ThemeBackgroundInfo& other) =
+    default;
+
+ThemeBackgroundInfo::~ThemeBackgroundInfo() = default;
 
 bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
   return using_default_theme == rhs.using_default_theme &&

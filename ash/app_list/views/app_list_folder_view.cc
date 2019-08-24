@@ -79,9 +79,10 @@ class BackgroundAnimation : public AppListFolderView::Animation,
   // AppListView::Animation:
   void ScheduleAnimation() override {
     // Calculate the source and target states.
-    const int icon_radius = AppListConfig::instance().folder_icon_radius();
+    const int icon_radius =
+        folder_view_->GetAppListConfig().folder_icon_radius();
     const int folder_radius =
-        AppListConfig::instance().folder_background_radius();
+        folder_view_->GetAppListConfig().folder_background_radius();
     const int from_radius = show_ ? icon_radius : folder_radius;
     const int to_radius = show_ ? folder_radius : icon_radius;
     gfx::Rect from_rect = show_ ? folder_view_->folder_item_icon_bounds()
@@ -91,13 +92,13 @@ class BackgroundAnimation : public AppListFolderView::Animation,
                               : folder_view_->folder_item_icon_bounds();
     to_rect -= background_view_->bounds().OffsetFromOrigin();
     const SkColor background_color =
-        AppListConfig::instance().folder_background_color();
+        folder_view_->GetAppListConfig().folder_background_color();
     const SkColor from_color =
-        show_ ? AppListConfig::instance().folder_bubble_color()
+        show_ ? folder_view_->GetAppListConfig().folder_bubble_color()
               : background_color;
     const SkColor to_color =
         show_ ? background_color
-              : AppListConfig::instance().folder_bubble_color();
+              : folder_view_->GetAppListConfig().folder_bubble_color();
 
     background_view_->layer()->SetColor(from_color);
     background_view_->layer()->SetClipRect(from_rect);
@@ -107,7 +108,7 @@ class BackgroundAnimation : public AppListFolderView::Animation,
     ui::ScopedLayerAnimationSettings settings(
         background_view_->layer()->GetAnimator());
     settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        AppListConfig::instance().folder_transition_in_duration_ms()));
+        folder_view_->GetAppListConfig().folder_transition_in_duration_ms()));
     settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     settings.AddObserver(this);
     background_view_->layer()->SetColor(to_color);
@@ -147,14 +148,14 @@ class FolderItemTitleAnimation : public AppListFolderView::Animation,
         animation_(this),
         folder_view_(folder_view) {
     // Calculate the source and target states.
-    from_color_ = show_ ? AppListConfig::instance().grid_title_color()
+    from_color_ = show_ ? folder_view_->GetAppListConfig().grid_title_color()
                         : SK_ColorTRANSPARENT;
     to_color_ = show_ ? SK_ColorTRANSPARENT
-                      : AppListConfig::instance().grid_title_color();
+                      : folder_view_->GetAppListConfig().grid_title_color();
 
     animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation_.SetSlideDuration(
-        AppListConfig::instance().folder_transition_in_duration_ms());
+        folder_view_->GetAppListConfig().folder_transition_in_duration_ms());
   }
 
   ~FolderItemTitleAnimation() override = default;
@@ -245,8 +246,9 @@ class TopIconAnimation : public AppListFolderView::Animation,
                                   : folder_view_->folder_item_icon_bounds();
 
       auto icon_view = std::make_unique<TopIconAnimationView>(
-          top_item->icon(), base::UTF8ToUTF16(top_item->GetDisplayName()),
-          scaled_rect, show_, item_in_folder_icon);
+          folder_view_->items_grid_view(), top_item->icon(),
+          base::UTF8ToUTF16(top_item->GetDisplayName()), scaled_rect, show_,
+          item_in_folder_icon);
       auto* icon_view_ptr = icon_view.get();
 
       icon_view_ptr->AddObserver(this);
@@ -288,24 +290,29 @@ class TopIconAnimation : public AppListFolderView::Animation,
  private:
   std::vector<gfx::Rect> GetTopItemViewsBoundsInFolderIcon() {
     std::vector<gfx::Rect> top_icons_bounds = FolderImage::GetTopIconsBounds(
+        folder_view_->GetAppListConfig(),
         folder_view_->folder_item_icon_bounds(),
         std::min(folder_view_->folder_item()->ChildItemCount(),
                  FolderImage::kNumFolderTopItems));
     std::vector<gfx::Rect> top_item_views_bounds;
-    const int icon_dimension = AppListConfig::instance().grid_icon_dimension();
-    const int tile_width = AppListConfig::instance().grid_tile_width();
-    const int tile_height = AppListConfig::instance().grid_tile_height();
+    const int icon_dimension =
+        folder_view_->GetAppListConfig().grid_icon_dimension();
+    const int icon_bottom_padding =
+        folder_view_->GetAppListConfig().grid_icon_bottom_padding();
+    const int tile_width = folder_view_->GetAppListConfig().grid_tile_width();
+    const int tile_height = folder_view_->GetAppListConfig().grid_tile_height();
     for (gfx::Rect bounds : top_icons_bounds) {
       // Calculate the item view's bounds based on the icon bounds.
-      int scale = icon_dimension / bounds.width();
-      bounds.set_y(bounds.y() -
-                   (tile_height -
-                    AppListConfig::instance().grid_icon_bottom_padding() -
-                    icon_dimension) /
-                       2 / scale);
-      bounds.set_x(bounds.x() - (tile_width - icon_dimension) / 2 / scale);
-      bounds.set_size(gfx::Size(tile_width / scale, tile_height / scale));
-      top_item_views_bounds.emplace_back(bounds);
+      gfx::Rect item_bounds(
+          (icon_dimension - tile_width) / 2,
+          (icon_dimension + icon_bottom_padding - tile_height) / 2, tile_width,
+          tile_height);
+      item_bounds = gfx::ScaleToRoundedRect(
+          item_bounds, bounds.width() / static_cast<float>(icon_dimension),
+          bounds.height() / static_cast<float>(icon_dimension));
+      item_bounds.Offset(bounds.x(), bounds.y());
+
+      top_item_views_bounds.emplace_back(item_bounds);
     }
     return top_item_views_bounds;
   }
@@ -321,7 +328,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
   std::vector<gfx::Rect> GetFirstPageItemViewsBounds() {
     std::vector<gfx::Rect> items_bounds;
     const size_t count =
-        std::min(AppListConfig::instance().max_folder_items_per_page(),
+        std::min(folder_view_->GetAppListConfig().max_folder_items_per_page(),
                  folder_view_->folder_item()->ChildItemCount());
     for (size_t i = 0; i < count; ++i) {
       const gfx::Rect rect =
@@ -384,7 +391,7 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
     animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation.AddObserver(this);
     animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        AppListConfig::instance().folder_transition_in_duration_ms()));
+        folder_view_->GetAppListConfig().folder_transition_in_duration_ms()));
     layer->SetTransform(show_ ? gfx::Transform() : transform);
     layer->SetOpacity(show_ ? 1.0f : 0.0f);
 
@@ -525,8 +532,7 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
 gfx::Size AppListFolderView::CalculatePreferredSize() const {
   gfx::Size size = items_grid_view_->GetTileGridSizeWithPadding();
   gfx::Size header_size = folder_header_view_->GetPreferredSize();
-  const int folder_padding =
-      AppListConfig::instance().grid_tile_spacing_in_folder();
+  const int folder_padding = GetAppListConfig().grid_tile_spacing_in_folder();
   size.Enlarge(folder_padding * 2, folder_padding + kFolderHeaderPadding * 2 +
                                        header_size.height());
   return size;
@@ -593,7 +599,7 @@ void AppListFolderView::UpdatePreferredBounds() {
   gfx::Rect container_bounds = container_view_->GetContentsBounds();
   container_bounds.Inset(
       0,
-      AppListConfig::instance().search_box_fullscreen_top_padding() +
+      GetAppListConfig().search_box_fullscreen_top_padding() +
           search_box::kSearchBoxPreferredHeight +
           SearchBoxView::GetFocusRingSpacing(),
       0, 0);
@@ -634,6 +640,10 @@ bool AppListFolderView::IsAnimationRunning() const {
   return top_icon_animation_ && top_icon_animation_->IsAnimationRunning();
 }
 
+const AppListConfig& AppListFolderView::GetAppListConfig() const {
+  return items_grid_view_->GetAppListConfig();
+}
+
 AppListItemView* AppListFolderView::GetActivatedFolderItemView() {
   return container_view_->apps_grid_view()->activated_folder_item_view();
 }
@@ -652,7 +662,7 @@ void AppListFolderView::RecordAnimationSmoothness() {
   if (end_frame_number > *animation_start_frame_number_) {
     RecordFolderShowHideAnimationSmoothness(
         end_frame_number - *animation_start_frame_number_,
-        AppListConfig::instance().folder_transition_in_duration_ms(),
+        GetAppListConfig().folder_transition_in_duration_ms(),
         compositor->refresh_rate());
   }
   // Resets the frame number so that further invocation won't record the
@@ -684,8 +694,7 @@ void AppListFolderView::CalculateIdealBounds() {
   view_model_->set_ideal_bounds(kIndexBackground, GetContentsBounds());
   view_model_->set_ideal_bounds(kIndexContentsContainer, GetContentsBounds());
 
-  const int folder_padding =
-      AppListConfig::instance().grid_tile_spacing_in_folder();
+  const int folder_padding = GetAppListConfig().grid_tile_spacing_in_folder();
   rect.Inset(folder_padding, folder_padding);
 
   // Calculate bounds for items grid view.
@@ -703,8 +712,7 @@ void AppListFolderView::CalculateIdealBounds() {
   // Calculate bounds for page_switcher.
   gfx::Rect page_switcher_frame(rect);
   gfx::Size page_switcher_size = page_switcher_->GetPreferredSize();
-  page_switcher_size.set_height(
-      AppListConfig::instance().folder_header_height());
+  page_switcher_size.set_height(GetAppListConfig().folder_header_height());
   page_switcher_frame.set_x(page_switcher_frame.right() -
                             page_switcher_size.width());
   page_switcher_frame.set_y(header_frame.y());
@@ -799,7 +807,7 @@ void AppListFolderView::HideViewImmediately() {
   if (activated_folder_item_view) {
     activated_folder_item_view->SetIconVisible(true);
     activated_folder_item_view->title()->SetEnabledColor(
-        AppListConfig::instance().grid_title_color());
+        GetAppListConfig().grid_title_color());
     activated_folder_item_view->title()->SetVisible(true);
   }
 }

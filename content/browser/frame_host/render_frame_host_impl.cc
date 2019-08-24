@@ -175,6 +175,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -5223,14 +5224,16 @@ void RenderFrameHostImpl::CommitNavigation(
   } else {
     // Pass the controller service worker info if we have one.
     blink::mojom::ControllerServiceWorkerInfoPtr controller;
-    blink::mojom::ServiceWorkerObjectAssociatedPtrInfo remote_object;
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerObject>
+        remote_object;
     blink::mojom::ServiceWorkerState sent_state;
     if (subresource_loader_params &&
         subresource_loader_params->controller_service_worker_info) {
       controller =
           std::move(subresource_loader_params->controller_service_worker_info);
       if (controller->object_info) {
-        controller->object_info->request = mojo::MakeRequest(&remote_object);
+        controller->object_info->receiver =
+            remote_object.InitWithNewEndpointAndPassReceiver();
         sent_state = controller->object_info->state;
       }
     }
@@ -7260,8 +7263,7 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
       return;
     }
     deprecation_message =
-        "[Deprecation] A cookie associated with a cross-site resource at " +
-        cookie_url +
+        "A cookie associated with a cross-site resource at " + cookie_url +
         " was set without the `SameSite` attribute. "
         "A future release of Chrome will only deliver cookies with "
         "cross-site requests if they are set with `SameSite=None` and "
@@ -7278,7 +7280,7 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
       return;
     }
     deprecation_message =
-        "[Deprecation] A cookie associated with a resource at " + cookie_url +
+        "A cookie associated with a resource at " + cookie_url +
         " was set with `SameSite=None` but without `Secure`. "
         "A future release of Chrome will only deliver cookies marked "
         "`SameSite=None` if they are also marked `Secure`. You "

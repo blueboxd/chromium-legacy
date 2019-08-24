@@ -11,7 +11,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
-#include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -94,10 +93,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
  private:
   void StartRequest();
-  void StartNetworkRequest(
-      int net_error,
-      base::Optional<CorsErrorStatus> status,
-      base::Optional<PreflightTimingInfo> preflight_timing_info);
+  void StartNetworkRequest(int net_error,
+                           base::Optional<CorsErrorStatus> status);
 
   // Called when there is a connection error on the upstream pipe used for the
   // actual request.
@@ -162,9 +159,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // We need to save this for redirect.
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
-
-  // Holds timing info if a preflight was made.
-  std::vector<PreflightTimingInfo> preflight_timing_info_;
 
   const base::Optional<url::Origin> factory_bound_origin_;
 

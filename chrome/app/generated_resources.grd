@@ -2468,16 +2468,16 @@ are declared in tools/grit/grit_rule.gni.
         Continue muting sound
       </message>
       <message name="IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address bar as part of the less-prominent UX, when a website requests the notification permission.">
-        Notifications off
+        Notifications blocked
       </message>
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_TITLE" desc="Title for the notifications status bubble, which is triggered when a user clicks on the blocked notifications icon in the omnibox.">
-        Show notifications for this site?
+        Notifications blocked
       </message>
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION" desc="Description for the notifications status bubble, which is triggered when a user clicks on the blocked notifications icon in the omnibox.">
-        Notifications are blocked for all sites except the ones you specify.
+        Notifications are automatically blocked for all sites except ones you allow
       </message>
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON" desc="Text displayed on a button that enables notifications for a site. This button is part of the notifications status bubble, which is triggered when a user clicks on the blocked notifications icon in the omnibox.">
-        Show for this site
+        Allow for this site
       </message>
 
       <!-- Win certificate selector dialog strings.  -->

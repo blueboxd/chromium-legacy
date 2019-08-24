@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Java accessor for base/feature_list.h state.
@@ -26,7 +27,7 @@ public abstract class ContentFeatureList {
      * @return Whether the feature is enabled or not.
      */
     public static boolean isEnabled(String featureName) {
-        return nativeIsEnabled(featureName);
+        return ContentFeatureListJni.get().isEnabled(featureName);
     }
 
     // Alphabetical:
@@ -35,5 +36,8 @@ public abstract class ContentFeatureList {
 
     public static final String SERVICE_GROUP_IMPORTANCE = "ServiceGroupImportance";
 
-    private static native boolean nativeIsEnabled(String featureName);
+    @NativeMethods
+    interface Natives {
+        boolean isEnabled(String featureName);
+    }
 }

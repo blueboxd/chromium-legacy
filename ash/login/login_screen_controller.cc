@@ -9,7 +9,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
-#include "ash/login/ui/parent_access_widget.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen_client.h"
 #include "ash/public/cpp/toast_data.h"
@@ -371,12 +370,13 @@ void LoginScreenController::ShowParentAccessButton(bool show) {
 
 void LoginScreenController::ShowParentAccessWidget(
     const AccountId& child_account_id,
-    OnParentAccessWidgetFinished callback,
+    ParentAccessWidget::OnExitCallback callback,
     ParentAccessRequestReason reason,
     bool extra_dimmer,
     base::Time validation_time) {
-  parent_access_widget_ = std::make_unique<ash::ParentAccessWidget>(
-      child_account_id, callback, reason, extra_dimmer, validation_time);
+  DCHECK(!ParentAccessWidget::Get());
+  ParentAccessWidget::Show(child_account_id, std::move(callback), reason,
+                           extra_dimmer, validation_time);
 }
 
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {

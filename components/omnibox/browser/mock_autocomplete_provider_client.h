@@ -86,7 +86,6 @@ class MockAutocompleteProviderClient
   MOCK_CONST_METHOD0(GetEmbedderRepresentationOfAboutScheme, std::string());
   MOCK_METHOD0(GetBuiltinURLs, std::vector<base::string16>());
   MOCK_METHOD0(GetBuiltinsToProvideAsUserTypes, std::vector<base::string16>());
-  MOCK_CONST_METHOD0(GetCurrentVisitTimestamp, base::Time());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
   MOCK_CONST_METHOD0(IsPersonalizedUrlDataCollectionActive, bool());

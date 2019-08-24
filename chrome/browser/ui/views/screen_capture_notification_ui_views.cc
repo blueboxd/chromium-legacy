@@ -206,7 +206,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   params.context = ash::Shell::GetPrimaryRootWindow();
 #endif
 
-  widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
+  widget->set_frame_type(views::Widget::FrameType::kForceCustom);
   widget->Init(std::move(params));
 
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(

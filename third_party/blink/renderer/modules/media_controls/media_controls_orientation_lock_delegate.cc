@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -26,8 +27,6 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #if defined(OS_ANDROID)
-#include "services/device/public/mojom/constants.mojom-blink.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #endif  // defined(OS_ANDROID)
@@ -196,8 +195,8 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 // Check whether the user locked screen orientation at the OS level.
 #if defined(OS_ANDROID)
   DCHECK(!monitor_.is_bound());
-  Platform::Current()->GetConnector()->BindInterface(
-      device::mojom::blink::kServiceName, mojo::MakeRequest(&monitor_));
+  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      mojo::MakeRequest(&monitor_));
   monitor_->IsAutoRotateEnabledByUser(WTF::Bind(
       &MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser,
       WrapPersistent(this)));

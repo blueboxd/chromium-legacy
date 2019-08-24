@@ -59,7 +59,8 @@
   },
   "action": {
     "dependencies": ["manifest:action"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "activityLogPrivate": [{
     "dependencies": ["permission:activityLogPrivate"],

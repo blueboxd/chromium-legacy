@@ -17,8 +17,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,15 +24,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
-#include "components/previews/content/previews_decider_impl.h"
-#include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_optimization_guide.h"
-#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -150,22 +145,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  void InitializeOptimizationHints() {
-    std::unique_ptr<optimization_guide::proto::Configuration> config =
-        std::make_unique<optimization_guide::proto::Configuration>();
-    std::unique_ptr<previews::PreviewsHints> hints =
-        previews::PreviewsHints::CreateFromHintsConfiguration(std::move(config),
-                                                              nullptr);
-
-    PreviewsService* previews_service =
-        PreviewsServiceFactory::GetForProfile(browser()->profile());
-
-    previews_service->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->UpdateHints(base::DoNothing(), std::move(hints));
-  }
-
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
 
@@ -186,21 +165,21 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   // processed before returning.
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
-    // Register a QuitClosure for when the next hint update is started below.
-    base::RunLoop run_loop;
-    PreviewsServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetBrowserContext()))
-        ->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    base::HistogramTester histogram_tester;
 
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
-    run_loop.Run();
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
+  }
+
+  void InitializeOptimizationHints() {
+    ProcessHintsComponent(
+        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
+            optimization_guide::proto::RESOURCE_LOADING, {"doesntmatter.com"},
+            "*", {}));
   }
 
   // Performs a navigation to |url| and waits for the the url's host's hints to
@@ -761,7 +740,6 @@ IN_PROC_BROWSER_TEST_P(
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  InitializeOptimizationHints();
 
   base::HistogramTester histogram_tester;
 

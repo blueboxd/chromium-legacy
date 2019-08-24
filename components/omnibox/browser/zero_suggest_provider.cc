@@ -96,6 +96,7 @@ constexpr char kArbitraryInsecureUrlString[] = "http://www.google.com/";
 constexpr char kOmniboxZeroSuggestEligibleHistogramName[] =
     "Omnibox.ZeroSuggest.Eligible.OnFocusV2";
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
 // If the user is not signed-in or the user does not have Google set up as their
 // default search engine, the remote suggestions service is replaced with the
 // most visited service.
@@ -117,6 +118,7 @@ bool RemoteSuggestionsShouldFallBackToMostVisited(
          default_provider->GetEngineType(
              template_url_service->search_terms_data()) != SEARCH_ENGINE_GOOGLE;
 }
+#endif
 
 }  // namespace
 
@@ -202,8 +204,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   client()
       ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
       ->CreateSuggestionsRequest(
-          search_terms_args, client()->GetCurrentVisitTimestamp(),
-          client()->GetTemplateURLService(),
+          search_terms_args, client()->GetTemplateURLService(),
           base::BindOnce(
               &ZeroSuggestProvider::OnRemoteSuggestionsLoaderAvailable,
               weak_ptr_factory_.GetWeakPtr()),
@@ -217,12 +218,7 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
   if (loader_)
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
   loader_.reset();
-  auto* remote_suggestions_service =
-      client()->GetRemoteSuggestionsService(/*create_if_necessary=*/false);
-  // remote_suggestions_service can be null if in incognito mode.
-  if (remote_suggestions_service != nullptr) {
-    remote_suggestions_service->StopCreatingSuggestionsRequest();
-  }
+
   // TODO(krb): It would allow us to remove some guards if we could also cancel
   // the TopSites::GetMostVisitedURLs request.
   done_ = true;
@@ -634,13 +630,16 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return REMOTE_NO_URL;
 
   if (field_trial_variant == kRemoteNoUrlVariant) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
     // TODO(tommycli): It's odd that this doesn't apply to kRemoteSendUrlVariant
     // as well. Most likely this fallback concept should be replaced by
     // a more general configuration setup.
-    return RemoteSuggestionsShouldFallBackToMostVisited(client(),
-                                                        template_url_service)
-               ? MOST_VISITED
-               : REMOTE_NO_URL;
+    if (RemoteSuggestionsShouldFallBackToMostVisited(client(),
+                                                     template_url_service)) {
+      return MOST_VISITED;
+    }
+#endif
+    return REMOTE_NO_URL;
   }
 
   if (field_trial_variant == kRemoteSendUrlVariant && can_send_current_url)

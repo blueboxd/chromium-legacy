@@ -46,7 +46,9 @@
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
@@ -1057,7 +1059,11 @@ Document::Document(const DocumentInit& initializer,
       layout_view_(nullptr),
       has_fullscreen_supplement_(false),
       load_event_delay_count_(0),
-      load_event_delay_timer_(GetTaskRunner(TaskType::kNetworking),
+      // We already intentionally fire load event asynchronously and here we use
+      // kDOMManipulation to ensure that we run onload() in order with other
+      // callbacks (e.g. onloadstart()) per the spec.
+      // See: https://html.spec.whatwg.org/#delay-the-load-event
+      load_event_delay_timer_(GetTaskRunner(TaskType::kDOMManipulation),
                               this,
                               &Document::LoadEventDelayTimerFired),
       plugin_loading_timer_(GetTaskRunner(TaskType::kInternalLoading),
@@ -6854,8 +6860,10 @@ ukm::UkmRecorder* Document::UkmRecorder() {
   if (ukm_recorder_)
     return ukm_recorder_.get();
 
-  ukm_recorder_ =
-      ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
+  ukm::mojom::UkmRecorderInterfacePtr recorder;
+  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      mojo::MakeRequest(&recorder));
+  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
 
   // TODO(crbug/795354): Move handling of URL recording out of the renderer.
   // URL must only be recorded from the main frame.

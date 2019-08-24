@@ -1005,11 +1005,16 @@ class TabListMediator {
         return mTabModelSelector.getCurrentTabId();
     }
 
-    // Find the index of the currently selected tab in the TabListRecyclerView.
-    // Note that Tabs may have different index in TabListModel/TabListRecyclerView and
-    // mTabModelSelector, like when resetWithListOfTabs is called with 'mruMode = true'.
-    int indexOfSelected() {
-        return mModel.indexFromId(selectedTabId());
+    /**
+     * Find the index of the given tab in the {@link TabListRecyclerView}.
+     * Note that Tabs may have different index in {@link TabListRecyclerView} and {@link
+     * TabModelSelector}, like when {@link resetWithListOfTabs} above is called with MRU mode
+     * enabled.
+     * @param tabId The given Tab id.
+     * @return The index of the Tab in the {@link TabListRecyclerView}.
+     */
+    int indexOfTab(int tabId) {
+        return mModel.indexFromId(tabId);
     }
 
     @VisibleForTesting

@@ -57,6 +57,7 @@ android_library("content_java") {
     "$google_play_services_package:google_play_services_basement_java",
     "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
+    "//base:jni_java",
     "//components/download/public/common:public_java",
     "//device/bluetooth:java",
     "//device/gamepad:java",
@@ -295,6 +296,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/common/ServiceManagerConnection.java",
     "java/src/org/chromium/content_public/common/UseZoomForDSFPolicy.java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 java_strings_grd("content_strings_grd") {

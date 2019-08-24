@@ -423,13 +423,6 @@ int HttpNetworkTransaction::Read(IOBuffer* buf,
 
 void HttpNetworkTransaction::StopCaching() {}
 
-bool HttpNetworkTransaction::GetFullRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  // TODO(juliatuttle): Make sure we've populated request_headers_.
-  *headers = request_headers_;
-  return true;
-}
-
 int64_t HttpNetworkTransaction::GetTotalReceivedBytes() const {
   int64_t total_received_bytes = total_received_bytes_;
   if (stream_)

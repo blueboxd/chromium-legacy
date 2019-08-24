@@ -22,10 +22,6 @@ class SequenceManager;
 }
 }  // namespace base
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ukm {
 class UkmRecorder;
 }
@@ -160,7 +156,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadSchedulerImpl,
   const FrameStatus initial_frame_status_;
 
   const ukm::SourceId ukm_source_id_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadScheduler);

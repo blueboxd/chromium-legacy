@@ -73,6 +73,8 @@ sessionInfos[sessionTypes.IMMERSIVE] = new SessionInfo();
 sessionInfos[sessionTypes.AR] = new SessionInfo();
 sessionInfos[sessionTypes.MAGIC_WINDOW] = new SessionInfo();
 
+var immersiveSessionInit = {};
+
 function getSessionType(session) {
   if (session.mode == 'immersive-vr') {
     return sessionTypes.IMMERSIVE;
@@ -94,7 +96,8 @@ function onRequestSession() {
   switch (sessionTypeToRequest) {
     case sessionTypes.IMMERSIVE:
       console.info('Requesting immersive VR session');
-      navigator.xr.requestSession('immersive-vr').then( (session) => {
+      navigator.xr.requestSession('immersive-vr', immersiveSessionInit)
+      .then( (session) => {
         session.mode = 'immersive-vr';
         console.info('Immersive VR session request succeeded');
         sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
@@ -106,7 +109,8 @@ function onRequestSession() {
       break;
     case sessionTypes.AR:
       console.info('Requesting Immersive AR session');
-      navigator.xr.requestSession('immersive-ar').then((session) => {
+      navigator.xr.requestSession('immersive-ar', immersiveSessionInit)
+      .then((session) => {
         session.mode = 'immersive-ar';
         console.info('Immersive AR session request succeeded');
         sessionInfos[sessionTypes.AR].currentSession = session;

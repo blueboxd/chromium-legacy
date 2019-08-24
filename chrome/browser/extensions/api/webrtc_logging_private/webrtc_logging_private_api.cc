@@ -250,7 +250,7 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
   if (!webrtc_logging_handler_host)
     return false;
 
-  std::unique_ptr<MetaDataMap> meta_data(new MetaDataMap());
+  std::unique_ptr<WebRtcLogMetaDataMap> meta_data(new WebRtcLogMetaDataMap());
   for (const MetaDataEntry& entry : params->meta_data)
     (*meta_data)[entry.key] = entry.value;
 
@@ -405,13 +405,7 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
   WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
       &WebrtcLoggingPrivateStartRtpDumpFunction::FireCallback, this);
 
-  // This call cannot fail.
-  content::RenderProcessHost::WebRtcStopRtpDumpCallback stop_callback =
-      host->StartRtpDump(params->incoming, params->outgoing,
-                         base::Bind(&WebRtcLoggingHandlerHost::OnRtpPacket,
-                                    webrtc_logging_handler_host->GetWeakPtr()));
-
-  webrtc_logging_handler_host->StartRtpDump(type, callback, stop_callback);
+  webrtc_logging_handler_host->StartRtpDump(type, callback);
   return true;
 }
 

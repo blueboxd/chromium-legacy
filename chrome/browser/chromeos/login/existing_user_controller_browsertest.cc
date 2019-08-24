@@ -348,7 +348,8 @@ MATCHER_P(HasDetails, expected, "") {
 }
 
 class ExistingUserControllerPublicSessionTest
-    : public ExistingUserControllerTest {
+    : public ExistingUserControllerTest,
+      public user_manager::UserManager::Observer {
  protected:
   ExistingUserControllerPublicSessionTest() {}
 
@@ -358,13 +359,13 @@ class ExistingUserControllerPublicSessionTest
     // Wait for the public session user to be created.
     if (!user_manager::UserManager::Get()->IsKnownUser(
             public_session_account_id_)) {
-      content::WindowedNotificationObserver(
-          chrome::NOTIFICATION_USER_LIST_CHANGED,
-          base::Bind(&user_manager::UserManager::IsKnownUser,
-                     base::Unretained(user_manager::UserManager::Get()),
-                     public_session_account_id_))
-          .Wait();
+      user_manager::UserManager::Get()->AddObserver(this);
+      local_state_changed_run_loop_ = std::make_unique<base::RunLoop>();
+      local_state_changed_run_loop_->Run();
+      user_manager::UserManager::Get()->RemoveObserver(this);
     }
+    EXPECT_TRUE(user_manager::UserManager::Get()->IsKnownUser(
+        public_session_account_id_));
 
     // Wait for the device local account policy to be installed.
     policy::CloudPolicyStore* store =
@@ -436,6 +437,11 @@ class ExistingUserControllerPublicSessionTest
       controller->current_screen()->Hide();
   }
 
+  // user_manager::UserManager::Observer:
+  void LocalStateChanged(user_manager::UserManager* user_manager) override {
+    local_state_changed_run_loop_->Quit();
+  }
+
   void ExpectSuccessfulLogin(const UserContext& user_context) {
     test::UserSessionManagerTestApi session_manager_test_api(
         UserSessionManager::GetInstance());
@@ -505,6 +511,8 @@ class ExistingUserControllerPublicSessionTest
           policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
 
  private:
+  std::unique_ptr<base::RunLoop> local_state_changed_run_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerPublicSessionTest);
 };
 
@@ -738,16 +746,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   // Check that when the timer fires, auto-login fails with an error.
   ExpectLoginFailure();
   FireAutoLogin();
-}
-
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
-                       PRE_TestLoadingPublicUsersFromLocalState) {
-  // First run propagates public accounts and stores them in Local State.
-}
-
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
-                       TestLoadingPublicUsersFromLocalState) {
-  // Second run loads list of public accounts from Local State.
 }
 
 class ExistingUserControllerActiveDirectoryTest

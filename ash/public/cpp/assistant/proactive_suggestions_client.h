@@ -5,10 +5,9 @@
 #ifndef ASH_PUBLIC_CPP_ASSISTANT_PROACTIVE_SUGGESTIONS_CLIENT_H_
 #define ASH_PUBLIC_CPP_ASSISTANT_PROACTIVE_SUGGESTIONS_CLIENT_H_
 
-#include <memory>
-
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace ash {
 
@@ -30,7 +29,7 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestionsClient {
     // changed. Note that |proactive_suggestions| may be |nullptr| if none
     // exist.
     virtual void OnProactiveSuggestionsChanged(
-        std::unique_ptr<ProactiveSuggestions> proactive_suggestions) {}
+        scoped_refptr<ProactiveSuggestions> proactive_suggestions) {}
 
    protected:
     Delegate() = default;
@@ -43,14 +42,12 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestionsClient {
   // Returns the singleton instance.
   static ProactiveSuggestionsClient* Get();
 
-  // Sets the |delegate_| for the ProactiveSuggestionsClient. May be |nullptr|.
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  // Sets the delegate for the client which may be |nullptr|.
+  virtual void SetDelegate(Delegate* delegate) = 0;
 
  protected:
   ProactiveSuggestionsClient();
   virtual ~ProactiveSuggestionsClient();
-
-  Delegate* delegate_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProactiveSuggestionsClient);

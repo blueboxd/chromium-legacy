@@ -117,6 +117,49 @@ class AsyncCertIssuerSourceStatic : public CertIssuerSource {
   return ::testing::AssertionSuccess();
 }
 
+const void* kKey = &kKey;
+class TrustStoreThatStoresUserData : public TrustStore {
+ public:
+  class Data : public base::SupportsUserData::Data {
+   public:
+    explicit Data(int value) : value(value) {}
+
+    int value = 0;
+  };
+
+  // TrustStore implementation:
+  void SyncGetIssuersOf(const ParsedCertificate* cert,
+                        ParsedCertificateList* issuers) override {}
+  void GetTrust(const scoped_refptr<ParsedCertificate>& cert,
+                CertificateTrust* trust,
+                base::SupportsUserData* debug_data) const override {
+    debug_data->SetUserData(kKey, std::make_unique<Data>(1234));
+  }
+};
+
+TEST(PathBuilderResultUserDataTest, ModifyUserDataInConstructor) {
+  scoped_refptr<ParsedCertificate> a_by_b;
+  ASSERT_TRUE(ReadTestCert("multi-root-A-by-B.pem", &a_by_b));
+  SimplePathBuilderDelegate delegate(
+      1024, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
+  der::GeneralizedTime verify_time = {2017, 3, 1, 0, 0, 0};
+  TrustStoreThatStoresUserData trust_store;
+
+  // |trust_store| will unconditionally store user data in the
+  // CertPathBuilder::Result. This ensures that the Result object has been
+  // initialized before the first GetTrust call occurs (otherwise the test will
+  // crash or fail on ASAN bots).
+  CertPathBuilder path_builder(
+      a_by_b, &trust_store, &delegate, verify_time, KeyPurpose::ANY_EKU,
+      InitialExplicitPolicy::kFalse, {AnyPolicy()},
+      InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
+  CertPathBuilder::Result result = path_builder.Run();
+  auto* data = static_cast<TrustStoreThatStoresUserData::Data*>(
+      result.GetUserData(kKey));
+  ASSERT_TRUE(data);
+  EXPECT_EQ(1234, data->value);
+}
+
 class PathBuilderMultiRootTest : public ::testing::Test {
  public:
   PathBuilderMultiRootTest()

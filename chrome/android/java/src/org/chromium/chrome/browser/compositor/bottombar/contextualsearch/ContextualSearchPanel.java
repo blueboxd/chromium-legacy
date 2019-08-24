@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.ui.base.LocalizationUtils;
@@ -193,15 +192,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     protected boolean isSupportedState(@PanelState int state) {
         return canDisplayContentInPanel() || state != PanelState.MAXIMIZED;
-    }
-
-    @Override
-    protected float getExpandedHeight() {
-        if (canDisplayContentInPanel()) {
-            return super.getExpandedHeight();
-        } else {
-            return getBarHeightPeeking() + getPromoHeightPx() * mPxToDp;
-        }
     }
 
     @Override
@@ -374,18 +364,7 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     @Override
     protected float getPeekedHeight() {
-        return getBarHeightPeeking() + getBarBannerControl().getHeightPeekingPx() * mPxToDp;
-    }
-
-    @Override
-    protected float calculateBarShadowOpacity() {
-        float barShadowOpacity = 0.f;
-        if (getPromoHeightPx() > 0.f) {
-            float threshold = 2 * mBarShadowHeightPx;
-            barShadowOpacity = getPromoHeightPx() > mBarShadowHeightPx ? 1.f
-                    : MathUtils.interpolate(0.f, 1.f, getPromoHeightPx() / threshold);
-        }
-        return barShadowOpacity;
+        return getBarHeight() + getBarBannerControl().getHeightPeekingPx() * mPxToDp;
     }
 
     @Override
@@ -890,6 +869,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     /**
+     * TODO(donnd): get rid of this promo stuff, no longer used.
      * @return An implementation of {@link ContextualSearchPromoHost}.
      */
     private ContextualSearchPromoHost getContextualSearchPromoHost() {
@@ -909,9 +889,7 @@ public class ContextualSearchPanel extends OverlayPanel {
                 }
 
                 @Override
-                public void onUpdatePromoAppearance() {
-                    ContextualSearchPanel.this.updateBarShadow();
-                }
+                public void onUpdatePromoAppearance() {}
             };
         }
 

@@ -17,7 +17,7 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, Construction) {
   RunOnThreads([]() {
     FontDescription fontDescription;
     Font font(fontDescription);
-    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font);
+    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font, 1);
     CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
     CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize,
                                              1);
@@ -28,7 +28,7 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, ConversionEm) {
   RunOnThreads([]() {
     FontDescription fontDescription;
     Font font(fontDescription);
-    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font);
+    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font, 1);
     CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
     CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize,
                                              1);
@@ -45,7 +45,7 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, ConversionPixel) {
   RunOnThreads([]() {
     FontDescription fontDescription;
     Font font(fontDescription);
-    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font);
+    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font, 1);
     CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
     CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize,
                                              1);
@@ -62,7 +62,7 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, ConversionViewport) {
   RunOnThreads([]() {
     FontDescription fontDescription;
     Font font(fontDescription);
-    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font);
+    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font, 1);
     CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
     CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize,
                                              1);
@@ -79,7 +79,7 @@ TSAN_TEST(CSSToLengthConversionDataThreadedTest, ConversionRem) {
   RunOnThreads([]() {
     FontDescription fontDescription;
     Font font(fontDescription);
-    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font);
+    CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font, 1);
     CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
     CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize,
                                              1);

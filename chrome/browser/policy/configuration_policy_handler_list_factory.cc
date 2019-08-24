@@ -890,6 +890,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kChromeCleanupReportingEnabled,
     prefs::kSwReporterReportingEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kRendererCodeIntegrityEnabled,
+    prefs::kRendererCodeIntegrityEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)

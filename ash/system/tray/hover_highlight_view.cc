@@ -94,33 +94,10 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                     TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
 }
 
-void HoverHighlightView::AddIconAndLabels(const gfx::ImageSkia& image,
-                                          const base::string16& text,
-                                          const base::string16& sub_text) {
-  DoAddIconAndLabels(image, text,
-                     TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL,
-                     sub_text);
-}
-
-void HoverHighlightView::AddIconAndLabelForDefaultView(
-    const gfx::ImageSkia& image,
-    const base::string16& text) {
-  DoAddIconAndLabel(image, text,
-                    TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
-}
-
 void HoverHighlightView::DoAddIconAndLabel(
     const gfx::ImageSkia& image,
     const base::string16& text,
     TrayPopupItemStyle::FontStyle font_style) {
-  DoAddIconAndLabels(image, text, font_style, base::string16());
-}
-
-void HoverHighlightView::DoAddIconAndLabels(
-    const gfx::ImageSkia& image,
-    const base::string16& text,
-    TrayPopupItemStyle::FontStyle font_style,
-    const base::string16& sub_text) {
   DCHECK(!is_populated_);
   is_populated_ = true;
 
@@ -144,10 +121,6 @@ void HoverHighlightView::DoAddIconAndLabels(
   tri_view_->SetContainerBorder(
       TriView::Container::CENTER,
       views::CreateEmptyBorder(0, 0, 0, kTrayPopupLabelRightPadding));
-
-  if (!sub_text.empty())
-    SetSubText(sub_text);
-
   tri_view_->SetContainerVisible(TriView::Container::END, false);
 
   SetAccessibleName(text);

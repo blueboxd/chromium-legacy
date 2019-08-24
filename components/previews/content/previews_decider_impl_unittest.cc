@@ -170,34 +170,27 @@ class TestTopHostProvider : public optimization_guide::TopHostProvider {
 // IsBlacklisted outcomes when testing PreviewsDeciderImpl.
 class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
  public:
-  TestPreviewsOptimizationGuide(
-      optimization_guide::OptimizationGuideService* optimization_guide_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      const base::FilePath& test_path,
-      PrefService* pref_service,
-      leveldb_proto::ProtoDatabaseProvider* database_provider,
-      optimization_guide::TopHostProvider* optimization_guide_top_host_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      : PreviewsOptimizationGuide(optimization_guide_service,
-                                  ui_task_runner,
-                                  background_task_runner,
-                                  test_path,
-                                  pref_service,
-                                  database_provider,
-                                  optimization_guide_top_host_provider,
-                                  url_loader_factory) {}
-  ~TestPreviewsOptimizationGuide() override {}
+  TestPreviewsOptimizationGuide() = default;
+  ~TestPreviewsOptimizationGuide() override = default;
+
+  bool IsReady() const override { return is_ready_; }
+
+  void SetIsReady(bool is_ready) { is_ready_ = is_ready; }
 
   // PreviewsOptimizationGuide:
-  bool IsWhitelisted(
+  bool CanApplyOptimization(
       PreviewsUserData* previews_user_data,
       content::NavigationHandle* navigation_handle,
       PreviewsType type,
       net::EffectiveConnectionType* ect_threshold) const override {
     EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
                 type == PreviewsType::RESOURCE_LOADING_HINTS ||
-                type == PreviewsType::DEFER_ALL_SCRIPT);
+                type == PreviewsType::DEFER_ALL_SCRIPT ||
+                type == PreviewsType::LITE_PAGE_REDIRECT);
+
+    if (type == PreviewsType::LITE_PAGE_REDIRECT)
+      return !IsBlacklisted(navigation_handle, type);
+
     const GURL url = navigation_handle->GetURL();
     // Use default ect trigger threshold for the preview type.
     *ect_threshold = previews::params::GetECTThresholdForPreview(type);
@@ -212,9 +205,10 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
     return false;
   }
 
-  // PreviewsOptimizationGuide:
+  // Returns whether the URL associated with |navigation_handle| should be
+  // blacklisted from |type|.
   bool IsBlacklisted(content::NavigationHandle* navigation_handle,
-                     PreviewsType type) const override {
+                     PreviewsType type) const {
     EXPECT_TRUE(type == PreviewsType::LITE_PAGE_REDIRECT);
     const GURL url = navigation_handle->GetURL();
     if (type == PreviewsType::LITE_PAGE_REDIRECT) {
@@ -222,6 +216,28 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
     }
     return false;
   }
+
+  // PreviewsOptimizationGuide:
+  bool MaybeLoadOptimizationHints(content::NavigationHandle* navigation_handle,
+                                  base::OnceClosure callback) override {
+    return false;
+  }
+
+  // PreviewsOptimizationGuide:
+  bool GetResourceLoadingHints(
+      const GURL& url,
+      std::vector<std::string>* out_resource_patterns_to_block) const override {
+    return false;
+  }
+
+  // PreviewsOptimizationGuide:
+  void LogHintCacheMatch(const GURL& url, bool is_committed) const override {}
+
+  // PreviewsOptimizationGuide:
+  void ClearFetchedHints() override {}
+
+ private:
+  bool is_ready_ = false;
 };
 
 // Stub class of PreviewsUIService to test logging functionalities in
@@ -442,16 +458,12 @@ class PreviewsDeciderImplTest
     previews_decider_impl_ = previews_decider_impl.get();
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
+    std::unique_ptr<TestPreviewsOptimizationGuide> previews_opt_guide =
+        std::make_unique<TestPreviewsOptimizationGuide>();
+    previews_opt_guide_ = previews_opt_guide.get();
     ui_service_.reset(new TestPreviewsUIService(
         std::move(previews_decider_impl), std::make_unique<TestOptOutStore>(),
-        std::make_unique<TestPreviewsOptimizationGuide>(
-            &optimization_guide_service_,
-            task_environment_.GetMainThreadTaskRunner(),
-            base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                             base::MayBlock(),
-                                             base::TaskPriority::BEST_EFFORT}),
-            temp_dir_.GetPath(), pref_service_.get(), db_provider_.get(),
-            &optimization_guide_top_host_provider_, url_loader_factory_),
+        std::move(previews_opt_guide),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),
         &network_quality_tracker_));
@@ -464,12 +476,7 @@ class PreviewsDeciderImplTest
   }
 
   void InitializeOptimizationGuideHints() {
-    std::unique_ptr<optimization_guide::proto::Configuration> config =
-        std::make_unique<optimization_guide::proto::Configuration>();
-    std::unique_ptr<PreviewsHints> hints =
-        PreviewsHints::CreateFromHintsConfiguration(std::move(config), nullptr);
-    previews_decider_impl()->previews_opt_guide()->UpdateHints(
-        base::DoNothing(), std::move(hints));
+    previews_opt_guide_->SetIsReady(true);
   }
 
   TestPreviewsDeciderImpl* previews_decider_impl() {
@@ -492,6 +499,7 @@ class PreviewsDeciderImplTest
   base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
+  TestPreviewsOptimizationGuide* previews_opt_guide_;
   TestTopHostProvider optimization_guide_top_host_provider_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;

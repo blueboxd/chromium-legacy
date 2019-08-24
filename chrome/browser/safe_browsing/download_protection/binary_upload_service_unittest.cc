@@ -232,6 +232,9 @@ TEST_F(BinaryUploadServiceTest, HoldsScanResponsesUntilAllReady) {
   response.mutable_malware_scan_verdict();
   ReceiveMessageForRequest(raw_request, response);
   content::RunAllTasksUntilIdle();
+
+  EXPECT_TRUE(scanning_response.has_dlp_scan_verdict());
+  EXPECT_TRUE(scanning_response.has_malware_scan_verdict());
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::SUCCESS);
 }
 

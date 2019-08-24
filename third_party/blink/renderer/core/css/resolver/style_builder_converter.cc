@@ -300,8 +300,21 @@ StyleBuilderConverter::ConvertFontVariationSettings(StyleResolverState& state,
 static float ComputeFontSize(const CSSToLengthConversionData& conversion_data,
                              const CSSPrimitiveValue& primitive_value,
                              const FontDescription::Size& parent_size) {
-  if (primitive_value.IsLength())
-    return primitive_value.ComputeLength<float>(conversion_data);
+  if (primitive_value.IsLength()) {
+    float result = primitive_value.ComputeLength<float>(conversion_data);
+    float font_size_zoom = conversion_data.FontSizeZoom();
+    // TODO(crbug.com/408777): Only accounting for numeric literal value here
+    // will leave calc() without zoom correction.
+    if (primitive_value.IsNumericLiteralValue() && font_size_zoom != 1) {
+      CSSPrimitiveValue::UnitType type =
+          To<CSSNumericLiteralValue>(&primitive_value)->GetType();
+      if (type == CSSPrimitiveValue::UnitType::kChs ||
+          type == CSSPrimitiveValue::UnitType::kExs) {
+        return result / font_size_zoom;
+      }
+    }
+    return result;
+  }
   if (primitive_value.IsCalculatedPercentageWithLength()) {
     return To<CSSMathFunctionValue>(primitive_value)
         .ToCalcValue(conversion_data)
@@ -337,9 +350,14 @@ FontDescription::Size StyleBuilderConverterBase::ConvertFontSize(
         parent_size.is_absolute);
   }
 
+  // TODO(crbug.com/979895): This is the result of a refactoring, which might
+  // have revealed an existing bug with calculated lengths. Investigate.
+  const bool is_absolute =
+      parent_size.is_absolute || primitive_value.IsMathFunctionValue() ||
+      !To<CSSNumericLiteralValue>(primitive_value).IsFontRelativeLength();
   return FontDescription::Size(
       0, ComputeFontSize(conversion_data, primitive_value, parent_size),
-      parent_size.is_absolute || !primitive_value.IsFontRelativeLength());
+      is_absolute);
 }
 
 FontDescription::Size StyleBuilderConverter::ConvertFontSize(

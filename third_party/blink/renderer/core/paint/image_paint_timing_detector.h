@@ -120,10 +120,6 @@ class CORE_EXPORT ImageRecordsManager {
   void OnImageLoadedInternal(base::WeakPtr<ImageRecord>&,
                              unsigned current_frame_index);
 
-  inline bool NeedMeausuringPaintTime() const {
-    return !images_queued_for_paint_time_.IsEmpty();
-  }
-
   // Compare the last frame index in queue with the last frame index that has
   // registered for assigning paint time.
   inline bool HasUnregisteredRecordsInQueued(
@@ -245,13 +241,10 @@ class CORE_EXPORT ImagePaintTimingDetector final
  private:
   friend class LargestContentfulPaintCalculatorTest;
 
-  ImageRecord* FindLargestPaintCandidate() const;
-
   void PopulateTraceValue(TracedValue&, const ImageRecord& first_image_paint);
   void RegisterNotifySwapTime();
   void ReportCandidateToTrace(ImageRecord&);
   void ReportNoCandidateToTrace();
-  void Deactivate();
 
   // Used to find the last candidate.
   unsigned count_candidates_ = 0;

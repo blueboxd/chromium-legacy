@@ -232,12 +232,14 @@ TEST_F(IndexedDBFactoryTest, BasicFactoryCreationAndTearDown) {
   leveldb::Status s;
 
   std::tie(origin_state1_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin1, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin1, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state1_handle.IsHeld()) << s.ToString();
   EXPECT_TRUE(s.ok()) << s.ToString();
 
   std::tie(origin_state2_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin2, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin2, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state2_handle.IsHeld()) << s.ToString();
   EXPECT_TRUE(s.ok()) << s.ToString();
 
@@ -255,7 +257,8 @@ TEST_F(IndexedDBFactoryTest, CloseSequenceStarts) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
 
@@ -278,7 +281,8 @@ TEST_F(IndexedDBFactoryTest, ImmediateClose) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
 
@@ -302,7 +306,8 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   // Open a connection & immediately release it to cause the closing sequence to
   // start.
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
 
@@ -323,7 +328,8 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   // Open a connection & immediately release it to cause the closing sequence to
   // start again.
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   origin_state_handle.Release();
 
@@ -341,7 +347,8 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
 
   // Stop sweep by opening a connection.
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   EXPECT_FALSE(
       OriginStateFromHandle(origin_state_handle)->pre_close_task_queue());
@@ -366,7 +373,8 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   //  Finally, move the clock forward so the origin should allow a sweep.
   clock.Advance(IndexedDBOriginState::kMaxEarliestOriginSweepFromNow);
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   origin_state_handle.Release();
   factory()->GetOriginFactory(origin)->close_timer()->FireNow();
 
@@ -388,7 +396,8 @@ TEST_F(IndexedDBFactoryTest, InMemoryFactoriesStay) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
   EXPECT_TRUE(OriginStateFromHandle(origin_state_handle)
                   ->backing_store()
@@ -419,8 +428,8 @@ TEST_F(IndexedDBFactoryTest, TooLongOrigin) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(too_long_origin,
-                                        context()->data_path());
+      factory()->GetOrOpenOriginFactory(too_long_origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_FALSE(origin_state_handle.IsHeld());
   EXPECT_TRUE(s.IsIOError());
 }
@@ -456,7 +465,8 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesHandles) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
 
   // Now simulate shutdown, which should clear all factories.
@@ -473,7 +483,8 @@ TEST_F(IndexedDBFactoryTest, FactoryForceClose) {
   leveldb::Status s;
 
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path());
+      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
+                                        /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
 
   OriginStateFromHandle(origin_state_handle)->ForceClose();

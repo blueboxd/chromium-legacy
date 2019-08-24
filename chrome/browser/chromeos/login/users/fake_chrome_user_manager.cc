@@ -486,11 +486,6 @@ void FakeChromeUserManager::SaveUserDisplayEmail(
   NOTREACHED();
 }
 
-std::string FakeChromeUserManager::GetUserDisplayEmail(
-    const AccountId& account_id) const {
-  return account_id.GetUserEmail();
-}
-
 void FakeChromeUserManager::SaveUserType(const user_manager::User* user) {
   NOTREACHED();
 }

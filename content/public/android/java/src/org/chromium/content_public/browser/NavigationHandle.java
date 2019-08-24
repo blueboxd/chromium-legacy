@@ -6,6 +6,7 @@ package org.chromium.content_public.browser;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.net.NetError;
 
 /**
@@ -196,7 +197,8 @@ public class NavigationHandle {
      * request.
      */
     public void setRequestHeader(String headerName, String headerValue) {
-        nativeSetRequestHeader(mNativeNavigationHandleProxy, headerName, headerValue);
+        NavigationHandleJni.get().setRequestHeader(
+                mNativeNavigationHandleProxy, headerName, headerValue);
     }
 
     /**
@@ -204,11 +206,13 @@ public class NavigationHandle {
      * during a redirect.
      */
     public void removeRequestHeader(String headerName) {
-        nativeRemoveRequestHeader(mNativeNavigationHandleProxy, headerName);
+        NavigationHandleJni.get().removeRequestHeader(mNativeNavigationHandleProxy, headerName);
     }
 
-    private static native void nativeSetRequestHeader(
-            long nativeNavigationHandleProxy, String headerName, String headerValue);
-    private static native void nativeRemoveRequestHeader(
-            long nativeNavigationHandleProxy, String headerName);
+    @NativeMethods
+    interface Natives {
+        void setRequestHeader(
+                long nativeNavigationHandleProxy, String headerName, String headerValue);
+        void removeRequestHeader(long nativeNavigationHandleProxy, String headerName);
+    }
 }

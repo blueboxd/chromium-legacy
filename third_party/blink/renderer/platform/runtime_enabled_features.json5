@@ -419,10 +419,6 @@
       depends_on: ["CSSVariables2"],
     },
     {
-      name: "CSSPartPseudoElement",
-      status: "stable",
-    },
-    {
       name: "CSSPictureInPicture",
       status: "experimental",
       depends_on: ["PictureInPictureAPI"],
@@ -1100,10 +1096,7 @@
       name: "OrientationEvent",
       status: {"Android": "stable"},
     },
-    {
-      name: "OriginTrials",
-      status: "stable",
-    },
+
     // Define a sample API for testing integration with the Origin Trials
     // Framework. The sample API is used in both unit and web tests for the
     // Origin Trials Framework. Do not change this flag to stable, as it exists
@@ -1215,7 +1208,7 @@
     },
     {
       name: "PaymentRetry",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PerformanceManagerInstrumentation",
@@ -1553,6 +1546,11 @@
       name: "StaleWhileRevalidate",
       origin_trial_feature_name: "StaleWhileRevalidate",
       status: "stable",
+    },
+    {
+      // Enabled when blink::features::kStorageAccessAPI is enabled.
+      name: "StorageAccessAPI",
+      status: "test",
     },
     {
       name: "StorageQuotaDetails",

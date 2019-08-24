@@ -1194,7 +1194,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/assert_static_initializers.pydeps',
     'build/android/gyp/bytecode_processor.pydeps',
     'build/android/gyp/compile_resources.pydeps',
-    'build/android/gyp/create_app_bundle_minimal_apks.pydeps',
+    'build/android/gyp/create_app_bundle_apks.pydeps',
     'build/android/gyp/create_bundle_wrapper_script.pydeps',
     'build/android/gyp/copy_ex.pydeps',
     'build/android/gyp/create_app_bundle.pydeps',

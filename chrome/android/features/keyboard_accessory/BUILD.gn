@@ -102,7 +102,6 @@ junit_binary("keyboard_accessory_junit_tests") {
     "//third_party/mockito:mockito_java",
   ]
 
-  srcjar_deps = [
-    "//components/module_installer/android:module_installer_apk_build_config",
-  ]
+  srcjar_deps =
+      [ "//components/module_installer/android:module_installer_build_config" ]
 }

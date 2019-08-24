@@ -104,6 +104,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                              bool is_hidden,
                              bool compositing_enabled,
                              WebViewImpl* opener);
+
+  // This method is overridden from both WebWidget and WebView. The former is
+  // meaningless, and this is only used to Close the WebView.
+  void Close() override;
+
   static HashSet<WebViewImpl*>& AllInstances();
   // Returns true if popup menus should be rendered by the browser, false if
   // they should be rendered by WebKit (which is the default).
@@ -422,7 +427,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // WebWidget methods:
   void SetAnimationHost(cc::AnimationHost*) override;
-  void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
   void DidEnterFullscreen() override;

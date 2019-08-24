@@ -43,6 +43,9 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   bool IsFadingOut() const;
 
+  // Returns the target tab (if any).
+  views::View* GetDesiredAnchorView();
+
   // Record a histogram metric of tab hover cards seen prior to a tab being
   // selected by mouse press.
   void RecordHoverCardsSeenRatioMetric();

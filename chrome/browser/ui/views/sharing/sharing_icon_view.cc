@@ -68,7 +68,7 @@ bool SharingIconView::Update() {
 
   const bool is_bubble_showing = IsBubbleShowing();
 
-  if (is_bubble_showing || isLoadingAnimationVisible() ||
+  if (is_bubble_showing || IsLoadingAnimationVisible() ||
       last_controller_ != controller) {
     ResetSlideAnimation(/*show=*/false);
   }
@@ -76,7 +76,7 @@ bool SharingIconView::Update() {
   last_controller_ = controller;
 
   const bool is_visible =
-      is_bubble_showing || isLoadingAnimationVisible() || label()->GetVisible();
+      is_bubble_showing || IsLoadingAnimationVisible() || label()->GetVisible();
   const bool visibility_changed = GetVisible() != is_visible;
 
   SetVisible(is_visible);
@@ -193,6 +193,6 @@ const gfx::VectorIcon& SharingIconView::GetVectorIconBadge() const {
 void SharingIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {}
 
-bool SharingIconView::isLoadingAnimationVisible() {
+bool SharingIconView::IsLoadingAnimationVisible() {
   return loading_animation_.get();
 }

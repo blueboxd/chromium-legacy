@@ -19,7 +19,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/file_system_util.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -163,8 +162,8 @@ int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
 
 blink::mojom::FileSystemManager& PepperFileSystemHost::GetFileSystemManager() {
   if (!file_system_manager_) {
-    ChildThreadImpl::current()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName, mojo::MakeRequest(&file_system_manager_));
+    ChildThreadImpl::current()->BindHostReceiver(
+        mojo::MakeRequest(&file_system_manager_));
   }
   return *file_system_manager_;
 }

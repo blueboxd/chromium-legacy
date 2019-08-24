@@ -530,9 +530,9 @@ void SearchResultTileItemView::Layout() {
 
   if (IsSuggestedAppTileShownInAppPage()) {
     icon_->SetBoundsRect(AppListItemView::GetIconBoundsForTargetViewBounds(
-        rect, icon_->GetImage().size()));
+        AppListConfig::instance(), rect, icon_->GetImage().size()));
     title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
-        rect, title_->GetPreferredSize()));
+        AppListConfig::instance(), rect, title_->GetPreferredSize()));
   } else {
     gfx::Rect icon_rect(rect);
     icon_rect.ClampToCenteredSize(icon_->GetImage().size());

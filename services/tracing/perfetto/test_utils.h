@@ -14,7 +14,6 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/consumer.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/protos/perfetto/common/observable_events.pb.h"
 
 namespace base {
@@ -105,10 +104,6 @@ class MockConsumer : public perfetto::Consumer {
   MockConsumer(std::vector<std::string> data_source_names,
                perfetto::TracingService* service,
                PacketReceivedCallback packet_received_callback);
-  MockConsumer(std::vector<std::string> data_source_names,
-               perfetto::TracingService* service,
-               PacketReceivedCallback packet_received_callback,
-               const perfetto::TraceConfig& config);
   ~MockConsumer() override;
 
   void ReadBuffers();
@@ -119,7 +114,6 @@ class MockConsumer : public perfetto::Consumer {
 
   void FreeBuffers();
 
-  size_t received_packets() const { return received_packets_; }
   size_t received_test_packets() const { return received_test_packets_; }
 
   // perfetto::Consumer implementation
@@ -146,18 +140,14 @@ class MockConsumer : public perfetto::Consumer {
 
   void CheckForAllDataSourcesStarted();
   void CheckForAllDataSourcesStopped();
-  perfetto::TraceConfig GetDefaultTraceConfig(
-      const std::vector<std::string>& data_sources);
 
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
       consumer_endpoint_;
-  size_t received_packets_ = 0;
   size_t received_test_packets_ = 0;
   PacketReceivedCallback packet_received_callback_;
   std::vector<DataSourceStatus> data_sources_;
   base::RunLoop* on_started_runloop_ = nullptr;
   base::RunLoop* on_stopped_runloop_ = nullptr;
-  perfetto::TraceConfig trace_config_;
 };
 
 class MockProducerHost : public ProducerHost {

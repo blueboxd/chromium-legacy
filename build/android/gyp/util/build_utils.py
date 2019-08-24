@@ -577,7 +577,9 @@ def ExpandFileArgs(args):
     @FileArg(filename:key1:key2:...:keyn)
 
   The value of such a placeholder is calculated by reading 'filename' as json.
-  And then extracting the value at [key1][key2]...[keyn].
+  And then extracting the value at [key1][key2]...[keyn]. If a key has a '[]'
+  suffix the (intermediate) value will be interpreted as a single item list and
+  the single item will be returned or used for further traversal.
 
   Note: This intentionally does not return the list of files that appear in such
   placeholders. An action that uses file-args *must* know the paths of those
@@ -592,15 +594,25 @@ def ExpandFileArgs(args):
     if not match:
       continue
 
+    def get_key(key):
+      if key.endswith('[]'):
+        return key[:-2], True
+      return key, False
+
     lookup_path = match.group(1).split(':')
-    file_path = lookup_path[0]
+    file_path, _ = get_key(lookup_path[0])
     if not file_path in file_jsons:
       with open(file_path) as f:
         file_jsons[file_path] = json.load(f)
 
-    expansion = file_jsons[file_path]
-    for k in lookup_path[1:]:
+    expansion = file_jsons
+    for k in lookup_path:
+      k, flatten = get_key(k)
       expansion = expansion[k]
+      if flatten:
+        if not isinstance(expansion, list) or not len(expansion) == 1:
+          raise Exception('Expected single item list but got %s' % expansion)
+        expansion = expansion[0]
 
     # This should match ParseGnList. The output is either a GN-formatted list
     # or a literal (with no quotes).

@@ -70,7 +70,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
            int buf_len,
            CompletionOnceCallback callback) override;
   void StopCaching() override;
-  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64_t GetTotalReceivedBytes() const override;
   int64_t GetTotalSentBytes() const override;
   void DoneReading() override;

@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/core/timezone/timezone_controller.h"
 
-#include "services/device/public/mojom/constants.mojom-blink.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
@@ -70,8 +69,8 @@ void TimeZoneController::Init() {
     return;
 
   device::mojom::blink::TimeZoneMonitorPtr monitor;
-  Platform::Current()->GetConnector()->BindInterface(
-      device::mojom::blink::kServiceName, mojo::MakeRequest(&monitor));
+  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      mojo::MakeRequest(&monitor));
   device::mojom::blink::TimeZoneMonitorClientPtr client;
   instance().binding_.Bind(mojo::MakeRequest(&client));
   monitor->AddClient(std::move(client));

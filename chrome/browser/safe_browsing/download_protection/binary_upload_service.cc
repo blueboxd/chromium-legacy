@@ -231,7 +231,7 @@ void BinaryUploadService::OnTimeout(Request* request) {
 void BinaryUploadService::FinishRequest(Request* request,
                                         Result result,
                                         DeepScanningClientResponse response) {
-  request->FinishRequest(result, DeepScanningClientResponse());
+  request->FinishRequest(result, response);
   active_requests_.erase(request);
   active_timers_.erase(request);
   active_uploads_.erase(request);

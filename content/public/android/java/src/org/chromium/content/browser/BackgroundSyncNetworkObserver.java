@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
 import org.chromium.net.RegistrationPolicyAlwaysRegister;
@@ -88,8 +89,9 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
         }
         mNativePtrs.add(nativePtr);
 
-        nativeNotifyConnectionTypeChanged(
-                nativePtr, mNotifier.getCurrentNetworkState().getConnectionType());
+        BackgroundSyncNetworkObserverJni.get().notifyConnectionTypeChanged(nativePtr,
+                BackgroundSyncNetworkObserver.this,
+                mNotifier.getCurrentNetworkState().getConnectionType());
     }
 
     @CalledByNative
@@ -110,7 +112,8 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
         mHasBroadcastConnectionType = true;
         mLastBroadcastConnectionType = newConnectionType;
         for (Long nativePtr : mNativePtrs) {
-            nativeNotifyConnectionTypeChanged(nativePtr, newConnectionType);
+            BackgroundSyncNetworkObserverJni.get().notifyConnectionTypeChanged(
+                    nativePtr, BackgroundSyncNetworkObserver.this, newConnectionType);
         }
     }
 
@@ -147,6 +150,10 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
     @Override
     public void purgeActiveNetworkList(long[] activeNetIds) {}
 
-    @NativeClassQualifiedName("BackgroundSyncNetworkObserverAndroid::Observer")
-    private native void nativeNotifyConnectionTypeChanged(long nativePtr, int newConnectionType);
+    @NativeMethods
+    interface Natives {
+        @NativeClassQualifiedName("BackgroundSyncNetworkObserverAndroid::Observer")
+        void notifyConnectionTypeChanged(
+                long nativePtr, BackgroundSyncNetworkObserver caller, int newConnectionType);
+    }
 }

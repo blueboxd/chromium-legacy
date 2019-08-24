@@ -8,6 +8,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceProvider;
@@ -67,7 +68,8 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     @Override
     public String getLastCommittedURL() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
-        return nativeGetLastCommittedURL(mNativeRenderFrameHostAndroid);
+        return RenderFrameHostImplJni.get().getLastCommittedURL(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
     }
 
     @Override
@@ -76,7 +78,8 @@ public class RenderFrameHostImpl implements RenderFrameHost {
             callback.onResult(null);
             return;
         }
-        nativeGetCanonicalUrlForSharing(mNativeRenderFrameHostAndroid, callback);
+        RenderFrameHostImplJni.get().getCanonicalUrlForSharing(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, callback);
     }
 
     @Override
@@ -96,12 +99,14 @@ public class RenderFrameHostImpl implements RenderFrameHost {
 
     @Override
     public void notifyUserActivation() {
-        nativeNotifyUserActivation(mNativeRenderFrameHostAndroid);
+        RenderFrameHostImplJni.get().notifyUserActivation(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
     }
 
     @Override
     public boolean isRenderFrameCreated() {
-        return nativeIsRenderFrameCreated(mNativeRenderFrameHostAndroid);
+        return RenderFrameHostImplJni.get().isRenderFrameCreated(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
     }
 
     /**
@@ -109,14 +114,18 @@ public class RenderFrameHostImpl implements RenderFrameHost {
      */
     public UnguessableToken getAndroidOverlayRoutingToken() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
-        return nativeGetAndroidOverlayRoutingToken(mNativeRenderFrameHostAndroid);
+        return RenderFrameHostImplJni.get().getAndroidOverlayRoutingToken(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
     }
 
-    private native String nativeGetLastCommittedURL(long nativeRenderFrameHostAndroid);
-    private native void nativeGetCanonicalUrlForSharing(
-            long nativeRenderFrameHostAndroid, Callback<String> callback);
-    private native UnguessableToken nativeGetAndroidOverlayRoutingToken(
-            long nativeRenderFrameHostAndroid);
-    private native void nativeNotifyUserActivation(long nativeRenderFrameHostAndroid);
-    private native boolean nativeIsRenderFrameCreated(long nativeRenderFrameHostAndroid);
+    @NativeMethods
+    interface Natives {
+        String getLastCommittedURL(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        void getCanonicalUrlForSharing(long nativeRenderFrameHostAndroid,
+                RenderFrameHostImpl caller, Callback<String> callback);
+        UnguessableToken getAndroidOverlayRoutingToken(
+                long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        void notifyUserActivation(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+        boolean isRenderFrameCreated(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
+    }
 }

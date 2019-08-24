@@ -63,9 +63,10 @@ enum TrackedDeviceClass {
 };
 
 enum ControllerRole {
-  kControllerRoleInvalid,
+  kControllerRoleInvalid, // Test hook should ignore this controller.
   kControllerRoleLeft,
-  kControllerRoleRight
+  kControllerRoleRight,
+  kControllerRoleVoice // Simulates voice input such as saying "select" in WMR.
 };
 
 struct ControllerFrameData {

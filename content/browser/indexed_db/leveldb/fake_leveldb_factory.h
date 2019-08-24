@@ -58,7 +58,8 @@ class FakeLevelDBFactory : public DefaultLevelDBFactory {
 
   std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /*disk_full*/>
   OpenLevelDBState(const base::FilePath& file_name,
-                   const leveldb::Comparator* ldb_comparator) override;
+                   const leveldb::Comparator* ldb_comparator,
+                   bool create_if_missing) override;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);

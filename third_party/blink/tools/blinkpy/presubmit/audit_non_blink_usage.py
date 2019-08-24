@@ -380,9 +380,6 @@ _CONFIG = [
             'mojo_base::BigBuffer.*',
             '(?:.+::)?mojom::.+',
             "service_manager::BinderRegistry",
-            # TODO(dcheng): Remove this once Connector isn't needed in Blink
-            # anymore.
-            'service_manager::Connector',
             'service_manager::InterfaceProvider',
             'service_manager::ServiceFilter',
 

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -273,8 +274,8 @@ bool SearchBox::GetMostVisitedItemWithID(
                                                            item);
 }
 
-const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() const {
-  return theme_info_;
+const ThemeBackgroundInfo* SearchBox::GetThemeBackgroundInfo() const {
+  return base::OptionalOrNullptr(theme_info_);
 }
 
 void SearchBox::Paste(const base::string16& text) {

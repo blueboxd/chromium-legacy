@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/common/search.mojom.h"
 #include "chrome/common/search/instant_types.h"
@@ -93,7 +94,8 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends PasteAndOpenDropdown to the browser.
   void Paste(const base::string16& text);
 
-  const ThemeBackgroundInfo& GetThemeBackgroundInfo() const;
+  // Will return null if the theme info hasn't been set yet.
+  const ThemeBackgroundInfo* GetThemeBackgroundInfo() const;
 
   // Sends FocusOmnibox(OMNIBOX_FOCUS_INVISIBLE) to the browser.
   void StartCapturingKeyStrokes();
@@ -240,7 +242,7 @@ class SearchBox : public content::RenderFrameObserver,
   // comparing most visited items.
   InstantMostVisitedInfo most_visited_info_;
   bool has_received_most_visited_;
-  ThemeBackgroundInfo theme_info_;
+  base::Optional<ThemeBackgroundInfo> theme_info_;
 
   base::WeakPtrFactory<SearchBox> weak_ptr_factory_{this};
 

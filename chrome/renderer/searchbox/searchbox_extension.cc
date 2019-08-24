@@ -895,8 +895,10 @@ v8::Local<v8::Value> NewTabPageBindings::GetThemeBackgroundInfo(
   const SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return v8::Null(isolate);
-  const ThemeBackgroundInfo& theme_info = search_box->GetThemeBackgroundInfo();
-  return GenerateThemeBackgroundInfo(isolate, theme_info);
+  const ThemeBackgroundInfo* theme_info = search_box->GetThemeBackgroundInfo();
+  if (!theme_info)
+    return v8::Null(isolate);
+  return GenerateThemeBackgroundInfo(isolate, *theme_info);
 }
 
 // static

@@ -99,8 +99,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   void ComputeParagraphAndHeadingThresholds(
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
       double* out_heading_font_size_threshold,
-      double* out_paragraph_spacing_threshold,
-      double* out_line_spacing_threshold);
+      double* out_paragraph_spacing_threshold);
   std::string GetTextRunCharsAsUTF8(
       const PP_PrivateAccessibilityTextRunInfo& text_run,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,

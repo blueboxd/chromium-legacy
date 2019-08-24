@@ -625,33 +625,21 @@ void OverviewItem::OnDragAnimationCompleted() {
   }
 }
 
-void OverviewItem::UpdatePhantomsForDragging(
-    const gfx::PointF& location_in_screen) {
+void OverviewItem::UpdatePhantomsForDragging(bool is_touch_dragging) {
   DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   DCHECK_GT(Shell::GetAllRootWindows().size(), 1u);
-
-  aura::Window* window = transform_window_.IsMinimized()
-                             ? item_widget_->GetNativeWindow()
-                             : GetWindow();
-
   if (!phantoms_for_dragging_) {
-    DCHECK_EQ(1.f, window->layer()->opacity());
-    phantoms_for_dragging_ = std::make_unique<DragWindowController>(window);
+    phantoms_for_dragging_ = std::make_unique<DragWindowController>(
+        transform_window_.IsMinimized() ? item_widget_->GetNativeWindow()
+                                        : GetWindow(),
+        is_touch_dragging);
   }
-
-  const gfx::Point location = gfx::ToRoundedPoint(location_in_screen);
-  window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
-      root_window_, window, location));
-  phantoms_for_dragging_->Update(location);
+  phantoms_for_dragging_->Update();
 }
 
 void OverviewItem::DestroyPhantomsForDragging() {
   DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   phantoms_for_dragging_.reset();
-  aura::Window* window = transform_window_.IsMinimized()
-                             ? item_widget_->GetNativeWindow()
-                             : GetWindow();
-  window->layer()->SetOpacity(1.f);
 }
 
 void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {

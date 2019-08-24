@@ -469,8 +469,6 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
  public:
   explicit ConnectionFilterImpl(int gpu_process_id) {
     auto task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-    registry_.AddInterface(base::BindRepeating(&FieldTrialRecorder::Create),
-                           task_runner);
 #if defined(OS_ANDROID)
     registry_.AddInterface(
         base::BindRepeating(
@@ -606,6 +604,15 @@ void GpuProcessHost::BindInterface(
   }
   process_->child_connection()->BindInterface(interface_name,
                                               std::move(interface_pipe));
+}
+
+void GpuProcessHost::BindHostReceiver(mojo::GenericPendingReceiver receiver) {
+  if (auto field_trial_receiver = receiver.As<mojom::FieldTrialRecorder>()) {
+    mojom::FieldTrialRecorderRequest request(std::move(field_trial_receiver));
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&FieldTrialRecorder::Create, std::move(request)));
+  }
 }
 
 void GpuProcessHost::RunService(

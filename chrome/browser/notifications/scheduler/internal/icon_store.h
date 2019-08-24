@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_ICON_STORE_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_ICON_STORE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/proto/icon.pb.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_converter.h"
+#include "chrome/browser/notifications/scheduler/internal/icon_converter_result.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
 #include "chrome/browser/notifications/scheduler/public/notification_data.h"
 #include "components/leveldb_proto/public/proto_database.h"
@@ -92,12 +94,12 @@ class IconProtoDbStore : public IconStore {
   // Called when the icons are encoded.
   void OnIconsEncoded(AddCallback callback,
                       std::vector<std::string> icons_uuid,
-                      std::vector<std::string> encoded_icons_data);
+                      std::unique_ptr<EncodeResult> encode_result);
 
   // Called when the encoded data are decoded.
   void OnIconsDecoded(LoadIconsCallback callback,
                       std::vector<std::string> icons_uuid,
-                      std::vector<SkBitmap> decoded_icons);
+                      std::unique_ptr<DecodeResult> decode_result);
 
   // The proto database instance that persists data.
   std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db_;

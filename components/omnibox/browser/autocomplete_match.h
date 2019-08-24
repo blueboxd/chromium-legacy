@@ -388,6 +388,10 @@ struct AutocompleteMatch {
   // dictionary.  Returns the empty string if no such value exists.
   std::string GetAdditionalInfo(const std::string& property) const;
 
+  // Returns the enum equivalent to the type of this autocomplete match.
+  metrics::OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType()
+      const;
+
   // Returns whether this match is a "verbatim" match: a URL navigation directly
   // to the user's input, a search for the user's input with the default search
   // engine, or a "keyword mode" search for the query portion of the user's

@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list_types.h"
 
 namespace ash {
@@ -52,7 +53,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantInteractionModelObserver
 
   // Invoked when the response associated with the interaction is changed.
   virtual void OnResponseChanged(
-      const std::shared_ptr<AssistantResponse>& response) {}
+      const scoped_refptr<AssistantResponse>& response) {}
 
   // Invoked when the response associated with the interaction is cleared.
   virtual void OnResponseCleared() {}

@@ -788,7 +788,7 @@ class DnsTransactionTest : public DnsTransactionTestBase,
 
   URLRequestJob* MaybeInterceptRequest(URLRequest* request,
                                        NetworkDelegate* network_delegate) {
-    // If the path indicates a redirct, skip checking the list of
+    // If the path indicates a redirect, skip checking the list of
     // configured servers, because it won't be there and we still want
     // to handle it.
     bool server_found = request->url().path() == "/redirect-destination";
@@ -814,12 +814,7 @@ class DnsTransactionTest : public DnsTransactionTestBase,
     }
     EXPECT_TRUE(server_found);
 
-    HttpRequestHeaders* headers = nullptr;
-    if (request->GetFullRequestHeaders(headers)) {
-      EXPECT_FALSE(headers->HasHeader(HttpRequestHeaders::kCookie));
-    }
-    EXPECT_FALSE(request->extra_request_headers().HasHeader(
-        HttpRequestHeaders::kCookie));
+    EXPECT_EQ(PRIVACY_MODE_ENABLED, request->privacy_mode());
 
     std::string accept;
     EXPECT_TRUE(request->extra_request_headers().GetHeader("Accept", &accept));

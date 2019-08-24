@@ -1840,6 +1840,16 @@ const char kStopNonTimersInBackgroundDescription[] =
     "Stop non-timer task queues, in the background, "
     "after a grace period.";
 
+const char kStorageAccessAPIName[] = "Storage Access API";
+const char kStorageAccessAPIDescription[] =
+    "Enables the Storage Access API, allowing websites to request storage "
+    "access when it would otherwise be restricted.";
+
+const char kStoragePressureUIName[] = "Enable storage pressure UI";
+const char kStoragePressureUIDescription[] =
+    "If enabled, Chrome will trigger system notifications to warn about "
+    "storage pressure.";
+
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
 const char kSuggestionsWithSubStringMatchDescription[] =

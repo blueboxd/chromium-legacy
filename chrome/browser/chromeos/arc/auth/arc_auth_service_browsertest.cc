@@ -696,8 +696,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance().account_info());
-  EXPECT_EQ(kFakeUserName,
-            auth_instance().account_info()->account_name.value());
+  EXPECT_TRUE(auth_instance().account_info()->account_name.value().empty());
   EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
   EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
             auth_instance().account_info()->account_type);
@@ -724,8 +723,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance().account_info());
-  EXPECT_EQ(kFakeUserName,
-            auth_instance().account_info()->account_name.value());
+  EXPECT_TRUE(auth_instance().account_info()->account_name.value().empty());
   EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
   EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
             auth_instance().account_info()->account_type);
@@ -843,8 +841,7 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   run_loop.Run();
 
   ASSERT_TRUE(auth_instance().account_info());
-  EXPECT_EQ(kFakeUserName,
-            auth_instance().account_info()->account_name.value());
+  EXPECT_TRUE(auth_instance().account_info()->account_name.value().empty());
   EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
   EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
             auth_instance().account_info()->account_type);

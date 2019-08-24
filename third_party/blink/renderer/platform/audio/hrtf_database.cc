@@ -55,8 +55,6 @@ HRTFDatabase::HRTFDatabase(float sample_rate)
         HRTFElevation::CreateForSubject(IDR_AUDIO_SPATIALIZATION_COMPOSITE,
                                         elevation, sample_rate);
     DCHECK(hrtf_elevation.get());
-    if (!hrtf_elevation.get())
-      return;
 
     elevations_[elevation_index] = std::move(hrtf_elevation);
     elevation_index += kInterpolationFactor;
@@ -90,25 +88,14 @@ void HRTFDatabase::GetKernelsFromAzimuthElevation(double azimuth_blend,
                                                   double& frame_delay_l,
                                                   double& frame_delay_r) {
   unsigned elevation_index = IndexFromElevationAngle(elevation_angle);
-  SECURITY_DCHECK(elevation_index < elevations_.size() &&
-                  elevations_.size() > 0);
-
-  if (!elevations_.size()) {
-    kernel_l = nullptr;
-    kernel_r = nullptr;
-    return;
-  }
+  SECURITY_DCHECK(elevation_index < elevations_.size());
+  SECURITY_DCHECK(elevations_.size() > 0);
 
   if (elevation_index > elevations_.size() - 1)
     elevation_index = elevations_.size() - 1;
 
   HRTFElevation* hrtf_elevation = elevations_[elevation_index].get();
   DCHECK(hrtf_elevation);
-  if (!hrtf_elevation) {
-    kernel_l = nullptr;
-    kernel_r = nullptr;
-    return;
-  }
 
   hrtf_elevation->GetKernelsFromAzimuth(azimuth_blend, azimuth_index, kernel_l,
                                         kernel_r, frame_delay_l, frame_delay_r);

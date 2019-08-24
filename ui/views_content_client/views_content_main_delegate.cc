@@ -88,7 +88,8 @@ void ViewsContentMainDelegate::PreCreateMainMessageLoop() {
 
 content::ContentBrowserClient*
     ViewsContentMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(new ViewsContentBrowserClient(views_content_client_));
+  browser_client_ =
+      std::make_unique<ViewsContentBrowserClient>(views_content_client_);
   return browser_client_.get();
 }
 

@@ -8,6 +8,7 @@
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
@@ -18,6 +19,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/vector_icons.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -34,7 +36,7 @@ constexpr int kPreferredHeightDip = 32;
 
 ProactiveSuggestionsView::ProactiveSuggestionsView(
     AssistantViewDelegate* delegate)
-    : delegate_(delegate) {
+    : views::Button(/*listener=*/this), delegate_(delegate) {
   InitLayout();
   InitWidget();
 
@@ -70,6 +72,19 @@ void ProactiveSuggestionsView::OnPaintBackground(gfx::Canvas* canvas) {
   canvas->DrawRoundRect(GetLocalBounds(), radius, flags);
 }
 
+void ProactiveSuggestionsView::ButtonPressed(views::Button* sender,
+                                             const ui::Event& event) {
+  // There are two possible |senders|, the close button...
+  if (sender == close_button_) {
+    delegate_->OnProactiveSuggestionsCloseButtonPressed();
+    return;
+  }
+
+  // ...and the proactive suggestions view itself.
+  DCHECK_EQ(this, sender);
+  delegate_->OnProactiveSuggestionsViewPressed();
+}
+
 void ProactiveSuggestionsView::OnUsableWorkAreaChanged(
     const gfx::Rect& usable_work_area) {
   UpdateBounds();
@@ -102,30 +117,37 @@ void ProactiveSuggestionsView::InitLayout() {
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   label->SetLineHeight(kLineHeightDip);
   label->SetMultiLine(false);
-  label->SetText(base::UTF8ToUTF16("Placeholder text"));
+  label->SetText(base::UTF8ToUTF16(delegate_->GetSuggestionsModel()
+                                       ->GetProactiveSuggestions()
+                                       ->description()));
   AddChildView(label);
 
+  // We impose a maximum width restriction on the proactive suggestions view.
+  // When restricting width, |label| should cede layout space to its siblings.
+  layout_manager->SetFlexForView(label, 1);
+
   // Close button.
-  views::ImageButton* close_button = new views::ImageButton(nullptr);
-  close_button->SetImage(
+  close_button_ = new views::ImageButton(/*listener=*/this);
+  close_button_->SetImage(
       views::ImageButton::ButtonState::STATE_NORMAL,
       gfx::CreateVectorIcon(views::kIcCloseIcon, kCloseButtonSizeDip,
                             gfx::kGoogleGrey100));
-  close_button->SetPreferredSize(
+  close_button_->SetPreferredSize(
       gfx::Size(kCloseButtonSizeDip, kCloseButtonSizeDip));
-  AddChildView(close_button);
+  AddChildView(close_button_);
 }
 
 void ProactiveSuggestionsView::InitWidget() {
   views::Widget::InitParams params;
+  params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.context = delegate_->GetRootWindowForNewWindows();
-  params.delegate = this;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
 
   views::Widget* widget = new views::Widget();
   widget->Init(std::move(params));
+  widget->SetContentsView(this);
 
   UpdateBounds();
 }

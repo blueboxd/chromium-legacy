@@ -225,6 +225,7 @@ jumbo_source_set("base") {
     "reentrancy_checker.h",
     "renderer.cc",
     "renderer.h",
+    "renderer_client.cc",
     "renderer_client.h",
     "renderer_factory.cc",
     "renderer_factory.h",

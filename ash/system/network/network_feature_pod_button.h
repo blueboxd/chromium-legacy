@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_NETWORK_NETWORK_FEATURE_POD_BUTTON_H_
 
 #include "ash/system/network/network_icon_animation_observer.h"
-#include "ash/system/network/tray_network_state_model.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/unified/feature_pod_button.h"
 
 namespace ash {
@@ -15,7 +15,7 @@ namespace ash {
 // animation to implement network connecting animation on feature pod button.
 class NetworkFeaturePodButton : public FeaturePodButton,
                                 public network_icon::AnimationObserver,
-                                public TrayNetworkStateModel::Observer {
+                                public TrayNetworkStateObserver {
  public:
   explicit NetworkFeaturePodButton(FeaturePodControllerBase* controller);
   ~NetworkFeaturePodButton() override;
@@ -23,7 +23,7 @@ class NetworkFeaturePodButton : public FeaturePodButton,
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
 
-  // TrayNetworkStateModel::Observer:
+  // TrayNetworkStateObserver:
   void ActiveNetworkStateChanged() override;
 
   // views::Button:

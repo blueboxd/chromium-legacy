@@ -53,19 +53,19 @@ AssistantSuggestionsModel::GetConversationStarters() const {
 }
 
 void AssistantSuggestionsModel::SetProactiveSuggestions(
-    std::unique_ptr<ProactiveSuggestions> proactive_suggestions) {
+    scoped_refptr<ProactiveSuggestions> proactive_suggestions) {
   if (ProactiveSuggestions::AreEqual(proactive_suggestions.get(),
                                      proactive_suggestions_.get())) {
     return;
   }
 
-  proactive_suggestions_ = std::move(proactive_suggestions);
+  proactive_suggestions_ = proactive_suggestions;
   NotifyProactiveSuggestionsChanged();
 }
 
-const ProactiveSuggestions* AssistantSuggestionsModel::GetProactiveSuggestions()
-    const {
-  return proactive_suggestions_.get();
+scoped_refptr<const ProactiveSuggestions>
+AssistantSuggestionsModel::GetProactiveSuggestions() const {
+  return proactive_suggestions_;
 }
 
 void AssistantSuggestionsModel::NotifyConversationStartersChanged() {
@@ -78,7 +78,7 @@ void AssistantSuggestionsModel::NotifyConversationStartersChanged() {
 
 void AssistantSuggestionsModel::NotifyProactiveSuggestionsChanged() {
   for (AssistantSuggestionsModelObserver& observer : observers_)
-    observer.OnProactiveSuggestionsChanged(proactive_suggestions_.get());
+    observer.OnProactiveSuggestionsChanged(proactive_suggestions_);
 }
 
 }  // namespace ash

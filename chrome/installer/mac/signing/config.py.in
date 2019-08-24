@@ -39,9 +39,9 @@ class CodeSignConfig(object):
             notary_password: Optional string password or password reference
                 (e.g. @keychain, see `xcrun altool -h`) that will be used to
                 authenticate to Apple's notary service if notarizing.
-            notary_asc_provider: Optitonal string that will be used as the
+            notary_asc_provider: Optional string that will be used as the
                 `--asc-provider` argument to `xcrun altool`, to be used when
-                notary_user is associatetd with multiple Apple developer teams.
+                notary_user is associated with multiple Apple developer teams.
         """
         assert identity
         self._identity = identity
@@ -164,10 +164,7 @@ class CodeSignConfig(object):
         """Returns whether the final code signed binary should be assessed by
         Gatekeeper after signing.
         """
-        # The base config should not run spctl because the app bundle is
-        # currently signed with resource rules, which are only permitted for
-        # Google Chrome as signed by Google. The internal_config returns True.
-        return False
+        return True
 
     # Computed Properties ######################################################
 

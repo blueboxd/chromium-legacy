@@ -56,7 +56,7 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
                 "US", "555-555-5555", "", "en-US"));
         // Create an expired credit card
         mCreditCardId = mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true,
-                "Jon Doe", "4111111111111111", "1111", "1", "2016", "visa", R.drawable.visa_card,
+                "Jon Doe", "4111111111111111", "1111", "1", "2016", "amex", R.drawable.amex_card,
                 CardType.UNKNOWN, billingAddressId, "" /* serverId */));
     }
 

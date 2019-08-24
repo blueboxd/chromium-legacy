@@ -52,17 +52,29 @@ class TestPreviewsLitePagePredictor : public PreviewsLitePagePredictor {
   bool is_visible_;
 };
 
+// True for preresolve testing, false for preconnect.
 class PreviewsLitePagePredictorUnitTest
-    : public ChromeRenderViewHostTestHarness {
+    : public ChromeRenderViewHostTestHarness,
+      public testing::WithParamInterface<bool> {
  public:
   void RunTest(bool feature_enabled,
                bool data_saver_enabled,
                bool ect_is_slow,
                bool page_is_blacklisted,
                bool is_visible) {
-    scoped_feature_list_.InitWithFeatureState(
-        previews::features::kLitePageServerPreviews, feature_enabled);
-    preresolver_.reset(new TestPreviewsLitePagePredictor(
+    if (feature_enabled) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          previews::features::kLitePageServerPreviews,
+          {
+              {"preresolve_on_slow_connections", GetParam() ? "true" : "false"},
+              {"preconnect_on_slow_connections",
+               !GetParam() ? "true" : "false"},
+          });
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          previews::features::kLitePageServerPreviews);
+    }
+    predictor_.reset(new TestPreviewsLitePagePredictor(
         web_contents(), data_saver_enabled, ect_is_slow, page_is_blacklisted,
         is_visible));
     test_handle_.reset(
@@ -82,20 +94,30 @@ class PreviewsLitePagePredictorUnitTest
   }
 
   void CallDidFinishNavigation() {
-    preresolver()->DidFinishNavigation(test_handle_.get());
+    predictor()->DidFinishNavigation(test_handle_.get());
   }
 
-  TestPreviewsLitePagePredictor* preresolver() const {
-    return preresolver_.get();
+  std::string GetParamedHistogramName() {
+    if (GetParam())
+      return "Previews.ServerLitePage.PreresolvedToPreviewServer";
+    return "Previews.ServerLitePage.PreconnectedToPreviewServer";
   }
+
+  std::string GetOtherHistogramName() {
+    if (!GetParam())
+      return "Previews.ServerLitePage.PreresolvedToPreviewServer";
+    return "Previews.ServerLitePage.PreconnectedToPreviewServer";
+  }
+
+  TestPreviewsLitePagePredictor* predictor() const { return predictor_.get(); }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<TestPreviewsLitePagePredictor> preresolver_;
+  std::unique_ptr<TestPreviewsLitePagePredictor> predictor_;
   std::unique_ptr<content::MockNavigationHandle> test_handle_;
 };
 
-TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Origin) {
+TEST_P(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Origin) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -105,15 +127,14 @@ TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Origin) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_TRUE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
   histogram_tester.ExpectUniqueSample(
-      "Previews.ServerLitePage.ToggledPreresolve", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Previews.ServerLitePage.PreresolvedToPreviewServer", true, 1);
+      "Previews.ServerLitePage.PredictorToggled", true, 1);
+  histogram_tester.ExpectUniqueSample(GetParamedHistogramName(), true, 1);
+  histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Preview) {
+TEST_P(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Preview) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -125,15 +146,14 @@ TEST_F(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Preview) {
           PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
               GURL(kTestUrl)));
 
-  EXPECT_TRUE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
   histogram_tester.ExpectUniqueSample(
-      "Previews.ServerLitePage.ToggledPreresolve", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Previews.ServerLitePage.PreresolvedToPreviewServer", false, 1);
+      "Previews.ServerLitePage.PredictorToggled", true, 1);
+  histogram_tester.ExpectUniqueSample(GetParamedHistogramName(), false, 1);
+  histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, FeatureDisabled) {
+TEST_P(PreviewsLitePagePredictorUnitTest, FeatureDisabled) {
   RunTest(false /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -141,11 +161,10 @@ TEST_F(PreviewsLitePagePredictorUnitTest, FeatureDisabled) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, DataSaverDisabled) {
+TEST_P(PreviewsLitePagePredictorUnitTest, DataSaverDisabled) {
   RunTest(true /* feature_enabled */, false /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -153,11 +172,10 @@ TEST_F(PreviewsLitePagePredictorUnitTest, DataSaverDisabled) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, ECTNotSlow) {
+TEST_P(PreviewsLitePagePredictorUnitTest, ECTNotSlow) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           false /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -165,11 +183,23 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ECTNotSlow) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, PageBlacklisted) {
+TEST_P(PreviewsLitePagePredictorUnitTest, ECTNotSlowOnPreview) {
+  RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
+          false /* ect_is_slow */, false /* page_is_blacklisted */,
+          true /* is_visible */);
+
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(
+          PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+              GURL(kTestUrl)));
+
+  EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
+}
+
+TEST_P(PreviewsLitePagePredictorUnitTest, PageBlacklisted) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, true /* page_is_blacklisted */,
           true /* is_visible */);
@@ -177,11 +207,10 @@ TEST_F(PreviewsLitePagePredictorUnitTest, PageBlacklisted) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, NotVisible) {
+TEST_P(PreviewsLitePagePredictorUnitTest, NotVisible) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           false /* is_visible */);
@@ -189,11 +218,10 @@ TEST_F(PreviewsLitePagePredictorUnitTest, NotVisible) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, InsecurePage) {
+TEST_P(PreviewsLitePagePredictorUnitTest, InsecurePage) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -201,11 +229,10 @@ TEST_F(PreviewsLitePagePredictorUnitTest, InsecurePage) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("http://test.com"));
 
-  EXPECT_FALSE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Navigations) {
+TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Navigations) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -214,23 +241,21 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Navigations) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
-  EXPECT_TRUE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
-  EXPECT_TRUE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
 
-  histogram_tester.ExpectBucketCount(
-      "Previews.ServerLitePage.ToggledPreresolve", true, 2);
-  histogram_tester.ExpectBucketCount(
-      "Previews.ServerLitePage.ToggledPreresolve", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Previews.ServerLitePage.PreresolvedToPreviewServer", true, 2);
+  histogram_tester.ExpectBucketCount("Previews.ServerLitePage.PredictorToggled",
+                                     true, 2);
+  histogram_tester.ExpectBucketCount("Previews.ServerLitePage.PredictorToggled",
+                                     false, 1);
+  histogram_tester.ExpectUniqueSample(GetParamedHistogramName(), true, 2);
+  histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_ECT) {
+TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_ECT) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -239,24 +264,23 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_ECT) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
-  EXPECT_TRUE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
 
-  preresolver()->set_ect_is_slow(false);
-  preresolver()->OnEffectiveConnectionTypeChanged(
+  predictor()->set_ect_is_slow(false);
+  predictor()->OnEffectiveConnectionTypeChanged(
       net::EFFECTIVE_CONNECTION_TYPE_4G);
-  EXPECT_FALSE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
 
-  histogram_tester.ExpectBucketCount(
-      "Previews.ServerLitePage.ToggledPreresolve", true, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.ServerLitePage.ToggledPreresolve", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Previews.ServerLitePage.PreresolvedToPreviewServer", true, 1);
+  EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
+
+  histogram_tester.ExpectBucketCount("Previews.ServerLitePage.PredictorToggled",
+                                     true, 1);
+  histogram_tester.ExpectBucketCount("Previews.ServerLitePage.PredictorToggled",
+                                     false, 1);
+  histogram_tester.ExpectUniqueSample(GetParamedHistogramName(), true, 1);
+  histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
 
-TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Visibility) {
+TEST_P(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Visibility) {
   RunTest(true /* feature_enabled */, true /* data_saver_enabled */,
           true /* ect_is_slow */, false /* page_is_blacklisted */,
           true /* is_visible */);
@@ -265,18 +289,21 @@ TEST_F(PreviewsLitePagePredictorUnitTest, ToggleMultipleTimes_Visibility) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
-  EXPECT_TRUE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
 
-  preresolver()->set_is_visible(false);
-  preresolver()->OnVisibilityChanged(content::Visibility::HIDDEN);
-  EXPECT_FALSE(
-      preresolver()->ShouldPreresolveOnPage(/*navigation_handle=*/nullptr));
+  predictor()->set_is_visible(false);
+  predictor()->OnVisibilityChanged(content::Visibility::HIDDEN);
+  EXPECT_FALSE(predictor()->ShouldActOnPage(nullptr));
 
-  histogram_tester.ExpectBucketCount(
-      "Previews.ServerLitePage.ToggledPreresolve", true, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.ServerLitePage.ToggledPreresolve", false, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Previews.ServerLitePage.PreresolvedToPreviewServer", true, 1);
+  histogram_tester.ExpectBucketCount("Previews.ServerLitePage.PredictorToggled",
+                                     true, 1);
+  histogram_tester.ExpectBucketCount("Previews.ServerLitePage.PredictorToggled",
+                                     false, 1);
+  histogram_tester.ExpectUniqueSample(GetParamedHistogramName(), true, 1);
+  histogram_tester.ExpectTotalCount(GetOtherHistogramName(), 0);
 }
+
+// True if preresolving, false for preconnecting.
+INSTANTIATE_TEST_SUITE_P(/* empty prefix */,
+                         PreviewsLitePagePredictorUnitTest,
+                         testing::Bool());

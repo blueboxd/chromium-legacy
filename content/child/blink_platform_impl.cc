@@ -34,14 +34,15 @@
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -87,8 +88,8 @@ std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 #endif
 }
 
-int ToMessageID(WebLocalizedString::Name name) {
-  switch (name) {
+int ToMessageID(int resource_id) {
+  switch (resource_id) {
     case WebLocalizedString::kAXAMPMFieldText:
       return IDS_AX_AM_PM_FIELD_TEXT;
     case WebLocalizedString::kAXCalendarShowDatePicker:
@@ -390,6 +391,34 @@ class NestedMessageLoopRunnerImpl
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
+mojo::SharedRemote<mojom::ChildProcessHost> GetChildProcessHost() {
+  auto* thread = ChildThreadImpl::current();
+  if (thread)
+    return thread->child_process_host();
+  return {};
+}
+
+// An implementation of BrowserInterfaceBroker which forwards to the
+// ChildProcessHost interface. This lives on the IO thread.
+class BrowserInterfaceBrokerProxyImpl
+    : public blink::ThreadSafeBrowserInterfaceBrokerProxy {
+ public:
+  BrowserInterfaceBrokerProxyImpl() : process_host_(GetChildProcessHost()) {}
+
+  // blink::ThreadSafeBrowserInterfaceBrokerProxy implementation:
+  void GetInterfaceImpl(mojo::GenericPendingReceiver receiver) override {
+    if (process_host_)
+      process_host_->BindHostReceiver(std::move(receiver));
+  }
+
+ private:
+  ~BrowserInterfaceBrokerProxyImpl() override = default;
+
+  const mojo::SharedRemote<mojom::ChildProcessHost> process_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserInterfaceBrokerProxyImpl);
+};
+
 }  // namespace
 
 // TODO(skyostil): Ensure that we always have an active task runner when
@@ -405,9 +434,11 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : main_thread_task_runner_(std::move(main_thread_task_runner)),
       io_thread_task_runner_(std::move(io_thread_task_runner)),
+      browser_interface_broker_proxy_(
+          base::MakeRefCounted<BrowserInterfaceBrokerProxyImpl>()),
       native_theme_engine_(GetWebThemeEngine()) {}
 
-BlinkPlatformImpl::~BlinkPlatformImpl() {}
+BlinkPlatformImpl::~BlinkPlatformImpl() = default;
 
 void BlinkPlatformImpl::RecordAction(const blink::UserMetricsAction& name) {
   if (ChildThread* child_thread = ChildThread::Get())
@@ -431,18 +462,17 @@ WebData BlinkPlatformImpl::UncompressDataResource(int resource_id) {
   return WebData(uncompressed.data(), uncompressed.size());
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(
-    WebLocalizedString::Name name) {
-  int message_id = ToMessageID(name);
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id) {
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
   return WebString::FromUTF16(
       GetContentClient()->GetLocalizedString(message_id));
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
                                                   const WebString& value) {
-  int message_id = ToMessageID(name);
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
 
@@ -463,10 +493,10 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
       base::ReplaceStringPlaceholders(format_string, value.Utf16(), nullptr));
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
                                                   const WebString& value1,
                                                   const WebString& value2) {
-  int message_id = ToMessageID(name);
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
   std::vector<base::string16> values;
@@ -487,8 +517,9 @@ blink::WebCrypto* BlinkPlatformImpl::Crypto() {
   return &web_crypto_;
 }
 
-const char* BlinkPlatformImpl::GetBrowserServiceName() const {
-  return mojom::kBrowserServiceName;
+blink::ThreadSafeBrowserInterfaceBrokerProxy*
+BlinkPlatformImpl::GetBrowserInterfaceBrokerProxy() {
+  return browser_interface_broker_proxy_.get();
 }
 
 WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {

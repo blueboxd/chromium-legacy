@@ -16,6 +16,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,6 +31,9 @@ void AppShimHostManager::Init() {
   DCHECK(!extension_app_shim_handler_);
   extension_app_shim_handler_.reset(new apps::ExtensionAppShimHandler());
   apps::AppShimHandler::Set(extension_app_shim_handler_.get());
+  // Initialize the instance of AppShimTerminationManager, to ensure that it
+  // registers for its notifications.
+  apps::AppShimTerminationManager::Get();
 
   // If running the shim triggers Chrome startup, the user must wait for the
   // socket to be set up before the shim will be usable. This also requires

@@ -265,30 +265,6 @@ ChromeAutocompleteProviderClient::GetBuiltinsToProvideAsUserTypes() {
   return builtins_to_provide;
 }
 
-base::Time ChromeAutocompleteProviderClient::GetCurrentVisitTimestamp() const {
-// The timestamp is currenly used only for contextual zero suggest suggestions
-// on desktop. Consider updating this if this will be used for mobile services.
-#if !defined(OS_ANDROID)
-  const Browser* active_browser = BrowserList::GetInstance()->GetLastActive();
-  if (!active_browser)
-    return base::Time();
-
-  content::WebContents* active_tab =
-      active_browser->tab_strip_model()->GetActiveWebContents();
-  if (!active_tab)
-    return base::Time();
-
-  content::NavigationEntry* navigation =
-      active_tab->GetController().GetLastCommittedEntry();
-  if (!navigation)
-    return base::Time();
-
-  return navigation->GetTimestamp();
-#else
-  return base::Time();
-#endif  // !defined(OS_ANDROID)
-}
-
 component_updater::ComponentUpdateService*
 ChromeAutocompleteProviderClient::GetComponentUpdateService() {
   return g_browser_process->component_updater();

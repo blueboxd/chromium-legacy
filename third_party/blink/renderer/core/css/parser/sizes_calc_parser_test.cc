@@ -53,7 +53,8 @@ static void VerifyCSSCalc(String text,
   ASSERT_TRUE(valid) << text;
 
   Font font;
-  CSSToLengthConversionData::FontSizes font_sizes(font_size, font_size, &font);
+  CSSToLengthConversionData::FontSizes font_sizes(font_size, font_size, &font,
+                                                  1);
   CSSToLengthConversionData::ViewportSize viewport_size(viewport_width,
                                                         viewport_height);
   CSSToLengthConversionData conversion_data(nullptr, font_sizes, viewport_size,

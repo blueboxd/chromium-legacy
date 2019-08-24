@@ -47,6 +47,9 @@ class ArCore {
   // Returns information about all planes detected in the current frame.
   virtual mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() = 0;
 
+  // Returns information about all anchors tracked in the current frame.
+  virtual mojom::XRAnchorsDataPtr GetAnchorsData() = 0;
+
   virtual bool RequestHitTest(
       const mojom::XRRayPtr& ray,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;

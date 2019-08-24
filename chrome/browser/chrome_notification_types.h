@@ -208,9 +208,6 @@ enum NotificationType {
   // Sent when kiosk app list is loaded in UI.
   NOTIFICATION_KIOSK_APPS_LOADED,
 
-  // Sent when the user list has changed.
-  NOTIFICATION_USER_LIST_CHANGED,
-
   // Sent when the screen lock state has changed. The source is
   // ScreenLocker and the details is a bool specifing that the
   // screen is locked. When details is a false, the source object

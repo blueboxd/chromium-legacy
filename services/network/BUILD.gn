@@ -6,6 +6,7 @@ import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
 import("//services/network/public/cpp/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 jumbo_component("network_service") {
   sources = [
@@ -13,6 +14,8 @@ jumbo_component("network_service") {
     "chunked_data_pipe_upload_data_stream.h",
     "conditional_cache_deletion_helper.cc",
     "conditional_cache_deletion_helper.h",
+    "content_security_policy.cc",
+    "content_security_policy.h",
     "cookie_manager.cc",
     "cookie_manager.h",
     "cookie_managers_shared.cc",
@@ -291,6 +294,7 @@ source_set("tests") {
 
   sources = [
     "chunked_data_pipe_upload_data_stream_unittest.cc",
+    "content_security_policy_unittest.cc",
     "cookie_manager_unittest.cc",
     "cookie_settings_unittest.cc",
     "cors/cors_url_loader_factory_unittest.cc",
@@ -446,4 +450,18 @@ jumbo_source_set("test_support") {
     "//services/network:network_service",
     "//testing/gtest",
   ]
+}
+
+fuzzer_test("network_content_security_policy_fuzzer") {
+  sources = [
+    "content_security_policy_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/content_security_policy.dict"
+  seed_corpus = "//testing/libfuzzer/fuzzers/content_security_policy_corpus"
 }

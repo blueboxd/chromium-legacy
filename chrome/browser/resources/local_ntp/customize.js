@@ -306,10 +306,16 @@ customize.colorsMenuLoaded = false;
 
 
 /**
+ * Default color for custom color picker in hex format.
+ * @type {string}
+ */
+customize.defaultCustomColor = '#000000';
+
+/**
  * Custom color picked in hex format.
  * @type {string}
  */
-customize.customColorPicked = '#000000';
+customize.customColorPicked = customize.defaultCustomColor;
 
 /**
  * Sets the visibility of the settings menu and individual options depending on
@@ -1418,7 +1424,7 @@ customize.richerPicker_preselectBackgroundOption = function() {
 
   customize.preselectedOptions.backgroundsMenuTile = null;
 
-  const themeInfo = ntpApiHandle.themeBackgroundInfo;
+  const themeInfo = assert(ntpApiHandle.themeBackgroundInfo);
   if (!themeInfo.customBackgroundConfigured) {
     // Default.
     customize.preselectedOptions.backgroundsMenuTile =
@@ -2296,7 +2302,7 @@ customize.loadColorsMenu = function() {
  */
 customize.colorsMenuOnThemeChange = function() {
   // Update webstore theme information.
-  const themeInfo = ntpApiHandle.themeBackgroundInfo;
+  const themeInfo = assert(ntpApiHandle.themeBackgroundInfo);
   if (themeInfo.themeId && themeInfo.themeName) {
     $(customize.IDS.COLORS_THEME).classList.add(customize.CLASSES.VISIBLE);
     $(customize.IDS.COLORS_THEME_NAME).innerHTML = themeInfo.themeName;
@@ -2323,7 +2329,7 @@ customize.colorsMenuOnThemeChange = function() {
  * Preselect Colors menu tile according to the theme info.
  */
 customize.colorsMenuPreselectTile = function() {
-  const themeInfo = ntpApiHandle.themeBackgroundInfo;
+  const themeInfo = assert(ntpApiHandle.themeBackgroundInfo);
 
   let tile;
   if (themeInfo.usingDefaultTheme) {
@@ -2413,6 +2419,7 @@ customize.cancelColor = function() {
  * picker.
  */
 customize.resetColorsMenu = function() {
+  customize.customColorPicked = customize.defaultCustomColor;
   $(customize.IDS.COLOR_PICKER).value = null;
   $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-border', '');
   $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-dark', '');

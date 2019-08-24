@@ -116,18 +116,17 @@ using content::BrowserThread;
 namespace chromeos {
 namespace {
 
-// A vector pref of the the regular users known on this device, arranged in LRU
-// order.
-const char kRegularUsers[] = "LoggedInUsers";
-
-// A vector pref of the device local accounts defined on this device.
-const char kDeviceLocalAccounts[] = "PublicAccounts";
-
 // A string pref that gets set when a device local account is removed but a
 // user is currently logged into that account, requiring the account's data to
 // be removed after logout.
 const char kDeviceLocalAccountPendingDataRemoval[] =
     "PublicAccountPendingDataRemoval";
+
+// A vector pref of the device local accounts defined on this device. Note that
+// this is separate from kAccountsPrefDeviceLocalAccounts because it reflects
+// the accounts that existed on the last run of Chrome and therefore have saved
+// data.
+const char kDeviceLocalAccountsWithSavedData[] = "PublicAccounts";
 
 constexpr char kGoogleDotCom[] = "@google.com";
 
@@ -331,7 +330,7 @@ void CheckProfileForSanity() {
 void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   ChromeUserManager::RegisterPrefs(registry);
 
-  registry->RegisterListPref(kDeviceLocalAccounts);
+  registry->RegisterListPref(kDeviceLocalAccountsWithSavedData);
   registry->RegisterStringPref(kDeviceLocalAccountPendingDataRemoval,
                                std::string());
   registry->RegisterListPref(prefs::kReportingUsers);
@@ -763,7 +762,7 @@ bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
 void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
     std::set<AccountId>* device_local_accounts_set) {
   const base::ListValue* prefs_device_local_accounts =
-      GetLocalState()->GetList(kDeviceLocalAccounts);
+      GetLocalState()->GetList(kDeviceLocalAccountsWithSavedData);
   std::vector<AccountId> device_local_accounts;
   ParseUserList(*prefs_device_local_accounts, std::set<AccountId>(),
                 &device_local_accounts, device_local_accounts_set);
@@ -864,7 +863,8 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   // If ephemeral users are enabled and we are on the login screen, take this
   // opportunity to clean up by removing all regular users except the owner.
   if (GetEphemeralUsersEnabled() && !IsUserLoggedIn()) {
-    ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsers);
+    ListPrefUpdate prefs_users_update(GetLocalState(),
+                                      user_manager::kRegularUsersPref);
     prefs_users_update->Clear();
     for (user_manager::UserList::iterator it = users_.begin();
          it != users_.end();) {
@@ -883,7 +883,7 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   }
 
   if (changed)
-    NotifyUserListChanged();
+    NotifyLocalStateChanged();
 }
 
 void ChromeUserManagerImpl::GuestUserLoggedIn() {
@@ -937,22 +937,17 @@ void ChromeUserManagerImpl::SupervisedUserLoggedIn(
   active_user_ =
       RemoveRegularOrSupervisedUserFromList(account_id, false /* notify */);
 
-  // If the user was not found on the user list, create a new user.
-  if (!GetActiveUser()) {
+  if (GetActiveUser()) {
+    SetIsCurrentUserNew(
+        supervised_user_manager_->CheckForFirstRun(account_id.GetUserEmail()));
+  } else {
+    // If the user was not found on the user list, create a new user.
     SetIsCurrentUserNew(true);
     active_user_ = user_manager::User::CreateSupervisedUser(account_id);
-  } else {
-    if (supervised_user_manager_->CheckForFirstRun(account_id.GetUserEmail()))
-      SetIsCurrentUserNew(true);
-    else
-      SetIsCurrentUserNew(false);
   }
 
   // Add the user to the front of the user list.
-  ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsers);
-  prefs_users_update->Insert(
-      0, std::make_unique<base::Value>(account_id.GetUserEmail()));
-  users_.insert(users_.begin(), active_user_);
+  AddUserRecord(active_user_);
 
   // Now that user is in the list, save display name.
   if (IsCurrentUserNew()) {
@@ -1193,9 +1188,12 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
       return false;
   }
 
-  // Persist the new list of device local accounts in a pref.
-  ListPrefUpdate prefs_device_local_accounts_update(GetLocalState(),
-                                                    kDeviceLocalAccounts);
+  // Persist the new list of device local accounts in a pref. These accounts
+  // will be loaded in LoadDeviceLocalAccounts() on the next reboot regardless
+  // of whether they still exist in kAccountsPrefDeviceLocalAccounts, allowing
+  // us to clean up associated data if they disappear from policy.
+  ListPrefUpdate prefs_device_local_accounts_update(
+      GetLocalState(), kDeviceLocalAccountsWithSavedData);
   prefs_device_local_accounts_update->Clear();
   for (const auto& account : device_local_accounts)
     prefs_device_local_accounts_update->AppendString(account.user_id);
@@ -1341,13 +1339,6 @@ UserFlow* ChromeUserManagerImpl::GetDefaultUserFlow() const {
   if (!default_flow_.get())
     default_flow_.reset(new DefaultUserFlow());
   return default_flow_.get();
-}
-
-void ChromeUserManagerImpl::NotifyUserListChanged() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_USER_LIST_CHANGED,
-      content::Source<UserManager>(this),
-      content::NotificationService::NoDetails());
 }
 
 void ChromeUserManagerImpl::NotifyUserAddedToSession(

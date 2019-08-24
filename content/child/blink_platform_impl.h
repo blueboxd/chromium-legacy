@@ -45,19 +45,19 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   blink::WebData GetDataResource(int resource_id,
                                  ui::ScaleFactor scale_factor) override;
   blink::WebData UncompressDataResource(int resource_id) override;
-  blink::WebString QueryLocalizedString(
-      blink::WebLocalizedString::Name name) override;
-  blink::WebString QueryLocalizedString(blink::WebLocalizedString::Name name,
+  blink::WebString QueryLocalizedString(int resource_id) override;
+  blink::WebString QueryLocalizedString(int resource_id,
                                         const blink::WebString& value) override;
   blink::WebString QueryLocalizedString(
-      blink::WebLocalizedString::Name name,
+      int resource_id,
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   void SuddenTerminationChanged(bool enabled) override {}
   bool AllowScriptExtensionForServiceWorker(
       const blink::WebSecurityOrigin& script_origin) override;
   blink::WebCrypto* Crypto() override;
-  const char* GetBrowserServiceName() const override;
+  blink::ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+      override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
   std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
@@ -66,6 +66,8 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+  const scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
+      browser_interface_broker_proxy_;
   std::unique_ptr<blink::WebThemeEngine> native_theme_engine_;
   webcrypto::WebCryptoImpl web_crypto_;
 };

@@ -39,8 +39,8 @@
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -68,12 +68,9 @@ constexpr char kThrottledErrorDescription[] =
     "information.";
 }  // namespace
 
-AwContentRendererClient::AwContentRendererClient() {}
+AwContentRendererClient::AwContentRendererClient() = default;
 
-AwContentRendererClient::~AwContentRendererClient() {
-  DCHECK(!render_thread_connector_for_io_thread_ ||
-         !render_thread_connector_for_io_thread_->IsBound());
-}
+AwContentRendererClient::~AwContentRendererClient() = default;
 
 void AwContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
@@ -82,8 +79,8 @@ void AwContentRendererClient::RenderThreadStarted() {
 
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
 
-  io_thread_task_runner_ = thread->GetIOTaskRunner();
-  render_thread_connector_for_io_thread_ = thread->GetConnector()->Clone();
+  browser_interface_broker_ =
+      blink::Platform::Current()->GetBrowserInterfaceBrokerProxy();
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(visited_link_slave_->GetBindCallback(),
@@ -271,31 +268,15 @@ void AwContentRendererClient::AddSupportedKeySystems(
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 AwContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
-  if (content::RenderThread::Get()) {
-    return std::make_unique<AwWebSocketHandshakeThrottleProvider>(
-        content::RenderThread::Get()->GetConnector());
-  }
-  if (io_thread_task_runner_->BelongsToCurrentThread()) {
-    return std::make_unique<AwWebSocketHandshakeThrottleProvider>(
-        render_thread_connector_for_io_thread_.get());
-  }
-  NOTREACHED();
-  return nullptr;
+  return std::make_unique<AwWebSocketHandshakeThrottleProvider>(
+      browser_interface_broker_.get());
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>
 AwContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType provider_type) {
-  if (content::RenderThread::Get()) {
-    return std::make_unique<AwURLLoaderThrottleProvider>(
-        content::RenderThread::Get()->GetConnector(), provider_type);
-  }
-  if (io_thread_task_runner_->BelongsToCurrentThread()) {
-    return std::make_unique<AwURLLoaderThrottleProvider>(
-        render_thread_connector_for_io_thread_.get(), provider_type);
-  }
-  NOTREACHED();
-  return nullptr;
+  return std::make_unique<AwURLLoaderThrottleProvider>(
+      browser_interface_broker_.get(), provider_type);
 }
 
 void AwContentRendererClient::GetInterface(
@@ -304,10 +285,8 @@ void AwContentRendererClient::GetInterface(
   // A dirty hack to make SpellCheckHost requests work on WebView.
   // TODO(crbug.com/806394): Use a WebView-specific service for SpellCheckHost
   // and SafeBrowsing, instead of |content_browser|.
-  RenderThread::Get()->GetConnector()->BindInterface(
-      service_manager::ServiceFilter::ByName(
-          content::mojom::kBrowserServiceName),
-      interface_name, std::move(interface_pipe));
+  RenderThread::Get()->BindHostReceiver(
+      mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
 }  // namespace android_webview

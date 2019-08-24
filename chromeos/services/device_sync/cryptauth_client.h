@@ -45,6 +45,8 @@ class BatchGetFeatureStatusesRequest;
 class BatchGetFeatureStatusesResponse;
 class BatchSetFeatureStatusesRequest;
 class BatchSetFeatureStatusesResponse;
+class GetDevicesActivityStatusRequest;
+class GetDevicesActivityStatusResponse;
 }  // namespace cryptauthv2
 
 namespace chromeos {
@@ -179,6 +181,15 @@ class CryptAuthClient {
   virtual void BatchSetFeatureStatuses(
       const cryptauthv2::BatchSetFeatureStatusesRequest& request,
       const BatchSetFeatureStatusesCallback& callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // DeviceSync v2: GetDevicesActivityStatus
+  typedef base::Callback<void(
+      const cryptauthv2::GetDevicesActivityStatusResponse&)>
+      GetDevicesActivityStatusCallback;
+  virtual void GetDevicesActivityStatus(
+      const cryptauthv2::GetDevicesActivityStatusRequest& request,
+      const GetDevicesActivityStatusCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
   // Returns the access token used to make the request. If no request has been

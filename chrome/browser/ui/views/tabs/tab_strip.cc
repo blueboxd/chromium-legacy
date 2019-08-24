@@ -1599,7 +1599,8 @@ bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {
     return false;
 
   return hover_card_ && hover_card_->GetWidget()->IsVisible() &&
-         !hover_card_->IsFadingOut() && hover_card_->GetAnchorView() == tab;
+         !hover_card_->IsFadingOut() &&
+         hover_card_->GetDesiredAnchorView() == tab;
 }
 
 bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) {
@@ -2169,7 +2170,7 @@ void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
                              UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
-  layout_helper_->RemoveTab(model_index);
+  layout_helper_->RemoveTab(model_index, tab);
 }
 
 void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
@@ -2223,7 +2224,7 @@ void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
                              UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
-  layout_helper_->RemoveTabNoAnimation(model_index);
+  layout_helper_->RemoveTabNoAnimation(model_index, tab);
   UpdateIdealBounds();
   AnimateToIdealBounds();
 

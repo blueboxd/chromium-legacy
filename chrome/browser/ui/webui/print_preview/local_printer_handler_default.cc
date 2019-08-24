@@ -33,12 +33,15 @@ scoped_refptr<base::TaskRunner> CreatePrinterHandlerTaskRunner() {
   static constexpr base::TaskTraits kTraits = {
       base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE};
 
-#if defined(OS_WIN)
-  // Windows drivers are likely not thread-safe.
-  return base::CreateSingleThreadTaskRunner(kTraits);
-#elif defined(USE_CUPS)
+#if defined(USE_CUPS)
   // CUPS is thread safe.
   return base::CreateTaskRunner(kTraits);
+#elif defined(OS_WIN)
+  // Windows drivers are likely not thread-safe.
+  return base::CreateSingleThreadTaskRunner(kTraits);
+#else
+  // Be conservative on unsupported platforms.
+  return base::CreateSingleThreadTaskRunner(kTraits);
 #endif
 }
 

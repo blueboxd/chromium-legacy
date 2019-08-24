@@ -532,8 +532,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
   friend class VisitRelayingRenderProcessHost;
   friend class StoragePartitonInterceptor;
-  class ConnectionFilterController;
-  class ConnectionFilterImpl;
 
   // Use CreateRenderProcessHost() instead of calling this constructor
   // directly.
@@ -722,9 +720,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojo::OutgoingInvitation mojo_invitation_;
 
   std::unique_ptr<ChildConnection> child_connection_;
-  int connection_filter_id_ =
-      ServiceManagerConnection::kInvalidConnectionFilterId;
-  scoped_refptr<ConnectionFilterController> connection_filter_controller_;
 
   size_t keep_alive_ref_count_;
 

@@ -70,18 +70,18 @@ class TabStripLayoutHelper {
   // the tab has been removed from the model but the old animation style owns
   // animating it.
   // TODO(958173): Remove this when the old animation style is removed.
-  void RemoveTabNoAnimation(int model_index);
+  void RemoveTabNoAnimation(int model_index, Tab* tab);
 
   // Marks the tab at |model_index| as closing and animates it closed.
-  void RemoveTab(int model_index);
+  void RemoveTab(int model_index, Tab* tab);
 
   // Invoked when |tab| has been destroyed by TabStrip (i.e. the remove
   // animation has completed).
   void OnTabDestroyed(Tab* tab);
 
-  // Moves the tab at |prev_index| with group |group_at_prev_index| to
-  // |new_index|. Also updates the group header's location if necessary.
-  void MoveTab(base::Optional<TabGroupId> group_at_prev_index,
+  // Moves the tab at |prev_index| with group |moving_tab_group| to |new_index|.
+  // Also updates the group header's location if necessary.
+  void MoveTab(base::Optional<TabGroupId> moving_tab_group,
                int prev_index,
                int new_index);
 
@@ -135,9 +135,10 @@ class TabStripLayoutHelper {
  private:
   struct TabSlot;
 
-  // Given a tab's |model_index|, returns the index of its corresponding TabSlot
-  // in |slots_|.
-  int GetSlotIndexForTabModelIndex(int model_index) const;
+  // Given a tab's |model_index| and |group|, returns the index of its
+  // corresponding TabSlot in |slots_|.
+  int GetSlotIndexForTabModelIndex(int model_index,
+                                   base::Optional<TabGroupId> group) const;
 
   // Given a group ID, returns the index of its header's corresponding TabSlot
   // in |slots_|.

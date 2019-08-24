@@ -16,8 +16,8 @@ class TestAboutPageBrowserProxy extends TestBrowserProxy {
       methodNames.push(
           'getChannelInfo', 'getVersionInfo', 'getRegulatoryInfo',
           'checkInternetConnection', 'getEnabledReleaseNotes',
-          'getHasEndOfLife', 'openOsHelpPage', 'refreshTPMFirmwareUpdateStatus',
-          'setChannel');
+          'getHasEndOfLife', 'launchReleaseNotes', 'openOsHelpPage',
+          'refreshTPMFirmwareUpdateStatus', 'setChannel');
     }
 
     if (cr.isMac) {
@@ -206,5 +206,10 @@ if (cr.isChromeOS) {
   /** @override */
   TestAboutPageBrowserProxy.prototype.openOsHelpPage = function() {
     this.methodCalled('openOsHelpPage');
+  };
+
+  /** @override */
+  TestAboutPageBrowserProxy.prototype.launchReleaseNotes = function() {
+    this.methodCalled('launchReleaseNotes');
   };
 }

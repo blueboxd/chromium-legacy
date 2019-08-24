@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/traced_value.h"
 #include "components/ui_devtools/connector_delegate.h"
 #include "components/ui_devtools/devtools_base_agent.h"
 #include "components/ui_devtools/devtools_protocol_encoding.h"
@@ -352,7 +353,8 @@ void TracingAgent::start(
   // Since we want minimum changes to the devtools frontend, enable the
   // tracing categories for ui_devtools here.
   std::string ui_devtools_categories =
-      "disabled-by-default-devtools.timeline.frame,views,latency,toplevel,"
+      "disabled-by-default-devtools.timeline,disabled-by-default-devtools."
+      "timeline.frame,views,latency,toplevel,"
       "benchmark,cc,viz,input,latency,gpu,rail,viz,ui";
   trace_config_ = base::trace_event::TraceConfig(ui_devtools_categories,
                                                  options.fromMaybe(""));
@@ -394,8 +396,50 @@ void TracingAgent::StartTracing(std::unique_ptr<StartCallback> callback) {
 }
 
 void TracingAgent::OnRecordingEnabled(std::unique_ptr<StartCallback> callback) {
+  EditTraceDataForFrontend();
   callback->sendSuccess();
   SetupTimer(buffer_usage_reporting_interval_);
+}
+
+void TracingAgent::EditTraceDataForFrontend() {
+  // TracingStartedInBrowser is used to enter _processInspectorTrace,
+  // which is the logic flow that browser devtools uses for the performance
+  // panel. Without this trace event, devtools will use the generic trace, which
+  // does not handle fps logic or use the color scheme defined by the
+  // category-event map. The processes that are of interest in ui_devtools needs
+  // to be specified in the data[frame] property of TracingStartedInBrowser
+  auto process_data = std::make_unique<base::trace_event::TracedValue>();
+  process_data->SetBoolean("persistentIds", true);
+  process_data->BeginArray("frames");
+
+  process_data->BeginDictionary();
+  process_data->SetString("frame", "ui_devtools_browser_frame");
+  process_data->SetString("name", "Browser");
+  process_data->SetInteger("processId", base::Process::Current().Pid());
+  process_data->EndDictionary();
+
+  process_data->BeginDictionary();
+  process_data->SetString("frame", "ui_devtools_gpu_frame");
+  process_data->SetString("name", "Gpu");
+  process_data->SetInteger("processId", gpu_pid_);
+  process_data->EndDictionary();
+
+  process_data->EndArray();
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "TracingStartedInBrowser", TRACE_EVENT_SCOPE_THREAD,
+                       "data", std::move(process_data));
+
+  // Browser devtools make sure the SetLayerTreeId trace event has the same
+  // layertreeid as the layertreeid from the frame trace events 'DrawFrame' and
+  // 'BeginFrame'. There is only 1 layer tree in ui_devtools, so the layertreeid
+  // for all frames in ui_devtools is 1. This is used to get the frames, which
+  // is later used for the fps metrics.
+  auto layer_tree_data = std::make_unique<base::trace_event::TracedValue>();
+  layer_tree_data->SetString("frame", "ui_devtools_browser_frame");
+  layer_tree_data->SetInteger("layerTreeId", 1);
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data",
+                       std::move(layer_tree_data));
 }
 
 void TracingAgent::SetupTimer(double usage_reporting_interval) {

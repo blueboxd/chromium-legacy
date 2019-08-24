@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/network/network_icon.h"
-#include "ash/system/network/tray_network_state_model.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -23,6 +23,8 @@ class ImageSkia;
 }  // namespace gfx
 
 namespace ash {
+
+class TrayNetworkStateModel;
 
 // Provides an interface to network_icon for the default network. This class
 // supports two interfaces:
@@ -37,7 +39,7 @@ namespace ash {
 // TODO(stevenjb): Move all test coverage to active_network_icon_unittest.cc and
 // test Dual icon methods.
 // This class is also responsible for periodically purging the icon cache.
-class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
+class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateObserver {
  public:
   enum class Type {
     kSingle,    // A single network icon in the tray.
@@ -81,7 +83,7 @@ class ASH_EXPORT ActiveNetworkIcon : public TrayNetworkStateModel::Observer {
 
   void SetCellularUninitializedMsg();
 
-  // TrayNetworkStateModel::Observer
+  // TrayNetworkStateObserver
   void ActiveNetworkStateChanged() override;
   void NetworkListChanged() override;
 

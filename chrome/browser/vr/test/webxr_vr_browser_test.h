@@ -7,7 +7,9 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/vr/test/conditional_skipping.h"
+#include "chrome/browser/vr/test/fake_xr_session_request_consent_manager.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
+#include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
 #include "chrome/browser/vr/test/webxr_browser_test.h"
 #include "chrome/browser/vr/test/xr_browser_test.h"
 #include "chrome/common/chrome_features.h"
@@ -18,7 +20,6 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
 #include "services/service_manager/sandbox/features.h"
 #endif
 
@@ -28,6 +29,7 @@ namespace vr {
 class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
  public:
   WebXrVrBrowserTestBase();
+  virtual ~WebXrVrBrowserTestBase();
   void EnterSessionWithUserGesture(content::WebContents* web_contents) override;
   void EnterSessionWithUserGestureOrFail(
       content::WebContents* web_contents) override;
@@ -44,9 +46,17 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
   using WebXrBrowserTestBase::EndSession;
   using WebXrBrowserTestBase::EndSessionOrFail;
 
-#if defined(OS_WIN)
-  MockXRSessionRequestConsentManager consent_manager_;
-#endif
+  // Methods/objects for managing consent. If SetupFakeConsentManager is never
+  // called, the test will default to mocking out the consent prompt and always
+  // provide consent. Once SetupFakeConsentManager is called, the test will show
+  // the Consent Dialog, and then rely on it's configuration for whether to
+  // accept or reject the dialog programmatically. While this is a more thorough
+  // end-to-end test, the extra overhead should be avoided unless that is the
+  // feature under test.
+  void SetupFakeConsentManager(
+      FakeXRSessionRequestConsentManager::UserResponse user_response);
+  ::testing::NiceMock<MockXRSessionRequestConsentManager> consent_manager_;
+  std::unique_ptr<FakeXRSessionRequestConsentManager> fake_consent_manager_;
 };
 
 // Test class with OpenVR disabled.

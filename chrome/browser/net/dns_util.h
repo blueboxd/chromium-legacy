@@ -14,6 +14,13 @@
 bool IsValidDoHTemplate(const std::string& server_template,
                         std::string* server_method);
 
+// Returns true if any machine level policies. ChromeOS devices are already
+// handled by the default_for_enterprise_users field on the DoH policy. We don't
+// attempt enterprise detection on Android at this time. This special logic is
+// to prevent enterprises from having DoH enabled by default and is necessary
+// because default_for_enterprise_users only applies to ChromeOS.
+bool ShouldDisableDohForManaged();
+
 const char kDnsOverHttpsModeOff[] = "off";
 const char kDnsOverHttpsModeAutomatic[] = "automatic";
 const char kDnsOverHttpsModeSecure[] = "secure";

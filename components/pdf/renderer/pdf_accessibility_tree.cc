@@ -29,17 +29,13 @@ namespace {
 // if the median font size is not at least this many points.
 const double kMinimumFontSize = 5;
 
-// Don't try to apply line break thresholds to automatically identify
-// line breaks if the median line break is not at least this many points.
+// Don't try to apply paragraph break thresholds to automatically identify
+// paragraph breaks if the median line break is not at least this many points.
 const double kMinimumLineSpacing = 5;
 
 // Ratio between the font size of one text run and the median on the page
 // for that text run to be considered to be a heading instead of normal text.
 const double kHeadingFontSizeRatio = 1.2;
-
-// Ratio between the delta-y between two text runs and the median on the page
-// for it to be considered a line break.
-const double kLineSpacingRatio = 0.8;
 
 // Ratio between the line spacing between two lines and the median on the
 // page for that line spacing to be considered a paragraph break.
@@ -48,6 +44,100 @@ const double kParagraphLineSpacingRatio = 1.2;
 gfx::RectF ToGfxRectF(const PP_FloatRect& r) {
   return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
 }
+
+// This class is used as part of our heuristic to determine which text runs live
+// on the same "line".  As we process runs, we keep a weighted average of the
+// top and bottom coordinates of the line, and if a new run falls within that
+// range (within a threshold) it is considered part of the line.
+class LineHelper {
+ public:
+  explicit LineHelper(
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs)
+      : text_runs_(text_runs) {
+    StartNewLine(0);
+  }
+
+  void StartNewLine(size_t current_index) {
+    DCHECK(current_index == 0 || current_index < text_runs_.size());
+    start_index_ = current_index;
+    accumulated_weight_top_ = 0.0f;
+    accumulated_weight_bottom_ = 0.0f;
+    accumulated_width_ = 0.0f;
+  }
+
+  void ProcessNextRun(size_t run_index) {
+    DCHECK_LT(run_index, text_runs_.size());
+    RemoveOldRunsUpTo(run_index);
+    AddRun(text_runs_[run_index].bounds);
+  }
+
+  bool IsRunOnSameLine(size_t run_index) const {
+    DCHECK_LT(run_index, text_runs_.size());
+
+    // Calculate new top/bottom bounds for our line.
+    if (accumulated_width_ == 0.0f)
+      return false;
+
+    float line_top = accumulated_weight_top_ / accumulated_width_;
+    float line_bottom = accumulated_weight_bottom_ / accumulated_width_;
+
+    // Look at the next run, and determine how much it overlaps the line.
+    const auto& run_bounds = text_runs_[run_index].bounds;
+    if (run_bounds.size.height == 0.0f)
+      return false;
+
+    float clamped_top = std::max(line_top, run_bounds.point.y);
+    float clamped_bottom =
+        std::min(line_bottom, run_bounds.point.y + run_bounds.size.height);
+    if (clamped_bottom < clamped_top)
+      return false;
+
+    float coverage = (clamped_bottom - clamped_top) / (run_bounds.size.height);
+
+    // See if it falls within the line (within our threshold).
+    constexpr float kLineCoverageThreshold = 0.25f;
+    return coverage > kLineCoverageThreshold;
+  }
+
+ private:
+  void AddRun(const PP_FloatRect& run_bounds) {
+    float run_width = fabs(run_bounds.size.width);
+    accumulated_width_ += run_width;
+    accumulated_weight_top_ += run_bounds.point.y * run_width;
+    accumulated_weight_bottom_ +=
+        (run_bounds.point.y + run_bounds.size.height) * run_width;
+  }
+
+  void RemoveRun(const PP_FloatRect& run_bounds) {
+    float run_width = fabs(run_bounds.size.width);
+    accumulated_width_ -= run_width;
+    accumulated_weight_top_ -= run_bounds.point.y * run_width;
+    accumulated_weight_bottom_ -=
+        (run_bounds.point.y + run_bounds.size.height) * run_width;
+  }
+
+  void RemoveOldRunsUpTo(size_t stop_index) {
+    // Remove older runs from the weighted average if we've exceeded the
+    // threshold distance from them. We remove them to prevent e.g. drop-caps
+    // from unduly influencing future lines.
+    constexpr float kBoxRemoveWidthThreshold = 3.0f;
+    while (start_index_ < stop_index &&
+           accumulated_width_ > text_runs_[start_index_].bounds.size.width *
+                                    kBoxRemoveWidthThreshold) {
+      const auto& old_bounds = text_runs_[start_index_].bounds;
+      RemoveRun(old_bounds);
+      start_index_++;
+    }
+  }
+
+  const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs_;
+  size_t start_index_;
+  float accumulated_weight_top_;
+  float accumulated_weight_bottom_;
+  float accumulated_width_;
+
+  DISALLOW_COPY_AND_ASSIGN(LineHelper);
+};
 
 template <typename T>
 bool CompareTextRuns(const T& a, const T& b) {
@@ -202,16 +292,16 @@ void PdfAccessibilityTree::AddPageContent(
   DCHECK(page_node);
   double heading_font_size_threshold = 0;
   double paragraph_spacing_threshold = 0;
-  double line_spacing_threshold = 0;
   ComputeParagraphAndHeadingThresholds(text_runs, &heading_font_size_threshold,
-                                       &paragraph_spacing_threshold,
-                                       &line_spacing_threshold);
+                                       &paragraph_spacing_threshold);
 
   ui::AXNodeData* para_node = nullptr;
   ui::AXNodeData* static_text_node = nullptr;
   ui::AXNodeData* previous_on_line_node = nullptr;
   std::string static_text;
   uint32_t char_index = 0;
+  LineHelper line_helper(text_runs);
+
   for (size_t text_run_index = 0; text_run_index < text_runs.size();
        ++text_run_index) {
     const PP_PrivateAccessibilityTextRunInfo& text_run =
@@ -252,7 +342,6 @@ void PdfAccessibilityTree::AddPageContent(
           ax::mojom::IntAttribute::kPreviousOnLineId,
           previous_on_line_node->id);
     }
-    previous_on_line_node = inline_text_box_node;
 
     if (text_run_index == text_runs.size() - 1) {
       static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
@@ -260,24 +349,34 @@ void PdfAccessibilityTree::AddPageContent(
       break;
     }
 
-    // End a paragraph if either of the conditions are met:
-    // 1. Current and next text run have different font sizes.
-    // 2. The line spacing between current and next text run is more than the
-    // calculated threshold value.
-    double line_spacing =
-        text_runs[text_run_index + 1].bounds.point.y - text_run.bounds.point.y;
-    if (text_run.font_size != text_runs[text_run_index + 1].font_size ||
-        (paragraph_spacing_threshold > 0 &&
-         line_spacing > paragraph_spacing_threshold)) {
-      static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                           static_text);
-      para_node = nullptr;
-      static_text_node = nullptr;
-      static_text.clear();
+    if (!previous_on_line_node)
+      line_helper.StartNewLine(text_run_index);
+    line_helper.ProcessNextRun(text_run_index);
+
+    if (line_helper.IsRunOnSameLine(text_run_index + 1)) {
+      // The next run is on the same line.
+      previous_on_line_node = inline_text_box_node;
+    } else {
+      // The next run is on a new line.
       previous_on_line_node = nullptr;
-    } else if (line_spacing_threshold > 0 &&
-               line_spacing > line_spacing_threshold) {
-      previous_on_line_node = nullptr;
+
+      // Check to see if its also a new paragraph, i.e., if the distance between
+      // lines is greater than the threshold.  If there's no threshold, that
+      // means there weren't enough lines to compute an accurate median, so
+      // we compare against the line size instead.
+      double line_spacing = fabs(text_runs[text_run_index + 1].bounds.point.y -
+                                 text_run.bounds.point.y);
+      if ((paragraph_spacing_threshold > 0 &&
+           line_spacing > paragraph_spacing_threshold) ||
+          (paragraph_spacing_threshold == 0 &&
+           line_spacing >
+               kParagraphLineSpacingRatio * text_run.bounds.size.height)) {
+        static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                             static_text);
+        para_node = nullptr;
+        static_text_node = nullptr;
+        static_text.clear();
+      }
     }
   }
 }
@@ -354,8 +453,7 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
 void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
     double* out_heading_font_size_threshold,
-    double* out_paragraph_spacing_threshold,
-    double* out_line_spacing_threshold) {
+    double* out_paragraph_spacing_threshold) {
   // Scan over the font sizes and line spacing within this page and
   // set heuristic thresholds so that text larger than the median font
   // size can be marked as a heading, and spacing larger than the median
@@ -379,13 +477,10 @@ void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
           median_font_size * kHeadingFontSizeRatio;
     }
   }
-  if (line_spacings.size() > 0) {
+  if (line_spacings.size() > 4) {
     std::sort(line_spacings.begin(), line_spacings.end());
     double median_line_spacing = line_spacings[line_spacings.size() / 2];
     if (median_line_spacing > kMinimumLineSpacing) {
-      *out_line_spacing_threshold = median_line_spacing * kLineSpacingRatio;
-    }
-    if (line_spacings.size() > 4) {
       *out_paragraph_spacing_threshold =
           median_line_spacing * kParagraphLineSpacingRatio;
     }
@@ -479,6 +574,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
   std::string chars_utf8 = GetTextRunCharsAsUTF8(text_run, chars, char_index);
   inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                            chars_utf8);
+  inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
+                                        text_run.direction);
   inline_text_box_node->relative_bounds.bounds =
       ToGfxRectF(text_run.bounds) + page_bounds.OffsetFromOrigin();
   std::vector<int32_t> char_offsets =

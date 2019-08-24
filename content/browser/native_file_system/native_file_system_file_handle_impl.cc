@@ -22,6 +22,7 @@ using blink::mojom::NativeFileSystemStatus;
 using storage::BlobDataHandle;
 using storage::BlobImpl;
 using storage::FileSystemOperation;
+using storage::IsolatedContext;
 
 namespace content {
 
@@ -157,15 +158,12 @@ void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(
   // already exists. Using the filesystem for synchronization, a successful
   // creation of the file ensures that this File Writer creation request owns
   // the file and eliminates possible race conditions.
-  auto base_swap_path =
-      base::FilePath(url().path()).AddExtensionASCII(".crswap");
   CreateSwapFile(
-      /*count=*/0, base_swap_path, keep_existing_data, std::move(callback));
+      /*count=*/0, keep_existing_data, std::move(callback));
 }
 
 void NativeFileSystemFileHandleImpl::CreateSwapFile(
     int count,
-    const base::FilePath& base_swap_path,
     bool keep_existing_data,
     CreateFileWriterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -179,10 +177,14 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
     return;
   }
 
+  auto swap_path =
+      base::FilePath(url().virtual_path()).AddExtensionASCII(".crswap");
+  auto swap_file_system = file_system();
+
   if (count >= max_swap_files_) {
     DLOG(ERROR) << "Error Creating Swap File, count: " << count
                 << " exceeds max unique files of: " << max_swap_files_
-                << " base path: " << base_swap_path;
+                << " base path: " << swap_path;
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kOperationFailed,
                                 "Failed to create swap file."),
@@ -190,36 +192,56 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
     return;
   }
 
-  auto swap_path = base_swap_path;
   if (count > 0) {
-    swap_path = base_swap_path.InsertBeforeExtensionASCII(
-        base::StringPrintf(".%d", count));
+    swap_path =
+        swap_path.InsertBeforeExtensionASCII(base::StringPrintf(".%d", count));
   }
 
+  // First attempt to just create the swap file in the same file system as this
+  // file.
   storage::FileSystemURL swap_url =
-      manager()->context()->CreateCrackedFileSystemURL(url().origin().GetURL(),
-                                                       url().type(), swap_path);
+      manager()->context()->CreateCrackedFileSystemURL(
+          url().origin().GetURL(), url().mount_type(), swap_path);
+
+  // If that failed, it means this file was part of an isolated file system,
+  // and specifically, a single file isolated file system. In that case we'll
+  // need to register a new isolated file system for the swap file, and use that
+  // for the writer.
+  if (!swap_url.is_valid()) {
+    DCHECK_EQ(url().mount_type(), storage::kFileSystemTypeIsolated);
+
+    swap_path = base::FilePath(url().path()).AddExtensionASCII(".crswap");
+    if (count > 0) {
+      swap_path = swap_path.InsertBeforeExtensionASCII(
+          base::StringPrintf(".%d", count));
+    }
+
+    auto handle =
+        manager()->CreateFileSystemURLFromPath(context().origin, swap_path);
+    swap_url = std::move(handle.url);
+    swap_file_system = std::move(handle.file_system);
+  }
 
   operation_runner()->CreateFile(
       swap_url,
       /*exclusive=*/true,
       base::BindOnce(&NativeFileSystemFileHandleImpl::DidCreateSwapFile,
-                     weak_factory_.GetWeakPtr(), count, base_swap_path,
-                     swap_url, keep_existing_data, std::move(callback)));
+                     weak_factory_.GetWeakPtr(), count, swap_url,
+                     swap_file_system, keep_existing_data,
+                     std::move(callback)));
 }
 
 void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
     int count,
-    const base::FilePath& base_swap_path,
     const storage::FileSystemURL& swap_url,
+    storage::IsolatedContext::ScopedFSHandle swap_file_system,
     bool keep_existing_data,
     CreateFileWriterCallback callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (result == base::File::FILE_ERROR_EXISTS) {
     // Creation attempt failed. We need to find an unused filename.
-    CreateSwapFile(count + 1, base_swap_path, keep_existing_data,
-                   std::move(callback));
+    CreateSwapFile(count + 1, keep_existing_data, std::move(callback));
     return;
   }
 
@@ -234,9 +256,13 @@ void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
   }
 
   if (!keep_existing_data) {
-    std::move(callback).Run(native_file_system_error::Ok(),
-                            manager()->CreateFileWriter(
-                                context(), url(), swap_url, handle_state()));
+    std::move(callback).Run(
+        native_file_system_error::Ok(),
+        manager()->CreateFileWriter(
+            context(), url(), swap_url,
+            NativeFileSystemManagerImpl::SharedHandleState(
+                handle_state().read_grant, handle_state().write_grant,
+                swap_file_system)));
     return;
   }
 
@@ -246,12 +272,13 @@ void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
       storage::FileSystemOperation::CopyProgressCallback(),
       base::BindOnce(&NativeFileSystemFileHandleImpl::DidCopySwapFile,
-                     weak_factory_.GetWeakPtr(), swap_url,
+                     weak_factory_.GetWeakPtr(), swap_url, swap_file_system,
                      std::move(callback)));
 }
 
 void NativeFileSystemFileHandleImpl::DidCopySwapFile(
     const storage::FileSystemURL& swap_url,
+    storage::IsolatedContext::ScopedFSHandle swap_file_system,
     CreateFileWriterCallback callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -266,7 +293,11 @@ void NativeFileSystemFileHandleImpl::DidCopySwapFile(
   }
   std::move(callback).Run(
       native_file_system_error::Ok(),
-      manager()->CreateFileWriter(context(), url(), swap_url, handle_state()));
+      manager()->CreateFileWriter(
+          context(), url(), swap_url,
+          NativeFileSystemManagerImpl::SharedHandleState(
+              handle_state().read_grant, handle_state().write_grant,
+              swap_file_system)));
 }
 
 base::WeakPtr<NativeFileSystemHandleBase>

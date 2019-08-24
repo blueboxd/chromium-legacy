@@ -22,6 +22,7 @@ class MockCryptAuthClient : public CryptAuthClient {
   MockCryptAuthClient();
   ~MockCryptAuthClient() override;
 
+  // TODO(https://crbug.com/997268): Update these to use MOCK_METHOD.
   // CryptAuthClient:
   MOCK_METHOD4(GetMyDevices,
                void(const cryptauth::GetMyDevicesRequest& request,
@@ -82,6 +83,10 @@ class MockCryptAuthClient : public CryptAuthClient {
   MOCK_METHOD3(BatchSetFeatureStatuses,
                void(const cryptauthv2::BatchSetFeatureStatusesRequest& request,
                     const BatchSetFeatureStatusesCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(GetDevicesActivityStatus,
+               void(const cryptauthv2::GetDevicesActivityStatusRequest& request,
+                    const GetDevicesActivityStatusCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD0(GetAccessTokenUsed, std::string());
 

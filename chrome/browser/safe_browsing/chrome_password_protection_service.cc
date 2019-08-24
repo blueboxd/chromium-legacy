@@ -807,15 +807,17 @@ void ChromePasswordProtectionService::
 
   // If password_type == OTHER_GAIA_PASSWORD, the account is not syncing.
   // Therefore, we have to use the security event recorder to log events to mark
-  // the account at risk in order to send data to Google.
+  // the account at risk.
   if (password_type == PasswordType::OTHER_GAIA_PASSWORD) {
     sync_pb::GaiaPasswordReuse gaia_password_reuse_event;
     *gaia_password_reuse_event.mutable_reuse_lookup() = reuse_lookup;
 
     WebUIInfoSingleton::GetInstance()->AddToSecurityEvents(
         gaia_password_reuse_event);
-    SecurityEventRecorderFactory::GetForProfile(profile_)
-        ->RecordGaiaPasswordReuse(gaia_password_reuse_event);
+    // TODO(crbug/914410): Renable once we know the SecurityEventRecorder won't
+    // crash Chrome.
+    // SecurityEventRecorderFactory::GetForProfile(profile_)
+    //     ->RecordGaiaPasswordReuse(gaia_password_reuse_event);
   } else {
     syncer::UserEventService* user_event_service =
         browser_sync::UserEventServiceFactory::GetForProfile(profile_);

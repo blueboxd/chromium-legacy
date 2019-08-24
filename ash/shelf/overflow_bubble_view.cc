@@ -220,9 +220,9 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
                                        views::View* anchor,
                                        SkColor background_color)
     : ShelfBubble(anchor, shelf_view->shelf()->alignment(), background_color),
-      shelf_(shelf_view->shelf()),
       shelf_view_(shelf_view) {
-  DCHECK(shelf_);
+  DCHECK(shelf_view_);
+  DCHECK(GetShelf());
 
   set_border_radius(ShelfConstants::shelf_size() / 2);
   SetArrow(views::BubbleBorder::NONE);
@@ -241,11 +241,11 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
 
   // Initialize the left arrow button.
   left_arrow_ = AddChildView(std::make_unique<OverflowScrollArrowView>(
-      ScrollArrowView::kLeft, shelf_->IsHorizontalAlignment(), this));
+      ScrollArrowView::kLeft, GetShelf()->IsHorizontalAlignment(), this));
 
   // Initialize the right arrow button.
   right_arrow_ = AddChildView(std::make_unique<OverflowScrollArrowView>(
-      ScrollArrowView::kRight, shelf_->IsHorizontalAlignment(), this));
+      ScrollArrowView::kRight, GetShelf()->IsHorizontalAlignment(), this));
 
   // Initialize the shelf container view.
   shelf_container_view_ = AddChildView(
@@ -267,7 +267,7 @@ bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
   // Make sure that no visible shelf button is partially shown after gestures.
   if (event.type() == ui::ET_GESTURE_END ||
       event.type() == ui::ET_GESTURE_SCROLL_END) {
-    int current_scroll_distance = shelf_->IsHorizontalAlignment()
+    int current_scroll_distance = GetShelf()->IsHorizontalAlignment()
                                       ? scroll_offset_.x()
                                       : scroll_offset_.y();
     const int residue = current_scroll_distance % GetUnit();
@@ -279,7 +279,7 @@ bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
 
     int offset =
         residue > GetGestureDragTheshold() ? GetUnit() - residue : -residue;
-    if (shelf_->IsHorizontalAlignment())
+    if (GetShelf()->IsHorizontalAlignment())
       ScrollByXOffset(offset, /*animate=*/true);
     else
       ScrollByYOffset(offset, /*animate=*/true);
@@ -289,7 +289,7 @@ bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return false;
 
-  if (shelf_->IsHorizontalAlignment())
+  if (GetShelf()->IsHorizontalAlignment())
     ScrollByXOffset(-event.details().scroll_x(), /*animate=*/false);
   else
     ScrollByYOffset(-event.details().scroll_y(), /*animate=*/false);
@@ -327,7 +327,7 @@ int OverflowBubbleView::GetLastVisibleIndexForTest() const {
 }
 
 int OverflowBubbleView::CalculateScrollUpperBound() const {
-  const bool is_horizontal = shelf_->IsHorizontalAlignment();
+  const bool is_horizontal = GetShelf()->IsHorizontalAlignment();
 
   // Calculate the length of the available space.
   const gfx::Rect content_size = GetContentsBounds();
@@ -346,8 +346,9 @@ int OverflowBubbleView::CalculateScrollUpperBound() const {
 }
 
 float OverflowBubbleView::CalculateLayoutStrategyAfterScroll(float scroll) {
-  const float old_scroll =
-      shelf_->IsHorizontalAlignment() ? scroll_offset_.x() : scroll_offset_.y();
+  const float old_scroll = GetShelf()->IsHorizontalAlignment()
+                               ? scroll_offset_.x()
+                               : scroll_offset_.y();
 
   const float scroll_upper_bound =
       static_cast<float>(CalculateScrollUpperBound());
@@ -368,13 +369,13 @@ void OverflowBubbleView::AdjustToEnsureIconsFullyVisible(
   if (layout_strategy_ == NOT_SHOW_ARROW_BUTTONS)
     return;
 
-  int width = shelf_->IsHorizontalAlignment() ? bubble_bounds->width()
-                                              : bubble_bounds->height();
+  int width = GetShelf()->IsHorizontalAlignment() ? bubble_bounds->width()
+                                                  : bubble_bounds->height();
   const int rd = width % GetUnit();
   width -= rd;
 
   // Offset to ensure that the bubble view is shown at the center of the screen.
-  if (shelf_->IsHorizontalAlignment()) {
+  if (GetShelf()->IsHorizontalAlignment()) {
     bubble_bounds->set_width(width);
     bubble_bounds->Offset(rd / 2, 0);
   } else {
@@ -386,7 +387,7 @@ void OverflowBubbleView::AdjustToEnsureIconsFullyVisible(
 void OverflowBubbleView::StartShelfScrollAnimation(float scroll_distance) {
   const gfx::Transform current_transform = shelf_view()->GetTransform();
   gfx::Transform reverse_transform = current_transform;
-  if (shelf_->IsHorizontalAlignment())
+  if (GetShelf()->IsHorizontalAlignment())
     reverse_transform.Translate(gfx::Vector2dF(scroll_distance, 0));
   else
     reverse_transform.Translate(gfx::Vector2dF(0, scroll_distance));
@@ -405,17 +406,18 @@ gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
           ->GetDisplayNearestPoint(GetAnchorRect().CenterPoint())
           .work_area();
   monitor_rect.Inset(gfx::Insets(kMinimumMargin));
-  int available_length = shelf_->IsHorizontalAlignment()
+  int available_length = GetShelf()->IsHorizontalAlignment()
                              ? monitor_rect.width()
                              : monitor_rect.height();
 
   gfx::Size preferred_size = shelf_container_view_->GetPreferredSize();
-  int preferred_length = shelf_->IsHorizontalAlignment()
+  int preferred_length = GetShelf()->IsHorizontalAlignment()
                              ? preferred_size.width()
                              : preferred_size.height();
   preferred_length += 2 * kEndPadding;
-  const int scroll_length =
-      shelf_->IsHorizontalAlignment() ? scroll_offset_.x() : scroll_offset_.y();
+  const int scroll_length = GetShelf()->IsHorizontalAlignment()
+                                ? scroll_offset_.x()
+                                : scroll_offset_.y();
 
   if (preferred_length <= available_length) {
     // Enough space to accommodate all of shelf buttons. So hide arrow buttons.
@@ -432,7 +434,7 @@ gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
     layout_strategy_ = SHOW_BUTTONS;
   }
 
-  if (shelf_->IsHorizontalAlignment()) {
+  if (GetShelf()->IsHorizontalAlignment()) {
     preferred_size.set_width(std::min(preferred_length, monitor_rect.width()));
   } else {
     preferred_size.set_height(
@@ -446,7 +448,7 @@ void OverflowBubbleView::Layout() {
                                     ShelfConstants::button_size());
   const gfx::Size arrow_button_size(GetArrowButtonSize(), GetArrowButtonSize());
 
-  bool is_horizontal = shelf_->IsHorizontalAlignment();
+  bool is_horizontal = GetShelf()->IsHorizontalAlignment();
   gfx::Rect shelf_container_bounds = GetLocalBounds();
 
   // Transpose and layout as if it is horizontal.
@@ -486,7 +488,7 @@ void OverflowBubbleView::Layout() {
   shelf_container_bounds.Inset(kEndPadding, 0, kEndPadding, 0);
 
   // Adjust the bounds when not showing in the horizontal alignment.
-  if (!shelf_->IsHorizontalAlignment()) {
+  if (!GetShelf()->IsHorizontalAlignment()) {
     left_arrow_bounds.Transpose();
     right_arrow_bounds.Transpose();
     shelf_container_bounds.Transpose();
@@ -510,7 +512,7 @@ void OverflowBubbleView::Layout() {
   gfx::Vector2d translate_vector;
   if (!left_arrow_bounds.IsEmpty()) {
     translate_vector =
-        shelf_->IsHorizontalAlignment()
+        GetShelf()->IsHorizontalAlignment()
             ? gfx::Vector2d(shelf_container_bounds.x() - kEndPadding, 0)
             : gfx::Vector2d(0, shelf_container_bounds.y() - kEndPadding);
   }
@@ -525,7 +527,7 @@ void OverflowBubbleView::ChildPreferredSizeChanged(views::View* child) {
   SizeToContents();
 
   // Ensures |shelf_view_| is still visible.
-  if (shelf_->IsHorizontalAlignment())
+  if (GetShelf()->IsHorizontalAlignment())
     ScrollByXOffset(0, /*animate=*/false);
   else
     ScrollByYOffset(0, /*animate=*/false);
@@ -536,7 +538,7 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   // recently, but the behavior of this function was retained to continue
   // using Y offsets only. Might be good to simply scroll in both
   // directions as in OverflowBubbleView::OnScrollEvent.
-  if (shelf_->IsHorizontalAlignment())
+  if (GetShelf()->IsHorizontalAlignment())
     ScrollByXOffset(-event.y_offset(), /*animate=*/false);
   else
     ScrollByYOffset(-event.y_offset(), /*animate=*/false);
@@ -556,9 +558,9 @@ void OverflowBubbleView::ButtonPressed(views::Button* sender,
 
   // Implement the arrow button handler in the same way with scrolling the
   // bubble view. The key is to calculate the suitable scroll distance.
-  int offset =
-      (shelf_->IsHorizontalAlignment() ? bounds().width() : bounds().height()) -
-      2 * GetUnit();
+  int offset = (GetShelf()->IsHorizontalAlignment() ? bounds().width()
+                                                    : bounds().height()) -
+               2 * GetUnit();
   DCHECK_GT(offset, 0);
 
   // If |forward| is true, scroll the overflow bubble view rightward.
@@ -566,14 +568,14 @@ void OverflowBubbleView::ButtonPressed(views::Button* sender,
   if (!forward)
     offset = -offset;
 
-  if (shelf_->IsHorizontalAlignment())
+  if (GetShelf()->IsHorizontalAlignment())
     ScrollByXOffset(offset, true);
   else
     ScrollByYOffset(offset, true);
 }
 
 void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
-  if (shelf_->IsHorizontalAlignment())
+  if (GetShelf()->IsHorizontalAlignment())
     ScrollByXOffset(static_cast<int>(-event->x_offset()), /*animate=*/false);
   else
     ScrollByYOffset(static_cast<int>(-event->y_offset()), /*animate=*/false);
@@ -594,7 +596,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   monitor_rect.Inset(gfx::Insets(kMinimumMargin));
 
   gfx::Rect bounds;
-  if (shelf_->IsHorizontalAlignment()) {
+  if (GetShelf()->IsHorizontalAlignment()) {
     bounds = gfx::Rect(
         base::i18n::IsRTL() ? anchor_rect.x()
                             : anchor_rect.right() - content_size.width(),
@@ -607,7 +609,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   } else {
     bounds = gfx::Rect(0, anchor_rect.bottom() - content_size.height(),
                        content_size.width(), content_size.height());
-    if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
+    if (GetShelf()->alignment() == SHELF_ALIGNMENT_LEFT)
       bounds.set_x(anchor_rect.right() + distance_to_overflow_button);
     else
       bounds.set_x(anchor_rect.x() - distance_to_overflow_button -
@@ -631,9 +633,9 @@ bool OverflowBubbleView::CanActivate() const {
   aura::Window* active_window = window_util::GetActiveWindow();
   aura::Window* bubble_window = GetWidget()->GetNativeWindow();
   aura::Window* hotseat_window =
-      shelf_->shelf_widget()->hotseat_widget()->GetNativeWindow();
+      GetShelf()->shelf_widget()->hotseat_widget()->GetNativeWindow();
   aura::Window* status_area_window =
-      shelf_->shelf_widget()->status_area_widget()->GetNativeWindow();
+      GetShelf()->shelf_widget()->status_area_widget()->GetNativeWindow();
   return active_window == bubble_window || active_window == hotseat_window ||
          active_window == status_area_window;
 }
@@ -649,6 +651,14 @@ bool OverflowBubbleView::ShouldCloseOnMouseExit() {
 int OverflowBubbleView::GetArrowButtonSize() {
   static int kArrowButtonSize = ShelfConstants::control_size();
   return kArrowButtonSize;
+}
+
+Shelf* OverflowBubbleView::GetShelf() {
+  return shelf_view_->shelf();
+}
+
+const Shelf* OverflowBubbleView::GetShelf() const {
+  return shelf_view_->shelf();
 }
 
 }  // namespace ash

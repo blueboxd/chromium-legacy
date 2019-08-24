@@ -99,7 +99,7 @@ class ArcPlayStoreDisabledWaiter : public ArcSessionManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreDisabledWaiter);
 };
 
-class ArcSessionManagerTest : public chromeos::MixinBasedInProcessBrowserTest {
+class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
  protected:
   ArcSessionManagerTest() {}
 
@@ -107,12 +107,12 @@ class ArcSessionManagerTest : public chromeos::MixinBasedInProcessBrowserTest {
   ~ArcSessionManagerTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    chromeos::MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
   void SetUpOnMainThread() override {
-    chromeos::MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
     // Init ArcSessionManager for testing.
@@ -178,7 +178,7 @@ class ArcSessionManagerTest : public chromeos::MixinBasedInProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
     user_manager_enabler_.reset();
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
-    chromeos::MixinBasedInProcessBrowserTest::TearDownOnMainThread();
+    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {

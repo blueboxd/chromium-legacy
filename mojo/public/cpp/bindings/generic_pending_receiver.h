@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -32,6 +33,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) GenericPendingReceiver {
   template <typename Interface>
   GenericPendingReceiver(mojo::PendingReceiver<Interface> receiver)
       : GenericPendingReceiver(Interface::Name_, receiver.PassPipe()) {}
+
+  template <typename Interface>
+  GenericPendingReceiver(mojo::InterfaceRequest<Interface> request)
+      : GenericPendingReceiver(Interface::Name_, request.PassMessagePipe()) {}
 
   GenericPendingReceiver(GenericPendingReceiver&&);
   ~GenericPendingReceiver();

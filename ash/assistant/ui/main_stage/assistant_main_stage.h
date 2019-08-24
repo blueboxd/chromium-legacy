@@ -11,6 +11,7 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
@@ -58,7 +59,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMainStage
   void OnPendingQueryChanged(const AssistantQuery& query) override;
   void OnPendingQueryCleared(bool due_to_commit) override;
   void OnResponseChanged(
-      const std::shared_ptr<AssistantResponse>& response) override;
+      const scoped_refptr<AssistantResponse>& response) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(

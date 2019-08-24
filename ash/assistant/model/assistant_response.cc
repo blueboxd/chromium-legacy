@@ -6,6 +6,7 @@
 
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "base/bind.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace ash {
 

@@ -6,7 +6,6 @@
 
 #include <bitset>
 #include "build/build_config.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"

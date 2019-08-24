@@ -26,6 +26,8 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/login_user_view.h"
+#include "ash/login/ui/parent_access_view.h"
+#include "ash/login/ui/parent_access_widget.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_features.h"
@@ -1949,7 +1951,7 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   EXPECT_TRUE(HasFocusInAnyChildView(status_area));
 }
 
-// Tests parent access dialog showing and hiding.
+// Tests parent access dialog showing/hiding and focus behavior.
 TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
@@ -1964,26 +1966,29 @@ TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
       LoginAuthUserView::TestApi(primary_view->auth_user());
 
   EXPECT_TRUE(primary_view->auth_user());
-  EXPECT_FALSE(primary_view->parent_access());
+  EXPECT_FALSE(ParentAccessWidget::Get());
   EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
                   .textfield()
                   ->HasFocus());
 
-  contents->ShowParentAccessDialog(true);
+  contents->ShowParentAccessDialog();
 
   EXPECT_TRUE(primary_view->auth_user());
-  EXPECT_TRUE(primary_view->parent_access());
+  ASSERT_TRUE(ParentAccessWidget::Get());
+  ParentAccessWidget::TestApi widget =
+      ParentAccessWidget::TestApi(ParentAccessWidget::Get());
   EXPECT_FALSE(LoginPasswordView::TestApi(auth_user.password_view())
                    .textfield()
                    ->HasFocus());
   EXPECT_TRUE(HasFocusInAnyChildView(
-      ParentAccessView::TestApi(primary_view->parent_access())
+      ParentAccessView::TestApi(widget.parent_access_view())
           .access_code_view()));
 
-  contents->ShowParentAccessDialog(false);
+  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+      .SimulateValidationFinished(false);
 
   EXPECT_TRUE(primary_view->auth_user());
-  EXPECT_FALSE(primary_view->parent_access());
+  EXPECT_FALSE(ParentAccessWidget::Get());
   EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
                   .textfield()
                   ->HasFocus());
@@ -1998,24 +2003,40 @@ TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
-  LockContentsView::TestApi contents_test_api(contents);
   AddChildUsers(1);
+  const AccountId child_id = users()[0].basic_user_info.account_id;
   SetWidget(CreateWidgetWithContent(contents));
 
-  // Simulate initial state - button shown.
+  // Simulate initial state - user auth disabled and button shown.
+  DataDispatcher()->DisableAuthForUser(
+      child_id,
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1)));
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
   EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation failed - show the button.
-  contents->ShowParentAccessDialog(true);
+  contents->ShowParentAccessDialog();
   EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
-  contents_test_api.SimulateParentAccessValidationFinished(false);
+  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+      .SimulateValidationFinished(false);
   EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation succeeded - hide the button.
-  contents->ShowParentAccessDialog(true);
+  contents->ShowParentAccessDialog();
   EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
-  contents_test_api.SimulateParentAccessValidationFinished(true);
+  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+      .SimulateValidationFinished(true);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+
+  // Validation failed but user auth got enabled - hide button.
+  // (Device got unlocked when parent access dialog was shown)
+  contents->ShowParentAccessDialog();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  DataDispatcher()->EnableAuthForUser(child_id);
+  ParentAccessWidget::TestApi(ParentAccessWidget::Get())
+      .SimulateValidationFinished(false);
   EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
 }
 

@@ -69,8 +69,7 @@ void DynamicTcmallocPolicy::OnPassedToGraph(Graph* graph) {
   graph_ = graph;
   timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromSeconds(
-          features::os_linux::kDynamicTuningTimeSec.Get()),
+      base::TimeDelta::FromSeconds(features::kDynamicTuningTimeSec.Get()),
       base::BindRepeating(&DynamicTcmallocPolicy::CheckAndUpdateTunables,
                           base::Unretained(this)));
 }
@@ -142,7 +141,7 @@ void DynamicTcmallocPolicy::CheckAndUpdateTunables() {
       // check before examining all the frames that the invisible scale factor
       // 75% of the base would still be greater than the min.
       constexpr float kInvisibleScaleFactor = 0.75;
-      if (features::os_linux::kDynamicTuningScaleInvisibleTimeSec.Get() >= 0 &&
+      if (features::kDynamicTuningScaleInvisibleTimeSec.Get() >= 0 &&
           (base_size_mb * kInvisibleScaleFactor) >=
               kMinOverallThreadCacheSizeMB) {
         // We will examine the frame nodes to find the main frame, if it hasn't
@@ -173,8 +172,7 @@ void DynamicTcmallocPolicy::CheckAndUpdateTunables() {
           // size for that ProcessNode to 75%.
           if (last_visibility_change <
               base::TimeDelta::FromSeconds(
-                  features::os_linux::kDynamicTuningScaleInvisibleTimeSec
-                      .Get())) {
+                  features::kDynamicTuningScaleInvisibleTimeSec.Get())) {
             // This frame is invisible but not for long enough so we cannot
             // scale any further.
             all_main_frames_invisible = false;

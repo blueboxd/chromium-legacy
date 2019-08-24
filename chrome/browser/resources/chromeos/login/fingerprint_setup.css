@@ -25,11 +25,16 @@
   width: 210px;
 }
 
+#sensorLocationContainer {
+  height: 242px;
+  width: 352px;
+}
+
 #sensorLocation {
   background-image:
       url(chrome://oobe/fingerprint_scanner_animation.png);
   background-size: 352px 242px;
-  height: 242px;
-  width: 352px;
+  height: 100%;
+  width: 100%;
 }
 

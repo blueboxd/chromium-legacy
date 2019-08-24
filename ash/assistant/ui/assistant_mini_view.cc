@@ -105,7 +105,7 @@ void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {
 }
 
 void AssistantMiniView::OnResponseChanged(
-    const std::shared_ptr<AssistantResponse>& response) {
+    const scoped_refptr<AssistantResponse>& response) {
   // When a response changes, the committed query becomes active. We'll cache
   // the text for that query to use as our prompt when not using the stylus.
   const AssistantQuery& committed_query =

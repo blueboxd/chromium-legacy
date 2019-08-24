@@ -9,6 +9,7 @@
 
 import argparse
 import os
+import subprocess
 import sys
 import tarfile
 
@@ -40,6 +41,11 @@ def main(args):
         # This is a prebuilt which wasn't accompanied by SDK symbols.
         continue
 
+    # Exclude stripped binaries (indicated by their lack of symbol tables).
+    readelf_output = subprocess.check_output(
+        ['readelf', '-S', symbol_source_path])
+    if not '.symtab' in readelf_output:
+      continue
 
     # Archive the unstripped ELF binary, placing it in a hierarchy keyed to the
     # GNU build ID. The binary resides in a directory whose name is the first

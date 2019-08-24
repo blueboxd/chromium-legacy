@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/update_client/update_query_params_delegate.h"
 #include "components/version_info/version_info.h"
@@ -63,11 +64,11 @@ const char kArch[] =
 
 const char kChrome[] = "chrome";
 
-#if defined(GOOGLE_CHROME_BUILD)
-const char kChromeCrx[] = "chromecrx";
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const char kCrx[] = "chromecrx";
 #else
-const char kChromiumCrx[] = "chromiumcrx";
-#endif  // defined(GOOGLE_CHROME_BUILD)
+const char kCrx[] = "chromiumcrx";
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 UpdateQueryParamsDelegate* g_delegate = nullptr;
 
@@ -89,11 +90,7 @@ const char* UpdateQueryParams::GetProdIdString(UpdateQueryParams::ProdId prod) {
       return kChrome;
       break;
     case UpdateQueryParams::CRX:
-#if defined(GOOGLE_CHROME_BUILD)
-      return kChromeCrx;
-#else
-      return kChromiumCrx;
-#endif
+      return kCrx;
       break;
   }
   return kUnknown;

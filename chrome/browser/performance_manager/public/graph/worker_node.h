@@ -5,9 +5,17 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_WORKER_NODE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_WORKER_NODE_H_
 
+#include <string>
+
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
+
+class GURL;
+
+namespace base {
+class UnguessableToken;
+}
 
 namespace performance_manager {
 
@@ -52,12 +60,21 @@ class WorkerNode : public Node {
   WorkerNode();
   ~WorkerNode() override;
 
-  // Returns the type.
-  virtual WorkerType GetType() const = 0;
+  // Returns the worker type. Note that this is different from the NodeTypeEnum.
+  virtual WorkerType GetWorkerType() const = 0;
+
+  // Returns the unique ID of the browser context that this worker belongs to.
+  virtual const std::string& GetBrowserContextID() const = 0;
 
   // Returns the process node to which this worker belongs. This is a constant
   // over the lifetime of the frame.
   virtual const ProcessNode* GetProcessNode() const = 0;
+
+  // Returns the URL of the worker script.
+  virtual const GURL& GetURL() const = 0;
+
+  // Returns the dev tools token for this worker.
+  virtual const base::UnguessableToken& GetDevToolsToken() const = 0;
 
   // Returns the frames that are clients of this worker.
   virtual const base::flat_set<const FrameNode*> GetClientFrames() const = 0;

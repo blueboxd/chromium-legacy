@@ -1098,15 +1098,26 @@ class CONTENT_EXPORT ContentBrowserClient {
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) || defined(OS_FUCHSIA)
 
 #if defined(OS_WIN)
+  // Defines flags that can be passed to PreSpawnRenderer.
+  enum RendererSpawnFlags {
+    NONE = 0,
+    RENDERER_CODE_INTEGRITY = 1 << 0,
+  };
+
   // This is called on the PROCESS_LAUNCHER thread before the renderer process
   // is launched. It gives the embedder a chance to add loosen the sandbox
   // policy.
-  virtual bool PreSpawnRenderer(sandbox::TargetPolicy* policy);
+  virtual bool PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                                RendererSpawnFlags flags);
 
   // Returns the AppContainer SID for the specified sandboxed process type, or
   // empty string if this sandboxed process type does not support living inside
-  // an AppContainer.
+  // an AppContainer. Called on PROCESS_LAUNCHER thread.
   virtual base::string16 GetAppContainerSidForSandboxType(int sandbox_type);
+
+  // Returns whether renderer code integrity is enabled.
+  // This is called on the UI thread.
+  virtual bool IsRendererCodeIntegrityEnabled();
 #endif
 
   // Binds a new media remoter service to |request|, if supported by the

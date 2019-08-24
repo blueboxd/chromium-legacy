@@ -78,6 +78,14 @@ settings.NoteAppLockScreenSupport = {
  */
 settings.NoteAppInfo;
 
+/**
+ * @typedef {{
+ *   label: string,
+ *   uuid: string
+ * }}
+ */
+settings.ExternalStorage;
+
 cr.define('settings', function() {
   /** @interface */
   class DevicePageBrowserProxy {
@@ -154,6 +162,16 @@ cr.define('settings', function() {
      *     actions from the lock screen.
      */
     setPreferredNoteTakingAppEnabledOnLockScreen(enabled) {}
+
+    /** Requests an external storage list update. */
+    updateExternalStorages() {}
+
+    /**
+     * |callback| is run when the list of plugged-in external storages is
+     * available after |updateExternalStorages| has been called.
+     * @param {function(Array<!settings.ExternalStorage>):void} callback
+     */
+    setExternalStoragesUpdatedCallback(callback) {}
   }
 
   /**
@@ -233,6 +251,16 @@ cr.define('settings', function() {
     /** @override */
     setPreferredNoteTakingAppEnabledOnLockScreen(enabled) {
       chrome.send('setPreferredNoteTakingAppEnabledOnLockScreen', [enabled]);
+    }
+
+    /** @override */
+    updateExternalStorages() {
+      chrome.send('updateExternalStorages');
+    }
+
+    /** @override */
+    setExternalStoragesUpdatedCallback(callback) {
+      cr.addWebUIListener('onExternalStoragesUpdated', callback);
     }
   }
 

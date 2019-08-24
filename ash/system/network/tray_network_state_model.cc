@@ -64,11 +64,11 @@ TrayNetworkStateModel::TrayNetworkStateModel()
 
 TrayNetworkStateModel::~TrayNetworkStateModel() = default;
 
-void TrayNetworkStateModel::AddObserver(Observer* observer) {
+void TrayNetworkStateModel::AddObserver(TrayNetworkStateObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void TrayNetworkStateModel::RemoveObserver(Observer* observer) {
+void TrayNetworkStateModel::RemoveObserver(TrayNetworkStateObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
@@ -211,9 +211,5 @@ void TrayNetworkStateModel::SendNetworkListChanged() {
   for (auto& observer : observer_list_)
     observer.NetworkListChanged();
 }
-
-void TrayNetworkStateModel::Observer::ActiveNetworkStateChanged() {}
-
-void TrayNetworkStateModel::Observer::NetworkListChanged() {}
 
 }  // namespace ash

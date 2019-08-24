@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 
 #include <memory>
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_state.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -138,10 +140,10 @@ ServiceWorker* ServiceWorker::From(
     mojom::blink::ServiceWorkerObjectInfoPtr info) {
   if (!info)
     return nullptr;
-  return From(context, WebServiceWorkerObjectInfo(
-                           info->version_id, info->state, info->url,
-                           info->host_ptr_info.PassHandle(),
-                           info->request.PassHandle()));
+  return From(context,
+              WebServiceWorkerObjectInfo(
+                  info->version_id, info->state, info->url,
+                  info->host_remote.PassHandle(), info->receiver.PassHandle()));
 }
 
 ServiceWorker* ServiceWorker::From(ExecutionContext* context,
@@ -177,17 +179,16 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
     : AbstractWorker(execution_context),
       was_stopped_(false),
       url_(info.url),
-      state_(info.state),
-      binding_(this) {
+      state_(info.state) {
   DCHECK_NE(mojom::blink::kInvalidServiceWorkerVersionId, info.version_id);
   host_.Bind(
-      mojom::blink::ServiceWorkerObjectHostAssociatedPtrInfo(
-          std::move(info.host_ptr_info),
+      mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerObjectHost>(
+          std::move(info.host_remote),
           mojom::blink::ServiceWorkerObjectHost::Version_),
       execution_context->GetTaskRunner(blink::TaskType::kInternalDefault));
-  binding_.Bind(
-      mojom::blink::ServiceWorkerObjectAssociatedRequest(
-          std::move(info.request)),
+  receiver_.Bind(
+      mojo::PendingAssociatedReceiver<mojom::blink::ServiceWorkerObject>(
+          std::move(info.receiver)),
       execution_context->GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
@@ -195,7 +196,7 @@ ServiceWorker::~ServiceWorker() = default;
 
 void ServiceWorker::Dispose() {
   host_.reset();
-  binding_.Close();
+  receiver_.reset();
 }
 
 void ServiceWorker::Trace(blink::Visitor* visitor) {

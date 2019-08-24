@@ -342,6 +342,9 @@ static_library("generated") {
     "//components/policy/core/common:common_constants",
     "//third_party/protobuf:protobuf_lite",
   ]
+  deps = [
+    "//build:branding_buildflags",
+  ]
 }
 
 if (gen_policy_templates_android && is_android) {

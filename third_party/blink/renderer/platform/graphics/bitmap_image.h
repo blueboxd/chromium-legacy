@@ -101,8 +101,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
     decoder_ = std::move(decoder);
   }
 
-  bool GetImageBitmap(const FloatRect& src_rect, SkBitmap* bitmap) override;
-
   DarkModeClassification CheckTypeSpecificConditionsForDarkMode(
       const FloatRect& src_rect,
       DarkModeImageClassifier* classifier) override;

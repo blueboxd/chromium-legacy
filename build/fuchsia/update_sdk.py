@@ -9,6 +9,7 @@ entry so that it only runs when .gclient's target_os includes 'fuchsia'."""
 from __future__ import print_function
 
 import argparse
+import itertools
 import logging
 import os
 import re
@@ -127,32 +128,54 @@ def DownloadAndUnpackFromCloudStorage(url, output_dir):
         stderr if stderr else ""))
   task.wait()
   if task.returncode:
-    raise subprocess.CalledProcessError(task.returncode, cmd, task.stderr.read())
+    raise subprocess.CalledProcessError(task.returncode, cmd,
+                                        task.stderr.read())
 
 
-def DownloadSdkBootImages(sdk_hash):
-  print('Downloading Fuchsia boot images...')
+def DownloadSdkBootImages(sdk_hash, boot_image_names):
+  all_device_types = ['generic', 'qemu']
+  all_archs = ['x64', 'arm64']
 
-  if (os.path.exists(IMAGES_ROOT)):
-    shutil.rmtree(IMAGES_ROOT)
-  os.mkdir(IMAGES_ROOT)
+  images_to_download = set()
+  for boot_image in boot_image_names.split(','):
+    components = boot_image.split('.')
+    if len(components) != 2:
+      continue
 
-  for device_type in ['generic', 'qemu']:
-    for arch in ['arm64', 'x64']:
-      images_tarball_url = \
-          'gs://fuchsia/development/{sdk_hash}/images/'\
-          '{device_type}-{arch}.tgz'.format(
-              sdk_hash=sdk_hash, device_type=device_type, arch=arch)
-      image_output_dir = os.path.join(IMAGES_ROOT, arch, device_type)
-      DownloadAndUnpackFromCloudStorage(images_tarball_url, image_output_dir)
+    device_type, arch = components
+    device_images = all_device_types if device_type=='*' else [device_type]
+    arch_images = all_archs if arch=='*' else [arch]
+    images_to_download.update(itertools.product(device_images, arch_images))
+
+  for image_to_download in images_to_download:
+    device_type = image_to_download[0]
+    arch = image_to_download[1]
+    image_output_dir = os.path.join(IMAGES_ROOT, arch, device_type)
+    if os.path.exists(image_output_dir):
+      continue
+
+    print('Downloading Fuchsia boot images for %s.%s...' % (device_type, arch))
+    images_tarball_url = \
+        'gs://fuchsia/development/{sdk_hash}/images/'\
+        '{device_type}-{arch}.tgz'.format(
+            sdk_hash=sdk_hash, device_type=device_type, arch=arch)
+    DownloadAndUnpackFromCloudStorage(images_tarball_url, image_output_dir)
 
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument("--verbose", "-v",
-    action="store_true",
-    help="Enable debug-level logging.")
+  parser.add_argument('--verbose', '-v',
+    action='store_true',
+    help='Enable debug-level logging.')
+  parser.add_argument('--boot-images',
+    type=str,
+    required=True,
+    help='List of boot images to download, represented as a comma separated '
+         'list. Wildcards are allowed.')
   args = parser.parse_args()
+
+  if not args.boot_images:
+    raise Exception('--boot-images must be non-empty.')
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
 
@@ -175,11 +198,10 @@ def main():
   if os.path.exists(hash_filename):
     with open(hash_filename, 'r') as f:
       if f.read().strip() == sdk_hash:
-        # Used to download boot images if "gclient runhooks" is called on a
-        # output directory which had previously built Fuchsia on the same SDK
-        # hash, but did not use separate boot images.
-        if not os.path.exists(IMAGES_ROOT):
-          DownloadSdkBootImages(sdk_hash)
+        # Ensure that the boot images are downloaded for this SDK.
+        # If the developer opted into downloading hardware boot images in their
+        # .gclient file, then only the hardware boot images will be downloaded.
+        DownloadSdkBootImages(sdk_hash, args.boot_images)
 
         # Nothing to do. Generate sdk/BUILD.gn anyway, in case the conversion
         # script changed.
@@ -206,8 +228,13 @@ def main():
   logging.debug("Running '%s'", " ".join(cmd))
   subprocess.check_call(cmd)
 
+  # Clean out the boot images directory.
+  if (os.path.exists(IMAGES_ROOT)):
+    shutil.rmtree(IMAGES_ROOT)
+  os.mkdir(IMAGES_ROOT)
+
   try:
-    DownloadSdkBootImages(sdk_hash)
+    DownloadSdkBootImages(sdk_hash, args.boot_images)
   except subprocess.CalledProcessError as e:
     logging.error((
       "command '%s' failed with status %d.%s"),

@@ -42,6 +42,7 @@ enum LabelPropertyKey {
   kLabelText = 1,
   kLabelShadows,
   kLabelHorizontalAlignment,
+  kLabelVerticalAlignment,
   kLabelLineHeight,
   kLabelObscured,
   kLabelAllowCharacterBreak,
@@ -202,6 +203,22 @@ void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
                     kPropertyEffectsLayout);
 }
 
+gfx::VerticalAlignment Label::GetVerticalAlignment() const {
+  return full_text_->vertical_alignment();
+}
+
+void Label::SetVerticalAlignment(gfx::VerticalAlignment alignment) {
+  // TODO(crbug.com/996905): remove once single-line vertical alignment is
+  // supported.
+  DCHECK(GetMultiLine() || alignment == gfx::ALIGN_MIDDLE);
+  if (GetVerticalAlignment() == alignment)
+    return;
+  full_text_->SetVerticalAlignment(alignment);
+  // TODO(dfried): consider if this should be kPropertyEffectsPaint instead.
+  OnPropertyChanged(&full_text_ + kLabelVerticalAlignment,
+                    kPropertyEffectsLayout);
+}
+
 int Label::GetLineHeight() const {
   return full_text_->min_line_height();
 }
@@ -220,6 +237,9 @@ bool Label::GetMultiLine() const {
 void Label::SetMultiLine(bool multi_line) {
   DCHECK(!multi_line || (elide_behavior_ == gfx::ELIDE_TAIL ||
                          elide_behavior_ == gfx::NO_ELIDE));
+  // TODO(crbug.com/996905): remove once single-line vertical alignment is
+  // supported.
+  DCHECK(multi_line || GetVerticalAlignment() == gfx::ALIGN_MIDDLE);
   if (this->GetMultiLine() == multi_line)
     return;
   multi_line_ = multi_line;
@@ -283,8 +303,8 @@ gfx::ElideBehavior Label::GetElideBehavior() const {
 }
 
 void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
-  DCHECK(!GetMultiLine() || (elide_behavior_ == gfx::ELIDE_TAIL ||
-                             elide_behavior_ == gfx::NO_ELIDE));
+  DCHECK(!GetMultiLine() || (elide_behavior == gfx::ELIDE_TAIL ||
+                             elide_behavior == gfx::NO_ELIDE));
   if (elide_behavior_ == elide_behavior)
     return;
   elide_behavior_ = elide_behavior;
@@ -556,6 +576,7 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
 
   auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
   render_text->SetHorizontalAlignment(GetHorizontalAlignment());
+  render_text->SetVerticalAlignment(GetVerticalAlignment());
   render_text->SetDirectionalityMode(full_text_->directionality_mode());
   render_text->SetElideBehavior(elide_behavior);
   render_text->SetObscured(GetObscured());
@@ -564,8 +585,9 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
   render_text->set_shadows(GetShadows());
   render_text->SetCursorEnabled(false);
   render_text->SetText(GetText());
-  render_text->SetMultiline(GetMultiLine());
-  render_text->SetMaxLines(GetMultiLine() ? GetMaxLines() : 0);
+  const bool multiline = GetMultiLine();
+  render_text->SetMultiline(multiline);
+  render_text->SetMaxLines(multiline ? GetMaxLines() : 0);
   render_text->SetWordWrapBehavior(full_text_->word_wrap_behavior());
 
   // Setup render text for selection controller.
@@ -1110,6 +1132,7 @@ ADD_PROPERTY_METADATA(Label, SkColor, SelectionBackgroundColor)
 ADD_PROPERTY_METADATA(Label, bool, SubpixelRenderingEnabled)
 ADD_PROPERTY_METADATA(Label, gfx::ShadowValues, Shadows)
 ADD_PROPERTY_METADATA(Label, gfx::HorizontalAlignment, HorizontalAlignment)
+ADD_PROPERTY_METADATA(Label, gfx::VerticalAlignment, VerticalAlignment)
 ADD_PROPERTY_METADATA(Label, int, LineHeight)
 ADD_PROPERTY_METADATA(Label, bool, MultiLine)
 ADD_PROPERTY_METADATA(Label, int, MaxLines)

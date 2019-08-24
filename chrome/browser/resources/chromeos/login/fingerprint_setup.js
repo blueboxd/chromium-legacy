@@ -58,6 +58,19 @@ Polymer({
       type: Number,
       value: FingerprintResultType.SUCCESS,
     },
+
+    /**
+     * True if lottie animation should be used instead of animated PNGs.
+     * @type {boolean}
+     * @private
+     */
+    shouldUseLottieAnimation_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('useLottieAnimationForFingerprint');
+      },
+      readOnly: true,
+    }
   },
 
   /*

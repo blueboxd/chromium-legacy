@@ -406,6 +406,9 @@ template("write_build_config") {
       _rebased_apk_path = rebase_path(invoker.apk_path, root_build_dir)
       _incremental_allowed =
           defined(invoker.incremental_allowed) && invoker.incremental_allowed
+
+      # TODO(tiborg): Remove APK path from build config and use
+      # install_artifacts from metadata instead.
       args += [ "--apk-path=$_rebased_apk_path" ]
       if (_incremental_allowed) {
         _rebased_incremental_apk_path =
@@ -568,6 +571,22 @@ template("test_runner_script") {
     }
   }
 
+  if (defined(invoker.apk_under_test)) {
+    _install_artifacts_json =
+        "${target_gen_dir}/${target_name}.install_artifacts"
+    generated_file("${target_name}__install_artifacts") {
+      deps = [
+        invoker.apk_under_test,
+      ]
+      output_conversion = "json"
+      outputs = [
+        _install_artifacts_json,
+      ]
+      data_keys = [ "install_artifacts" ]
+      rebase = root_build_dir
+    }
+  }
+
   generate_android_wrapper(target_name) {
     forward_variables_from(invoker,
                            [
@@ -655,15 +674,20 @@ template("test_runner_script") {
         "@WrappedPath(${_rebased_test_jar})",
       ]
       if (defined(invoker.apk_under_test)) {
-        deps += [ "${invoker.apk_under_test}$build_config_target_suffix" ]
-        _apk_under_test_build_config =
-            get_label_info(invoker.apk_under_test, "target_gen_dir") + "/" +
-            get_label_info(invoker.apk_under_test, "name") + ".build_config"
-        _rebased_apk_under_test_build_config =
-            rebase_path(_apk_under_test_build_config, root_build_dir)
-        _apk_under_test = "@WrappedPath(@FileArg($_rebased_apk_under_test_build_config:deps_info:apk_path))"
         if (_incremental_install) {
+          deps += [ "${invoker.apk_under_test}$build_config_target_suffix" ]
+          _apk_under_test_build_config =
+              get_label_info(invoker.apk_under_test, "target_gen_dir") + "/" +
+              get_label_info(invoker.apk_under_test, "name") + ".build_config"
+          _rebased_apk_under_test_build_config =
+              rebase_path(_apk_under_test_build_config, root_build_dir)
           _apk_under_test = "@WrappedPath(@FileArg($_rebased_apk_under_test_build_config:deps_info:incremental_apk_path))"
+        } else {
+          deps += [ ":${target_name}__install_artifacts" ]
+          _rebased_install_artifacts_json =
+              rebase_path(_install_artifacts_json, root_build_dir)
+          _apk_under_test =
+              "@WrappedPath(@FileArg($_rebased_install_artifacts_json[]))"
         }
         executable_args += [
           "--apk-under-test",

@@ -503,14 +503,6 @@ class HttpNetworkTransactionTest : public PlatformTest,
     EXPECT_EQ("GET / HTTP/1.1\r\n",
               GetStringValueFromParams(entries[pos], "line"));
 
-    HttpRequestHeaders request_headers;
-    EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-    std::string value;
-    EXPECT_TRUE(request_headers.GetHeader("Host", &value));
-    EXPECT_EQ("www.example.org", value);
-    EXPECT_TRUE(request_headers.GetHeader("Connection", &value));
-    EXPECT_EQ("keep-alive", value);
-
     EXPECT_EQ("['Host: www.example.org','Connection: keep-alive']",
               GetHeaders(entries[pos].params));
 
@@ -16980,10 +16972,6 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncConnectError) {
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
 
-  // We don't care whether this succeeds or fails, but it shouldn't crash.
-  HttpRequestHeaders request_headers;
-  trans.GetFullRequestHeaders(&request_headers);
-
   ConnectionAttempts attempts;
   trans.GetConnectionAttempts(&attempts);
   ASSERT_EQ(1u, attempts.size());
@@ -17016,10 +17004,6 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncConnectError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_NAME_NOT_RESOLVED));
-
-  // We don't care whether this succeeds or fails, but it shouldn't crash.
-  HttpRequestHeaders request_headers;
-  trans.GetFullRequestHeaders(&request_headers);
 
   ConnectionAttempts attempts;
   trans.GetConnectionAttempts(&attempts);
@@ -17058,10 +17042,6 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncWriteError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  EXPECT_TRUE(request_headers.HasHeader("Host"));
 }
 
 TEST_F(HttpNetworkTransactionTest, HttpAsyncWriteError) {
@@ -17091,10 +17071,6 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncWriteError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  EXPECT_TRUE(request_headers.HasHeader("Host"));
 }
 
 TEST_F(HttpNetworkTransactionTest, HttpSyncReadError) {
@@ -17127,10 +17103,6 @@ TEST_F(HttpNetworkTransactionTest, HttpSyncReadError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  EXPECT_TRUE(request_headers.HasHeader("Host"));
 }
 
 TEST_F(HttpNetworkTransactionTest, HttpAsyncReadError) {
@@ -17163,53 +17135,6 @@ TEST_F(HttpNetworkTransactionTest, HttpAsyncReadError) {
 
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  EXPECT_TRUE(request_headers.HasHeader("Host"));
-}
-
-TEST_F(HttpNetworkTransactionTest, GetFullRequestHeadersIncludesExtraHeader) {
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("http://www.example.org/");
-  request.extra_headers.SetHeader("X-Foo", "bar");
-  request.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
-
-  MockWrite data_writes[] = {
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: keep-alive\r\n"
-          "X-Foo: bar\r\n\r\n"),
-  };
-  MockRead data_reads[] = {
-    MockRead("HTTP/1.1 200 OK\r\n"
-             "Content-Length: 5\r\n\r\n"
-             "hello"),
-    MockRead(ASYNC, ERR_UNEXPECTED),
-  };
-
-  StaticSocketDataProvider data(data_reads, data_writes);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  TestCompletionCallback callback;
-
-  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsOk());
-
-  HttpRequestHeaders request_headers;
-  EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
-  std::string foo;
-  EXPECT_TRUE(request_headers.GetHeader("X-Foo", &foo));
-  EXPECT_EQ("bar", foo);
 }
 
 // Tests that when a used socket is returned to the SSL socket pool, it's closed

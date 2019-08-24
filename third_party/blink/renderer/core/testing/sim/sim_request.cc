@@ -99,7 +99,7 @@ void SimRequestBase::Finish() {
       // TODO(esprehn): Is claiming a request time of 0 okay for tests?
       client_->DidFinishLoading(base::TimeTicks(), total_encoded_data_length_,
                                 total_encoded_data_length_,
-                                total_encoded_data_length_, false, {});
+                                total_encoded_data_length_, false);
     }
   }
   Reset();

@@ -129,6 +129,15 @@ class VIEWS_EXPORT Label : public View,
   gfx::HorizontalAlignment GetHorizontalAlignment() const;
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
+  // Gets/Sets the vertical alignment. Affects how whitespace is distributed
+  // vertically around the label text, or if the label is not tall enough to
+  // render all of the text, what gets cut off.
+  //
+  // Currently, this must be ALIGN_MIDDLE (default) for non-multiline labels.
+  // TODO(crbug.com/996905): support single-line vertical alignment.
+  gfx::VerticalAlignment GetVerticalAlignment() const;
+  void SetVerticalAlignment(gfx::VerticalAlignment alignment);
+
   // Get or set the distance in pixels between baselines of multi-line text.
   // Default is 0, indicating the distance between lines should be the standard
   // one for the label's text, font list, and platform.

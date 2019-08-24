@@ -10,6 +10,7 @@
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -17,7 +18,8 @@
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace {
 
@@ -82,6 +84,11 @@ void RecordSuggestionPresented(
   }
 }
 
+AvailableOfflineContentHelper::Binder& GetBinderOverride() {
+  static base::NoDestructor<AvailableOfflineContentHelper::Binder> binder;
+  return *binder;
+}
+
 }  // namespace
 
 AvailableOfflineContentHelper::AvailableOfflineContentHelper() = default;
@@ -105,9 +112,22 @@ void AvailableOfflineContentHelper::FetchAvailableContent(
 bool AvailableOfflineContentHelper::BindProvider() {
   if (provider_)
     return true;
-  content::RenderThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName, &provider_);
-  return !!provider_;
+
+  auto request = mojo::MakeRequest(&provider_);
+  const auto& binder_override = GetBinderOverride();
+  if (binder_override) {
+    binder_override.Run(std::move(request));
+    return true;
+  }
+
+  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      std::move(request));
+  return true;
+}
+
+// static
+void AvailableOfflineContentHelper::OverrideBinderForTesting(Binder binder) {
+  GetBinderOverride() = std::move(binder);
 }
 
 void AvailableOfflineContentHelper::LaunchItem(const std::string& id,

@@ -17,6 +17,10 @@
 <dom-module id="settings-account-manager">
   <template>
     <style include="settings-shared iron-flex iron-flex-alignment">
+      :host {
+        --add-account-margin-top: 16px;
+      }
+
       .profile-icon {
         background: center / cover no-repeat;
         border-radius: 20px;
@@ -40,16 +44,17 @@
         margin-inline-start: 60px;
       }
 
-      cr-policy-indicator {
-        margin-inline-end: 1em;
-      }
-
       #account-list-header {
         padding-bottom: 8px;
       }
 
+      cr-policy-indicator {
+        margin-inline-end: 1em;
+        margin-top: var(--add-account-margin-top);
+      }
+
       #add-account-button {
-        margin-top: 16px;
+        margin-top: var(--add-account-margin-top);
       }
 
       #add-account-icon {

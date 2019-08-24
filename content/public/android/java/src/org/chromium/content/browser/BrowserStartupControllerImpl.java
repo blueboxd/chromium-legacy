@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
@@ -314,7 +315,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
 
     @VisibleForTesting
     void flushStartupTasks() {
-        nativeFlushStartupTasks();
+        BrowserStartupControllerImplJni.get().flushStartupTasks();
     }
 
     @Override
@@ -448,7 +449,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
                 if (!mPostResourceExtractionTasksCompleted) {
                     // TODO(yfriedman): Remove dependency on a command line flag for this.
                     DeviceUtilsImpl.addDeviceSpecificUserAgentSwitch();
-                    nativeSetCommandLineFlags(singleProcess);
+                    BrowserStartupControllerImplJni.get().setCommandLineFlags(singleProcess);
                     mPostResourceExtractionTasksCompleted = true;
                 }
 
@@ -475,11 +476,13 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         ServicificationStartupUma.getInstance().commit();
     }
 
-    private static native void nativeSetCommandLineFlags(boolean singleProcess);
+    @NativeMethods
+    interface Natives {
+        void setCommandLineFlags(boolean singleProcess);
+        // Is this an official build of Chrome? Only native code knows for sure. Official build
+        // knowledge is needed very early in process startup.
+        boolean isOfficialBuild();
 
-    // Is this an official build of Chrome? Only native code knows for sure. Official build
-    // knowledge is needed very early in process startup.
-    private static native boolean nativeIsOfficialBuild();
-
-    private static native void nativeFlushStartupTasks();
+        void flushStartupTasks();
+    }
 }

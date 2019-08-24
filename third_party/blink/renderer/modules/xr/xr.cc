@@ -389,24 +389,34 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   XRSessionFeatureSet required_features;
   if (session_init && session_init->hasRequiredFeatures()) {
     for (const auto& feature : session_init->requiredFeatures()) {
-      // Add all features so that we can track the presence of an unknown
-      // required feature later, to reject it at the appropriate time.
-      auto feature_enum = StringToXRSessionFeature(feature);
+      String feature_string;
+      if (feature.ToString(feature_string)) {
+        // Add all features so that we can track the presence of an unknown
+        // required feature later, to reject it at the appropriate time.
+        auto feature_enum = StringToXRSessionFeature(feature_string);
 
-      if (!feature_enum) {
-        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kError,
-            "Unrecognized required feature requested: " + feature));
-        has_invalid_required_features = true;
-      } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode)) {
-        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kError,
-            "Feature: " + feature + " is not supported for mode: " + mode));
-        has_invalid_required_features = true;
+        if (!feature_enum) {
+          GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kError,
+              "Unrecognized required feature requested: " + feature_string));
+          has_invalid_required_features = true;
+        } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode)) {
+          GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kError,
+              "Feature: " + feature_string +
+                  " is not supported for mode: " + mode));
+          has_invalid_required_features = true;
+        } else {
+          required_features.insert(feature_enum.value());
+        }
       } else {
-        required_features.insert(feature_enum.value());
+        GetExecutionContext()->AddConsoleMessage(
+            ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                                   mojom::ConsoleMessageLevel::kError,
+                                   "Unrecognized required feature value"));
+        has_invalid_required_features = true;
       }
     }
   }
@@ -415,21 +425,30 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   XRSessionFeatureSet optional_features;
   if (session_init && session_init->hasOptionalFeatures()) {
     for (const auto& feature : session_init->optionalFeatures()) {
-      auto feature_enum = StringToXRSessionFeature(feature);
-      // Unrecognized optional features can be silently ignored, as they won't
-      // be supported.
-      if (!feature_enum) {
-        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
-            "Unrecognized optional feature requested: " + feature));
-      } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode)) {
-        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
-            "Feature: " + feature + " is not supported for mode: " + mode));
+      String feature_string;
+      if (feature.ToString(feature_string)) {
+        auto feature_enum = StringToXRSessionFeature(feature_string);
+        // Unrecognized optional features can be silently ignored, as they won't
+        // be supported.
+        if (!feature_enum) {
+          GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning,
+              "Unrecognized optional feature requested: " + feature_string));
+        } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode)) {
+          GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning,
+              "Feature: " + feature_string +
+                  " is not supported for mode: " + mode));
+        } else {
+          optional_features.insert(feature_enum.value());
+        }
       } else {
-        optional_features.insert(feature_enum.value());
+        GetExecutionContext()->AddConsoleMessage(
+            ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                                   mojom::ConsoleMessageLevel::kWarning,
+                                   "Unrecognized optional feature value"));
       }
     }
   }

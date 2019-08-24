@@ -230,9 +230,7 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
       shadow_host_rules_.push_back(rule_data);
       return true;
     case CSSSelector::kPseudoPart:
-      if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
-        part_pseudo_rules_.push_back(rule_data);
-      }
+      part_pseudo_rules_.push_back(rule_data);
       return true;
     default:
       break;

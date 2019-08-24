@@ -21,6 +21,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 enum class AppListViewState;
@@ -204,6 +205,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Fills the given AppLaunchedMetricParams with info known by the delegate.
   virtual void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) = 0;
+
+  // Adjusts the bounds by snapping it to the edge of the display in pixel
+  // space. This prevents 1px gaps on displays with non-integer scale factors.
+  virtual gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) = 0;
 };
 
 }  // namespace app_list

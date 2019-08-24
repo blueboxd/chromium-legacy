@@ -449,36 +449,9 @@ void BitmapImage::SetAnimationPolicy(ImageAnimationPolicy policy) {
   ResetAnimation();
 }
 
-bool BitmapImage::GetImageBitmap(const FloatRect& src_rect, SkBitmap* bitmap) {
-  if (!src_rect.Width() || !src_rect.Height())
-    return false;
-
-  SkScalar sx = SkFloatToScalar(src_rect.X());
-  SkScalar sy = SkFloatToScalar(src_rect.Y());
-  SkScalar sw = SkFloatToScalar(src_rect.Width());
-  SkScalar sh = SkFloatToScalar(src_rect.Height());
-  SkRect src = {sx, sy, sx + sw, sy + sh};
-  SkRect dest = {0, 0, sw, sh};
-
-  if (!bitmap || !bitmap->tryAllocPixels(SkImageInfo::MakeN32(
-                     static_cast<int>(src_rect.Width()),
-                     static_cast<int>(src_rect.Height()), kPremul_SkAlphaType)))
-    return false;
-
-  SkCanvas canvas(*bitmap);
-  canvas.clear(SK_ColorTRANSPARENT);
-  canvas.drawImageRect(this->PaintImageForCurrentFrame().GetSkImage(), src,
-                       dest, nullptr);
-  return true;
-}
-
 DarkModeClassification BitmapImage::CheckTypeSpecificConditionsForDarkMode(
     const FloatRect& src_rect,
     DarkModeImageClassifier* classifier) {
-  // This check is needed to prevent division with zero scenarios
-  // while computing the features in DarkModeImageClassifier.
-  DCHECK(kMinImageSizeForClassification1D > 10);
-
   if (src_rect.Width() < kMinImageSizeForClassification1D ||
       src_rect.Height() < kMinImageSizeForClassification1D)
     return DarkModeClassification::kApplyFilter;

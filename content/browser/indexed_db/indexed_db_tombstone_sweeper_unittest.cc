@@ -141,7 +141,8 @@ class IndexedDBTombstoneSweeperTest : public testing::Test {
     leveldb::Status s;
     std::tie(level_db_state, s, std::ignore) =
         indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
-            base::FilePath(), indexed_db::GetDefaultLevelDBComparator());
+            base::FilePath(), indexed_db::GetDefaultLevelDBComparator(),
+            /* create_if_missing=*/true);
     ASSERT_TRUE(s.ok());
     in_memory_db_ = indexed_db::LevelDBFactory::Get()->CreateLevelDBDatabase(
         std::move(level_db_state), nullptr, nullptr,

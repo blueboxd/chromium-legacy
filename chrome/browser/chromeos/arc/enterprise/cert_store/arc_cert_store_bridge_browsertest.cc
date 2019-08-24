@@ -14,7 +14,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
@@ -93,13 +93,13 @@ class FakeArcCertStoreInstance : public mojom::CertStoreInstance {
   bool is_on_certs_changed_called_ = false;
 };
 
-class ArcCertStoreBridgeTest : public chromeos::MixinBasedInProcessBrowserTest {
+class ArcCertStoreBridgeTest : public MixinBasedInProcessBrowserTest {
  protected:
   ArcCertStoreBridgeTest() = default;
 
-  // chromeos::MixinBasedInProcessBrowserTest:
+  // MixinBasedInProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    chromeos::MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
 
     arc::SetArcAvailableCommandLineForTesting(command_line);
 
@@ -128,7 +128,7 @@ class ArcCertStoreBridgeTest : public chromeos::MixinBasedInProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    chromeos::MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
 
     policy_helper_->WaitForInitialPolicy(browser()->profile());
 
@@ -162,7 +162,7 @@ class ArcCertStoreBridgeTest : public chromeos::MixinBasedInProcessBrowserTest {
     // instance in fixture, once), but it should be no op.
     ArcServiceLauncher::Get()->Shutdown();
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
-    chromeos::MixinBasedInProcessBrowserTest::TearDownOnMainThread();
+    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
   ArcBridgeService* arc_bridge() {

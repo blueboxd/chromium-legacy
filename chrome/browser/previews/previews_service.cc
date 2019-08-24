@@ -4,6 +4,8 @@
 
 #include "chrome/browser/previews/previews_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
@@ -21,7 +23,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/previews/content/previews_decider_impl.h"
-#include "components/previews/content/previews_optimization_guide.h"
+#include "components/previews/content/previews_optimization_guide_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
@@ -149,7 +151,7 @@ void PreviewsService::Initialize(
           ui_task_runner, background_task_runner,
           profile_path.Append(chrome::kPreviewsOptOutDBFilename)),
       optimization_guide_service
-          ? std::make_unique<previews::PreviewsOptimizationGuide>(
+          ? std::make_unique<previews::PreviewsOptimizationGuideImpl>(
                 optimization_guide_service, ui_task_runner,
                 background_task_runner, profile_path,
                 Profile::FromBrowserContext(browser_context_)->GetPrefs(),

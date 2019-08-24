@@ -109,8 +109,8 @@
     <template is="dom-if"
         if="[[showCellularChooseNetwork_(managedProperties_)]]">
       <div class="section single-column">
-        <network-choose-mobile networking-private="[[networkingPrivate]]"
-            network-properties="[[networkProperties]]">
+        <network-choose-mobile device-state="[[deviceState_]]"
+            managed-properties="[[managedProperties_]]">
         </network-choose-mobile>
       </div>
     </template>

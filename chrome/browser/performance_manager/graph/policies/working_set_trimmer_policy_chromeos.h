@@ -47,8 +47,7 @@ class WorkingSetTrimmerPolicyChromeOS : public WorkingSetTrimmerPolicy {
   bool trim_on_freeze_enabled_ = false;
   bool trim_on_memory_pressure_enabled_ = false;
 
-  features::chromeos::TrimOnMemoryPressureParams
-      trim_on_memory_pressure_params_;
+  features::TrimOnMemoryPressureParams trim_on_memory_pressure_params_;
 
   // Keeps track of the last time we walked the graph looking for processes
   // to trim.

@@ -55,6 +55,11 @@ DeviceFeatureStatus BuildDeviceFeatureStatus(
     const std::vector<std::pair<std::string /* feature_type */,
                                 bool /* enabled */>>& feature_statuses);
 
+DeviceActivityStatus BuildDeviceActivityStatus(
+    const std::string& device_id,
+    int64_t last_activity_time_sec,
+    const OnlineStatus online_status);
+
 // The data field is set to "start_|start_time_millis|_end_|end_time_millis|".
 BeaconSeed BuildBeaconSeedForTest(int64_t start_time_millis,
                                   int64_t end_time_millis);

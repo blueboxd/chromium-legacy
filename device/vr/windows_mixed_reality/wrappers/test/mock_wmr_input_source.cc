@@ -26,8 +26,19 @@ uint32_t MockWMRInputSource::Id() const {
 
 ABI::Windows::UI::Input::Spatial::SpatialInteractionSourceKind
 MockWMRInputSource::Kind() const {
-  return ABI::Windows::UI::Input::Spatial::
-      SpatialInteractionSourceKind_Controller;
+  switch (data_.role) {
+    case ControllerRole::kControllerRoleLeft:
+    case ControllerRole::kControllerRoleRight:
+      return ABI::Windows::UI::Input::Spatial::
+          SpatialInteractionSourceKind_Controller;
+    case ControllerRole::kControllerRoleVoice:
+      return ABI::Windows::UI::Input::Spatial::
+          SpatialInteractionSourceKind_Voice;
+    case ControllerRole::kControllerRoleInvalid:
+      NOTREACHED();
+      return ABI::Windows::UI::Input::Spatial::
+          SpatialInteractionSourceKind_Controller;
+  }
 }
 
 bool MockWMRInputSource::IsPointingSupported() const {

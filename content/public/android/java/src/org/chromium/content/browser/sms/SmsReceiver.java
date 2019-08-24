@@ -20,6 +20,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android
@@ -96,11 +97,11 @@ public class SmsReceiver extends BroadcastReceiver {
             case CommonStatusCodes.SUCCESS:
                 String message = intent.getExtras().getString(SmsRetriever.EXTRA_SMS_MESSAGE);
                 if (DEBUG) Log.d(TAG, "Got message: %s!", message);
-                nativeOnReceive(mSmsProviderAndroid, message);
+                SmsReceiverJni.get().onReceive(mSmsProviderAndroid, message);
                 break;
             case CommonStatusCodes.TIMEOUT:
                 if (DEBUG) Log.d(TAG, "Timeout");
-                nativeOnTimeout(mSmsProviderAndroid);
+                SmsReceiverJni.get().onTimeout(mSmsProviderAndroid);
                 break;
         }
     }
@@ -128,6 +129,9 @@ public class SmsReceiver extends BroadcastReceiver {
         mClient.setContext(mContext);
     }
 
-    private static native void nativeOnReceive(long nativeSmsProviderAndroid, String sms);
-    private static native void nativeOnTimeout(long nativeSmsProviderAndroid);
+    @NativeMethods
+    interface Natives {
+        void onReceive(long nativeSmsProviderAndroid, String sms);
+        void onTimeout(long nativeSmsProviderAndroid);
+    }
 }

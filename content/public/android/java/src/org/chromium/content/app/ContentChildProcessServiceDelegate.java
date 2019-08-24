@@ -18,6 +18,7 @@ import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -156,7 +157,8 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         // Now that the library is loaded, get the FD map,
         // TODO(jcivelli): can this be done in onBeforeMain? We would have to mode onBeforeMain
         // so it's called before FDs are registered.
-        nativeRetrieveFileDescriptorsIdsToKeys();
+        ContentChildProcessServiceDelegateJni.get().retrieveFileDescriptorsIdsToKeys(
+                ContentChildProcessServiceDelegate.this);
 
         return true;
     }
@@ -169,7 +171,8 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     @Override
     public void onBeforeMain() {
-        nativeInitChildProcess(mCpuCount, mCpuFeatures);
+        ContentChildProcessServiceDelegateJni.get().initChildProcess(
+                ContentChildProcessServiceDelegate.this, mCpuCount, mCpuFeatures);
         PostTask.postTask(
                 UiThreadTaskTraits.DEFAULT, () -> MemoryPressureUma.initializeForChildService());
     }
@@ -236,14 +239,18 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         }
     }
 
-    /**
-     * Initializes the native parts of the service.
-     *
-     * @param cpuCount The number of CPUs.
-     * @param cpuFeatures The CPU features.
-     */
-    private native void nativeInitChildProcess(int cpuCount, long cpuFeatures);
+    @NativeMethods
+    interface Natives {
+        /**
+         * Initializes the native parts of the service.
+         *
+         * @param cpuCount The number of CPUs.
+         * @param cpuFeatures The CPU features.
+         */
+        void initChildProcess(
+                ContentChildProcessServiceDelegate caller, int cpuCount, long cpuFeatures);
 
-    // Retrieves the FD IDs to keys map and set it by calling setFileDescriptorsIdsToKeys().
-    private native void nativeRetrieveFileDescriptorsIdsToKeys();
+        // Retrieves the FD IDs to keys map and set it by calling setFileDescriptorsIdsToKeys().
+        void retrieveFileDescriptorsIdsToKeys(ContentChildProcessServiceDelegate caller);
+    }
 }

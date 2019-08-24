@@ -132,11 +132,6 @@ void URLRequestJob::StopCaching() {
   // Nothing to do here.
 }
 
-bool URLRequestJob::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
-  // Most job types don't send request headers.
-  return false;
-}
-
 int64_t URLRequestJob::GetTotalReceivedBytes() const {
   return 0;
 }

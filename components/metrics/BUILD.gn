@@ -131,6 +131,7 @@ jumbo_static_library("metrics") {
   deps = [
     "//base",
     "//base:base_static",
+    "//build:branding_buildflags",
     "//components/prefs",
     "//components/variations",
     "//components/version_info:version_info",

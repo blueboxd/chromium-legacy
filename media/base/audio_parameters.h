@@ -152,16 +152,17 @@ class MEDIA_SHMEM_EXPORT AudioParameters {
   // effects should be enabled.
   enum PlatformEffectsMask {
     NO_EFFECTS = 0x0,
-    ECHO_CANCELLER = 0x1,
-    DUCKING = 0x2,  // Enables ducking if the OS supports it.
-    KEYBOARD_MIC = 0x4,
-    HOTWORD = 0x8,
-    NOISE_SUPPRESSION = 0x10,
-    AUTOMATIC_GAIN_CONTROL = 0x20,
-    EXPERIMENTAL_ECHO_CANCELLER = 0x40,  // Indicates an echo canceller is
-                                         // available that should only
-                                         // experimentally be enabled.
-    MULTIZONE = 0x80,
+    ECHO_CANCELLER = 1 << 0,
+    DUCKING = 1 << 1,  // Enables ducking if the OS supports it.
+    KEYBOARD_MIC = 1 << 2,
+    HOTWORD = 1 << 3,
+    NOISE_SUPPRESSION = 1 << 4,
+    AUTOMATIC_GAIN_CONTROL = 1 << 5,
+    EXPERIMENTAL_ECHO_CANCELLER = 1 << 6,  // Indicates an echo canceller is
+                                           // available that should only
+                                           // experimentally be enabled.
+    MULTIZONE = 1 << 7,
+    AUDIO_PREFETCH = 1 << 8,
   };
 
   struct HardwareCapabilities {

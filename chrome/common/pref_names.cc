@@ -2555,6 +2555,12 @@ const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN)
+// A boolean value, controlling whether Chrome renderer processes have the CIG
+// mitigation enabled.
+const char kRendererCodeIntegrityEnabled[] = "renderer_code_integrity_enabled";
+#endif  // defined(OS_WIN)
+
 // An integer that keeps track of prompt waves for the settings reset
 // prompt. Users will be prompted to reset settings at most once per prompt wave
 // for each setting that the prompt targets (default search, startup URLs and

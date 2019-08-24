@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/notifications/scheduler/internal/icon_converter_impl.h"
+#include "chrome/browser/notifications/scheduler/internal/png_icon_converter_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace notifications {
@@ -13,46 +13,49 @@ namespace {
 
 class IconConverterTest : public testing::Test {
  public:
-  IconConverterTest() {}
+  IconConverterTest() : encoded_result_(), decoded_result_() {}
   ~IconConverterTest() override = default;
 
   void SetUp() override {
-    auto icon_converter = std::make_unique<IconConverterImpl>();
+    auto icon_converter = std::make_unique<PngIconConverterImpl>();
     icon_converter_ = std::move(icon_converter);
-    encoded_data_.clear();
-    decoded_icons_.clear();
   }
 
   void OnIconsEncoded(base::OnceClosure quit_closure,
-                      std::vector<std::string> encoded_data) {
-    encoded_data_ = std::move(encoded_data);
+                      std::unique_ptr<EncodeResult> encoded_result) {
+    encoded_result_ = std::move(encoded_result);
     std::move(quit_closure).Run();
   }
 
   void OnIconsDecoded(base::OnceClosure quit_closure,
-                      std::vector<SkBitmap> decoded_icons) {
-    decoded_icons_ = std::move(decoded_icons);
+                      std::unique_ptr<DecodeResult> decoded_result) {
+    decoded_result_ = std::move(decoded_result);
     std::move(quit_closure).Run();
   }
 
   void VerifyEncodeRoundTrip(std::vector<SkBitmap> input) {
-    EXPECT_EQ(decoded_icons_.size(), input.size());
+    EXPECT_EQ(decoded_icons()->size(), input.size());
     for (size_t i = 0; i < input.size(); i++) {
-      EXPECT_EQ(input[i].height(), decoded_icons_[i].height());
-      EXPECT_EQ(input[i].width(), decoded_icons_[i].width());
+      EXPECT_EQ(input[i].height(), decoded_icons()->at(i).height());
+      EXPECT_EQ(input[i].width(), decoded_icons()->at(i).width());
     }
   }
 
  protected:
   IconConverter* icon_converter() { return icon_converter_.get(); }
-  std::vector<SkBitmap>* decoded_icons() { return &decoded_icons_; }
-  std::vector<std::string>* encoded_data() { return &encoded_data_; }
+  std::vector<SkBitmap>* decoded_icons() {
+    return &decoded_result_->decoded_icons;
+  }
+  std::vector<std::string>* encoded_data() {
+    return &encoded_result_->encoded_data;
+  }
 
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<IconConverter> icon_converter_;
-  std::vector<std::string> encoded_data_;
-  std::vector<SkBitmap> decoded_icons_;
+  std::unique_ptr<EncodeResult> encoded_result_;
+  std::unique_ptr<DecodeResult> decoded_result_;
+
   DISALLOW_COPY_AND_ASSIGN(IconConverterTest);
 };
 

@@ -91,15 +91,11 @@ class ElementRareData : public NodeRareData {
   }
 
   void SetPart(DOMTokenList* part) {
-    if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
-      return;
     part_ = part;
   }
   DOMTokenList* GetPart() const { return part_.Get(); }
 
   void SetPartNamesMap(const AtomicString part_names) {
-    if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
-      return;
     if (!part_names_map_) {
       part_names_map_.reset(new NamesMap());
     }

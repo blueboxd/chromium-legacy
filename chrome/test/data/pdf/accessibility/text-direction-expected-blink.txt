@@ -1,0 +1,7 @@
+embeddedObject textDirection=ltr
+++document restriction=readOnly
+++++region name='Page 1' restriction=readOnly isPageBreakingObject=true
+++++++paragraph restriction=readOnly
+++++++++staticText name='abcdef<newline>شممشا' restriction=readOnly
+++++++++++inlineTextBox name='abcdef<newline>' restriction=readOnly textDirection=ltr
+++++++++++inlineTextBox name='شممشا' restriction=readOnly textDirection=rtl

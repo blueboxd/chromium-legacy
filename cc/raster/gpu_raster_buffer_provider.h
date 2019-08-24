@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <random>
 
+#include "base/time/time.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
 
@@ -75,7 +76,8 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       uint64_t new_content_id,
       const gfx::AxisTransform2d& transform,
       const RasterSource::PlaybackSettings& playback_settings,
-      const GURL& url);
+      const GURL& url,
+      base::TimeTicks raster_buffer_creation_time);
 
  private:
   class GpuRasterBacking;
@@ -118,14 +120,23 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     // A SyncToken to be returned from the worker thread, and waited on before
     // using the rastered resource.
     gpu::SyncToken after_raster_sync_token_;
+
+    base::TimeTicks creation_time_;
   };
 
   struct PendingRasterQuery {
     // The id for querying the duration in executing the GPU side work.
-    GLuint query_id = 0u;
+    GLuint raster_duration_query_id = 0u;
 
     // The duration for executing the work on the raster worker thread.
-    base::TimeDelta worker_duration;
+    base::TimeDelta worker_raster_duration;
+
+    // The id for querying the time at which we're about to start issuing raster
+    // work to the driver.
+    GLuint raster_start_query_id = 0u;
+
+    // The time at which the raster buffer was created.
+    base::TimeTicks raster_buffer_creation_time;
   };
 
   bool ShouldUnpremultiplyAndDitherResource(viz::ResourceFormat format) const;

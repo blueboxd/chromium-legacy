@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_WORKER_NODE_IMPL_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -13,6 +14,7 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/public/graph/worker_node.h"
+#include "url/gurl.h"
 
 namespace performance_manager {
 
@@ -27,8 +29,10 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kWorker; }
 
   WorkerNodeImpl(GraphImpl* graph,
+                 const std::string& browser_context_id,
                  WorkerType worker_type,
                  ProcessNodeImpl* process_node,
+                 const GURL& url,
                  const base::UnguessableToken& dev_tools_token);
   ~WorkerNodeImpl() override;
 
@@ -41,8 +45,11 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   void RemoveClientWorker(WorkerNodeImpl* worker_node);
 
   // Getters for const properties. These can be called from any thread.
+  const std::string& browser_context_id() const;
   WorkerType worker_type() const;
   ProcessNodeImpl* process_node() const;
+  const GURL& url() const;
+  const base::UnguessableToken& dev_tools_token() const;
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& client_frames() const;
@@ -55,8 +62,11 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
 
   // WorkerNode: These are private so that users of the
   // impl use the private getters rather than the public interface.
-  WorkerType GetType() const override;
+  WorkerType GetWorkerType() const override;
+  const std::string& GetBrowserContextID() const override;
   const ProcessNode* GetProcessNode() const override;
+  const GURL& GetURL() const override;
+  const base::UnguessableToken& GetDevToolsToken() const override;
   const base::flat_set<const FrameNode*> GetClientFrames() const override;
   const base::flat_set<const WorkerNode*> GetClientWorkers() const override;
   const base::flat_set<const WorkerNode*> GetChildWorkers() const override;
@@ -65,11 +75,17 @@ class WorkerNodeImpl : public PublicNodeImpl<WorkerNodeImpl, WorkerNode>,
   void AddChildWorker(WorkerNodeImpl* worker_node);
   void RemoveChildWorker(WorkerNodeImpl* worker_node);
 
+  // The unique ID of the browser context that this worker belongs to.
+  const std::string browser_context_id_;
+
   // The type of this worker.
   const WorkerType worker_type_;
 
   // The process in which this worker lives.
   ProcessNodeImpl* const process_node_;
+
+  // The URL of the worker script.
+  const GURL url_;
 
   // A unique identifier shared with all representations of this node across
   // content and blink. The token is only defined by the browser process and

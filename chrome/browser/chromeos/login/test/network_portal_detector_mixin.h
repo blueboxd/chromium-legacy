@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_NETWORK_PORTAL_DETECTOR_MIXIN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_NETWORK_PORTAL_DETECTOR_MIXIN_H_
 
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 
 namespace chromeos {

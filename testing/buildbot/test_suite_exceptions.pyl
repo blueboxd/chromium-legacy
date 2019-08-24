@@ -309,7 +309,7 @@
       'android-marshmallow-arm64-rel': {
         # TODO(crbug.com/731759): Enable this once we're confident that it
         # passes.
-        'experiment_percentage': 0,
+        'experiment_percentage': 50,
       },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
@@ -320,10 +320,6 @@
         'swarming': {
           'shards': 14,
         },
-        # TODO(crbug.com/990551): Remove this once bug fixed.
-        'args': [
-          '--test-filter=-org.chromium.chrome.browser.metrics.StartupLoadingMetricsTest#testStartWithURLRecorded',
-        ],
       },
       'Oreo Phone Tester': {
         # TODO(https://crbug.com/884413): Re-enable this once the tests are
@@ -1062,14 +1058,6 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
     ],
-    'modifications': {
-      'Marshmallow 64 bit Tester': {
-        # TODO(crbug.com/990551): Remove this once bug fixed.
-        'args': [
-          '--test-filter=-org.chromium.chrome.browser.metrics.StartupLoadingMetricsTest#testStartWithURLRecorded',
-        ],
-      },
-    }
   },
   'network_service_out_of_process_components_browsertests': {
     'remove_from': [

@@ -136,6 +136,6 @@ void ProactiveSuggestionsLoader::OnSimpleURLLoaderComplete(
   // Otherwise we have a populated proactive suggestions response and can return
   // a fully constructed set of proactive suggestions.
   std::move(complete_callback_)
-      .Run(std::make_unique<ash::ProactiveSuggestions>(
+      .Run(base::MakeRefCounted<ash::ProactiveSuggestions>(
           /*description=*/description, /*html=*/std::move(*response_body)));
 }

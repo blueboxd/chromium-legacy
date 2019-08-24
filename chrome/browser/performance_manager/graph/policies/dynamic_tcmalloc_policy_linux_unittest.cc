@@ -182,7 +182,7 @@ TEST_F(DynamicTcmallocPolicyTest, PeriodicPressureCheck) {
   // Advance through two intervals to confirm that we see our periodic checks.
   EXPECT_CALL(*policy(), CheckAndUpdateTunables()).Times(2);
   FastForwardBy(base::TimeDelta::FromSeconds(
-      2 * features::os_linux::kDynamicTuningTimeSec.Get() + 1));
+      2 * features::kDynamicTuningTimeSec.Get() + 1));
 }
 
 // This test will validate that for a mocked value of memory available we see a
@@ -212,8 +212,8 @@ TEST_F(DynamicTcmallocPolicyTest, DynamicallyAdjustThreadCacheSize) {
       .Times(1);
 
   // Advancing beyond our interval will cause a periodic pressure check.
-  FastForwardBy(base::TimeDelta::FromSeconds(
-      features::os_linux::kDynamicTuningTimeSec.Get() + 1));
+  FastForwardBy(
+      base::TimeDelta::FromSeconds(features::kDynamicTuningTimeSec.Get() + 1));
 }
 
 // This test validates that process nodes with no frame nodes are skipped.
@@ -236,8 +236,8 @@ TEST_F(DynamicTcmallocPolicyTest, SkipProcessNodesWithNoFrameNodes) {
   EXPECT_CALL(*policy(), EnsureTcmallocTunablesForProcess(testing::_)).Times(0);
 
   // Advancing beyond our interval will cause a periodic pressure check.
-  FastForwardBy(base::TimeDelta::FromSeconds(
-      features::os_linux::kDynamicTuningTimeSec.Get() + 1));
+  FastForwardBy(
+      base::TimeDelta::FromSeconds(features::kDynamicTuningTimeSec.Get() + 1));
 }
 
 // This test will validate that the minimum size is enforced and we won't
@@ -269,8 +269,8 @@ TEST_F(DynamicTcmallocPolicyTest,
       .Times(1);
 
   // Advancing beyond our interval will cause a periodic pressure check.
-  FastForwardBy(base::TimeDelta::FromSeconds(
-      features::os_linux::kDynamicTuningTimeSec.Get() + 1));
+  FastForwardBy(
+      base::TimeDelta::FromSeconds(features::kDynamicTuningTimeSec.Get() + 1));
 }
 
 // This test will validate that we apply the invisible scale factor only when
@@ -278,15 +278,14 @@ TEST_F(DynamicTcmallocPolicyTest,
 TEST_F(DynamicTcmallocPolicyTest, OnlyApplyInvisibleScaleFactorAfterCutoff) {
   // Switch our experimental state so we can test certain behavior.
   ScopedExperimentalStateToggle experimental_state_(
-      features::os_linux::kDynamicTcmallocTuning.name,
+      features::kDynamicTcmallocTuning.name,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE,
       {{"DynamicTcmallocScaleInvisibleTimeSec", "240"},
        {"DynamicTcmallocTuneTimeSec", "120"}});
 
-  const int dynamic_tuning_time_sec =
-      features::os_linux::kDynamicTuningTimeSec.Get();
+  const int dynamic_tuning_time_sec = features::kDynamicTuningTimeSec.Get();
   const int scaling_invisible_time_sec =
-      features::os_linux::kDynamicTuningScaleInvisibleTimeSec.Get();
+      features::kDynamicTuningScaleInvisibleTimeSec.Get();
 
   // Validate we're using the params we expect.
   ASSERT_EQ(dynamic_tuning_time_sec, 120);

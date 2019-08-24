@@ -152,11 +152,11 @@ void UiElementContainerView::OnCommittedQueryChanged(
 }
 
 void UiElementContainerView::OnResponseChanged(
-    const std::shared_ptr<AssistantResponse>& response) {
+    const scoped_refptr<AssistantResponse>& response) {
   // We may have to pend the response while we animate the previous response off
   // stage. We use a shared pointer to ensure that any views we add to the view
   // hierarchy can be removed before the underlying UI elements are destroyed.
-  pending_response_ = std::shared_ptr<const AssistantResponse>(response);
+  pending_response_ = response;
 
   // If we don't have any pre-existing content, there is nothing to animate off
   // stage so we we can proceed to add the new response.
@@ -245,7 +245,7 @@ void UiElementContainerView::OnResponseCleared() {
 }
 
 void UiElementContainerView::OnResponseAdded(
-    std::shared_ptr<const AssistantResponse> response) {
+    scoped_refptr<const AssistantResponse> response) {
   // The response should be fully processed before it is presented.
   DCHECK_EQ(AssistantResponse::ProcessingState::kProcessed,
             response->processing_state());

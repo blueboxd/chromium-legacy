@@ -400,7 +400,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     CycleThreads();
 
-    web_view_->MainFrameWidget()->Close();
+    web_view_->Close();
   }
 
  protected:

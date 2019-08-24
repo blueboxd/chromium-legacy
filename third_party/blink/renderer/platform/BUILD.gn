@@ -481,7 +481,6 @@ jumbo_component("platform") {
     "exported/mediastream/web_platform_media_stream_track.cc",
     "exported/mediastream/webrtc_uma_histograms.cc",
     "exported/platform.cc",
-    "exported/service_registry.cc",
     "exported/url_conversion.cc",
     "exported/video_capture/web_video_capture_impl_manager.cc",
     "exported/web_audio_bus.cc",

@@ -19,7 +19,7 @@ SIGTERM_EXIT_CODE=143
 # has occurred and that the host should not be restarted. Please, keep these
 # constants in sync with remoting/host/host_exit_codes.h.
 MIN_PERMANENT_ERROR_EXIT_CODE=100
-MAX_PERMANENT_ERROR_EXIT_CODE=106
+MAX_PERMANENT_ERROR_EXIT_CODE=105
 
 # Constants controlling the host process relaunch throttling.
 MINIMUM_RELAUNCH_INTERVAL=60

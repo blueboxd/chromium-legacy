@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,7 +36,7 @@ CardNameFixFlowViewDelegateMobile::~CardNameFixFlowViewDelegateMobile() {
 }
 
 int CardNameFixFlowViewDelegateMobile::GetIconId() const {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
 #else
   return 0;

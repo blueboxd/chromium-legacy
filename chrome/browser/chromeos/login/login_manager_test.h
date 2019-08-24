@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 
 class AccountId;
 

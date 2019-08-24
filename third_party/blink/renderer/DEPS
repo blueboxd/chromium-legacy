@@ -51,7 +51,6 @@ include_rules = [
     "+build",
     "+components/crash/core/common/crash_key.h",
     "+services/network/public/mojom",
-    "+services/service_manager/public/cpp/connector.h",
     "+services/service_manager/public/cpp/interface_provider.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",

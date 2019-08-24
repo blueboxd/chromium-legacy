@@ -37,6 +37,11 @@
 //     for the user's devices. Optionally, features can be enabled exclusively,
 //     meaning enabled on one device and disabled on all others.
 // * Response: Trivial
+//
+// -- GetDevicesActivityStatus --
+// * Request: Trivial
+// * Response: The state of activity for the user's devices. This includes if
+//     the device is currently online and the time the device was last active.
 syntax = "proto3";
 
 package cryptauthv2;
@@ -257,3 +262,38 @@ message BatchSetFeatureStatusesRequest {
 
 // Response to BatchSetFeatureStatuses.
 message BatchSetFeatureStatusesResponse {}
+
+// Request for GetDevicesActivityStatus.
+message GetDevicesActivityStatusRequest {
+  // The context of this request.
+  RequestContext context = 1;
+}
+
+// Describes the device's network reachability.
+enum OnlineStatus {
+  // Default value.
+  UNKNOWN_CONNECTIVITY = 0;
+  // The device appears to be unreachable.
+  OFFLINE = 1;
+  // The device appears to be online and reachable.
+  ONLINE = 2;
+}
+
+// Activity status of a single device.
+message DeviceActivityStatus {
+  // Device identifier.
+  string device_id = 1;
+
+  // The last time this device was active as retrieved from Bond. Freshness
+  // is on the order of minutes.
+  int64 last_activity_time_sec = 2;
+
+  // Online status of the device as inferred by reachability via FCM.
+  OnlineStatus online_status = 3;
+}
+
+// Response for GetDevicesActivityStatus.
+message GetDevicesActivityStatusResponse {
+  // The status of all group devices.
+  repeated DeviceActivityStatus device_activity_statuses = 1;
+}

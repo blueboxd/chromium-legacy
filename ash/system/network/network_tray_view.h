@@ -10,7 +10,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/system/network/active_network_icon.h"
 #include "ash/system/network/network_icon_animation_observer.h"
-#include "ash/system/network/tray_network_state_model.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/macros.h"
 
@@ -23,7 +23,7 @@ namespace tray {
 class NetworkTrayView : public TrayItemView,
                         public network_icon::AnimationObserver,
                         public SessionObserver,
-                        public TrayNetworkStateModel::Observer {
+                        public TrayNetworkStateObserver {
  public:
   ~NetworkTrayView() override;
 
@@ -42,7 +42,7 @@ class NetworkTrayView : public TrayItemView,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
-  // TrayNetworkStateModel::Observer:
+  // TrayNetworkStateObserver:
   void ActiveNetworkStateChanged() override;
   void NetworkListChanged() override;
 

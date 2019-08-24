@@ -146,7 +146,7 @@ void AssistantUiController::OnMicStateChanged(MicState mic_state) {
 }
 
 void AssistantUiController::OnProactiveSuggestionsChanged(
-    const ProactiveSuggestions* proactive_suggestions) {
+    scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {
   // When proactive suggestions are present, we show the associated view if it
   // isn't showing already. If it's already showing, no action need be taken.
   if (proactive_suggestions) {
@@ -219,6 +219,18 @@ void AssistantUiController::OnMiniViewPressed() {
   // will cause the UI to expand.
   if (input_modality != InputModality::kStylus)
     UpdateUiMode(AssistantUiMode::kMainUi);
+}
+
+void AssistantUiController::OnProactiveSuggestionsCloseButtonPressed() {
+  ResetProactiveSuggestionsView();
+  DCHECK(!proactive_suggestions_view_);
+}
+
+void AssistantUiController::OnProactiveSuggestionsViewPressed() {
+  ResetProactiveSuggestionsView();
+  DCHECK(!proactive_suggestions_view_);
+
+  ShowUi(AssistantEntryPoint::kProactiveSuggestions);
 }
 
 void AssistantUiController::OnHighlighterEnabledChanged(
@@ -649,7 +661,7 @@ void AssistantUiController::CreateProactiveSuggestionsView() {
 void AssistantUiController::ResetProactiveSuggestionsView() {
   DCHECK(proactive_suggestions_view_);
 
-  proactive_suggestions_view_->GetWidget()->CloseNow();
+  proactive_suggestions_view_->GetWidget()->Close();
   proactive_suggestions_view_ = nullptr;
 
   UpdateUsableWorkAreaObservers();

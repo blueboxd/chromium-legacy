@@ -29,6 +29,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
 #include "chrome/browser/background/background_application_list_model.h"
@@ -110,7 +111,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-using apps::AppShimHandler;
 using apps::ExtensionAppShimHandler;
 using base::UserMetricsAction;
 using content::BrowserContext;
@@ -1224,7 +1224,8 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // Normally, it'd just open a new empty page.
   {
     static BOOL doneOnce = NO;
-    BOOL attemptRestore = apps::AppShimHandler::ShouldRestoreSession() ||
+    BOOL attemptRestore =
+        apps::AppShimTerminationManager::Get()->ShouldRestoreSession() ||
         (!doneOnce && base::mac::WasLaunchedAsHiddenLoginItem());
     doneOnce = YES;
     if (attemptRestore) {

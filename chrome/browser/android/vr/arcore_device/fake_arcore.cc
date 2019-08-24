@@ -229,6 +229,19 @@ mojom::XRPlaneDetectionDataPtr FakeArCore::GetDetectedPlanesData() {
                                           std::move(result));
 }
 
+mojom::XRAnchorsDataPtr FakeArCore::GetAnchorsData() {
+  std::vector<mojom::XRAnchorDataPtr> result;
+
+  // 2m ahead of the origin, neutral orientation facing forward.
+  mojom::VRPosePtr pose = mojom::VRPose::New();
+  pose->position = gfx::Point3F(0.0, 0.0, -2.0);
+  pose->orientation = gfx::Quaternion();
+
+  result.push_back(mojom::XRAnchorData::New(2, std::move(pose)));
+
+  return mojom::XRAnchorsData::New(std::vector<int32_t>{2}, std::move(result));
+}
+
 void FakeArCore::Pause() {
   DCHECK(IsOnGlThread());
 }

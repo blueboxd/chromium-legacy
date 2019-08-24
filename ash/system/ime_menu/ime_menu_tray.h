@@ -7,8 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
-#include "ash/public/mojom/ime_controller.mojom.h"
-#include "ash/public/mojom/ime_info.mojom.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_view.h"

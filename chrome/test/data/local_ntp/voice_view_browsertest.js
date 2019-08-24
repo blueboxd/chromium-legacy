@@ -358,7 +358,7 @@ test.view.testClickMicButtonWithResults = function() {
   assertFalse(test.view.state.shouldRetry);
   assertTrue(test.view.state.shouldSubmit);
   assertFalse(test.view.state.navigatingAway);
-  assert(!test.view.state.lastEvent);
+  assertTrue(!test.view.state.lastEvent);
 };
 
 /**

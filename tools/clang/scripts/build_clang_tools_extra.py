@@ -2,7 +2,6 @@
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """A script for fetching LLVM monorepo and building clang-tools-extra binaries.
 
 Example: build clangd and clangd-indexer
@@ -16,6 +15,7 @@ import errno
 import os
 import subprocess
 import sys
+import update
 
 
 def GetCheckoutDir(out_dir):
@@ -32,7 +32,7 @@ def CreateDirIfNotExists(dir):
     os.makedirs(dir)
 
 
-def FetchLLVM(checkout_dir):
+def FetchLLVM(checkout_dir, revision):
   """Clone llvm repo into |out_dir| or update if it already exists."""
   CreateDirIfNotExists(os.path.dirname(checkout_dir))
 
@@ -49,6 +49,9 @@ def FetchLLVM(checkout_dir):
     # Otherwise, try to update it.
     print('-- Attempting to update existing repo')
     args = ['git', 'pull', '--rebase', 'origin', 'master']
+    subprocess.check_call(args, cwd=checkout_dir)
+  if revision:
+    args = ['git', 'checkout', revision]
     subprocess.check_call(args, cwd=checkout_dir)
 
 
@@ -73,15 +76,16 @@ def BuildTargets(build_dir, targets):
 
 def main():
   parser = argparse.ArgumentParser(description='Build clang_tools_extra.')
+  parser.add_argument('--fetch', action='store_true', help='fetch LLVM source')
   parser.add_argument(
-      '--fetch', action='store_true', help='fetch LLVM source')
+      '--revision', help='LLVM revision to use', default=update.CLANG_REVISION)
   parser.add_argument('OUT_DIR', help='where we put the LLVM source repository')
   parser.add_argument('TARGETS', nargs='+', help='targets being built')
   args = parser.parse_args()
 
   if args.fetch:
     print 'Fetching LLVM source'
-    FetchLLVM(GetCheckoutDir(args.OUT_DIR))
+    FetchLLVM(GetCheckoutDir(args.OUT_DIR), args.revision)
 
   print 'Building targets: %s' % ', '.join(args.TARGETS)
   BuildTargets(GetBuildDir(args.OUT_DIR), args.TARGETS)

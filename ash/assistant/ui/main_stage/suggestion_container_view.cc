@@ -83,7 +83,7 @@ void SuggestionContainerView::InitLayout() {
 }
 
 void SuggestionContainerView::OnResponseChanged(
-    const std::shared_ptr<AssistantResponse>& response) {
+    const scoped_refptr<AssistantResponse>& response) {
   has_received_response_ = true;
 
   OnSuggestionsCleared();

@@ -40,7 +40,6 @@
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
@@ -72,7 +71,6 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -2540,9 +2538,7 @@ class KioskHiddenWebUITest : public KioskTest,
 
 IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
   // Add a device owner.
-  FakeChromeUserManager* user_manager = new FakeChromeUserManager();
-  user_manager->AddUser(test_owner_account_id_);
-  user_manager::ScopedUserManager enabler(base::WrapUnique(user_manager));
+  mock_user_manager()->AddUser(test_owner_account_id_);
 
   // Set kiosk app to autolaunch.
   EnableConsumerKioskMode();

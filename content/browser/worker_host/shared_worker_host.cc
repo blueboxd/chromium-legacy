@@ -26,6 +26,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
@@ -198,12 +199,12 @@ void SharedWorkerHost::Start(
   // Prepare the controller service worker info to pass to the renderer.
   // |object_info| can be nullptr when the service worker context or the service
   // worker version is gone during shared worker startup.
-  blink::mojom::ServiceWorkerObjectAssociatedPtrInfo
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerObject>
       service_worker_remote_object;
   blink::mojom::ServiceWorkerState service_worker_sent_state;
   if (controller && controller->object_info) {
-    controller->object_info->request =
-        mojo::MakeRequest(&service_worker_remote_object);
+    controller->object_info->receiver =
+        service_worker_remote_object.InitWithNewEndpointAndPassReceiver();
     service_worker_sent_state = controller->object_info->state;
   }
 

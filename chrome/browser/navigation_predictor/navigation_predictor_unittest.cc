@@ -27,7 +27,7 @@ namespace {
 
 class TestNavigationPredictor : public NavigationPredictor {
  public:
-  explicit TestNavigationPredictor(
+  TestNavigationPredictor(
       mojo::InterfaceRequest<AnchorElementMetricsHost> request,
       content::RenderFrameHost* render_frame_host,
       bool init_feature_list)
@@ -77,6 +77,29 @@ class TestNavigationPredictor : public NavigationPredictor {
   mojo::Binding<AnchorElementMetricsHost> binding_;
 
   int calls_to_prefetch_ = 0;
+};
+
+class TestNavigationPredictorBasedOnScroll : public TestNavigationPredictor {
+ public:
+  TestNavigationPredictorBasedOnScroll(
+      mojo::InterfaceRequest<AnchorElementMetricsHost> request,
+      content::RenderFrameHost* render_frame_host,
+      bool init_feature_list)
+      : TestNavigationPredictor(std::move(request),
+                                render_frame_host,
+                                init_feature_list) {}
+
+  ~TestNavigationPredictorBasedOnScroll() override {}
+
+  // Override CalculateAnchorNavigationScore so the only metric that has
+  // any weight is the ratio distance to the top of the document.
+  double CalculateAnchorNavigationScore(
+      const blink::mojom::AnchorElementMetrics& metrics,
+      double document_engagement_score,
+      double target_engagement_score,
+      int area_rank) const override {
+    return metrics.ratio_distance_root_top;
+  }
 };
 
 class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
@@ -722,10 +745,61 @@ class NavigationPredictorPrefetchAfterPreconnectEnabledTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        mojo::MakeRequest(&predictor_service_), main_rfh(), false);
+    predictor_service_helper_ =
+        std::make_unique<TestNavigationPredictorBasedOnScroll>(
+            mojo::MakeRequest(&predictor_service_), main_rfh(), false);
+  }
+
+  blink::mojom::AnchorElementMetricsPtr CreateMetricsPtrWithRatioDistance(
+      const std::string& source_url,
+      const std::string& target_url,
+      float ratio_area,
+      float ratio_distance) const {
+    auto metrics = blink::mojom::AnchorElementMetrics::New();
+    metrics->source_url = GURL(source_url);
+    metrics->target_url = GURL(target_url);
+    metrics->ratio_area = ratio_area;
+    metrics->ratio_distance_root_top = ratio_distance;
+    return metrics;
   }
 };
+
+// Tests that a prefetch only occurs for the URL with the highest navigation
+// score in |top_urls_|, not the URL with the highest navigation score overall.
+TEST_F(NavigationPredictorPrefetchAfterPreconnectEnabledTest,
+       PrefetchOnlyURLInTopURLs) {
+  const std::string source = "https://example1.com";
+  const std::string url_to_prefetch = "https://example1.com/large";
+
+  // Simulate the case where the highest navigation score in |navigation_scores|
+  // doesn't contain any of the URLs in |top_urls_| by overriding
+  // |CalculateAnchorNavigationScore| to only take ratio distance into account.
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+
+  // The URL with the largest navigation score overall will be that with the
+  // highest ratio distance.
+  metrics.push_back(CreateMetricsPtrWithRatioDistance(
+      source, "https://example2.com/small", 1, 10));
+
+  // However, |top_urls_| will contain the top 10 links that have the highest
+  // ratio area, so the link with the highest ratio distance will not appear
+  // in the list.
+  metrics.push_back(
+      CreateMetricsPtrWithRatioDistance(source, url_to_prefetch, 10, 5));
+  for (int i = 0; i < 9; i++) {
+    metrics.push_back(CreateMetricsPtrWithRatioDistance(
+        source,
+        std::string("https://example2.com/xsmall")
+            .append(base::NumberToString(i)),
+        10, 0));
+  }
+
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
+                                                        GetDefaultViewport());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(prefetch_url().value(), url_to_prefetch);
+}
 
 // Test that a prefetch after preconnect occurs only when the current tab is
 // in the foreground, and that it does not occur multiple times for the same

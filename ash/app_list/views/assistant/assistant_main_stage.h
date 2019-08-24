@@ -56,7 +56,7 @@ class APP_LIST_EXPORT AssistantMainStage
   void OnPendingQueryChanged(const ash::AssistantQuery& query) override;
   void OnPendingQueryCleared(bool due_to_commit) override;
   void OnResponseChanged(
-      const std::shared_ptr<ash::AssistantResponse>& response) override;
+      const scoped_refptr<ash::AssistantResponse>& response) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(

@@ -17,6 +17,8 @@ ControllerRole MojoToDeviceControllerRole(
       return device::kControllerRoleLeft;
     case device_test::mojom::ControllerRole::kControllerRoleRight:
       return device::kControllerRoleRight;
+    case device_test::mojom::ControllerRole::kControllerRoleVoice:
+      return device::kControllerRoleVoice;
   }
   return device::kControllerRoleInvalid;
 }

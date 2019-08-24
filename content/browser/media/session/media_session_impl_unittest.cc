@@ -14,6 +14,7 @@
 #include "content/browser/media/session/mock_media_session_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/system_connector.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_web_contents.h"
@@ -660,6 +661,23 @@ TEST_F(MediaSessionImplTest, SourceId_DifferentBrowserContext) {
   MediaSessionImpl* other_session = MediaSessionImpl::Get(other_contents.get());
 
   EXPECT_NE(GetMediaSession()->GetSourceId(), other_session->GetSourceId());
+}
+
+TEST_F(MediaSessionImplTest, SessionInfoSensitive) {
+  EXPECT_FALSE(browser_context()->IsOffTheRecord());
+  EXPECT_FALSE(media_session::test::GetMediaSessionInfoSync(GetMediaSession())
+                   ->is_sensitive);
+}
+
+TEST_F(MediaSessionImplTest, SessionInfoSensitive_OffTheRecord) {
+  auto other_context = std::make_unique<TestBrowserContext>();
+  other_context->set_is_off_the_record(true);
+  auto other_contents = TestWebContents::Create(other_context.get(), nullptr);
+  MediaSessionImpl* other_session = MediaSessionImpl::Get(other_contents.get());
+
+  EXPECT_TRUE(other_context->IsOffTheRecord());
+  EXPECT_TRUE(media_session::test::GetMediaSessionInfoSync(other_session)
+                  ->is_sensitive);
 }
 
 }  // namespace content

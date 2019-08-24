@@ -10,6 +10,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
+#include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -303,7 +304,7 @@ void ActiveNetworkIcon::SetCellularUninitializedMsg() {
     cellular_uninitialized_msg_ = 0;
 }
 
-// TrayNetworkStateModel::Observer
+// TrayNetworkStateObserver
 
 void ActiveNetworkIcon::ActiveNetworkStateChanged() {
   SetCellularUninitializedMsg();

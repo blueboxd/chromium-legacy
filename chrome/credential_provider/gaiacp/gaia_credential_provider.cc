@@ -580,19 +580,8 @@ bool CGaiaCredentialProvider::CanNewUsersBeCreated(
   if (cpus == CPUS_UNLOCK_WORKSTATION)
     return false;
 
-  // If MDM enrollment is required and multiple users is not supported, only
-  // allow a new associated user to be created if there does not yet exist an
-  // OS user created from a Google account.
-  if (MdmEnrollmentEnabled()) {
-    DWORD multi_user_supported = 0;
-    HRESULT hr = GetGlobalFlag(kRegMdmSupportsMultiUser, &multi_user_supported);
-    if (FAILED(hr) || multi_user_supported == 0) {
-      if (AssociatedUserValidator::Get()->GetAssociatedUsersCount() > 0)
-        return false;
-    }
-  }
-
-  return true;
+  return GetGlobalFlagOrDefault(kRegMdmSupportsMultiUser, 1) ||
+         !AssociatedUserValidator::Get()->GetAssociatedUsersCount();
 }
 
 // ICredentialUpdateEventsHandler //////////////////////////////////////////////

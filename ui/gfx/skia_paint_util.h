@@ -40,12 +40,12 @@ GFX_EXPORT sk_sp<cc::PaintShader> CreateImageRepShaderForScale(
     const SkMatrix& local_matrix,
     SkScalar scale);
 
-// Creates a vertical gradient shader. The caller owns the shader.
-// Example usage to avoid leaks:
-GFX_EXPORT sk_sp<cc::PaintShader> CreateGradientShader(int start_point,
-                                                       int end_point,
-                                                       SkColor start_color,
-                                                       SkColor end_color);
+// Creates a gradient shader. The caller owns the shader.
+GFX_EXPORT sk_sp<cc::PaintShader> CreateGradientShader(
+    const gfx::Point& start_point,
+    const gfx::Point& end_point,
+    SkColor start_color,
+    SkColor end_color);
 
 // Creates a draw looper to generate |shadows|. The caller owns the draw looper.
 // NULL is returned if |shadows| is empty since no draw looper is needed in

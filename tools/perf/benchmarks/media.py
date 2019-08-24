@@ -45,7 +45,8 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Info(emails=['dalecurtis@chromium.org'],
-                component='Internals>Media')
+                component='Internals>Media',
+                documentation_url='https://chromium.googlesource.com/chromium/src/+/master/docs/speed/benchmark/harnesses/media.md')  # pylint: disable=line-too-long
 class MediaDesktop(_MediaBenchmark):
   """Obtains media performance for key user scenarios on desktop."""
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
@@ -60,7 +61,8 @@ class MediaDesktop(_MediaBenchmark):
 
 # If any story is failing on svelte, please only disable on svelte.
 @benchmark.Info(emails=['dalecurtis@chromium.org'],
-                component='Internals>Media')
+                component='Internals>Media',
+                documentation_url='https://chromium.googlesource.com/chromium/src/+/master/docs/speed/benchmark/harnesses/media.md')  # pylint: disable=line-too-long
 class MediaMobile(_MediaBenchmark):
   """Obtains media performance for key user scenarios on mobile devices."""
 

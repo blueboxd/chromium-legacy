@@ -936,8 +936,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     } else {
       client_->DidFinishLoading(status.completion_time, total_transfer_size,
                                 encoded_body_size, status.decoded_body_length,
-                                status.should_report_corb_blocking,
-                                status.cors_preflight_timing_info);
+                                status.should_report_corb_blocking);
     }
   }
 }

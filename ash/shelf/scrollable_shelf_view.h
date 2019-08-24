@@ -54,6 +54,8 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
   static constexpr int kEndPadding = 4;
 
  private:
+  class GradientLayerDelegate;
+
   // Returns the maximum scroll distance.
   int CalculateScrollUpperBound() const;
 
@@ -118,6 +120,9 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
   // |forward| indicates whether the next page or previous page is shown.
   float CalculatePageScrollingOffset(bool forward) const;
 
+  // Updates the gradient zone.
+  void UpdateGradientZone();
+
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.
@@ -144,6 +149,8 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
   gfx::Vector2dF scroll_offset_before_main_axis_scrolling_;
   LayoutStrategy layout_strategy_before_main_axis_scrolling_ =
       kNotShowArrowButtons;
+
+  std::unique_ptr<GradientLayerDelegate> gradient_layer_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfView);
 };

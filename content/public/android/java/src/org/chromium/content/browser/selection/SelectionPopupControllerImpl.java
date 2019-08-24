@@ -40,6 +40,7 @@ import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
@@ -260,7 +261,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             manager.addObserver(this);
         }
         if (initializeNative) {
-            mNativeSelectionPopupController = nativeInit(mWebContents);
+            mNativeSelectionPopupController = SelectionPopupControllerImplJni.get().init(
+                    SelectionPopupControllerImpl.this, mWebContents);
             ImeAdapterImpl imeAdapter = ImeAdapterImpl.fromWebContents(mWebContents);
             if (imeAdapter != null) imeAdapter.addEventObserver(this);
         }
@@ -1220,7 +1222,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     private void setTextHandlesTemporarilyHidden(boolean hide) {
         if (mNativeSelectionPopupController == 0) return;
-        nativeSetTextHandlesTemporarilyHidden(mNativeSelectionPopupController, hide);
+        SelectionPopupControllerImplJni.get().setTextHandlesTemporarilyHidden(
+                mNativeSelectionPopupController, SelectionPopupControllerImpl.this, hide);
     }
 
     @CalledByNative
@@ -1574,7 +1577,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         mNativeSelectionPopupController = 0;
     }
 
-    private native long nativeInit(WebContents webContents);
-    private native void nativeSetTextHandlesTemporarilyHidden(
-            long nativeSelectionPopupController, boolean hidden);
+    @NativeMethods
+    interface Natives {
+        long init(SelectionPopupControllerImpl caller, WebContents webContents);
+        void setTextHandlesTemporarilyHidden(long nativeSelectionPopupController,
+                SelectionPopupControllerImpl caller, boolean hidden);
+    }
 }

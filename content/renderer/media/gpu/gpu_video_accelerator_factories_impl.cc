@@ -31,7 +31,6 @@
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkPostConfig.h"
 

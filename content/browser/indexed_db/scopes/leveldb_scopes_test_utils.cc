@@ -52,7 +52,7 @@ void LevelDBScopesTestBase::SetUpRealDatabase() {
   ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
   leveldb::Status status;
   std::tie(leveldb_, status, std::ignore) = leveldb_factory_->OpenLevelDBState(
-      temp_directory_.GetPath(), leveldb::BytewiseComparator());
+      temp_directory_.GetPath(), leveldb::BytewiseComparator(), true);
   ASSERT_TRUE(status.ok()) << status.ToString();
   ASSERT_TRUE(leveldb_);
 }
@@ -65,6 +65,7 @@ void LevelDBScopesTestBase::SetUpBreakableDB(
 
   leveldb_env::Options options = indexed_db::GetLevelDBOptions(
       LevelDBEnv::Get(), leveldb::BytewiseComparator(),
+      /*create_if_missing=*/true,
       leveldb_env::WriteBufferSize(
           base::SysInfo::AmountOfTotalDiskSpace(temp_directory_.GetPath())),
       /*paranoid_checks=*/true);
@@ -96,6 +97,7 @@ void LevelDBScopesTestBase::SetUpFlakyDB(
 
   leveldb_env::Options options = indexed_db::GetLevelDBOptions(
       LevelDBEnv::Get(), leveldb::BytewiseComparator(),
+      /*create_if_missing=*/true,
       leveldb_env::WriteBufferSize(
           base::SysInfo::AmountOfTotalDiskSpace(temp_directory_.GetPath())),
       /*paranoid_checks=*/true);
@@ -112,7 +114,7 @@ void LevelDBScopesTestBase::SetUpFlakyDB(
   fake_factory.EnqueueNextOpenDBResult(std::move(flaky_db),
                                        leveldb::Status::OK());
   std::tie(leveldb_, status, std::ignore) = fake_factory.OpenLevelDBState(
-      temp_directory_.GetPath(), leveldb::BytewiseComparator());
+      temp_directory_.GetPath(), leveldb::BytewiseComparator(), true);
   ASSERT_TRUE(status.ok());
   ASSERT_TRUE(leveldb_);
 }

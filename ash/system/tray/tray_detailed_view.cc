@@ -30,7 +30,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -277,8 +276,7 @@ TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
       back_button_(nullptr) {
   box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  SetBackground(views::CreateSolidBackground(
-      delegate_->GetBackgroundColor(GetNativeTheme())));
+  SetBackground(views::CreateSolidBackground(delegate_->GetBackgroundColor()));
 }
 
 TrayDetailedView::~TrayDetailedView() = default;
@@ -319,8 +317,7 @@ void TrayDetailedView::CreateScrollableList() {
   scroller_->SetDrawOverflowIndicator(delegate_->IsOverflowIndicatorEnabled());
   scroll_content_ = scroller_->SetContents(std::move(scroll_content));
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
-  scroller_->SetBackgroundColor(
-      delegate_->GetBackgroundColor(GetNativeTheme()));
+  scroller_->SetBackgroundColor(delegate_->GetBackgroundColor());
 
   AddChildView(scroller_);
   box_layout_->SetFlexForView(scroller_, 1);

@@ -173,6 +173,12 @@ const base::Feature kGuestViewCrossProcessFrames{
 const base::Feature kHistoryManipulationIntervention{
     "HistoryManipulationIntervention", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Prevents sandboxed iframes from using the history API to navigate frames
+// outside their subttree, if they are restricted from doing top-level
+// navigations.
+const base::Feature kHistoryPreventSandboxedNavigation{
+    "HistoryPreventSandboxedNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // This is intended as a kill switch for the Idle Detection feature. To enable
 // this feature, the experimental web platform features flag should be set,
 // or the site should obtain an Origin Trial token.
@@ -299,10 +305,6 @@ const base::Feature kNotificationTriggers{"NotificationTriggers",
 // Origin Policy. See https://crbug.com/751996
 const base::Feature kOriginPolicy{"OriginPolicy",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Origin Trials for controlling access to feature/API experiments.
-const base::Feature kOriginTrials{"OriginTrials",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // History navigation in response to horizontal overscroll (aka gesture-nav).
 const base::Feature kOverscrollHistoryNavigation {
@@ -522,6 +524,10 @@ const base::Feature kSpareRendererForSitePerProcess{
 // https://www.chromestatus.com/features/5050913014153216
 const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables Storage Pressure notifications and settings pages.
+const base::Feature kStoragePressureUI{"StoragePressureUI",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether site isolation should use origins instead of scheme and
 // eTLD+1.

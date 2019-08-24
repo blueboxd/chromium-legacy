@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -31,6 +32,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
@@ -63,6 +65,7 @@ class ExistingUserController
       public content::NotificationObserver,
       public LoginPerformer::Delegate,
       public UserSessionManagerDelegate,
+      public user_manager::UserManager::Observer,
       public ArcKioskAppManager::ArcKioskAppManagerObserver,
       public policy::MinimumVersionPolicyHandler::Observer {
  public:
@@ -115,6 +118,9 @@ class ExistingUserController
   void SetDisplayAndGivenName(const std::string& display_name,
                               const std::string& given_name);
   bool IsUserWhitelisted(const AccountId& account_id);
+
+  // user_manager::UserManager::Observer:
+  void LocalStateChanged(user_manager::UserManager* user_manager) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -415,6 +421,9 @@ class ExistingUserController
   // Used to wait for cloud policy store load during public session login, if
   // the store is not yet initialized when the login is attempted.
   std::unique_ptr<PolicyStoreLoadWaiter> policy_store_waiter_;
+
+  ScopedObserver<user_manager::UserManager, user_manager::UserManager::Observer>
+      observed_user_manager_{this};
 
   // Factory of callbacks.
   base::WeakPtrFactory<ExistingUserController> weak_factory_{this};

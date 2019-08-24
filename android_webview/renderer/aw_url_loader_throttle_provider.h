@@ -8,10 +8,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
-
-namespace service_manager {
-class Connector;
-}
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 
 namespace android_webview {
 
@@ -19,8 +16,9 @@ namespace android_webview {
 // destructed on a single thread, which can be different from the render thread.
 class AwURLLoaderThrottleProvider : public content::URLLoaderThrottleProvider {
  public:
-  AwURLLoaderThrottleProvider(service_manager::Connector* connector,
-                              content::URLLoaderThrottleProviderType type);
+  AwURLLoaderThrottleProvider(
+      blink::ThreadSafeBrowserInterfaceBrokerProxy* broker,
+      content::URLLoaderThrottleProviderType type);
 
   ~AwURLLoaderThrottleProvider() override;
 

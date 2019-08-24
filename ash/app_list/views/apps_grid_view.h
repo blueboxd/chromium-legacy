@@ -51,6 +51,7 @@ class AppsGridViewTestApi;
 }
 
 class ApplicationDragAndDropHost;
+class AppListConfig;
 class AppListItemView;
 class AppsGridViewFolderDelegate;
 class ContentsView;
@@ -91,6 +92,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     MOUSE,
     TOUCH,
   };
+
+  // The height of gradient fade-out zones.
+  static constexpr int kFadeoutZoneHeight = 24;
 
   AppsGridView(ContentsView* contents_view,
                AppsGridViewFolderDelegate* folder_delegate);
@@ -277,6 +281,15 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Returns true if tablet mode is active.
   bool IsTabletMode() const;
+
+  // Should be called by AppListView if the app list config it uses changes.
+  // This will update all app list items (as the icon sizes and bounds might
+  // need updating), so it should be used sparingly.
+  void OnAppListConfigUpdated();
+
+  // Helper for getting current app list config from the parents in the app list
+  // view hierarchy.
+  const AppListConfig& GetAppListConfig() const;
 
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }

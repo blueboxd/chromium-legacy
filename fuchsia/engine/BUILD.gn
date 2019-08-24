@@ -89,6 +89,7 @@ component("web_engine_core") {
     "//skia/public/mojom",
     "//third_party/blink/public/common",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
+    "//third_party/fuchsia-sdk/sdk:sys_cpp",
     "//third_party/fuchsia-sdk/sdk:web",
     "//third_party/widevine/cdm:headers",
     "//ui/aura",

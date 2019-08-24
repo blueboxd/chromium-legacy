@@ -284,6 +284,8 @@ struct XRPlanePointData {
   float z;
 };
 
+// Struct containing plane-related information. A plane describes a flat surface
+// detected in the real world by the underlying system.
 struct XRPlaneData {
   // Unique (per session) identifier of the plane.
   int32 id;
@@ -300,15 +302,45 @@ struct XRPlaneData {
   array<XRPlanePointData> polygon;
 };
 
-// Struct containing information about existing & updated planes in frame N.
-// If the plane was removed between frame N-1 and N, its ID will not be present
-// in all_plane_ids.
+// Struct containing information about all tracked & updated planes in a given
+// frame. If a plane tracked in frame N-1 is no longer being tracked in frame N,
+// its ID will not be present in all_plane_ids and its XRPlaneData will not be
+// present in updated_planes_data.
 struct XRPlaneDetectionData {
-  // Array with ids of all planes.
+  // Array with ids of all tracked planes.
   array<int32> all_planes_ids;
 
-  // Array with plane data for updated planes.
+  // Array with plane data for all updated planes. Plane is considered updated
+  // if its position or polygon has changed. Updated planes are always a subset
+  // of all planes (i.e. for each plane found in updated_planes_data, its ID
+  // will be present in all_planes_ids).
   array<XRPlaneData> updated_planes_data;
+};
+
+// Struct containing anchor-related information. An anchor represents a pose
+// (position and orientation) in the real world. The anchor's pose will be
+// adjusted by the underlying system as its understanding of the real world
+// evolves.
+struct XRAnchorData {
+  // Unique (per session) identifier of the anchor.
+  int32 id;
+
+  // Pose of the anchor.
+  VRPose pose;
+};
+
+// Struct containing information about all tracked & updated anchors in a given
+// frame. If an anchor tracked in frame N-1 is no longer being tracked in
+// frame N, its ID will not be present in all_anchors_ids and its XRAnchorData
+// will not be present in updated_anchors_data.
+struct XRAnchorsData {
+  // Array with ids of all tracked anchors.
+  array<int32> all_anchors_ids;
+
+  // Array with anchor data for all updated anchors. Updated anchors are always
+  // a subset of all anchors (i.e. for each anchor found in
+  // updated_anchors_data, its ID will be present in all_anchors_ids).
+  array<XRAnchorData> updated_anchors_data;
 };
 
 // The data needed for each animation frame of an XRSession.
@@ -357,6 +389,9 @@ struct XRFrameData {
 
   // Detected plane information. Only present if plane detection is enabled.
   XRPlaneDetectionData? detected_planes_data;
+
+  // Tracked anchors information.
+  XRAnchorsData? anchors_data;
 };
 
 enum VRDisplayEventReason {

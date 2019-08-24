@@ -75,6 +75,11 @@ class UI_DEVTOOLS_EXPORT TracingAgent
   // Called when we have successfully started tracing with Perfetto session.
   void OnRecordingEnabled(std::unique_ptr<StartCallback> callback);
 
+  // Edits tracing data to use the normal devtools frontend logic to display
+  // the performance metrics. Without this, it will use the devtools generic
+  // trace logic to display the performance metrics.
+  void EditTraceDataForFrontend();
+
   // Sets up repeating timer to request the trace buffer status from the
   // perfetto tracing session. If usage_reporting_interval is too small, it will
   // be clipped to a minimum value.

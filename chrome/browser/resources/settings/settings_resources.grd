@@ -587,6 +587,12 @@
         <structure name="IDR_SETTINGS_DEVICE_STORAGE_JS"
                    file="device_page/storage.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_STORAGE_EXTERNAL_ENTRY_HTML"
+                   file="device_page/storage_external_entry.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DEVICE_STORAGE_EXTERNAL_ENTRY_JS"
+                   file="device_page/storage_external_entry.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEVICE_STORAGE_EXTERNAL_HTML"
                    file="device_page/storage_external.html"
                    type="chrome_html" />

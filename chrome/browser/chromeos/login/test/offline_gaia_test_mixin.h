@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 
 class AccountId;
 

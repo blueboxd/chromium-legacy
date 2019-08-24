@@ -12,6 +12,7 @@ const char kContextualSearchFieldTrialName[] = "ContextualSearch";
 const char kLongpressResolveParamName[] = "longpress_resolve_variation";
 const char kLongpressResolveHideOnScroll[] = "1";
 const char kLongpressResolvePrivacyAggressive[] = "2";
+const char kLongpressResolvePreserveTap[] = "3";
 
 // Contextual Cards variations and integration Api settings.
 const char kContextualCardsVersionParamName[] = "contextual_cards_version";

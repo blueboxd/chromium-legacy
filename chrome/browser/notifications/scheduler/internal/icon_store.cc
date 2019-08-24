@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 
+#include <map>
 #include <utility>
 
 #include "base/guid.h"
@@ -115,13 +116,17 @@ void IconProtoDbStore::OnIconEntriesLoaded(
 void IconProtoDbStore::OnIconsEncoded(
     AddCallback callback,
     std::vector<std::string> icons_uuid,
-    std::vector<std::string> encoded_icons_data) {
-  // TODO(hesen): Handle result return from PNGCodec.
-  DCHECK_EQ(icons_uuid.size(), encoded_icons_data.size());
+    std::unique_ptr<EncodeResult> encode_result) {
+  if (!encode_result->success) {
+    std::move(callback).Run({} /*icons_uuid*/, false);
+    return;
+  }
+
   auto entries_to_save = std::make_unique<KeyEntryVector>();
-  for (size_t i = 0; i < encoded_icons_data.size(); i++) {
+  auto encoded_data = std::move(encode_result->encoded_data);
+  for (size_t i = 0; i < encoded_data.size(); i++) {
     IconEntry icon_entry;
-    icon_entry.data = std::move(encoded_icons_data[i]);
+    icon_entry.data = std::move(encoded_data[i]);
     entries_to_save->emplace_back(icons_uuid[i], std::move(icon_entry));
   }
   auto add_callback =
@@ -131,15 +136,21 @@ void IconProtoDbStore::OnIconsEncoded(
                      std::move(add_callback));
 }
 
-void IconProtoDbStore::OnIconsDecoded(LoadIconsCallback callback,
-                                      std::vector<std::string> icons_uuid,
-                                      std::vector<SkBitmap> decoded_icons) {
-  // TODO(hesen): Handle result return from PNGCodec.
-  IconsMap icons;
-  for (size_t i = 0; i < icons_uuid.size(); i++) {
-    icons.emplace(std::move(icons_uuid[i]), decoded_icons[i]);
+void IconProtoDbStore::OnIconsDecoded(
+    LoadIconsCallback callback,
+    std::vector<std::string> icons_uuid,
+    std::unique_ptr<DecodeResult> decoded_result) {
+  if (!decoded_result->success) {
+    std::move(callback).Run(false, {} /*IconsMap*/);
+    return;
   }
-  std::move(callback).Run(true, std::move(icons));
+
+  IconsMap icons_map;
+  auto icons = std::move(decoded_result->decoded_icons);
+  for (size_t i = 0; i < icons_uuid.size(); i++) {
+    icons_map.emplace(std::move(icons_uuid[i]), std::move(icons[i]));
+  }
+  std::move(callback).Run(true, std::move(icons_map));
 }
 
 }  // namespace notifications

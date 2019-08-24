@@ -44,9 +44,9 @@ TEST_F(DesktopScreenPositionClientTest, PositionControlWithNonRootParent) {
   // Use a custom frame type.  By default we will choose a native frame when
   // aero glass is enabled, and this complicates the logic surrounding origin
   // computation, making it difficult to compute the expected origin location.
-  widget1.set_frame_type(Widget::FRAME_TYPE_FORCE_CUSTOM);
-  widget2.set_frame_type(Widget::FRAME_TYPE_FORCE_CUSTOM);
-  widget3.set_frame_type(Widget::FRAME_TYPE_FORCE_CUSTOM);
+  widget1.set_frame_type(Widget::FrameType::kForceCustom);
+  widget2.set_frame_type(Widget::FrameType::kForceCustom);
+  widget3.set_frame_type(Widget::FrameType::kForceCustom);
 
   // Create 3 windows.  A root window, an arbitrary window parented to the root
   // but NOT positioned at (0,0) relative to the root, and then a third window
@@ -99,7 +99,7 @@ TEST_F(DesktopScreenPositionClientTest, InitialBoundsConstrainedToDesktop) {
       gfx::Point(work_area.width() * 3 / 4, work_area.height() * 3 / 4);
 
   // Use a custom frame type. See above for further explanation.
-  widget.set_frame_type(Widget::FRAME_TYPE_FORCE_CUSTOM);
+  widget.set_frame_type(Widget::FrameType::kForceCustom);
 
   // Create a window that is intentionally positioned so that it is off screen.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -129,8 +129,8 @@ TEST_F(DesktopScreenPositionClientTest, InitialBoundsConstrainedToParent) {
                                  work_area.y() + work_area.height() / 4);
 
   // Use a custom frame type.  See above for further explanation
-  widget1.set_frame_type(Widget::FRAME_TYPE_FORCE_CUSTOM);
-  widget2.set_frame_type(Widget::FRAME_TYPE_FORCE_CUSTOM);
+  widget1.set_frame_type(Widget::FrameType::kForceCustom);
+  widget2.set_frame_type(Widget::FrameType::kForceCustom);
 
   // Create 2 windows.  A root window, and an arbitrary window parented to the
   // root and positioned such that it extends beyond the bounds of the root.

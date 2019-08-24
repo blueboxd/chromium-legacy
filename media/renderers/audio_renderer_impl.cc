@@ -558,6 +558,13 @@ void AudioRendererImpl::OnDeviceInfoReceived(
 
   audio_parameters_.set_latency_tag(AudioLatency::LATENCY_PLAYBACK);
 
+  if (!client_->IsVideoStreamAvailable()) {
+    // When video is not available, audio prefetch can be enabled.  See
+    // crbug/988535.
+    audio_parameters_.set_effects(audio_parameters_.effects() |
+                                  ::media::AudioParameters::AUDIO_PREFETCH);
+  }
+
   last_decoded_channel_layout_ =
       stream->audio_decoder_config().channel_layout();
 

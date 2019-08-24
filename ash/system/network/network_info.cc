@@ -4,11 +4,18 @@
 
 #include "ash/system/network/network_info.h"
 
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+
 namespace ash {
 
-NetworkInfo::NetworkInfo() = default;
+NetworkInfo::NetworkInfo() : NetworkInfo(std::string()) {}
 
-NetworkInfo::NetworkInfo(const std::string& guid) : guid(guid) {}
+NetworkInfo::NetworkInfo(const std::string& guid)
+    : guid(guid),
+      connection_state(
+          chromeos::network_config::mojom::ConnectionStateType::kNotConnected),
+      type(chromeos::network_config::mojom::NetworkType::kWiFi),
+      source(chromeos::network_config::mojom::OncSource::kNone) {}
 
 NetworkInfo::~NetworkInfo() = default;
 

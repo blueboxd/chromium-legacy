@@ -47,6 +47,15 @@ class NativeFileSystemPermissionRequestManager
   void AddRequest(RequestData request,
                   base::OnceCallback<void(PermissionAction result)> callback);
 
+  // Do NOT use this method in production code. Use this method in browser
+  // tests that need to accept or deny permissions when requested in
+  // JavaScript. Your test needs to call this before permission is requested,
+  // and then the bubble will proceed as desired as soon as it would have been
+  // shown.
+  void set_auto_response_for_test(base::Optional<PermissionAction> response) {
+    auto_response_for_test_ = response;
+  }
+
  private:
   friend class content::WebContentsUserData<
       NativeFileSystemPermissionRequestManager>;
@@ -72,6 +81,8 @@ class NativeFileSystemPermissionRequestManager
 
   // We only show new prompts when this is true.
   bool main_frame_has_fully_loaded_ = false;
+
+  base::Optional<PermissionAction> auto_response_for_test_;
 
   base::WeakPtrFactory<NativeFileSystemPermissionRequestManager> weak_factory_{
       this};

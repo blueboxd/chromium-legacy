@@ -160,7 +160,7 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // Updates |phantoms_for_dragging_|. If |phantoms_for_dragging_| is null, then
   // a new object is created for it.
-  void UpdatePhantomsForDragging(const gfx::PointF& location_in_screen);
+  void UpdatePhantomsForDragging(bool is_touch_dragging);
 
   void DestroyPhantomsForDragging();
 

@@ -42,11 +42,6 @@ base::string16 SimpleMenuModel::Delegate::GetLabelForCommandId(
   return base::string16();
 }
 
-base::string16 SimpleMenuModel::Delegate::GetSublabelForCommandId(
-    int command_id) const {
-  return base::string16();
-}
-
 base::string16 SimpleMenuModel::Delegate::GetMinorTextForCommandId(
     int command_id) const {
   return base::string16();
@@ -329,11 +324,6 @@ void SimpleMenuModel::SetLabel(int index, const base::string16& label) {
   MenuItemsChanged();
 }
 
-void SimpleMenuModel::SetSublabel(int index, const base::string16& sublabel) {
-  items_[ValidateItemIndex(index)].sublabel = sublabel;
-  MenuItemsChanged();
-}
-
 void SimpleMenuModel::SetMinorText(int index,
                                    const base::string16& minor_text) {
   items_[ValidateItemIndex(index)].minor_text = minor_text;
@@ -406,12 +396,6 @@ base::string16 SimpleMenuModel::GetLabelAt(int index) const {
   if (IsItemDynamicAt(index))
     return delegate_->GetLabelForCommandId(GetCommandIdAt(index));
   return items_[ValidateItemIndex(index)].label;
-}
-
-base::string16 SimpleMenuModel::GetSublabelAt(int index) const {
-  if (IsItemDynamicAt(index))
-    return delegate_->GetSublabelForCommandId(GetCommandIdAt(index));
-  return items_[ValidateItemIndex(index)].sublabel;
 }
 
 base::string16 SimpleMenuModel::GetMinorTextAt(int index) const {

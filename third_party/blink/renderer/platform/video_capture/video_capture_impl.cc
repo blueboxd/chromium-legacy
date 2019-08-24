@@ -25,7 +25,7 @@
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture_types.mojom-blink.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -152,8 +152,7 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
   DETACH_FROM_THREAD(io_thread_checker_);
 
   media::mojom::blink::VideoCaptureHostPtr temp_video_capture_host;
-  Platform::Current()->GetConnector()->BindInterface(
-      Platform::Current()->GetBrowserServiceName(),
+  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
       mojo::MakeRequest(&temp_video_capture_host));
   video_capture_host_info_ = temp_video_capture_host.PassInterface();
 }

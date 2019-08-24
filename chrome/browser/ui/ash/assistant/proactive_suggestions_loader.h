@@ -32,7 +32,7 @@ class ProactiveSuggestionsLoader {
   // Callback used when downloading of |proactive_suggestions| is complete.
   // Note that |proactive_suggestions| may be |nullptr|.
   using CompleteCallback = base::OnceCallback<void(
-      std::unique_ptr<ash::ProactiveSuggestions> proactive_suggestions)>;
+      scoped_refptr<ash::ProactiveSuggestions> proactive_suggestions)>;
 
   // Starts downloading of |proactive_suggestions| associated with |url_|,
   // running |complete_callback| when finished. Note that this method should be

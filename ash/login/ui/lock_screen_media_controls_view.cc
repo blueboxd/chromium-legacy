@@ -389,6 +389,12 @@ void LockScreenMediaControlsView::MediaSessionInfoChanged(
     return;
   }
 
+  // If the session is marked as sensitive then don't show the controls.
+  if (session_info->is_sensitive && !IsDrawn()) {
+    SetShown(Shown::kNotShownSessionSensitive);
+    return;
+  }
+
   bool is_paused = session_info->playback_state ==
                    media_session::mojom::MediaPlaybackState::kPaused;
 

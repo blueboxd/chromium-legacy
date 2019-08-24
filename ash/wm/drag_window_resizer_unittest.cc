@@ -182,6 +182,10 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     ASSERT_TRUE(resizer.get());
     // Drag the pointer to the right. Once it reaches the right edge of the
     // primary display, it warps to the secondary.
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
     resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
     resizer->CompleteDrag();
     // The whole window is on the secondary display now. The parent should be
@@ -198,6 +202,10 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[0]));
     resizer->Drag(CalculateDragPoint(*resizer, 795, 10), 0);
     // Window should be adjusted for minimum visibility (25px) during the drag.
     EXPECT_EQ("775,10 50x60", window_->bounds().ToString());
@@ -218,6 +226,10 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window_.get(), gfx::Point(49, 0), HTCAPTION));
     ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
     resizer->Drag(CalculateDragPoint(*resizer, 751, 10), ui::EF_CONTROL_DOWN);
     resizer->CompleteDrag();
     // Since the pointer is on the secondary, the parent should be changed
@@ -313,6 +325,10 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
     ASSERT_TRUE(resizer.get());
     // Drag the pointer to the right. Once it reaches the right edge of the
     // primary display, it warps to the secondary.
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
     resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
     resizer->CompleteDrag();
     // The whole window is on the secondary display now. The parent should be
@@ -370,6 +386,10 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
 
     // The pointer is inside the primary root. The drag window controller
     // should be NULL.
+    ASSERT_EQ(display::Screen::GetScreen()
+                  ->GetDisplayNearestWindow(root_windows[0])
+                  .id(),
+              Shell::Get()->cursor_manager()->GetDisplay().id());
     resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
     DragWindowController* controller =
         drag_resizer->drag_window_controller_.get();
@@ -404,6 +424,10 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
     EXPECT_GT(1.0f, drag_layer->opacity());
 
     // Enter the pointer to the secondary display.
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
     resizer->Drag(CalculateDragPoint(*resizer, 775, 10), 0);
     EXPECT_EQ(1, controller->GetDragWindowsCountForTest());
     // |window_| should be transparent, and the drag window should be opaque.
@@ -472,6 +496,10 @@ TEST_F(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
   DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
   ASSERT_TRUE(drag_resizer);
   EXPECT_FALSE(drag_resizer->drag_window_controller_.get());
+  // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+  // without having to call |CursorManager::SetDisplay|.
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
   resizer->Drag(CalculateDragPoint(*resizer, -50, 0), 0);
   DragWindowController* controller =
       drag_resizer->drag_window_controller_.get();
@@ -503,6 +531,10 @@ TEST_F(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
   EXPECT_GT(1.0f, drag_layer0->opacity());
   EXPECT_GT(1.0f, drag_layer1->opacity());
 
+  // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+  // without having to call |CursorManager::SetDisplay|.
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[0]));
   resizer->Drag(CalculateDragPoint(*resizer, -51, 549), 0);
   ASSERT_EQ(2, controller->GetDragWindowsCountForTest());
   drag_window0 = controller->GetDragWindowForTest(0);
@@ -520,6 +552,10 @@ TEST_F(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
 
   // Enter the pointer to the 3rd. Since it's bottom, the window snaps and
   // no drag windwos are created.
+  // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+  // without having to call |CursorManager::SetDisplay|.
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[2]));
   resizer->Drag(CalculateDragPoint(*resizer, -51, 551), 0);
   ASSERT_EQ(1, controller->GetDragWindowsCountForTest());
   drag_window0 = controller->GetDragWindowForTest(0);
@@ -586,20 +622,25 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
   UpdateDisplay("400x400,800x800*2");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
+  const display::Display display0 =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[0]);
+  const display::Display display1 =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
 
   CursorManagerTestApi cursor_test_api(Shell::Get()->cursor_manager());
   // Move window from the root window with 1.0 device scale factor to the root
   // window with 2.0 device scale factor.
   {
-    window_->SetBoundsInScreen(
-        gfx::Rect(0, 0, 50, 60),
-        display::Screen::GetScreen()->GetPrimaryDisplay());
+    window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60), display0);
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
     ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(display1);
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     TestIfMouseWarpsAt(gfx::Point(399, 200));
     EXPECT_EQ(2.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
@@ -610,19 +651,16 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
   // Move window from the root window with 2.0 device scale factor to the root
   // window with 1.0 device scale factor.
   {
-    // Make sure the window is on the active desk container first.
-    aura::Window* active_desk_container =
-        desks_util::GetActiveDeskContainerForRoot(root_windows[1]);
-    active_desk_container->AddChild(window_.get());
-    window_->SetBoundsInScreen(
-        gfx::Rect(600, 0, 50, 60),
-        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+    window_->SetBoundsInScreen(gfx::Rect(600, 0, 50, 60), display1);
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Grab (0, 0) of the window.
     std::unique_ptr<WindowResizer> resizer(
         CreateDragWindowResizer(window_.get(), gfx::Point(), HTCAPTION));
     EXPECT_EQ(2.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
     ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(display0);
     resizer->Drag(CalculateDragPoint(*resizer, -200, 200), 0);
     TestIfMouseWarpsAt(gfx::Point(400, 200));
     EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());

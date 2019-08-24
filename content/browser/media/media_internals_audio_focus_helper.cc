@@ -45,6 +45,7 @@ const char kMediaSessionPlaybackStatePaused[] = "Paused";
 const char kMediaSessionPlaybackStatePlaying[] = "Playing";
 
 const char kMediaSessionIsControllable[] = "Controllable";
+const char kMediaSessionIsSensitive[] = "Sensitive";
 
 }  // namespace
 
@@ -304,6 +305,10 @@ std::string MediaInternalsAudioFocusHelper::BuildStateString(
   // Convert the |is_controllable| boolean into a string.
   if (state->session_info->is_controllable)
     stream << " " << kMediaSessionIsControllable;
+
+  // Convert the |is_sensitive| boolean into a string.
+  if (state->session_info->is_sensitive)
+    stream << " " << kMediaSessionIsSensitive;
 
   if (!provided_state.empty())
     stream << " " << provided_state;

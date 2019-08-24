@@ -1349,14 +1349,6 @@ void URLRequestHttpJob::StopCaching() {
     transaction_->StopCaching();
 }
 
-bool URLRequestHttpJob::GetFullRequestHeaders(
-    HttpRequestHeaders* headers) const {
-  if (!transaction_)
-    return false;
-
-  return transaction_->GetFullRequestHeaders(headers);
-}
-
 int64_t URLRequestHttpJob::GetTotalReceivedBytes() const {
   int64_t total_received_bytes =
       total_received_bytes_from_previous_transactions_;

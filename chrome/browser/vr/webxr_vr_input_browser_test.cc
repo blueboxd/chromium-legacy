@@ -166,7 +166,9 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
     UpdateControllerAndWait(index, controller_data);
   }
 
-  unsigned int CreateAndConnectMinimalGamepad() {
+  unsigned int CreateAndConnectMinimalGamepad(
+      device::ControllerRole role =
+          device::ControllerRole::kControllerRoleRight) {
     // Create a controller that only supports select via a trigger, i.e. it has
     // just enough data to be considered a gamepad.
     uint64_t supported_buttons =
@@ -176,9 +178,7 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
         {device::XrButtonId::kAxisTrigger, device::XrAxisType::kTrigger},
     };
 
-    return CreateAndConnectController(
-        device::ControllerRole::kControllerRoleRight, axis_types,
-        supported_buttons);
+    return CreateAndConnectController(role, axis_types, supported_buttons);
   }
 
   unsigned int CreateAndConnectController(
@@ -220,6 +220,13 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
     auto controller_data = GetCurrentControllerData(controller_index);
     controller_data.role = role;
     UpdateControllerAndWait(controller_index, controller_data);
+  }
+
+  // A controller is necessary to simulate voice input because of how the test
+  // API works.
+  unsigned int CreateVoiceController() {
+    return CreateAndConnectMinimalGamepad(
+        device::ControllerRole::kControllerRoleVoice);
   }
 
  private:
@@ -416,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestInputProfilesChange) {
 // and that if whether or not an input source has a gamepad changes that the
 // input source change event is fired and a new input source is created.
 // OpenVR-only since WMR doesn't support the notion of an incomplete gamepad
-// except if using voice input, which is currently not supported in tests.
+// except if using voice input.
 IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestInputGamepadSameObject) {
   WebXrControllerInputMock my_mock;
 
@@ -926,6 +933,26 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
   t->WaitOnJavaScriptStep();
 
   t->EndTest();
+}
+
+// Test that voice input is registered via WebXR's input method. WMR only since
+// it's the only platform we are testing that supports select via voice.
+IN_PROC_BROWSER_TEST_F(WebXrVrWmrBrowserTest, TestVoiceSelectRegistered) {
+  WebXrControllerInputMock my_mock;
+  unsigned int index = my_mock.CreateVoiceController();
+
+  // Load the test page and enter presentation.
+  LoadUrlAndAwaitInitialization(GetFileUrlForHtmlTestFile("test_webxr_input"));
+  EnterSessionWithUserGestureOrFail();
+
+  RunJavaScriptOrFail("stepSetupListeners(1)");
+
+  // Simulate the user saying "select" and make sure the select events are
+  // registered for it. Must wait for JS to receive the "select" event.
+  my_mock.PressReleasePrimaryTrigger(index);
+  WaitOnJavaScriptStep();
+
+  EndTest();
 }
 
 // TODO(crbug.com/986637) - Enable for OpenXR

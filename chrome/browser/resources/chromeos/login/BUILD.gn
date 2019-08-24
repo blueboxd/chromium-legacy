@@ -192,6 +192,7 @@ js_library("enrollment_license_card") {
 js_library("fingerprint_setup") {
   deps = [
     ":oobe_dialog_host_behavior",
+    "//ui/webui/resources/cr_elements/chromeos/cr_lottie:cr_lottie",
     "//ui/webui/resources/cr_elements/cr_fingerprint:cr_fingerprint_progress_arc",
     "//ui/webui/resources/js:i18n_behavior",
   ]

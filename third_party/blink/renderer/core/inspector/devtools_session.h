@@ -36,7 +36,8 @@ class CORE_EXPORT DevToolsSession
       mojom::blink::DevToolsSessionAssociatedRequest main_request,
       mojom::blink::DevToolsSessionRequest io_request,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-      bool client_expects_binary_responses);
+      bool client_expects_binary_responses,
+      const String& session_id);
   ~DevToolsSession() override;
 
   void ConnectToV8(v8_inspector::V8Inspector*, int context_group_id);
@@ -86,6 +87,11 @@ class CORE_EXPORT DevToolsSession
   void SendProtocolResponse(int call_id,
                             const protocol::ProtocolMessage& message);
 
+  // Inserts the session id (if non-empty) and converts to JSON
+  // if requested by the client.
+  blink::mojom::blink::DevToolsMessagePtr FinalizeMessage(
+      protocol::ProtocolMessage message);
+
   Member<DevToolsAgent> agent_;
   mojo::AssociatedBinding<mojom::blink::DevToolsSession> binding_;
   mojom::blink::DevToolsSessionHostAssociatedPtr host_ptr_;
@@ -97,6 +103,7 @@ class CORE_EXPORT DevToolsSession
   class Notification;
   Vector<std::unique_ptr<Notification>> notification_queue_;
   const bool client_expects_binary_responses_;
+  const String session_id_;
   InspectorAgentState v8_session_state_;
   InspectorAgentState::Bytes v8_session_state_cbor_;
 

@@ -546,6 +546,75 @@ class PixelTestPages(object):
             'color': [0, 255, 0],
           },
         ]),
+
+      PixelTestPage(
+        'pixel_canvas2d_tab_switch.html',
+        base_name + '_Canvas2DTabSwitch',
+        test_rect=[0, 0, 100, 100],
+        revision=0, # Golden image revision is not used
+        optional_action='SwitchTabs',
+        tolerance=3,
+        expected_colors=[
+          {
+            'comment': 'top left, green',
+            'location': [5, 5],
+            'size': [40, 40],
+            'color': [0, 128, 0],
+          },
+          {
+            'comment': 'bottom right, blue',
+            'location': [55, 55],
+            'size': [40, 40],
+            'color': [0, 0, 255],
+          },
+          {
+            'comment': 'top right, red',
+            'location': [55, 5],
+            'size': [40, 40],
+            'color': [255, 0, 0],
+          },
+          {
+            'comment': 'bottom left, red',
+            'location': [5, 55],
+            'size': [40, 40],
+            'color': [255, 0, 0],
+          },
+        ]),
+
+      PixelTestPage(
+        'pixel_canvas2d_tab_switch.html',
+        base_name + '_Canvas2DTabSwitch_SoftwareCompositing',
+        test_rect=[0, 0, 100, 100],
+        revision=0, # Golden image revision is not used
+        browser_args=sw_compositing_args,
+        optional_action='SwitchTabs',
+        tolerance=3,
+        expected_colors=[
+          {
+            'comment': 'top left, green',
+            'location': [5, 5],
+            'size': [40, 40],
+            'color': [0, 128, 0],
+          },
+          {
+            'comment': 'bottom right, blue',
+            'location': [55, 55],
+            'size': [40, 40],
+            'color': [0, 0, 255],
+          },
+          {
+            'comment': 'top right, red',
+            'location': [55, 5],
+            'size': [40, 40],
+            'color': [255, 0, 0],
+          },
+          {
+            'comment': 'bottom left, red',
+            'location': [5, 55],
+            'size': [40, 40],
+            'color': [255, 0, 0],
+          },
+        ]),
     ]
 
 

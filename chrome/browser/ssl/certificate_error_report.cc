@@ -20,6 +20,10 @@
 #include "net/cert/cert_verify_proc_android.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "net/cert/internal/trust_store_mac.h"
+#endif
+
 #include "net/cert/cert_verify_result.h"
 
 using network_time::NetworkTimeTracker;
@@ -74,6 +78,7 @@ void AddCertStatusToReportStatus(
 #undef COPY_CERT_STATUS
 }
 
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 void AddVerifyFlagsToReport(
     bool enable_rev_checking,
     bool require_rev_checking_local_anchors,
@@ -97,6 +102,32 @@ void AddVerifyFlagsToReport(
                           VERIFY_DISABLE_SYMANTEC_ENFORCEMENT);
   }
 }
+
+#if defined(OS_MACOSX)
+void AddMacTrustFlagsToReport(
+    int mac_trust_flags,
+    ::google::protobuf::RepeatedField<int>* report_flags) {
+#define COPY_TRUST_FLAGS(flag)                            \
+  if (mac_trust_flags & net::TrustStoreMac::TRUST_##flag) \
+    report_flags->Add(                                    \
+        chrome_browser_ssl::TrialVerificationInfo::MAC_TRUST_##flag);
+
+  COPY_TRUST_FLAGS(SETTINGS_ARRAY_EMPTY);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_EMPTY);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_UNKNOWN_KEY);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_POLICY);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_INVALID_POLICY_TYPE);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_APPLICATION);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_POLICY_STRING);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_KEY_USAGE);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_RESULT);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_INVALID_RESULT_TYPE);
+  COPY_TRUST_FLAGS(SETTINGS_DICT_CONTAINS_ALLOWED_ERROR);
+
+#undef COPY_TRUST_FLAGS
+}
+#endif  // defined(OS_MACOSX)
+#endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 
 bool CertificateChainToString(const net::X509Certificate& cert,
                               std::string* result) {
@@ -123,6 +154,7 @@ CertificateErrorReport::CertificateErrorReport(const std::string& hostname,
   cert_report_->add_pin(ssl_info.pinning_failure_log);
 }
 
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 CertificateErrorReport::CertificateErrorReport(
     const std::string& hostname,
     const net::X509Certificate& unverified_cert,
@@ -131,7 +163,8 @@ CertificateErrorReport::CertificateErrorReport(
     bool enable_sha1_local_anchors,
     bool disable_symantec_enforcement,
     const net::CertVerifyResult& primary_result,
-    const net::CertVerifyResult& trial_result)
+    const net::CertVerifyResult& trial_result,
+    network::mojom::CertVerifierDebugInfoPtr debug_info)
     : CertificateErrorReport(hostname,
                              *primary_result.verified_cert,
                              &unverified_cert,
@@ -155,7 +188,13 @@ CertificateErrorReport::CertificateErrorReport(
       enable_rev_checking, require_rev_checking_local_anchors,
       enable_sha1_local_anchors, disable_symantec_enforcement,
       trial_report->mutable_verify_flags());
+#if defined(OS_MACOSX)
+  AddMacTrustFlagsToReport(
+      debug_info->mac_combined_trust_debug_info,
+      trial_report->mutable_mac_combined_trust_debug_info());
+#endif
 }
+#endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 
 CertificateErrorReport::~CertificateErrorReport() {}
 

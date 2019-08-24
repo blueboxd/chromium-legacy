@@ -234,8 +234,9 @@ TEST_F(TrialComparisonCertVerifierControllerTest, NothingEnabled) {
   EXPECT_FALSE(trial_controller().IsAllowed());
 
   // Attempting to send a report should also do nothing.
-  report_client()->SendTrialReport("hostname", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, ok_result_);
+  report_client()->SendTrialReport(
+      "hostname", leaf_cert_1_, false, false, false, false, ok_result_,
+      ok_result_, network::mojom::CertVerifierDebugInfo::New());
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
   // Expect no report since the trial is not allowed.
@@ -255,8 +256,9 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   EXPECT_FALSE(trial_controller().IsAllowed());
 
   // Attempting to send a report should do nothing.
-  report_client()->SendTrialReport("hostname", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, ok_result_);
+  report_client()->SendTrialReport(
+      "hostname", leaf_cert_1_, false, false, false, false, ok_result_,
+      ok_result_, network::mojom::CertVerifierDebugInfo::New());
 
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
@@ -290,8 +292,9 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   EXPECT_FALSE(trial_controller().IsAllowed());
 
   // Attempting to send a report should do nothing.
-  report_client()->SendTrialReport("hostname", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, ok_result_);
+  report_client()->SendTrialReport(
+      "hostname", leaf_cert_1_, false, false, false, false, ok_result_,
+      ok_result_, network::mojom::CertVerifierDebugInfo::New());
 
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
@@ -323,8 +326,9 @@ TEST_F(TrialComparisonCertVerifierControllerTest, OfficialBuildTrialEnabled) {
   Mock::VerifyAndClear(&mock_config_client());
 
   // Report should be sent.
-  report_client()->SendTrialReport("127.0.0.1", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, bad_result_);
+  report_client()->SendTrialReport(
+      "127.0.0.1", leaf_cert_1_, false, false, false, false, ok_result_,
+      bad_result_, network::mojom::CertVerifierDebugInfo::New());
 
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
@@ -365,8 +369,9 @@ TEST_F(TrialComparisonCertVerifierControllerTest, OfficialBuildTrialEnabled) {
   EXPECT_FALSE(trial_controller().IsAllowed());
 
   // Attempting to send a report should do nothing now.
-  report_client()->SendTrialReport("hostname", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, bad_result_);
+  report_client()->SendTrialReport(
+      "hostname", leaf_cert_1_, false, false, false, false, ok_result_,
+      bad_result_, network::mojom::CertVerifierDebugInfo::New());
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
   // Expect no report since the trial is not allowed.
@@ -409,10 +414,12 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   Mock::VerifyAndClear(&mock_config_client_2);
 
   // Report should be sent.
-  report_client()->SendTrialReport("127.0.0.1", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, bad_result_);
-  report_client_2->SendTrialReport("127.0.0.2", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, bad_result_);
+  report_client()->SendTrialReport(
+      "127.0.0.1", leaf_cert_1_, false, false, false, false, ok_result_,
+      bad_result_, network::mojom::CertVerifierDebugInfo::New());
+  report_client_2->SendTrialReport(
+      "127.0.0.2", leaf_cert_1_, false, false, false, false, ok_result_,
+      bad_result_, network::mojom::CertVerifierDebugInfo::New());
 
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
@@ -457,10 +464,12 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   EXPECT_FALSE(trial_controller().IsAllowed());
 
   // Attempting to send a report should do nothing now.
-  report_client()->SendTrialReport("hostname", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, bad_result_);
-  report_client_2->SendTrialReport("hostname2", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, bad_result_);
+  report_client()->SendTrialReport(
+      "hostname", leaf_cert_1_, false, false, false, false, ok_result_,
+      bad_result_, network::mojom::CertVerifierDebugInfo::New());
+  report_client_2->SendTrialReport(
+      "hostname2", leaf_cert_1_, false, false, false, false, ok_result_,
+      bad_result_, network::mojom::CertVerifierDebugInfo::New());
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
   // Expect no report since the trial is not allowed.
@@ -491,8 +500,9 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
 
   // In uma_only mode, the network service will generate a report, but the
   // trial controller will not send it to the reporting service.
-  report_client()->SendTrialReport("127.0.0.1", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, bad_result_);
+  report_client()->SendTrialReport(
+      "127.0.0.1", leaf_cert_1_, false, false, false, false, ok_result_,
+      bad_result_, network::mojom::CertVerifierDebugInfo::New());
 
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
@@ -519,8 +529,9 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   EXPECT_FALSE(trial_controller().IsAllowed());
 
   // Attempting to send a report should also do nothing.
-  report_client()->SendTrialReport("hostname", leaf_cert_1_, false, false,
-                                   false, false, ok_result_, ok_result_);
+  report_client()->SendTrialReport(
+      "hostname", leaf_cert_1_, false, false, false, false, ok_result_,
+      ok_result_, network::mojom::CertVerifierDebugInfo::New());
   // Ensure any in-flight mojo calls get run.
   base::RunLoop().RunUntilIdle();
   // Expect no report since the trial is not allowed.

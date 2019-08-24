@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 
@@ -74,7 +75,8 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       DispatchCookieChangeEventCallback callback) override;
   void DispatchFetchEventForMainResource(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+          response_callback,
       DispatchFetchEventForMainResourceCallback callback) override;
   void DispatchNotificationClickEvent(
       const std::string& notification_id,

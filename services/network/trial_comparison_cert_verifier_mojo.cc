@@ -6,8 +6,13 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/trial_comparison_cert_verifier.h"
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "net/cert/internal/trust_store_mac.h"
+#endif
 
 namespace network {
 
@@ -23,10 +28,10 @@ TrialComparisonCertVerifierMojo::TrialComparisonCertVerifierMojo(
       std::make_unique<net::TrialComparisonCertVerifier>(
           initial_allowed, primary_verify_proc, trial_verify_proc,
           base::BindRepeating(
-              &mojom::TrialComparisonCertVerifierReportClient::SendTrialReport,
+              &TrialComparisonCertVerifierMojo::OnSendTrialReport,
               // Unretained safe because the report_callback will not be called
               // after trial_comparison_cert_verifier_ is destroyed.
-              base::Unretained(report_client_.get())));
+              base::Unretained(this)));
 }
 
 TrialComparisonCertVerifierMojo::~TrialComparisonCertVerifierMojo() = default;
@@ -47,6 +52,33 @@ void TrialComparisonCertVerifierMojo::SetConfig(const Config& config) {
 
 void TrialComparisonCertVerifierMojo::OnTrialConfigUpdated(bool allowed) {
   trial_comparison_cert_verifier_->set_trial_allowed(allowed);
+}
+
+void TrialComparisonCertVerifierMojo::OnSendTrialReport(
+    const std::string& hostname,
+    const scoped_refptr<net::X509Certificate>& unverified_cert,
+    bool enable_rev_checking,
+    bool require_rev_checking_local_anchors,
+    bool enable_sha1_local_anchors,
+    bool disable_symantec_enforcement,
+    const net::CertVerifyResult& primary_result,
+    const net::CertVerifyResult& trial_result) {
+  network::mojom::CertVerifierDebugInfoPtr debug_info =
+      network::mojom::CertVerifierDebugInfo::New();
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  auto* mac_trust_debug_info =
+      net::TrustStoreMac::ResultDebugData::Get(&trial_result);
+  if (mac_trust_debug_info) {
+    debug_info->mac_combined_trust_debug_info =
+        mac_trust_debug_info->combined_trust_debug_info();
+  }
+#endif
+
+  report_client_->SendTrialReport(
+      hostname, unverified_cert, enable_rev_checking,
+      require_rev_checking_local_anchors, enable_sha1_local_anchors,
+      disable_symantec_enforcement, primary_result, trial_result,
+      std::move(debug_info));
 }
 
 }  // namespace network

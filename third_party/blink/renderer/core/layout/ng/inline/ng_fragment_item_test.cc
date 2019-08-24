@@ -37,4 +37,34 @@ TEST_F(NGFragmentItemTest, Simple) {
   EXPECT_NE(items, nullptr);
 }
 
+TEST_F(NGFragmentItemTest, ForLayoutObject) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #container {
+      font-family: monospace;
+      width: 5ch;
+    }
+    #span {
+      background: gray;
+    }
+    </style>
+    <div id="container">
+      0123
+      <span id="span">1234 5678</span>
+      6789
+    </div>
+  )HTML");
+
+  const LayoutObject* span = GetLayoutObjectByElementId("span");
+  ASSERT_NE(span, nullptr);
+  const auto items = NGFragmentItem::ItemsFor(*span);
+  EXPECT_FALSE(items.IsEmpty());
+  unsigned count = 0;
+  for (const NGFragmentItem& item : items) {
+    EXPECT_EQ(item.GetLayoutObject(), span);
+    ++count;
+  }
+  EXPECT_EQ(count, 2u);
+}
+
 }  // namespace blink

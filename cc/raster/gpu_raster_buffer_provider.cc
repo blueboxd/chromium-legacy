@@ -538,12 +538,6 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
   }
 
   if (measure_raster_metric) {
-    // Use a query to time the GPU side work for rasterizing this tile.
-    ri->GenQueriesEXT(1, &query->raster_duration_query_id);
-    DCHECK_GT(query->raster_duration_query_id, 0u);
-    ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM,
-                      query->raster_duration_query_id);
-
 #if defined(OS_CHROMEOS)
     // Use a query to detect when the GPU side is ready to start issuing raster
     // work to the driver. We will use the resulting timestamp to measure raster
@@ -559,6 +553,12 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
                           GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM);
     }
 #endif
+
+    // Use a query to time the GPU side work for rasterizing this tile.
+    ri->GenQueriesEXT(1, &query->raster_duration_query_id);
+    DCHECK_GT(query->raster_duration_query_id, 0u);
+    ri->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM,
+                      query->raster_duration_query_id);
   }
 
   {

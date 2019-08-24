@@ -101,7 +101,6 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
     io_session_.reset();
     return;
   }
-
   // TODO(https://crbug.com/978694): Consider a reset flow since new mojo types
   // checks is_bound strictly.
   if (receiver_.is_bound()) {
@@ -109,12 +108,11 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
     session_.reset();
     io_session_.reset();
   }
-
-  agent->AttachDevToolsSession(receiver_.BindNewEndpointAndPassRemote(),
-                               session_.BindNewEndpointAndPassReceiver(),
-                               io_session_.BindNewPipeAndPassReceiver(),
-                               session_state_cookie_.Clone(),
-                               client_->UsesBinaryProtocol());
+  agent->AttachDevToolsSession(
+      receiver_.BindNewEndpointAndPassRemote(),
+      session_.BindNewEndpointAndPassReceiver(),
+      io_session_.BindNewPipeAndPassReceiver(), session_state_cookie_.Clone(),
+      client_->UsesBinaryProtocol(), child_session_id_);
   session_.set_disconnect_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
 
@@ -281,10 +279,18 @@ void DevToolsSession::ResumeSendingMessagesToAgent() {
 // the browser to the client.
 static void SendProtocolResponseOrNotification(
     DevToolsAgentHostClient* client,
+    const std::string& child_session_id,
     DevToolsAgentHostImpl* agent_host,
     std::unique_ptr<protocol::Serializable> message) {
   std::string cbor = message->serialize(/*binary=*/true);
   DCHECK(IsCBORMessage(SpanFrom(cbor)));
+  if (!child_session_id.empty()) {
+    IPEStatus status = AppendString8EntryToCBORMap(
+        SpanFrom(kSessionId), SpanFrom(child_session_id), &cbor);
+    DCHECK(status.ok()) << status.ToASCIIString();
+    if (!status.ok())
+      return;
+  }
   if (client->UsesBinaryProtocol()) {
     client->DispatchProtocolMessage(agent_host, cbor);
     return;
@@ -298,13 +304,15 @@ static void SendProtocolResponseOrNotification(
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponseOrNotification(client_, agent_host_, std::move(message));
+  SendProtocolResponseOrNotification(client_, child_session_id_, agent_host_,
+                                     std::move(message));
   // |this| may be deleted at this point.
 }
 
 void DevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponseOrNotification(client_, agent_host_, std::move(message));
+  SendProtocolResponseOrNotification(client_, child_session_id_, agent_host_,
+                                     std::move(message));
   // |this| may be deleted at this point.
 }
 
@@ -392,6 +400,7 @@ DevToolsSession* DevToolsSession::AttachChildSession(
   DCHECK(!root_session_);
   auto session = std::make_unique<DevToolsSession>(client);
   session->root_session_ = this;
+  session->child_session_id_ = session_id;
   DevToolsSession* session_ptr = session.get();
   // If attach did not succeed, |session| is already destroyed.
   if (!agent_host->AttachInternal(std::move(session)))
@@ -409,18 +418,12 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
   if (child_sessions_.find(session_id) == child_sessions_.end())
     return;
   DCHECK(IsCBORMessage(SpanFrom(message)));
-  std::string patched(message);
-  IPEStatus status = AppendString8EntryToCBORMap(
-      SpanFrom(kSessionId), SpanFrom(session_id), &patched);
-  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  if (!status.ok())
-    return;
   if (client_->UsesBinaryProtocol()) {
-    client_->DispatchProtocolMessage(agent_host_, patched);
+    client_->DispatchProtocolMessage(agent_host_, message);
     return;
   }
   std::string json;
-  status = ConvertCBORToJSON(SpanFrom(patched), &json);
+  IPEStatus status = ConvertCBORToJSON(SpanFrom(message), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client_->DispatchProtocolMessage(agent_host_, json);
   // |this| may be deleted at this point.

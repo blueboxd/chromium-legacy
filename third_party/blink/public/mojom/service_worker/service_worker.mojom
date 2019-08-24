@@ -214,7 +214,7 @@ interface ServiceWorker {
   // calling respondWith().
   DispatchFetchEventForMainResource(
       DispatchFetchEventParams params,
-      ServiceWorkerFetchResponseCallback response_callback)
+      pending_remote<ServiceWorkerFetchResponseCallback> response_callback)
       => (ServiceWorkerEventStatus status);
 
   DispatchNotificationClickEvent(

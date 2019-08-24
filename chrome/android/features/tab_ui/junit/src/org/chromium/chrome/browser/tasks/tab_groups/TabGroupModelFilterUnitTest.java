@@ -384,6 +384,41 @@ public class TabGroupModelFilterUnitTest {
     }
 
     @Test
+    public void moveTabOutOfGroup_OtherGroupsLastShownIdUnchanged() {
+        List<Tab> expectedTabModel =
+                new ArrayList<>(Arrays.asList(mTab1, mTab2, mTab4, mTab5, mTab6, mTab3));
+        assertThat(mTab3.getRootId(), equalTo(TAB2_ID));
+
+        // By default, the last shown tab is the first tab in group by order in tab model.
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB5_ROOT_ID),
+                equalTo(TAB5_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB6_ROOT_ID),
+                equalTo(TAB5_ID));
+
+        // Specifically select a different tab in (Tab5, Tab6) group to change the last shown id in
+        // that group so that it is different from the default setting.
+        mTabGroupModelFilter.selectTab(mTab6);
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB5_ROOT_ID),
+                equalTo(TAB6_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB6_ROOT_ID),
+                equalTo(TAB6_ID));
+
+        mTabGroupModelFilter.moveTabOutOfGroup(TAB3_ID);
+
+        verify(mTabModel).moveTab(mTab3.getId(), mTabs.size());
+        verify(mTabGroupModelFilterObserver).didMoveTabOutOfGroup(mTab3, POSITION2);
+        assertThat(mTab3.getRootId(), equalTo(TAB3_ID));
+        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+
+        // After ungroup, last shown ids in groups that are unrelated to this ungroup should remain
+        // unchanged.
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB5_ROOT_ID),
+                equalTo(TAB6_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB6_ROOT_ID),
+                equalTo(TAB6_ID));
+    }
+
+    @Test
     public void mergeTabToGroup_NoUpdateTabModel() {
         List<Tab> expectedGroup = new ArrayList<>(Arrays.asList(mTab2, mTab3, mTab4));
 
@@ -528,6 +563,56 @@ public class TabGroupModelFilterUnitTest {
         verify(mTabGroupModelFilterObserver).didMergeTabToGroup(mTab1, mTab4.getId());
         verify(mTabGroupModelFilterObserver).didMergeTabToGroup(newTab, mTab4.getId());
         assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+    }
+
+    @Test
+    public void merge_OtherGroupsLastShownIdUnchanged() {
+        List<Tab> expectedGroup = new ArrayList<>(Arrays.asList(mTab1, mTab4));
+        List<Tab> expectedTabModel =
+                new ArrayList<>(Arrays.asList(mTab1, mTab4, mTab2, mTab3, mTab5, mTab6));
+        int startIndex = POSITION1;
+
+        // By default, the last shown tab is the first tab in group by order in tab model.
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB2_ROOT_ID),
+                equalTo(TAB2_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB3_ROOT_ID),
+                equalTo(TAB2_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB5_ROOT_ID),
+                equalTo(TAB5_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB6_ROOT_ID),
+                equalTo(TAB5_ID));
+
+        // Specifically select different tabs in (Tab2, Tab3) group and (Tab5, Tab6) group to change
+        // the last shown ids in respective groups so that it is different from the default setting.
+        mTabGroupModelFilter.selectTab(mTab3);
+        mTabGroupModelFilter.selectTab(mTab6);
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB2_ROOT_ID),
+                equalTo(TAB3_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB3_ROOT_ID),
+                equalTo(TAB3_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB5_ROOT_ID),
+                equalTo(TAB6_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB6_ROOT_ID),
+                equalTo(TAB6_ID));
+
+        mTabGroupModelFilter.mergeTabsToGroup(mTab4.getId(), mTab1.getId());
+
+        verify(mTabModel).moveTab(mTab4.getId(), ++startIndex);
+        verify(mTabGroupModelFilterObserver).didMergeTabToGroup(mTab4, mTab1.getId());
+        assertArrayEquals(mTabGroupModelFilter.getRelatedTabList(mTab4.getId()).toArray(),
+                expectedGroup.toArray());
+        assertArrayEquals(mTabs.toArray(), expectedTabModel.toArray());
+
+        // After merge, last shown ids in groups that are unrelated to this merge should remain
+        // unchanged.
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB2_ROOT_ID),
+                equalTo(TAB3_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB3_ROOT_ID),
+                equalTo(TAB3_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB5_ROOT_ID),
+                equalTo(TAB6_ID));
+        assertThat(mTabGroupModelFilter.getGroupLastShownTabIdForTesting(TAB6_ROOT_ID),
+                equalTo(TAB6_ID));
     }
 
     @Test

@@ -211,8 +211,11 @@ class FakeControllerServiceWorker
   // blink::mojom::ControllerServiceWorker:
   void DispatchFetchEventForSubresource(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+          pending_response_callback,
       DispatchFetchEventForSubresourceCallback callback) override {
+    mojo::Remote<blink::mojom::ServiceWorkerFetchResponseCallback>
+        response_callback(std::move(pending_response_callback));
     EXPECT_FALSE(params->request->is_main_resource_load);
     if (params->request->body)
       request_body_ = params->request->body;

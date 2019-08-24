@@ -6,14 +6,30 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
-    ":imagecapture",
+    ":device_operator",
+    ":image_capture",
+    ":mojo_connector",
   ]
 }
 
-js_library("imagecapture") {
+js_library("device_operator") {
   deps = [
-    "//media/capture/mojom:image_capture_js_library_for_compile",
     "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
   ]
   externs_list = [ "$externs_path/pending.js" ]
+}
+
+js_library("image_capture") {
+  deps = [
+    ":device_operator",
+    "..:util",
+    "//media/capture/mojom:image_capture_js_library_for_compile",
+  ]
+  externs_list = [ "$externs_path/pending.js" ]
+}
+
+js_library("mojo_connector") {
+  deps = [
+    "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
+  ]
 }

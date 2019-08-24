@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -149,8 +149,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   mojo::Binding<network::mojom::URLLoader> url_loader_binding_;
 
   // For handling FetchEvent response.
-  mojo::Binding<blink::mojom::ServiceWorkerFetchResponseCallback>
-      response_callback_binding_;
+  mojo::Receiver<blink::mojom::ServiceWorkerFetchResponseCallback>
+      response_callback_receiver_{this};
   // The blob needs to be held while it's read to keep it alive.
   blink::mojom::BlobPtr body_as_blob_;
   uint64_t body_as_blob_size_;

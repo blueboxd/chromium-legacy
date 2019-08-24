@@ -404,6 +404,10 @@ source_set("tests") {
     sources += [ "expect_ct_reporter_unittest.cc" ]
     deps += [ "//components/certificate_transparency" ]
   }
+
+  if (trial_comparison_cert_verifier_supported) {
+    sources += [ "trial_comparison_cert_verifier_mojo_unittest.cc" ]
+  }
 }
 
 jumbo_source_set("test_support") {

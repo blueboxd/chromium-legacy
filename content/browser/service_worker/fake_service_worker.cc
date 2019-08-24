@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 
@@ -109,12 +110,15 @@ void FakeServiceWorker::DispatchCookieChangeEvent(
 
 void FakeServiceWorker::DispatchFetchEventForMainResource(
     blink::mojom::DispatchFetchEventParamsPtr params,
-    blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+        pending_response_callback,
     DispatchFetchEventForMainResourceCallback callback) {
   auto response = blink::mojom::FetchAPIResponse::New();
   response->status_code = 200;
   response->status_text = "OK";
   response->response_type = network::mojom::FetchResponseType::kDefault;
+  mojo::Remote<blink::mojom::ServiceWorkerFetchResponseCallback>
+      response_callback(std::move(pending_response_callback));
   response_callback->OnResponse(
       std::move(response), blink::mojom::ServiceWorkerFetchEventTiming::New());
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);

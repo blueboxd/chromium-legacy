@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
@@ -602,8 +603,26 @@ public class TabGroupModelFilter extends TabModelFilter {
     protected void resetFilterState() {
         mShouldRecordUma = false;
         mIsResetting = true;
+        Map<Integer, Integer> groupIdToGroupLastShownTabId = new HashMap<>();
+        for (int groupId : mGroupIdToGroupMap.keySet()) {
+            groupIdToGroupLastShownTabId.put(
+                    groupId, mGroupIdToGroupMap.get(groupId).getLastShownTabId());
+        }
+
         super.resetFilterState();
 
+        // Restore previous last shown tab ids after resetting filter state.
+        for (int groupId : mGroupIdToGroupMap.keySet()) {
+            // This happens when group with new groupId is formed after resetting filter state, i.e.
+            // when ungroup happens. Restoring last shown id of newly generated group is ignored.
+            if (!groupIdToGroupLastShownTabId.containsKey(groupId)) continue;
+            int lastShownId = groupIdToGroupLastShownTabId.get(groupId);
+            // This happens during continuous resetFilterState() calls caused by merging multiple
+            // tabs. Ignore the calls where the merge is not completed but the last shown tab has
+            // already been merged to new group.
+            if (!mGroupIdToGroupMap.get(groupId).contains(lastShownId)) continue;
+            mGroupIdToGroupMap.get(groupId).setLastShownTabId(lastShownId);
+        }
         TabModel tabModel = getTabModel();
         if (tabModel.index() == TabModel.INVALID_TAB_INDEX) {
             mCurrentGroupIndex = TabModel.INVALID_TAB_INDEX;
@@ -749,5 +768,10 @@ public class TabGroupModelFilter extends TabModelFilter {
     @Override
     public boolean isClosurePending(int tabId) {
         return getTabModel().isClosurePending(tabId);
+    }
+
+    @VisibleForTesting
+    int getGroupLastShownTabIdForTesting(int groupId) {
+        return mGroupIdToGroupMap.get(groupId).getLastShownTabId();
     }
 }

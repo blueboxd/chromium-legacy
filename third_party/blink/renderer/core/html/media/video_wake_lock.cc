@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -109,9 +110,9 @@ void VideoWakeLock::EnsureWakeLockService() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame->GetTaskRunner(TaskType::kMediaElementEvent);
 
-  blink::mojom::blink::WakeLockServicePtr service;
+  mojo::Remote<blink::mojom::blink::WakeLockService> service;
   frame->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&service, task_runner));
+      service.BindNewPipeAndPassReceiver(task_runner));
   service->GetWakeLock(device::mojom::WakeLockType::kPreventDisplaySleep,
                        device::mojom::blink::WakeLockReason::kVideoPlayback,
                        "Video Wake Lock",

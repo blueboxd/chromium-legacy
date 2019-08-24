@@ -473,6 +473,15 @@ class PixelIntegrationTest(
     # process was chosen.
     tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
 
+  def _SwitchTabs(self, tab, page):
+    if not tab.browser.supports_tab_control:
+      self.fail('Browser must support tab control')
+    dummy_tab = tab.browser.tabs.New()
+    dummy_tab.Activate()
+    # Wait for 2 seconds so that new tab becomes visible.
+    dummy_tab.action_runner.Wait(2)
+    tab.Activate()
+
   @classmethod
   def ExpectationsFiles(cls):
     return [

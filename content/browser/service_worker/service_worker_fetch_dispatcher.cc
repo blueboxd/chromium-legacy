@@ -34,7 +34,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/navigation_policy.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
@@ -327,10 +329,11 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
     : public blink::mojom::ServiceWorkerFetchResponseCallback {
  public:
   ResponseCallback(
-      blink::mojom::ServiceWorkerFetchResponseCallbackRequest request,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerFetchResponseCallback>
+          receiver,
       base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher,
       ServiceWorkerVersion* version)
-      : binding_(this, std::move(request)),
+      : receiver_(this, std::move(receiver)),
         fetch_dispatcher_(fetch_dispatcher),
         version_(version) {}
 
@@ -387,7 +390,7 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
                                 std::move(timing));
   }
 
-  mojo::Binding<blink::mojom::ServiceWorkerFetchResponseCallback> binding_;
+  mojo::Receiver<blink::mojom::ServiceWorkerFetchResponseCallback> receiver_;
   base::WeakPtr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   // Owns |this| via pending_requests_.
   ServiceWorkerVersion* version_;
@@ -540,10 +543,11 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
       "ServiceWorker", "ServiceWorkerFetchDispatcher::FetchEvent", this);
 
   // Set up for receiving the response.
-  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
+  mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+      pending_response_callback;
   auto response_callback = std::make_unique<ResponseCallback>(
-      mojo::MakeRequest(&response_callback_ptr), weak_factory_.GetWeakPtr(),
-      version_.get());
+      pending_response_callback.InitWithNewPipeAndPassReceiver(),
+      weak_factory_.GetWeakPtr(), version_.get());
   ResponseCallback* response_callback_rawptr = response_callback.get();
 
   // Set up the fetch event.
@@ -574,7 +578,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // Pass |url_loader_assets_| to the callback to keep the URL loader related
   // assets alive while the FetchEvent is ongoing in the service worker.
   version_->endpoint()->DispatchFetchEventForMainResource(
-      std::move(params), std::move(response_callback_ptr),
+      std::move(params), std::move(pending_response_callback),
       base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                      base::Unretained(version_.get()), event_finish_id,
                      url_loader_assets_));

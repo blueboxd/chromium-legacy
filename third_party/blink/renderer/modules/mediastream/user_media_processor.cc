@@ -807,6 +807,11 @@ UserMediaProcessor::GetMediaStreamDeviceObserver() {
     auto* web_frame = static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame_));
     DCHECK(web_frame);
 
+    if (!web_frame->Client())
+      return nullptr;
+
+    // TODO(704136): Move ownership of |WebMediaStreamDeviceObserver| out of
+    // RenderFrameImpl, back to UserMediaClient.
     media_stream_device_observer =
         web_frame->Client()->MediaStreamDeviceObserver();
     DCHECK(media_stream_device_observer);
@@ -1220,15 +1225,16 @@ UserMediaProcessor::CreateVideoSource(
 
 void UserMediaProcessor::StartTracks(const String& label) {
   DCHECK(!current_request_info_->web_request().IsNull());
-  DCHECK(GetMediaStreamDeviceObserver());
-  GetMediaStreamDeviceObserver()->AddStream(
-      blink::WebString(label),
-      ToStdVector(current_request_info_->audio_devices()),
-      ToStdVector(current_request_info_->video_devices()),
-      WTF::BindRepeating(&UserMediaProcessor::OnDeviceStopped,
-                         WrapWeakPersistent(this)),
-      WTF::BindRepeating(&UserMediaProcessor::OnDeviceChanged,
-                         WrapWeakPersistent(this)));
+  if (auto* media_stream_device_observer = GetMediaStreamDeviceObserver()) {
+    media_stream_device_observer->AddStream(
+        blink::WebString(label),
+        ToStdVector(current_request_info_->audio_devices()),
+        ToStdVector(current_request_info_->video_devices()),
+        WTF::BindRepeating(&UserMediaProcessor::OnDeviceStopped,
+                           WrapWeakPersistent(this)),
+        WTF::BindRepeating(&UserMediaProcessor::OnDeviceChanged,
+                           WrapWeakPersistent(this)));
+  }
 
   Vector<blink::WebMediaStreamTrack> audio_tracks(
       current_request_info_->audio_devices().size());
@@ -1603,8 +1609,8 @@ void UserMediaProcessor::OnLocalSourceStopped(
   CHECK(some_source_removed);
 
   blink::WebPlatformMediaStreamSource* source_impl = source.GetPlatformSource();
-  DCHECK(GetMediaStreamDeviceObserver());
-  GetMediaStreamDeviceObserver()->RemoveStreamDevice(source_impl->device());
+  if (auto* media_stream_device_observer = GetMediaStreamDeviceObserver())
+    media_stream_device_observer->RemoveStreamDevice(source_impl->device());
 
   String device_id(source_impl->device().id.data());
   GetMediaStreamDispatcherHost()->StopStreamDevice(
@@ -1619,8 +1625,8 @@ void UserMediaProcessor::StopLocalSource(
            << "{device_id = " << source_impl->device().id << "})";
 
   if (notify_dispatcher) {
-    DCHECK(GetMediaStreamDeviceObserver());
-    GetMediaStreamDeviceObserver()->RemoveStreamDevice(source_impl->device());
+    if (auto* media_stream_device_observer = GetMediaStreamDeviceObserver())
+      media_stream_device_observer->RemoveStreamDevice(source_impl->device());
 
     String device_id(source_impl->device().id.data());
     GetMediaStreamDispatcherHost()->StopStreamDevice(

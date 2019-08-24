@@ -4391,8 +4391,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(&FileChooserImpl::Create, base::Unretained(this)));
 
-  registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
-                                              base::Unretained(this)));
+  registry_->AddInterface(base::BindRepeating(
+      &WakeLockServiceImpl::CreateForRequest, base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &PictureInPictureServiceImpl::CreateFromRequest, base::Unretained(this)));

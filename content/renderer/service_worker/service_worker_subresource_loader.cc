@@ -22,6 +22,7 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_util.h"
@@ -163,7 +164,6 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
-      response_callback_binding_(this),
       body_as_blob_size_(blink::BlobUtils::kUnknownSize),
       controller_connector_(std::move(controller_connector)),
       controller_connector_observer_(this),
@@ -221,8 +221,10 @@ void ServiceWorkerSubresourceLoader::StartRequest(
 }
 
 void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
-  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
-  response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
+  mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+      response_callback;
+  response_callback_receiver_.Bind(
+      response_callback.InitWithNewPipeAndPassReceiver());
   blink::mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
           blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
@@ -263,7 +265,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   // TODO(falken): Grant the controller service worker's process access to files
   // in the body, like ServiceWorkerFetchDispatcher::DispatchFetchEvent() does.
   controller->DispatchFetchEventForSubresource(
-      std::move(params), std::move(response_callback_ptr),
+      std::move(params), std::move(response_callback),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
                      weak_factory_.GetWeakPtr()));
 }
@@ -305,7 +307,7 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
 }
 
 void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
-  response_callback_binding_.Close();
+  response_callback_receiver_.reset();
 
   // If the connection to the service worker gets disconnected after dispatching
   // a fetch event and before getting the response of the fetch event, restart
@@ -679,7 +681,7 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
   // Restart the request.
   TransitionToStatus(Status::kNotStarted);
   redirect_info_.reset();
-  response_callback_binding_.Close();
+  response_callback_receiver_.reset();
   StartRequest(resource_request_);
 }
 

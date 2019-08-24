@@ -24,7 +24,8 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
@@ -178,7 +179,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
  protected:
   void DispatchFetchEventForMainResource(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+          pending_response_callback,
       blink::mojom::ServiceWorker::DispatchFetchEventForMainResourceCallback
           finish_callback) override {
     // Basic checks on DispatchFetchEvent parameters.
@@ -188,10 +190,12 @@ class FetchEventServiceWorker : public FakeServiceWorker {
     if (params->request->body)
       request_body_ = params->request->body;
 
+    mojo::Remote<blink::mojom::ServiceWorkerFetchResponseCallback>
+        response_callback(std::move(pending_response_callback));
     switch (response_mode_) {
       case ResponseMode::kDefault:
         FakeServiceWorker::DispatchFetchEventForMainResource(
-            std::move(params), std::move(response_callback),
+            std::move(params), response_callback.Unbind(),
             std::move(finish_callback));
         break;
       case ResponseMode::kBlob:
@@ -287,7 +291,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
   // For ResponseMode::kEarlyResponse and kDeferredResponse.
   blink::mojom::ServiceWorker::DispatchFetchEventForMainResourceCallback
       finish_callback_;
-  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
+  mojo::Remote<blink::mojom::ServiceWorkerFetchResponseCallback>
+      response_callback_;
 
   // For ResponseMode::kRedirect.
   GURL redirected_url_;

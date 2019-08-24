@@ -105,17 +105,19 @@ void TrialComparisonCertVerifierController::SendTrialReport(
     bool enable_sha1_local_anchors,
     bool disable_symantec_enforcement,
     const net::CertVerifyResult& primary_result,
-    const net::CertVerifyResult& trial_result) {
+    const net::CertVerifyResult& trial_result,
+    network::mojom::CertVerifierDebugInfoPtr debug_info) {
   if (!IsAllowed() ||
       base::GetFieldTrialParamByFeatureAsBool(
           features::kCertDualVerificationTrialFeature, "uma_only", false)) {
     return;
   }
 
-  CertificateErrorReport report(
-      hostname, *unverified_cert, enable_rev_checking,
-      require_rev_checking_local_anchors, enable_sha1_local_anchors,
-      disable_symantec_enforcement, primary_result, trial_result);
+  CertificateErrorReport report(hostname, *unverified_cert, enable_rev_checking,
+                                require_rev_checking_local_anchors,
+                                enable_sha1_local_anchors,
+                                disable_symantec_enforcement, primary_result,
+                                trial_result, std::move(debug_info));
 
   report.AddNetworkTimeInfo(g_browser_process->network_time_tracker());
   report.AddChromeChannel(chrome::GetChannel());

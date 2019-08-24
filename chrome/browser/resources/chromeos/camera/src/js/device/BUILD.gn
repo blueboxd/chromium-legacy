@@ -14,24 +14,24 @@ js_type_check("closure_compile") {
 
 js_library("camera3_device_info") {
   deps = [
-    "../mojo:imagecapture",
+    "../mojo:image_capture",
   ]
 }
 
 js_library("constraints_preferrer") {
   deps = [
+    ":camera3_device_info",
     "..:resolution_event_broker",
     "..:state",
-    ":camera3_device_info",
     "../browser_proxy:browser_proxy",
   ]
 }
 
 js_library("device_info_updater") {
   deps = [
-    "..:state",
-    "../mojo:imagecapture",
     ":camera3_device_info",
     ":constraints_preferrer",
+    "..:state",
+    "../mojo:mojo_connector",
   ]
 }

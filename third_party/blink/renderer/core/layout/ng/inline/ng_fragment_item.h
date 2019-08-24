@@ -95,6 +95,53 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   String DebugName() const override;
   IntRect VisualRect() const override;
 
+  // Find |NGFragmentItem|s that are associated with a |LayoutObject|.
+  class CORE_EXPORT ItemsForLayoutObject {
+    STACK_ALLOCATED();
+
+   public:
+    ItemsForLayoutObject() = default;
+    ItemsForLayoutObject(const Vector<std::unique_ptr<NGFragmentItem>>& items,
+                         unsigned first_index,
+                         const NGFragmentItem* first_item)
+        : items_(&items), first_item_(first_item), first_index_(first_index) {}
+
+    bool IsEmpty() const { return !items_; }
+
+    class CORE_EXPORT Iterator {
+     public:
+      Iterator(const Vector<std::unique_ptr<NGFragmentItem>>* items,
+               unsigned index,
+               const NGFragmentItem* item)
+          : current_(item), items_(items), index_(index) {}
+      const NGFragmentItem& operator*() const { return *current_; }
+      const NGFragmentItem& operator->() const { return *current_; }
+      Iterator& operator++();
+      bool operator==(const Iterator& other) const {
+        return current_ == other.current_;
+      }
+      bool operator!=(const Iterator& other) const {
+        return current_ != other.current_;
+      }
+
+     private:
+      const NGFragmentItem* current_;
+      const Vector<std::unique_ptr<NGFragmentItem>>* items_;
+      unsigned index_;
+    };
+    using iterator = Iterator;
+    iterator begin() const {
+      return Iterator(items_, first_index_, first_item_);
+    }
+    iterator end() const { return Iterator(nullptr, 0, nullptr); }
+
+   private:
+    const Vector<std::unique_ptr<NGFragmentItem>>* items_;
+    const NGFragmentItem* first_item_;
+    unsigned first_index_;
+  };
+  static ItemsForLayoutObject ItemsFor(const LayoutObject& layout_object);
+
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class MutableForPainting {

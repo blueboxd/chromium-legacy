@@ -72,6 +72,7 @@ cca.views.camera.PhotoResult;
 
 /**
  * Mode controller managing capture sequence of different camera mode.
+ * @param {cca.mojo.MojoConnector} mojoConnector
  * @param {cca.device.PhotoResolPreferrer} photoResolPreferrer
  * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @param {!DoSwitchMode} doSwitchMode
@@ -81,8 +82,8 @@ cca.views.camera.PhotoResult;
  * @constructor
  */
 cca.views.camera.Modes = function(
-    photoResolPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
-    createVideoSaver, doSaveVideo) {
+    mojoConnector, photoResolPreferrer, videoPreferrer, doSwitchMode,
+    doSavePhoto, createVideoSaver, doSaveVideo) {
   /**
    * @type {!DoSwitchMode}
    * @private
@@ -146,21 +147,14 @@ cca.views.camera.Modes = function(
     },
     'portrait-mode': {
       captureFactory: () => new cca.views.camera.Portrait(
-          this.stream_, doSavePhoto, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_, mojoConnector),
       isSupported: async (stream) => {
-        try {
-          const imageCapture =
-              new cca.mojo.ImageCapture(stream.getVideoTracks()[0]);
-          const capabilities = await imageCapture.getPhotoCapabilities();
-          return capabilities.supportedEffects &&
-              capabilities.supportedEffects.includes(
-                  cros.mojom.Effect.PORTRAIT_MODE);
-        } catch (e) {
-          // The mode is considered unsupported for given stream. This includes
-          // the case where underlying camera HAL is V1 causing mojo connection
-          // unable to work.
+        const deviceOperator = mojoConnector.getDeviceOperator();
+        if (!deviceOperator) {
           return false;
         }
+        const deviceId = stream.getVideoTracks()[0].getSettings().deviceId;
+        return await deviceOperator.isPortraitModeSupported(deviceId);
       },
       resolutionConfig: photoResolPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
@@ -696,9 +690,11 @@ cca.views.camera.Square.prototype.cropSquare = async function(blob) {
  * @param {MediaStream} stream
  * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
+ * @param {cca.mojo.MojoConnector} mojoConnector
  * @constructor
  */
-cca.views.camera.Portrait = function(stream, doSavePhoto, captureResolution) {
+cca.views.camera.Portrait = function(
+    stream, doSavePhoto, captureResolution, mojoConnector) {
   cca.views.camera.Photo.call(this, stream, doSavePhoto, captureResolution);
 
   /**
@@ -707,6 +703,13 @@ cca.views.camera.Portrait = function(stream, doSavePhoto, captureResolution) {
    * @private
    */
   this.crosImageCapture_ = null;
+
+  /**
+   * Mojo connector that used to construct CrOS ImageCapture.
+   * @type {cca.mojo.MojoConnector}
+   * @private
+   */
+  this.mojoConnector_ = mojoConnector;
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -722,8 +725,8 @@ cca.views.camera.Portrait.prototype = {
 cca.views.camera.Portrait.prototype.start_ = async function() {
   if (this.crosImageCapture_ == null) {
     try {
-      this.crosImageCapture_ =
-          new cca.mojo.ImageCapture(this.stream_.getVideoTracks()[0]);
+      this.crosImageCapture_ = new cca.mojo.ImageCapture(
+          this.stream_.getVideoTracks()[0], this.mojoConnector_);
     } catch (e) {
       cca.toast.show('error_msg_take_photo_failed');
       throw e;

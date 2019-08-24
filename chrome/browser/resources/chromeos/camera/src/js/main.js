@@ -11,9 +11,17 @@ var cca = cca || {};
 
 /**
  * Creates the Camera App main object.
+ * @param {!cca.mojo.MojoConnector} mojoConnector The mojo connector which could
+ *     be used to communicate with Chrome and video capture devices.
  * @constructor
  */
-cca.App = function() {
+cca.App = function(mojoConnector) {
+  /**
+   * @type {cca.mojo.MojoConnector}
+   * @private
+   */
+  this.mojoConnector_ = mojoConnector;
+
   /**
    * @type {cca.models.Gallery}
    * @private
@@ -45,7 +53,7 @@ cca.App = function() {
    * @private
    */
   this.infoUpdater_ = new cca.device.DeviceInfoUpdater(
-      this.photoPreferrer_, this.videoPreferrer_);
+      this.photoPreferrer_, this.videoPreferrer_, this.mojoConnector_);
 
   /**
    * @type {cca.GalleryButton}
@@ -64,8 +72,8 @@ cca.App = function() {
    * @private
    */
   this.cameraView_ = new cca.views.Camera(
-      this.gallery_, this.infoUpdater_, this.photoPreferrer_,
-      this.videoPreferrer_);
+      this.mojoConnector_, this.gallery_, this.infoUpdater_,
+      this.photoPreferrer_, this.videoPreferrer_);
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -200,9 +208,16 @@ cca.App.instance_ = null;
 /**
  * Creates the App object and starts camera stream.
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const mojoConnector = new cca.mojo.MojoConnector();
+  try {
+    await mojoConnector.initDeviceOperator();
+  } catch (e) {
+    console.error(e);
+  }
+
   if (!cca.App.instance_) {
-    cca.App.instance_ = new cca.App();
+    cca.App.instance_ = new cca.App(mojoConnector);
   }
   cca.App.instance_.start();
   chrome.app.window.current().show();

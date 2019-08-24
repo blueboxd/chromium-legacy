@@ -35,6 +35,10 @@
 #include "net/cert/cert_verify_proc_android.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "net/cert/internal/trust_store_mac.h"
+#endif
+
 using net::SSLInfo;
 using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
@@ -323,5 +327,56 @@ TEST(ErrorReportTest, AndroidAIAFetchingFeatureEnabled) {
       parsed.features_info().android_aia_fetching_status());
 }
 #endif
+
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
+TEST(ErrorReportTest, TrialDebugInfo) {
+  scoped_refptr<net::X509Certificate> unverified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  scoped_refptr<net::X509Certificate> chain1 =
+      net::CreateCertificateChainFromFile(net::GetTestCertsDirectory(),
+                                          "x509_verify_results.chain.pem",
+                                          net::X509Certificate::FORMAT_AUTO);
+  scoped_refptr<net::X509Certificate> chain2 =
+      net::CreateCertificateChainFromFile(net::GetTestCertsDirectory(),
+                                          "multi-root-chain1.pem",
+                                          net::X509Certificate::FORMAT_AUTO);
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = chain1;
+  net::CertVerifyResult trial_result;
+  trial_result.verified_cert = chain2;
+
+  network::mojom::CertVerifierDebugInfoPtr debug_info =
+      network::mojom::CertVerifierDebugInfo::New();
+#if defined(OS_MACOSX)
+  debug_info->mac_combined_trust_debug_info =
+      net::TrustStoreMac::TRUST_SETTINGS_DICT_CONTAINS_APPLICATION |
+      net::TrustStoreMac::TRUST_SETTINGS_DICT_CONTAINS_RESULT;
+#endif
+
+  CertificateErrorReport report("example.com", *unverified_cert, false, false,
+                                false, false, primary_result, trial_result,
+                                std::move(debug_info));
+  std::string serialized_report;
+  ASSERT_TRUE(report.Serialize(&serialized_report));
+  chrome_browser_ssl::CertLoggerRequest parsed;
+  ASSERT_TRUE(parsed.ParseFromString(serialized_report));
+  ASSERT_TRUE(parsed.has_features_info());
+  ASSERT_TRUE(parsed.features_info().has_trial_verification_info());
+  const chrome_browser_ssl::TrialVerificationInfo& trial_info =
+      parsed.features_info().trial_verification_info();
+
+#if defined(OS_MACOSX)
+  ASSERT_EQ(2, trial_info.mac_combined_trust_debug_info_size());
+  EXPECT_EQ(chrome_browser_ssl::TrialVerificationInfo::
+                MAC_TRUST_SETTINGS_DICT_CONTAINS_APPLICATION,
+            trial_info.mac_combined_trust_debug_info()[0]);
+  EXPECT_EQ(chrome_browser_ssl::TrialVerificationInfo::
+                MAC_TRUST_SETTINGS_DICT_CONTAINS_RESULT,
+            trial_info.mac_combined_trust_debug_info()[1]);
+#else
+  EXPECT_EQ(0, trial_info.mac_combined_trust_debug_info_size());
+#endif
+}
+#endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 
 }  // namespace

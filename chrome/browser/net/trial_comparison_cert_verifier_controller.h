@@ -55,7 +55,8 @@ class TrialComparisonCertVerifierController
       bool enable_sha1_local_anchors,
       bool disable_symantec_enforcement,
       const net::CertVerifyResult& primary_result,
-      const net::CertVerifyResult& trial_result) override;
+      const net::CertVerifyResult& trial_result,
+      network::mojom::CertVerifierDebugInfoPtr debug_info) override;
 
   static void SetFakeOfficialBuildForTesting(bool fake_official_build);
 

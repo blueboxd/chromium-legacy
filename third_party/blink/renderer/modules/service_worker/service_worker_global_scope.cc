@@ -910,8 +910,8 @@ void ServiceWorkerGlobalScope::RespondToFetchEventWithNoResponse(
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(fetch_response_callbacks_.Contains(fetch_event_id));
-  mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback =
-      fetch_response_callbacks_.Take(fetch_event_id);
+  mojo::Remote<mojom::blink::ServiceWorkerFetchResponseCallback>
+      response_callback = fetch_response_callbacks_.Take(fetch_event_id);
 
   auto timing = mojom::blink::ServiceWorkerFetchEventTiming::New();
   timing->dispatch_event_time = event_dispatch_time;
@@ -933,8 +933,8 @@ void ServiceWorkerGlobalScope::RespondToFetchEvent(
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(fetch_response_callbacks_.Contains(fetch_event_id));
 
-  mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback =
-      fetch_response_callbacks_.Take(fetch_event_id);
+  mojo::Remote<mojom::blink::ServiceWorkerFetchResponseCallback>
+      response_callback = fetch_response_callbacks_.Take(fetch_event_id);
 
   auto timing = mojom::blink::ServiceWorkerFetchEventTiming::New();
   timing->dispatch_event_time = event_dispatch_time;
@@ -957,8 +957,8 @@ void ServiceWorkerGlobalScope::RespondToFetchEventWithResponseStream(
                           TRACE_ID_LOCAL(fetch_event_id)),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(fetch_response_callbacks_.Contains(fetch_event_id));
-  mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback =
-      fetch_response_callbacks_.Take(fetch_event_id);
+  mojo::Remote<mojom::blink::ServiceWorkerFetchResponseCallback>
+      response_callback = fetch_response_callbacks_.Take(fetch_event_id);
 
   auto timing = mojom::blink::ServiceWorkerFetchEventTiming::New();
   timing->dispatch_event_time = event_dispatch_time;
@@ -1316,13 +1316,16 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventInternal(
 
 void ServiceWorkerGlobalScope::DispatchFetchEventInternal(
     mojom::blink::DispatchFetchEventParamsPtr params,
-    mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
+        response_callback,
     DispatchFetchEventInternalCallback callback) {
   DCHECK(IsContextThread());
   int event_id =
       timeout_timer_->StartEvent(CreateAbortCallback(&fetch_event_callbacks_));
   fetch_event_callbacks_.Set(event_id, std::move(callback));
-  fetch_response_callbacks_.Set(event_id, std::move(response_callback));
+  fetch_response_callbacks_.Set(
+      event_id, mojo::Remote<mojom::blink::ServiceWorkerFetchResponseCallback>(
+                    std::move(response_callback)));
 
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
@@ -1388,7 +1391,8 @@ void ServiceWorkerGlobalScope::SetFetchHandlerExistence(
 
 void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
     mojom::blink::DispatchFetchEventParamsPtr params,
-    mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
+        response_callback,
     DispatchFetchEventForSubresourceCallback callback) {
   DCHECK(IsContextThread());
   TRACE_EVENT2("ServiceWorker",
@@ -1640,7 +1644,8 @@ void ServiceWorkerGlobalScope::DispatchExtendableMessageEventWithCustomTimeout(
 
 void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
     mojom::blink::DispatchFetchEventParamsPtr params,
-    mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
+        response_callback,
     DispatchFetchEventForMainResourceCallback callback) {
   DCHECK(IsContextThread());
   DispatchFetchEventInternal(std::move(params), std::move(response_callback),

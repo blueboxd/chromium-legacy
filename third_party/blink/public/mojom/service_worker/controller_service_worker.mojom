@@ -39,7 +39,7 @@ interface ControllerServiceWorker {
   // settles, or when the event handler ran without calling respondWith().
   DispatchFetchEventForSubresource(
       blink.mojom.DispatchFetchEventParams params,
-      blink.mojom.ServiceWorkerFetchResponseCallback response_callback)
+      pending_remote<blink.mojom.ServiceWorkerFetchResponseCallback> response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status);
 
   // TODO(kinuko): Add DispatchExtendableMessageEvent() as well.

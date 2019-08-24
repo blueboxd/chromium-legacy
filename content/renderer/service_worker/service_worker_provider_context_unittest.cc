@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -188,7 +189,8 @@ class FakeControllerServiceWorker
   // blink::mojom::ControllerServiceWorker:
   void DispatchFetchEventForSubresource(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+          response_callback,
       DispatchFetchEventForSubresourceCallback callback) override {
     fetch_event_count_++;
     fetch_event_request_ = std::move(params->request);

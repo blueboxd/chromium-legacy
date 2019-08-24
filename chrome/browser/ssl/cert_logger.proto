@@ -211,4 +211,23 @@ message TrialVerificationInfo {
   // The VerifyFlags that were used when validating this chain. (Note this
   // applies to both the primary and trial verifiers.)
   repeated VerifyFlags verify_flags = 6;
+
+  enum MacTrustFlags {
+    UNKNOWN_MAC_TRUST_FLAG = 0;
+    MAC_TRUST_SETTINGS_ARRAY_EMPTY = 1;
+    MAC_TRUST_SETTINGS_DICT_EMPTY = 2;
+    MAC_TRUST_SETTINGS_DICT_UNKNOWN_KEY = 3;
+    MAC_TRUST_SETTINGS_DICT_CONTAINS_POLICY = 4;
+    MAC_TRUST_SETTINGS_DICT_INVALID_POLICY_TYPE = 5;
+    MAC_TRUST_SETTINGS_DICT_CONTAINS_APPLICATION = 6;
+    MAC_TRUST_SETTINGS_DICT_CONTAINS_POLICY_STRING = 7;
+    MAC_TRUST_SETTINGS_DICT_CONTAINS_KEY_USAGE = 8;
+    MAC_TRUST_SETTINGS_DICT_CONTAINS_RESULT = 9;
+    MAC_TRUST_SETTINGS_DICT_INVALID_RESULT_TYPE = 10;
+    MAC_TRUST_SETTINGS_DICT_CONTAINS_ALLOWED_ERROR = 11;
+  }
+  // Debug flags from the trial verifier path building attempt, only populated
+  // on reports from macOS.  Contains the union of flags from all the GetTrust
+  // calls done during verification.
+  repeated MacTrustFlags mac_combined_trust_debug_info = 7;
 }

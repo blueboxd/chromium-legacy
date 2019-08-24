@@ -138,9 +138,9 @@ class MockPermissionService final : public mojom::blink::PermissionService {
 // TEST(Foo, Bar) {
 //   MockWakeLockService mock_service;
 //   WakeLockTestingContext context(&mock_service);
-//   mojom::blink::WakeLockServicePtr service;
+//   mojo::Remote<mojom::blink::WakeLockService> service;
 //   context.GetDocument()->GetInterfaceProvider()->GetInterface(
-//       mojo::MakeRequest(&service));
+//       service.BindNewPipeAndPassReceiver());
 //   service->GetWakeLock(...);  // Will call mock_service.GetWakeLock().
 // }
 class WakeLockTestingContext final {

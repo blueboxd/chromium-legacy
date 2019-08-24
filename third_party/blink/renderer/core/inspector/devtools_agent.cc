@@ -106,12 +106,13 @@ void DevToolsAgent::AttachDevToolsSession(
         session_receiver,
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-    bool client_expects_binary_responses) {
+    bool client_expects_binary_responses,
+    const WTF::String& session_id) {
   client_->DebuggerTaskStarted();
   DevToolsSession* session = MakeGarbageCollected<DevToolsSession>(
       this, std::move(host), std::move(session_receiver),
       std::move(io_session_receiver), std::move(reattach_session_state),
-      client_expects_binary_responses);
+      client_expects_binary_responses, session_id);
   sessions_.insert(session);
   client_->DebuggerTaskFinished();
 }

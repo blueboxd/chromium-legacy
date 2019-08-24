@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_state_record.h"
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -39,8 +40,9 @@ void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
   if (!wake_lock_) {
     auto* interface_provider = execution_context_->GetInterfaceProvider();
     DCHECK(interface_provider);
-    mojom::blink::WakeLockServicePtr wake_lock_service;
-    interface_provider->GetInterface(mojo::MakeRequest(&wake_lock_service));
+    mojo::Remote<mojom::blink::WakeLockService> wake_lock_service;
+    interface_provider->GetInterface(
+        wake_lock_service.BindNewPipeAndPassReceiver());
 
     wake_lock_service->GetWakeLock(
         wake_lock_type_, device::mojom::blink::WakeLockReason::kOther,

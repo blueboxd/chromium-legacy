@@ -66,4 +66,44 @@ IntRect NGFragmentItem::VisualRect() const {
   return IntRect();
 }
 
+NGFragmentItem::ItemsForLayoutObject NGFragmentItem::ItemsFor(
+    const LayoutObject& layout_object) {
+  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
+  DCHECK(layout_object.IsText() || layout_object.IsLayoutInline() ||
+         (layout_object.IsBox() && layout_object.IsInline()));
+
+  // TODO(kojii): This is a hot function needed by paint and several other
+  // operations. Make this fast, by not iterating.
+  if (const LayoutBlockFlow* block_flow =
+          layout_object.RootInlineFormattingContext()) {
+    if (const NGPhysicalBoxFragment* fragment = block_flow->CurrentFragment()) {
+      if (const NGFragmentItems* items = fragment->Items()) {
+        for (unsigned i = 0; i < items->Items().size(); ++i) {
+          const NGFragmentItem* item = items->Items()[i].get();
+          if (item->GetLayoutObject() == &layout_object)
+            return ItemsForLayoutObject(items->Items(), i, item);
+        }
+      }
+    }
+  }
+
+  return ItemsForLayoutObject();
+}
+
+NGFragmentItem::ItemsForLayoutObject::Iterator&
+NGFragmentItem::ItemsForLayoutObject::Iterator::operator++() {
+  // TODO(kojii): This is a hot function needed by paint and several other
+  // operations. Make this fast, by not iterating.
+  if (!current_)
+    return *this;
+  const LayoutObject* current_layout_object = current_->GetLayoutObject();
+  while (++index_ < items_->size()) {
+    current_ = (*items_)[index_].get();
+    if (current_->GetLayoutObject() == current_layout_object)
+      return *this;
+  }
+  current_ = nullptr;
+  return *this;
+}
+
 }  // namespace blink

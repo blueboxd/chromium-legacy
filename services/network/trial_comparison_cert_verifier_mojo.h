@@ -21,6 +21,8 @@ class CertVerifyResult;
 class TrialComparisonCertVerifier;
 }  // namespace net
 
+FORWARD_DECLARE_TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo);
+
 namespace network {
 
 // Wrapper around TrialComparisonCertVerifier that does trial configuration and
@@ -53,8 +55,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TrialComparisonCertVerifierMojo
   void SetConfig(const Config& config) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(::TrialComparisonCertVerifierMojoTest,
+                           SendReportDebugInfo);
+
   // mojom::TrialComparisonCertVerifierConfigClient implementation:
   void OnTrialConfigUpdated(bool allowed) override;
+
+  void OnSendTrialReport(
+      const std::string& hostname,
+      const scoped_refptr<net::X509Certificate>& unverified_cert,
+      bool enable_rev_checking,
+      bool require_rev_checking_local_anchors,
+      bool enable_sha1_local_anchors,
+      bool disable_symantec_enforcement,
+      const net::CertVerifyResult& primary_result,
+      const net::CertVerifyResult& trial_result);
 
   mojo::Binding<mojom::TrialComparisonCertVerifierConfigClient> binding_;
 

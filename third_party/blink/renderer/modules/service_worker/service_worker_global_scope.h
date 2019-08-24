@@ -34,8 +34,10 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
@@ -343,7 +345,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       base::OnceCallback<void(mojom::blink::ServiceWorkerEventStatus)>;
   void DispatchFetchEventInternal(
       mojom::blink::DispatchFetchEventParamsPtr params,
-      mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
+          response_callback,
       DispatchFetchEventInternalCallback callback);
 
   void SetFetchHandlerExistence(FetchHandlerExistence fetch_handler_existence);
@@ -357,7 +360,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // starts another event), or else is dropped if the worker is terminated.
   void DispatchFetchEventForSubresource(
       mojom::blink::DispatchFetchEventParamsPtr params,
-      mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
+          response_callback,
       DispatchFetchEventForSubresourceCallback callback) override;
   void Clone(mojo::PendingReceiver<mojom::blink::ControllerServiceWorker>
                  reciever) override;
@@ -391,7 +395,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       DispatchExtendableMessageEventCallback callback) override;
   void DispatchFetchEventForMainResource(
       mojom::blink::DispatchFetchEventParamsPtr params,
-      mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
+          response_callback,
       DispatchFetchEventForMainResourceCallback callback) override;
   void DispatchNotificationClickEvent(
       const String& notification_id,
@@ -516,7 +521,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       can_make_payment_result_callbacks_;
   HashMap<int, payments::mojom::blink::PaymentHandlerResponseCallbackPtr>
       payment_response_callbacks_;
-  HashMap<int, mojom::blink::ServiceWorkerFetchResponseCallbackPtr>
+  HashMap<int, mojo::Remote<mojom::blink::ServiceWorkerFetchResponseCallback>>
       fetch_response_callbacks_;
 
   HeapHashMap<int, Member<FetchEvent>> pending_preload_fetch_events_;

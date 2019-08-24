@@ -20,74 +20,25 @@ cca.views = cca.views || {};
 cca.views.camera = cca.views.camera || {};
 
 /**
- * Video device information queried from HALv3 mojo private API.
- * @param {MediaDeviceInfo} deviceInfo Information of the video device.
- * @param {cros.mojom.CameraFacing} facing Camera facing of the video device.
- * @param {ResolList} photoResols Supported available photo resolutions of the
- *     video device.
- * @param {Array<[number, number, number]>} videoResolFpses Supported available
- *     video resolutions and maximal capture fps of the video device.
- * @param {FpsRangeInfo} fpsRanges Supported fps ranges of the video device.
- */
-cca.views.camera.Camera3DeviceInfo = function(
-    deviceInfo, facing, photoResols, videoResolFpses, fpsRanges) {
-  /**
-   * @type {string}
-   * @public
-   */
-  this.deviceId = deviceInfo.deviceId;
-
-  /**
-   * @type {cros.mojom.CameraFacing}
-   * @public
-   */
-  this.facing = facing;
-
-  /**
-   * @type {ResolList}
-   * @public
-   */
-  this.photoResols = photoResols;
-
-  /**
-   * @type {ResolList}
-   * @public
-   */
-  this.videoResols = [];
-
-  /**
-   * @type {MaxFpsInfo}
-   * @public
-   */
-  this.videoMaxFps = {};
-
-  /**
-   * @type {FpsRangeInfo}
-   * @public
-   */
-  this.fpsRanges = fpsRanges;
-
-  // End of properties, seal the object.
-  Object.seal(this);
-
-  videoResolFpses.filter(([, , fps]) => fps >= 24).forEach(([w, h, fps]) => {
-    this.videoResols.push([w, h]);
-    this.videoMaxFps[[w, h]] = fps;
-  });
-};
-
-/**
  * Creates a controller for the options of Camera view.
  * @param {cca.device.DeviceInfoUpdater} infoUpdater
+ * @param {cca.mojo.MojoConnector} mojoConnector
  * @param {function()} doSwitchDevice Callback to trigger device switching.
  * @constructor
  */
-cca.views.camera.Options = function(infoUpdater, doSwitchDevice) {
+cca.views.camera.Options = function(
+    infoUpdater, mojoConnector, doSwitchDevice) {
   /**
    * @type {cca.device.DeviceInfoUpdater}
    * @private
    */
   this.infoUpdater_ = infoUpdater;
+
+  /**
+   * @type {cca.mojo.MojoConnector}
+   * @private
+   */
+  this.mojoConnector_ = mojoConnector;
 
   /**
    * @type {function()}
@@ -131,7 +82,7 @@ cca.views.camera.Options = function(infoUpdater, doSwitchDevice) {
   /**
    * Promise for querying Camera3DeviceInfo of all available video devices from
    * mojo private API.
-   * @type {Promise<!Array<Camera3DeviceInfo>>}
+   * @type {Promise<!Array<cca.device.Camera3DeviceInfo>>}
    * @private
    */
   this.devicesPrivateInfo_ = null;
@@ -334,20 +285,14 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
 
   this.devicesPrivateInfo_ = (async () => {
     const devices = await this.videoDevices_;
-    try {
-      var privateInfos = await Promise.all(devices.map((d) => Promise.all([
-        d,
-        cca.mojo.getCameraFacing(d.deviceId),
-        cca.mojo.getPhotoResolutions(d.deviceId),
-        cca.mojo.getVideoConfigs(d.deviceId),
-        cca.mojo.getSupportedFpsRanges(d.deviceId),
-      ])));
-    } catch (e) {
+
+    const deviceOperator = this.mojoConnector_.getDeviceOperator();
+    if (!deviceOperator) {
       cca.state.set('no-resolution-settings', true);
       throw new Error('HALv1-api');
     }
-    return privateInfos.map(
-        (info) => new cca.views.camera.Camera3DeviceInfo(...info));
+    return await Promise.all(devices.map(
+        (d) => cca.device.Camera3DeviceInfo.create(d, deviceOperator)));
   })();
 
   (async () => {

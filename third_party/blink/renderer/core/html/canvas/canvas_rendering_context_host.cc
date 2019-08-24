@@ -167,11 +167,17 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
               CanvasResourceProvider::kAllowSwapChainPresentationMode;
         }
 
+        // It is important to not use the context's IsOriginTopLeft() here
+        // because that denotes the current state and could change after the
+        // new resource provider is created e.g. due to switching between
+        // unaccelerated and accelerated modes during tab switching.
+        const bool is_origin_top_left =
+            !want_acceleration || LowLatencyEnabled();
+
         ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             GetMSAASampleCountFor2dContext(), FilterQuality(), ColorParams(),
-            presentation_mode, std::move(dispatcher),
-            RenderingContext()->IsOriginTopLeft()));
+            presentation_mode, std::move(dispatcher), is_origin_top_left));
 
         if (ResourceProvider()) {
           // Always save an initial frame, to support resetting the top level

@@ -12,8 +12,9 @@
 #include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
@@ -167,10 +168,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
  private:
   class Factory;
 
-  // - |service_worker_client_request| is bound to |this| to receive
-  //   OnControllerChanged() notifications.
-  // - |service_worker_worker_client_registry_info| is a host pointer to
-  //   register a new ServiceWorkerWorkerClient, which is needed when creating a
+  // - |service_worker_client_receiver| receives OnControllerChanged()
+  //   notifications.
+  // - |service_worker_worker_client_registry| is used to register new
+  //   ServiceWorkerWorkerClients, which is needed when creating a
   //   nested worker.
   //
   // Regarding the rest of params, see the comments on Create().
@@ -178,10 +179,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       blink::mojom::RendererPreferences renderer_preferences,
       mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
           watcher_receiver,
-      blink::mojom::ServiceWorkerWorkerClientRequest
-          service_worker_client_request,
-      blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
-          service_worker_worker_client_registry_info,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerWorkerClient>
+          service_worker_client_receiver,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerWorkerClientRegistry>
+          service_worker_worker_client_registry,
       mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
           service_worker_container_host,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
@@ -196,10 +197,10 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   ~WebWorkerFetchContextImpl() override;
 
   scoped_refptr<WebWorkerFetchContextImpl> CloneForNestedWorkerInternal(
-      blink::mojom::ServiceWorkerWorkerClientRequest
-          service_worker_client_request,
-      blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
-          service_worker_worker_client_registry_ptr_info,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerWorkerClient>
+          service_worker_client_receiver,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerWorkerClientRegistry>
+          service_worker_worker_client_registry,
       mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
           service_worker_container_host,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
@@ -218,18 +219,19 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Implements blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
-  // |binding_| and |service_worker_worker_client_registry_| may be null if this
-  // context can't use service workers. See comments for Create().
-  mojo::Binding<blink::mojom::ServiceWorkerWorkerClient> binding_;
-  blink::mojom::ServiceWorkerWorkerClientRegistryPtr
+  // |receiver_| and |service_worker_worker_client_registry_| may be null if
+  // this context can't use service workers. See comments for Create().
+  mojo::Receiver<blink::mojom::ServiceWorkerWorkerClient> receiver_{this};
+  mojo::Remote<blink::mojom::ServiceWorkerWorkerClientRegistry>
       service_worker_worker_client_registry_;
 
   // Bound to |this| on the worker thread.
-  blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request_;
+  mojo::PendingReceiver<blink::mojom::ServiceWorkerWorkerClient>
+      service_worker_client_receiver_;
   // Consumed on the worker thread to create
   // |service_worker_worker_client_registry_|.
-  blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
-      service_worker_worker_client_registry_info_;
+  mojo::PendingRemote<blink::mojom::ServiceWorkerWorkerClientRegistry>
+      pending_service_worker_worker_client_registry_;
   // Consumed on the worker thread to create |service_worker_container_host_|.
   mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
       pending_service_worker_container_host_;

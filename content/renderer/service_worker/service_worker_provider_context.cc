@@ -183,18 +183,22 @@ void ServiceWorkerProviderContext::SetWebServiceWorkerProvider(
 }
 
 void ServiceWorkerProviderContext::RegisterWorkerClient(
-    blink::mojom::ServiceWorkerWorkerClientPtr client) {
+    mojo::PendingRemote<blink::mojom::ServiceWorkerWorkerClient>
+        pending_client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  client.set_connection_error_handler(base::BindOnce(
+  mojo::Remote<blink::mojom::ServiceWorkerWorkerClient> client(
+      std::move(pending_client));
+  client.set_disconnect_handler(base::BindOnce(
       &ServiceWorkerProviderContext::UnregisterWorkerFetchContext,
       base::Unretained(this), client.get()));
   worker_clients_.push_back(std::move(client));
 }
 
 void ServiceWorkerProviderContext::CloneWorkerClientRegistry(
-    blink::mojom::ServiceWorkerWorkerClientRegistryRequest request) {
+    mojo::PendingReceiver<blink::mojom::ServiceWorkerWorkerClientRegistry>
+        receiver) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  worker_client_registry_bindings_.AddBinding(this, std::move(request));
+  worker_client_registry_receivers_.Add(this, std::move(receiver));
 }
 
 mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
@@ -254,9 +258,8 @@ void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   base::EraseIf(
       worker_clients_,
-      [client](const blink::mojom::ServiceWorkerWorkerClientPtr& client_ptr) {
-        return client_ptr.get() == client;
-      });
+      [client](const mojo::Remote<blink::mojom::ServiceWorkerWorkerClient>&
+                   remote_client) { return remote_client.get() == client; });
 }
 
 void ServiceWorkerProviderContext::SetController(

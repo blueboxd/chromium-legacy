@@ -584,7 +584,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
       FROM_HERE,
       base::BindOnce(
           &VideoDecodeAccelerator::Client::ProvidePictureBuffersWithVisibleRect,
-          client_, num_pictures, pixel_format, 1, coded_size_,
+          client_, num_pictures, pixel_format, 1, gl_image_size_,
           decoder_->GetVisibleRect(), device_->GetTextureTarget()));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding
@@ -2073,16 +2073,14 @@ bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
       input_queue_->AllocatedBuffersCount();
   size_t input_queue_memory_usage = 0;
   std::string input_queue_buffers_memory_type =
-      V4L2Device::V4L2MemoryToString(V4L2_MEMORY_MMAP);
+      V4L2Device::V4L2MemoryToString(input_queue_->GetMemoryType());
   input_queue_memory_usage += input_queue_->GetMemoryUsage();
 
   // VIDEO_CAPTURE queue's memory usage.
   const size_t output_queue_buffers_count = output_buffer_map_.size();
   size_t output_queue_memory_usage = 0;
   std::string output_queue_buffers_memory_type =
-      output_mode_ == Config::OutputMode::ALLOCATE
-          ? V4L2Device::V4L2MemoryToString(V4L2_MEMORY_MMAP)
-          : V4L2Device::V4L2MemoryToString(V4L2_MEMORY_DMABUF);
+      V4L2Device::V4L2MemoryToString(output_queue_->GetMemoryType());
   if (output_mode_ == Config::OutputMode::ALLOCATE) {
     // Call QUERY_BUF here because the length of buffers on VIDIOC_CATURE queue
     // are not recorded nowhere in V4L2VideoDecodeAccelerator.

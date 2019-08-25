@@ -846,9 +846,9 @@ class MetaBuildWrapper(object):
       return ret
 
     if getattr(self.args, 'swarming_targets_file', None):
-      self.GenerateIsolates(vals, isolate_targets, isolate_map, build_dir)
+      ret = self.GenerateIsolates(vals, isolate_targets, isolate_map, build_dir)
 
-    return 0
+    return ret
 
   def RunGNGenAllIsolates(self, vals):
     """
@@ -964,8 +964,11 @@ class MetaBuildWrapper(object):
       runtime_deps = self.ReadFile(path_to_use).splitlines()
 
       canonical_target = target.replace(':','_').replace('/','_')
-      self.WriteIsolateFiles(build_dir, command, canonical_target, runtime_deps,
-                             extra_files)
+      ret = self.WriteIsolateFiles(build_dir, command, canonical_target,
+                                   runtime_deps, vals, extra_files)
+      if ret:
+        return ret
+    return 0
 
   def PossibleRuntimeDepsPaths(self, vals, ninja_targets, isolate_map):
     """Returns a map of targets to possible .runtime_deps paths.
@@ -1052,8 +1055,10 @@ class MetaBuildWrapper(object):
 
     runtime_deps = out.splitlines()
 
-    self.WriteIsolateFiles(build_dir, command, target, runtime_deps,
-                           extra_files)
+    ret = self.WriteIsolateFiles(build_dir, command, target, runtime_deps, vals,
+                                 extra_files)
+    if ret:
+      return ret
 
     ret, _, _ = self.Run([
         self.executable,
@@ -1067,14 +1072,62 @@ class MetaBuildWrapper(object):
 
     return ret
 
-  def WriteIsolateFiles(self, build_dir, command, target, runtime_deps,
+  def WriteIsolateFiles(self, build_dir, command, target, runtime_deps, vals,
                         extra_files):
     isolate_path = self.ToAbsPath(build_dir, target + '.isolate')
+    files = sorted(set(runtime_deps + extra_files))
+
+    # Complain if any file is a directory that's inside the build directory,
+    # since that makes incremental builds incorrect. See
+    # https://crbug.com/912946
+    is_android = 'target_os="android"' in vals['gn_args']
+    is_cros = ('target_os="chromeos"' in vals['gn_args'] or
+               vals.get('cros_passthrough', False))
+    is_mac = self.platform == 'darwin'
+    is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
+    is_msan = 'is_msan=true' in vals['gn_args']
+
+    err = ''
+    for f in files:
+      # Skip a few configs that need extra cleanup for now.
+      # TODO(https://crbug.com/912946): Fix everything on all platforms and
+      # enable check everywhere.
+      if is_android or is_cros or is_mac or is_win or is_msan:
+        break
+
+      # Skip a few existing violations that need to be cleaned up. Each of
+      # these will lead to incorrect incremental builds if their directory
+      # contents change. Do not add to this list.
+      # TODO(https://crbug.com/912946): Remove this if statement.
+      if (f == 'angledata/gl_cts/' or  # http://anglebug.com/3827
+          f == 'gen/chrome/browser/resources/media_router/extension/' or
+          f == 'gen/components/subresource_filter/tools/' or
+          f == 'locales/' or
+          f.startswith('nacl_test_data/') or
+          f.startswith('ppapi_nacl_tests_libs/') or
+          f == 'test_url_loader_data/'):
+        continue
+
+      path = os.path.normpath(self.PathJoin(build_dir, f))
+      # This runs before the build, so we can't use isdir(path). But
+      # isolate.py luckily requires data directories to end with '/', so we
+      # can check for that. (Check f instead of path because normpath() removes
+      # trailing slashes.)
+      if path.startswith(build_dir) and f.endswith('/'):
+        # See https://crbug.com/912946
+        err += '\n' + path
+
+    if err:
+      self.Print('error: gn `data` items may not list generated directories; '
+                 'list files in directory instead for:' + err,
+                 file=sys.stderr)
+      return 1
+
     self.WriteFile(isolate_path,
       pprint.pformat({
         'variables': {
           'command': command,
-          'files': sorted(set(runtime_deps + extra_files)),
+          'files': files,
         }
       }) + '\n')
 

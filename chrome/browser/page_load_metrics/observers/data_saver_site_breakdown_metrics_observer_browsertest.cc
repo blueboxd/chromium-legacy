@@ -226,6 +226,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
       {"/media/youtube.html", 5000, 20000},
   };
   ASSERT_TRUE(embedded_test_server()->Start());
+  WaitForDBToInitialize();
 
   for (const auto& test : tests) {
     GURL test_url(embedded_test_server()->GetURL(test.url));
@@ -255,6 +256,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   plaintext_server->RegisterRequestHandler(
       base::BindRepeating(&HandleResourceRequestWithPlaintextMimeType));
   ASSERT_TRUE(plaintext_server->Start());
+  WaitForDBToInitialize();
 
   GURL test_url(plaintext_server->GetURL("/page"));
 

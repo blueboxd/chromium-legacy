@@ -22,7 +22,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "content/common/dom_storage/dom_storage_types.h"
+#include "content/browser/dom_storage/dom_storage_types.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace url {

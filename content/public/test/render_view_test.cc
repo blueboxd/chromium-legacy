@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/app/mojo/mojo_init.h"
-#include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"

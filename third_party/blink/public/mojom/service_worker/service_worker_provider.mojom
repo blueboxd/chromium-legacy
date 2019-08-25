@@ -77,8 +77,9 @@ interface ServiceWorkerWorkerClient {
 // nested workers.
 interface ServiceWorkerWorkerClientRegistry {
   // Adds a new ServiceWorkerWorkerClient.
-  RegisterWorkerClient(ServiceWorkerWorkerClient client);
+  RegisterWorkerClient(pending_remote<ServiceWorkerWorkerClient> client);
 
   // Clones this host.
-  CloneWorkerClientRegistry(ServiceWorkerWorkerClientRegistry& host);
+  CloneWorkerClientRegistry(
+      pending_receiver<ServiceWorkerWorkerClientRegistry> host);
 };

@@ -5,6 +5,8 @@
 
 """Tests for mb.py."""
 
+from __future__ import print_function
+
 import json
 import os
 import re
@@ -612,6 +614,49 @@ class UnitTest(unittest.TestCase):
 
     self.check(['isolate', '//out/Default', 'base_unittests'],
                files=files, ret=0)
+
+  def test_isolate_dir(self):
+    files = {
+      '/fake_src/out/Default/toolchain.ninja': "",
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'base_unittests': {"
+          "  'label': '//base:base_unittests',"
+          "  'type': 'raw',"
+          "  'args': [],"
+          "}}\n"
+      ),
+    }
+    mbw = self.fake_mbw(files=files)
+    mbw.cmds.append((0, '', ''))  # Result of `gn gen`
+    mbw.cmds.append((0, '', ''))  # Result of `autoninja`
+
+    # Result of `gn desc runtime_deps`
+    mbw.cmds.append((0, 'base_unitests\n../../test_data/\n', ''))
+    self.check(['isolate', '-c', 'debug_goma', '//out/Default',
+                'base_unittests'], mbw=mbw, ret=0, err='')
+
+  def test_isolate_generated_dir(self):
+    files = {
+      '/fake_src/out/Default/toolchain.ninja': "",
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'base_unittests': {"
+          "  'label': '//base:base_unittests',"
+          "  'type': 'raw',"
+          "  'args': [],"
+          "}}\n"
+      ),
+    }
+    mbw = self.fake_mbw(files=files)
+    mbw.cmds.append((0, '', ''))  # Result of `gn gen`
+    mbw.cmds.append((0, '', ''))  # Result of `autoninja`
+
+    # Result of `gn desc runtime_deps`
+    mbw.cmds.append((0, 'base_unitests\ntest_data/\n', ''))
+    expected_err = ('error: gn `data` items may not list generated directories;'
+                    ' list files in directory instead for:\n'
+                    '//out/Default/test_data\n')
+    self.check(['isolate', '-c', 'debug_goma', '//out/Default',
+                'base_unittests'], mbw=mbw, ret=1, err=expected_err)
 
   def test_run(self):
     files = {

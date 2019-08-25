@@ -160,11 +160,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '87b57d083321a21b64979e0e3c92d34c8678e273',
+  'skia_revision': '92b33354ddac6c281d26c51d3cbdedc10a026967',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8f4f153dec942d77289066f853ec1294f0cede10',
+  'v8_revision': '40ba72e3195abfa78729d496ed5cc951d5941174',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -840,7 +840,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '921281a13489cd01e1c7eeaf362cdaa6dc485e14',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '765375356dc514dbf1bb039d6abd8e2a9dd04928',
       'condition': 'checkout_linux',
   },
 
@@ -1238,7 +1238,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd221a276180a71e0d591075b7fc4e0dc1a937f21',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1191e18ffa29127fb74e060efa798098afae6ef1',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1447,7 +1447,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@70014cdd2fb13a2b70907c279585e511faadf113',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@62d93b5f32619aa0577ae0dfd1dc03f08d2def02',
     'condition': 'checkout_src_internal',
   },
 

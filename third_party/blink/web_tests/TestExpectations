@@ -3257,6 +3257,10 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/web-animations/timing-model/animation-effects/phases-and-states.html [ Crash ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_fuzzy_chain_ini.html [ Failure ]

@@ -17,10 +17,11 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -141,9 +142,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // blink::mojom::ServiceWorkerWorkerClientRegistry:
   void RegisterWorkerClient(
-      blink::mojom::ServiceWorkerWorkerClientPtr client) override;
+      mojo::PendingRemote<blink::mojom::ServiceWorkerWorkerClient>
+          pending_client) override;
   void CloneWorkerClientRegistry(
-      blink::mojom::ServiceWorkerWorkerClientRegistryRequest request) override;
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerWorkerClientRegistry>
+          receiver) override;
 
   // Returns a remote to this context's container host. This can return null
   // after OnNetworkProviderDestroyed() is called (in which case |this| will be
@@ -274,18 +277,19 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // and therefore doesn't support navigator.serviceWorker.
   base::WeakPtr<WebServiceWorkerProviderImpl> web_service_worker_provider_;
 
-  // Keeps ServiceWorkerWorkerClient pointers of dedicated or shared workers
-  // which are associated with the ServiceWorkerProviderContext.
+  // Remotes for dedicated or shared workers which are associated with the
+  // ServiceWorkerProviderContext.
   // - If this ServiceWorkerProviderContext is for a Document, then
   //   |worker_clients| contains all its dedicated workers.
   // - If this ServiceWorkerProviderContext is for a SharedWorker (technically
   //   speaking, for its shadow page), then |worker_clients| has one element:
   //   the shared worker.
-  std::vector<blink::mojom::ServiceWorkerWorkerClientPtr> worker_clients_;
+  std::vector<mojo::Remote<blink::mojom::ServiceWorkerWorkerClient>>
+      worker_clients_;
 
   // For adding new ServiceWorkerWorkerClients.
-  mojo::BindingSet<blink::mojom::ServiceWorkerWorkerClientRegistry>
-      worker_client_registry_bindings_;
+  mojo::ReceiverSet<blink::mojom::ServiceWorkerWorkerClientRegistry>
+      worker_client_registry_receivers_;
 
   // Used in |subresource_loader_factory_| to get the connection to the
   // controller service worker.

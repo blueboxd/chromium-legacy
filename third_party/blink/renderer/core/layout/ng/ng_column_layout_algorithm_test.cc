@@ -3130,6 +3130,41 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedNoInnerContent) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, NestedSomeInnerContent) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:50px; column-fill:auto; width:320px; }
+      .inner { columns:2; height:100px; column-fill:auto; padding:1px; }
+      .outer, .inner { column-gap:10px; }
+      .content { break-inside:avoid; height:20px; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="content" style="width:5px;"></div>
+        <div class="inner">
+          <div class="content" style="width:6px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x50
+    offset:0,0 size:320x50
+      offset:0,0 size:100x50
+        offset:0,0 size:5x20
+        offset:0,20 size:100x30
+          offset:1,1 size:44x20
+            offset:0,0 size:6x20
+      offset:110,0 size:100x50
+        offset:0,0 size:100x50
+      offset:220,0 size:100x22
+        offset:0,0 size:100x22
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, NestedLimitedHeight) {
   // This tests that we don't advance to the next outer fragmentainer when we've
   // reached the bottom of an inner multicol container. We should create inner

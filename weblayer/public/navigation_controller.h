@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_PUBLIC_WEB_NAVIGATION_CONTROLLER_H_
-#define WEBLAYER_PUBLIC_WEB_NAVIGATION_CONTROLLER_H_
+#ifndef WEBLAYER_PUBLIC_NAVIGATION_CONTROLLER_H_
+#define WEBLAYER_PUBLIC_NAVIGATION_CONTROLLER_H_
 
 #include <algorithm>
 
@@ -11,9 +11,9 @@ class GURL;
 
 namespace weblayer {
 
-class WebNavigationController {
+class NavigationController {
  public:
-  virtual ~WebNavigationController() {}
+  virtual ~NavigationController() {}
 
   virtual void Navigate(const GURL& url) = 0;
 
@@ -28,4 +28,4 @@ class WebNavigationController {
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_PUBLIC_WEB_NAVIGATION_CONTROLLER_H_
+#endif  // WEBLAYER_PUBLIC_NAVIGATION_CONTROLLER_H_

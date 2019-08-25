@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/browser/web_content_browser_client.h"
+#include "weblayer/browser/content_browser_client_impl.h"
 
 #include <utility>
 
@@ -15,8 +15,8 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "weblayer/browser/web_browser_main_parts.h"
-#include "weblayer/public/web_main.h"
+#include "weblayer/browser/browser_main_parts_impl.h"
+#include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
@@ -35,40 +35,38 @@
 
 namespace weblayer {
 
-WebContentBrowserClient::WebContentBrowserClient(WebMainParams* params)
-    : params_(params), shell_browser_main_parts_(nullptr) {}
+ContentBrowserClientImpl::ContentBrowserClientImpl(MainParams* params)
+    : params_(params) {}
 
-WebContentBrowserClient::~WebContentBrowserClient() = default;
+ContentBrowserClientImpl::~ContentBrowserClientImpl() = default;
 
 std::unique_ptr<content::BrowserMainParts>
-WebContentBrowserClient::CreateBrowserMainParts(
+ContentBrowserClientImpl::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  std::unique_ptr<WebBrowserMainParts> browser_main_parts =
-      std::make_unique<WebBrowserMainParts>(params_, parameters);
-
-  shell_browser_main_parts_ = browser_main_parts.get();
+  std::unique_ptr<BrowserMainPartsImpl> browser_main_parts =
+      std::make_unique<BrowserMainPartsImpl>(params_, parameters);
 
   return browser_main_parts;
 }
 
-std::string WebContentBrowserClient::GetAcceptLangs(
+std::string ContentBrowserClientImpl::GetAcceptLangs(
     content::BrowserContext* context) {
   return "en-us,en";
 }
 
 content::WebContentsViewDelegate*
-WebContentBrowserClient::GetWebContentsViewDelegate(
+ContentBrowserClientImpl::GetWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return nullptr;
 }
 
-std::string WebContentBrowserClient::GetUserAgent() {
+std::string ContentBrowserClientImpl::GetUserAgent() {
   std::string product = "Chrome/";
   product += params_->full_version;
   return content::BuildUserAgentFromProduct(product);
 }
 
-blink::UserAgentMetadata WebContentBrowserClient::GetUserAgentMetadata() {
+blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
 
   metadata.brand = params_->brand;
@@ -82,7 +80,7 @@ blink::UserAgentMetadata WebContentBrowserClient::GetUserAgentMetadata() {
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-void WebContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
+void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
     content::PosixFileDescriptorInfo* mappings) {

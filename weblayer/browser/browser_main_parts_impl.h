@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_BROWSER_WEB_BROWSER_MAIN_PARTS_H_
-#define WEBLAYER_BROWSER_WEB_BROWSER_MAIN_PARTS_H_
+#ifndef WEBLAYER_BROWSER_BROWSER_MAIN_PARTS_IMPL_H_
+#define WEBLAYER_BROWSER_BROWSER_MAIN_PARTS_IMPL_H_
 
 #include <memory>
 
@@ -14,13 +14,13 @@
 #include "content/public/common/main_function_params.h"
 
 namespace weblayer {
-struct WebMainParams;
+struct MainParams;
 
-class WebBrowserMainParts : public content::BrowserMainParts {
+class BrowserMainPartsImpl : public content::BrowserMainParts {
  public:
-  WebBrowserMainParts(WebMainParams* weblayer_params,
-                      const content::MainFunctionParams& main_function_params);
-  ~WebBrowserMainParts() override;
+  BrowserMainPartsImpl(MainParams* params,
+                       const content::MainFunctionParams& main_function_params);
+  ~BrowserMainPartsImpl() override;
 
   // BrowserMainParts overrides.
   int PreEarlyInitialization() override;
@@ -29,11 +29,11 @@ class WebBrowserMainParts : public content::BrowserMainParts {
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
 
  private:
-  WebMainParams* weblayer_params_;
+  MainParams* params_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebBrowserMainParts);
+  DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsImpl);
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_BROWSER_WEB_BROWSER_MAIN_PARTS_H_
+#endif  // WEBLAYER_BROWSER_BROWSER_MAIN_PARTS_IMPL_H_

@@ -67,8 +67,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
         const std::string& extension_id);
     virtual bool AllowShimToConnect(Profile* profile,
                                     const extensions::Extension* extension);
-    virtual AppShimHost* CreateHost(Profile* profile,
-                                    const extensions::Extension* extension);
+    virtual std::unique_ptr<AppShimHost> CreateHost(
+        Profile* profile,
+        const extensions::Extension* extension);
     virtual void EnableExtension(Profile* profile,
                                  const std::string& extension_id,
                                  base::OnceCallback<void()> callback);
@@ -143,7 +144,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
       base::OnceClosure terminated_callback) override;
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
-  void OnShimClose(AppShimHost* host) override;
+  void OnShimProcessDisconnected(AppShimHost* host) override;
   void OnShimFocus(AppShimHost* host,
                    AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override;
@@ -170,7 +171,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnBrowserRemoved(Browser* browser) override;
 
  protected:
-  typedef std::map<std::pair<Profile*, std::string>, AppShimHost*> HostMap;
+  typedef std::map<std::pair<Profile*, std::string>,
+                   std::unique_ptr<AppShimHost>>
+      HostMap;
   typedef std::set<Browser*> BrowserSet;
   typedef std::map<std::pair<Profile*, std::string>, BrowserSet> AppBrowserMap;
 

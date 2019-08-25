@@ -33,6 +33,8 @@ class AppShimHost : public chrome::mojom::AppShimHost {
               const base::FilePath& profile_path,
               bool uses_remote_views);
 
+  ~AppShimHost() override;
+
   bool UsesRemoteViews() const { return uses_remote_views_; }
 
   // Returns true if an AppShimHostBootstrap has already connected to this
@@ -46,9 +48,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Invoked when the app shim has launched and connected to the browser.
   virtual void OnBootstrapConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap);
-
-  // Invoked when the app is closed in the browser process.
-  void OnAppClosed();
 
   // TODO(ccameron): The following three function should directly call the
   // AppShim mojo interface (they only don't due to tests that could be changed
@@ -74,18 +73,11 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   chrome::mojom::AppShim* GetAppShim() const;
 
  protected:
-  // AppShimHost is owned by itself. It will delete itself in Close (called on
-  // channel error and OnAppClosed).
-  ~AppShimHost() override;
-
   // Return the AppShimHandler for this app (virtual for tests).
   virtual apps::AppShimHandler* GetAppShimHandler() const;
 
  private:
   void ChannelError(uint32_t custom_reason, const std::string& description);
-
-  // Closes the channel and destroys the AppShimHost.
-  void Close();
 
   // Helper function to launch the app shim process.
   void LaunchShimInternal(bool recreate_shims);

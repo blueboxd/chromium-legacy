@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_PUBLIC_WEB_MAIN_H_
-#define WEBLAYER_PUBLIC_WEB_MAIN_H_
+#ifndef WEBLAYER_PUBLIC_MAIN_H_
+#define WEBLAYER_PUBLIC_MAIN_H_
 
 #include <string>
 
@@ -17,19 +17,19 @@
 
 namespace weblayer {
 
-class WebMainDelegate {
+class MainDelegate {
  public:
   virtual void PreMainMessageLoopRun() = 0;
   virtual void SetMainMessageLoopQuitClosure(
       base::OnceClosure quit_closure) = 0;
 };
 
-struct WebMainParams {
-  WebMainParams();
-  WebMainParams(const WebMainParams& other);
-  ~WebMainParams();
+struct MainParams {
+  MainParams();
+  MainParams(const MainParams& other);
+  ~MainParams();
 
-  WebMainDelegate* delegate;
+  MainDelegate* delegate;
 
   // If set, logging will redirect to this file.
   base::FilePath log_filename;
@@ -46,19 +46,19 @@ struct WebMainParams {
   std::string major_version;
 };
 
-int WebMain(WebMainParams params
+int Main(MainParams params
 #if defined(OS_WIN)
 #if !defined(WIN_CONSOLE_APP)
-            ,
-            HINSTANCE instance
+         ,
+         HINSTANCE instance
 #endif
 #else
-            ,
-            int argc,
-            const char** argv
+         ,
+         int argc,
+         const char** argv
 #endif
 );
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_PUBLIC_WEB_MAIN_H_
+#endif  // WEBLAYER_PUBLIC_MAIN_H_

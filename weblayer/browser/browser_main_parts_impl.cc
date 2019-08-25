@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/browser/web_browser_main_parts.h"
+#include "weblayer/browser/browser_main_parts_impl.h"
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -21,7 +21,7 @@
 #include "services/service_manager/embedder/result_codes.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "weblayer/public/web_main.h"
+#include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_change_notifier_factory_android.h"
@@ -53,20 +53,20 @@ void StopMessageLoop(base::OnceClosure quit_closure) {
 
 }  // namespace
 
-WebBrowserMainParts::WebBrowserMainParts(
-    WebMainParams* weblayer_params,
+BrowserMainPartsImpl::BrowserMainPartsImpl(
+    MainParams* params,
     const content::MainFunctionParams& main_function_params)
-    : weblayer_params_(weblayer_params) {}
+    : params_(params) {}
 
-WebBrowserMainParts::~WebBrowserMainParts() = default;
+BrowserMainPartsImpl::~BrowserMainPartsImpl() = default;
 
-void WebBrowserMainParts::PreMainMessageLoopStart() {
+void BrowserMainPartsImpl::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 }
 
-int WebBrowserMainParts::PreEarlyInitialization() {
+int BrowserMainPartsImpl::PreEarlyInitialization() {
 #if defined(USE_X11)
   ui::SetDefaultX11ErrorHandlers();
 #endif
@@ -80,16 +80,16 @@ int WebBrowserMainParts::PreEarlyInitialization() {
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 
-void WebBrowserMainParts::PreMainMessageLoopRun() {
+void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   ui::MaterialDesignController::Initialize();
-  weblayer_params_->delegate->PreMainMessageLoopRun();
+  params_->delegate->PreMainMessageLoopRun();
 }
 
-void WebBrowserMainParts::PreDefaultMainMessageLoopRun(
+void BrowserMainPartsImpl::PreDefaultMainMessageLoopRun(
     base::OnceClosure quit_closure) {
   // Wrap the method that stops the message loop so we can do other shutdown
   // cleanup inside content.
-  weblayer_params_->delegate->SetMainMessageLoopQuitClosure(
+  params_->delegate->SetMainMessageLoopQuitClosure(
       base::BindOnce(StopMessageLoop, std::move(quit_closure)));
 }
 

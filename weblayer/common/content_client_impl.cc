@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/common/web_content_client.h"
+#include "weblayer/common/content_client_impl.h"
 
 #include "build/build_config.h"
 #include "content/app/resources/grit/content_resources.h"
@@ -12,24 +12,24 @@
 
 namespace weblayer {
 
-WebContentClient::WebContentClient() {}
+ContentClientImpl::ContentClientImpl() {}
 
-WebContentClient::~WebContentClient() {}
+ContentClientImpl::~ContentClientImpl() {}
 
-base::StringPiece WebContentClient::GetDataResource(
+base::StringPiece ContentClientImpl::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
-base::RefCountedMemory* WebContentClient::GetDataResourceBytes(
+base::RefCountedMemory* ContentClientImpl::GetDataResourceBytes(
     int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
 }
 
-gfx::Image& WebContentClient::GetNativeImageNamed(int resource_id) {
+gfx::Image& ContentClientImpl::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }

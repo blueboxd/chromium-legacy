@@ -4,7 +4,7 @@
 
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by web_shell.rc
+// Used by shell.rc
 //
 
 #define IDR_MAINFRAME 128

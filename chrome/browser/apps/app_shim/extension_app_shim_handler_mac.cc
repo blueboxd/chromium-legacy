@@ -301,11 +301,11 @@ bool ExtensionAppShimHandler::Delegate::AllowShimToConnect(
   return true;
 }
 
-AppShimHost* ExtensionAppShimHandler::Delegate::CreateHost(
+std::unique_ptr<AppShimHost> ExtensionAppShimHandler::Delegate::CreateHost(
     Profile* profile,
     const extensions::Extension* extension) {
-  return new AppShimHost(extension->id(), profile->GetPath(),
-                         UsesRemoteViews(extension));
+  return std::make_unique<AppShimHost>(extension->id(), profile->GetPath(),
+                                       UsesRemoteViews(extension));
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -397,7 +397,7 @@ ExtensionAppShimHandler::~ExtensionAppShimHandler() {
 AppShimHost* ExtensionAppShimHandler::FindHost(Profile* profile,
                                                const std::string& app_id) {
   HostMap::iterator it = hosts_.find(make_pair(profile, app_id));
-  return it == hosts_.end() ? NULL : it->second;
+  return it == hosts_.end() ? nullptr : it->second.get();
 }
 
 AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
@@ -405,10 +405,14 @@ AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
     const extensions::Extension* extension) {
   if (web_app::AppShimLaunchDisabled())
     return nullptr;
-  AppShimHost*& host = hosts_[make_pair(profile, extension->id())];
-  if (!host)
-    host = delegate_->CreateHost(profile, extension);
-  return host;
+  auto key = make_pair(profile, extension->id());
+  auto it = hosts_.find(key);
+  if (it == hosts_.end()) {
+    std::unique_ptr<AppShimHost> new_host =
+        delegate_->CreateHost(profile, extension);
+    it = hosts_.emplace(make_pair(key, std::move(new_host))).first;
+  }
+  return it->second.get();
 }
 
 AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
@@ -621,9 +625,8 @@ const Extension* ExtensionAppShimHandler::MaybeGetExtensionOrCloseHost(
   const Extension* extension =
       delegate_->MaybeGetAppExtension(profile, host->GetAppId());
   if (!extension) {
-    // Extensions may have been uninstalled or disabled since the shim
-    // started.
-    host->OnAppClosed();
+    auto key = std::make_pair(profile, host->GetAppId());
+    hosts_.erase(key);
   }
 
   if (profile_out)
@@ -729,12 +732,12 @@ bool ExtensionAppShimHandler::IsAcceptablyCodeSigned(pid_t pid) const {
   return IsAcceptablyCodeSignedInternal(pid);
 }
 
-void ExtensionAppShimHandler::OnShimClose(AppShimHost* host) {
+void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
   // This might be called when shutting down. Don't try to look up the profile
   // since profile_manager might not be around.
   for (HostMap::iterator it = hosts_.begin(); it != hosts_.end(); ) {
     HostMap::iterator current = it++;
-    if (current->second == host)
+    if (current->second.get() == host)
       hosts_.erase(current);
   }
 }
@@ -843,13 +846,10 @@ void ExtensionAppShimHandler::Observe(
           this);
       // Shut down every shim associated with this profile.
       for (HostMap::iterator it = hosts_.begin(); it != hosts_.end(); ) {
-        // Increment the iterator first as OnAppClosed may call back to
-        // OnShimClose and invalidate the iterator.
-        HostMap::iterator current = it++;
-        if (profile->IsSameProfile(current->first.first)) {
-          AppShimHost* host = current->second;
-          host->OnAppClosed();
-        }
+        if (profile->IsSameProfile(it->first.first))
+          it = hosts_.erase(it);
+        else
+          ++it;
       }
       break;
     }
@@ -893,10 +893,8 @@ void ExtensionAppShimHandler::OnAppActivated(content::BrowserContext* context,
 
 void ExtensionAppShimHandler::OnAppDeactivated(content::BrowserContext* context,
                                                const std::string& app_id) {
-  AppShimHost* host = FindHost(static_cast<Profile*>(context), app_id);
-  if (host)
-    host->OnAppClosed();
-
+  auto key = std::make_pair(static_cast<Profile*>(context), app_id);
+  hosts_.erase(key);
   if (hosts_.empty())
     delegate_->MaybeTerminate();
 }

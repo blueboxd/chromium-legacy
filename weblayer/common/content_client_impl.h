@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_COMMON_WEB_CONTENT_CLIENT_H_
-#define WEBLAYER_COMMON_WEB_CONTENT_CLIENT_H_
+#ifndef WEBLAYER_COMMON_CONTENT_CLIENT_IMPL_H_
+#define WEBLAYER_COMMON_CONTENT_CLIENT_IMPL_H_
 
 #include "content/public/common/content_client.h"
 
 namespace weblayer {
 
-class WebContentClient : public content::ContentClient {
+class ContentClientImpl : public content::ContentClient {
  public:
-  WebContentClient();
-  ~WebContentClient() override;
+  ContentClientImpl();
+  ~ContentClientImpl() override;
 
   base::StringPiece GetDataResource(int resource_id,
                                     ui::ScaleFactor scale_factor) override;
@@ -22,4 +22,4 @@ class WebContentClient : public content::ContentClient {
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_COMMON_WEB_CONTENT_CLIENT_H_
+#endif  // WEBLAYER_COMMON_CONTENT_CLIENT_IMPL_H_

@@ -153,17 +153,12 @@ class MockAppShimHost : public AppShimHost {
   MockAppShimHost()
       : AppShimHost("app",
                     base::FilePath("Profile"),
-                    false /* uses_remote_views */),
-        weak_factory_(this) {}
+                    false /* uses_remote_views */) {}
   ~MockAppShimHost() override {}
 
   MOCK_METHOD0(OnAppUnhideWithoutActivation, void());
-  base::WeakPtr<MockAppShimHost> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
 
  private:
-  base::WeakPtrFactory<MockAppShimHost> weak_factory_;
 };
 
 class MockExtensionAppShimHandler : public apps::ExtensionAppShimHandler {
@@ -188,8 +183,8 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
   test_api.SetExtensionAppShimHandler(
       std::unique_ptr<apps::ExtensionAppShimHandler>(
           mock));  // Takes ownership.
-  base::WeakPtr<MockAppShimHost> mock_host =
-      (new MockAppShimHost)->GetWeakPtr();
+  std::unique_ptr<MockAppShimHost> mock_host =
+      std::make_unique<MockAppShimHost>();
 
   SetUpAppWithWindows(1);
   extensions::AppWindowRegistry::AppWindowList windows =
@@ -223,9 +218,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
   testing::Mock::VerifyAndClearExpectations(mock);
   testing::Mock::VerifyAndClearExpectations(mock_host.get());
 
-  // Ensure that the mock object be deleted.
-  mock_host->OnAppClosed();
-  DCHECK(!mock_host);
+  mock_host.reset();
 }
 
 // Test that NativeAppWindow and AppWindow fullscreen state is updated when

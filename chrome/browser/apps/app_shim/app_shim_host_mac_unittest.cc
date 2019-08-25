@@ -69,16 +69,10 @@ class TestingAppShimHost : public AppShimHost {
  public:
   TestingAppShimHost(const std::string& app_id,
                      const base::FilePath& profile_path)
-      : AppShimHost(app_id, profile_path, false /* uses_remote_views */),
-        test_weak_factory_(this) {}
-
-  base::WeakPtr<TestingAppShimHost> GetWeakPtr() {
-    return test_weak_factory_.GetWeakPtr();
-  }
+      : AppShimHost(app_id, profile_path, false /* uses_remote_views */) {}
+  ~TestingAppShimHost() override {}
 
  private:
-  ~TestingAppShimHost() override {}
-  base::WeakPtrFactory<TestingAppShimHost> test_weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(TestingAppShimHost);
 };
 
@@ -110,12 +104,7 @@ class AppShimHostTest : public testing::Test,
                         public apps::AppShimHandler {
  public:
   AppShimHostTest() { task_runner_ = base::ThreadTaskRunnerHandle::Get(); }
-
-  ~AppShimHostTest() override {
-    if (host_)
-      host_->OnAppClosed();
-    DCHECK(!host_);
-  }
+  ~AppShimHostTest() override {}
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
@@ -151,18 +140,19 @@ class AppShimHostTest : public testing::Test,
     ++launch_count_;
     if (bootstrap->GetLaunchType() == apps::APP_SHIM_LAUNCH_NORMAL)
       ++launch_now_count_;
-    // Maintain only a weak reference to |host_| because it is owned by itself
-    // and will delete itself upon closing.
-    host_ = (new TestingAppShimHost(bootstrap->GetAppId(),
-                                    bootstrap->GetProfilePath()))
-                ->GetWeakPtr();
+    host_ = std::make_unique<TestingAppShimHost>(bootstrap->GetAppId(),
+                                                 bootstrap->GetProfilePath());
     if (launch_result_ == apps::APP_SHIM_LAUNCH_SUCCESS)
       host_->OnBootstrapConnected(std::move(bootstrap));
     else
       bootstrap->OnFailedToConnectToHost(launch_result_);
   }
 
-  void OnShimClose(AppShimHost* host) override { ++close_count_; }
+  void OnShimProcessDisconnected(AppShimHost* host) override {
+    DCHECK_EQ(host, host_.get());
+    host_ = nullptr;
+    ++close_count_;
+  }
 
   void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,
@@ -196,7 +186,7 @@ class AppShimHostTest : public testing::Test,
 
   // AppShimHost will destroy itself in AppShimHost::Close, so use a weak
   // pointer here to avoid lifetime issues.
-  base::WeakPtr<TestingAppShimHost> host_;
+  std::unique_ptr<TestingAppShimHost> host_;
   chrome::mojom::AppShimHostPtr host_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);

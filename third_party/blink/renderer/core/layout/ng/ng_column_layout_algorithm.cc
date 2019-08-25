@@ -94,7 +94,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   if (!IsResumingLayout(BreakToken()))
     intrinsic_block_size_ = border_scrollbar_padding_.block_start;
 
-  scoped_refptr<const NGBlockBreakToken> child_break_token;
+  scoped_refptr<const NGBreakToken> child_break_token;
   if (const auto* token = BreakToken()) {
     // We're resuming layout of this multicol container after an outer
     // fragmentation break. Resume at the break token of the last column that we
@@ -112,7 +112,20 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     }
   }
 
-  LayoutRow(std::move(child_break_token));
+  if (!BreakToken() || !BreakToken()->HasSeenAllChildren()) {
+    child_break_token =
+        LayoutRow(To<NGBlockBreakToken>(child_break_token.get()));
+  }
+
+  if (!child_break_token) {
+    // We've gone through all the content. This doesn't necessarily mean that
+    // we're done fragmenting, since the multicol container may be taller than
+    // what the content requires, which means that we might create more
+    // (childless) fragments, if we're nested inside another fragmentation
+    // context. In that case we must make sure to skip the contents when
+    // resuming.
+    container_builder_.SetHasSeenAllChildren();
+  }
 
   // Figure out how much space we've already been able to process in previous
   // fragments, if this multicol container participates in an outer
@@ -191,8 +204,8 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
   return sizes;
 }
 
-void NGColumnLayoutAlgorithm::LayoutRow(
-    scoped_refptr<const NGBlockBreakToken> next_column_token) {
+scoped_refptr<const NGBreakToken> NGColumnLayoutAlgorithm::LayoutRow(
+    const NGBlockBreakToken* next_column_token) {
   LayoutUnit column_block_offset = intrinsic_block_size_;
   LogicalSize column_size = CalculateColumnSize(content_box_size_);
 
@@ -223,6 +236,8 @@ void NGColumnLayoutAlgorithm::LayoutRow(
   // builder when we have the final column fragments. Or clear the list and
   // retry otherwise.
   NGContainerFragmentBuilder::ChildrenVector new_columns;
+
+  scoped_refptr<const NGBreakToken> last_break_token;
 
   do {
     scoped_refptr<const NGBlockBreakToken> column_break_token =
@@ -271,7 +286,9 @@ void NGColumnLayoutAlgorithm::LayoutRow(
         forced_break_count++;
 
       column_inline_offset += column_inline_progression_;
-      column_break_token = To<NGBlockBreakToken>(column.BreakToken());
+
+      last_break_token = column.BreakToken();
+      column_break_token = To<NGBlockBreakToken>(last_break_token.get());
 
       // If we're participating in an outer fragmentation context, we'll only
       // allow as many columns as the used value of column-count, so that we
@@ -339,7 +356,7 @@ void NGColumnLayoutAlgorithm::LayoutRow(
     // propagating them.
     if (column.Children().size() == 0 &&
         !column.HasOutOfFlowPositionedDescendants())
-      return;
+      return last_break_token;
   }
 
   intrinsic_block_size_ += column_size.block_size;
@@ -349,6 +366,8 @@ void NGColumnLayoutAlgorithm::LayoutRow(
     container_builder_.AddChild(To<NGPhysicalBoxFragment>(*column.fragment),
                                 column.offset);
   }
+
+  return last_break_token;
 }
 
 LogicalSize NGColumnLayoutAlgorithm::CalculateColumnSize(

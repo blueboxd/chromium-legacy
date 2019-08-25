@@ -116,7 +116,7 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
     if (run_loop_.get())
       run_loop_->Quit();
   }
-  void OnShimClose(AppShimHost* host) override {}
+  void OnShimProcessDisconnected(AppShimHost* host) override {}
   void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}

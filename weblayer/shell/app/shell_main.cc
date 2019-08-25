@@ -12,9 +12,9 @@
 #include "build/build_config.h"
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
-#include "weblayer/public/web_main.h"
-#include "weblayer/public/web_profile.h"
-#include "weblayer/shell/browser/web_shell.h"
+#include "weblayer/public/main.h"
+#include "weblayer/public/profile.h"
+#include "weblayer/shell/browser/shell.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -44,19 +44,19 @@ GURL GetStartupURL() {
       base::MakeAbsoluteFilePath(base::FilePath(args[0])));
 }
 
-class ShellWebMainDelegate : public weblayer::WebMainDelegate {
+class MainDelegateImpl : public weblayer::MainDelegate {
  public:
   void PreMainMessageLoopRun() override {
     InitializeProfiles();
 
-    weblayer::WebShell::Initialize();
+    weblayer::Shell::Initialize();
 
-    weblayer::WebShell::CreateNewWindow(profile_.get(), GetStartupURL(),
-                                        gfx::Size());
+    weblayer::Shell::CreateNewWindow(profile_.get(), GetStartupURL(),
+                                     gfx::Size());
   }
 
   void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) override {
-    weblayer::WebShell::SetMainMessageLoopQuitClosure(std::move(quit_closure));
+    weblayer::Shell::SetMainMessageLoopQuitClosure(std::move(quit_closure));
   }
 
  private:
@@ -80,18 +80,18 @@ class ShellWebMainDelegate : public weblayer::WebMainDelegate {
     if (!base::PathExists(path))
       base::CreateDirectory(path);
 
-    profile_ = weblayer::WebProfile::Create(path);
+    profile_ = weblayer::Profile::Create(path);
 
     // TODO: create an incognito profile as well.
   }
 
-  std::unique_ptr<weblayer::WebProfile> profile_;
+  std::unique_ptr<weblayer::Profile> profile_;
 };
 
-weblayer::WebMainParams CreateMainParams() {
-  static const base::NoDestructor<ShellWebMainDelegate> weblayer_delegate;
-  weblayer::WebMainParams params;
-  params.delegate = const_cast<ShellWebMainDelegate*>(&(*weblayer_delegate));
+weblayer::MainParams CreateMainParams() {
+  static const base::NoDestructor<MainDelegateImpl> weblayer_delegate;
+  weblayer::MainParams params;
+  params.delegate = const_cast<MainDelegateImpl*>(&(*weblayer_delegate));
 
   base::PathService::Get(base::DIR_EXE, &params.log_filename);
   params.log_filename = params.log_filename.AppendASCII("weblayer_shell.log");
@@ -110,17 +110,17 @@ weblayer::WebMainParams CreateMainParams() {
 
 #if defined(WIN_CONSOLE_APP)
 int main() {
-  return WebMain(CreateMainParams());
+  return weblayer::Main(CreateMainParams());
 #else
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
-  return WebMain(CreateMainParams(), instance);
+  return weblayer::Main(CreateMainParams(), instance);
 #endif
 }
 
 #else
 
 int main(int argc, const char** argv) {
-  return WebMain(CreateMainParams(), argc, argv);
+  return weblayer::Main(CreateMainParams(), argc, argv);
 }
 
 #endif  // OS_POSIX

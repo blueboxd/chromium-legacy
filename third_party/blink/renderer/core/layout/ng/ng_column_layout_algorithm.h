@@ -28,7 +28,8 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       const MinMaxSizeInput&) const override;
 
  private:
-  void LayoutRow(scoped_refptr<const NGBlockBreakToken> next_column_token);
+  scoped_refptr<const NGBreakToken> LayoutRow(
+      const NGBlockBreakToken* next_column_token);
 
   LogicalSize CalculateColumnSize(const LogicalSize& content_box_size);
   LayoutUnit CalculateBalancedColumnBlockSize(const LogicalSize& column_size,

@@ -46,7 +46,8 @@ class AppShimHandler {
       std::unique_ptr<AppShimHostBootstrap> bootstrap) = 0;
 
   // Invoked by the shim host when the connection to the shim process is closed.
-  virtual void OnShimClose(AppShimHost* host) = 0;
+  // This is also called when we give up on trying to get a shim to connect.
+  virtual void OnShimProcessDisconnected(AppShimHost* host) = 0;
 
   // Invoked by the shim host when the shim process receives a focus event.
   // |files|, if non-empty, holds an array of files dragged onto the app bundle

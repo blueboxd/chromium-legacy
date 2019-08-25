@@ -23,8 +23,8 @@ declare_args() {
 jumbo_static_library("weblayer_shell_lib") {
   testonly = true
   sources = [
-    "browser/web_shell.cc",
-    "browser/web_shell.h",
+    "browser/shell.cc",
+    "browser/shell.h",
   ]
 
   configs += [
@@ -97,7 +97,7 @@ jumbo_static_library("weblayer_shell_lib") {
     ]
 
     if (toolkit_views) {
-      sources += [ "browser/web_shell_views.cc" ]
+      sources += [ "browser/shell_views.cc" ]
       deps += [
         "//ui/resources",
         "//ui/views:test_support",
@@ -117,10 +117,10 @@ grit("weblayer_shell_resources_grit") {
 
   # External code should depend on ":resources" instead.
   visibility = [ ":*" ]
-  source = "web_shell_resources.grd"
+  source = "shell_resources.grd"
   outputs = [
-    "grit/web_shell_resources.h",
-    "webshell_resources.pak",
+    "grit/shell_resources.h",
+    "weblayer_shell_resources.pak",
   ]
 }
 
@@ -128,10 +128,10 @@ copy("copy_shell_resources") {
   testonly = true
 
   sources = [
-    "$target_gen_dir/webshell_resources.pak",
+    "$target_gen_dir/weblayer_shell_resources.pak",
   ]
   outputs = [
-    "$root_out_dir/webshell_resources.pak",
+    "$root_out_dir/weblayer_shell_resources.pak",
   ]
 
   public_deps = [
@@ -163,7 +163,7 @@ repack("pak") {
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
-    "$root_gen_dir/weblayer/shell/webshell_resources.pak",
+    "$root_gen_dir/weblayer/shell/weblayer_shell_resources.pak",
   ]
 
   deps = [
@@ -200,11 +200,11 @@ if (is_android) {
     testonly = true
 
     sources = [
-      "app/web_shell_main.cc",
+      "app/shell_main.cc",
     ]
 
     if (is_win) {
-      sources += [ "app/web_shell.rc" ]
+      sources += [ "app/shell.rc" ]
     }
 
     defines = [

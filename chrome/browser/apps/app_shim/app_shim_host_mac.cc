@@ -49,17 +49,10 @@ void AppShimHost::ChannelError(uint32_t custom_reason,
                                const std::string& description) {
   LOG(ERROR) << "Channel error custom_reason:" << custom_reason
              << " description: " << description;
-  Close();
-}
 
-void AppShimHost::Close() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // Note that we must call GetAppShimHandler here and not in the destructor
-  // because some tests override the method.
-  apps::AppShimHandler* handler = GetAppShimHandler();
-  if (handler)
-    handler->OnShimClose(this);
-  delete this;
+  // OnShimProcessDisconnected will delete |this|.
+  if (apps::AppShimHandler* handler = GetAppShimHandler())
+    handler->OnShimProcessDisconnected(this);
 }
 
 apps::AppShimHandler* AppShimHost::GetAppShimHandler() const {
@@ -115,7 +108,10 @@ void AppShimHost::OnShimProcessTerminated(bool recreate_shims_requested) {
   // TODO(https://crbug.com/913362): Consider adding some UI to tell the
   // user that the process launch failed.
   DLOG(ERROR) << "Failed to launch recreated shim, giving up.";
-  OnAppClosed();
+
+  // OnShimProcessDisconnected will delete |this|.
+  if (apps::AppShimHandler* handler = GetAppShimHandler())
+    handler->OnShimProcessDisconnected(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,10 +175,6 @@ void AppShimHost::QuitApp() {
   apps::AppShimHandler* handler = GetAppShimHandler();
   if (handler)
     handler->OnShimQuit(this);
-}
-
-void AppShimHost::OnAppClosed() {
-  Close();
 }
 
 void AppShimHost::OnAppHide() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/app/web_content_main_delegate.h"
+#include "weblayer/app/content_main_delegate_impl.h"
 
 #include <iostream>
 
@@ -16,8 +16,8 @@
 #include "content/public/common/url_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "weblayer/browser/web_content_browser_client.h"
-#include "weblayer/common/web_content_client.h"
+#include "weblayer/browser/content_browser_client_impl.h"
+#include "weblayer/common/content_client_impl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
@@ -37,7 +37,7 @@ namespace weblayer {
 
 namespace {
 
-void InitLogging(WebMainParams* params) {
+void InitLogging(MainParams* params) {
   if (params->log_filename.empty())
     return;
 
@@ -52,12 +52,12 @@ void InitLogging(WebMainParams* params) {
 
 }  // namespace
 
-WebContentMainDelegate::WebContentMainDelegate(WebMainParams params)
+ContentMainDelegateImpl::ContentMainDelegateImpl(MainParams params)
     : params_(std::move(params)) {}
 
-WebContentMainDelegate::~WebContentMainDelegate() = default;
+ContentMainDelegateImpl::~ContentMainDelegateImpl() = default;
 
-bool WebContentMainDelegate::BasicStartupComplete(int* exit_code) {
+bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   int dummy;
   if (!exit_code)
     exit_code = &dummy;
@@ -68,13 +68,13 @@ bool WebContentMainDelegate::BasicStartupComplete(int* exit_code) {
 
   InitLogging(&params_);
 
-  content_client_ = std::make_unique<WebContentClient>();
+  content_client_ = std::make_unique<ContentClientImpl>();
   SetContentClient(content_client_.get());
 
   return false;
 }
 
-void WebContentMainDelegate::PreSandboxStartup() {
+void ContentMainDelegateImpl::PreSandboxStartup() {
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache
   // cpu_brand info.
@@ -84,7 +84,7 @@ void WebContentMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
 }
 
-int WebContentMainDelegate::RunProcess(
+int ContentMainDelegateImpl::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
   // For non-browser process, return and have the caller run the main loop.
@@ -115,7 +115,7 @@ int WebContentMainDelegate::RunProcess(
 #endif
 }
 
-void WebContentMainDelegate::InitializeResourceBundle() {
+void ContentMainDelegateImpl::InitializeResourceBundle() {
 #if defined(OS_ANDROID)
   // On Android, the renderer runs with a different UID and can never access
   // the file system. Use the file descriptor passed in at launch time.
@@ -155,8 +155,8 @@ void WebContentMainDelegate::InitializeResourceBundle() {
 }
 
 content::ContentBrowserClient*
-WebContentMainDelegate::CreateContentBrowserClient() {
-  browser_client_ = std::make_unique<WebContentBrowserClient>(&params_);
+ContentMainDelegateImpl::CreateContentBrowserClient() {
+  browser_client_ = std::make_unique<ContentBrowserClientImpl>(&params_);
   return browser_client_.get();
 }
 

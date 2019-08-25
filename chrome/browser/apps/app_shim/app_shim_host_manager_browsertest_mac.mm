@@ -127,7 +127,7 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
       apps::ShimTerminatedCallback terminated_callback) override {}
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
-  void OnShimClose(::AppShimHost* host) override {}
+  void OnShimProcessDisconnected(::AppShimHost* host) override {}
   void OnShimFocus(::AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}

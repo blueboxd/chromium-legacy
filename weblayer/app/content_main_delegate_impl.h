@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_APP_WEB_CONTENT_MAIN_DELEGATE_H_
-#define WEBLAYER_APP_WEB_CONTENT_MAIN_DELEGATE_H_
+#ifndef WEBLAYER_APP_CONTENT_MAIN_DELEGATE_IMPL_H_
+#define WEBLAYER_APP_CONTENT_MAIN_DELEGATE_IMPL_H_
 
 #include <memory>
 
@@ -11,16 +11,16 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
-#include "weblayer/public/web_main.h"
+#include "weblayer/public/main.h"
 
 namespace weblayer {
-class WebContentClient;
-class WebContentBrowserClient;
+class ContentClientImpl;
+class ContentBrowserClientImpl;
 
-class WebContentMainDelegate : public content::ContentMainDelegate {
+class ContentMainDelegateImpl : public content::ContentMainDelegate {
  public:
-  explicit WebContentMainDelegate(WebMainParams params);
-  ~WebContentMainDelegate() override;
+  explicit ContentMainDelegateImpl(MainParams params);
+  ~ContentMainDelegateImpl() override;
 
   // ContentMainDelegate implementation:
   bool BasicStartupComplete(int* exit_code) override;
@@ -33,13 +33,13 @@ class WebContentMainDelegate : public content::ContentMainDelegate {
  private:
   void InitializeResourceBundle();
 
-  WebMainParams params_;
-  std::unique_ptr<WebContentBrowserClient> browser_client_;
-  std::unique_ptr<WebContentClient> content_client_;
+  MainParams params_;
+  std::unique_ptr<ContentBrowserClientImpl> browser_client_;
+  std::unique_ptr<ContentClientImpl> content_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebContentMainDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ContentMainDelegateImpl);
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_APP_WEB_CONTENT_MAIN_DELEGATE_H_
+#endif  // WEBLAYER_APP_CONTENT_MAIN_DELEGATE_IMPL_H_

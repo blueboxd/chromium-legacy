@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_PUBLIC_WEB_BROWSER_CONTROLLER_H_
-#define WEBLAYER_PUBLIC_WEB_BROWSER_CONTROLLER_H_
+#ifndef WEBLAYER_PUBLIC_BROWSER_CONTROLLER_H_
+#define WEBLAYER_PUBLIC_BROWSER_CONTROLLER_H_
 
 #include <algorithm>
 
@@ -16,20 +16,20 @@ class WebView;
 }
 
 namespace weblayer {
-class WebProfile;
-class WebNavigationController;
+class Profile;
+class NavigationController;
 
 // Represents a browser window that is navigable.
-class WebBrowserController {
+class BrowserController {
  public:
   // Pass an empty |path| for an in-memory profile.
-  static std::unique_ptr<WebBrowserController> Create(
-      WebProfile* profile,
+  static std::unique_ptr<BrowserController> Create(
+      Profile* profile,
       const gfx::Size& initial_size);
 
-  virtual ~WebBrowserController() {}
+  virtual ~BrowserController() {}
 
-  virtual WebNavigationController* GetWebNavigationController() = 0;
+  virtual NavigationController* GetNavigationController() = 0;
 
   // TODO: this isn't a stable API, so use it now for expediency in the C++ API,
   // but if we ever want to have backward or forward compatibility in C++ this
@@ -39,4 +39,4 @@ class WebBrowserController {
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_PUBLIC_WEB_BROWSER_CONTROLLER_H_
+#endif  // WEBLAYER_PUBLIC_BROWSER_CONTROLLER_H_

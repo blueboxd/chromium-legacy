@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/public/web_main.h"
+#include "weblayer/public/main.h"
 
 #include "build/build_config.h"
 #include "content/public/app/content_main.h"
-#include "weblayer/app/web_content_main_delegate.h"
+#include "weblayer/app/content_main_delegate_impl.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -16,23 +16,23 @@
 
 namespace weblayer {
 
-WebMainParams::WebMainParams() = default;
-WebMainParams::WebMainParams(const WebMainParams& other) = default;
-WebMainParams::~WebMainParams() = default;
+MainParams::MainParams() = default;
+MainParams::MainParams(const MainParams& other) = default;
+MainParams::~MainParams() = default;
 
-int WebMain(WebMainParams params
+int Main(MainParams params
 #if defined(OS_WIN)
 #if !defined(WIN_CONSOLE_APP)
-            ,
-            HINSTANCE instance
+         ,
+         HINSTANCE instance
 #endif
 #else
-            ,
-            int argc,
-            const char** argv
+         ,
+         int argc,
+         const char** argv
 #endif
 ) {
-  WebContentMainDelegate delegate(std::move(params));
+  ContentMainDelegateImpl delegate(std::move(params));
   content::ContentMainParams content_params(&delegate);
 
 #if defined(OS_WIN)

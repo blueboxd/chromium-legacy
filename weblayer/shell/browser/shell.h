@@ -1,8 +1,9 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef WEBLAYER_SHELL_BROWSER_WEB_SHELL_H_
-#define WEBLAYER_SHELL_BROWSER_WEB_SHELL_H_
+
+#ifndef WEBLAYER_SHELL_BROWSER_SHELL_H_
+#define WEBLAYER_SHELL_BROWSER_SHELL_H_
 
 #include <stdint.h>
 
@@ -31,14 +32,14 @@ class WMState;
 class GURL;
 
 namespace weblayer {
-class WebBrowserController;
-class WebProfile;
+class BrowserController;
+class Profile;
 
 // This represents one window of the Web Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-class WebShell {
+class Shell {
  public:
-  ~WebShell();
+  ~Shell();
 
   void LoadURL(const GURL& url);
   void GoBackOrForward(int offset);
@@ -50,15 +51,15 @@ class WebShell {
   // Do one time initialization at application startup.
   static void Initialize();
 
-  static WebShell* CreateNewWindow(weblayer::WebProfile* web_profile,
-                                   const GURL& url,
-                                   const gfx::Size& initial_size);
+  static Shell* CreateNewWindow(weblayer::Profile* web_profile,
+                                const GURL& url,
+                                const gfx::Size& initial_size);
 
   // Closes all windows, pumps teardown tasks, then returns. The main message
   // loop will be signalled to quit, before the call returns.
   static void CloseAllWindows();
 
-  // Stores the supplied |quit_closure|, to be run when the last WebShell
+  // Stores the supplied |quit_closure|, to be run when the last Shell
   // instance is destroyed.
   static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
 
@@ -69,12 +70,11 @@ class WebShell {
  private:
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
-  explicit WebShell(
-      std::unique_ptr<WebBrowserController> web_browser_controller);
+  explicit Shell(std::unique_ptr<BrowserController> browser_controller);
 
-  // Helper to create a new WebShell.
-  static WebShell* CreateWebShell(
-      std::unique_ptr<WebBrowserController> web_browser_controller,
+  // Helper to create a new Shell.
+  static Shell* CreateShell(
+      std::unique_ptr<BrowserController> browser_controller,
       const gfx::Size& initial_size);
 
   // Helper for one time initialization of application
@@ -88,7 +88,7 @@ class WebShell {
   static gfx::Size AdjustWindowSize(const gfx::Size& initial_size);
 
   // All the methods that begin with Platform need to be implemented by the
-  // platform specific WebShell implementation.
+  // platform specific Shell implementation.
   // Called from the destructor to let each platform do any necessary cleanup.
   void PlatformCleanUp();
 
@@ -121,7 +121,7 @@ class WebShell {
       const WebContents* web_contents) const;
 #endif
 
-  std::unique_ptr<WebBrowserController> web_browser_controller_;
+  std::unique_ptr<BrowserController> browser_controller_;
 
   gfx::NativeWindow window_;
 
@@ -140,9 +140,9 @@ class WebShell {
 
   // A container of all the open windows. We use a vector so we can keep track
   // of ordering.
-  static std::vector<WebShell*> windows_;
+  static std::vector<Shell*> windows_;
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_SHELL_BROWSER_WEB_SHELL_H_
+#endif  // WEBLAYER_SHELL_BROWSER_SHELL_H_

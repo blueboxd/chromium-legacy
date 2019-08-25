@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBLAYER_BROWSER_WEB_CONTENT_BROWSER_CLIENT_H_
-#define WEBLAYER_BROWSER_WEB_CONTENT_BROWSER_CLIENT_H_
+#ifndef WEBLAYER_BROWSER_CONTENT_BROWSER_CLIENT_IMPL_H_
+#define WEBLAYER_BROWSER_CONTENT_BROWSER_CLIENT_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -17,13 +17,12 @@
 
 namespace weblayer {
 
-class WebBrowserMainParts;
-struct WebMainParams;
+struct MainParams;
 
-class WebContentBrowserClient : public content::ContentBrowserClient {
+class ContentBrowserClientImpl : public content::ContentBrowserClient {
  public:
-  explicit WebContentBrowserClient(WebMainParams* params);
-  ~WebContentBrowserClient() override;
+  explicit ContentBrowserClientImpl(MainParams* params);
+  ~ContentBrowserClientImpl() override;
 
   // ContentBrowserClient overrides.
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
@@ -41,16 +40,10 @@ class WebContentBrowserClient : public content::ContentBrowserClient {
       content::PosixFileDescriptorInfo* mappings) override;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-  WebBrowserMainParts* shell_browser_main_parts() {
-    return shell_browser_main_parts_;
-  }
-
  private:
-  WebMainParams* params_;
-  // Owned by content::BrowserMainLoop.
-  WebBrowserMainParts* shell_browser_main_parts_;
+  MainParams* params_;
 };
 
 }  // namespace weblayer
 
-#endif  // WEBLAYER_BROWSER_WEB_CONTENT_BROWSER_CLIENT_H_
+#endif  // WEBLAYER_BROWSER_CONTENT_BROWSER_CLIENT_IMPL_H_

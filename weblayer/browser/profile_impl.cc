@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/browser/web_profile_impl.h"
+#include "weblayer/browser/profile_impl.h"
 
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -12,25 +12,25 @@ namespace weblayer {
 
 namespace {
 
-class WebResourceContext : public content::ResourceContext {
+class ResourceContextImpl : public content::ResourceContext {
  public:
-  WebResourceContext() = default;
-  ~WebResourceContext() override = default;
+  ResourceContextImpl() = default;
+  ~ResourceContextImpl() override = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebResourceContext);
+  DISALLOW_COPY_AND_ASSIGN(ResourceContextImpl);
 };
 
 }  // namespace
 
-class WebProfileImpl::WebBrowserContext : public content::BrowserContext {
+class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
  public:
-  WebBrowserContext(const base::FilePath& path) : path_(path) {
-    resource_context_ = std::make_unique<WebResourceContext>();
+  BrowserContextImpl(const base::FilePath& path) : path_(path) {
+    resource_context_ = std::make_unique<ResourceContextImpl>();
     content::BrowserContext::Initialize(this, path_);
   }
 
-  ~WebBrowserContext() override { NotifyWillBeDestroyed(this); }
+  ~BrowserContextImpl() override { NotifyWillBeDestroyed(this); }
 
   // BrowserContext implementation:
 #if !defined(OS_ANDROID)
@@ -97,27 +97,27 @@ class WebProfileImpl::WebBrowserContext : public content::BrowserContext {
 
  private:
   base::FilePath path_;
-  std::unique_ptr<WebResourceContext> resource_context_;
+  std::unique_ptr<ResourceContextImpl> resource_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebBrowserContext);
+  DISALLOW_COPY_AND_ASSIGN(BrowserContextImpl);
 };
 
-WebProfileImpl::WebProfileImpl(const base::FilePath& path) : path_(path) {
-  browser_context_ = std::make_unique<WebBrowserContext>(path_);
+ProfileImpl::ProfileImpl(const base::FilePath& path) : path_(path) {
+  browser_context_ = std::make_unique<BrowserContextImpl>(path_);
 }
 
-WebProfileImpl::~WebProfileImpl() = default;
+ProfileImpl::~ProfileImpl() = default;
 
-content::BrowserContext* WebProfileImpl::GetBrowserContext() {
+content::BrowserContext* ProfileImpl::GetBrowserContext() {
   return browser_context_.get();
 }
 
-void WebProfileImpl::ClearBrowsingData() {
+void ProfileImpl::ClearBrowsingData() {
   NOTIMPLEMENTED();
 }
 
-std::unique_ptr<WebProfile> WebProfile::Create(const base::FilePath& path) {
-  return std::make_unique<WebProfileImpl>(path);
+std::unique_ptr<Profile> Profile::Create(const base::FilePath& path) {
+  return std::make_unique<ProfileImpl>(path);
 }
 
 }  // namespace weblayer

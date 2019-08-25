@@ -1927,4 +1927,10 @@ TEST_F(MultiDisplayWorkspaceWindowResizerTest, Magnetism) {
   EXPECT_EQ(gfx::Rect(1150, 10, 100, 100), win1->GetBoundsInScreen());
 }
 
+// Makes sure that we are not creating any resizer in kiosk mode.
+TEST_F(WorkspaceWindowResizerTest, DoesNotWorkInAppMode) {
+  GetSessionControllerClient()->SetIsRunningInAppMode(true);
+  EXPECT_FALSE(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+}
+
 }  // namespace ash

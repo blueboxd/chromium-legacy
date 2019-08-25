@@ -103,14 +103,14 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
     return allow_shim_to_connect_;
   }
 
-  void SetHostForCreate(AppShimHost* host_for_create) {
-    host_for_create_ = host_for_create;
+  void SetHostForCreate(std::unique_ptr<AppShimHost> host_for_create) {
+    host_for_create_ = std::move(host_for_create);
   }
-  AppShimHost* CreateHost(Profile* profile,
-                          const extensions::Extension* extension) override {
+  std::unique_ptr<AppShimHost> CreateHost(
+      Profile* profile,
+      const extensions::Extension* extension) override {
     DCHECK(host_for_create_);
-    auto* result = host_for_create_;
-    host_for_create_ = nullptr;
+    std::unique_ptr<AppShimHost> result = std::move(host_for_create_);
     return result;
   }
 
@@ -130,7 +130,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   ShimLaunchedCallback* launch_shim_callback_capture_ = nullptr;
   ShimTerminatedCallback* terminated_shim_callback_capture_ = nullptr;
   std::map<base::FilePath, base::OnceCallback<void(Profile*)>> callbacks_;
-  AppShimHost* host_for_create_ = nullptr;
+  std::unique_ptr<AppShimHost> host_for_create_ = nullptr;
   bool allow_shim_to_connect_ = true;
 };
 
@@ -224,6 +224,7 @@ class TestHost : public AppShimHost {
       : AppShimHost(app_id, profile_path, false /* uses_remote_views */),
         handler_(handler),
         test_weak_factory_(this) {}
+  ~TestHost() override {}
 
   // Override the GetAppShimHandler for testing.
   apps::AppShimHandler* GetAppShimHandler() const override { return handler_; }
@@ -242,7 +243,6 @@ class TestHost : public AppShimHost {
   }
 
  private:
-  ~TestHost() override {}
   TestingExtensionAppShimHandler* handler_;
   bool did_connect_to_host_ = false;
 
@@ -280,15 +280,19 @@ class ExtensionAppShimHandlerTest : public testing::Test {
                                          handler_.get()))
             ->GetWeakPtr();
 
-    host_aa_ = (new TestHost(profile_path_a_, kTestAppIdA, handler_.get()))
-                   ->GetWeakPtr();
-    host_ab_ = (new TestHost(profile_path_a_, kTestAppIdB, handler_.get()))
-                   ->GetWeakPtr();
-    host_bb_ = (new TestHost(profile_path_b_, kTestAppIdB, handler_.get()))
-                   ->GetWeakPtr();
-    host_aa_duplicate_ =
-        (new TestHost(profile_path_a_, kTestAppIdA, handler_.get()))
-            ->GetWeakPtr();
+    host_aa_unique_ = std::make_unique<TestHost>(profile_path_a_, kTestAppIdA,
+                                                 handler_.get());
+    host_ab_unique_ = std::make_unique<TestHost>(profile_path_a_, kTestAppIdB,
+                                                 handler_.get());
+    host_bb_unique_ = std::make_unique<TestHost>(profile_path_b_, kTestAppIdB,
+                                                 handler_.get());
+    host_aa_duplicate_unique_ = std::make_unique<TestHost>(
+        profile_path_a_, kTestAppIdA, handler_.get());
+
+    host_aa_ = host_aa_unique_->GetWeakPtr();
+    host_ab_ = host_ab_unique_->GetWeakPtr();
+    host_bb_ = host_bb_unique_->GetWeakPtr();
+    host_aa_duplicate_ = host_aa_duplicate_unique_->GetWeakPtr();
 
     base::FilePath extension_path("/fake/path");
     extension_a_ = extensions::ExtensionBuilder("Fake Name")
@@ -331,15 +335,24 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   }
 
   ~ExtensionAppShimHandlerTest() override {
-    if (host_aa_)
-      host_aa_->OnAppClosed();
-    if (host_ab_)
-      host_ab_->OnAppClosed();
-    if (host_bb_)
-      host_bb_->OnAppClosed();
-    if (host_aa_duplicate_)
-      host_aa_duplicate_->OnAppClosed();
+    host_aa_unique_.reset();
+    host_ab_unique_.reset();
+    host_bb_unique_.reset();
+    host_aa_duplicate_unique_.reset();
+    delegate_->SetHostForCreate(nullptr);
 
+    if (host_aa_)
+      handler_->OnShimProcessDisconnected(host_aa_.get());
+    if (host_ab_)
+      handler_->OnShimProcessDisconnected(host_ab_.get());
+    if (host_bb_)
+      handler_->OnShimProcessDisconnected(host_bb_.get());
+    if (host_aa_duplicate_)
+      handler_->OnShimProcessDisconnected(host_aa_duplicate_.get());
+
+    // Delete the bootstraps via their weak pointers if they haven't been
+    // deleted yet. Note that this must be done after the profiles and hosts
+    // have been destroyed (because they may now own the bootstraps).
     delete bootstrap_aa_.get();
     delete bootstrap_ab_.get();
     delete bootstrap_bb_.get();
@@ -348,31 +361,32 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   }
 
   void DoShimLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
-                    base::WeakPtr<TestHost> host,
+                    std::unique_ptr<TestHost> host,
                     apps::AppShimLaunchType launch_type,
                     const std::vector<base::FilePath>& files) {
     if (host)
-      delegate_->SetHostForCreate(host.get());
+      delegate_->SetHostForCreate(std::move(host));
     bootstrap->DoTestLaunch(launch_type, files);
   }
 
   void NormalLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
-                    base::WeakPtr<TestHost> host) {
-    DoShimLaunch(bootstrap, host, APP_SHIM_LAUNCH_NORMAL,
+                    std::unique_ptr<TestHost> host) {
+    DoShimLaunch(bootstrap, std::move(host), APP_SHIM_LAUNCH_NORMAL,
                  std::vector<base::FilePath>());
   }
 
   void RegisterOnlyLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
-                          base::WeakPtr<TestHost> host) {
-    DoShimLaunch(bootstrap, host, APP_SHIM_LAUNCH_REGISTER_ONLY,
+                          std::unique_ptr<TestHost> host) {
+    DoShimLaunch(bootstrap, std::move(host), APP_SHIM_LAUNCH_REGISTER_ONLY,
                  std::vector<base::FilePath>());
   }
 
   // Completely launch a shim host and leave it running.
   void LaunchAndActivate(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
-                         base::WeakPtr<TestHost> host,
+                         std::unique_ptr<TestHost> host_unique,
                          Profile* profile) {
-    NormalLaunch(bootstrap, host);
+    base::WeakPtr<TestHost> host = host_unique->GetWeakPtr();
+    NormalLaunch(bootstrap, std::move(host_unique));
     EXPECT_EQ(host.get(), handler_->FindHost(profile, host->GetAppId()));
     EXPECT_CALL(*handler_, OnShimFocus(host.get(), APP_SHIM_FOCUS_NORMAL, _));
     handler_->OnAppActivated(profile, host->GetAppId());
@@ -414,6 +428,14 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   base::Optional<apps::AppShimLaunchResult> bootstrap_aa_duplicate_result_;
   base::Optional<apps::AppShimLaunchResult> bootstrap_aa_thethird_result_;
 
+  // Unique ptr to the TestsHosts used by the tests. These are passed by
+  // std::move durnig tests. To access them after they have been passed, use
+  // the WeakPtr versions.
+  std::unique_ptr<TestHost> host_aa_unique_;
+  std::unique_ptr<TestHost> host_ab_unique_;
+  std::unique_ptr<TestHost> host_bb_unique_;
+  std::unique_ptr<TestHost> host_aa_duplicate_unique_;
+
   base::WeakPtr<TestHost> host_aa_;
   base::WeakPtr<TestHost> host_ab_;
   base::WeakPtr<TestHost> host_bb_;
@@ -450,7 +472,7 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
       .WillRepeatedly(Return(static_cast<const Extension*>(NULL)));
   EXPECT_CALL(*delegate_, DoEnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
-  NormalLaunch(bootstrap_aa_, host_aa_);
+  NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_EQ(APP_SHIM_LAUNCH_APP_NOT_FOUND, *bootstrap_aa_result_);
 }
 
@@ -461,21 +483,22 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
       .WillRepeatedly(Return(extension_a_.get()));
   EXPECT_CALL(*delegate_, DoEnableExtension(&profile_a_, kTestAppIdA, _))
       .WillOnce(RunOnceCallback<2>());
-  NormalLaunch(bootstrap_aa_, host_aa_);
+  NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   // Normal startup.
-  NormalLaunch(bootstrap_aa_, host_aa_);
+  NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  NormalLaunch(bootstrap_ab_, host_ab_);
+  NormalLaunch(bootstrap_ab_, std::move(host_ab_unique_));
   EXPECT_EQ(host_ab_.get(), handler_->FindHost(&profile_a_, kTestAppIdB));
 
   std::vector<base::FilePath> some_file(1, base::FilePath("some_file"));
   EXPECT_CALL(*delegate_,
               LaunchApp(&profile_b_, extension_b_.get(), some_file));
-  DoShimLaunch(bootstrap_bb_, host_bb_, APP_SHIM_LAUNCH_NORMAL, some_file);
+  DoShimLaunch(bootstrap_bb_, std::move(host_bb_unique_),
+               APP_SHIM_LAUNCH_NORMAL, some_file);
   EXPECT_EQ(host_bb_.get(), handler_->FindHost(&profile_b_, kTestAppIdB));
 
   // Activation when there is a registered shim finishes launch with success and
@@ -489,27 +512,27 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   EXPECT_CALL(*handler_,
               OnShimFocus(host_aa_.get(), APP_SHIM_FOCUS_REOPEN, some_file));
 
-  DoShimLaunch(bootstrap_aa_duplicate_, host_aa_duplicate_,
+  DoShimLaunch(bootstrap_aa_duplicate_, std::move(host_aa_duplicate_unique_),
                APP_SHIM_LAUNCH_NORMAL, some_file);
   EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *bootstrap_aa_duplicate_result_);
 
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
-  handler_->OnShimClose(host_aa_duplicate_.get());
+  handler_->OnShimProcessDisconnected(host_aa_duplicate_.get());
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Normal close.
-  handler_->OnShimClose(host_aa_.get());
+  handler_->OnShimProcessDisconnected(host_aa_.get());
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Closing the second host afterward does nothing.
-  handler_->OnShimClose(host_aa_duplicate_.get());
+  handler_->OnShimProcessDisconnected(host_aa_duplicate_.get());
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
 }
 
 TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
   // When the app activates, a host is created. If there is no shim, one is
   // launched.
-  delegate_->SetHostForCreate(host_aa_.get());
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
@@ -561,7 +584,7 @@ TEST_F(ExtensionAppShimHandlerTest, FailToLaunch) {
   // When the app activates, it requests a launch.
   ShimLaunchedCallback launch_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launch_callback);
-  delegate_->SetHostForCreate(host_aa_.get());
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
@@ -586,7 +609,7 @@ TEST_F(ExtensionAppShimHandlerTest, FailToConnect) {
   ShimTerminatedCallback terminated_callback;
   delegate_->SetCaptureShimTerminatedCallback(&terminated_callback);
 
-  delegate_->SetHostForCreate(host_aa_.get());
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
@@ -627,7 +650,7 @@ TEST_F(ExtensionAppShimHandlerTest, FailCodeSignature) {
   // Fail to code-sign. This should result in a host being created, and a launch
   // having been requested.
   EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(), false));
-  NormalLaunch(bootstrap_aa_, host_aa_);
+  NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
   EXPECT_TRUE(launched_callback);
   EXPECT_TRUE(terminated_callback);
@@ -640,7 +663,7 @@ TEST_F(ExtensionAppShimHandlerTest, FailCodeSignature) {
   EXPECT_FALSE(host_aa_->HasBootstrapConnected());
 
   // Simulate the register call that then fails due to signature failing.
-  RegisterOnlyLaunch(bootstrap_aa_duplicate_, host_aa_);
+  RegisterOnlyLaunch(bootstrap_aa_duplicate_, std::move(host_aa_unique_));
   EXPECT_FALSE(host_aa_->HasBootstrapConnected());
 
   // Simulate the termination after the register failed.
@@ -649,17 +672,17 @@ TEST_F(ExtensionAppShimHandlerTest, FailCodeSignature) {
   std::move(terminated_callback).Run();
   EXPECT_TRUE(launched_callback);
   EXPECT_TRUE(terminated_callback);
-  RegisterOnlyLaunch(bootstrap_aa_thethird_, host_aa_);
+  RegisterOnlyLaunch(bootstrap_aa_thethird_, std::move(host_aa_unique_));
   EXPECT_TRUE(host_aa_->HasBootstrapConnected());
 }
 
 TEST_F(ExtensionAppShimHandlerTest, MaybeTerminate) {
   // Launch shims, adding entries in the map.
-  RegisterOnlyLaunch(bootstrap_aa_, host_aa_);
+  RegisterOnlyLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
-  RegisterOnlyLaunch(bootstrap_ab_, host_ab_);
+  RegisterOnlyLaunch(bootstrap_ab_, std::move(host_ab_unique_));
   EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_ab_result_);
   EXPECT_EQ(host_ab_.get(), handler_->FindHost(&profile_a_, kTestAppIdB));
 
@@ -682,12 +705,12 @@ TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {
   // For an APP_SHIM_LAUNCH_REGISTER_ONLY, don't launch the app.
   EXPECT_CALL(*delegate_, LaunchApp(_, _, _))
       .Times(0);
-  RegisterOnlyLaunch(bootstrap_aa_, host_aa_);
+  RegisterOnlyLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Close the shim, removing the entry in the map.
-  handler_->OnShimClose(host_aa_.get());
+  handler_->OnShimProcessDisconnected(host_aa_.get());
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
 }
 
@@ -696,7 +719,7 @@ TEST_F(ExtensionAppShimHandlerTest, DontCreateHost) {
 
   // The app should be launched.
   EXPECT_CALL(*delegate_, LaunchApp(_, _, _)).Times(1);
-  NormalLaunch(bootstrap_aa_, host_aa_);
+  NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   // But the bootstrap should be closed.
   EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *bootstrap_aa_result_);
   // And we should create no host.
@@ -710,7 +733,7 @@ TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
   EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
       .WillOnce(Return(static_cast<Profile*>(NULL)))
       .WillRepeatedly(Return(&profile_a_));
-  NormalLaunch(bootstrap_aa_, host_aa_);
+  NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
   delegate_->RunLoadProfileCallback(profile_path_a_, &profile_a_);
   EXPECT_TRUE(handler_->FindHost(&profile_a_, kTestAppIdA));
@@ -719,7 +742,7 @@ TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
 // Tests that calls to OnShimFocus, OnShimHide correctly handle a null extension
 // being provided by the extension system.
 TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
-  LaunchAndActivate(bootstrap_aa_, host_aa_, &profile_a_);
+  LaunchAndActivate(bootstrap_aa_, std::move(host_aa_unique_), &profile_a_);
 
   // Have GetWindows() return an empty window list for focus (otherwise, it
   // will contain a single nullptr, which can't be focused). Expect 1 call only.
@@ -739,7 +762,7 @@ TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
   EXPECT_EQ(nullptr, host_aa_.get());
 
   // Do the same for SetHidden on host_bb.
-  LaunchAndActivate(bootstrap_bb_, host_bb_, &profile_b_);
+  LaunchAndActivate(bootstrap_bb_, std::move(host_bb_unique_), &profile_b_);
   ShimSetHidden(host_bb_.get(), true);
   EXPECT_NE(nullptr, host_bb_.get());
 
@@ -751,7 +774,7 @@ TEST_F(ExtensionAppShimHandlerTest, ExtensionUninstalled) {
 
 TEST_F(ExtensionAppShimHandlerTest, PreExistingHost) {
   // Create a host for our profile.
-  delegate_->SetHostForCreate(host_aa_.get());
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_EQ(nullptr, handler_->FindHost(&profile_a_, kTestAppIdA));
   EXPECT_EQ(host_aa_.get(),
             handler_->FindOrCreateHost(&profile_a_, extension_a_.get()));

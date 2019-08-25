@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "weblayer/shell/browser/web_shell.h"
+#include "weblayer/shell/browser/shell.h"
 
 #include <stddef.h>
 
@@ -16,8 +16,8 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "url/gurl.h"
-#include "weblayer/public/web_browser_controller.h"
-#include "weblayer/public/web_navigation_controller.h"
+#include "weblayer/public/browser_controller.h"
+#include "weblayer/public/navigation_controller.h"
 
 namespace weblayer {
 
@@ -27,15 +27,14 @@ base::NoDestructor<base::OnceClosure> g_quit_main_message_loop;
 const int kDefaultTestWindowWidthDip = 800;
 const int kDefaultTestWindowHeightDip = 600;
 
-std::vector<WebShell*> WebShell::windows_;
+std::vector<Shell*> Shell::windows_;
 
-WebShell::WebShell(std::unique_ptr<WebBrowserController> web_browser_controller)
-    : web_browser_controller_(std::move(web_browser_controller)),
-      window_(nullptr) {
+Shell::Shell(std::unique_ptr<BrowserController> browser_controller)
+    : browser_controller_(std::move(browser_controller)), window_(nullptr) {
   windows_.push_back(this);
 }
 
-WebShell::~WebShell() {
+Shell::~Shell() {
   PlatformCleanUp();
 
   for (size_t i = 0; i < windows_.size(); ++i) {
@@ -48,7 +47,7 @@ WebShell::~WebShell() {
   // Always destroy WebContents before calling PlatformExit(). WebContents
   // destruction sequence may depend on the resources destroyed in
   // PlatformExit() (e.g. the display::Screen singleton).
-  web_browser_controller_.reset();
+  browser_controller_.reset();
 
   if (windows_.empty()) {
     if (*g_quit_main_message_loop)
@@ -56,10 +55,9 @@ WebShell::~WebShell() {
   }
 }
 
-WebShell* WebShell::CreateWebShell(
-    std::unique_ptr<WebBrowserController> web_browser_controller,
-    const gfx::Size& initial_size) {
-  WebShell* shell = new WebShell(std::move(web_browser_controller));
+Shell* Shell::CreateShell(std::unique_ptr<BrowserController> browser_controller,
+                          const gfx::Size& initial_size) {
+  Shell* shell = new Shell(std::move(browser_controller));
   shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
 
   shell->PlatformSetContents();
@@ -69,8 +67,8 @@ WebShell* WebShell::CreateWebShell(
   return shell;
 }
 
-void WebShell::CloseAllWindows() {
-  std::vector<WebShell*> open_windows(windows_);
+void Shell::CloseAllWindows() {
+  std::vector<Shell*> open_windows(windows_);
   for (size_t i = 0; i < open_windows.size(); ++i)
     open_windows[i]->Close();
 
@@ -85,57 +83,56 @@ void WebShell::CloseAllWindows() {
   PlatformExit();
 }
 
-void WebShell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
+void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
   *g_quit_main_message_loop = std::move(quit_closure);
 }
 
-void WebShell::Initialize() {
+void Shell::Initialize() {
   PlatformInitialize(GetShellDefaultSize());
 }
 
-gfx::Size WebShell::AdjustWindowSize(const gfx::Size& initial_size) {
+gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
   if (!initial_size.IsEmpty())
     return initial_size;
   return GetShellDefaultSize();
 }
 
-WebShell* WebShell::CreateNewWindow(weblayer::WebProfile* web_profile,
-                                    const GURL& url,
-                                    const gfx::Size& initial_size) {
+Shell* Shell::CreateNewWindow(weblayer::Profile* web_profile,
+                              const GURL& url,
+                              const gfx::Size& initial_size) {
   auto adjusted_size = AdjustWindowSize(initial_size);
-  auto web_browser_controller =
-      WebBrowserController::Create(web_profile, adjusted_size);
+  auto browser_controller =
+      BrowserController::Create(web_profile, adjusted_size);
 
-  WebShell* shell =
-      CreateWebShell(std::move(web_browser_controller), adjusted_size);
+  Shell* shell = CreateShell(std::move(browser_controller), adjusted_size);
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;
 }
 
-void WebShell::LoadURL(const GURL& url) {
-  web_browser_controller_->GetWebNavigationController()->Navigate(url);
+void Shell::LoadURL(const GURL& url) {
+  browser_controller_->GetNavigationController()->Navigate(url);
 }
 
-void WebShell::GoBackOrForward(int offset) {
+void Shell::GoBackOrForward(int offset) {
   if (offset == -1)
-    web_browser_controller_->GetWebNavigationController()->GoBack();
+    browser_controller_->GetNavigationController()->GoBack();
   else if (offset == 1)
-    web_browser_controller_->GetWebNavigationController()->GoForward();
+    browser_controller_->GetNavigationController()->GoForward();
 }
 
-void WebShell::Reload() {
-  web_browser_controller_->GetWebNavigationController()->Reload();
+void Shell::Reload() {
+  browser_controller_->GetNavigationController()->Reload();
 }
 
-void WebShell::ReloadBypassingCache() {}
+void Shell::ReloadBypassingCache() {}
 
-void WebShell::Stop() {
-  web_browser_controller_->GetWebNavigationController()->Stop();
+void Shell::Stop() {
+  browser_controller_->GetNavigationController()->Stop();
 }
 
-/* TODO: this depends on getting notifications from WebBrowserController.
-void WebShell::UpdateNavigationControls(bool to_different_document) {
+/* TODO: this depends on getting notifications from BrowserController.
+void Shell::UpdateNavigationControls(bool to_different_document) {
   int current_index = web_contents_->GetController().GetCurrentEntryIndex();
   int max_index = web_contents_->GetController().GetEntryCount() - 1;
 
@@ -146,7 +143,7 @@ void WebShell::UpdateNavigationControls(bool to_different_document) {
 }
 */
 
-gfx::Size WebShell::GetShellDefaultSize() {
+gfx::Size Shell::GetShellDefaultSize() {
   static gfx::Size default_shell_size;
   if (!default_shell_size.IsEmpty())
     return default_shell_size;

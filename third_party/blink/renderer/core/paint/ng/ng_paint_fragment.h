@@ -19,6 +19,7 @@ namespace blink {
 
 class NGBlockBreakToken;
 struct LayoutSelectionStatus;
+struct NGContainerInkOverflow;
 enum class NGOutlineType;
 
 // The NGPaintFragment contains a NGPhysicalFragment and geometry in the paint
@@ -375,17 +376,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   PhysicalOffset inline_offset_to_container_box_;
 
   // The ink overflow storage for when |InkOverflowOwnerBox()| is nullptr.
-  struct NGInkOverflowModel {
-    USING_FAST_MALLOC(NGInkOverflowModel);
-
-   public:
-    NGInkOverflowModel(const PhysicalRect& self_ink_overflow,
-                       const PhysicalRect& contents_ink_overflow);
-
-    PhysicalRect self_ink_overflow;
-    PhysicalRect contents_ink_overflow;
-  };
-  std::unique_ptr<NGInkOverflowModel> ink_overflow_;
+  std::unique_ptr<NGContainerInkOverflow> ink_overflow_;
 
   // Set when the corresponding LayoutObject is destroyed.
   unsigned is_layout_object_destroyed_ : 1;

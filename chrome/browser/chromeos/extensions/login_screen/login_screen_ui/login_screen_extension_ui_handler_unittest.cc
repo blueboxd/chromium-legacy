@@ -28,7 +28,7 @@
 namespace {
 
 const char kErrorWindowAlreadyExists[] =
-    "Can't create more than one window per extension.";
+    "Login screen extension UI already in use.";
 const char kErrorNoExistingWindow[] = "No open window to close.";
 const char kErrorNotOnLoginOrLockScreen[] =
     "Windows can only be created on the login and lock screen.";
@@ -124,7 +124,8 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
     session_manager_.SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
 
-    extension_ = extensions::ExtensionBuilder("test" /*extension_name*/)
+    extension_ = extensions::ExtensionBuilder(
+                     /*extension_name=*/"LoginScreenUi test extension")
                      .SetID(kWhitelistedExtensionID1)
                      .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
                      .AddPermission(kPermissionName)
@@ -284,9 +285,9 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest, WindowClosedOnUnlock) {
   EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
 }
 
-TEST_F(LoginScreenExtensionUiHandlerUnittest, TwoExtensionsInParallel) {
+TEST_F(LoginScreenExtensionUiHandlerUnittest, OnlyOneWindow) {
   scoped_refptr<const extensions::Extension> other_extension =
-      extensions::ExtensionBuilder("other extension" /*extension_name*/)
+      extensions::ExtensionBuilder(/*extension_name=*/"Imprivata")
           .SetID(kWhitelistedExtensionID2)
           .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
           .AddPermission(kPermissionName)
@@ -299,30 +300,24 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest, TwoExtensionsInParallel) {
   EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
   EXPECT_FALSE(ui_handler_->HasOpenWindow(other_extension->id()));
 
-  // Open window with extension 2.
-  CheckCanOpenWindow(other_extension.get());
+  // Try to open another window with extension 1.
+  CheckCannotOpenWindow(extension_.get(), kErrorWindowAlreadyExists);
   EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(other_extension->id()));
+  EXPECT_FALSE(ui_handler_->HasOpenWindow(other_extension->id()));
+
+  // Open window with extension 2.
+  CheckCannotOpenWindow(other_extension.get(), kErrorWindowAlreadyExists);
+  EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
+  EXPECT_FALSE(ui_handler_->HasOpenWindow(other_extension->id()));
 
   // Close window with extension 1.
   CheckCanCloseWindow(extension_.get());
   EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(other_extension->id()));
-
-  // Close window with extension 1 again.
-  CheckCannotCloseWindow(extension_.get(), kErrorNoExistingWindow);
-  EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(other_extension->id()));
+  EXPECT_FALSE(ui_handler_->HasOpenWindow(other_extension->id()));
 }
 
-TEST_F(LoginScreenExtensionUiHandlerUnittest, OnlyOneWindowPerExtension) {
-  // Open window with extension 1.
-  CheckCanOpenWindow(extension_.get());
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
-
-  // Open window with extension 1 again.
-  CheckCannotOpenWindow(extension_.get(), kErrorWindowAlreadyExists);
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
+TEST_F(LoginScreenExtensionUiHandlerUnittest, CannotCloseNoWindow) {
+  CheckCannotCloseWindow(extension_.get(), kErrorNoExistingWindow);
 }
 
 TEST_F(LoginScreenExtensionUiHandlerUnittest, ManualClose) {

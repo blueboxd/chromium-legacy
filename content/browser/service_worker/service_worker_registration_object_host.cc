@@ -88,7 +88,7 @@ ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
   DCHECK(registration_.get());
   DCHECK(provider_host_);
   registration_->AddListener(this);
-  bindings_.set_connection_error_handler(base::BindRepeating(
+  receivers_.set_disconnect_handler(base::BindRepeating(
       &ServiceWorkerRegistrationObjectHost::OnConnectionError,
       base::Unretained(this)));
 }
@@ -104,8 +104,10 @@ ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
   info->registration_id = registration_->id();
   info->scope = registration_->scope();
   info->update_via_cache = registration_->update_via_cache();
-  bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
-  info->request = mojo::MakeRequest(&remote_registration_);
+  receivers_.Add(this, info->host_remote.InitWithNewEndpointAndPassReceiver());
+
+  remote_registration_.reset();
+  info->receiver = remote_registration_.BindNewEndpointAndPassReceiver();
 
   info->installing = CreateCompleteObjectInfoToSend(
       provider_host_, registration_->installing_version());
@@ -316,7 +318,7 @@ void ServiceWorkerRegistrationObjectHost::SetNavigationPreloadHeader(
   // TODO(falken): Ideally this would match Blink's isValidHTTPHeaderValue.
   // Chrome's check is less restrictive: it allows non-latin1 characters.
   if (!net::HttpUtil::IsValidHeaderValue(value)) {
-    bindings_.ReportBadMessage(
+    receivers_.ReportBadMessage(
         ServiceWorkerConsts::kBadNavigationPreloadHeaderValue);
     return;
   }
@@ -432,8 +434,8 @@ void ServiceWorkerRegistrationObjectHost::SetServiceWorkerObjects(
 }
 
 void ServiceWorkerRegistrationObjectHost::OnConnectionError() {
-  // If there are still bindings, |this| is still being used.
-  if (!bindings_.empty())
+  // If there are still receivers, |this| is still being used.
+  if (!receivers_.empty())
     return;
   // Will destroy |this|.
   provider_host_->RemoveServiceWorkerRegistrationObjectHost(
@@ -467,7 +469,8 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
 
   std::vector<GURL> urls = {provider_host_->url(), registration_->scope()};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    bindings_.ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
+    receivers_.ReportBadMessage(
+        ServiceWorkerConsts::kBadMessageImproperOrigins);
     return false;
   }
 

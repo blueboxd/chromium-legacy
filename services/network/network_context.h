@@ -170,12 +170,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ResetURLLoaderFactories() override;
   void GetCookieManager(
       mojo::PendingReceiver<mojom::CookieManager> receiver) override;
-  void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
-                                  mojom::RestrictedCookieManagerRole role,
-                                  const url::Origin& origin,
-                                  bool is_service_worker,
-                                  int32_t process_id,
-                                  int32_t routing_id) override;
+  void GetRestrictedCookieManager(
+      mojo::PendingReceiver<mojom::RestrictedCookieManager> receiver,
+      mojom::RestrictedCookieManagerRole role,
+      const url::Origin& origin,
+      bool is_service_worker,
+      int32_t process_id,
+      int32_t routing_id) override;
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;

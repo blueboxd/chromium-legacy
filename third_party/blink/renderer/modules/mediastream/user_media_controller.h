@@ -81,7 +81,7 @@ inline void UserMediaController::CancelUserMediaRequest(
 
 inline void UserMediaController::ApplyConstraints(
     ApplyConstraintsRequest* request) {
-  Client()->ApplyConstraints(WebApplyConstraintsRequest(request));
+  Client()->ApplyConstraints(request);
 }
 
 inline void UserMediaController::StopTrack(MediaStreamComponent* track) {

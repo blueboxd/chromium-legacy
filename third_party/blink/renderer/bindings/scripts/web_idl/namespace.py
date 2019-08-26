@@ -9,14 +9,14 @@ from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
-from .identifier_ir_map import IdentifierIRMap
+from .ir_map import IRMap
 
 
 class Namespace(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
                 WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-namespaces"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -25,9 +25,9 @@ class Namespace(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
-            kind = (IdentifierIRMap.IR.Kind.PARTIAL_NAMESPACE
-                    if is_partial else IdentifierIRMap.IR.Kind.NAMESPACE)
-            IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
+            kind = (IRMap.IR.Kind.PARTIAL_NAMESPACE
+                    if is_partial else IRMap.IR.Kind.NAMESPACE)
+            IRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)

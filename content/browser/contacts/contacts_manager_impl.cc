@@ -38,12 +38,14 @@ void OnContactsSelected(
     blink::mojom::ContactsManager::SelectCallback callback,
     ukm::SourceId source_id,
     base::Optional<std::vector<blink::mojom::ContactInfoPtr>> contacts,
-    int percentage_shared) {
+    int percentage_shared,
+    int properties_requested) {
   if (contacts != base::nullopt) {
     int select_count = contacts.value().size();
     ukm::builders::ContactsPicker_ShareStatistics(source_id)
         .SetSelectCount(ukm::GetExponentialBucketMinForCounts1000(select_count))
         .SetSelectPercentage(percentage_shared)
+        .SetPropertiesRequested(properties_requested)
         .Record(ukm::UkmRecorder::Get());
   }
   std::move(callback).Run(std::move(contacts));

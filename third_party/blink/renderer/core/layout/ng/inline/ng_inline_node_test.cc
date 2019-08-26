@@ -502,6 +502,25 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
   EXPECT_EQ(130, sizes.max_size);
 }
 
+TEST_F(NGInlineNodeTest, MinMaxSizeCloseTagAfterForcedBreak) {
+  LoadAhem();
+  SetupHtml("t", R"HTML(
+    <style>
+      span { border: 30px solid blue; }
+    </style>
+    <div id=t style="font: 10px Ahem">
+      <span>12<br></span>
+    </div>
+  )HTML");
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  MinMaxSize sizes = ComputeMinMaxSize(node);
+  // The right border of the `</span>` is included in the line even if it
+  // appears after `<br>`. crbug.com/991320.
+  EXPECT_EQ(80, sizes.min_size);
+  EXPECT_EQ(80, sizes.max_size);
+}
+
 TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
   LoadAhem();
   SetupHtml("t", R"HTML(

@@ -11,9 +11,18 @@
 
 namespace blink {
 
+class ComputedStyle;
+class DisplayItemClient;
+class LayoutObject;
+class NGFragmentItem;
+class NGFragmentItems;
 class NGPaintFragment;
+class NGPhysicalTextFragment;
+struct NGTextFragmentPaintInfo;
 struct PaintInfo;
 struct PhysicalOffset;
+struct PhysicalRect;
+struct PhysicalSize;
 
 // Text fragment painter for LayoutNG. Operates on NGPhysicalTextFragments and
 // handles clipping, selection, etc. Delegates to NGTextPainter to paint the
@@ -22,15 +31,38 @@ class NGTextFragmentPainter {
   STACK_ALLOCATED();
 
  public:
+  // TODO(kojii) : Remove | NGPaintFragment | once the transition is done.
+  // crbug.com/982194
   explicit NGTextFragmentPainter(const NGPaintFragment&);
+  NGTextFragmentPainter(const NGFragmentItem&, const NGFragmentItems&);
 
   void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
-  void PaintSymbol(const PaintInfo& paint_info,
-                   const PhysicalOffset& paint_offset);
+  void PaintItem(const PaintInfo&, const PhysicalOffset& paint_offset);
 
-  const NGPaintFragment& fragment_;
+  void Paint(const NGTextFragmentPaintInfo& fragment_paint_info,
+             const LayoutObject* layout_object,
+             const DisplayItemClient& display_item_client,
+             const ComputedStyle& style,
+             PhysicalRect box_rect,
+             const IntRect& visual_rect,
+             bool is_ellipsis,
+             bool is_symbol_marker,
+             const PaintInfo& paint_info,
+             const PhysicalOffset& paint_offset);
+
+  static void PaintSymbol(const LayoutObject* layout_object,
+                          const ComputedStyle& style,
+                          const PhysicalSize box_size,
+                          const PaintInfo& paint_info,
+                          const PhysicalOffset& paint_offset);
+
+  const NGPaintFragment* paint_fragment_ = nullptr;
+  const NGPhysicalTextFragment* text_fragment_ = nullptr;
+
+  const NGFragmentItem* item_ = nullptr;
+  const NGFragmentItems* items_ = nullptr;
 };
 
 }  // namespace blink

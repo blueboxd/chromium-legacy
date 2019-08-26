@@ -10,9 +10,10 @@ namespace prefs {
 // regardless of other content settings.
 const char kBlockThirdPartyCookies[] = "profile.block_third_party_cookies";
 
-// Boolean that is true if the new cookie controls UI is enabled. This will
-// block third-party cookies similar to kBlockThirdPartyCookies.
-const char kCookieControlsEnabled[] = "profile.cookie_controls_enabled";
+// CookieControlsMode enum value that decides when the cookie controls UI is
+// enabled. This will block third-party cookies similar to
+// kBlockThirdPartyCookies but with a new UI.
+const char kCookieControlsMode[] = "profile.cookie_controls_mode";
 
 // Version of the pattern format used to define content settings.
 const char kContentSettingsVersion[] = "profile.content_settings.pref_version";

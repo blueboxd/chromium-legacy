@@ -9,8 +9,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
@@ -28,7 +27,6 @@ using mojom::blink::BlobPtr;
 using mojom::blink::BlobRegistry;
 using mojom::blink::BlobRegistryPtr;
 using mojom::blink::BlobRegistryRequest;
-using mojom::blink::BlobRequest;
 using mojom::blink::DataElement;
 using mojom::blink::DataElementBlob;
 using mojom::blink::DataElementBytes;

@@ -38,10 +38,10 @@ namespace {
 
 Color SelectionBackgroundColor(const Document& document,
                                const ComputedStyle& style,
-                               const NGPhysicalTextFragment& text_fragment,
+                               Node* node,
                                Color text_color) {
-  const Color color = SelectionPaintingUtils::SelectionBackgroundColor(
-      document, style, text_fragment.GetNode());
+  const Color color =
+      SelectionPaintingUtils::SelectionBackgroundColor(document, style, node);
   if (!color.Alpha())
     return Color();
 
@@ -52,16 +52,13 @@ Color SelectionBackgroundColor(const Document& document,
   return color;
 }
 
-DocumentMarkerVector ComputeMarkersToPaint(
-    const NGPaintFragment& paint_fragment) {
+DocumentMarkerVector ComputeMarkersToPaint(Node* node, bool is_ellipsis) {
   // TODO(yoichio): Handle first-letter
-  Node* const node = paint_fragment.GetNode();
   auto* text_node = DynamicTo<Text>(node);
   if (!text_node)
     return DocumentMarkerVector();
   // We don't paint any marker on ellipsis.
-  if (paint_fragment.PhysicalFragment().StyleVariant() ==
-      NGStyleVariant::kEllipsis)
+  if (is_ellipsis)
     return DocumentMarkerVector();
 
   DocumentMarkerController& document_marker_controller =
@@ -129,7 +126,7 @@ PhysicalRect MarkerRectForForeground(
 
 // Copied from InlineTextBoxPainter
 void PaintDocumentMarkers(GraphicsContext& context,
-                          const NGPaintFragment& paint_fragment,
+                          const NGPhysicalTextFragment& text_fragment,
                           const DocumentMarkerVector& markers_to_paint,
                           const PhysicalOffset& box_origin,
                           const ComputedStyle& style,
@@ -138,8 +135,6 @@ void PaintDocumentMarkers(GraphicsContext& context,
   if (markers_to_paint.IsEmpty())
     return;
 
-  const auto& text_fragment =
-      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   DCHECK(text_fragment.GetNode());
   const auto& text = To<Text>(*text_fragment.GetNode());
   for (const DocumentMarker* marker : markers_to_paint) {
@@ -227,9 +222,15 @@ void PaintDocumentMarkers(GraphicsContext& context,
 }  // namespace
 
 NGTextFragmentPainter::NGTextFragmentPainter(
-    const NGPaintFragment& text_fragment)
-    : fragment_(text_fragment) {
-  DCHECK(text_fragment.PhysicalFragment().IsText());
+    const NGPaintFragment& paint_fragment)
+    : paint_fragment_(&paint_fragment),
+      text_fragment_(
+          &To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment())) {}
+
+NGTextFragmentPainter::NGTextFragmentPainter(const NGFragmentItem& item,
+                                             const NGFragmentItems& items)
+    : item_(&item), items_(&items) {
+  DCHECK_EQ(item.Type(), NGFragmentItem::kText);
 }
 
 // Logic is copied from InlineTextBoxPainter::PaintSelection.
@@ -237,64 +238,111 @@ NGTextFragmentPainter::NGTextFragmentPainter(
 // [text_fragment.StartOffset(), text_fragment.EndOffset()].
 static void PaintSelection(GraphicsContext& context,
                            const NGPaintFragment& paint_fragment,
+                           Node* node,
                            const Document& document,
                            const ComputedStyle& style,
                            Color text_color,
                            const PhysicalRect& box_rect,
                            const LayoutSelectionStatus& selection_status) {
-  const auto& text_fragment =
-      To<NGPhysicalTextFragment>(paint_fragment.PhysicalFragment());
   const Color color =
-      SelectionBackgroundColor(document, style, text_fragment, text_color);
+      SelectionBackgroundColor(document, style, node, text_color);
   const PhysicalRect selection_rect =
       paint_fragment.ComputeLocalSelectionRectForText(selection_status);
   PaintRect(context, box_rect.offset, selection_rect, color);
 }
 
-void NGTextFragmentPainter::PaintSymbol(const PaintInfo& paint_info,
+void NGTextFragmentPainter::PaintSymbol(const LayoutObject* layout_object,
+                                        const ComputedStyle& style,
+                                        const PhysicalSize box_size,
+                                        const PaintInfo& paint_info,
                                         const PhysicalOffset& paint_offset) {
-  const ComputedStyle& style = fragment_.Style();
-  PhysicalRect marker_rect(LayoutListMarker::RelativeSymbolMarkerRect(
-      style, fragment_.Size().width));
-  marker_rect.Move(fragment_.Offset());
+  PhysicalRect marker_rect(
+      LayoutListMarker::RelativeSymbolMarkerRect(style, box_size.width));
   marker_rect.Move(paint_offset);
   IntRect rect = PixelSnappedIntRect(marker_rect);
 
-  ListMarkerPainter::PaintSymbol(paint_info, fragment_.GetLayoutObject(), style,
-                                 rect);
+  ListMarkerPainter::PaintSymbol(paint_info, layout_object, style, rect);
 }
 
 // This is copied from InlineTextBoxPainter::PaintSelection() but lacks of
 // ltr, expanding new line wrap or so which uses InlineTextBox functions.
 void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
                                   const PhysicalOffset& paint_offset) {
-  const auto& text_fragment =
-      To<NGPhysicalTextFragment>(fragment_.PhysicalFragment());
-  const ComputedStyle& style = fragment_.Style();
+  if (UNLIKELY(item_)) {
+    PaintItem(paint_info, paint_offset);
+    return;
+  }
+  DCHECK(text_fragment_ && paint_fragment_);
 
   // We can skip painting if the fragment (including selection) is invisible.
-  if (!text_fragment.Length() || fragment_.VisualRect().IsEmpty())
+  if (!text_fragment_->Length())
+    return;
+  IntRect visual_rect = paint_fragment_->VisualRect();
+  if (visual_rect.IsEmpty())
     return;
 
-  if (!text_fragment.TextShapeResult() &&
+  if (!text_fragment_->TextShapeResult() &&
       // A line break's selection tint is still visible.
-      !text_fragment.IsLineBreak())
+      !text_fragment_->IsLineBreak())
     return;
 
-  const Document& document = fragment_.GetLayoutObject()->GetDocument();
-  bool is_printing = paint_info.IsPrinting();
+  Paint(text_fragment_->PaintInfo(), text_fragment_->GetLayoutObject(),
+        *paint_fragment_, text_fragment_->Style(),
+        {paint_fragment_->Offset(), text_fragment_->Size()}, visual_rect,
+        text_fragment_->IsEllipsis(),
+        text_fragment_->TextType() == NGPhysicalTextFragment::kSymbolMarker,
+        paint_info, paint_offset);
+}
+
+void NGTextFragmentPainter::PaintItem(const PaintInfo& paint_info,
+                                      const PhysicalOffset& paint_offset) {
+  DCHECK(item_ && items_);
+
+  if (!item_->TextLength())
+    return;
+  IntRect visual_rect = item_->VisualRect();
+  if (visual_rect.IsEmpty())
+    return;
+
+  NGTextFragmentPaintInfo fragment_paint_info = item_->TextPaintInfo(*items_);
+  bool is_ellipsis = false;       // TODO(kojii): Implement.
+  bool is_symbol_marker = false;  // TODO(kojii): Implement.
+  Paint(fragment_paint_info, item_->GetLayoutObject(), *item_, item_->Style(),
+        item_->Rect(), visual_rect, is_ellipsis, is_symbol_marker, paint_info,
+        paint_offset);
+}
+
+void NGTextFragmentPainter::Paint(
+    const NGTextFragmentPaintInfo& fragment_paint_info,
+    const LayoutObject* layout_object,
+    const DisplayItemClient& display_item_client,
+    const ComputedStyle& style,
+    PhysicalRect box_rect,
+    const IntRect& visual_rect,
+    bool is_ellipsis,
+    bool is_symbol_marker,
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) {
+  DCHECK(layout_object);
+  const Document& document = layout_object->GetDocument();
+  const bool is_printing = paint_info.IsPrinting();
 
   // Determine whether or not we're selected.
   bool have_selection = !is_printing &&
                         paint_info.phase != PaintPhase::kTextClip &&
-                        text_fragment.GetLayoutObject()->IsSelected();
+                        layout_object->IsSelected();
   base::Optional<LayoutSelectionStatus> selection_status;
   if (have_selection) {
-    selection_status =
-        document.GetFrame()->Selection().ComputeLayoutSelectionStatus(
-            fragment_);
-    DCHECK_LE(selection_status->start, selection_status->end);
-    have_selection = selection_status->start < selection_status->end;
+    if (paint_fragment_) {
+      selection_status =
+          document.GetFrame()->Selection().ComputeLayoutSelectionStatus(
+              *paint_fragment_);
+      DCHECK_LE(selection_status->start, selection_status->end);
+      have_selection = selection_status->start < selection_status->end;
+    } else {
+      // TODO(kojii): Implement without paint_fragment_
+      have_selection = false;
+    }
   }
   if (!have_selection) {
     // When only painting the selection, don't bother to paint if there is none.
@@ -302,7 +350,8 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       return;
 
     // Flow controls (line break, tab, <wbr>) need only selection painting.
-    if (text_fragment.IsFlowControl())
+    // TODO(kojii): Implement without text_fragment_.
+    if (text_fragment_ && text_fragment_->IsFlowControl())
       return;
   }
 
@@ -312,35 +361,35 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   base::Optional<DrawingRecorder> recorder;
   if (paint_info.phase != PaintPhase::kTextClip) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, fragment_, paint_info.phase))
+            paint_info.context, display_item_client, paint_info.phase))
       return;
-    recorder.emplace(paint_info.context, fragment_, paint_info.phase);
+    recorder.emplace(paint_info.context, display_item_client, paint_info.phase);
   }
 
-  if (UNLIKELY(text_fragment.TextType() ==
-               NGPhysicalTextFragment::kSymbolMarker)) {
+  if (UNLIKELY(is_symbol_marker)) {
     // The NGInlineItem of marker might be Split(). So PaintSymbol only if the
     // StartOffset is 0, or it might be painted several times.
-    if (!text_fragment.StartOffset())
-      PaintSymbol(paint_info, paint_offset);
+    if (!fragment_paint_info.from) {
+      PaintSymbol(layout_object, style, box_rect.size, paint_info,
+                  paint_offset + box_rect.offset);
+    }
     return;
   }
 
   // We round the y-axis to ensure consistent line heights.
   PhysicalOffset adjusted_paint_offset(paint_offset.left,
                                        LayoutUnit(paint_offset.top.Round()));
-
-  PhysicalOffset box_origin = fragment_.Offset();
-  box_origin += adjusted_paint_offset;
+  box_rect.offset += adjusted_paint_offset;
 
   GraphicsContext& context = paint_info.context;
 
   // Determine text colors.
+
+  Node* node = layout_object->GetNode();
   TextPaintStyle text_style =
       TextPainterBase::TextPaintingStyle(document, style, paint_info);
   TextPaintStyle selection_style = TextPainterBase::SelectionPaintingStyle(
-      document, style, fragment_.GetNode(), have_selection, paint_info,
-      text_style);
+      document, style, node, have_selection, paint_info, text_style);
   bool paint_selected_text_only = (paint_info.phase == PaintPhase::kSelection);
   bool paint_selected_text_separately =
       !paint_selected_text_only && text_style != selection_style;
@@ -350,7 +399,6 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
 
-  PhysicalRect box_rect(box_origin, fragment_.Size());
   base::Optional<GraphicsContextStateSaver> state_saver;
 
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
@@ -362,36 +410,46 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   // NGPaintFragment::ComputeLocalSelectionRectForText logical so that we can
   // paint selection in same fliped dimention as NGTextPainter.
   const DocumentMarkerVector& markers_to_paint =
-      ComputeMarkersToPaint(fragment_);
+      ComputeMarkersToPaint(node, is_ellipsis);
   if (paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing) {
-    PaintDocumentMarkers(context, fragment_, markers_to_paint, box_origin,
-                         style, DocumentMarkerPaintPhase::kBackground, nullptr);
+    if (text_fragment_) {
+      PaintDocumentMarkers(context, *text_fragment_, markers_to_paint,
+                           box_rect.offset, style,
+                           DocumentMarkerPaintPhase::kBackground, nullptr);
+    } else {
+      // TODO(kojii): Implement without text_fragment_.
+    }
 
     if (have_selection) {
-      PaintSelection(context, fragment_, document, style,
-                     selection_style.fill_color, box_rect, *selection_status);
+      if (paint_fragment_) {
+        PaintSelection(context, *paint_fragment_, node, document, style,
+                       selection_style.fill_color, box_rect, *selection_status);
+      } else {
+        // TODO(kojii): Implement without paint_fragment_.
+      }
     }
   }
 
-  const NGLineOrientation orientation = text_fragment.LineOrientation();
-  if (orientation != NGLineOrientation::kHorizontal) {
+  const WritingMode writing_mode = style.GetWritingMode();
+  const bool is_horizontal = IsHorizontalWritingMode(writing_mode);
+  if (!is_horizontal) {
     state_saver.emplace(context);
     // Because we rotate the GraphicsContext to match the logical direction,
     // transpose the |box_rect| to match to it.
-    box_rect.size =
-        PhysicalSize(fragment_.Size().height, fragment_.Size().width);
+    box_rect.size = PhysicalSize(box_rect.Height(), box_rect.Width());
     context.ConcatCTM(TextPainterBase::Rotation(
-        box_rect, orientation == NGLineOrientation::kClockWiseVertical
+        box_rect, writing_mode != WritingMode::kSidewaysLr
                       ? TextPainterBase::kClockwise
                       : TextPainterBase::kCounterclockwise));
   }
 
   // 2. Now paint the foreground, including text and decorations.
   int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
-  PhysicalOffset text_origin(box_origin.left, box_origin.top + ascent);
-  NGTextPainter text_painter(context, font, fragment_, text_origin, box_rect,
-                             text_fragment.IsHorizontal());
+  PhysicalOffset text_origin(box_rect.offset.left,
+                             box_rect.offset.top + ascent);
+  NGTextPainter text_painter(context, font, fragment_paint_info, visual_rect,
+                             text_origin, box_rect, is_horizontal);
 
   if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone) {
     text_painter.SetEmphasisMark(style.TextEmphasisMarkString(),
@@ -399,12 +457,12 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   }
 
   DOMNodeId node_id = kInvalidDOMNodeId;
-  if (Node* node = text_fragment.GetNode()) {
+  if (node) {
     if (auto* layout_text = ToLayoutTextOrNull(node->GetLayoutObject()))
       node_id = layout_text->EnsureNodeId();
   }
 
-  unsigned length = text_fragment.Text().length();
+  const unsigned length = fragment_paint_info.to - fragment_paint_info.from;
   if (!paint_selected_text_only) {
     // Paint text decorations except line-through.
     DecorationInfo decoration_info;
@@ -412,27 +470,31 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
     if (style.TextDecorationsInEffect() != TextDecoration::kNone &&
         // Ellipsis should not have text decorations. This is not defined, but 4
         // impls do this.
-        !text_fragment.IsEllipsis()) {
-      PhysicalOffset local_origin = box_origin;
+        !is_ellipsis) {
+      PhysicalOffset local_origin = box_rect.offset;
       LayoutUnit width = box_rect.Width();
       const NGPhysicalBoxFragment* decorating_box = nullptr;
       const ComputedStyle* decorating_box_style =
           decorating_box ? &decorating_box->Style() : nullptr;
 
       text_painter.ComputeDecorationInfo(
-          decoration_info, box_origin, local_origin, width,
+          decoration_info, box_rect.offset, local_origin, width,
           style.GetFontBaseline(), style, decorating_box_style);
 
-      NGTextDecorationOffset decoration_offset(*decoration_info.style,
-                                               text_fragment, decorating_box);
-      text_painter.PaintDecorationsExceptLineThrough(
-          decoration_offset, decoration_info, paint_info,
-          style.AppliedTextDecorations(), text_style,
-          &has_line_through_decoration);
+      if (text_fragment_) {
+        NGTextDecorationOffset decoration_offset(
+            *decoration_info.style, *text_fragment_, decorating_box);
+        text_painter.PaintDecorationsExceptLineThrough(
+            decoration_offset, decoration_info, paint_info,
+            style.AppliedTextDecorations(), text_style,
+            &has_line_through_decoration);
+      } else {
+        // TODO(kojii): Implement without text_fragment_
+      }
     }
 
-    unsigned start_offset = text_fragment.StartOffset();
-    unsigned end_offset = start_offset + length;
+    unsigned start_offset = fragment_paint_info.from;
+    unsigned end_offset = fragment_paint_info.to;
 
     if (have_selection && paint_selected_text_separately) {
       // Paint only the text that is not selected.
@@ -465,8 +527,13 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
 
   if (paint_info.phase != PaintPhase::kForeground)
     return;
-  PaintDocumentMarkers(context, fragment_, markers_to_paint, box_origin, style,
-                       DocumentMarkerPaintPhase::kForeground, &text_painter);
+  if (text_fragment_) {
+    PaintDocumentMarkers(context, *text_fragment_, markers_to_paint,
+                         box_rect.offset, style,
+                         DocumentMarkerPaintPhase::kForeground, &text_painter);
+  } else {
+    // TODO(kojii): Implement without text_fragment_.
+  }
 }
 
 }  // namespace blink

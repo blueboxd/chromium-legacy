@@ -74,6 +74,6 @@ class AddressAccessorySheetViewBinder {
 
     static void initializeView(RecyclerView view, AccessorySheetTabModel model) {
         view.setAdapter(AddressAccessorySheetCoordinator.createAdapter(model));
-        view.addItemDecoration(new AddressAccessoryInfoView.DynamicBottomSpacer());
+        view.addItemDecoration(new DynamicInfoViewBottomSpacer(AddressAccessoryInfoView.class));
     }
 }

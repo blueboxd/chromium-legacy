@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
-from .identifier_ir_map import IdentifierIRMap
+from .ir_map import IRMap
 from .idl_type import IdlType
 from .literal_constant import LiteralConstant
 from .make_copy import make_copy
@@ -20,7 +21,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
                  WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-dictionaries"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -38,9 +39,9 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
                 isinstance(member, DictionaryMember.IR)
                 for member in own_members)
 
-            kind = (IdentifierIRMap.IR.Kind.PARTIAL_DICTIONARY
-                    if is_partial else IdentifierIRMap.IR.Kind.DICTIONARY)
-            IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
+            kind = (IRMap.IR.Kind.PARTIAL_DICTIONARY
+                    if is_partial else IRMap.IR.Kind.DICTIONARY)
+            IRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(
@@ -58,7 +59,8 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)
 
@@ -141,7 +143,8 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
         ir = make_copy(ir)
         WithIdentifier.__init__(self, ir.identifier)
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
         WithOwner.__init__(self, owner)
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)

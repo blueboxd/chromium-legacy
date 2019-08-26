@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -604,12 +605,6 @@ void NGPaintFragment::LayoutObjectWillBeDestroyed() {
   }
 }
 
-NGPaintFragment::NGInkOverflowModel::NGInkOverflowModel(
-    const PhysicalRect& self_ink_overflow,
-    const PhysicalRect& contents_ink_overflow)
-    : self_ink_overflow(self_ink_overflow),
-      contents_ink_overflow(contents_ink_overflow) {}
-
 const LayoutBox* NGPaintFragment::InkOverflowOwnerBox() const {
   const NGPhysicalFragment& fragment = PhysicalFragment();
   if (fragment.IsBox() && !fragment.IsInlineBox())
@@ -728,7 +723,7 @@ PhysicalRect NGPaintFragment::RecalcInkOverflow() {
     ink_overflow_.reset();
   } else if (!ink_overflow_) {
     ink_overflow_ =
-        std::make_unique<NGInkOverflowModel>(self_rect, contents_rect);
+        std::make_unique<NGContainerInkOverflow>(self_rect, contents_rect);
   } else {
     ink_overflow_->self_ink_overflow = self_rect;
     ink_overflow_->contents_ink_overflow = contents_rect;

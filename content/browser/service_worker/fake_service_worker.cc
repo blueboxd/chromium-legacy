@@ -45,7 +45,7 @@ void FakeServiceWorker::InitializeGlobalScope(
 
   // Enable callers to use these endpoints without us actually binding them
   // to an implementation.
-  mojo::AssociateWithDisconnectedPipe(registration_info->request.PassHandle());
+  mojo::AssociateWithDisconnectedPipe(registration_info->receiver.PassHandle());
   if (registration_info->installing) {
     mojo::AssociateWithDisconnectedPipe(
         registration_info->installing->receiver.PassHandle());

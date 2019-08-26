@@ -24,6 +24,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -102,11 +103,12 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   // Tells this worker to respond to fetch events with the specified stream.
   void RespondWithStream(
-      blink::mojom::ServiceWorkerStreamCallbackRequest callback_request,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerStreamCallback>
+          callback_receiver,
       mojo::ScopedDataPipeConsumerHandle consumer_handle) {
     response_mode_ = ResponseMode::kStream;
     stream_handle_ = blink::mojom::ServiceWorkerStreamHandle::New();
-    stream_handle_->callback_request = std::move(callback_request);
+    stream_handle_->callback_receiver = std::move(callback_receiver);
     stream_handle_->stream = std::move(consumer_handle);
   }
 
@@ -564,8 +566,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   auto blob = blink::mojom::SerializedBlob::New();
   blob->uuid = blob_handle->uuid();
   blob->size = blob_handle->size();
-  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob->blob);
-  storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
+  mojo::PendingReceiver<blink::mojom::Blob> receiver =
+      mojo::MakeRequest(&blob->blob);
+  storage::BlobImpl::Create(std::move(blob_handle), std::move(receiver));
   service_worker_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
@@ -604,8 +607,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
                                   storage::BlobStatus::ERR_OUT_OF_MEMORY);
   auto blob = blink::mojom::SerializedBlob::New();
   blob->uuid = kBrokenUUID;
-  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob->blob);
-  storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
+  mojo::PendingReceiver<blink::mojom::Blob> receiver =
+      mojo::MakeRequest(&blob->blob);
+  storage::BlobImpl::Create(std::move(blob_handle), std::move(receiver));
   service_worker_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
@@ -638,10 +642,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
 
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  service_worker_->RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  service_worker_->RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
   StartRequest(CreateRequest());
@@ -685,10 +690,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
 
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  service_worker_->RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  service_worker_->RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
   StartRequest(CreateRequest());
@@ -734,10 +740,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
 
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  service_worker_->RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  service_worker_->RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
   StartRequest(CreateRequest());

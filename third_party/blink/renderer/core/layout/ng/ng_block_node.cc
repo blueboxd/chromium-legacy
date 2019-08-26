@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/ng_custom_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -462,11 +463,15 @@ void NGBlockNode::FinishLayout(
     if (has_inline_children) {
       const auto& physical_fragment =
           To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
-      CopyFragmentDataToLayoutBoxForInlineChildren(
-          physical_fragment, physical_fragment.Size().width,
-          Style().IsFlippedBlocksWritingMode());
-      block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
-                                   &physical_fragment);
+      if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+        CopyFragmentDataToLayoutBoxForInlineChildren(
+            physical_fragment, physical_fragment.Size().width,
+            Style().IsFlippedBlocksWritingMode());
+        block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
+                                     &physical_fragment);
+      } else {
+        CopyFragmentDataToLayoutBoxForInlineChildren(physical_fragment);
+      }
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
@@ -902,6 +907,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
     LayoutUnit initial_container_width,
     bool initial_container_is_flipped,
     PhysicalOffset offset) {
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   for (const auto& child : container.Children()) {
     if (child->IsContainer()) {
       PhysicalOffset child_offset = offset + child.Offset();
@@ -937,6 +943,44 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
         CopyFragmentDataToLayoutBoxForInlineChildren(
             To<NGPhysicalContainerFragment>(*child), initial_container_width,
             initial_container_is_flipped, child_offset);
+      }
+    }
+  }
+}
+
+void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
+    const NGPhysicalBoxFragment& container) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  bool initial_container_is_flipped = Style().IsFlippedBlocksWritingMode();
+  const NGFragmentItems* items = container.Items();
+  DCHECK(items);
+  NGInlineCursor cursor(*items);
+  while (cursor.MoveToNext()) {
+    if (const NGPhysicalBoxFragment* child = cursor.CurrentBoxFragment()) {
+      // Replaced elements and inline blocks need Location() set relative to
+      // their block container.
+      LayoutObject* layout_object = child->GetMutableLayoutObject();
+      if (!layout_object)
+        continue;
+      if (LayoutBox* layout_box = ToLayoutBoxOrNull(layout_object)) {
+        PhysicalOffset maybe_flipped_offset = cursor.CurrentOffset();
+        if (initial_container_is_flipped) {
+          maybe_flipped_offset.left = container.Size().width -
+                                      child->Size().width -
+                                      maybe_flipped_offset.left;
+        }
+        layout_box->SetLocation(maybe_flipped_offset.ToLayoutPoint());
+        continue;
+      }
+
+      // Legacy compatibility. This flag is used in paint layer for
+      // invalidation.
+      if (LayoutInline* layout_inline = ToLayoutInlineOrNull(layout_object)) {
+        if (layout_inline->StyleRef().HasOutline() &&
+            !layout_inline->IsElementContinuation() &&
+            layout_inline->Continuation()) {
+          box_->SetContainsInlineWithOutlineAndContinuation(true);
+        }
       }
     }
   }

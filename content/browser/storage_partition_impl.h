@@ -111,7 +111,8 @@ class CONTENT_EXPORT StoragePartitionImpl
       bool is_service_worker,
       int process_id,
       int routing_id,
-      network::mojom::RestrictedCookieManagerRequest request) override;
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
+      override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;

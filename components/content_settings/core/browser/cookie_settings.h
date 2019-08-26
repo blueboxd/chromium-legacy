@@ -24,6 +24,15 @@ class PrefService;
 
 namespace content_settings {
 
+// This enum is used in prefs, do not change values.
+// The enum needs to correspond to CookieControlsMode in enums.xml.
+enum class CookieControlsMode {
+  kOff = 0,
+  kOn = 1,
+  kIncognitoOnly = 2,
+  kMaxValue = kIncognitoOnly,
+};
+
 // Default value for |extension_scheme|.
 const char kDummyExtensionScheme[] = ":no-extension-scheme:";
 
@@ -42,8 +51,11 @@ class CookieSettings : public CookieSettingsBase,
   // Creates a new CookieSettings instance.
   // The caller is responsible for ensuring that |extension_scheme| is valid for
   // the whole lifetime of this instance.
+  // |is_incognito| indicates whether this is an incognito profile. It is not
+  // true for other types of off-the-record profiles like guest mode.
   CookieSettings(HostContentSettingsMap* host_content_settings_map,
                  PrefService* prefs,
+                 bool is_incognito,
                  const char* extension_scheme = kDummyExtensionScheme);
 
   // Returns the default content setting (CONTENT_SETTING_ALLOW,
@@ -117,6 +129,8 @@ class CookieSettings : public CookieSettingsBase,
 
   void RemoveObserver(const Observer* obs) { observers_.RemoveObserver(obs); }
 
+  bool IsCookieControlsEnabled();
+
  private:
   ~CookieSettings() override;
 
@@ -133,6 +147,7 @@ class CookieSettings : public CookieSettingsBase,
   base::ObserverList<Observer> observers_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   PrefChangeRegistrar pref_change_registrar_;
+  const bool is_incognito_;
   const char* extension_scheme_;  // Weak.
 
   // Used around accesses to |block_third_party_cookies_| to guarantee thread

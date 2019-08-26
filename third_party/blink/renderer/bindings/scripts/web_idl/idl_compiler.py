@@ -9,7 +9,7 @@ from .database import Database
 from .database import DatabaseBody
 from .dictionary import Dictionary
 from .enumeration import Enumeration
-from .identifier_ir_map import IdentifierIRMap
+from .ir_map import IRMap
 from .idl_type import IdlTypeFactory
 from .interface import Interface
 from .make_copy import make_copy
@@ -37,16 +37,14 @@ class IdlCompiler(object):
     2.1. y = process_and_update(x.copy())
     2.2. self._ir_map(phase=next_phase).add(y)
 
-    Note that an old IR for 'x' remains internally.  See IdentifierIRMap for
-    the details.
+    Note that an old IR for 'x' remains internally.  See IRMap for the details.
     """
 
     def __init__(self, ir_map, ref_to_idl_def_factory, ref_to_idl_type_factory,
                  idl_type_factory, report_error):
         """
         Args:
-            ir_map: IdentifierIRMap filled with the initial IRs of IDL
-                definitions.
+            ir_map: IRMap filled with the initial IRs of IDL definitions.
             ref_to_idl_def_factory: RefByIdFactory that created all references
                 to UserDefinedType.
             ref_to_idl_type_factory: RefByIdFactory that created all references
@@ -58,7 +56,7 @@ class IdlCompiler(object):
                 takes an error message of type str and return value is not used.
                 It's okay to terminate the program in this callback.
         """
-        assert isinstance(ir_map, IdentifierIRMap)
+        assert isinstance(ir_map, IRMap)
         assert isinstance(ref_to_idl_def_factory, RefByIdFactory)
         assert isinstance(ref_to_idl_type_factory, RefByIdFactory)
         assert isinstance(idl_type_factory, IdlTypeFactory)
@@ -96,24 +94,21 @@ class IdlCompiler(object):
         return Database(self._db)
 
     def _merge_partial_interfaces(self):
-        old_interfaces = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.INTERFACE)
+        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
         partial_interfaces = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE)
-        old_mixins = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.INTERFACE_MIXIN)
+            IRMap.IR.Kind.PARTIAL_INTERFACE)
+        old_mixins = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
         partial_mixins = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
 
         self._ir_map.move_to_new_phase()
         self._merge_interfaces(old_interfaces, partial_interfaces)
         self._merge_interfaces(old_mixins, partial_mixins)
 
     def _merge_partial_dictionaries(self):
-        old_dictionaries = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.DICTIONARY)
+        old_dictionaries = self._ir_map.find_by_kind(IRMap.IR.Kind.DICTIONARY)
         old_partial_dictionaries = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.PARTIAL_DICTIONARY)
+            IRMap.IR.Kind.PARTIAL_DICTIONARY)
 
         self._ir_map.move_to_new_phase()
 
@@ -129,10 +124,9 @@ class IdlCompiler(object):
             self._ir_map.add(new_dictionary)
 
     def _merge_interface_mixins(self):
-        interfaces = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.INTERFACE)
+        interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
         interface_mixins = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.INTERFACE_MIXIN)
+            IRMap.IR.Kind.INTERFACE_MIXIN)
 
         identifier_to_mixin_map = {
             identifier: [
@@ -140,7 +134,7 @@ class IdlCompiler(object):
                 for include in includes
             ]
             for identifier, includes in self._ir_map.find_by_kind(
-                IdentifierIRMap.IR.Kind.INCLUDES).iteritems()
+                IRMap.IR.Kind.INCLUDES).iteritems()
         }
 
         self._ir_map.move_to_new_phase()
@@ -171,8 +165,7 @@ class IdlCompiler(object):
             return [obj] + create_inheritance_stack(
                 table[obj.inherited.identifier], table)
 
-        old_interfaces = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.INTERFACE)
+        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
         self._ir_map.move_to_new_phase()
         for old_interface in old_interfaces.itervalues():
             new_interface = make_copy(old_interface)
@@ -191,40 +184,36 @@ class IdlCompiler(object):
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""
-        interface_irs = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.INTERFACE)
+        interface_irs = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
         for ir in interface_irs.itervalues():
             self._db.register(DatabaseBody.Kind.INTERFACE, Interface(ir))
 
         interface_mixin_irs = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.INTERFACE_MIXIN)
+            IRMap.IR.Kind.INTERFACE_MIXIN)
         for ir in interface_mixin_irs.itervalues():
             self._db.register(DatabaseBody.Kind.INTERFACE_MIXIN, Interface(ir))
 
-        dictionary_irs = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.DICTIONARY)
+        dictionary_irs = self._ir_map.find_by_kind(IRMap.IR.Kind.DICTIONARY)
         for ir in dictionary_irs.itervalues():
             self._db.register(DatabaseBody.Kind.DICTIONARY, Dictionary(ir))
 
         callback_interface_irs = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.CALLBACK_INTERFACE)
+            IRMap.IR.Kind.CALLBACK_INTERFACE)
         for ir in callback_interface_irs.itervalues():
             self._db.register(DatabaseBody.Kind.CALLBACK_INTERFACE,
                               CallbackInterface(ir))
 
         callback_function_irs = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.CALLBACK_FUNCTION)
+            IRMap.IR.Kind.CALLBACK_FUNCTION)
         for ir in callback_function_irs.itervalues():
             self._db.register(DatabaseBody.Kind.CALLBACK_FUNCTION,
                               CallbackFunction(ir))
 
-        enum_irs = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.ENUMERATION)
+        enum_irs = self._ir_map.find_by_kind(IRMap.IR.Kind.ENUMERATION)
         for ir in enum_irs.itervalues():
             self._db.register(DatabaseBody.Kind.ENUMERATION, Enumeration(ir))
 
-        typedef_irs = self._ir_map.find_by_kind(
-            IdentifierIRMap.IR.Kind.TYPEDEF)
+        typedef_irs = self._ir_map.find_by_kind(IRMap.IR.Kind.TYPEDEF)
         for ir in typedef_irs.itervalues():
             self._db.register(DatabaseBody.Kind.TYPEDEF, Typedef(ir))
 

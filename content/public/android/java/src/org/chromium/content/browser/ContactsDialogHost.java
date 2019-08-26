@@ -82,11 +82,12 @@ public class ContactsDialogHost implements ContactsPickerListener {
     }
 
     @Override
-    public void onContactsPickerUserAction(
-            @ContactsPickerAction int action, List<Contact> contacts, int percentageShared) {
+    public void onContactsPickerUserAction(@ContactsPickerAction int action, List<Contact> contacts,
+            int percentageShared, int propertiesRequested) {
         switch (action) {
             case ContactsPickerAction.CANCEL:
-                ContactsDialogHostJni.get().endContactsList(mNativeContactsProviderAndroid, 0);
+                ContactsDialogHostJni.get().endContactsList(
+                        mNativeContactsProviderAndroid, 0, propertiesRequested);
                 break;
 
             case ContactsPickerAction.CONTACTS_SELECTED:
@@ -104,7 +105,7 @@ public class ContactsDialogHost implements ContactsPickerListener {
                                     : null);
                 }
                 ContactsDialogHostJni.get().endContactsList(
-                        mNativeContactsProviderAndroid, percentageShared);
+                        mNativeContactsProviderAndroid, percentageShared, propertiesRequested);
                 break;
 
             case ContactsPickerAction.SELECT_ALL:
@@ -118,7 +119,8 @@ public class ContactsDialogHost implements ContactsPickerListener {
         void addContact(long nativeContactsProviderAndroid, boolean includeNames,
                 boolean includeEmails, boolean includeTel, String[] names, String[] emails,
                 String[] tel);
-        void endContactsList(long nativeContactsProviderAndroid, int percentageShared);
+        void endContactsList(
+                long nativeContactsProviderAndroid, int percentageShared, int propertiesRequested);
         void endWithPermissionDenied(long nativeContactsProviderAndroid);
     }
 }

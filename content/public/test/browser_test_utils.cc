@@ -3145,6 +3145,9 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = process_id;
   url_loader_factory_params->is_corb_enabled = false;
+  url::Origin origin = url::Origin::Create(url);
+  url_loader_factory_params->network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
   network_context->CreateURLLoaderFactory(MakeRequest(&url_loader_factory),
                                           std::move(url_loader_factory_params));
   // |url_loader_factory| will receive error notification asynchronously if

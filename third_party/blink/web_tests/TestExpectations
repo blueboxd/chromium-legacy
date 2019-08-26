@@ -1321,13 +1321,6 @@ crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-overflow
 #crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 
-crbug.com/992920 [ Mac10.10 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
-crbug.com/992920 [ Mac10.12 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
-crbug.com/992920 [ Mac10.13 ] fast/dom/collection-item-should-be-overridden-by-own-property.html [ Crash Pass ]
-crbug.com/992920 [ Mac10.10 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
-crbug.com/992920 [ Mac10.12 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
-crbug.com/992920 [ Mac10.13 ] fast/text/forced-break-before-close-tag.html [ Crash Pass ]
-
 #crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
 
 # A few other lines for this test are commented out above to avoid conflicting expectations.
@@ -3112,6 +3105,8 @@ crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-block
 
 crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
+crbug.com/626703 external/wpt/css/css-animations/Element-getAnimations.tentative.html [ Pass Failure ]
+
 # TODO(chrishtr): rebaseline these
 crbug.com/921242 [ Mac ] paint/invalidation/compositing/fixed-pos-inside-composited-intermediate-layer.html [ Failure ]
 crbug.com/921242 [ Mac ] paint/invalidation/scroll/fixed-under-composited-absolute-scrolled.html [ Failure ]
@@ -3257,6 +3252,7 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Retina ] virtual/cascade/external/wpt/css/css-paint-api/one-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
@@ -4939,6 +4935,7 @@ crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/requi
 crbug.com/678499 virtual/blink-cors/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
 crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
+crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Win Mac ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
@@ -6486,7 +6483,6 @@ crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
 
 #Sherrif 2019-08-16
 crbug.com/994692 [ Linux Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
-crbug.com/994746 animations/events/play-state-initially-paused-start-event.html [ Pass Timeout ]
 
 # Video flakily not being being rendered on Mac
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
@@ -6530,10 +6526,14 @@ crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/canvas-large-p
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canvas.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
-crbug.com/997149 [ Linux ] external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Pass Failure ]
 
 crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
 crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
+
+# Sheriff 2019-08-26
+crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope-in-files.js [ Pass Crash ]
+crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope.js [ Pass Crash ]
+crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-main-thread.https.html [ Pass Failure ]
 
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]

@@ -15,6 +15,7 @@ class PersonalDataManager;
 
 namespace autofill_assistant {
 class AccessTokenFetcher;
+class WebsiteLoginFetcher;
 
 // A client interface that needs to be supplied to the controller by the
 // embedder.
@@ -43,6 +44,9 @@ class Client {
 
   // Returns the current active personal data manager.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
+
+  // Returns the currently active login fetcher.
+  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
 
   // Returns the server URL to be used for requests to the backend.
   virtual std::string GetServerUrl() = 0;

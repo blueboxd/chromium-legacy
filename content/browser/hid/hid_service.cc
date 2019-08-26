@@ -71,9 +71,10 @@ void HidService::RequestDevice(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void HidService::Connect(const std::string& device_guid,
-                         device::mojom::HidConnectionClientPtr client,
-                         ConnectCallback callback) {
+void HidService::Connect(
+    const std::string& device_guid,
+    mojo::PendingRemote<device::mojom::HidConnectionClient> client,
+    ConnectCallback callback) {
   GetContentClient()
       ->browser()
       ->GetHidDelegate()

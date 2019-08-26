@@ -44,12 +44,12 @@ network::mojom::RestrictedCookieManagerPtr GetRestrictedCookieManagerForContext(
       BrowserContext::GetDefaultStoragePartition(browser_context);
 
   network::mojom::RestrictedCookieManagerPtr pipe;
-  network::mojom::RestrictedCookieManagerRequest request =
+  mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver =
       mojo::MakeRequest(&pipe);
   storage_partition->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::NETWORK, origin,
       /* is_service_worker = */ false, render_process_id, render_frame_id,
-      std::move(request));
+      std::move(receiver));
   return pipe;
 }
 

@@ -425,10 +425,6 @@ const base::Feature kRenderDocumentForMainFrame{
 const base::Feature kRenderDocumentForSubframe{
     "RenderDocumentForSubframe", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Throttle Blink's rendering pipeline based on frame visibility.
-const base::Feature kRenderingPipelineThrottling{
-    "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kRequestUnbufferedDispatch{
     "RequestUnbufferedDispatch", base::FEATURE_ENABLED_BY_DEFAULT};
 

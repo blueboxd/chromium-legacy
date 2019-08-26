@@ -10,6 +10,8 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
@@ -120,7 +122,7 @@ bool IsClientRequest(network::mojom::RequestContextFrameType frame_type,
          request_context == mojom::RequestContextType::WORKER;
 }
 
-// Notifies the result of FetchDataLoader to |callback_ptr_|, the other endpoint
+// Notifies the result of FetchDataLoader to |callback_|, the other endpoint
 // for which is passed to the browser process via
 // blink.mojom.ServiceWorkerFetchResponseCallback.OnResponseStream().
 class FetchLoaderClient final
@@ -132,10 +134,10 @@ class FetchLoaderClient final
   FetchLoaderClient(
       std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token)
       : token_(std::move(token)) {
-    // We need to make |callback_ptr_| callable in the first place because some
+    // We need to make |callback_| callable in the first place because some
     // DidFetchDataLoadXXX() accessing it may be called synchronously from
     // StartLoading().
-    callback_request_ = mojo::MakeRequest(&callback_ptr_);
+    callback_receiver_ = callback_.BindNewPipeAndPassReceiver();
   }
 
   void DidFetchDataStartedDataPipe(
@@ -145,18 +147,18 @@ class FetchLoaderClient final
     body_stream_ = std::move(pipe);
   }
   void DidFetchDataLoadedDataPipe() override {
-    callback_ptr_->OnCompleted();
+    callback_->OnCompleted();
     token_.reset();
   }
   void DidFetchDataLoadFailed() override {
-    callback_ptr_->OnAborted();
+    callback_->OnAborted();
     token_.reset();
   }
   void Abort() override {
     // A fetch() aborted via AbortSignal in the ServiceWorker will just look
     // like an ordinary failure to the page.
     // TODO(ricea): Should a fetch() on the page get an AbortError instead?
-    callback_ptr_->OnAborted();
+    callback_->OnAborted();
     token_.reset();
   }
 
@@ -164,7 +166,7 @@ class FetchLoaderClient final
     if (!body_stream_.is_valid())
       return nullptr;
     return mojom::blink::ServiceWorkerStreamHandle::New(
-        std::move(body_stream_), std::move(callback_request_));
+        std::move(body_stream_), std::move(callback_receiver_));
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -173,9 +175,10 @@ class FetchLoaderClient final
 
  private:
   mojo::ScopedDataPipeConsumerHandle body_stream_;
-  mojom::blink::ServiceWorkerStreamCallbackRequest callback_request_;
+  mojo::PendingReceiver<mojom::blink::ServiceWorkerStreamCallback>
+      callback_receiver_;
 
-  mojom::blink::ServiceWorkerStreamCallbackPtr callback_ptr_;
+  mojo::Remote<mojom::blink::ServiceWorkerStreamCallback> callback_;
   std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchLoaderClient);

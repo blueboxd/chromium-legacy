@@ -15,8 +15,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/pending_app_manager_observer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/pending_app_registration_task.h"
 #include "content/public/browser/web_contents.h"
 
 namespace web_app {
@@ -69,14 +71,25 @@ void PendingAppManagerImpl::UninstallApps(std::vector<GURL> uninstall_urls,
 }
 
 void PendingAppManagerImpl::Shutdown() {
+  pending_registrations_.clear();
+  current_registration_.reset();
   pending_installs_.clear();
   current_install_.reset();
-  web_contents_.reset();
+  ReleaseWebContents();
 }
 
 void PendingAppManagerImpl::SetUrlLoaderForTesting(
     std::unique_ptr<WebAppUrlLoader> url_loader) {
   url_loader_ = std::move(url_loader);
+}
+
+void PendingAppManagerImpl::ReleaseWebContents() {
+  DCHECK(pending_registrations_.empty());
+  DCHECK(!current_registration_);
+  DCHECK(pending_installs_.empty());
+  DCHECK(!current_install_);
+
+  web_contents_.reset();
 }
 
 std::unique_ptr<PendingAppInstallTask>
@@ -85,6 +98,24 @@ PendingAppManagerImpl::CreateInstallationTask(
   return std::make_unique<PendingAppInstallTask>(profile_, registrar(),
                                                  ui_manager(), finalizer(),
                                                  std::move(install_options));
+}
+
+std::unique_ptr<PendingAppRegistrationTaskBase>
+PendingAppManagerImpl::StartRegistration(GURL launch_url) {
+  return std::make_unique<PendingAppRegistrationTask>(
+      launch_url, url_loader_.get(), web_contents_.get(),
+      base::BindOnce(&PendingAppManagerImpl::OnRegistrationFinished,
+                     weak_ptr_factory_.GetWeakPtr(), launch_url));
+}
+
+void PendingAppManagerImpl::OnRegistrationFinished(
+    const GURL& launch_url,
+    RegistrationResultCode result) {
+  DCHECK_EQ(current_registration_->launch_url(), launch_url);
+  PendingAppManager::OnRegistrationFinished(launch_url, result);
+
+  current_registration_.reset();
+  PostMaybeStartNext();
 }
 
 void PendingAppManagerImpl::PostMaybeStartNext() {
@@ -163,13 +194,23 @@ void PendingAppManagerImpl::MaybeStartNext() {
     StartInstallationTask(std::move(front));
     return;
   }
+  DCHECK(!current_install_);
 
-  web_contents_.reset();
+  if (current_registration_ || RunNextRegistration())
+    return;
+
+  ReleaseWebContents();
 }
 
 void PendingAppManagerImpl::StartInstallationTask(
     std::unique_ptr<TaskAndCallback> task) {
   DCHECK(!current_install_);
+  if (current_registration_) {
+    // Preempt current registration.
+    pending_registrations_.push_front(current_registration_->launch_url());
+    current_registration_.reset();
+  }
+
   current_install_ = std::move(task);
 
   CreateWebContentsIfNecessary();
@@ -178,6 +219,17 @@ void PendingAppManagerImpl::StartInstallationTask(
                        web_contents_.get(),
                        base::BindOnce(&PendingAppManagerImpl::OnUrlLoaded,
                                       weak_ptr_factory_.GetWeakPtr()));
+}
+
+bool PendingAppManagerImpl::RunNextRegistration() {
+  if (pending_registrations_.empty()) {
+    return false;
+  }
+
+  GURL front = pending_registrations_.front();
+  pending_registrations_.pop_front();
+  current_registration_ = StartRegistration(front);
+  return true;
 }
 
 void PendingAppManagerImpl::CreateWebContentsIfNecessary() {
@@ -203,6 +255,12 @@ void PendingAppManagerImpl::OnInstalled(PendingAppInstallTask::Result result) {
 void PendingAppManagerImpl::CurrentInstallationFinished(
     const base::Optional<AppId>& app_id,
     InstallResultCode code) {
+  if (app_id && code == InstallResultCode::kSuccess) {
+    const GURL& launch_url = registrar()->GetAppLaunchURL(*app_id);
+    if (!launch_url.is_empty() && launch_url.scheme() != "chrome")
+      pending_registrations_.push_back(launch_url);
+  }
+
   // Post a task to avoid InstallableManager crashing and do so before
   // running the callback in case the callback tries to install another
   // app.

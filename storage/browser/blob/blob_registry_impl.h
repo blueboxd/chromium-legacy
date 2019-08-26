@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
   void Bind(blink::mojom::BlobRegistryRequest request,
             std::unique_ptr<Delegate> delegate);
 
-  void Register(blink::mojom::BlobRequest blob,
+  void Register(mojo::PendingReceiver<blink::mojom::Blob> blob,
                 const std::string& uuid,
                 const std::string& content_type,
                 const std::string& content_disposition,
@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
       mojo::ScopedDataPipeConsumerHandle data,
       blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
       RegisterFromStreamCallback callback) override;
-  void GetBlobFromUUID(blink::mojom::BlobRequest blob,
+  void GetBlobFromUUID(mojo::PendingReceiver<blink::mojom::Blob> blob,
                        const std::string& uuid,
                        GetBlobFromUUIDCallback callback) override;
 

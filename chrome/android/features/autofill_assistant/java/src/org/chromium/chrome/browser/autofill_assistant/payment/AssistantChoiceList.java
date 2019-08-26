@@ -82,20 +82,26 @@ public class AssistantChoiceList extends GridLayout {
     private boolean mAllowMultipleChoices;
     private Runnable mAddButtonListener;
 
+    /**
+     * Constructor, automatically invoked when inflating this class from XML.
+     */
     public AssistantChoiceList(Context context, AttributeSet attrs) {
+        this(context, attrs,
+                context.getTheme().obtainStyledAttributes(
+                        attrs, R.styleable.AssistantChoiceList, 0, 0));
+    }
+
+    /**
+     * Constructor for use in Java code.
+     */
+    public AssistantChoiceList(Context context, AttributeSet attrs, @Nullable String addButtonText,
+            int rowSpacingInPixels, int columnSpacingInPixels) {
         super(context, attrs);
-        TypedArray a = context.getTheme().obtainStyledAttributes(
-                attrs, R.styleable.AssistantChoiceList, 0, 0);
-        mCanAddItems = a.getBoolean(R.styleable.AssistantChoiceList_can_add_items, true);
-        String addButtonText =
-                a.hasValue(R.styleable.AssistantChoiceList_add_button_text) && mCanAddItems
-                ? a.getString(R.styleable.AssistantChoiceList_add_button_text)
-                : null;
-        mRowSpacing = a.getDimensionPixelSize(R.styleable.AssistantChoiceList_row_spacing, 0);
-        mColumnSpacing = a.getDimensionPixelSize(R.styleable.AssistantChoiceList_column_spacing, 0);
+        mCanAddItems = addButtonText != null;
+        mRowSpacing = rowSpacingInPixels;
+        mColumnSpacing = columnSpacingInPixels;
         mMinimumTouchTargetSize = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_minimum_touch_target_size);
-        a.recycle();
 
         // One column for the radio buttons, one for the content, one for the edit buttons.
         setColumnCount(3);
@@ -114,6 +120,16 @@ public class AssistantChoiceList extends GridLayout {
             mAddButton = null;
             mAddButtonLabel = null;
         }
+    }
+
+    private AssistantChoiceList(Context context, AttributeSet attrs, TypedArray a) {
+        this(context, attrs,
+                a.hasValue(R.styleable.AssistantChoiceList_add_button_text)
+                        ? a.getString(R.styleable.AssistantChoiceList_add_button_text)
+                        : null,
+                a.getDimensionPixelSize(R.styleable.AssistantChoiceList_row_spacing, 0),
+                a.getDimensionPixelSize(R.styleable.AssistantChoiceList_column_spacing, 0));
+        a.recycle();
     }
 
     /**

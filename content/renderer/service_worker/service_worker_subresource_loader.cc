@@ -22,7 +22,9 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_util.h"
@@ -129,11 +131,12 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
 class ServiceWorkerSubresourceLoader::StreamWaiter
     : public blink::mojom::ServiceWorkerStreamCallback {
  public:
-  StreamWaiter(ServiceWorkerSubresourceLoader* owner,
-               blink::mojom::ServiceWorkerStreamCallbackRequest request)
-      : owner_(owner), binding_(this, std::move(request)) {
+  StreamWaiter(
+      ServiceWorkerSubresourceLoader* owner,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerStreamCallback> receiver)
+      : owner_(owner), receiver_(this, std::move(receiver)) {
     DCHECK(owner_);
-    binding_.set_connection_error_handler(
+    receiver_.set_disconnect_handler(
         base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
   }
 
@@ -143,7 +146,7 @@ class ServiceWorkerSubresourceLoader::StreamWaiter
 
  private:
   ServiceWorkerSubresourceLoader* owner_;
-  mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
+  mojo::Receiver<blink::mojom::ServiceWorkerStreamCallback> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
 };
@@ -483,7 +486,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     DCHECK(!response->blob);
     DCHECK(url_loader_client_.is_bound());
     stream_waiter_ = std::make_unique<StreamWaiter>(
-        this, std::move(body_as_stream->callback_request));
+        this, std::move(body_as_stream->callback_receiver));
     CommitResponseBody(std::move(body_as_stream->stream));
     return;
   }

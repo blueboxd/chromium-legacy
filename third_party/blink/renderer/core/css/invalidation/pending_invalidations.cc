@@ -49,20 +49,27 @@ void PendingInvalidations::ScheduleInvalidationSetsForNode(
   }
 
   if (!requires_descendant_invalidation &&
-      (invalidation_lists.siblings.IsEmpty() || !node.nextSibling()))
+      invalidation_lists.siblings.IsEmpty())
     return;
 
-  node.SetNeedsStyleInvalidation();
-
+  // For SiblingInvalidationSets we can skip scheduling if there is no
+  // nextSibling() to invalidate, but NthInvalidationSets are scheduled on the
+  // parent node which may not have a sibling.
+  bool nth_only = !node.nextSibling();
+  bool requires_sibling_invalidation = false;
   NodeInvalidationSets& pending_invalidations =
       EnsurePendingInvalidations(node);
-  if (node.nextSibling()) {
-    for (auto& invalidation_set : invalidation_lists.siblings) {
-      if (pending_invalidations.Siblings().Contains(invalidation_set))
-        continue;
-      pending_invalidations.Siblings().push_back(invalidation_set);
-    }
+  for (auto& invalidation_set : invalidation_lists.siblings) {
+    if (nth_only && !invalidation_set->IsNthSiblingInvalidationSet())
+      continue;
+    if (pending_invalidations.Siblings().Contains(invalidation_set))
+      continue;
+    pending_invalidations.Siblings().push_back(invalidation_set);
+    requires_sibling_invalidation = true;
   }
+
+  if (requires_sibling_invalidation || requires_descendant_invalidation)
+    node.SetNeedsStyleInvalidation();
 
   if (!requires_descendant_invalidation)
     return;

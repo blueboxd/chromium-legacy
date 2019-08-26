@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_SCREEN_UI_LOGIN_SCREEN_EXTENSION_UI_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_LOGIN_SCREEN_LOGIN_SCREEN_UI_LOGIN_SCREEN_EXTENSION_UI_HANDLER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 
@@ -28,9 +27,20 @@ namespace chromeos {
 class LoginScreenExtensionUiWindow;
 class LoginScreenExtensionUiWindowFactory;
 
+struct ExtensionIdToWindowMapping {
+  ExtensionIdToWindowMapping(
+      const std::string& extension_id,
+      std::unique_ptr<LoginScreenExtensionUiWindow> window);
+  ~ExtensionIdToWindowMapping();
+
+  const std::string extension_id;
+  std::unique_ptr<LoginScreenExtensionUiWindow> window;
+};
+
 // This class receives calls from the chrome.loginScreenUi API and manages the
-// associated windows. Windows can only be created on the login and lock screen
-// and are automatically closed when logging in or unlocking a user session.
+// associated window (only one window can be active at a time). Windows can only
+// be created on the login and lock screen and are automatically closed when
+// logging in or unlocking a user session.
 // TODO(hendrich): handle interference with other ChromeOS UI that pops up
 // during login (e.g. arc ToS).
 class LoginScreenExtensionUiHandler
@@ -62,7 +72,6 @@ class LoginScreenExtensionUiHandler
   bool RemoveWindowForExtension(const std::string& extension_id);
 
   bool HasOpenWindow(const std::string& extension_id) const;
-  bool HasOpenWindow() const;
 
   // session_manager::SessionManagerObserver
   void OnSessionStateChanged() override;
@@ -71,9 +80,6 @@ class LoginScreenExtensionUiHandler
       const std::string& extension_id);
 
  private:
-  using WindowMap =
-      std::map<std::string, std::unique_ptr<LoginScreenExtensionUiWindow>>;
-
   void UpdateSessionState();
 
   // extensions::ExtensionRegistryObserver
@@ -85,7 +91,7 @@ class LoginScreenExtensionUiHandler
 
   bool login_or_lock_screen_active_ = false;
 
-  WindowMap windows_;
+  std::unique_ptr<ExtensionIdToWindowMapping> current_window_;
 
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>

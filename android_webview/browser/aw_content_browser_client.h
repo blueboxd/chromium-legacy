@@ -211,7 +211,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_service_worker,
       int process_id,
       int routing_id,
-      network::mojom::RestrictedCookieManagerRequest* request) override;
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager>* receiver)
+      override;
   std::string GetProduct() override;
   std::string GetUserAgent() override;
   ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()

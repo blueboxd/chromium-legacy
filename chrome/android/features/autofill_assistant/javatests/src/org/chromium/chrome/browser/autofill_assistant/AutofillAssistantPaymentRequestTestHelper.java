@@ -4,19 +4,22 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.PAYMENT_REQUEST_CHOICE_LIST;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.findViewsWithTag;
 import static org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator.DIVIDER_TAG;
 
 import android.support.annotation.Nullable;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceList;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestDelegate;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestLoginChoice;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantTermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantVerticalExpander;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantVerticalExpanderAccordion;
@@ -25,7 +28,6 @@ import org.chromium.chrome.browser.payments.AutofillContact;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -42,6 +44,11 @@ public class AutofillAssistantPaymentRequestTestHelper {
         final AssistantVerticalExpander mContactSection;
         final AssistantVerticalExpander mPaymentSection;
         final AssistantVerticalExpander mShippingSection;
+        final AssistantVerticalExpander mLoginsSection;
+        final AssistantChoiceList mContactList;
+        final AssistantChoiceList mPaymentMethodList;
+        final AssistantChoiceList mShippingAddressList;
+        final AssistantChoiceList mLoginList;
         final List<View> mDividers;
 
         ViewHolder(AssistantPaymentRequestCoordinator coordinator) {
@@ -53,21 +60,21 @@ public class AutofillAssistantPaymentRequestTestHelper {
                     AssistantTagsForTesting.PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_TAG);
             mShippingSection = coordinator.getView().findViewWithTag(
                     AssistantTagsForTesting.PAYMENT_REQUEST_SHIPPING_ADDRESS_SECTION_TAG);
+            mLoginsSection = coordinator.getView().findViewWithTag(
+                    AssistantTagsForTesting.PAYMENT_REQUEST_LOGIN_SECTION_TAG);
             mDividers = findViewsWithTag(coordinator.getView(), DIVIDER_TAG);
-        }
-
-        /** Returns all views with a matching tag. */
-        private List<View> findViewsWithTag(View view, Object tag) {
-            List<View> viewsWithTag = new ArrayList<>();
-            if (view instanceof ViewGroup) {
-                for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
-                    viewsWithTag.addAll(findViewsWithTag(((ViewGroup) view).getChildAt(i), tag));
-                }
-            }
-            if (view.getTag() != null && view.getTag().equals(tag)) {
-                viewsWithTag.add(view);
-            }
-            return viewsWithTag;
+            mContactList = (AssistantChoiceList) (findViewsWithTag(
+                    mContactSection, PAYMENT_REQUEST_CHOICE_LIST)
+                                                          .get(0));
+            mPaymentMethodList = (AssistantChoiceList) (findViewsWithTag(
+                    mPaymentSection, PAYMENT_REQUEST_CHOICE_LIST)
+                                                                .get(0));
+            mShippingAddressList = (AssistantChoiceList) (findViewsWithTag(
+                    mShippingSection, PAYMENT_REQUEST_CHOICE_LIST)
+                                                                  .get(0));
+            mLoginList = (AssistantChoiceList) (findViewsWithTag(
+                    mLoginsSection, PAYMENT_REQUEST_CHOICE_LIST)
+                                                        .get(0));
         }
     }
 
@@ -80,6 +87,7 @@ public class AutofillAssistantPaymentRequestTestHelper {
         AutofillContact mContact;
         AutofillAddress mAddress;
         AutofillPaymentInstrument mPaymentMethod;
+        AssistantPaymentRequestLoginChoice mLoginChoice;
         @AssistantTermsAndConditionsState
         int mTermsStatus;
         @Nullable
@@ -103,6 +111,11 @@ public class AutofillAssistantPaymentRequestTestHelper {
         @Override
         public void onTermsAndConditionsChanged(@AssistantTermsAndConditionsState int state) {
             mTermsStatus = state;
+        }
+
+        @Override
+        public void onLoginChoiceChanged(@Nullable AssistantPaymentRequestLoginChoice loginChoice) {
+            mLoginChoice = loginChoice;
         }
 
         @Override

@@ -15,6 +15,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "url/gurl.h"
@@ -22,9 +23,11 @@
 namespace web_app {
 
 enum class InstallResultCode;
+enum class RegistrationResultCode;
 
 class AppRegistrar;
 class InstallFinalizer;
+class PendingAppManagerObserver;
 class WebAppUiManager;
 
 // PendingAppManager installs, uninstalls, and updates apps.
@@ -100,12 +103,18 @@ class PendingAppManager {
       ExternalInstallSource install_source,
       SynchronizeCallback callback);
 
+  void AddObserver(PendingAppManagerObserver* observer);
+  void RemoveObserver(const PendingAppManagerObserver* observer);
+
   virtual void Shutdown() = 0;
 
  protected:
   AppRegistrar* registrar() { return registrar_; }
   WebAppUiManager* ui_manager() { return ui_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
+
+  virtual void OnRegistrationFinished(const GURL& launch_url,
+                                      RegistrationResultCode result);
 
  private:
   struct SynchronizeRequest {
@@ -138,6 +147,9 @@ class PendingAppManager {
 
   base::flat_map<ExternalInstallSource, SynchronizeRequest>
       synchronize_requests_;
+
+  base::ObserverList<PendingAppManagerObserver, /*check_empty=*/true>
+      observers_;
 
   base::WeakPtrFactory<PendingAppManager> weak_ptr_factory_{this};
 

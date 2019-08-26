@@ -490,8 +490,6 @@ extern const base::Feature kQuickUnlockPinSignin;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kQuickUnlockFingerprint;
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBulkPrinters;
-
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrosCompUpdates;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTPMFirmwareUpdate;

@@ -110,10 +110,6 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
       net::HttpRequestHeaders::kOrigin,
       (tainted ? url::Origin() : *request.request_initiator).Serialize());
 
-  // TODO(toyoshim): Should not matter, but at this moment, it hits a sanity
-  // check in ResourceDispatcherHostImpl if |resource_type| isn't set.
-  preflight_request->resource_type = request.resource_type;
-
   return preflight_request;
 }
 

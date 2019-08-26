@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithIdentifier
@@ -10,8 +9,7 @@ from .idl_type import IdlType
 from .typedef import Typedef
 
 
-class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
-            WithDebugInfo):
+class Union(WithIdentifier, WithComponent, WithDebugInfo):
     """
     Union class makes a group of union types with the same flattened member
     types and the same result whether it includes a nullable type or not.
@@ -79,7 +77,6 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
             idl_type.apply_to_all_composing_elements(collect_components)
 
         WithIdentifier.__init__(self, identifier)
-        WithCodeGeneratorInfo.__init__(self)
         WithComponent.__init__(self, components=sorted(components))
         WithDebugInfo.__init__(self)
 
@@ -103,7 +100,7 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
     @property
     def does_include_nullable_type(self):
         """
-        Returns true if any of member type is nullable or a member union
+        Returns True if any of member type is nullable or a member union
         includes a nullable type.
         """
         return self._does_include_nullable_type

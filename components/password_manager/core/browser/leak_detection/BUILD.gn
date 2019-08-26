@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
-import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 
 fuzzable_proto_library("proto") {
@@ -97,11 +96,8 @@ jumbo_source_set("unit_tests") {
   ]
 }
 
-fuzzer_test("encryption_utils_fuzzer") {
-  sources = [
-    "cipher_encrypt_fuzzer.cc",
-  ]
+group("fuzzers") {
   deps = [
-    ":leak_detection",
+    "//components/password_manager/core/browser/leak_detection/fuzzer",
   ]
 }

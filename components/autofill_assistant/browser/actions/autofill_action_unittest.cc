@@ -6,20 +6,15 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/guid.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
-#include "build/build_config.h"
+#include "base/test/mock_callback.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
-#include "components/autofill_assistant/browser/client_memory.h"
-#include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/mock_personal_data_manager.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
-#include "components/autofill_assistant/browser/service.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -31,94 +26,32 @@ using ::testing::Eq;
 using ::testing::Expectation;
 using ::testing::InSequence;
 using ::testing::Invoke;
-using ::testing::IsNull;
-using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::StrNe;
-
-class MockPersonalDataManager : public autofill::PersonalDataManager {
- public:
-  MockPersonalDataManager() : PersonalDataManager("en-US") {}
-  ~MockPersonalDataManager() override {}
-
-  // PersonalDataManager:
-  std::string SaveImportedProfile(
-      const autofill::AutofillProfile& profile) override {
-    std::vector<autofill::AutofillProfile> profiles;
-    std::string merged_guid =
-        MergeProfile(profile, &profiles_, "en-US", &profiles);
-    if (merged_guid == profile.guid())
-      profiles_.push_back(std::make_unique<autofill::AutofillProfile>(profile));
-    return merged_guid;
-  }
-
-  autofill::AutofillProfile* GetProfileByGUID(
-      const std::string& guid) override {
-    autofill::AutofillProfile* result = nullptr;
-    for (const auto& profile : profiles_) {
-      if (profile->guid() != guid)
-        continue;
-      result = profile.get();
-      break;
-    }
-
-    return result;
-  }
-
- private:
-  std::vector<std::unique_ptr<autofill::AutofillProfile>> profiles_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPersonalDataManager);
-};
-
-// A callback that expects to be called immediately.
-//
-// This relies on mocked methods calling their callbacks immediately (which is
-// the case in this test).
-class DirectCallback {
- public:
-  DirectCallback() : was_run_(false), result_(nullptr) {}
-
-  // Returns a base::OnceCallback. The current instance must exist until
-  // GetResultOrDie is called.
-  base::OnceCallback<void(std::unique_ptr<ProcessedActionProto>)> Get() {
-    return base::BindOnce(&DirectCallback::Run, base::Unretained(this));
-  }
-
-  ProcessedActionProto* GetResultOrDie() {
-    CHECK(was_run_);
-    return result_.get();
-  }
-
- private:
-  void Run(std::unique_ptr<ProcessedActionProto> result) {
-    was_run_ = true;
-    result_ = std::move(result);
-  }
-
-  bool was_run_;
-  std::unique_ptr<ProcessedActionProto> result_;
-};
+using ::testing::SaveArgPointee;
 
 class AutofillActionTest : public testing::Test {
  public:
   void SetUp() override {
+    // Build two identical autofill profiles. One for the memory, one for the
+    // mock.
     auto autofill_profile = std::make_unique<autofill::AutofillProfile>(
         base::GenerateGUID(), autofill::test::kEmptyOrigin);
     autofill::test::SetProfileInfo(autofill_profile.get(), kFirstName, "",
                                    kLastName, kEmail, "", "", "", "", "", "",
                                    "", "");
-    personal_data_manager_ = std::make_unique<MockPersonalDataManager>();
-    personal_data_manager_->SaveImportedProfile(*autofill_profile);
-
+    autofill::test::SetProfileInfo(&autofill_profile_, kFirstName, "",
+                                   kLastName, kEmail, "", "", "", "", "", "",
+                                   "", "");
     client_memory_.set_selected_address(kAddressName,
                                         std::move(autofill_profile));
 
+    ON_CALL(mock_personal_data_manager_, GetProfileByGUID)
+        .WillByDefault(Return(&autofill_profile_));
     ON_CALL(mock_action_delegate_, GetClientMemory)
         .WillByDefault(Return(&client_memory_));
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
-        .WillByDefault(Return(personal_data_manager_.get()));
+        .WillByDefault(Return(&mock_personal_data_manager_));
     ON_CALL(mock_action_delegate_, RunElementChecks)
         .WillByDefault(Invoke([this](BatchElementChecker* checker) {
           checker->Run(&mock_web_controller_);
@@ -179,17 +112,19 @@ class AutofillActionTest : public testing::Test {
 
   ProcessedActionStatusProto ProcessAction(const ActionProto& action_proto) {
     AutofillAction action(&mock_action_delegate_, action_proto);
-    // We can use DirectCallback given that methods in ActionDelegate are mocked
-    // and return directly.
-    DirectCallback callback;
-    action.ProcessAction(callback.Get());
-    return callback.GetResultOrDie()->status();
+    ProcessedActionProto capture;
+    EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&capture));
+    action.ProcessAction(callback_.Get());
+    return capture.status();
   }
 
+  base::MockCallback<Action::ProcessActionCallback> callback_;
+  MockPersonalDataManager mock_personal_data_manager_;
   MockActionDelegate mock_action_delegate_;
   MockWebController mock_web_controller_;
   ClientMemory client_memory_;
-  std::unique_ptr<autofill::PersonalDataManager> personal_data_manager_;
+
+  autofill::AutofillProfile autofill_profile_;
 };
 
 #if !defined(OS_ANDROID)
@@ -229,16 +164,14 @@ TEST_F(AutofillActionTest, PreconditionFailedPopulatesUnexpectedErrorInfo) {
 
   AutofillAction action(&mock_action_delegate_, action_proto);
 
-  // We can use DirectCallback given that methods in ActionDelegate are mocked
-  // and return directly.
-  DirectCallback callback;
-  action.ProcessAction(callback.Get());
+  ProcessedActionProto processed_action;
+  EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&processed_action));
+  action.ProcessAction(callback_.Get());
 
-  auto* processed_action = callback.GetResultOrDie();
   EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
-            processed_action->status());
+            processed_action.status());
   const auto& error_info =
-      processed_action->status_details().autofill_error_info();
+      processed_action.status_details().autofill_error_info();
   EXPECT_EQ(base::JoinString({kAddressName, "one_more"}, ","),
             error_info.client_memory_address_key_names());
   EXPECT_EQ(kAddressName, error_info.address_key_requested());

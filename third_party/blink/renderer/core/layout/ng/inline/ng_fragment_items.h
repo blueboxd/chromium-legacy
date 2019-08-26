@@ -24,6 +24,10 @@ class CORE_EXPORT NGFragmentItems {
     return items_;
   }
 
+  const String& Text(bool first_line) const {
+    return UNLIKELY(first_line) ? first_line_text_content_ : text_content_;
+  }
+
  private:
   // TODO(kojii): inline capacity TBD.
   Vector<std::unique_ptr<NGFragmentItem>> items_;

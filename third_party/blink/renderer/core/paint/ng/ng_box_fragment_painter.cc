@@ -359,10 +359,10 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   const LayoutObject* layout_object = fragment.GetLayoutObject();
 
   DCHECK(fragment.ChildrenInline());
-  DCHECK(paint_fragment_ || fragment.HasItems());
+  DCHECK(paint_fragment_ || items_);
 
-  if (const NGFragmentItems* items = fragment.Items()) {
-    PaintInlineItems(*items, paint_info.ForDescendants(), paint_offset);
+  if (items_) {
+    PaintInlineItems(paint_info.ForDescendants(), paint_offset);
     return;
   }
 
@@ -803,16 +803,21 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
 }
 
 void NGBoxFragmentPainter::PaintInlineItems(
-    const NGFragmentItems& items,
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
-  NGInlineCursor cursor(items);
+  DCHECK(items_);
+
+  ScopedPaintTimingDetectorBlockPaintHook
+      scoped_paint_timing_detector_block_paint_hook;
+  // TODO(kojii): Copy more from |PaintLineBoxChildren|.
+
+  NGInlineCursor cursor(*items_);
   for (bool has_next = cursor.MoveToNext(); has_next;) {
     const NGFragmentItem* item = cursor.CurrentItem();
     DCHECK(item);
     switch (item->Type()) {
       case NGFragmentItem::kText:
-        // TODO(kojii): Implement.
+        PaintTextItem(*item, paint_info, paint_offset);
         break;
       case NGFragmentItem::kGeneratedText:
         // TODO(kojii): Implement.
@@ -994,6 +999,23 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& paint_fragment,
     return;
 
   NGTextFragmentPainter text_painter(paint_fragment);
+  text_painter.Paint(paint_info, paint_offset);
+}
+
+void NGBoxFragmentPainter::PaintTextItem(const NGFragmentItem& item,
+                                         const PaintInfo& paint_info,
+                                         const PhysicalOffset& paint_offset) {
+  DCHECK_EQ(item.Type(), NGFragmentItem::kText);
+  DCHECK(items_);
+
+  // Only paint during the foreground/selection phases.
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kTextClip &&
+      paint_info.phase != PaintPhase::kMask)
+    return;
+
+  NGTextFragmentPainter text_painter(item, *items_);
   text_painter.Paint(paint_info, paint_offset);
 }
 

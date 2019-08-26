@@ -5,10 +5,7 @@
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import android.content.Context;
-import android.graphics.Rect;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.keyboard_accessory.R;
@@ -28,26 +25,6 @@ class AddressAccessoryInfoView extends LinearLayout {
     private ChipView mAddressHomeCountry;
     private ChipView mPhoneHomeWholeNumber;
     private ChipView mEmailAddress;
-
-    /**
-     * This decoration adds a space between the last AddressAccessoryInfoView and the first
-     * non-AddressAccessoryInfoView. This allows to define a margin below the whole list of
-     * AddressAccessoryInfoViews without having to wrap them in a new layout. This would reduce
-     * the reusability of single info containers in a RecyclerView.
-     */
-    public static class DynamicBottomSpacer extends RecyclerView.ItemDecoration {
-        @Override
-        public void getItemOffsets(
-                Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            super.getItemOffsets(outRect, view, parent, state);
-            if (view instanceof AddressAccessoryInfoView) return;
-            int previous = parent.indexOfChild(view) - 1;
-            if (previous < 0) return;
-            if (!(parent.getChildAt(previous) instanceof AddressAccessoryInfoView)) return;
-            outRect.top = view.getContext().getResources().getDimensionPixelSize(
-                    R.dimen.keyboard_accessory_suggestion_padding);
-        }
-    }
 
     /**
      * Constructor for inflating from XML.

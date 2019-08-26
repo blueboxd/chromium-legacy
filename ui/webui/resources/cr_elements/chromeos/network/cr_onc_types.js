@@ -316,60 +316,6 @@ CrOnc.getActiveProperties = function(properties) {
 };
 
 /**
- * Returns an IPConfigProperties object for |type|. For IPV4, these will be the
- * static properties if IPAddressConfigType is Static and StaticIPConfig is set.
- * @param {!CrOnc.NetworkProperties|undefined} properties The ONC properties.
- * @param {!CrOnc.IPType} type The IP Config type.
- * @return {CrOnc.IPConfigProperties|undefined} The IP Config object, or
- *     undefined if no properties for |type| are available.
- */
-CrOnc.getIPConfigForType = function(properties, type) {
-  'use strict';
-  /** @type {!CrOnc.IPConfigProperties|undefined} */ let ipConfig = undefined;
-  /** @type {!CrOnc.IPType|undefined} */ let ipType = undefined;
-  const ipConfigs = properties.IPConfigs;
-  if (ipConfigs) {
-    for (let i = 0; i < ipConfigs.length; ++i) {
-      ipConfig = ipConfigs[i];
-      ipType = ipConfig.Type ? /** @type {CrOnc.IPType} */ (ipConfig.Type) :
-                               undefined;
-      if (ipType == type) {
-        break;
-      }
-    }
-  }
-  if (type != CrOnc.IPType.IPV4) {
-    return type == ipType ? ipConfig : undefined;
-  }
-
-  const staticIpConfig =
-      /** @type {!CrOnc.IPConfigProperties|undefined} */ (
-          CrOnc.getActiveProperties(properties.StaticIPConfig));
-  if (!staticIpConfig) {
-    return ipConfig;
-  }
-
-  // If there is no entry in IPConfigs for |type|, return the static config.
-  if (!ipConfig) {
-    return staticIpConfig;
-  }
-
-  // Otherwise, merge the appropriate static values into the result.
-  if (staticIpConfig.IPAddress &&
-      CrOnc.getActiveValue(properties.IPAddressConfigType) == 'Static') {
-    ipConfig.Gateway = staticIpConfig.Gateway;
-    ipConfig.IPAddress = staticIpConfig.IPAddress;
-    ipConfig.RoutingPrefix = staticIpConfig.RoutingPrefix;
-    ipConfig.Type = staticIpConfig.Type;
-  }
-  if (staticIpConfig.NameServers &&
-      CrOnc.getActiveValue(properties.NameServersConfigType) == 'Static') {
-    ipConfig.NameServers = staticIpConfig.NameServers;
-  }
-  return ipConfig;
-};
-
-/**
  * Determines whether the provided properties represent a connecting/connected
  * network.
  * @param {!CrOnc.NetworkProperties|undefined} properties
@@ -616,15 +562,6 @@ CrOnc.getRoutingPrefixAsLength = function(netmask) {
     }
   }
   return prefixLength;
-};
-
-/**
- * @param {!CrOnc.ProxyLocation} a
- * @param {!CrOnc.ProxyLocation} b
- * @return {boolean}
- */
-CrOnc.proxyMatches = function(a, b) {
-  return a.Host == b.Host && a.Port == b.Port;
 };
 
 /**

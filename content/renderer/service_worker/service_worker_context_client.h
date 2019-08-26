@@ -124,7 +124,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void WorkerContextFailedToStartOnInitiatorThread() override;
   void FailedToLoadClassicScript() override;
   void FailedToFetchModuleScript() override;
-  void WorkerScriptLoadedOnInitiatorThread() override;
   void WorkerScriptLoadedOnWorkerThread() override;
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy,

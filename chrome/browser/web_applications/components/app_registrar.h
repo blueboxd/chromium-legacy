@@ -47,12 +47,6 @@ class AppRegistrar {
   // Returns true if the app with |app_id| is currently fully locally installed.
   virtual bool IsLocallyInstalled(const AppId& app_id) const = 0;
 
-  // Returns true if the app with the specified |start_url| is currently fully
-  // locally installed. The provided |start_url| must exactly match the launch
-  // URL for the app; this method does not consult the app scope or match URLs
-  // that fall within the scope.
-  virtual bool IsLocallyInstalled(const GURL& start_url) const = 0;
-
   // Returns true if the app with |app_id| was previously uninstalled by the
   // user. For example, if a user uninstalls a default app ('default apps' are
   // considered external apps), then this will return true.
@@ -101,6 +95,12 @@ class AppRegistrar {
 
   // Finds all apps that are installed under |scope|.
   std::vector<AppId> FindAppsInScope(const GURL& scope) const;
+
+  // Returns true if the app with the specified |start_url| is currently fully
+  // locally installed. The provided |start_url| must exactly match the launch
+  // URL for the app; this method does not consult the app scope or match URLs
+  // that fall within the scope.
+  bool IsLocallyInstalled(const GURL& start_url) const;
 
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);

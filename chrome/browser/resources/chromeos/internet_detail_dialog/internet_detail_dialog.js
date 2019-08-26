@@ -254,25 +254,6 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkConfigProperties} onc The ONC
-   *     network properties.
-   * @private
-   */
-  setNetworkProperties_: function(onc) {
-    if (!this.networkPropertiesReceived_) {
-      return;
-    }
-    assert(this.guid);
-    this.networkingPrivate.setProperties(this.guid, onc, () => {
-      if (chrome.runtime.lastError) {
-        // An error typically indicates invalid input; request the properties
-        // to update any invalid fields.
-        this.getNetworkDetails_();
-      }
-    });
-  },
-
-  /**
    * @param {!mojom.ConfigProperties} config
    * @private
    */
@@ -288,16 +269,6 @@ Polymer({
         this.getNetworkDetails_();
       }
     });
-  },
-
-  /**
-   * @return {!chrome.networkingPrivate.NetworkConfigProperties} An ONC
-   *     dictionary with just the Type property set. Used for passing properties
-   *     to setNetworkProperties_.
-   * @private
-   */
-  getEmptyNetworkProperties_: function() {
-    return {Type: this.networkProperties.Type};
   },
 
   /**
@@ -520,21 +491,11 @@ Polymer({
 
   /**
    * Event triggered when the Proxy configuration element changes.
-   * @param {!CustomEvent<!{field: string, value: !CrOnc.ProxySettings}>} event
-   *     The network-proxy change event.
+   * @param {!CustomEvent<!mojom.ProxySettings>} event
    * @private
    */
   onProxyChange_: function(event) {
-    if (!this.networkProperties) {
-      return;
-    }
-    if (event.detail.field != 'ProxySettings') {
-      return;
-    }
-    const onc = this.getEmptyNetworkProperties_();
-    CrOnc.setProperty(
-        onc, 'ProxySettings', /** @type {!Object} */ (event.detail.value));
-    this.setNetworkProperties_(onc);
+    this.setMojoNetworkProperties_({proxySettings: event.detail});
   },
 
   /**

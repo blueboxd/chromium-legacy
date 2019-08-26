@@ -1171,7 +1171,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstabilitySubframeAggregation) {
 TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, false);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOff));
 
   NavigateAndCommit(GURL(kTestUrl1));
 
@@ -1195,7 +1197,9 @@ TEST_F(UkmPageLoadMetricsObserverTest,
        ThirdPartyCookieBlockingFeatureDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOn));
 
   NavigateAndCommit(GURL(kTestUrl1));
 
@@ -1218,7 +1222,9 @@ TEST_F(UkmPageLoadMetricsObserverTest,
 TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOn));
 
   NavigateAndCommit(GURL(kTestUrl1));
 
@@ -1242,7 +1248,9 @@ TEST_F(UkmPageLoadMetricsObserverTest,
        ThirdPartyCookieBlockingDisabledForSite) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOn));
   auto cookie_settings = CookieSettingsFactory::GetForProfile(profile());
   cookie_settings->SetThirdPartyCookieSetting(GURL(kTestUrl1),
                                               CONTENT_SETTING_ALLOW);

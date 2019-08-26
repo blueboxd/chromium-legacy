@@ -47,12 +47,11 @@ struct ServiceWorkerRegistrationObjectInfo {
 
   // Holds one mojo connection to browser process, acts as a reference count to
   // control lifetime of ServiceWorkerRegistration in the browser process.
-  associated ServiceWorkerRegistrationObjectHost host_ptr_info;
+  pending_associated_remote<ServiceWorkerRegistrationObjectHost> host_remote;
 
-  // |request| is expected to be bound on the implementation of interface
-  // ServiceWorkerRegistrationObject in the renderer process. The other end
+  // |receiver| is expected to be bound in the renderer process. The other end
   // point of this Mojo connection is held by the browser process.
-  associated ServiceWorkerRegistrationObject& request;
+  pending_associated_receiver<ServiceWorkerRegistrationObject> receiver;
 
   // Corresponds to ServiceWorkerRegistration#{installing,waiting,active}.
   // Null value means the corresponding object does not exist.

@@ -601,14 +601,9 @@ class OptimizationGuideKeyedServiceHintsFetcherTest
 };
 
 // TODO(crbug/969558): Figure out why hints fetcher not fetching on ChromeOS.
-#if defined(OS_CHROMEOS)
-#define DISABLE_ON_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_CHROMEOS(x) x
-#endif
-
+// TODO(crbug/997106): Flaky on Win, Mac and Linux.
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsFetcherTest,
-                       DISABLE_ON_CHROMEOS(ClearFetchedHints)) {
+                       DISABLED_ClearFetchedHints) {
   PushHintsComponentAndWaitForCompletion();
   WaitForHintsFetchToComplete();
 

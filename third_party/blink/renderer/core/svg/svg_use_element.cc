@@ -486,8 +486,6 @@ void SVGUseElement::DetachShadowTree() {
 
 LayoutObject* SVGUseElement::CreateLayoutObject(const ComputedStyle& style,
                                                 LegacyLayout) {
-  if (style.Display() == EDisplay::kContents)
-    return nullptr;
   return new LayoutSVGTransformableContainer(this);
 }
 

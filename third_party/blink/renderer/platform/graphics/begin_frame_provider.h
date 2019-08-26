@@ -5,7 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BEGIN_FRAME_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BEGIN_FRAME_PROVIDER_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include <string>
+
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
@@ -52,7 +56,7 @@ class PLATFORM_EXPORT BeginFrameProvider
 
   // viz::mojom::blink::EmbeddedFrameSinkClient implementation.
   void BindSurfaceEmbedder(
-      mojom::blink::SurfaceEmbedderRequest request) override {
+      mojo::PendingReceiver<mojom::blink::SurfaceEmbedder> receiver) override {
     NOTIMPLEMENTED();
   }
 
@@ -69,11 +73,12 @@ class PLATFORM_EXPORT BeginFrameProvider
   bool needs_begin_frame_;
   bool requested_needs_begin_frame_;
 
-  mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> cfs_binding_;
-  mojo::Binding<mojom::blink::EmbeddedFrameSinkClient> efs_binding_;
+  mojo::Receiver<viz::mojom::blink::CompositorFrameSinkClient> cfs_receiver_{
+      this};
+  mojo::Receiver<mojom::blink::EmbeddedFrameSinkClient> efs_receiver_{this};
   viz::FrameSinkId frame_sink_id_;
   viz::FrameSinkId parent_frame_sink_id_;
-  viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
+  mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
   BeginFrameProviderClient* begin_frame_client_;
 
   base::WeakPtrFactory<BeginFrameProvider> weak_factory_{this};

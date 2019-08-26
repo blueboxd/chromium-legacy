@@ -69,7 +69,8 @@ class TestStoragePartition : public StoragePartition {
       bool is_service_worker,
       int process_id,
       int routing_id,
-      network::mojom::RestrictedCookieManagerRequest request) override;
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
+      override;
 
   void set_quota_manager(storage::QuotaManager* manager) {
     quota_manager_ = manager;

@@ -32,6 +32,18 @@
 #include "base/win/win_util.h"
 #endif
 
+// Data from deprecated UMA histograms:
+//
+// Startup.TimeSinceLastStartup.[Cold/Warm]Startup, August 2019, Windows-only:
+//   Time elapsed since the last startup that went up to the main message loop
+//   start. This is recorded just before the main message loop starts.
+//
+//                      Cold startup   Warm startup
+//   25th percentile    3.5 hours      4 minutes
+//   50th percentile    14.5 hours     21 minutes
+//   75th percentile    27 hours       90 minutes
+//   95th percentile    13 days        17 hours
+
 namespace startup_metric_utils {
 
 namespace {
@@ -438,44 +450,6 @@ void AddStartupEventsForTelemetry()
                                       g_browser_main_entry_point_ticks);
 }
 
-// Logs the Startup.TimeSinceLastStartup histogram. Obtains the timestamp of the
-// last startup from |pref_service| and overwrites it with the timestamp of the
-// current startup. If the startup temperature has been set by
-// RecordBrowserMainMessageLoopStart, the time since last startup is also logged
-// to a histogram suffixed with the startup temperature.
-void RecordTimeSinceLastStartup(PrefService* pref_service) {
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-  DCHECK(pref_service);
-
-  // Get the timestamp of the current startup.
-  const base::Time process_start_time =
-      base::Process::Current().CreationTime();
-
-  // Get the timestamp of the last startup from |pref_service|.
-  const int64_t last_startup_timestamp_internal =
-      pref_service->GetInt64(prefs::kLastStartupTimestamp);
-  if (last_startup_timestamp_internal != 0) {
-    // Log the Startup.TimeSinceLastStartup histogram.
-    const base::Time last_startup_timestamp =
-        base::Time::FromInternalValue(last_startup_timestamp_internal);
-    const base::TimeDelta time_since_last_startup =
-        process_start_time - last_startup_timestamp;
-    const int minutes_since_last_startup = time_since_last_startup.InMinutes();
-
-    // Ignore negative values, which can be caused by system clock changes.
-    if (minutes_since_last_startup >= 0) {
-      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_TIME_IN_MINUTES_MONTH_RANGE,
-          "Startup.TimeSinceLastStartup", minutes_since_last_startup);
-    }
-  }
-
-  // Write the timestamp of the current startup in |pref_service|.
-  pref_service->SetInt64(prefs::kLastStartupTimestamp,
-                         process_start_time.ToInternalValue());
-#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-}
-
 // Logs the Startup.SameVersionStartupCount histogram. Relies on |pref_service|
 // to know information about the previous startups and store information for
 // future ones. Stores the logged value in |g_startups_with_current_version|.
@@ -511,7 +485,6 @@ bool ShouldLogStartupHistogram() {
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(registry);
-  registry->RegisterInt64Pref(prefs::kLastStartupTimestamp, 0);
   registry->RegisterStringPref(prefs::kLastStartupVersion, std::string());
   registry->RegisterIntegerPref(prefs::kSameVersionStartupCount, 0);
 }
@@ -587,7 +560,6 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   }
 
   AddStartupEventsForTelemetry();
-  RecordTimeSinceLastStartup(pref_service);
   RecordSystemUptimeHistogram();
 
   // Record values stored prior to startup temperature evaluation.

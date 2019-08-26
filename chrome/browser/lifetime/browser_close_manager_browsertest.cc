@@ -398,7 +398,14 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 
 // Test that browser windows are only closed if all browsers are ready to close
 // and that all beforeunload dialogs are shown again after a cancel.
-IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestMultipleWindows) {
+// Flaky on Windows too: https://crbug.com/997649
+#if defined(OS_WIN)
+#define MAYBE_TestMultipleWindows DISABLED_TestMultipleWindows
+#else
+#define MAYBE_TestMultipleWindows TestMultipleWindows
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
+                       MAYBE_TestMultipleWindows) {
   browsers_.push_back(CreateBrowser(browser()->profile()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browsers_[0], embedded_test_server()->GetURL("/beforeunload.html")));
@@ -438,8 +445,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestMultipleWindows) {
 // Test that tabs in the same window with a beforeunload event that hangs are
 // treated the same as the user accepting the close, but do not close the tab
 // early.
+// crbug.com/997649. The test is flaky.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
-                       TestHangInBeforeUnloadMultipleTabs) {
+                       DISABLED_TestHangInBeforeUnloadMultipleTabs) {
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browsers_[0], embedded_test_server()->GetURL("/beforeunload_hang.html")));
   AddBlankTabAndShow(browsers_[0]);
@@ -547,7 +555,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 // tab early.
 // Regression for crbug.com/365052 caused CHECK in tabstrip.
 // Flaky on Mac and Linux: https://crbug.com/819541
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+// Flaky on Windows too: https://crbug.com/997649
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_TestBeforeUnloadMultipleSlowWindows \
   DISABLED_TestBeforeUnloadMultipleSlowWindows
 #else

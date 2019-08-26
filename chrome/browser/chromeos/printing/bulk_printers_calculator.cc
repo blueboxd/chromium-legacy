@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
@@ -20,7 +19,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/printing/printer_translator.h"
 
 namespace chromeos {
@@ -239,9 +237,6 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
 
   void ClearData() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!base::FeatureList::IsEnabled(features::kBulkPrinters)) {
-      return;
-    }
     data_is_set_ = false;
     last_processed_task_ = ++last_received_task_;
     printers_.clear();
@@ -256,9 +251,6 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
 
   void SetData(std::unique_ptr<std::string> data) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!base::FeatureList::IsEnabled(features::kBulkPrinters)) {
-      return;
-    }
     data_is_set_ = true;
     TaskData task_data =
         std::make_unique<TaskDataInternal>(++last_received_task_);

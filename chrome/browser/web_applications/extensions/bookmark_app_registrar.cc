@@ -49,26 +49,6 @@ bool BookmarkAppRegistrar::IsLocallyInstalled(
   return extension && BookmarkAppIsLocallyInstalled(profile(), extension);
 }
 
-bool BookmarkAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  const ExtensionSet& extensions = registry->enabled_extensions();
-
-  // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
-  // or check the web extent (hosted apps).
-  for (const scoped_refptr<const Extension>& extension : extensions) {
-    if (!extension->from_bookmark())
-      continue;
-
-    if (!BookmarkAppIsLocallyInstalled(profile(), extension.get()))
-      continue;
-
-    DCHECK(extension->web_extent().is_empty());
-    if (AppLaunchInfo::GetLaunchWebURL(extension.get()) == start_url)
-      return true;
-  }
-  return false;
-}
-
 bool BookmarkAppRegistrar::WasExternalAppUninstalledByUser(
     const web_app::AppId& app_id) const {
   return ExtensionPrefs::Get(profile())->IsExternalExtensionUninstalled(app_id);

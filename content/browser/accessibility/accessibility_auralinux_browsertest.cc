@@ -17,15 +17,6 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
-// TODO(crbug.com/981913): This flakes on linux tsan and msan.
-#if defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
-  DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint
-#else
-#define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
-  TestSetCaretSetsSequentialFocusNavigationStartingPoint
-#endif
-
 namespace content {
 
 namespace {
@@ -833,9 +824,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(div);
 }
 
+// TODO(crbug.com/981913): This flakes on linux.
 IN_PROC_BROWSER_TEST_F(
     AccessibilityAuraLinuxBrowserTest,
-    MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
+    DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
   auto is_focused = [](AtkObject* object) {
     AtkStateSet* state_set = atk_object_ref_state_set(object);
     bool result = atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED);

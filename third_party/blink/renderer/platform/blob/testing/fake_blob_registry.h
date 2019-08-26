@@ -14,7 +14,7 @@ namespace blink {
 // FakeBlob instance with the correct uuid.
 class FakeBlobRegistry : public mojom::blink::BlobRegistry {
  public:
-  void Register(mojom::blink::BlobRequest,
+  void Register(mojo::PendingReceiver<mojom::blink::Blob>,
                 const String& uuid,
                 const String& content_type,
                 const String& content_disposition,
@@ -28,7 +28,7 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
                           mojom::blink::ProgressClientAssociatedPtrInfo,
                           RegisterFromStreamCallback) override;
 
-  void GetBlobFromUUID(mojom::blink::BlobRequest,
+  void GetBlobFromUUID(mojo::PendingReceiver<mojom::blink::Blob>,
                        const String& uuid,
                        GetBlobFromUUIDCallback) override;
 

@@ -9,9 +9,7 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,8 +91,6 @@ class TestObserver : public BulkPrintersCalculator::Observer {
 class BulkPrintersCalculatorTest : public testing::Test {
  public:
   BulkPrintersCalculatorTest() : task_environment_() {
-    scoped_feature_list_.InitAndEnableFeature(
-        base::Feature(features::kBulkPrinters));
     external_printers_ = BulkPrintersCalculator::Create();
   }
   ~BulkPrintersCalculatorTest() override {
@@ -105,9 +101,6 @@ class BulkPrintersCalculatorTest : public testing::Test {
  protected:
   std::unique_ptr<BulkPrintersCalculator> external_printers_;
   base::test::TaskEnvironment task_environment_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Verify that we're initiall unset and empty.

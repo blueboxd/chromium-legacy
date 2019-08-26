@@ -128,19 +128,19 @@ class MockServiceWorkerContextClient final
                void(mojo::ScopedMessagePipeHandle,
                     mojo::ScopedMessagePipeHandle));
   MOCK_METHOD0(WorkerContextFailedToStartOnInitiatorThread, void());
-  MOCK_METHOD0(WorkerScriptLoadedOnInitiatorThread, void());
 
   void WorkerContextStarted(WebServiceWorkerContextProxy* proxy,
                             scoped_refptr<base::SequencedTaskRunner>) override {
     mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerHost> host_remote;
     auto host_receiver = host_remote.InitWithNewEndpointAndPassReceiver();
 
-    mojom::blink::ServiceWorkerRegistrationObjectHostAssociatedPtrInfo
-        registration_object_host_ptr_info;
-    auto registration_object_host_request =
-        mojo::MakeRequest(&registration_object_host_ptr_info);
-    mojom::blink::ServiceWorkerRegistrationObjectAssociatedPtrInfo
-        registration_object_ptr_info;
+    mojo::PendingAssociatedRemote<
+        mojom::blink::ServiceWorkerRegistrationObjectHost>
+        registration_object_host;
+    auto registration_object_host_receiver =
+        registration_object_host.InitWithNewEndpointAndPassReceiver();
+    mojo::PendingAssociatedRemote<mojom::blink::ServiceWorkerRegistrationObject>
+        registration_object;
 
     // Simulates calling blink.mojom.ServiceWorker.InitializeGlobalScope() to
     // unblock the service worker script evaluation.
@@ -152,15 +152,15 @@ class MockServiceWorkerContextClient final
         mojom::blink::ServiceWorkerRegistrationObjectInfo::New(
             2 /* registration_id */, KURL("https://example.com"),
             mojom::blink::ServiceWorkerUpdateViaCache::kImports,
-            std::move(registration_object_host_ptr_info),
-            mojo::MakeRequest(&registration_object_ptr_info), nullptr, nullptr,
-            nullptr),
+            std::move(registration_object_host),
+            registration_object.InitWithNewEndpointAndPassReceiver(), nullptr,
+            nullptr, nullptr),
         mojom::blink::FetchHandlerExistence::EXISTS);
 
     // To make the other side callable.
     mojo::AssociateWithDisconnectedPipe(host_receiver.PassHandle());
     mojo::AssociateWithDisconnectedPipe(
-        registration_object_host_request.PassHandle());
+        registration_object_host_receiver.PassHandle());
   }
 
   void FailedToLoadClassicScript() override {

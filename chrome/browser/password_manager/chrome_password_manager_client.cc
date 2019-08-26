@@ -204,8 +204,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
   saving_and_filling_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
-      *saving_and_filling_passwords_enabled_, this, GetSyncService(profile_),
-      GetIdentityManager(), GetPrefs());
+      this, GetSyncService(profile_), GetIdentityManager(), GetPrefs());
   driver_factory_->RequestSendLoggingAvailability();
 }
 

@@ -12,13 +12,11 @@ from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 from .function_like import FunctionLike
-from .idl_member import IdlMember
 from .idl_type import IdlType
 
 
-class Operation(IdlMember):
-    """https://heycam.github.io/webidl/#idl-operations
-    https://www.w3.org/TR/WebIDL-1/#idl-special-operations"""
+class Operation(object):
+    """https://heycam.github.io/webidl/#idl-operations"""
 
     class IR(FunctionLike.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):

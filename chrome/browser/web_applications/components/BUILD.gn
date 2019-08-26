@@ -19,6 +19,7 @@ source_set("components") {
     "install_manager.h",
     "pending_app_manager.cc",
     "pending_app_manager.h",
+    "pending_app_manager_observer.h",
     "policy/web_app_policy_constants.cc",
     "policy/web_app_policy_constants.h",
     "policy/web_app_policy_manager.cc",

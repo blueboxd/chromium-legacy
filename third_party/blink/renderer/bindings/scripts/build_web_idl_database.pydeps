@@ -9,6 +9,7 @@ web_idl/ast_group.py
 web_idl/attribute.py
 web_idl/callback_function.py
 web_idl/callback_interface.py
+web_idl/code_generator_info.py
 web_idl/composition_parts.py
 web_idl/constant.py
 web_idl/database.py
@@ -19,13 +20,12 @@ web_idl/exposure.py
 web_idl/extended_attribute.py
 web_idl/file_io.py
 web_idl/function_like.py
-web_idl/identifier_ir_map.py
 web_idl/idl_compiler.py
-web_idl/idl_member.py
 web_idl/idl_type.py
 web_idl/includes.py
 web_idl/interface.py
 web_idl/ir_builder.py
+web_idl/ir_map.py
 web_idl/literal_constant.py
 web_idl/make_copy.py
 web_idl/namespace.py

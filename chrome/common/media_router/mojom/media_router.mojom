@@ -244,12 +244,12 @@ struct MediaRouteProviderConfig {
 // result.  An MRP may return this as part of any route creation callback to
 // allow direct communication with the controlling page.
 struct RoutePresentationConnection {
-  // Interface pointer to send messages to the MRP.
-  blink.mojom.PresentationConnection connection_ptr;
+  // Remote to send messages to the MRP.
+  pending_remote<blink.mojom.PresentationConnection> connection_remote;
 
-  // Interface request which the controlling page should bind to receive
-  // messages from the MRP.
-  blink.mojom.PresentationConnection& connection_request;
+  // Receiver which the controlling page should bind to receive messages from
+  // the MRP.
+  pending_receiver<blink.mojom.PresentationConnection> connection_receiver;
 };
 
 // Modeled after the MediaRouter interface defined in

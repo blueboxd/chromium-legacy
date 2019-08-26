@@ -26,17 +26,14 @@ namespace blink {
 PresentationReceiver::PresentationReceiver(LocalFrame* frame)
     : ContextLifecycleObserver(frame->GetDocument()),
       connection_list_(MakeGarbageCollected<PresentationConnectionList>(
-          frame->GetDocument())),
-      receiver_binding_(this) {
+          frame->GetDocument())) {
   auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
   interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
 
-  mojom::blink::PresentationReceiverPtr receiver_ptr;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame->GetTaskRunner(TaskType::kPresentation);
-  receiver_binding_.Bind(mojo::MakeRequest(&receiver_ptr, task_runner),
-                         task_runner);
-  presentation_service_->SetReceiver(std::move(receiver_ptr));
+  presentation_service_->SetReceiver(
+      presentation_receiver_receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
 // static
@@ -85,13 +82,15 @@ void PresentationReceiver::RemoveConnection(
 
 void PresentationReceiver::OnReceiverConnectionAvailable(
     mojom::blink::PresentationInfoPtr info,
-    mojom::blink::PresentationConnectionPtr controller_connection,
-    mojom::blink::PresentationConnectionRequest receiver_connection_request) {
+    mojo::PendingRemote<mojom::blink::PresentationConnection>
+        controller_connection,
+    mojo::PendingReceiver<mojom::blink::PresentationConnection>
+        receiver_connection_receiver) {
   // Take() will call PresentationReceiver::registerConnection()
   // and register the connection.
   auto* connection = ReceiverPresentationConnection::Take(
       this, *info, std::move(controller_connection),
-      std::move(receiver_connection_request));
+      std::move(receiver_connection_receiver));
 
   // Only notify receiver.connectionList property if it has been acccessed
   // previously.
@@ -126,7 +125,7 @@ void PresentationReceiver::RecordOriginTypeAccess(
 }
 
 void PresentationReceiver::ContextDestroyed(ExecutionContext*) {
-  receiver_binding_.Close();
+  presentation_receiver_receiver_.reset();
   presentation_service_.reset();
 }
 

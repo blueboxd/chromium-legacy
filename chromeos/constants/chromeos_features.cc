@@ -144,6 +144,10 @@ const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
 const base::Feature kImeInputLogicFstNonEnglish{
     "ImeInputLogicFstNonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable IME service decoder engine and 'ime' sandbox on Chrome OS.
+const base::Feature kImeDecoderWithSandbox{"ImeDecoderWithSandbox",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -217,6 +221,10 @@ bool IsAmbientModeEnabled() {
 
 bool IsAssistantEnabled() {
   return base::FeatureList::IsEnabled(kAssistantFeature);
+}
+
+bool IsImeDecoderWithSandboxEnabled() {
+  return base::FeatureList::IsEnabled(kImeDecoderWithSandbox);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .extended_attribute import ExtendedAttributes
+from .code_generator_info import CodeGeneratorInfo
+from .code_generator_info import CodeGeneratorInfoMutable
 from .exposure import Exposure
+from .extended_attribute import ExtendedAttributes
 
 
 class Identifier(str):
@@ -35,17 +37,14 @@ class WithExtendedAttributes(object):
         return self._extended_attributes
 
 
-class CodeGeneratorInfo(dict):
-    """A bag of properties to be used by bindings code generators"""
-
-
 class WithCodeGeneratorInfo(object):
     """Implements |code_generator_info| as a readonly attribute."""
 
     def __init__(self, code_generator_info=None):
         assert (code_generator_info is None
                 or isinstance(code_generator_info, CodeGeneratorInfo))
-        self._code_generator_info = code_generator_info or CodeGeneratorInfo()
+        self._code_generator_info = (code_generator_info
+                                     or CodeGeneratorInfoMutable())
 
     @property
     def code_generator_info(self):

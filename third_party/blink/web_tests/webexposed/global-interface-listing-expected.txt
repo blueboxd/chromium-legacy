@@ -10624,6 +10624,13 @@ interface WebSocket : EventTarget
     setter onerror
     setter onmessage
     setter onopen
+interface WebSocketStream
+    attribute @@toStringTag
+    getter closed
+    getter connection
+    getter url
+    method close
+    method constructor
 interface WheelEvent : MouseEvent
     attribute @@toStringTag
     attribute DOM_DELTA_LINE

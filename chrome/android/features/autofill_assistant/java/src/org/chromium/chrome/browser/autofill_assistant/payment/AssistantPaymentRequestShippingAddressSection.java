@@ -32,9 +32,9 @@ public class AssistantPaymentRequestShippingAddressSection
                 R.layout.autofill_assistant_address_full,
                 context.getResources().getDimensionPixelSize(
                         R.dimen.autofill_assistant_payment_request_title_padding),
-                context.getString(R.string.payments_shipping_address_label),
                 context.getString(R.string.payments_add_address),
-                context.getString(R.string.payments_add_address));
+                context.getString(R.string.payments_add_address), /*canEditItems=*/true);
+        setTitle(context.getString(R.string.payments_shipping_address_label));
     }
 
     public void setEditor(AddressEditor editor) {

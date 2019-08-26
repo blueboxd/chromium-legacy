@@ -45,10 +45,8 @@ const StorageAreaAsyncIteratorPrototype = {
 };
 
 Object.defineProperty(
-  StorageAreaAsyncIteratorPrototype,
-  Symbol.toStringTag,
-  {writable: false, enumerable: false}
-);
+    StorageAreaAsyncIteratorPrototype, Symbol.toStringTag,
+    {writable: false, enumerable: false});
 
 function getNextIterResult(iter, performDatabaseOperation) {
   return performDatabaseOperation(async (transaction, store) => {

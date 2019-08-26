@@ -14,12 +14,10 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "build/buildflag.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/constants.h"
-#include "chromeos/services/ime/public/cpp/buildflags.h"
-
-#if BUILDFLAG(ENABLE_CROS_IME_DECODER)
 #include "chromeos/services/ime/decoder/decoder_engine.h"
-#endif
+#include "chromeos/services/ime/public/cpp/buildflags.h"
 
 namespace chromeos {
 namespace ime {
@@ -36,11 +34,9 @@ enum SimpleDownloadError {
 
 ImeService::ImeService(mojo::PendingReceiver<mojom::ImeService> receiver)
     : receiver_(this, std::move(receiver)) {
-#if BUILDFLAG(ENABLE_CROS_IME_DECODER)
-  input_engine_ = std::make_unique<DecoderEngine>(this);
-#else
-  input_engine_ = std::make_unique<InputEngine>();
-#endif
+  input_engine_ = chromeos::features::IsImeDecoderWithSandboxEnabled()
+                      ? std::make_unique<DecoderEngine>(this)
+                      : std::make_unique<InputEngine>();
 }
 
 ImeService::~ImeService() = default;

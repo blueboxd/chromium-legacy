@@ -245,7 +245,8 @@ TEST_F(HidManagerTest, TestHidConnectionInterface) {
   {
     base::RunLoop run_loop;
     hid_manager_->Connect(
-        device0->device_guid(), /*connection_client=*/nullptr,
+        device0->device_guid(),
+        mojo::PendingRemote<mojom::HidConnectionClient>(),
         base::BindOnce(&OnConnect, run_loop.QuitClosure(), client.get()));
     run_loop.Run();
   }

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chromeos/services/ime/public/features.gni")
-
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 component("constants") {
@@ -21,6 +19,10 @@ component("constants") {
 
 source_set("lib") {
   sources = [
+    "decoder/decoder_engine.cc",
+    "decoder/decoder_engine.h",
+    "decoder/downloader_impl.cc",
+    "decoder/downloader_impl.h",
     "ime_service.cc",
     "ime_service.h",
     "input_engine.cc",
@@ -30,20 +32,12 @@ source_set("lib") {
   deps = [
     ":constants",
     "//base",
+    "//chromeos/constants",
     "//chromeos/services/ime/public/cpp:buildflags",
     "//chromeos/services/ime/public/cpp:rulebased",
     "//chromeos/services/ime/public/cpp/shared_lib:interfaces",
     "//chromeos/services/ime/public/mojom",
   ]
-
-  if (enable_cros_ime_decoder) {
-    sources += [
-      "decoder/decoder_engine.cc",
-      "decoder/decoder_engine.h",
-      "decoder/downloader_impl.cc",
-      "decoder/downloader_impl.h",
-    ]
-  }
 }
 
 source_set("sandbox_hook") {

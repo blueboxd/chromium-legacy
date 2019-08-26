@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob_registry.h"
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
 
 namespace blink {
 
-void FakeBlobRegistry::Register(mojom::blink::BlobRequest blob,
+void FakeBlobRegistry::Register(mojo::PendingReceiver<mojom::blink::Blob> blob,
                                 const String& uuid,
                                 const String& content_type,
                                 const String& content_disposition,
@@ -18,7 +18,8 @@ void FakeBlobRegistry::Register(mojom::blink::BlobRequest blob,
                                 RegisterCallback callback) {
   registrations.push_back(Registration{uuid, content_type, content_disposition,
                                        std::move(elements)});
-  mojo::MakeStrongBinding(std::make_unique<FakeBlob>(uuid), std::move(blob));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FakeBlob>(uuid),
+                              std::move(blob));
   std::move(callback).Run();
 }
 
@@ -32,11 +33,13 @@ void FakeBlobRegistry::RegisterFromStream(
   NOTREACHED();
 }
 
-void FakeBlobRegistry::GetBlobFromUUID(mojom::blink::BlobRequest blob,
-                                       const String& uuid,
-                                       GetBlobFromUUIDCallback callback) {
+void FakeBlobRegistry::GetBlobFromUUID(
+    mojo::PendingReceiver<mojom::blink::Blob> blob,
+    const String& uuid,
+    GetBlobFromUUIDCallback callback) {
   binding_requests.push_back(BindingRequest{uuid});
-  mojo::MakeStrongBinding(std::make_unique<FakeBlob>(uuid), std::move(blob));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FakeBlob>(uuid),
+                              std::move(blob));
   std::move(callback).Run();
 }
 

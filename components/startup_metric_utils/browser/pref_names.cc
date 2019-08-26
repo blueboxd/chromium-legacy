@@ -7,9 +7,6 @@
 namespace startup_metric_utils {
 namespace prefs {
 
-// Time of the last startup stored as an int64.
-const char kLastStartupTimestamp[] = "startup_metric.last_startup_timestamp";
-
 // Version of the product in the startup preceding this one as reported by
 // version_info.h.
 const char kLastStartupVersion[] = "startup_metric.last_startup_version";

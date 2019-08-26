@@ -21,6 +21,7 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -28,6 +29,7 @@
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
+#include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/channel.h"
@@ -363,6 +365,14 @@ AccessTokenFetcher* ClientAndroid::GetAccessTokenFetcher() {
 autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() {
   return autofill::PersonalDataManagerFactory::GetForProfile(
       ProfileManager::GetLastUsedProfile());
+}
+
+WebsiteLoginFetcher* ClientAndroid::GetWebsiteLoginFetcher() {
+  if (!website_login_fetcher_) {
+    website_login_fetcher_ = std::make_unique<WebsiteLoginFetcherImpl>(
+        ChromePasswordManagerClient::FromWebContents(web_contents_));
+  }
+  return website_login_fetcher_.get();
 }
 
 std::string ClientAndroid::GetServerUrl() {

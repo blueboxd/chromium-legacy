@@ -720,7 +720,7 @@ interface NetworkContext {
   // |is_service_worker|, |process_id| and |routing_id| will be passed to
   // NetworkContextClient::OnCookieChange and OnCookiesRead.
   GetRestrictedCookieManager(
-      RestrictedCookieManager& restricted_cookie_manager,
+      pending_receiver<RestrictedCookieManager> restricted_cookie_manager,
       RestrictedCookieManagerRole role,
       url.mojom.Origin origin,
       bool is_service_worker,

@@ -588,8 +588,15 @@ void RuleFeatureSet::UpdateInvalidationSets(const RuleData* rule_data) {
     features.has_features_for_rule_set_invalidation = false;
   else if (!features.HasFeatures())
     features.invalidation_flags.SetWholeSubtreeInvalid(true);
-  if (features.has_nth_pseudo)
-    AddFeaturesToInvalidationSet(EnsureNthInvalidationSet(), features);
+  if (features.has_nth_pseudo) {
+    // The rightmost compound contains an :nth-* selector.
+    // Add the compound features to the NthSiblingInvalidationSet. That is, for
+    // '#id:nth-child(even)', add #id to the invalidation set and make sure we
+    // invalidate elements matching those features (SetInvalidateSelf()).
+    NthSiblingInvalidationSet& nth_set = EnsureNthInvalidationSet();
+    AddFeaturesToInvalidationSet(nth_set, features);
+    nth_set.SetInvalidatesSelf();
+  }
 
   const CSSSelector* next_compound = last_in_compound
                                          ? last_in_compound->TagHistory()
@@ -814,9 +821,20 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
           sibling_features ? InvalidationType::kInvalidateSiblings
                            : InvalidationType::kInvalidateDescendants,
           kAncestor)) {
-    if (!sibling_features || invalidation_set == nth_invalidation_set_) {
-      AddFeaturesToInvalidationSet(*invalidation_set, descendant_features);
-      return;
+    if (!sibling_features) {
+      if (invalidation_set == nth_invalidation_set_) {
+        // TODO(futhark): We can extract the features from the current compound
+        // to optimize this.
+        invalidation_set->SetWholeSubtreeInvalid();
+        AddFeaturesToInvalidationSet(
+            To<SiblingInvalidationSet>(invalidation_set)
+                ->EnsureSiblingDescendants(),
+            descendant_features);
+        return;
+      } else {
+        AddFeaturesToInvalidationSet(*invalidation_set, descendant_features);
+        return;
+      }
     }
 
     auto* sibling_invalidation_set =
@@ -1212,12 +1230,12 @@ RuleFeatureSet::EnsureUniversalSiblingInvalidationSet() {
 void RuleFeatureSet::CollectNthInvalidationSet(
     InvalidationLists& invalidation_lists) const {
   if (nth_invalidation_set_)
-    invalidation_lists.descendants.push_back(nth_invalidation_set_);
+    invalidation_lists.siblings.push_back(nth_invalidation_set_);
 }
 
-DescendantInvalidationSet& RuleFeatureSet::EnsureNthInvalidationSet() {
+NthSiblingInvalidationSet& RuleFeatureSet::EnsureNthInvalidationSet() {
   if (!nth_invalidation_set_)
-    nth_invalidation_set_ = DescendantInvalidationSet::Create();
+    nth_invalidation_set_ = NthSiblingInvalidationSet::Create();
   return *nth_invalidation_set_;
 }
 

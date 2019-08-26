@@ -10,11 +10,10 @@
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "components/cast_channel/enum_table.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
 using blink::mojom::PresentationConnectionMessagePtr;
-using blink::mojom::PresentationConnectionPtrInfo;
 using blink::mojom::PresentationConnectionState;
 
 namespace media_router {
@@ -46,23 +45,25 @@ CastSessionClientImpl::CastSessionClientImpl(const std::string& client_id,
     : CastSessionClient(client_id, origin, tab_id),
       auto_join_policy_(auto_join_policy),
       data_decoder_(data_decoder),
-      activity_(activity),
-      connection_binding_(this) {}
+      activity_(activity) {}
 
 CastSessionClientImpl::~CastSessionClientImpl() = default;
 
 mojom::RoutePresentationConnectionPtr CastSessionClientImpl::Init() {
-  PresentationConnectionPtrInfo renderer_connection;
-  connection_binding_.Bind(mojo::MakeRequest(&renderer_connection));
-  auto connection_request = mojo::MakeRequest(&connection_);
-  connection_->DidChangeState(PresentationConnectionState::CONNECTED);
-  return mojom::RoutePresentationConnection::New(std::move(renderer_connection),
-                                                 std::move(connection_request));
+  auto renderer_connection = connection_receiver_.BindNewPipeAndPassRemote();
+  mojo::PendingRemote<blink::mojom::PresentationConnection>
+      pending_connection_remote;
+  auto connection_receiver =
+      pending_connection_remote.InitWithNewPipeAndPassReceiver();
+  connection_remote_.Bind(std::move(pending_connection_remote));
+  connection_remote_->DidChangeState(PresentationConnectionState::CONNECTED);
+  return mojom::RoutePresentationConnection::New(
+      std::move(renderer_connection), std::move(connection_receiver));
 }
 
 void CastSessionClientImpl::SendMessageToClient(
     PresentationConnectionMessagePtr message) {
-  connection_->OnMessage(std::move(message));
+  connection_remote_->OnMessage(std::move(message));
 }
 
 void CastSessionClientImpl::SendMediaStatusToClient(
@@ -242,23 +243,22 @@ void CastSessionClientImpl::SendResultResponse(int sequence_number,
 
 void CastSessionClientImpl::CloseConnection(
     PresentationConnectionCloseReason close_reason) {
-  if (connection_)
-    connection_->DidClose(close_reason);
+  if (connection_remote_)
+    connection_remote_->DidClose(close_reason);
 
   TearDownPresentationConnection();
 }
 
 void CastSessionClientImpl::TerminateConnection() {
-  if (connection_) {
-    connection_->DidChangeState(PresentationConnectionState::TERMINATED);
-  }
+  if (connection_remote_)
+    connection_remote_->DidChangeState(PresentationConnectionState::TERMINATED);
 
   TearDownPresentationConnection();
 }
 
 void CastSessionClientImpl::TearDownPresentationConnection() {
-  connection_.reset();
-  connection_binding_.Close();
+  connection_remote_.reset();
+  connection_receiver_.reset();
 }
 
 }  // namespace media_router

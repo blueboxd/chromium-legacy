@@ -14,9 +14,14 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/components/pending_app_manager_observer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/pending_app_registration_task.h"
+#include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -40,6 +45,11 @@ class PendingAppManagerImplBrowserTest : public InProcessBrowserTest {
         ->registrar();
   }
 
+  PendingAppManager& pending_app_manager() {
+    return WebAppProviderBase::GetProviderBase(browser()->profile())
+        ->pending_app_manager();
+  }
+
   void InstallApp(ExternalInstallOptions install_options) {
     base::RunLoop run_loop;
 
@@ -54,6 +64,27 @@ class PendingAppManagerImplBrowserTest : public InProcessBrowserTest {
                      }));
     run_loop.Run();
     ASSERT_TRUE(result_code_.has_value());
+  }
+
+  void CheckServiceWorkerStatus(const GURL& url,
+                                content::ServiceWorkerCapability status) {
+    base::RunLoop run_loop;
+    std::unique_ptr<content::WebContents> web_contents =
+        content::WebContents::Create(
+            content::WebContents::CreateParams(browser()->profile()));
+    content::ServiceWorkerContext* service_worker_context =
+        content::BrowserContext::GetStoragePartition(
+            Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+            web_contents->GetSiteInstance())
+            ->GetServiceWorkerContext();
+    service_worker_context->CheckHasServiceWorker(
+        url,
+        base::BindLambdaForTesting(
+            [&run_loop, status](content::ServiceWorkerCapability capability) {
+              CHECK_EQ(status, capability);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
   }
 
   base::Optional<InstallResultCode> result_code_;
@@ -182,6 +213,72 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,
       ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
           .LookupAppId(url);
   ASSERT_FALSE(id.has_value());
+}
+
+IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, RegistrationSucceeds) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL launch_url(
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+  GURL url(embedded_test_server()->GetURL(
+      "/banners/manifest_no_service_worker.html"));
+
+  ExternalInstallOptions install_options = CreateInstallOptions(url);
+  install_options.bypass_service_worker_check = true;
+  InstallApp(std::move(install_options));
+  EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+  WebAppRegistrationWaiter(&pending_app_manager())
+      .AwaitNextRegistration(launch_url, RegistrationResultCode::kSuccess);
+  CheckServiceWorkerStatus(
+      url, content::ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER);
+}
+
+IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, AlreadyRegistered) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL launch_url(
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+  {
+    GURL url(embedded_test_server()->GetURL(
+        "/banners/"
+        "manifest_no_service_worker.html?manifest=manifest_short_name_only."
+        "json"));
+    ExternalInstallOptions install_options = CreateInstallOptions(url);
+    install_options.force_reinstall = true;
+    install_options.bypass_service_worker_check = true;
+    InstallApp(std::move(install_options));
+    EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+    WebAppRegistrationWaiter(&pending_app_manager())
+        .AwaitNextRegistration(launch_url, RegistrationResultCode::kSuccess);
+  }
+  CheckServiceWorkerStatus(
+      launch_url,
+      content::ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER);
+  {
+    GURL url(embedded_test_server()->GetURL(
+        "/banners/manifest_no_service_worker.html"));
+    ExternalInstallOptions install_options = CreateInstallOptions(url);
+    install_options.force_reinstall = true;
+    install_options.bypass_service_worker_check = true;
+    InstallApp(std::move(install_options));
+    EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+    WebAppRegistrationWaiter(&pending_app_manager())
+        .AwaitNextRegistration(launch_url,
+                               RegistrationResultCode::kAlreadyRegistered);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, RegistrationTimeout) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  PendingAppRegistrationTask::SetTimeoutForTesting(0);
+  GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+  CheckServiceWorkerStatus(url,
+                           content::ServiceWorkerCapability::NO_SERVICE_WORKER);
+
+  ExternalInstallOptions install_options = CreateInstallOptions(url);
+  install_options.bypass_service_worker_check = true;
+  InstallApp(std::move(install_options));
+  EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+  WebAppRegistrationWaiter(&pending_app_manager())
+      .AwaitNextRegistration(url, RegistrationResultCode::kTimeout);
 }
 
 }  // namespace web_app

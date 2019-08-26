@@ -58,17 +58,21 @@ class ExtendedAttribute(object):
             self._format = self._FORM_IDENT_LIST
             self._values = tuple(values)
 
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-        return (self.key == other.key
-                and self.syntactic_form == other.syntactic_form)
+    @classmethod
+    def equals(cls, lhs, rhs):
+        """
+        Returns True if |lhs| and |rhs| have the same contents.
 
-    def __ne__(self, other):
-        return not self == other
+        Note that |lhs == rhs| evaluates to True if lhs and rhs are the same
+        object.
+        """
+        if lhs is None and rhs is None:
+            return True
+        if not all(isinstance(x, cls) for x in (lhs, rhs)):
+            return False
 
-    def __hash__(self):
-        return hash((self._key, self._values, self._arguments))
+        return (lhs.key == rhs.key
+                and lhs.syntactic_form == rhs.syntactic_form)
 
     @property
     def syntactic_form(self):
@@ -171,22 +175,27 @@ class ExtendedAttributes(object):
         self._keys = tuple(sorted(self._ext_attrs.keys()))
         self._length = len(sorted_ext_attrs)
 
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-        if self.keys() != other.keys():
+    @classmethod
+    def equals(cls, lhs, rhs):
+        """
+        Returns True if |lhs| and |rhs| have the same contents.
+
+        Note that |lhs == rhs| evaluates to True if lhs and rhs are the same
+        object.
+        """
+        if lhs is None and rhs is None:
+            return True
+        if not all(isinstance(x, cls) for x in (lhs, rhs)):
             return False
-        if len(self) != len(other):
+
+        if lhs.keys() != rhs.keys():
             return False
-        for lhs, rhs in zip(self, other):
-            if lhs != rhs:
+        if len(lhs) != len(rhs):
+            return False
+        for l, r in zip(lhs, rhs):
+            if not ExtendedAttribute.equals(l, r):
                 return False
         return True
-
-    def __ne__(self, other):
-        return not self == other
-
-    __hash__ = None
 
     def __contains__(self, key):
         """Returns True if this has an extended attribute with the |key|."""

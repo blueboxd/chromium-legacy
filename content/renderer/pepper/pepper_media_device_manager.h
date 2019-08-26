@@ -15,7 +15,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "ppapi/c/pp_instance.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
@@ -118,7 +118,7 @@ class PepperMediaDeviceManager
   blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
   blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
 
-  mojo::BindingSet<blink::mojom::MediaDevicesListener> bindings_;
+  mojo::ReceiverSet<blink::mojom::MediaDevicesListener> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMediaDeviceManager);
 };

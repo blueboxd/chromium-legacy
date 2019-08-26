@@ -9,8 +9,8 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/constants.h"
-#include "chromeos/services/ime/public/cpp/buildflags.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/service_process_host.h"
 #include "net/base/load_flags.h"
@@ -24,12 +24,6 @@ namespace chromeos {
 namespace input_method {
 
 namespace {
-
-#if BUILDFLAG(ENABLE_CROS_IME_DECODER)
-constexpr auto kImeServiceSandboxType = service_manager::SANDBOX_TYPE_IME;
-#else
-constexpr auto kImeServiceSandboxType = service_manager::SANDBOX_TYPE_UTILITY;
-#endif
 
 constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("ime_url_downloader", R"(
@@ -114,6 +108,10 @@ void ImeServiceConnector::DownloadImeFileTo(
 void ImeServiceConnector::SetupImeService(
     mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
   if (!remote_service_) {
+    auto kImeServiceSandboxType =
+        chromeos::features::IsImeDecoderWithSandboxEnabled()
+            ? service_manager::SANDBOX_TYPE_IME
+            : service_manager::SANDBOX_TYPE_UTILITY;
     content::ServiceProcessHost::Launch(
         remote_service_.BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()

@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 
-#include <memory>
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -57,7 +58,6 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
       size_(size),
       change_size_for_next_commit_(false),
       needs_begin_frame_(false),
-      binding_(this),
       placeholder_canvas_id_(canvas_id),
       num_unreclaimed_frames_posted_(0),
       client_(client) {
@@ -67,16 +67,16 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
     return;
 
   DCHECK(!sink_.is_bound());
-  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
+  mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&provider));
+      provider.BindNewPipeAndPassReceiver());
 
   DCHECK(provider);
-  binding_.Bind(mojo::MakeRequest(&client_ptr_));
-  provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client_ptr_),
-                                      mojo::MakeRequest(&sink_));
+  provider->CreateCompositorFrameSink(frame_sink_id_,
+                                      receiver_.BindNewPipeAndPassRemote(),
+                                      sink_.BindNewPipeAndPassReceiver());
   provider->ConnectToEmbedder(frame_sink_id_,
-                              mojo::MakeRequest(&surface_embedder_));
+                              surface_embedder_.BindNewPipeAndPassReceiver());
 }
 
 CanvasResourceDispatcher::~CanvasResourceDispatcher() = default;

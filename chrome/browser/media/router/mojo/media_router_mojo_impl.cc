@@ -210,7 +210,7 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     const base::Optional<std::string>& error_text,
     RouteRequestResult::ResultCode result_code) {
   DCHECK(!connection ||
-         (connection->connection_ptr && connection->connection_request));
+         (connection->connection_remote && connection->connection_receiver));
   std::unique_ptr<RouteRequestResult> result;
   if (!media_route) {
     // An error occurred.

@@ -103,5 +103,6 @@ class CreditCardAccessorySheetViewBinder {
                 new SimpleRecyclerViewMcp<>(model, AccessorySheetDataPiece::getType,
                         AccessorySheetTabViewBinder.ElementViewHolder::bind),
                 CreditCardAccessorySheetViewBinder::create));
+        view.addItemDecoration(new DynamicInfoViewBottomSpacer(CreditCardAccessoryInfoView.class));
     }
 }

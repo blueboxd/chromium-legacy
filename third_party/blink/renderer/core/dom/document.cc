@@ -38,6 +38,7 @@
 #include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -5628,11 +5629,11 @@ void Document::SendDidEditFieldInInsecureContext() {
   if (!GetFrame())
     return;
 
-  mojom::blink::InsecureInputServicePtr insecure_input_service_ptr;
+  mojo::Remote<mojom::blink::InsecureInputService> insecure_input_service;
   GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&insecure_input_service_ptr));
+      insecure_input_service.BindNewPipeAndPassReceiver());
 
-  insecure_input_service_ptr->DidEditFieldInInsecureContext();
+  insecure_input_service->DidEditFieldInInsecureContext();
 }
 
 void Document::RegisterEventFactory(

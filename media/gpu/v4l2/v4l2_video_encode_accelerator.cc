@@ -1319,8 +1319,11 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   DCHECK(!output_queue_->IsStreaming());
 
   // First see if the device can use the provided format directly.
-  std::vector<uint32_t> pix_fmt_candidates = {
-      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format, false)};
+  std::vector<uint32_t> pix_fmt_candidates;
+  uint32_t pix_fmt =
+      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format, false);
+  if (pix_fmt)
+    pix_fmt_candidates.push_back(pix_fmt);
   // Second try preferred input formats for both single-planar and
   // multi-planar.
   for (auto preferred_format :

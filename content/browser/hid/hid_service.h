@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/frame_service_base.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
 
@@ -32,7 +33,7 @@ class HidService : public content::FrameServiceBase<blink::mojom::HidService> {
   void RequestDevice(std::vector<blink::mojom::HidDeviceFilterPtr> filters,
                      RequestDeviceCallback callback) override;
   void Connect(const std::string& device_guid,
-               device::mojom::HidConnectionClientPtr client,
+               mojo::PendingRemote<device::mojom::HidConnectionClient> client,
                ConnectCallback callback) override;
 
  private:

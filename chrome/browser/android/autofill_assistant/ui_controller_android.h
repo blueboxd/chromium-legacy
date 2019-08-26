@@ -121,6 +121,7 @@ class UiControllerAndroid : public ControllerObserver {
                             std::string email);
   void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
+  void OnLoginChoiceChanged(std::string identifier);
   void OnTermsAndConditionsLinkClicked(int link);
 
   // Called by AssistantFormDelegate:

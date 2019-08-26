@@ -56,7 +56,8 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       bool subscribe_audio_input,
       bool subscribe_video_input,
       bool subscribe_audio_output,
-      blink::mojom::MediaDevicesListenerPtr listener) override;
+      mojo::PendingRemote<blink::mojom::MediaDevicesListener> listener)
+      override;
 
  private:
   using GetVideoInputDeviceFormatsCallback =

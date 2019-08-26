@@ -2391,9 +2391,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityLanguageDetection)},
 #if defined(OS_CHROMEOS)
-    {"enable-bulk-printers", flag_descriptions::kBulkPrintersName,
-     flag_descriptions::kBulkPrintersDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kBulkPrinters)},
     {"enable-encryption-migration",
      flag_descriptions::kEnableEncryptionMigrationName,
      flag_descriptions::kEnableEncryptionMigrationDescription, kOsCrOS,

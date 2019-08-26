@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/begin_frame_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
@@ -19,16 +21,14 @@ BeginFrameProvider::BeginFrameProvider(
     BeginFrameProviderClient* client)
     : needs_begin_frame_(false),
       requested_needs_begin_frame_(false),
-      cfs_binding_(this),
-      efs_binding_(this),
       frame_sink_id_(begin_frame_provider_params.frame_sink_id),
       parent_frame_sink_id_(begin_frame_provider_params.parent_frame_sink_id),
       begin_frame_client_(client) {}
 
 void BeginFrameProvider::ResetCompositorFrameSink() {
   compositor_frame_sink_.reset();
-  efs_binding_.Close();
-  cfs_binding_.Close();
+  efs_receiver_.reset();
+  cfs_receiver_.reset();
   if (needs_begin_frame_) {
     needs_begin_frame_ = false;
     RequestBeginFrame();
@@ -59,26 +59,21 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
   if (compositor_frame_sink_.is_bound())
     return;
 
-  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
+  mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&provider));
+      provider.BindNewPipeAndPassReceiver());
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       ThreadScheduler::Current()->CompositorTaskRunner();
 
-  mojom::blink::EmbeddedFrameSinkClientPtr efs_client;
-  efs_binding_.Bind(mojo::MakeRequest(&efs_client), task_runner);
-
-  viz::mojom::blink::CompositorFrameSinkClientPtr client;
-  cfs_binding_.Bind(mojo::MakeRequest(&client), task_runner);
-
   provider->CreateSimpleCompositorFrameSink(
-      parent_frame_sink_id_, frame_sink_id_, std::move(efs_client),
-      std::move(client), mojo::MakeRequest(&compositor_frame_sink_));
+      parent_frame_sink_id_, frame_sink_id_,
+      efs_receiver_.BindNewPipeAndPassRemote(task_runner),
+      cfs_receiver_.BindNewPipeAndPassRemote(task_runner),
+      compositor_frame_sink_.BindNewPipeAndPassReceiver());
 
-  compositor_frame_sink_.set_connection_error_with_reason_handler(
-      base::BindOnce(&BeginFrameProvider::OnMojoConnectionError,
-                     weak_factory_.GetWeakPtr()));
+  compositor_frame_sink_.set_disconnect_with_reason_handler(base::BindOnce(
+      &BeginFrameProvider::OnMojoConnectionError, weak_factory_.GetWeakPtr()));
 }
 
 void BeginFrameProvider::RequestBeginFrame() {

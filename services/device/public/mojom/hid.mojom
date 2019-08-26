@@ -323,7 +323,8 @@ interface HidManager {
   // Opens a connection to a device by given guid. The callback will be run
   // with null on failure. If a connection client is provided, it will be
   // notified when input reports are received.
-  Connect(string device_guid, HidConnectionClient? connection_client)
+  Connect(string device_guid,
+          pending_remote<HidConnectionClient>? connection_client)
       => (HidConnection? connection);
 };
 

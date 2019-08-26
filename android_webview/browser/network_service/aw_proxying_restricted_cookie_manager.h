@@ -18,7 +18,7 @@ class AwProxyingRestrictedCookieManager
     : public network::mojom::RestrictedCookieManager {
  public:
   // Creates a AwProxyingRestrictedCookieManager that lives on IO thread,
-  // binding it to handle communications from |request|. The requests will be
+  // binding it to handle communications from |receiver|. The requests will be
   // delegated to |underlying_rcm|. The resulting object will be owned by the
   // pipe corresponding to |request| and will in turn own |underlying_rcm|.
   //
@@ -28,7 +28,7 @@ class AwProxyingRestrictedCookieManager
       bool is_service_worker,
       int process_id,
       int frame_id,
-      network::mojom::RestrictedCookieManagerRequest request);
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
   ~AwProxyingRestrictedCookieManager() override;
 
@@ -81,7 +81,7 @@ class AwProxyingRestrictedCookieManager
       bool is_service_worker,
       int process_id,
       int frame_id,
-      network::mojom::RestrictedCookieManagerRequest request);
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
   network::mojom::RestrictedCookieManagerPtr
       underlying_restricted_cookie_manager_;

@@ -12,9 +12,10 @@ namespace blink {
 NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
     : layout_object_(text.GetLayoutObject()),
       text_({text.TextShapeResult(), text.StartOffset(), text.EndOffset()}),
-      size_(text.Size()),
+      rect_({PhysicalOffset(), text.Size()}),
       type_(kText),
       style_variant_(static_cast<unsigned>(text.StyleVariant())) {
+  DCHECK_LE(text_.start_offset, text_.end_offset);
 #if DCHECK_IS_ON()
   if (text_.shape_result) {
     DCHECK_EQ(text_.shape_result->StartIndex(), text_.start_offset);
@@ -28,7 +29,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
     : layout_object_(nullptr),
       line_({line.Metrics(), To<NGInlineBreakToken>(line.BreakToken()),
              item_count}),
-      size_(line.Size()),
+      rect_({PhysicalOffset(), line.Size()}),
       type_(kLine),
       style_variant_(static_cast<unsigned>(line.StyleVariant())) {}
 
@@ -36,25 +37,45 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
                                wtf_size_t item_count)
     : layout_object_(box.GetLayoutObject()),
       box_({&box, item_count}),
-      size_(box.Size()),
+      rect_({PhysicalOffset(), box.Size()}),
       type_(kBox),
       style_variant_(static_cast<unsigned>(box.StyleVariant())) {}
 
 NGFragmentItem::~NGFragmentItem() {
   switch (Type()) {
     case kText:
-      text_.~Text();
+      text_.~TextItem();
       break;
     case kGeneratedText:
-      generated_text_.~GeneratedText();
+      generated_text_.~GeneratedTextItem();
       break;
     case kLine:
-      line_.~Line();
+      line_.~LineItem();
       break;
     case kBox:
-      box_.~Box();
+      box_.~BoxItem();
       break;
   }
+}
+
+StringView NGFragmentItem::Text(const NGFragmentItems& items) const {
+  if (Type() == kText) {
+    DCHECK_LE(text_.start_offset, text_.end_offset);
+    return StringView(items.Text(UsesFirstLineStyle()), text_.start_offset,
+                      text_.end_offset - text_.start_offset);
+  }
+  NOTREACHED();
+  return StringView();
+}
+
+NGTextFragmentPaintInfo NGFragmentItem::TextPaintInfo(
+    const NGFragmentItems& items) const {
+  if (Type() == kText) {
+    return {items.Text(UsesFirstLineStyle()), text_.start_offset,
+            text_.end_offset, text_.shape_result.get()};
+  }
+  NOTREACHED();
+  return {};
 }
 
 String NGFragmentItem::DebugName() const {

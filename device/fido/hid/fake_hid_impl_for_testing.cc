@@ -170,7 +170,7 @@ void FakeFidoHidManager::GetDevices(GetDevicesCallback callback) {
 
 void FakeFidoHidManager::Connect(
     const std::string& device_guid,
-    mojom::HidConnectionClientPtr connection_client,
+    mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
     ConnectCallback callback) {
   auto device_it = devices_.find(device_guid);
   auto connection_it = connections_.find(device_guid);

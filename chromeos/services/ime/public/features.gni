@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 declare_args() {
-  # Enable a full featured IME implementation with decoders.
-  enable_cros_ime_decoder = false
-
   # Enable share language modules between IME services.
   enable_cros_ime_shared_data = false
 

@@ -2041,6 +2041,14 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
     return;
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(request_context);
+  if (!resource_request.PriorityHasBeenSet()) {
+    resource_request.SetPriority(ComputeLoadPriority(
+        resource->GetType(), resource_request, ResourcePriority::kNotVisible,
+        FetchParameters::DeferOption::kNoDefer,
+        FetchParameters::SpeculativePreloadType::kNotSpeculative,
+        false /* is_link_preload */));
+  }
+
   ResourceLoaderOptions options = resource->Options();
   options.initiator_info.name = initiator_name;
   FetchParameters params(resource_request, options);

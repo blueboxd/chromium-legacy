@@ -270,9 +270,6 @@ void SetIndividualRuntimeFeatures(
       base::FeatureList::IsEnabled(
           features::kExpensiveBackgroundTimerThrottling));
 
-  WebRuntimeFeatures::EnableRenderingPipelineThrottling(
-      base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling));
-
   WebRuntimeFeatures::EnableTimerThrottlingForHiddenFrames(
       base::FeatureList::IsEnabled(features::kTimerThrottlingForHiddenFrames));
 

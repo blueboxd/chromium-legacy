@@ -3514,6 +3514,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onerror
 [Worker]     setter onmessage
 [Worker]     setter onopen
+[Worker] interface WebSocketStream
+[Worker]     attribute @@toStringTag
+[Worker]     getter closed
+[Worker]     getter connection
+[Worker]     getter url
+[Worker]     method close
+[Worker]     method constructor
 [Worker] interface WorkerGlobalScope : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter addressSpace

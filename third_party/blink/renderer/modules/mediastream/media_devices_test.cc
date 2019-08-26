@@ -7,7 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
@@ -34,7 +35,7 @@ const char kFakeAudioOutputDeviceId1[] = "fake_audio_output 1";
 class MockMediaDevicesDispatcherHost
     : public mojom::blink::MediaDevicesDispatcherHost {
  public:
-  MockMediaDevicesDispatcherHost() : binding_(this) {}
+  MockMediaDevicesDispatcherHost() {}
 
   void EnumerateDevices(bool request_audio_input,
                         bool request_video_input,
@@ -139,23 +140,27 @@ class MockMediaDevicesDispatcherHost
       bool subscribe_audio_input,
       bool subscribe_video_input,
       bool subscribe_audio_output,
-      mojom::blink::MediaDevicesListenerPtr listener) override {
-    listener_ = std::move(listener);
+      mojo::PendingRemote<mojom::blink::MediaDevicesListener> listener)
+      override {
+    listener_.Bind(std::move(listener));
   }
 
-  mojom::blink::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
-    mojom::blink::MediaDevicesDispatcherHostPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<mojom::blink::MediaDevicesDispatcherHost>
+  CreatePendingRemoteAndBind() {
+    mojo::PendingRemote<mojom::blink::MediaDevicesDispatcherHost> remote;
+    receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
-  void CloseBinding() { binding_.Close(); }
+  void CloseBinding() { receiver_.reset(); }
 
-  mojom::blink::MediaDevicesListenerPtr& listener() { return listener_; }
+  mojo::Remote<mojom::blink::MediaDevicesListener>& listener() {
+    return listener_;
+  }
 
  private:
-  mojom::blink::MediaDevicesListenerPtr listener_;
-  mojo::Binding<mojom::blink::MediaDevicesDispatcherHost> binding_;
+  mojo::Remote<mojom::blink::MediaDevicesListener> listener_;
+  mojo::Receiver<mojom::blink::MediaDevicesDispatcherHost> receiver_{this};
 };
 
 class PromiseObserver {
@@ -220,7 +225,7 @@ class MediaDevicesTest : public testing::Test {
     if (!media_devices_) {
       media_devices_ = MakeGarbageCollected<MediaDevices>(context);
       media_devices_->SetDispatcherHostForTesting(
-          dispatcher_host_->CreateInterfacePtrAndBind());
+          dispatcher_host_->CreatePendingRemoteAndBind());
     }
     return media_devices_;
   }
@@ -254,7 +259,7 @@ class MediaDevicesTest : public testing::Test {
     device_changed_ = false;
   }
 
-  mojom::blink::MediaDevicesListenerPtr& listener() {
+  mojo::Remote<mojom::blink::MediaDevicesListener>& listener() {
     return dispatcher_host_->listener();
   }
 
@@ -420,7 +425,7 @@ TEST_F(MediaDevicesTest, ObserveDeviceChangeEvent) {
   media_devices->StartObserving();
   platform()->RunUntilIdle();
   EXPECT_TRUE(listener());
-  listener().set_connection_error_handler(WTF::Bind(
+  listener().set_disconnect_handler(WTF::Bind(
       &MediaDevicesTest::OnListenerConnectionError, WTF::Unretained(this)));
 
   // Simulate a device change.

@@ -41,6 +41,11 @@ class AssistantPaymentRequestDelegate {
       const base::android::JavaParamRef<jobject>& jcaller,
       jint link);
 
+  void OnLoginChoiceChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jidentifier);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

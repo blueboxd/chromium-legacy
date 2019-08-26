@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/pending_app_manager_observer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
 namespace web_app {
@@ -94,6 +95,21 @@ void PendingAppManager::SynchronizeInstalledApps(
       std::move(desired_apps_install_options),
       base::BindRepeating(&PendingAppManager::InstallForSynchronizeCallback,
                           weak_ptr_factory_.GetWeakPtr(), install_source));
+}
+
+void PendingAppManager::AddObserver(PendingAppManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PendingAppManager::RemoveObserver(
+    const PendingAppManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void PendingAppManager::OnRegistrationFinished(const GURL& launch_url,
+                                               RegistrationResultCode result) {
+  for (PendingAppManagerObserver& observer : observers_)
+    observer.OnRegistrationFinished(launch_url, result);
 }
 
 void PendingAppManager::InstallForSynchronizeCallback(

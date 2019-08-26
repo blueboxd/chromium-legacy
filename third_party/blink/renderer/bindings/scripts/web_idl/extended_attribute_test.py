@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# pylint: disable=import-error,print-statement,relative-import
 """Unit tests for extended_attributes.py."""
 
 import unittest

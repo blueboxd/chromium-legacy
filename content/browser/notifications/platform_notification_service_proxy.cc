@@ -60,19 +60,25 @@ void PlatformNotificationServiceProxy::VerifyServiceWorkerScope(
     DisplayResultCallback callback,
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  base::OnceClosure task;
+
   if (status == blink::ServiceWorkerStatusCode::kOk &&
       registration->scope().GetOrigin() == data.origin) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&PlatformNotificationServiceProxy::DoDisplayNotification,
-                       AsWeakPtr(), data, registration->scope(),
-                       std::move(callback)));
+    task = base::BindOnce(
+        &PlatformNotificationServiceProxy::DoDisplayNotification, AsWeakPtr(),
+        data, registration->scope(), std::move(callback));
+  } else {
+    task = base::BindOnce(std::move(callback), /* success= */ false,
+                          /* notification_id= */ "");
+  }
+
+  if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
+    std::move(task).Run();
   } else {
     base::PostTask(FROM_HERE,
                    {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-                   base::BindOnce(std::move(callback), /* success= */ false,
-                                  /* notification_id= */ ""));
+                   std::move(task));
   }
 }
 
@@ -88,7 +94,9 @@ void PlatformNotificationServiceProxy::DisplayNotification(
   }
 
   base::PostTask(
-      FROM_HERE, {BrowserThread::IO, base::TaskPriority::USER_VISIBLE},
+      FROM_HERE,
+      {ServiceWorkerContext::GetCoreThreadId(),
+       base::TaskPriority::USER_VISIBLE},
       base::BindOnce(
           &ServiceWorkerContextWrapper::FindReadyRegistrationForId,
           service_worker_context_, data.service_worker_registration_id,

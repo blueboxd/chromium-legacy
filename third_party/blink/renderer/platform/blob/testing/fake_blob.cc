@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 
@@ -41,9 +41,9 @@ class SimpleDataPipeGetter : public network::mojom::blink::DataPipeGetter {
 FakeBlob::FakeBlob(const String& uuid, const String& body, State* state)
     : uuid_(uuid), body_(body), state_(state) {}
 
-void FakeBlob::Clone(mojom::blink::BlobRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<FakeBlob>(uuid_, body_, state_),
-                          std::move(request));
+void FakeBlob::Clone(mojo::PendingReceiver<mojom::blink::Blob> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FakeBlob>(uuid_, body_, state_),
+                              std::move(receiver));
 }
 
 void FakeBlob::AsDataPipeGetter(

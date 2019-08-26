@@ -399,7 +399,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsExecuteScript) {
 }
 
 // Tests chrome.webRequest APIs.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WebRequest) {
+// Times out on Mac/Win only.  https://crbug.com/997686
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_WebRequest DISABLED_WebRequest
+#else
+#define MAYBE_WebRequest WebRequest
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, MAYBE_WebRequest) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/web_request"))
       << message_;

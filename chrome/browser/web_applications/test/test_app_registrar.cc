@@ -47,11 +47,6 @@ bool TestAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
   return false;
 }
 
-bool TestAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool TestAppRegistrar::WasExternalAppUninstalledByUser(
     const AppId& app_id) const {
   return base::Contains(user_uninstalled_external_apps_, app_id);
@@ -120,9 +115,12 @@ base::Optional<SkColor> TestAppRegistrar::GetAppThemeColor(
   return base::nullopt;
 }
 
-const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId&) const {
-  NOTIMPLEMENTED();
-  return GURL::EmptyGURL();
+const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
+  auto iterator = installed_apps_.find(app_id);
+  if (iterator == installed_apps_.end())
+    return GURL::EmptyGURL();
+
+  return iterator->second.launch_url;
 }
 
 base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {

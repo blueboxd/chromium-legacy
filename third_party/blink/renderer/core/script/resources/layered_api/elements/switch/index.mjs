@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as face from './face_utils.mjs';
 import * as reflection from '../internal/reflection.mjs';
-import {SwitchTrack} from './track.mjs';
+
+import * as face from './face_utils.mjs';
 import * as style from './style.mjs';
+import {SwitchTrack} from './track.mjs';
 
 const generateStyleSheet = style.styleSheetFactory();
 
@@ -33,8 +34,9 @@ export class StdSwitchElement extends HTMLElement {
   constructor() {
     super();
     if (new.target !== StdSwitchElement) {
-      throw new TypeError('Illegal constructor: StdSwitchElement is not ' +
-                          'extensible for now');
+      throw new TypeError(
+          'Illegal constructor: StdSwitchElement is not ' +
+          'extensible for now');
     }
     this[_internals] = this.attachInternals();
     this._initializeDOM();

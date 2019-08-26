@@ -60,9 +60,10 @@ CookieSettingsFactory::BuildServiceInstanceFor(
   base::UmaHistogramBoolean(
       "Privacy.ThirdPartyCookieBlockingSetting",
       profile->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies));
-  base::UmaHistogramBoolean(
+  base::UmaHistogramEnumeration(
       "Privacy.CookieControlsSetting",
-      profile->GetPrefs()->GetBoolean(prefs::kCookieControlsEnabled));
+      static_cast<content_settings::CookieControlsMode>(
+          profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode)));
   // The DNT setting is only vaguely cookie-related. However, there is currently
   // no DNT-related code that is executed once per Profile lifetime, and
   // creating a new BrowserContextKeyedService to record this metric would be
@@ -73,6 +74,6 @@ CookieSettingsFactory::BuildServiceInstanceFor(
       profile->GetPrefs()->GetBoolean(prefs::kEnableDoNotTrack));
   return new content_settings::CookieSettings(
       HostContentSettingsMapFactory::GetForProfile(profile),
-      profile->GetPrefs(),
+      profile->GetPrefs(), profile->IsIncognitoProfile(),
       extensions::kExtensionScheme);
 }

@@ -12,9 +12,9 @@
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
-#include "third_party/blink/public/web/web_apply_constraints_request.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -47,7 +47,7 @@ class MODULES_EXPORT UserMediaClient
 
   void RequestUserMedia(const blink::WebUserMediaRequest& web_request);
   void CancelUserMediaRequest(const blink::WebUserMediaRequest& web_request);
-  void ApplyConstraints(const blink::WebApplyConstraintsRequest& web_request);
+  void ApplyConstraints(blink::ApplyConstraintsRequest* web_request);
   void StopTrack(const blink::WebMediaStreamTrack& web_track);
   void ContextDestroyed();
 
@@ -60,13 +60,11 @@ class MODULES_EXPORT UserMediaClient
           media_devices_dispatcher);
 
  private:
-  class Request {
+  class Request : public GarbageCollectedFinalized<Request> {
    public:
     explicit Request(std::unique_ptr<UserMediaRequestInfo> request);
-    explicit Request(const blink::WebApplyConstraintsRequest& request);
+    explicit Request(blink::ApplyConstraintsRequest* request);
     explicit Request(const blink::WebMediaStreamTrack& request);
-    Request(Request&& other);
-    Request& operator=(Request&& other);
     ~Request();
 
     std::unique_ptr<UserMediaRequestInfo> MoveUserMediaRequest();
@@ -74,7 +72,7 @@ class MODULES_EXPORT UserMediaClient
     UserMediaRequestInfo* user_media_request() const {
       return user_media_request_.get();
     }
-    const blink::WebApplyConstraintsRequest& apply_constraints_request() const {
+    blink::ApplyConstraintsRequest* apply_constraints_request() const {
       return apply_constraints_request_;
     }
     const blink::WebMediaStreamTrack& web_track_to_stop() const {
@@ -82,15 +80,17 @@ class MODULES_EXPORT UserMediaClient
     }
 
     bool IsUserMedia() const { return !!user_media_request_; }
-    bool IsApplyConstraints() const {
-      return !apply_constraints_request_.IsNull();
-    }
+    bool IsApplyConstraints() const { return apply_constraints_request_; }
     bool IsStopTrack() const { return !web_track_to_stop_.IsNull(); }
+
+    void Trace(Visitor* visitor) { visitor->Trace(apply_constraints_request_); }
 
    private:
     std::unique_ptr<UserMediaRequestInfo> user_media_request_;
-    blink::WebApplyConstraintsRequest apply_constraints_request_;
+    Member<blink::ApplyConstraintsRequest> apply_constraints_request_;
     blink::WebMediaStreamTrack web_track_to_stop_;
+
+    DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
   void MaybeProcessNextRequestInfo();
@@ -119,7 +119,7 @@ class MODULES_EXPORT UserMediaClient
   // and |pending_request_infos_| is a list of queued requests.
   bool is_processing_request_ = false;
 
-  Deque<Request> pending_request_infos_;
+  HeapDeque<Member<Request>> pending_request_infos_;
 
   THREAD_CHECKER(thread_checker_);
 

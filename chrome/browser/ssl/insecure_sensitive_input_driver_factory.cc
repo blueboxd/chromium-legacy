@@ -5,7 +5,6 @@
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/stl_util.h"
 #include "chrome/browser/ssl/insecure_sensitive_input_driver.h"
@@ -57,7 +56,7 @@ InsecureSensitiveInputDriverFactory::GetOrCreateForWebContents(
 
 // static
 void InsecureSensitiveInputDriverFactory::BindDriver(
-    blink::mojom::InsecureInputServiceRequest request,
+    mojo::PendingReceiver<blink::mojom::InsecureInputService> receiver,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -70,7 +69,7 @@ void InsecureSensitiveInputDriverFactory::BindDriver(
   InsecureSensitiveInputDriver* driver =
       factory->GetOrCreateDriverForFrame(render_frame_host);
 
-  driver->BindInsecureInputServiceRequest(std::move(request));
+  driver->BindInsecureInputServiceReceiver(std::move(receiver));
 }
 
 InsecureSensitiveInputDriver*

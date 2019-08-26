@@ -152,7 +152,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableRasterInducingScroll(bool);
   BLINK_PLATFORM_EXPORT static void EnableReducedReferrerGranularity(bool);
   BLINK_PLATFORM_EXPORT static void EnableRemotePlaybackAPI(bool);
-  BLINK_PLATFORM_EXPORT static void EnableRenderingPipelineThrottling(bool);
   BLINK_PLATFORM_EXPORT static void EnableResourceLoadScheduler(bool);
   BLINK_PLATFORM_EXPORT static void
   EnableRestrictAutomaticLazyFrameLoadingToDataSaver(bool);

@@ -66,8 +66,8 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
-      *saving_passwords_enabled_, this, GetSyncService(delegate_.browserState),
-      GetIdentityManager(), GetPrefs());
+      this, GetSyncService(delegate_.browserState), GetIdentityManager(),
+      GetPrefs());
   log_manager_ = autofill::LogManager::Create(
       ios::PasswordManagerLogRouterFactory::GetForBrowserState(
           delegate_.browserState),

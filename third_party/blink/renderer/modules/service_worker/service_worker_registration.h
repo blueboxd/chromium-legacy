@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_H_
 
 #include <memory>
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration_object_info.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -114,24 +115,23 @@ class ServiceWorkerRegistration final
   const int64_t registration_id_;
   const KURL scope_;
   mojom::ServiceWorkerUpdateViaCache update_via_cache_;
-  // Both |host_| and |binding_| are associated with
-  // content.mojom.ServiceWorkerContainer interface for a Document, and
-  // content.mojom.ServiceWorker interface for a ServiceWorkerGlobalScope.
+  // Both |host_| and |receiver_| are associated with
+  // blink.mojom.ServiceWorkerContainer interface for a Document, and
+  // blink.mojom.ServiceWorker interface for a ServiceWorkerGlobalScope.
   //
   // |host_| keeps the Mojo connection to the
   // browser-side ServiceWorkerRegistrationObjectHost, whose lifetime is bound
   // to the Mojo connection. It is bound on the
   // main thread for service worker clients (document), and is bound on the
   // service worker thread for service worker execution contexts.
-  mojom::blink::ServiceWorkerRegistrationObjectHostAssociatedPtr host_;
-  // |binding_| keeps the Mojo binding to serve its other Mojo endpoint (i.e.
-  // the caller end) held by the ServiceWorkerRegistrationObjectHost in
-  // the browser process.
-  // It is bound on the main thread for service worker clients (document), and
-  // is bound on the service worker thread for service worker execution
-  // contexts.
-  mojo::AssociatedBinding<mojom::blink::ServiceWorkerRegistrationObject>
-      binding_;
+  mojo::AssociatedRemote<mojom::blink::ServiceWorkerRegistrationObjectHost>
+      host_;
+  // |receiver_| receives messages from the ServiceWorkerRegistrationObjectHost
+  // in the browser process. It is bound on the main thread for service worker
+  // clients (document), and is bound on the service worker thread for service
+  // worker execution contexts.
+  mojo::AssociatedReceiver<mojom::blink::ServiceWorkerRegistrationObject>
+      receiver_{this};
 
   bool stopped_;
 };

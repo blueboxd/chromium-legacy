@@ -79,8 +79,10 @@ class CookieSettingsTest : public testing::Test {
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
-    cookie_settings_ =
-        new CookieSettings(settings_map_.get(), &prefs_, "chrome-extension");
+    cookie_settings_ = new CookieSettings(settings_map_.get(), &prefs_, false,
+                                          "chrome-extension");
+    cookie_settings_incognito_ = new CookieSettings(
+        settings_map_.get(), &prefs_, true, "chrome-extension");
   }
 
  protected:
@@ -98,6 +100,7 @@ class CookieSettingsTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   scoped_refptr<HostContentSettingsMap> settings_map_;
   scoped_refptr<CookieSettings> cookie_settings_;
+  scoped_refptr<CookieSettings> cookie_settings_incognito_;
   const GURL kBlockedSite;
   const GURL kAllowedSite;
   const GURL kFirstPartySite;
@@ -144,24 +147,63 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
-TEST_F(CookieSettingsTest, CookiesControlsEnabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(kImprovedCookieControls);
-  ASSERT_TRUE(
+// Test fixture with ImprovedCookieControls enabled.
+class ImprovedCookieControlsCookieSettingsTest : public CookieSettingsTest {
+ public:
+  ImprovedCookieControlsCookieSettingsTest() : CookieSettingsTest() {
+    feature_list_.InitAndEnableFeature(kImprovedCookieControls);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(ImprovedCookieControlsCookieSettingsTest, CookiesControlsDefault) {
+  EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
-  prefs_.SetBoolean(prefs::kCookieControlsEnabled, true);
+  EXPECT_FALSE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
+}
+
+TEST_F(ImprovedCookieControlsCookieSettingsTest, CookiesControlsEnabled) {
+  prefs_.SetInteger(prefs::kCookieControlsMode,
+                    static_cast<int>(CookieControlsMode::kOn));
   EXPECT_FALSE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_FALSE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
+}
+
+TEST_F(ImprovedCookieControlsCookieSettingsTest, CookiesControlsDisabled) {
+  prefs_.SetInteger(prefs::kCookieControlsMode,
+                    static_cast<int>(CookieControlsMode::kOff));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
+}
+
+TEST_F(ImprovedCookieControlsCookieSettingsTest,
+       CookiesControlsEnabledForIncognito) {
+  prefs_.SetInteger(prefs::kCookieControlsMode,
+                    static_cast<int>(CookieControlsMode::kIncognitoOnly));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_FALSE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesControlsEnabledButFeatureDisabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(kImprovedCookieControls);
-  ASSERT_TRUE(
-      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
-  prefs_.SetBoolean(prefs::kCookieControlsEnabled, true);
   EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
+  prefs_.SetInteger(prefs::kCookieControlsMode,
+                    static_cast<int>(CookieControlsMode::kOn));
+  EXPECT_TRUE(
+      cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
+  EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(
+      kBlockedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesAllowThirdParty) {

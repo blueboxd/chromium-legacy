@@ -175,9 +175,10 @@ ScriptPromise HID::requestDevice(ScriptState* script_state,
   return promise;
 }
 
-void HID::Connect(const String& device_guid,
-                  device::mojom::blink::HidConnectionClientPtr client,
-                  device::mojom::blink::HidManager::ConnectCallback callback) {
+void HID::Connect(
+    const String& device_guid,
+    mojo::PendingRemote<device::mojom::blink::HidConnectionClient> client,
+    device::mojom::blink::HidManager::ConnectCallback callback) {
   EnsureServiceConnection();
   service_->Connect(device_guid, std::move(client), std::move(callback));
 }
@@ -230,8 +231,8 @@ void HID::EnsureServiceConnection() {
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_, task_runner));
-  service_.set_connection_error_handler(
+      service_.BindNewPipeAndPassReceiver(task_runner));
+  service_.set_disconnect_handler(
       WTF::Bind(&HID::OnServiceConnectionError, WrapWeakPersistent(this)));
 }
 

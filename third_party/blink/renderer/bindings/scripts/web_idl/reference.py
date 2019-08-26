@@ -86,7 +86,7 @@ class Proxy(object):
             if not attr.startswith('_')
         ])
 
-    def make_copy(self):
+    def make_copy(self, memo):
         return self
 
     def set_target_object(self, target_object):

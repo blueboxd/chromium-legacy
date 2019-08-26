@@ -257,7 +257,8 @@ class MockMediaDevicesDispatcherHost
       bool subscribe_audio_input,
       bool subscribe_video_input,
       bool subscribe_audio_output,
-      blink::mojom::blink::MediaDevicesListenerPtr listener) override {
+      mojo::PendingRemote<blink::mojom::blink::MediaDevicesListener> listener)
+      override {
     NOTREACHED();
   }
 
@@ -633,8 +634,8 @@ class UserMediaClientTest : public ::testing::Test {
     if (frame_rate)
       factory.basic().frame_rate.SetExact(*frame_rate);
 
-    blink::WebApplyConstraintsRequest apply_constraints_request =
-        blink::WebApplyConstraintsRequest::CreateForTesting(
+    auto* apply_constraints_request =
+        blink::ApplyConstraintsRequest::CreateForTesting(
             web_track, factory.CreateWebMediaConstraints());
     user_media_client_impl_->ApplyConstraints(apply_constraints_request);
     base::RunLoop().RunUntilIdle();

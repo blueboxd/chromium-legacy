@@ -15,6 +15,7 @@
     <dimen name="keyboard_accessory_chip_vertical_margin">8dp</dimen>
     <!--dimen name="keyboard_accessory_sheet_height">330dp</dimen-->
     <dimen name="keyboard_accessory_sheet_divider_margin">24dp</dimen>
+    <dimen name="keyboard_accessory_sheet_footer_trailing_margin">64dp</dimen>
     <dimen name="keyboard_accessory_sheet_padding">8dp</dimen>
     <dimen name="keyboard_accessory_sheet_top_margin">16dp</dimen>
     <dimen name="keyboard_accessory_sheet_bottom_margin">8dp</dimen>

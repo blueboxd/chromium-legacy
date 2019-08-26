@@ -672,7 +672,7 @@ void NetworkContext::GetCookieManager(
 }
 
 void NetworkContext::GetRestrictedCookieManager(
-    mojom::RestrictedCookieManagerRequest request,
+    mojo::PendingReceiver<mojom::RestrictedCookieManager> receiver,
     mojom::RestrictedCookieManagerRole role,
     const url::Origin& origin,
     bool is_service_worker,
@@ -687,7 +687,7 @@ void NetworkContext::GetRestrictedCookieManager(
           role, url_request_context_->cookie_store(),
           &cookie_manager_->cookie_settings(), origin, client(),
           is_service_worker, process_id, routing_id),
-      std::move(request));
+      std::move(receiver));
 }
 
 void NetworkContext::OnProxyLookupComplete(

@@ -95,7 +95,7 @@ void FinalizeBlobOnIOThread(
     CacheStorageCache::EntryIndex disk_cache_index,
     CacheStorageCache::EntryIndex side_data_disk_cache_index,
     std::string uuid,
-    blink::mojom::BlobRequest request) {
+    mojo::PendingReceiver<blink::mojom::Blob> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Just allow the blob mojo message pipe to automatically close if we're
@@ -109,7 +109,7 @@ void FinalizeBlobOnIOThread(
   blob_data->AppendReadableDataHandle(std::move(inner_handle));
   auto blob_handle = blob_context->AddFinishedBlob(std::move(blob_data));
 
-  storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
+  storage::BlobImpl::Create(std::move(blob_handle), std::move(receiver));
 }
 
 }  // namespace

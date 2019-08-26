@@ -238,10 +238,11 @@ blink::mojom::BlobPtr ChromeBlobStorageContext::GetBlobPtr(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
-             blink::mojom::BlobRequest request, const std::string& uuid) {
+             mojo::PendingReceiver<blink::mojom::Blob> receiver,
+             const std::string& uuid) {
             auto handle = context->context()->GetBlobDataFromUUID(uuid);
             if (handle)
-              storage::BlobImpl::Create(std::move(handle), std::move(request));
+              storage::BlobImpl::Create(std::move(handle), std::move(receiver));
           },
           base::WrapRefCounted(GetFor(browser_context)), MakeRequest(&blob_ptr),
           uuid));

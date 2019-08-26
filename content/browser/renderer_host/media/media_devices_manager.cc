@@ -281,11 +281,11 @@ MediaDevicesManager::SubscriptionRequest::SubscriptionRequest(
     int render_process_id,
     int render_frame_id,
     const BoolDeviceTypes& subscribe_types,
-    blink::mojom::MediaDevicesListenerPtr listener)
+    mojo::Remote<blink::mojom::MediaDevicesListener> listener)
     : render_process_id(render_process_id),
       render_frame_id(render_frame_id),
       subscribe_types(subscribe_types),
-      listener(std::move(listener)) {}
+      listener_(std::move(listener)) {}
 
 MediaDevicesManager::SubscriptionRequest::SubscriptionRequest(
     SubscriptionRequest&&) = default;
@@ -450,13 +450,13 @@ uint32_t MediaDevicesManager::SubscribeDeviceChangeNotifications(
     int render_process_id,
     int render_frame_id,
     const BoolDeviceTypes& subscribe_types,
-    blink::mojom::MediaDevicesListenerPtr listener) {
+    mojo::PendingRemote<blink::mojom::MediaDevicesListener> listener) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   StartMonitoring();
   uint32_t subscription_id = ++last_subscription_id_;
-  blink::mojom::MediaDevicesListenerPtr media_devices_listener =
-      std::move(listener);
-  media_devices_listener.set_connection_error_handler(
+  mojo::Remote<blink::mojom::MediaDevicesListener> media_devices_listener;
+  media_devices_listener.Bind(std::move(listener));
+  media_devices_listener.set_disconnect_handler(
       base::BindOnce(&MediaDevicesManager::UnsubscribeDeviceChangeNotifications,
                      weak_factory_.GetWeakPtr(), subscription_id));
   subscriptions_.emplace(
@@ -1143,7 +1143,7 @@ void MediaDevicesManager::NotifyDeviceChange(
     return;
 
   const SubscriptionRequest& request = it->second;
-  request.listener->OnDevicesChanged(
+  request.listener_->OnDevicesChanged(
       type, TranslateMediaDeviceInfoArray(has_permission, salt_and_origin,
                                           device_infos));
 }

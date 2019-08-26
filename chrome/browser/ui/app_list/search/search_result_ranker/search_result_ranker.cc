@@ -51,8 +51,6 @@ enum class Model { NONE, APPS, MIXED_TYPES };
 // Returns the model relevant for predicting launches for results with the given
 // |type|.
 Model ModelForType(RankingItemType type) {
-  // TODO(959679): Update this with zero-state item types once zero-state
-  // search providers have been implemented.
   switch (type) {
     case RankingItemType::kFile:
     case RankingItemType::kOmniboxGeneric:
@@ -60,6 +58,8 @@ Model ModelForType(RankingItemType type) {
     case RankingItemType::kOmniboxDocument:
     case RankingItemType::kOmniboxHistory:
     case RankingItemType::kOmniboxSearch:
+    case RankingItemType::kZeroStateFile:
+    case RankingItemType::kDriveQuickAccess:
       return Model::MIXED_TYPES;
     // Currently we don't rank arc app shortcuts. If this changes, add a case
     // here.

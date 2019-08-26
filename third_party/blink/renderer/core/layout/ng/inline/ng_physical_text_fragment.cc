@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/line/line_orientation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
@@ -20,9 +21,8 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalTextFragment : NGPhysicalFragment {
-  void* pointers[2];
+  void* pointers[3];
   unsigned offsets[2];
-  PhysicalRect rect;
 };
 
 static_assert(sizeof(NGPhysicalTextFragment) ==
@@ -82,23 +82,6 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
       static_cast<unsigned>(ToLineOrientation(builder->GetWritingMode()));
   is_generated_text_ = builder->IsGeneratedText();
   ink_overflow_computed_ = false;
-}
-
-// Convert logical cooridnate to local physical coordinate.
-PhysicalRect NGPhysicalTextFragment::ConvertToLocal(
-    const LayoutRect& logical_rect) const {
-  switch (LineOrientation()) {
-    case NGLineOrientation::kHorizontal:
-      return PhysicalRect(logical_rect);
-    case NGLineOrientation::kClockWiseVertical:
-      return {size_.width - logical_rect.MaxY(), logical_rect.X(),
-              logical_rect.Height(), logical_rect.Width()};
-    case NGLineOrientation::kCounterClockWiseVertical:
-      return {logical_rect.Y(), size_.height - logical_rect.MaxX(),
-              logical_rect.Height(), logical_rect.Width()};
-  }
-  NOTREACHED();
-  return PhysicalRect(logical_rect);
 }
 
 // Compute the inline position from text offset, in logical coordinate relative
@@ -175,73 +158,20 @@ PhysicalRect NGPhysicalTextFragment::LocalRect(unsigned start_offset,
 PhysicalRect NGPhysicalTextFragment::SelfInkOverflow() const {
   if (!ink_overflow_computed_)
     ComputeSelfInkOverflow();
-  return self_ink_overflow_;
-}
-
-void NGPhysicalTextFragment::ClearSelfInkOverflow() const {
-  self_ink_overflow_ = LocalRect();
+  if (ink_overflow_)
+    return ink_overflow_->self_ink_overflow;
+  return LocalRect();
 }
 
 void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
   ink_overflow_computed_ = true;
 
   if (UNLIKELY(!shape_result_)) {
-    ClearSelfInkOverflow();
+    ink_overflow_ = nullptr;
     return;
   }
 
-  // Glyph bounds is in logical coordinate, origin at the alphabetic baseline.
-  FloatRect text_ink_bounds = Style().GetFont().TextInkBounds(PaintInfo());
-  LayoutRect ink_overflow = EnclosingLayoutRect(text_ink_bounds);
-
-  // Make the origin at the logical top of this fragment.
-  const ComputedStyle& style = Style();
-  const Font& font = style.GetFont();
-  if (const SimpleFontData* font_data = font.PrimaryFont()) {
-    ink_overflow.SetY(
-        ink_overflow.Y() +
-        font_data->GetFontMetrics().FixedAscent(kAlphabeticBaseline));
-  }
-
-  if (float stroke_width = style.TextStrokeWidth()) {
-    ink_overflow.Inflate(LayoutUnit::FromFloatCeil(stroke_width / 2.0f));
-  }
-
-  if (style.GetTextEmphasisMark() != TextEmphasisMark::kNone) {
-    LayoutUnit emphasis_mark_height =
-        LayoutUnit(font.EmphasisMarkHeight(style.TextEmphasisMarkString()));
-    DCHECK_GT(emphasis_mark_height, LayoutUnit());
-    if (style.GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver) {
-      ink_overflow.ShiftYEdgeTo(
-          std::min(ink_overflow.Y(), -emphasis_mark_height));
-    } else {
-      LayoutUnit logical_height =
-          style.IsHorizontalWritingMode() ? Size().height : Size().width;
-      ink_overflow.ShiftMaxYEdgeTo(
-          std::max(ink_overflow.MaxY(), logical_height + emphasis_mark_height));
-    }
-  }
-
-  if (ShadowList* text_shadow = style.TextShadow()) {
-    LayoutRectOutsets text_shadow_logical_outsets =
-        LineOrientationLayoutRectOutsets(
-            LayoutRectOutsets(text_shadow->RectOutsetsIncludingOriginal()),
-            style.GetWritingMode());
-    text_shadow_logical_outsets.ClampNegativeToZero();
-    ink_overflow.Expand(text_shadow_logical_outsets);
-  }
-
-  // Uniting the frame rect ensures that non-ink spaces such side bearings, or
-  // even space characters, are included in the visual rect for decorations.
-  PhysicalRect local_ink_overflow = ConvertToLocal(ink_overflow);
-  PhysicalRect local_rect = LocalRect();
-  if (local_rect.Contains(local_ink_overflow)) {
-    self_ink_overflow_ = local_rect;
-    return;
-  }
-  local_ink_overflow.Unite(local_rect);
-  local_ink_overflow.ExpandEdgesToPixelBoundaries();
-  self_ink_overflow_ = local_ink_overflow;
+  ink_overflow_ = NGInkOverflow::TextInkOverflow(PaintInfo(), Style(), Size());
 }
 
 scoped_refptr<const NGPhysicalTextFragment>

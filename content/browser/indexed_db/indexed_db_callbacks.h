@@ -76,7 +76,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
     const IndexedDBBlobInfo& blob_info_;
     std::string uuid_;
-    blink::mojom::BlobRequest request_;
+    mojo::PendingReceiver<blink::mojom::Blob> receiver_;
   };
 
   static bool CreateAllBlobs(

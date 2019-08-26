@@ -294,9 +294,9 @@ class RestrictedCookieManagerInterceptor
     : public network::mojom::RestrictedCookieManagerInterceptorForTesting {
  public:
   RestrictedCookieManagerInterceptor(
-      network::mojom::RestrictedCookieManagerRequest request,
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver,
       network::mojom::RestrictedCookieManagerPtr real_rcm)
-      : binding_(this, std::move(request)), real_rcm_(std::move(real_rcm)) {}
+      : receiver_(this, std::move(receiver)), real_rcm_(std::move(real_rcm)) {}
 
   void set_override_url(base::Optional<std::string> maybe_url) {
     override_url_ = std::move(maybe_url);
@@ -331,7 +331,7 @@ class RestrictedCookieManagerInterceptor
 
   base::Optional<std::string> override_url_;
 
-  mojo::Binding<network::mojom::RestrictedCookieManager> binding_;
+  mojo::Receiver<network::mojom::RestrictedCookieManager> receiver_;
   network::mojom::RestrictedCookieManagerPtr real_rcm_;
 };
 
@@ -346,15 +346,16 @@ class CookieStoreContentBrowserClient : public ContentBrowserClient {
       bool is_service_worker,
       int process_id,
       int routing_id,
-      network::mojom::RestrictedCookieManagerRequest* request) override {
-    network::mojom::RestrictedCookieManagerRequest orig_request =
-        std::move(*request);
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager>* receiver)
+      override {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
+        orig_receiver = std::move(*receiver);
 
     network::mojom::RestrictedCookieManagerPtr real_rcm;
-    *request = mojo::MakeRequest(&real_rcm);
+    *receiver = mojo::MakeRequest(&real_rcm);
 
     rcm_interceptor_ = std::make_unique<RestrictedCookieManagerInterceptor>(
-        std::move(orig_request), std::move(real_rcm));
+        std::move(orig_receiver), std::move(real_rcm));
     rcm_interceptor_->set_override_url(override_url_);
 
     return false;  // only made a proxy, still need the actual impl to be made.

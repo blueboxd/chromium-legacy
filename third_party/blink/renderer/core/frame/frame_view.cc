@@ -25,8 +25,6 @@ Frame& FrameView::GetFrame() const {
 bool FrameView::CanThrottleRenderingForPropagation() const {
   if (CanThrottleRendering())
     return true;
-  if (!RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled())
-    return false;
   LocalFrame* parent_frame = DynamicTo<LocalFrame>(GetFrame().Tree().Parent());
   if (!parent_frame)
     return false;

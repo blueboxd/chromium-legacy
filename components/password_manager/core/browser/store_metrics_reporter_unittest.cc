@@ -16,6 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::Bool;
 using ::testing::Return;
 
 namespace password_manager {
@@ -28,12 +29,21 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(IsUnderAdvancedProtection, bool());
 };
 
-class StoreMetricsReporterTest : public SyncUsernameTestBase {
+// The test fixture defines two tests, one that doesn't require a password store
+// and one that does. Each of these tests depend on two boolean parameters,
+// which are declared here. Each test then assigns the desired semantics to
+// them.
+class StoreMetricsReporterTest
+    : public SyncUsernameTestBase,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   StoreMetricsReporterTest() {
+    prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableService,
+                                           false);
+    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordLeakDetectionEnabled,
+                                           false);
     prefs_.registry()->RegisterBooleanPref(
-        password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false,
-        PrefRegistry::NO_REGISTRATION_FLAGS);
+        password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
   }
 
   ~StoreMetricsReporterTest() override = default;
@@ -45,77 +55,52 @@ class StoreMetricsReporterTest : public SyncUsernameTestBase {
 };
 
 // Test that store-independent metrics are reported correctly.
-TEST_F(StoreMetricsReporterTest, StoreIndependentMetrics) {
-  for (const bool password_manager_enabled : {true, false}) {
-    for (const bool first_run_ui_shown : {true, false}) {
-      SCOPED_TRACE(testing::Message()
-                   << "password_manager_enabled=" << password_manager_enabled
-                   << ", first_run_ui_shown=" << first_run_ui_shown);
+TEST_P(StoreMetricsReporterTest, StoreIndependentMetrics) {
+  const bool password_manager_enabled = std::get<0>(GetParam());
+  const bool leak_detection_enabled = std::get<1>(GetParam());
 
-      prefs_.SetBoolean(
-          password_manager::prefs::kWasAutoSignInFirstRunExperienceShown,
-          first_run_ui_shown);
-      base::HistogramTester histogram_tester;
-      EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(nullptr));
-      StoreMetricsReporter reporter(password_manager_enabled, &client_,
-                                    sync_service(), identity_manager(),
-                                    &prefs_);
+  prefs_.SetBoolean(password_manager::prefs::kCredentialsEnableService,
+                    password_manager_enabled);
+  prefs_.SetBoolean(password_manager::prefs::kPasswordLeakDetectionEnabled,
+                    leak_detection_enabled);
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(nullptr));
+  StoreMetricsReporter reporter(&client_, sync_service(), identity_manager(),
+                                &prefs_);
 
-      histogram_tester.ExpectBucketCount("PasswordManager.Enabled",
-                                         password_manager_enabled, 1);
-    }
-  }
+  histogram_tester.ExpectUniqueSample("PasswordManager.Enabled",
+                                      password_manager_enabled, 1);
+  histogram_tester.ExpectUniqueSample("PasswordManager.LeakDetection.Enabled",
+                                      leak_detection_enabled, 1);
 }
 
 // Test that sync username and syncing state are passed correctly to the
-// PasswordStore when not under advanced protection.
-TEST_F(StoreMetricsReporterTest, PasswordStore) {
-  for (const bool syncing_with_passphrase : {true, false}) {
-    SCOPED_TRACE(testing::Message()
-                 << "syncing_with_passphrase=" << syncing_with_passphrase);
+// PasswordStore.
+TEST_P(StoreMetricsReporterTest, StoreDependentMetrics) {
+  const bool syncing_with_passphrase = std::get<0>(GetParam());
+  const bool is_under_advanced_protection = std::get<1>(GetParam());
 
-    auto store = base::MakeRefCounted<MockPasswordStore>();
-    const auto sync_state =
-        syncing_with_passphrase
-            ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
-            : password_manager::SYNCING_NORMAL_ENCRYPTION;
-    EXPECT_CALL(client_, GetPasswordSyncState()).WillOnce(Return(sync_state));
-    EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(store.get()));
-    EXPECT_CALL(client_, IsUnderAdvancedProtection()).WillOnce(Return(false));
-    EXPECT_CALL(*store, ReportMetrics("some.user@gmail.com",
-                                      syncing_with_passphrase, false));
-    FakeSigninAs("some.user@gmail.com");
+  auto store = base::MakeRefCounted<MockPasswordStore>();
+  const auto sync_state = syncing_with_passphrase
+                              ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
+                              : password_manager::SYNCING_NORMAL_ENCRYPTION;
+  EXPECT_CALL(client_, GetPasswordSyncState()).WillOnce(Return(sync_state));
+  EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(store.get()));
+  EXPECT_CALL(client_, IsUnderAdvancedProtection())
+      .WillOnce(Return(is_under_advanced_protection));
+  EXPECT_CALL(*store,
+              ReportMetrics("some.user@gmail.com", syncing_with_passphrase,
+                            is_under_advanced_protection));
+  FakeSigninAs("some.user@gmail.com");
 
-    StoreMetricsReporter reporter(true, &client_, sync_service(),
-                                  identity_manager(), &prefs_);
-    store->ShutdownOnUIThread();
-  }
+  StoreMetricsReporter reporter(&client_, sync_service(), identity_manager(),
+                                &prefs_);
+  store->ShutdownOnUIThread();
 }
 
-// Test that sync username and syncing state are passed correctly to the
-// PasswordStore when under advanced protection.
-TEST_F(StoreMetricsReporterTest, PasswordStoreForUnderAdvancedProtection) {
-  for (const bool syncing_with_passphrase : {true, false}) {
-    SCOPED_TRACE(testing::Message()
-                 << "syncing_with_passphrase=" << syncing_with_passphrase);
-
-    auto store = base::MakeRefCounted<MockPasswordStore>();
-    const auto sync_state =
-        syncing_with_passphrase
-            ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
-            : password_manager::SYNCING_NORMAL_ENCRYPTION;
-    EXPECT_CALL(client_, GetPasswordSyncState()).WillOnce(Return(sync_state));
-    EXPECT_CALL(client_, GetPasswordStore()).WillOnce(Return(store.get()));
-    EXPECT_CALL(client_, IsUnderAdvancedProtection()).WillOnce(Return(true));
-    EXPECT_CALL(*store, ReportMetrics("some.user@gmail.com",
-                                      syncing_with_passphrase, true));
-    FakeSigninAs("some.user@gmail.com");
-
-    StoreMetricsReporter reporter(true, &client_, sync_service(),
-                                  identity_manager(), &prefs_);
-    store->ShutdownOnUIThread();
-  }
-}
+INSTANTIATE_TEST_SUITE_P(/*InstantiationName*/,
+                         StoreMetricsReporterTest,
+                         testing::Combine(Bool(), Bool()));
 
 }  // namespace
 }  // namespace password_manager

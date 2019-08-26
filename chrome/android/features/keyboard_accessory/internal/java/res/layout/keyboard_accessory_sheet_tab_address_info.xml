@@ -46,7 +46,7 @@
     <LinearLayout
         android:gravity="center_vertical|start"
         android:fillViewport="true"
-        android:layout_height="@dimen/keyboard_accessory_suggestion_height"
+        android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:orientation="horizontal">
 
@@ -78,8 +78,6 @@
     <org.chromium.ui.widget.ChipView
         android:id="@+id/address_home_country"
         android:gravity="center_vertical|start"
-        android:layout_marginTop="@dimen/keyboard_accessory_sheet_padding"
-        android:layout_marginBottom="@dimen/keyboard_accessory_sheet_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/InputChip" />

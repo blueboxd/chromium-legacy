@@ -1967,7 +1967,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          &RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider,
+          [](RenderProcessHostImpl* impl,
+             blink::mojom::EmbeddedFrameSinkProviderRequest request) {
+            // An implicit conversion to PendinReceiver<T> will be used below.
+            impl->CreateEmbeddedFrameSinkProvider(std::move(request));
+          },
           base::Unretained(this)));
 
   AddUIThreadInterface(
@@ -2215,7 +2219,7 @@ void RenderProcessHostImpl::GetAssociatedInterface(
 }
 
 void RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(
-    blink::mojom::EmbeddedFrameSinkProviderRequest request) {
+    mojo::PendingReceiver<blink::mojom::EmbeddedFrameSinkProvider> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!embedded_frame_sink_provider_) {
     // The client id gets converted to a uint32_t in FrameSinkId.
@@ -2224,7 +2228,7 @@ void RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider(
         std::make_unique<EmbeddedFrameSinkProviderImpl>(
             GetHostFrameSinkManager(), renderer_client_id);
   }
-  embedded_frame_sink_provider_->Add(std::move(request));
+  embedded_frame_sink_provider_->Add(std::move(receiver));
 }
 
 void RenderProcessHostImpl::BindFrameSinkProvider(

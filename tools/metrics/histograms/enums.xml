@@ -9600,6 +9600,17 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Contact(s) selected"/>
 </enum>
 
+<enum name="ContactsPickerProperties">
+  <int value="0" label="No properties requested"/>
+  <int value="1" label="Telephone numbers requested"/>
+  <int value="2" label="Emails requested"/>
+  <int value="3" label="Emails and Telephone numbers requested"/>
+  <int value="4" label="Names requested"/>
+  <int value="5" label="Names and Telephone numbers requested"/>
+  <int value="6" label="Names and Emails requested"/>
+  <int value="7" label="Names, Emails, and Telephone numbers requested"/>
+</enum>
+
 <enum name="ContentIndexCategory">
   <summary>
     The type of a Content Index entry. Corresponds to
@@ -10446,6 +10457,12 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Adding cookie to DB failed."/>
   <int value="2" label="Updating access time of cookie failed."/>
   <int value="3" label="Deleting cookie failed."/>
+</enum>
+
+<enum name="CookieControlsMode">
+  <int value="0" label="Off"/>
+  <int value="1" label="On"/>
+  <int value="2" label="IncognitoOnly"/>
 </enum>
 
 <enum name="CookieDeleteEquivalent">

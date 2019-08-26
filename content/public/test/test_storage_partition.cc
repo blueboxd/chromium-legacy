@@ -47,7 +47,7 @@ void TestStoragePartition::CreateRestrictedCookieManager(
     bool is_service_worker,
     int process_id,
     int routing_id,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   NOTREACHED();
 }
 

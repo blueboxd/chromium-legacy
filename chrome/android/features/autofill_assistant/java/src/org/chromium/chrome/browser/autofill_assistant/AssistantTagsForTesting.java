@@ -12,9 +12,11 @@ package org.chromium.chrome.browser.autofill_assistant;
  */
 public class AssistantTagsForTesting {
     public static final String PAYMENT_REQUEST_ACCORDION_TAG = "accordion";
+    public static final String PAYMENT_REQUEST_LOGIN_SECTION_TAG = "login";
     public static final String PAYMENT_REQUEST_CONTACT_DETAILS_SECTION_TAG = "contact";
     public static final String PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_TAG = "payment";
     public static final String PAYMENT_REQUEST_SHIPPING_ADDRESS_SECTION_TAG = "shipping";
     public static final String PAYMENT_REQUEST_TERMS_REQUIRE_REVIEW = "require_review";
     public static final String VERTICAL_EXPANDER_CHEVRON = "chevron";
+    public static final String PAYMENT_REQUEST_CHOICE_LIST = "choicelist";
 }

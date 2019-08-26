@@ -490,12 +490,27 @@ void GetRestrictedCookieManager(
     int process_id,
     int frame_id,
     StoragePartition* storage_partition,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   storage_partition->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::SCRIPT,
       frame_host->GetLastCommittedOrigin(),
       /* is_service_worker = */ false, process_id, frame_id,
-      std::move(request));
+      std::move(receiver));
+}
+
+// TODO(https://crbug.com/955171): Remove this method and use
+// GetRestrictedCookieManager once RenderFrameHostImpl uses
+// service_manager::BinderMap instead of service_manager::BinderRegistry.
+void GetRestrictedCookieManagerForRequest(
+    RenderFrameHostImpl* frame_host,
+    int process_id,
+    int frame_id,
+    StoragePartition* storage_partition,
+    network::mojom::RestrictedCookieManagerRequest request) {
+  // Implicit conversion from |request| to
+  // mojo::PendingReceiver<network::mojom::RestrictedCookieManager>.
+  GetRestrictedCookieManager(frame_host, process_id, frame_id,
+                             storage_partition, std::move(request));
 }
 
 // TODO(crbug.com/977040): Remove when no longer needed.
@@ -4413,7 +4428,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   registry_->AddInterface(base::BindRepeating(
-      &GetRestrictedCookieManager, base::Unretained(this),
+      &GetRestrictedCookieManagerForRequest, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
 
   if (base::FeatureList::IsEnabled(features::kSmsReceiver) &&

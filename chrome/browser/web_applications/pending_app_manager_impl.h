@@ -29,12 +29,12 @@ class WebContents;
 
 namespace web_app {
 
+class PendingAppRegistrationTaskBase;
+
 // Installs, uninstalls, and updates any External Web Apps. This class should
 // only be used from the UI thread.
 class PendingAppManagerImpl : public PendingAppManager {
  public:
-  using WebContentsFactory =
-      base::RepeatingCallback<std::unique_ptr<content::WebContents>(Profile*)>;
 
   explicit PendingAppManagerImpl(Profile* profile);
   ~PendingAppManagerImpl() override;
@@ -51,8 +51,16 @@ class PendingAppManagerImpl : public PendingAppManager {
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
 
  protected:
+  void ReleaseWebContents();
+
   virtual std::unique_ptr<PendingAppInstallTask> CreateInstallationTask(
       ExternalInstallOptions install_options);
+
+  virtual std::unique_ptr<PendingAppRegistrationTaskBase> StartRegistration(
+      GURL launch_url);
+
+  void OnRegistrationFinished(const GURL& launch_url,
+                              RegistrationResultCode result) override;
 
   Profile* profile() { return profile_; }
 
@@ -64,6 +72,8 @@ class PendingAppManagerImpl : public PendingAppManager {
   void MaybeStartNext();
 
   void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
+
+  bool RunNextRegistration();
 
   void CreateWebContentsIfNecessary();
 
@@ -89,6 +99,10 @@ class PendingAppManagerImpl : public PendingAppManager {
   std::unique_ptr<TaskAndCallback> current_install_;
 
   base::circular_deque<std::unique_ptr<TaskAndCallback>> pending_installs_;
+
+  std::unique_ptr<PendingAppRegistrationTaskBase> current_registration_;
+
+  base::circular_deque<GURL> pending_registrations_;
 
   base::WeakPtrFactory<PendingAppManagerImpl> weak_ptr_factory_{this};
 

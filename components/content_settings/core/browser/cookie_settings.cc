@@ -24,8 +24,10 @@ namespace content_settings {
 CookieSettings::CookieSettings(
     HostContentSettingsMap* host_content_settings_map,
     PrefService* prefs,
+    bool is_incognito,
     const char* extension_scheme)
     : host_content_settings_map_(host_content_settings_map),
+      is_incognito_(is_incognito),
       extension_scheme_(extension_scheme),
       block_third_party_cookies_(false) {
   pref_change_registrar_.Init(prefs);
@@ -34,7 +36,7 @@ CookieSettings::CookieSettings(
       base::Bind(&CookieSettings::OnCookiePreferencesChanged,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kCookieControlsEnabled,
+      prefs::kCookieControlsMode,
       base::Bind(&CookieSettings::OnCookiePreferencesChanged,
                  base::Unretained(this)));
   OnCookiePreferencesChanged();
@@ -57,8 +59,9 @@ void CookieSettings::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kBlockThirdPartyCookies, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kCookieControlsEnabled, false,
+  registry->RegisterIntegerPref(
+      prefs::kCookieControlsMode,
+      static_cast<int>(CookieControlsMode::kIncognitoOnly),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
@@ -179,15 +182,31 @@ void CookieSettings::GetCookieSettingInternal(
 CookieSettings::~CookieSettings() {
 }
 
+bool CookieSettings::IsCookieControlsEnabled() {
+  if (!base::FeatureList::IsEnabled(kImprovedCookieControls))
+    return false;
+
+  CookieControlsMode mode = static_cast<CookieControlsMode>(
+      pref_change_registrar_.prefs()->GetInteger(prefs::kCookieControlsMode));
+
+  switch (mode) {
+    case CookieControlsMode::kOn:
+      return true;
+    case CookieControlsMode::kIncognitoOnly:
+      return is_incognito_;
+    case CookieControlsMode::kOff:
+      return false;
+  }
+  return false;
+}
+
 void CookieSettings::OnCookiePreferencesChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool new_block_third_party_cookies =
       pref_change_registrar_.prefs()->GetBoolean(
           prefs::kBlockThirdPartyCookies) ||
-      (base::FeatureList::IsEnabled(kImprovedCookieControls) &&
-       pref_change_registrar_.prefs()->GetBoolean(
-           prefs::kCookieControlsEnabled));
+      IsCookieControlsEnabled();
 
   // Safe to read |block_third_party_cookies_| without locking here because the
   // only place that writes to it is this method and it will always be run on

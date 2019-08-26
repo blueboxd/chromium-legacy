@@ -50,7 +50,7 @@ void AwProxyingRestrictedCookieManager::CreateAndBind(
     bool is_service_worker,
     int process_id,
     int frame_id,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTask(
@@ -58,7 +58,7 @@ void AwProxyingRestrictedCookieManager::CreateAndBind(
       base::BindOnce(
           &AwProxyingRestrictedCookieManager::CreateAndBindOnIoThread,
           std::move(underlying_rcm), is_service_worker, process_id, frame_id,
-          std::move(request)));
+          std::move(receiver)));
 }
 
 AwProxyingRestrictedCookieManager::~AwProxyingRestrictedCookieManager() {
@@ -182,12 +182,12 @@ void AwProxyingRestrictedCookieManager::CreateAndBindOnIoThread(
     bool is_service_worker,
     int process_id,
     int frame_id,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   auto wrapper = base::WrapUnique(new AwProxyingRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerPtr(std::move(underlying_rcm)),
       is_service_worker, process_id, frame_id));
-  mojo::MakeStrongBinding(std::move(wrapper), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(wrapper), std::move(receiver));
 }
 
 bool AwProxyingRestrictedCookieManager::AllowCookies(

@@ -42,7 +42,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/disk_cache/disk_cache.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -91,11 +91,11 @@ using ResponseHeaderMap = base::flat_map<std::string, std::string>;
 
 class DelayedBlob : public storage::FakeBlob {
  public:
-  DelayedBlob(blink::mojom::BlobRequest request,
+  DelayedBlob(mojo::PendingReceiver<blink::mojom::Blob> receiver,
               std::string data,
               base::OnceClosure read_closure)
       : FakeBlob("foo"),
-        binding_(this, std::move(request)),
+        receiver_(this, std::move(receiver)),
         data_(std::move(data)),
         read_closure_(std::move(read_closure)) {}
 
@@ -134,7 +134,7 @@ class DelayedBlob : public storage::FakeBlob {
     producer_handle_.reset();
   }
 
-  mojo::Binding<blink::mojom::Blob> binding_;
+  mojo::Receiver<blink::mojom::Blob> receiver_;
   std::string data_;
   base::OnceClosure read_closure_;
   mojo::Remote<blink::mojom::BlobReaderClient> client_;

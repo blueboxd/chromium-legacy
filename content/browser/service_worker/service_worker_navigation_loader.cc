@@ -24,6 +24,8 @@
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 
@@ -50,12 +52,11 @@ std::string ComposeFetchEventResultString(
 class ServiceWorkerNavigationLoader::StreamWaiter
     : public blink::mojom::ServiceWorkerStreamCallback {
  public:
-  StreamWaiter(
-      ServiceWorkerNavigationLoader* owner,
-      blink::mojom::ServiceWorkerStreamCallbackRequest callback_request)
-      : owner_(owner),
-        binding_(this, std::move(callback_request)) {
-    binding_.set_connection_error_handler(
+  StreamWaiter(ServiceWorkerNavigationLoader* owner,
+               mojo::PendingReceiver<blink::mojom::ServiceWorkerStreamCallback>
+                   callback_receiver)
+      : owner_(owner), receiver_(this, std::move(callback_receiver)) {
+    receiver_.set_disconnect_handler(
         base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
   }
 
@@ -71,7 +72,7 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 
  private:
   ServiceWorkerNavigationLoader* owner_;
-  mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
+  mojo::Receiver<blink::mojom::ServiceWorkerStreamCallback> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
 };
@@ -377,7 +378,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "result", "stream response");
     stream_waiter_ = std::make_unique<StreamWaiter>(
-        this, std::move(body_as_stream->callback_request));
+        this, std::move(body_as_stream->callback_receiver));
     CommitResponseBody(std::move(body_as_stream->stream));
     // StreamWaiter will call CommitCompleted() when done.
     return;

@@ -30,7 +30,6 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -131,7 +130,7 @@ IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
     uuid_ = base::GenerateGUID();
   }
   (*blob_or_file_info)->uuid = uuid_;
-  request_ = mojo::MakeRequest(&(*blob_or_file_info)->blob);
+  receiver_ = mojo::MakeRequest(&(*blob_or_file_info)->blob);
 }
 IndexedDBCallbacks::IndexedDBValueBlob::IndexedDBValueBlob(
     IndexedDBValueBlob&& other) = default;
@@ -201,7 +200,7 @@ bool IndexedDBCallbacks::CreateAllBlobs(
                       inner_idb_runner.get(), inner_value_blobs[i].blob_info_);
               storage::BlobImpl::Create(
                   std::move(blob_data),
-                  std::move(inner_value_blobs[i].request_));
+                  std::move(inner_value_blobs[i].receiver_));
             }
             *inner_result = true;
           },

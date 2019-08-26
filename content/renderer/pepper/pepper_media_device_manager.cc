@@ -15,6 +15,7 @@
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -123,9 +124,9 @@ size_t PepperMediaDeviceManager::StartMonitoringDevices(
   bool subscribe_audio_output = type == PP_DEVICETYPE_DEV_AUDIOOUTPUT;
   CHECK(subscribe_audio_input || subscribe_video_input ||
         subscribe_audio_output);
-  blink::mojom::MediaDevicesListenerPtr listener;
+  mojo::PendingRemote<blink::mojom::MediaDevicesListener> listener;
   size_t subscription_id =
-      bindings_.AddBinding(this, mojo::MakeRequest(&listener));
+      receivers_.Add(this, listener.InitWithNewPipeAndPassReceiver());
   GetMediaDevicesDispatcher()->AddMediaDevicesListener(
       subscribe_audio_input, subscribe_video_input, subscribe_audio_output,
       std::move(listener));
@@ -144,7 +145,7 @@ void PepperMediaDeviceManager::StopMonitoringDevices(PP_DeviceType_Dev type,
                 [subscription_id](const Subscription& subscription) {
                   return subscription.first == subscription_id;
                 });
-  bindings_.RemoveBinding(subscription_id);
+  receivers_.Remove(subscription_id);
 }
 
 int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,

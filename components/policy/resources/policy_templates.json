@@ -5886,19 +5886,19 @@
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:65-'],
       'features': {
-        # The case where a user is already signed into an unmanaged account from the content area cannot be handled right now and hence this is not dynamic.
+        # The case where a user is already signed into an unmanaged account cannot be handled right now and hence this is not dynamic.
         'dynamic_refresh': False,
         'per_profile': True,
       },
       'example_value': False,
       'id': 406,
-      'caption': '''Allow Multiple Sign-in Within the Browser''',
+      'caption': '''Allow Sign-in To Additional Google Accounts''',
       'tags': [],
-      'desc': '''This setting allows users to switch between Google accounts within the content area of their browser window after they sign into their <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device.
+      'desc': '''This setting allows users to switch between Google Accounts within the content area of their browser window and in Android applications, after they sign into their <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device.
 
-      If this policy is set to false, signing in to a different account from non-Incognito browser content area will not be allowed.
+      If this policy is set to false, signing in to a different Google Account from a non-Incognito browser content area and Android applications will not be allowed.
 
-      If this policy is unset or set to true, the default behavior will be used: signing in to a different account from the browser content area will be allowed, except for child accounts where it will be blocked for non-Incognito content area.
+      If this policy is unset or set to true, the default behavior will be used: signing in to a different Google Account from the browser content area and Android applications will be allowed, except for child accounts where it will be blocked for non-Incognito content area.
 
       In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy.
 

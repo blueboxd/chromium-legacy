@@ -218,17 +218,14 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
     : MediaStreamTrack(context,
                        component,
-                       component->Source()->GetReadyState(),
-                       false /* stopped */) {}
+                       component->Source()->GetReadyState()) {}
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component,
-                                   MediaStreamSource::ReadyState ready_state,
-                                   bool stopped)
-    : ContextLifecycleObserver(context),
-      ready_state_(ready_state),
-      stopped_(stopped),
-      component_(component) {
+                                   MediaStreamSource::ReadyState ready_state)
+    : ready_state_(ready_state),
+      component_(component),
+      execution_context_(context) {
   component_->Source()->AddObserver(this);
 
   // If the source is already non-live at this point, the observer won't have
@@ -380,8 +377,7 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
 MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
   MediaStreamComponent* cloned_component = Component()->Clone();
   MediaStreamTrack* cloned_track = MakeGarbageCollected<MediaStreamTrack>(
-      ExecutionContext::From(script_state), cloned_component, ready_state_,
-      stopped_);
+      ExecutionContext::From(script_state), cloned_component, ready_state_);
   DidCloneMediaStreamTrack(Component(), cloned_component);
   return cloned_track;
 }
@@ -705,7 +701,8 @@ void MediaStreamTrack::applyConstraintsImageCapture(
 }
 
 bool MediaStreamTrack::Ended() const {
-  return stopped_ || (ready_state_ == MediaStreamSource::kReadyStateEnded);
+  return (execution_context_ && execution_context_->IsContextDestroyed()) ||
+         (ready_state_ == MediaStreamSource::kReadyStateEnded);
 }
 
 void MediaStreamTrack::SourceChangedState() {
@@ -737,10 +734,6 @@ void MediaStreamTrack::PropagateTrackEnded() {
        iter != registered_media_streams_.end(); ++iter)
     (*iter)->TrackEnded();
   is_iterating_registered_media_streams_ = false;
-}
-
-void MediaStreamTrack::ContextDestroyed(ExecutionContext*) {
-  stopped_ = true;
 }
 
 bool MediaStreamTrack::HasPendingActivity() const {
@@ -785,15 +778,15 @@ const AtomicString& MediaStreamTrack::InterfaceName() const {
 }
 
 ExecutionContext* MediaStreamTrack::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return execution_context_.Get();
 }
 
 void MediaStreamTrack::Trace(blink::Visitor* visitor) {
   visitor->Trace(registered_media_streams_);
   visitor->Trace(component_);
   visitor->Trace(image_capture_);
+  visitor->Trace(execution_context_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

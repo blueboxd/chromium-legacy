@@ -53,6 +53,7 @@ void StyleInvalidator::Invalidate(Document& document, Element* root_element) {
   }
   document.ClearChildNeedsStyleInvalidation();
   pending_invalidation_map_.clear();
+  pending_nth_sets_.clear();
 }
 
 StyleInvalidator::StyleInvalidator(
@@ -190,10 +191,17 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
   NodeInvalidationSets& pending_invalidations =
       pending_invalidations_iterator->value;
 
+  DCHECK(pending_nth_sets_.IsEmpty());
+
   for (const auto& invalidation_set : pending_invalidations.Siblings()) {
     CHECK(invalidation_set->IsAlive());
-    sibling_data.PushInvalidationSet(
-        To<SiblingInvalidationSet>(*invalidation_set));
+    if (invalidation_set->IsNthSiblingInvalidationSet()) {
+      AddPendingNthSiblingInvalidationSet(
+          To<NthSiblingInvalidationSet>(*invalidation_set));
+    } else {
+      sibling_data.PushInvalidationSet(
+          To<SiblingInvalidationSet>(*invalidation_set));
+    }
   }
 
   if (node.GetStyleChangeType() >= kSubtreeStyleChange)
@@ -236,9 +244,13 @@ void StyleInvalidator::InvalidateShadowRootChildren(Element& element) {
     SiblingData sibling_data;
     if (!WholeSubtreeInvalid()) {
       if (UNLIKELY(root->NeedsStyleInvalidation())) {
+        // The shadow root does not have any siblings. There should never be any
+        // other sets than the nth set to schedule.
+        DCHECK(sibling_data.IsEmpty());
         PushInvalidationSetsForContainerNode(*root, sibling_data);
       }
     }
+    PushNthSiblingInvalidationSets(sibling_data);
     for (Element* child = ElementTraversal::FirstChild(*root); child;
          child = ElementTraversal::NextSibling(*child)) {
       Invalidate(*child, sibling_data);
@@ -249,10 +261,11 @@ void StyleInvalidator::InvalidateShadowRootChildren(Element& element) {
 }
 
 void StyleInvalidator::InvalidateChildren(Element& element) {
-  SiblingData sibling_data;
-  if (UNLIKELY(!!element.GetShadowRoot())) {
+  if (UNLIKELY(!!element.GetShadowRoot()))
     InvalidateShadowRootChildren(element);
-  }
+
+  SiblingData sibling_data;
+  PushNthSiblingInvalidationSets(sibling_data);
 
   for (Element* child = ElementTraversal::FirstChild(element); child;
        child = ElementTraversal::NextSibling(*child)) {

@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
-#include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -43,30 +42,29 @@ void NGTextPainter::Paint(unsigned start_offset,
 
 template <NGTextPainter::PaintInternalStep step>
 void NGTextPainter::PaintInternalFragment(
-    NGTextFragmentPaintInfo& fragment_paint_info,
     unsigned from,
     unsigned to,
     DOMNodeId node_id) {
-  DCHECK(from <= fragment_paint_info.text.length());
-  DCHECK(to <= fragment_paint_info.text.length());
+  DCHECK(from <= fragment_paint_info_.text.length());
+  DCHECK(to <= fragment_paint_info_.text.length());
 
-  fragment_paint_info.from = from;
-  fragment_paint_info.to = to;
+  fragment_paint_info_.from = from;
+  fragment_paint_info_.to = to;
 
   if (step == kPaintEmphasisMark) {
     graphics_context_.DrawEmphasisMarks(
-        font_, fragment_paint_info, emphasis_mark_,
+        font_, fragment_paint_info_, emphasis_mark_,
         FloatPoint(text_origin_) + IntSize(0, emphasis_mark_offset_));
   } else {
     DCHECK(step == kPaintText);
-    graphics_context_.DrawText(font_, fragment_paint_info,
+    graphics_context_.DrawText(font_, fragment_paint_info_,
                                FloatPoint(text_origin_), node_id);
     // TODO(npm): Check that there are non-whitespace characters. See
     // crbug.com/788444.
     graphics_context_.GetPaintController().SetTextPainted();
 
     if (!font_.ShouldSkipDrawing())
-      PaintTimingDetector::NotifyTextPaint(paint_fragment_.VisualRect());
+      PaintTimingDetector::NotifyTextPaint(visual_rect_);
   }
 }
 
@@ -76,21 +74,17 @@ void NGTextPainter::PaintInternal(unsigned start_offset,
                                   unsigned truncation_point,
                                   DOMNodeId node_id) {
   // TODO(layout-dev): We shouldn't be creating text fragments without text.
-  if (!fragment_.TextShapeResult())
+  if (!fragment_paint_info_.shape_result)
     return;
 
-  NGTextFragmentPaintInfo paint_info = fragment_.PaintInfo();
-
   if (start_offset <= end_offset) {
-    PaintInternalFragment<Step>(paint_info, start_offset, end_offset, node_id);
+    PaintInternalFragment<Step>(start_offset, end_offset, node_id);
   } else {
     if (end_offset > 0) {
-      PaintInternalFragment<Step>(paint_info, ellipsis_offset_, end_offset,
-                                  node_id);
+      PaintInternalFragment<Step>(ellipsis_offset_, end_offset, node_id);
     }
     if (start_offset < truncation_point) {
-      PaintInternalFragment<Step>(paint_info, start_offset, truncation_point,
-                                  node_id);
+      PaintInternalFragment<Step>(start_offset, truncation_point, node_id);
     }
   }
 }
@@ -98,13 +92,13 @@ void NGTextPainter::PaintInternal(unsigned start_offset,
 void NGTextPainter::ClipDecorationsStripe(float upper,
                                           float stripe_width,
                                           float dilation) {
-  if (!fragment_.Length() || !fragment_.TextShapeResult())
+  if (fragment_paint_info_.from >= fragment_paint_info_.to ||
+      !fragment_paint_info_.shape_result)
     return;
 
-  NGTextFragmentPaintInfo fragment_paint_info = fragment_.PaintInfo();
   Vector<Font::TextIntercept> text_intercepts;
   font_.GetTextIntercepts(
-      fragment_paint_info, graphics_context_.DeviceScaleFactor(),
+      fragment_paint_info_, graphics_context_.DeviceScaleFactor(),
       graphics_context_.FillFlags(),
       std::make_tuple(upper, upper + stripe_width), text_intercepts);
 

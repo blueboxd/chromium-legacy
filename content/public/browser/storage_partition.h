@@ -113,7 +113,8 @@ class CONTENT_EXPORT StoragePartition {
       bool is_service_worker,
       int process_id,
       int routing_id,
-      network::mojom::RestrictedCookieManagerRequest request) = 0;
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
+          receiver) = 0;
 
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;

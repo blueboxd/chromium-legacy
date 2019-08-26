@@ -163,7 +163,6 @@ PresentationConnection::PresentationConnection(LocalFrame& frame,
       id_(id),
       url_(url),
       state_(mojom::blink::PresentationConnectionState::CONNECTING),
-      connection_binding_(this),
       binary_type_(kBinaryTypeArrayBuffer),
       file_reading_task_runner_(frame.GetTaskRunner(TaskType::kFileReading)) {}
 
@@ -271,21 +270,22 @@ void ControllerPresentationConnection::Trace(blink::Visitor* visitor) {
 }
 
 void ControllerPresentationConnection::Init(
-    mojom::blink::PresentationConnectionPtr connection_ptr,
-    mojom::blink::PresentationConnectionRequest connection_request) {
+    mojo::PendingRemote<mojom::blink::PresentationConnection> connection_remote,
+    mojo::PendingReceiver<mojom::blink::PresentationConnection>
+        connection_receiver) {
   // Note that it is possible for the binding to be already bound here, because
   // the ControllerPresentationConnection object could be reused when
   // reconnecting in the same frame. In this case the existing connections are
   // discarded.
-  if (connection_binding_.is_bound()) {
-    connection_binding_.Close();
+  if (connection_receiver_.is_bound()) {
+    connection_receiver_.reset();
     target_connection_.reset();
   }
 
   DidChangeState(mojom::blink::PresentationConnectionState::CONNECTING);
-  target_connection_ = std::move(connection_ptr);
-  connection_binding_.Bind(
-      std::move(connection_request),
+  target_connection_.Bind(std::move(connection_remote));
+  connection_receiver_.Bind(
+      std::move(connection_receiver),
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
 }
 
@@ -305,8 +305,10 @@ void ControllerPresentationConnection::TerminateInternal() {
 ReceiverPresentationConnection* ReceiverPresentationConnection::Take(
     PresentationReceiver* receiver,
     const mojom::blink::PresentationInfo& presentation_info,
-    mojom::blink::PresentationConnectionPtr controller_connection,
-    mojom::blink::PresentationConnectionRequest receiver_connection_request) {
+    mojo::PendingRemote<mojom::blink::PresentationConnection>
+        controller_connection,
+    mojo::PendingReceiver<mojom::blink::PresentationConnection>
+        receiver_connection_receiver) {
   DCHECK(receiver);
 
   ReceiverPresentationConnection* connection =
@@ -314,7 +316,7 @@ ReceiverPresentationConnection* ReceiverPresentationConnection::Take(
           *receiver->GetFrame(), receiver, presentation_info.id,
           presentation_info.url);
   connection->Init(std::move(controller_connection),
-                   std::move(receiver_connection_request));
+                   std::move(receiver_connection_receiver));
 
   receiver->RegisterConnection(connection);
 
@@ -331,11 +333,13 @@ ReceiverPresentationConnection::ReceiverPresentationConnection(
 ReceiverPresentationConnection::~ReceiverPresentationConnection() = default;
 
 void ReceiverPresentationConnection::Init(
-    mojom::blink::PresentationConnectionPtr controller_connection_ptr,
-    mojom::blink::PresentationConnectionRequest receiver_connection_request) {
-  target_connection_ = std::move(controller_connection_ptr);
-  connection_binding_.Bind(
-      std::move(receiver_connection_request),
+    mojo::PendingRemote<mojom::blink::PresentationConnection>
+        controller_connection_remote,
+    mojo::PendingReceiver<mojom::blink::PresentationConnection>
+        receiver_connection_receiver) {
+  target_connection_.Bind(std::move(controller_connection_remote));
+  connection_receiver_.Bind(
+      std::move(receiver_connection_receiver),
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
 
   target_connection_->DidChangeState(
@@ -410,7 +414,7 @@ void PresentationConnection::AddedEventListener(
 void PresentationConnection::ContextDestroyed(ExecutionContext*) {
   DoClose(mojom::blink::PresentationConnectionCloseReason::WENT_AWAY);
   target_connection_.reset();
-  connection_binding_.Close();
+  connection_receiver_.reset();
 }
 
 void PresentationConnection::Trace(blink::Visitor* visitor) {

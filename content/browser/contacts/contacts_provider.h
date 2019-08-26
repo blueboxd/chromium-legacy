@@ -13,7 +13,8 @@ class ContactsProvider {
  public:
   using ContactsSelectedCallback = base::OnceCallback<void(
       base::Optional<std::vector<blink::mojom::ContactInfoPtr>> contacts,
-      int percentage_shared)>;
+      int percentage_shared,
+      int properties_requested)>;
 
   ContactsProvider() = default;
   virtual ~ContactsProvider() = default;

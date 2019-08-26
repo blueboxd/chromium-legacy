@@ -3961,7 +3961,6 @@ void LocalFrameView::CrossOriginStatusChanged() {
   // If any of these conditions hold, then a change in cross-origin status does
   // not affect throttling.
   if (lifecycle_updates_throttled_ ||
-      !RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled() ||
       IsSubtreeThrottled() || !IsHiddenForThrottling()) {
     return;
   }
@@ -4115,8 +4114,6 @@ bool LocalFrameView::ShouldThrottleRendering() const {
 bool LocalFrameView::CanThrottleRendering() const {
   if (lifecycle_updates_throttled_)
     return true;
-  if (!RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled())
-    return false;
   if (IsSubtreeThrottled())
     return true;
   // We only throttle hidden cross-origin frames. This is to avoid a situation

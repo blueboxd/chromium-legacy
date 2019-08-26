@@ -1375,12 +1375,12 @@ void StoragePartitionImpl::CreateRestrictedCookieManager(
     bool is_service_worker,
     int process_id,
     int routing_id,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK(initialized_);
   if (!GetContentClient()->browser()->WillCreateRestrictedCookieManager(
           role, browser_context_, origin, is_service_worker, process_id,
-          routing_id, &request)) {
-    GetNetworkContext()->GetRestrictedCookieManager(std::move(request), role,
+          routing_id, &receiver)) {
+    GetNetworkContext()->GetRestrictedCookieManager(std::move(receiver), role,
                                                     origin, is_service_worker,
                                                     process_id, routing_id);
   }

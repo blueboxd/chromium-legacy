@@ -1296,15 +1296,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // access to script-accessible cookies from JavaScript, so returned objects
   // should treat their inputs as untrusted.
   //
-  // |*request| is always valid upon entry.
+  // |*receiver| is always valid upon entry.
   //
   // If this methods returns true, it should have created an object bound to
-  // |*request|, and the value of |*request| afterwards is unusable.
+  // |*receiver|, and the value of |*receiver| afterwards is unusable.
   //
   // If the method returns false, it's the caller's responsibility to create
-  // an appropriate RestrictedCookieManager bound to the value of |*request|
+  // an appropriate RestrictedCookieManager bound to the value of |*receiver|
   // after it finishes executing --- the implementation is permitted to swap out
-  // the value of |*request| for a different one (which permits interposition
+  // the value of |*receiver| for a different one (which permits interposition
   // of a proxy object).
   //
   // If |is_service_worker| is false, then |process_id| and |routing_id|
@@ -1320,7 +1320,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_service_worker,
       int process_id,
       int routing_id,
-      network::mojom::RestrictedCookieManagerRequest* request);
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager>* receiver);
 
   // Allows the embedder to returns a list of request interceptors that can
   // intercept a navigation request.

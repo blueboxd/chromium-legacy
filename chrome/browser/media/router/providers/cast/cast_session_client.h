@@ -17,7 +17,8 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/origin.h"
 
@@ -178,13 +179,14 @@ class CastSessionClientImpl : public CastSessionClient,
   // sequence numbers can be used directly without generating request IDs.
   base::flat_map<int, int> pending_media_requests_;
 
-  // Binding for the PresentationConnection in Blink to receive incoming
+  // Receiver for the PresentationConnection in Blink to receive incoming
   // messages and respond to state changes.
-  mojo::Binding<blink::mojom::PresentationConnection> connection_binding_;
+  mojo::Receiver<blink::mojom::PresentationConnection> connection_receiver_{
+      this};
 
   // Mojo message pipe to PresentationConnection in Blink to send messages and
   // initiate state changes.
-  blink::mojom::PresentationConnectionPtr connection_;
+  mojo::Remote<blink::mojom::PresentationConnection> connection_remote_;
 
   base::WeakPtrFactory<CastSessionClientImpl> weak_ptr_factory_{this};
 };

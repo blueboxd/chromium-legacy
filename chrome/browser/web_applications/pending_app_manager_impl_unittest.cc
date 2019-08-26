@@ -22,11 +22,13 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/pending_app_install_task.h"
+#include "chrome/browser/web_applications/pending_app_registration_task.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
+#include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +43,10 @@ using UninstallAppsResults = std::vector<std::pair<GURL, bool>>;
 const GURL kFooWebAppUrl("https://foo.example");
 const GURL kBarWebAppUrl("https://bar.example");
 const GURL kQuxWebAppUrl("https://qux.example");
+
+const GURL kFooLaunchUrl("https://foo.example/launch");
+const GURL kBarLaunchUrl("https://bar.example/launch");
+const GURL kQuxLaunchUrl("https://qux.example/launch");
 
 ExternalInstallOptions GetFooInstallOptions(
     base::Optional<bool> override_previous_user_uninstall =
@@ -80,6 +86,8 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
 
   ~TestPendingAppManagerImpl() override {
     DCHECK(next_installation_task_results_.empty());
+    DCHECK(next_installation_launch_urls_.empty());
+    DCHECK(!preempt_registration_callback_);
   }
 
   size_t install_run_count() { return install_run_count_; }
@@ -88,16 +96,45 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
     return install_options_list_;
   }
 
+  size_t registration_run_count() { return registration_run_count_; }
+
+  const GURL& last_registered_launch_url() {
+    return last_registered_launch_url_;
+  }
+
   void SetNextInstallationTaskResult(const GURL& app_url,
                                      InstallResultCode result_code) {
     DCHECK(!base::Contains(next_installation_task_results_, app_url));
     next_installation_task_results_[app_url] = result_code;
   }
 
+  void SetNextInstallationLaunchURL(const GURL& app_url,
+                                    const GURL& launch_url) {
+    DCHECK(!base::Contains(next_installation_launch_urls_, app_url));
+    next_installation_launch_urls_[app_url] = launch_url;
+  }
+
+  bool MaybePreemptRegistration() {
+    if (!preempt_registration_callback_)
+      return false;
+
+    base::Optional<base::OnceClosure> callback;
+    preempt_registration_callback_.swap(callback);
+    std::move(*callback).Run();
+    return true;
+  }
+
   std::unique_ptr<PendingAppInstallTask> CreateInstallationTask(
       ExternalInstallOptions install_options) override {
     return std::make_unique<TestPendingAppInstallTask>(
         this, profile(), std::move(install_options));
+  }
+
+  std::unique_ptr<PendingAppRegistrationTaskBase> StartRegistration(
+      GURL launch_url) override {
+    ++registration_run_count_;
+    last_registered_launch_url_ = launch_url;
+    return std::make_unique<TestPendingAppRegistrationTask>(launch_url, this);
   }
 
   void OnInstallCalled(const ExternalInstallOptions& install_options) {
@@ -110,6 +147,24 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
     auto result = next_installation_task_results_.at(url);
     next_installation_task_results_.erase(url);
     return result;
+  }
+
+  GURL GetNextInstallationLaunchURL(const GURL& url) {
+    if (!base::Contains(next_installation_launch_urls_, url))
+      return GURL::EmptyGURL();
+
+    auto result = next_installation_launch_urls_.at(url);
+    next_installation_launch_urls_.erase(url);
+    return result;
+  }
+
+  void WaitForRegistrationAndCancel() {
+    DCHECK(!preempt_registration_callback_);
+
+    base::RunLoop run_loop;
+    preempt_registration_callback_ =
+        base::BindLambdaForTesting([&run_loop]() { run_loop.Quit(); });
+    run_loop.Run();
   }
 
   TestAppRegistrar* registrar() { return test_app_registrar_; }
@@ -141,8 +196,12 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
           pending_app_manager_impl_->GetNextInstallationTaskResult(install_url);
       if (result_code == InstallResultCode::kSuccess) {
         app_id = GenerateFakeAppId(install_url);
+        GURL launch_url =
+            pending_app_manager_impl_->GetNextInstallationLaunchURL(
+                install_url);
         pending_app_manager_impl_->registrar()->AddExternalApp(
-            *app_id, {install_url, install_options().install_source});
+            *app_id,
+            {install_url, install_options().install_source, launch_url});
         externally_installed_app_prefs_.Insert(
             install_url, *app_id, install_options().install_source);
         const bool is_placeholder =
@@ -160,12 +219,46 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
     DISALLOW_COPY_AND_ASSIGN(TestPendingAppInstallTask);
   };
 
+  class TestPendingAppRegistrationTask : public PendingAppRegistrationTaskBase {
+   public:
+    TestPendingAppRegistrationTask(
+        const GURL& launch_url,
+        TestPendingAppManagerImpl* pending_app_manager_impl)
+        : PendingAppRegistrationTaskBase(launch_url),
+          pending_app_manager_impl_(pending_app_manager_impl) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&TestPendingAppRegistrationTask::OnProgress,
+                         weak_ptr_factory_.GetWeakPtr(), launch_url));
+    }
+    ~TestPendingAppRegistrationTask() override = default;
+
+   private:
+    void OnProgress(GURL launch_url) {
+      if (pending_app_manager_impl_->MaybePreemptRegistration())
+        return;
+      pending_app_manager_impl_->OnRegistrationFinished(
+          launch_url, RegistrationResultCode::kSuccess);
+    }
+
+    TestPendingAppManagerImpl* const pending_app_manager_impl_;
+
+    base::WeakPtrFactory<TestPendingAppRegistrationTask> weak_ptr_factory_{
+        this};
+
+    DISALLOW_COPY_AND_ASSIGN(TestPendingAppRegistrationTask);
+  };
+
   TestAppRegistrar* test_app_registrar_;
 
   std::vector<ExternalInstallOptions> install_options_list_;
+  GURL last_registered_launch_url_;
   size_t install_run_count_ = 0;
+  size_t registration_run_count_ = 0;
 
   std::map<GURL, InstallResultCode> next_installation_task_results_;
+  std::map<GURL, GURL> next_installation_launch_urls_;
+  base::Optional<base::OnceClosure> preempt_registration_callback_;
 };
 
 }  // namespace
@@ -278,12 +371,23 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
     return pending_app_manager_impl_->install_run_count();
   }
 
+  // Number of times PendingAppManagerImpl::StartRegistration was called.
+  // Reflects how many times we've tried to cache service worker resources
+  // for a web app.
+  size_t registration_run_count() {
+    return pending_app_manager_impl_->registration_run_count();
+  }
+
   size_t uninstall_call_count() {
     return install_finalizer_->uninstall_external_web_app_urls().size();
   }
 
   const std::vector<GURL>& uninstalled_app_urls() {
     return install_finalizer_->uninstall_external_web_app_urls();
+  }
+
+  const GURL& last_registered_launch_url() {
+    return pending_app_manager_impl_->last_registered_launch_url();
   }
 
   const GURL& last_uninstalled_app_url() {
@@ -315,6 +419,8 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
 TEST_F(PendingAppManagerImplTest, Install_Succeeds) {
   pending_app_manager_impl()->SetNextInstallationTaskResult(
       kFooWebAppUrl, InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationLaunchURL(kFooWebAppUrl,
+                                                           kFooLaunchUrl);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   base::Optional<GURL> url;
@@ -327,11 +433,18 @@ TEST_F(PendingAppManagerImplTest, Install_Succeeds) {
 
   EXPECT_EQ(1u, install_run_count());
   EXPECT_EQ(GetFooInstallOptions(), last_install_options());
+
+  WebAppRegistrationWaiter(pending_app_manager_impl())
+      .AwaitNextRegistration(kFooLaunchUrl, RegistrationResultCode::kSuccess);
+  EXPECT_EQ(1U, registration_run_count());
+  EXPECT_EQ(kFooLaunchUrl, last_registered_launch_url());
 }
 
 TEST_F(PendingAppManagerImplTest, Install_SerialCallsDifferentApps) {
   pending_app_manager_impl()->SetNextInstallationTaskResult(
       kFooWebAppUrl, InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationLaunchURL(kFooWebAppUrl,
+                                                           kFooLaunchUrl);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   {
@@ -347,8 +460,14 @@ TEST_F(PendingAppManagerImplTest, Install_SerialCallsDifferentApps) {
     EXPECT_EQ(GetFooInstallOptions(), last_install_options());
   }
 
+  pending_app_manager_impl()->WaitForRegistrationAndCancel();
+  // kFooLaunchUrl registration will be attempted again after
+  // kBarWebAppUrl installs.
+
   pending_app_manager_impl()->SetNextInstallationTaskResult(
       kBarWebAppUrl, InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationLaunchURL(kBarWebAppUrl,
+                                                           kBarLaunchUrl);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   {
@@ -364,6 +483,13 @@ TEST_F(PendingAppManagerImplTest, Install_SerialCallsDifferentApps) {
     EXPECT_EQ(2u, install_run_count());
     EXPECT_EQ(GetBarInstallOptions(), last_install_options());
   }
+
+  WebAppRegistrationWaiter(pending_app_manager_impl())
+      .AwaitNextRegistration(kFooLaunchUrl, RegistrationResultCode::kSuccess);
+  WebAppRegistrationWaiter(pending_app_manager_impl())
+      .AwaitNextRegistration(kBarLaunchUrl, RegistrationResultCode::kSuccess);
+  EXPECT_EQ(3U, registration_run_count());
+  EXPECT_EQ(kBarLaunchUrl, last_registered_launch_url());
 }
 
 TEST_F(PendingAppManagerImplTest, Install_ConcurrentCallsDifferentApps) {
@@ -834,18 +960,22 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstallApps) {
 TEST_F(PendingAppManagerImplTest, Install_PendingMulitpleInstallApps) {
   pending_app_manager_impl()->SetNextInstallationTaskResult(
       kFooWebAppUrl, InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationLaunchURL(kFooWebAppUrl,
+                                                           kFooLaunchUrl);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   pending_app_manager_impl()->SetNextInstallationTaskResult(
       kBarWebAppUrl, InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationLaunchURL(kBarWebAppUrl,
+                                                           kBarLaunchUrl);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   pending_app_manager_impl()->SetNextInstallationTaskResult(
       kQuxWebAppUrl, InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationLaunchURL(kQuxWebAppUrl,
+                                                           kQuxLaunchUrl);
   url_loader()->SetNextLoadUrlResult(kQuxWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-
-  base::RunLoop run_loop;
 
   std::vector<ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
@@ -869,8 +999,6 @@ TEST_F(PendingAppManagerImplTest, Install_PendingMulitpleInstallApps) {
 
           EXPECT_EQ(3u, install_run_count());
           EXPECT_EQ(GetBarInstallOptions(), last_install_options());
-
-          run_loop.Quit();
         } else {
           NOTREACHED();
         }
@@ -888,7 +1016,14 @@ TEST_F(PendingAppManagerImplTest, Install_PendingMulitpleInstallApps) {
         EXPECT_EQ(GetQuxInstallOptions(), last_install_options());
       }));
 
-  run_loop.Run();
+  WebAppRegistrationWaiter(pending_app_manager_impl())
+      .AwaitNextRegistration(kQuxLaunchUrl, RegistrationResultCode::kSuccess);
+  WebAppRegistrationWaiter(pending_app_manager_impl())
+      .AwaitNextRegistration(kFooLaunchUrl, RegistrationResultCode::kSuccess);
+  WebAppRegistrationWaiter(pending_app_manager_impl())
+      .AwaitNextRegistration(kBarLaunchUrl, RegistrationResultCode::kSuccess);
+  EXPECT_EQ(3U, registration_run_count());
+  EXPECT_EQ(kBarLaunchUrl, last_registered_launch_url());
 }
 
 TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstall) {

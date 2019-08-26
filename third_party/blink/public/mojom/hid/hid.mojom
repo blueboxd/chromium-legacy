@@ -85,6 +85,6 @@ interface HidService {
   // will be notified when an input report is received from the device.
   // |connection| contains the opened connection, or nullptr if the device could
   // not be opened.
-  Connect(string device_guid, device.mojom.HidConnectionClient client)
+  Connect(string device_guid, pending_remote<device.mojom.HidConnectionClient> client)
       => (device.mojom.HidConnection? connection);
 };

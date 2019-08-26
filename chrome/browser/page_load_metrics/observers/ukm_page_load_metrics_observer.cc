@@ -619,10 +619,10 @@ UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled(
     return base::nullopt;
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
-  if (!profile->GetPrefs()->GetBoolean(prefs::kCookieControlsEnabled))
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
+  if (!cookie_settings->IsCookieControlsEnabled())
     return base::nullopt;
 
-  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   return !cookie_settings->IsThirdPartyAccessAllowed(info.url);
 }
 

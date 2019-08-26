@@ -156,10 +156,11 @@ class HidConnectionImplTest : public DeviceServiceTestBase {
   }
 
   void CreateHidConnection(bool with_connection_client) {
-    mojom::HidConnectionClientPtr hid_connection_client;
+    mojo::PendingRemote<mojom::HidConnectionClient> hid_connection_client;
     if (with_connection_client) {
       connection_client_ = std::make_unique<TestHidConnectionClient>();
-      connection_client_->Bind(mojo::MakeRequest(&hid_connection_client));
+      connection_client_->Bind(
+          hid_connection_client.InitWithNewPipeAndPassReceiver());
     }
     fake_connection_ = new FakeHidConnection(CreateTestDevice());
     hid_connection_impl_ = std::make_unique<HidConnectionImpl>(

@@ -5,8 +5,8 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior_mojo.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator_mojo.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -38,19 +38,19 @@
 
     <!-- Policy indicator. Only one dom-if below will be shown. -->
     <template is="dom-if"
-        if="[[shouldShowNetworkPolicyIndicator_(networkProperties)]]">
+        if="[[shouldShowNetworkPolicyIndicator_(managedProperties)]]">
       <div class="settings-box">
         <div class="layout horizontal center">
-          <cr-policy-network-indicator
-              property="[[networkProperties.ProxySettings.Type]]"
+          <cr-policy-network-indicator-mojo
+              property="[[managedProperties.proxySettings.type]]"
               no-extension-indicator>
-          </cr-policy-network-indicator>
+          </cr-policy-network-indicator-mojo>
           <div>$i18n{networkProxyEnforcedPolicy}</div>
         </div>
       </div>
     </template>
     <template is="dom-if"
-        if="[[shouldShowExtensionIndicator_(networkProperties)]]">
+        if="[[shouldShowExtensionIndicator_(managedProperties)]]">
       <div class="settings-box">
         <extension-controlled-indicator
             extension-id="[[prefs.proxy.extensionId]]"
@@ -63,7 +63,7 @@
     <!-- Allow shared proxies -->
     <settings-toggle-button id="allowShared" class="continuation indented"
         hidden$="[[!shouldShowAllowShared_(
-            networkProperties.ProxySettings.Type)]]"
+            managedProperties.proxySettings.type)]]"
         pref="{{prefs.settings.use_shared_proxies}}"
         label="$i18n{networkProxyAllowShared}"
         on-settings-boolean-control-change="onAllowSharedProxiesChange_"
@@ -72,7 +72,7 @@
 
     <div class="settings-box single-column stretch continuation indented">
       <network-proxy editable
-          network-properties="[[networkProperties]]"
+          managed-properties="[[managedProperties]]"
           use-shared-proxies="[[useSharedProxies_]]">
       </network-proxy>
     </div>

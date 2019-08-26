@@ -1450,13 +1450,8 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackSetConfiguration(this, new_configuration);
 
-  webrtc::RTCError webrtc_error;
-  bool ret = native_peer_connection_->SetConfiguration(new_configuration,
-                                                       &webrtc_error);
-  // The boolean return value is made redundant by the error output param; just
-  // DCHECK that they're consistent.
-  DCHECK_EQ(ret, webrtc_error.type() == webrtc::RTCErrorType::NONE);
-
+  webrtc::RTCError webrtc_error =
+      native_peer_connection_->SetConfiguration(new_configuration);
   if (webrtc_error.ok()) {
     configuration_ = new_configuration;
   }

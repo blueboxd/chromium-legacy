@@ -1111,7 +1111,9 @@ uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(const VideoPixelFormat format,
     case PIXEL_FORMAT_YV12:
       return single_planar ? V4L2_PIX_FMT_YVU420 : V4L2_PIX_FMT_YVU420M;
     default:
-      LOG(FATAL) << "Add more cases as needed";
+      LOG(ERROR) << "Add more cases as needed, format: "
+                 << VideoPixelFormatToString(format)
+                 << ", single_planar: " << single_planar;
       return 0;
   }
 }
@@ -1142,7 +1144,7 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
     else
       return V4L2_PIX_FMT_VP9;
   } else {
-    LOG(FATAL) << "Add more cases as needed";
+    LOG(ERROR) << "Unknown profile: " << GetProfileName(profile);
     return 0;
   }
 }

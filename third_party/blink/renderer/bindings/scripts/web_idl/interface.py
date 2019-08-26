@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 
 from .attribute import Attribute
+from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
 from .constant import Constant
-from .identifier_ir_map import IdentifierIRMap
-from .idl_member import IdlMember
 from .idl_type import IdlType
+from .ir_map import IRMap
 from .make_copy import make_copy
 from .operation import Operation
 from .reference import RefById
@@ -21,7 +21,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-interfaces"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+    class IR(IRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
              WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
@@ -64,15 +64,15 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             kind = None
             if is_partial:
                 if is_mixin:
-                    kind = IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN
+                    kind = IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN
                 else:
-                    kind = IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE
+                    kind = IRMap.IR.Kind.PARTIAL_INTERFACE
             else:
                 if is_mixin:
-                    kind = IdentifierIRMap.IR.Kind.INTERFACE_MIXIN
+                    kind = IRMap.IR.Kind.INTERFACE_MIXIN
                 else:
-                    kind = IdentifierIRMap.IR.Kind.INTERFACE
-            IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
+                    kind = IRMap.IR.Kind.INTERFACE
+            IRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(
@@ -96,7 +96,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         ir = make_copy(ir)
         UserDefinedType.__init__(self, ir.identifier)
         WithExtendedAttributes.__init__(self, ir.extended_attributes)
-        WithCodeGeneratorInfo.__init__(self, ir.code_generator_info)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)
 
@@ -214,13 +215,12 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return True
 
 
-class Iterable(WithCodeGeneratorInfo, WithDebugInfo):
+class Iterable(WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-iterable"""
 
     def __init__(self,
                  key_type=None,
                  value_type=None,
-                 code_generator_info=None,
                  debug_info=None):
         assert key_type is None or isinstance(key_type, IdlType)
         # iterable is declared in either form of
@@ -230,7 +230,6 @@ class Iterable(WithCodeGeneratorInfo, WithDebugInfo):
         # to be consistent with the format of IDL.
         assert isinstance(value_type, IdlType), "value_type must be specified"
 
-        WithCodeGeneratorInfo.__init__(self, code_generator_info)
         WithDebugInfo.__init__(self, debug_info)
 
         self._key_type = key_type
@@ -247,20 +246,18 @@ class Iterable(WithCodeGeneratorInfo, WithDebugInfo):
         return self._value_type
 
 
-class Maplike(WithCodeGeneratorInfo, WithDebugInfo):
+class Maplike(WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-maplike"""
 
     def __init__(self,
                  key_type,
                  value_type,
                  is_readonly=False,
-                 code_generator_info=None,
                  debug_info=None):
         assert isinstance(key_type, IdlType)
         assert isinstance(value_type, IdlType)
         assert isinstance(is_readonly, bool)
 
-        WithCodeGeneratorInfo.__init__(self, code_generator_info)
         WithDebugInfo.__init__(self, debug_info)
 
         self._key_type = key_type
@@ -292,18 +289,16 @@ class Maplike(WithCodeGeneratorInfo, WithDebugInfo):
         return self._is_readonly
 
 
-class Setlike(WithCodeGeneratorInfo, WithDebugInfo):
+class Setlike(WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-setlike"""
 
     def __init__(self,
                  value_type,
                  is_readonly=False,
-                 code_generator_info=None,
                  debug_info=None):
         assert isinstance(value_type, IdlType)
         assert isinstance(is_readonly, bool)
 
-        WithCodeGeneratorInfo.__init__(self, code_generator_info)
         WithDebugInfo.__init__(self, debug_info)
 
         self._value_type = value_type
@@ -326,7 +321,7 @@ class Setlike(WithCodeGeneratorInfo, WithDebugInfo):
         return self._is_readonly
 
 
-class IndexedPropertyHandler(IdlMember):
+class IndexedPropertyHandler(object):
     @property
     def getter(self):
         """
@@ -352,7 +347,7 @@ class IndexedPropertyHandler(IdlMember):
         assert False, "Not implemented yet."
 
 
-class NamedPropertyHandler(IdlMember):
+class NamedPropertyHandler(object):
     @property
     def getter(self):
         """

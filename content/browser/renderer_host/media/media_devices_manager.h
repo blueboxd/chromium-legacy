@@ -22,6 +22,8 @@
 #include "media/audio/audio_device_description.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 
@@ -109,7 +111,7 @@ class CONTENT_EXPORT MediaDevicesManager
       int render_process_id,
       int render_frame_id,
       const BoolDeviceTypes& subscribe_types,
-      blink::mojom::MediaDevicesListenerPtr listener);
+      mojo::PendingRemote<blink::mojom::MediaDevicesListener> listener);
   void UnsubscribeDeviceChangeNotifications(uint32_t subscription_id);
 
   // Tries to start device monitoring. If successful, enables caching of
@@ -160,10 +162,11 @@ class CONTENT_EXPORT MediaDevicesManager
   struct EnumerationRequest;
 
   struct SubscriptionRequest {
-    SubscriptionRequest(int render_process_id,
-                        int render_frame_id,
-                        const BoolDeviceTypes& subscribe_types,
-                        blink::mojom::MediaDevicesListenerPtr listener);
+    SubscriptionRequest(
+        int render_process_id,
+        int render_frame_id,
+        const BoolDeviceTypes& subscribe_types,
+        mojo::Remote<blink::mojom::MediaDevicesListener> listener);
     SubscriptionRequest(SubscriptionRequest&&);
     ~SubscriptionRequest();
 
@@ -172,7 +175,7 @@ class CONTENT_EXPORT MediaDevicesManager
     int render_process_id;
     int render_frame_id;
     BoolDeviceTypes subscribe_types;
-    blink::mojom::MediaDevicesListenerPtr listener;
+    mojo::Remote<blink::mojom::MediaDevicesListener> listener_;
   };
 
   // Class containing the state of each spawned enumeration. This state is

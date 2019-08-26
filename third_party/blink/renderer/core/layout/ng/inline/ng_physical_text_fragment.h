@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
@@ -17,9 +18,9 @@
 
 namespace blink {
 
-struct PhysicalRect;
 class NGTextFragmentBuilder;
 class NGPhysicalTextFragment;
+struct PhysicalRect;
 
 enum class AdjustMidCluster;
 
@@ -149,10 +150,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                                      LayoutUnit (*round)(float),
                                      AdjustMidCluster) const;
 
-  PhysicalRect ConvertToLocal(const LayoutRect&) const;
-
   void ComputeSelfInkOverflow() const;
-  void ClearSelfInkOverflow() const;
 
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
@@ -166,7 +164,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Fragments are immutable but allow certain expensive data, specifically ink
   // overflow, to be cached as long as it is guaranteed to always recompute to
   // the same value.
-  mutable PhysicalRect self_ink_overflow_;
+  mutable std::unique_ptr<NGInkOverflow> ink_overflow_;
 
   friend class NGTextFragmentBuilder;
 };

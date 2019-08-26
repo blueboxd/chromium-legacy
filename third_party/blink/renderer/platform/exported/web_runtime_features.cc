@@ -489,10 +489,6 @@ void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {
   RuntimeEnabledFeatures::SetPresentationEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableRenderingPipelineThrottling(bool enable) {
-  RuntimeEnabledFeatures::SetRenderingPipelineThrottlingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableResourceLoadScheduler(bool enable) {
   RuntimeEnabledFeatures::SetResourceLoadSchedulerEnabled(enable);
 }

@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/http/http_util.h"
@@ -51,7 +52,9 @@ class FakeBlob final : public blink::mojom::Blob {
 
  private:
   // Implements blink::mojom::Blob.
-  void Clone(blink::mojom::BlobRequest) override { NOTREACHED(); }
+  void Clone(mojo::PendingReceiver<blink::mojom::Blob>) override {
+    NOTREACHED();
+  }
   void AsDataPipeGetter(network::mojom::DataPipeGetterRequest) override {
     NOTREACHED();
   }
@@ -139,11 +142,12 @@ class FakeControllerServiceWorker
 
   // Tells this controller to respond to fetch events with the specified stream.
   void RespondWithStream(
-      blink::mojom::ServiceWorkerStreamCallbackRequest callback_request,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerStreamCallback>
+          callback_receiver,
       mojo::ScopedDataPipeConsumerHandle consumer_handle) {
     response_mode_ = ResponseMode::kStream;
     stream_handle_ = blink::mojom::ServiceWorkerStreamHandle::New();
-    stream_handle_->callback_request = std::move(callback_request);
+    stream_handle_->callback_receiver = std::move(callback_receiver);
     stream_handle_->stream = std::move(consumer_handle);
   }
 
@@ -862,10 +866,11 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
 
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  fake_controller_.RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  fake_controller_.RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
   fake_controller_.SetResponseSource(
       network::mojom::FetchResponseSource::kNetwork);
 
@@ -922,10 +927,11 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
 
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  fake_controller_.RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  fake_controller_.RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
 
   network::mojom::URLLoaderFactoryPtr factory =
       CreateSubresourceLoaderFactory();
@@ -1226,10 +1232,11 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
 
   // Give the final response.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  fake_controller_.RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  fake_controller_.RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
   loader->FollowRedirect({}, {}, base::nullopt);
   client->RunUntilResponseReceived();
 

@@ -4380,7 +4380,12 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::BindRepeating(&language::BindContentTranslateDriver));
 
   frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&InsecureSensitiveInputDriverFactory::BindDriver));
+      base::BindRepeating([](blink::mojom::InsecureInputServiceRequest request,
+                             content::RenderFrameHost* render_frame_host) {
+        // Implicit conversion to PendingReceiver<T>.
+        InsecureSensitiveInputDriverFactory::BindDriver(std::move(request),
+                                                        render_frame_host);
+      }));
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(base::Bind(
@@ -4920,13 +4925,13 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
     bool is_service_worker,
     int process_id,
     int routing_id,
-    network::mojom::RestrictedCookieManagerRequest* request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager>* receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (origin.scheme() == extensions::kExtensionScheme) {
     DCHECK_EQ(network::mojom::RestrictedCookieManagerRole::SCRIPT, role);
     extensions::ChromeExtensionCookies::Get(browser_context)
-        ->CreateRestrictedCookieManager(origin, std::move(*request));
+        ->CreateRestrictedCookieManager(origin, std::move(*receiver));
     return true;
   }
 #endif

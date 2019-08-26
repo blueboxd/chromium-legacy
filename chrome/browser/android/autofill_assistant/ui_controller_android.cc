@@ -702,6 +702,10 @@ void UiControllerAndroid::OnTermsAndConditionsChanged(
   ui_delegate_->SetTermsAndConditions(state);
 }
 
+void UiControllerAndroid::OnLoginChoiceChanged(std::string identifier) {
+  ui_delegate_->SetLoginOption(identifier);
+}
+
 void UiControllerAndroid::OnTermsAndConditionsLinkClicked(int link) {
   ui_delegate_->OnTermsAndConditionsLinkClicked(link);
 }
@@ -725,6 +729,12 @@ void UiControllerAndroid::OnPaymentRequestOptionsChanged(
       env, jmodel, payment_options->request_shipping);
   Java_AssistantPaymentRequestModel_setRequestPayment(
       env, jmodel, payment_options->request_payment_method);
+  Java_AssistantPaymentRequestModel_setRequestLoginChoice(
+      env, jmodel, payment_options->request_login_choice);
+  Java_AssistantPaymentRequestModel_setLoginSectionTitle(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, payment_options->login_section_title));
   Java_AssistantPaymentRequestModel_setAcceptTermsAndConditionsText(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
@@ -741,6 +751,17 @@ void UiControllerAndroid::OnPaymentRequestOptionsChanged(
       env, jmodel,
       base::android::ToJavaArrayOfStrings(
           env, payment_options->supported_basic_card_networks));
+  if (payment_options->request_login_choice) {
+    auto jlist = Java_AssistantPaymentRequestModel_createLoginChoiceList(env);
+    for (const auto& login_choice : payment_options->login_choices) {
+      Java_AssistantPaymentRequestModel_addLoginChoice(
+          env, jmodel, jlist,
+          base::android::ConvertUTF8ToJavaString(env, login_choice.identifier),
+          base::android::ConvertUTF8ToJavaString(env, login_choice.label),
+          login_choice.preselect_priority);
+    }
+    Java_AssistantPaymentRequestModel_setLoginChoices(env, jmodel, jlist);
+  }
 
   Java_AssistantPaymentRequestModel_setVisible(env, jmodel, true);
 }

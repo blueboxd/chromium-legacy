@@ -1,12 +1,15 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include <memory>
 #include <utility>
 
 #include "third_party/blink/renderer/core/html/forms/password_input_type.h"
 
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
@@ -23,15 +26,16 @@ class MockInsecureInputService : public mojom::blink::InsecureInputService {
         &frame.GetInterfaceProvider());
     test_api.SetBinderForName(
         mojom::blink::InsecureInputService::Name_,
-        WTF::BindRepeating(&MockInsecureInputService::BindRequest,
+        WTF::BindRepeating(&MockInsecureInputService::BindReceiver,
                            WTF::Unretained(this)));
   }
 
   ~MockInsecureInputService() override = default;
 
-  void BindRequest(mojo::ScopedMessagePipeHandle handle) {
-    binding_set_.AddBinding(
-        this, mojom::blink::InsecureInputServiceRequest(std::move(handle)));
+  void BindReceiver(mojo::ScopedMessagePipeHandle handle) {
+    receiver_set_.Add(this,
+                      mojo::PendingReceiver<mojom::blink::InsecureInputService>(
+                          std::move(handle)));
   }
 
   unsigned DidEditFieldCalls() const { return num_did_edit_field_calls_; }
@@ -39,7 +43,7 @@ class MockInsecureInputService : public mojom::blink::InsecureInputService {
  private:
   void DidEditFieldInInsecureContext() override { ++num_did_edit_field_calls_; }
 
-  mojo::BindingSet<InsecureInputService> binding_set_;
+  mojo::ReceiverSet<InsecureInputService> receiver_set_;
 
   unsigned num_did_edit_field_calls_ = 0;
 };

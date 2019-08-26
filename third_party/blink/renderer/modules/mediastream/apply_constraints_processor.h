@@ -13,7 +13,7 @@
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/web_apply_constraints_request.h"
+#include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -40,10 +40,10 @@ class MODULES_EXPORT ApplyConstraintsProcessor
   // it notifies by invoking |callback|.
   // This method must be called only if there is no request currently being
   // processed.
-  void ProcessRequest(const blink::WebApplyConstraintsRequest& request,
+  void ProcessRequest(blink::ApplyConstraintsRequest* request,
                       base::OnceClosure callback);
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor* visitor) { visitor->Trace(current_request_); }
 
  private:
   // Helpers for video device-capture requests.
@@ -82,7 +82,7 @@ class MODULES_EXPORT ApplyConstraintsProcessor
   // contains the request currently being processed, if any.
   // |video_source_| and |request_completed_cb_| are the video source and
   // reply callback for the current request.
-  blink::WebApplyConstraintsRequest current_request_;
+  WeakMember<blink::ApplyConstraintsRequest> current_request_;
 
   // TODO(crbug.com/704136): Change to use Member.
   blink::MediaStreamVideoSource* video_source_ = nullptr;

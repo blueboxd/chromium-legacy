@@ -66,9 +66,9 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CrOSOAuthDelegateTest,
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceDelegateChromeOSTest,
                            BackOffIsTriggerredForTransientErrors);
-  FRIEND_TEST_ALL_PREFIXES(CrOSOAuthDelegateTest,
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceDelegateChromeOSTest,
                            BackOffIsResetOnNetworkChange);
 
   // A utility class to keep track of |GoogleServiceAuthError|s for an account.

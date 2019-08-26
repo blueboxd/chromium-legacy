@@ -6,11 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_DISPATCHER_H_
 
 #include <memory>
+
 #include "base/memory/read_only_shared_memory_region.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 
@@ -109,10 +111,9 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   void ReclaimResourceInternal(viz::ResourceId resource_id);
   void ReclaimResourceInternal(const ResourceMap::iterator&);
 
-  viz::mojom::blink::CompositorFrameSinkPtr sink_;
-  mojom::blink::SurfaceEmbedderPtr surface_embedder_;
-  mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
-  viz::mojom::blink::CompositorFrameSinkClientPtr client_ptr_;
+  mojo::Remote<viz::mojom::blink::CompositorFrameSink> sink_;
+  mojo::Remote<mojom::blink::SurfaceEmbedder> surface_embedder_;
+  mojo::Receiver<viz::mojom::blink::CompositorFrameSinkClient> receiver_{this};
 
   int placeholder_canvas_id_;
 

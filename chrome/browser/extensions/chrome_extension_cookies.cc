@@ -62,7 +62,7 @@ ChromeExtensionCookies* ChromeExtensionCookies::Get(
 
 void ChromeExtensionCookies::CreateRestrictedCookieManager(
     const url::Origin& origin,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!io_data_)
     return;
@@ -71,7 +71,7 @@ void ChromeExtensionCookies::CreateRestrictedCookieManager(
   base::PostTask(FROM_HERE, {content::BrowserThread::IO},
                  base::BindOnce(&IOData::CreateRestrictedCookieManager,
                                 base::Unretained(io_data_.get()), origin,
-                                std::move(request)));
+                                std::move(receiver)));
 }
 
 void ChromeExtensionCookies::ClearCookies(const GURL& origin) {
@@ -109,17 +109,17 @@ ChromeExtensionCookies::IOData::~IOData() {
 
 void ChromeExtensionCookies::IOData::CreateRestrictedCookieManager(
     const url::Origin& origin,
-    network::mojom::RestrictedCookieManagerRequest request) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  restricted_cookie_managers_.AddBinding(
+  restricted_cookie_managers_.Add(
       std::make_unique<network::RestrictedCookieManager>(
           network::mojom::RestrictedCookieManagerRole::SCRIPT,
           GetOrCreateCookieStore(), &network_cookie_settings_, origin,
           /* null network_context_client disables logging, making later
              arguments irrelevant */
           nullptr, false, -1, -1),
-      std::move(request));
+      std::move(receiver));
 }
 
 void ChromeExtensionCookies::IOData::ClearCookies(const GURL& origin) {

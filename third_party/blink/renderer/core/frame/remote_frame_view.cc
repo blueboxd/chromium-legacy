@@ -245,8 +245,6 @@ void RemoteFrameView::VisibilityForThrottlingChanged() {
 }
 
 bool RemoteFrameView::CanThrottleRendering() const {
-  if (!RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled())
-    return false;
   return IsSubtreeThrottled() || IsHiddenForThrottling();
 }
 

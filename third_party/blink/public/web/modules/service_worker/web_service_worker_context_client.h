@@ -95,13 +95,6 @@ class WebServiceWorkerContextClient {
   // failed.
   virtual void FailedToFetchModuleScript() {}
 
-  // The worker script was successfully loaded by ResourceLoader. Called on the
-  // initiator thread.
-  //
-  // This is called before WorkerContextStarted(). Script evaluation does not
-  // start until WillEvaluateScript().
-  virtual void WorkerScriptLoadedOnInitiatorThread() {}
-
   // The worker script was successfully loaded on the worker thread.
   // When off-the-main-thread script fetch is on, this is called for both
   // new-script and installed-script cases. If off-the-main-thread script fetch

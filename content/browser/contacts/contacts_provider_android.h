@@ -40,8 +40,10 @@ class ContactsProviderAndroid : public ContactsProvider {
                   const base::android::JavaParamRef<jobjectArray>& tel_java);
 
   // Signals the end of adding contacts to the list. The contact list is
-  // returned to the web page.
-  void EndContactsList(JNIEnv* env, jint percentageShared);
+  // returned to the web page, the other params are logged via UKM.
+  void EndContactsList(JNIEnv* env,
+                       jint percentage_shared,
+                       jint properties_requested);
 
   // Signals the end (due to a permission error).
   void EndWithPermissionDenied(JNIEnv* env);

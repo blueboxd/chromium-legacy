@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 const cannotCreateMultipleWindowsErrorMessage =
-    'Can\'t create more than one window per extension.';
+    'Login screen extension UI already in use.';
 const cannotCloseNoWindowErrorMessage = 'No open window to close.';
 const cannotAccessLocalStorageErrorMessage =
     '"local" is not available for login screen extensions';

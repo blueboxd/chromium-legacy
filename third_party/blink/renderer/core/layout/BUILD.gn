@@ -454,6 +454,8 @@ blink_core_sources("layout") {
     "ng/ng_fragment_builder.h",
     "ng/ng_fragmentation_utils.cc",
     "ng/ng_fragmentation_utils.h",
+    "ng/ng_ink_overflow.cc",
+    "ng/ng_ink_overflow.h",
     "ng/ng_layout_algorithm.h",
     "ng/ng_layout_input_node.cc",
     "ng/ng_layout_input_node.h",

@@ -491,7 +491,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool is_service_worker,
       int process_id,
       int routing_id,
-      network::mojom::RestrictedCookieManagerRequest* request) override;
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager>* receiver)
+      override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
   network::mojom::NetworkContextPtr CreateNetworkContext(

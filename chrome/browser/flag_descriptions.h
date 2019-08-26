@@ -1850,9 +1850,6 @@ extern const char kAshSwapSideVolumeButtonsForOrientationDescription[];
 extern const char kBluetoothAggressiveAppearanceFilterName[];
 extern const char kBluetoothAggressiveAppearanceFilterDescription[];
 
-extern const char kBulkPrintersName[];
-extern const char kBulkPrintersDescription[];
-
 extern const char kCameraSystemWebAppName[];
 extern const char kCameraSystemWebAppDescription[];
 

@@ -21,7 +21,7 @@ class FakeBlob : public mojom::blink::Blob {
            const String& body = String(),
            State* state = nullptr);
 
-  void Clone(mojom::blink::BlobRequest) override;
+  void Clone(mojo::PendingReceiver<mojom::blink::Blob>) override;
   void AsDataPipeGetter(network::mojom::blink::DataPipeGetterRequest) override;
   void ReadRange(uint64_t offset,
                  uint64_t length,

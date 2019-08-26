@@ -326,8 +326,9 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
     NOTIMPLEMENTED();
     return webrtc::PeerConnectionInterface::RTCConfiguration();
   }
-  bool SetConfiguration(const RTCConfiguration& configuration,
-                        webrtc::RTCError* error) override;
+  webrtc::RTCError SetConfiguration(
+      const RTCConfiguration& configuration) override;
+
   bool AddIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
   bool RemoveIceCandidates(
       const std::vector<cricket::Candidate>& candidates) override {

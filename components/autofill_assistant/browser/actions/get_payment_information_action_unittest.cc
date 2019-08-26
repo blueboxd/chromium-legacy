@@ -22,12 +22,11 @@ class GetPaymentInformationActionTest : public testing::Test {
   void SetUp() override {
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(&mock_personal_data_manager_));
-    ON_CALL(mock_action_delegate_, GetPaymentInformation(_))
+    ON_CALL(mock_action_delegate_, GetPaymentInformation(_, _))
         .WillByDefault(
-            Invoke([](std::unique_ptr<PaymentRequestOptions> options) {
-              auto payment_information = std::make_unique<PaymentInformation>();
-              std::move(options->confirm_callback)
-                  .Run(std::move(payment_information));
+            Invoke([](std::unique_ptr<PaymentRequestOptions> options,
+                      std::unique_ptr<PaymentInformation> information) {
+              std::move(options->confirm_callback).Run(std::move(information));
             }));
   }
 

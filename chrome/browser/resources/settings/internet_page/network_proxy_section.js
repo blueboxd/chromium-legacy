@@ -7,23 +7,24 @@
  * detail page. This element is responsible for setting 'Allow proxies for
  * shared networks'.
  */
+(function() {
+'use strict';
+
+const mojom = chromeos.networkConfig.mojom;
+
 Polymer({
   is: 'network-proxy-section',
 
   behaviors: [
-    CrPolicyNetworkBehavior,
+    CrPolicyNetworkBehaviorMojo,
     I18nBehavior,
     PrefsBehavior,
     settings.RouteObserverBehavior,
   ],
 
   properties: {
-    /**
-     * The network properties dictionary containing the proxy properties to
-     * display and modify.
-     * @type {!CrOnc.NetworkProperties|undefined}
-     */
-    networkProperties: Object,
+    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
+    managedProperties: Object,
 
     /**
      * Reflects prefs.settings.use_shared_proxies for data binding.
@@ -54,17 +55,17 @@ Polymer({
    * @private
    */
   isShared_: function() {
-    return this.networkProperties.Source == 'Device' ||
-        this.networkProperties.Source == 'DevicePolicy';
+    return this.managedProperties.source == 'Device' ||
+        this.managedProperties.source == 'DevicePolicy';
   },
 
   /**
-   * @return {!CrOnc.ManagedProperty|undefined}
+   * @return {!OncMojo.ManagedProperty|undefined}
    * @private
    */
   getProxySettingsTypeProperty_: function() {
-    return /** @type {!CrOnc.ManagedProperty|undefined} */ (
-        this.get('ProxySettings.Type', this.networkProperties));
+    return /** @type {!OncMojo.ManagedProperty|undefined} */ (
+        this.get('proxySettings.type', this.managedProperties));
   },
 
   /**
@@ -98,7 +99,7 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.ManagedProperty} property
+   * @param {!OncMojo.ManagedProperty} property
    * @return {boolean}
    * @private
    */
@@ -148,3 +149,4 @@ Polymer({
     this.$.allowShared.focus();
   },
 });
+})();

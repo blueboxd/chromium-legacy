@@ -3106,9 +3106,6 @@ const char kBluetoothAggressiveAppearanceFilterDescription[] =
     "Enables a more aggressive Bluetooth filter in the UI to hide devices that "
     "likely cannot be connected to.";
 
-const char kBulkPrintersName[] = "Bulk Printers Policy";
-const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
-
 const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
     "Run the Chrome Camera App as a System Web App.";

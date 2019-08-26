@@ -545,7 +545,7 @@ BlobReader::Status BlobReader::ReadFileItem(FileStreamReader* reader,
     return Status::DONE;
   }
   if (result == net::ERR_IO_PENDING) {
-    TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::ReadFileItem", this, "uuid",
+    TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobReader::ReadFileItem", this, "uuid",
                              blob_data_->uuid());
     io_pending_ = true;
     return Status::IO_PENDING;
@@ -555,7 +555,7 @@ BlobReader::Status BlobReader::ReadFileItem(FileStreamReader* reader,
 
 void BlobReader::DidReadFile(int result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::ReadFileItem", this, "uuid",
+  TRACE_EVENT_ASYNC_END1("Blob", "BlobReader::ReadFileItem", this, "uuid",
                          blob_data_->uuid());
   DidReadItem(result);
 }
@@ -600,8 +600,8 @@ BlobReader::Status BlobReader::ReadReadableDataHandle(const BlobDataItem& item,
     return Status::DONE;
   }
   if (result == net::ERR_IO_PENDING) {
-    TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::ReadReadableDataHandle",
-                             this, "uuid", blob_data_->uuid());
+    TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobReader::ReadReadableDataHandle", this,
+                             "uuid", blob_data_->uuid());
     io_pending_ = true;
     return Status::IO_PENDING;
   }
@@ -610,7 +610,7 @@ BlobReader::Status BlobReader::ReadReadableDataHandle(const BlobDataItem& item,
 
 void BlobReader::DidReadReadableDataHandle(int result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::ReadReadableDataHandle", this,
+  TRACE_EVENT_ASYNC_END1("Blob", "BlobReader::ReadReadableDataHandle", this,
                          "uuid", blob_data_->uuid());
   RecordBytesReadFromDataHandle(current_item_index_, result);
   DidReadItem(result);

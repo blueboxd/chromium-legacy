@@ -40,7 +40,7 @@ Polymer({
   onRemoveTap_: function(event) {
     const index = event.model.index;
     this.splice('exclusions', index, 1);
-    this.fire('proxy-change');
+    this.fire('proxy-exclusions-change');
   }
 });
 })();

@@ -233,13 +233,6 @@ void ServiceWorkerContextClient::FailedToFetchModuleScript() {
   // eventually destroys |this|.
 }
 
-void ServiceWorkerContextClient::WorkerScriptLoadedOnInitiatorThread() {
-  DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!is_starting_installed_worker_);
-  instance_host_->OnScriptLoaded();
-  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
-}
-
 void ServiceWorkerContextClient::WorkerScriptLoadedOnWorkerThread() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   instance_host_->OnScriptLoaded();

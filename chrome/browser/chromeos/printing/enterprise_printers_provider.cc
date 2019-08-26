@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/hash/md5.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/chromeos/printing/calculators_policies_binder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
@@ -48,28 +46,22 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     // initialization of pref_change_registrar
     pref_change_registrar_.Init(profile->GetPrefs());
 
-    if (base::FeatureList::IsEnabled(features::kBulkPrinters)) {
-      // Binds instances of BulkPrintersCalculator to policies.
-      policies_binder_ = CalculatorsPoliciesBinder::Create(settings, profile);
-      // Get instance of BulkPrintersCalculator for device policies.
-      device_printers_ = BulkPrintersCalculatorFactory::Get()->GetForDevice(
-          /*create_if_not_exists=*/false);
-      if (device_printers_) {
-        device_printers_->AddObserver(this);
-        RecalculateCompleteFlagForDevicePrinters();
-      }
-      // Get instance of BulkPrintersCalculator for user policies.
-      user_printers_ = BulkPrintersCalculatorFactory::Get()->GetForProfile(
-          profile,
-          /*create_if_not_exists=*/false);
-      if (user_printers_) {
-        user_printers_->AddObserver(this);
-        RecalculateCompleteFlagForUserPrinters();
-      }
-    } else {
-      // If a "Bulk Printers" feature is inactive, we do not bind anything.
-      // The list of printers is always empty and is reported as complete.
-      complete_ = true;
+    // Binds instances of BulkPrintersCalculator to policies.
+    policies_binder_ = CalculatorsPoliciesBinder::Create(settings, profile);
+    // Get instance of BulkPrintersCalculator for device policies.
+    device_printers_ = BulkPrintersCalculatorFactory::Get()->GetForDevice(
+        /*create_if_not_exists=*/false);
+    if (device_printers_) {
+      device_printers_->AddObserver(this);
+      RecalculateCompleteFlagForDevicePrinters();
+    }
+    // Get instance of BulkPrintersCalculator for user policies.
+    user_printers_ = BulkPrintersCalculatorFactory::Get()->GetForProfile(
+        profile,
+        /*create_if_not_exists=*/false);
+    if (user_printers_) {
+      user_printers_->AddObserver(this);
+      RecalculateCompleteFlagForUserPrinters();
     }
     // Binds policy with recommended printers (deprecated). This method calls
     // indirectly RecalculateCurrentPrintersList() that prepares the first

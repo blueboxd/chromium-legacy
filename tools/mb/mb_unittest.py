@@ -654,9 +654,11 @@ class UnitTest(unittest.TestCase):
     mbw.cmds.append((0, 'base_unitests\ntest_data/\n', ''))
     expected_err = ('error: gn `data` items may not list generated directories;'
                     ' list files in directory instead for:\n'
-                    '//out/Default/test_data\n')
+                    '//out/Default/test_data/\n')
     self.check(['isolate', '-c', 'debug_goma', '//out/Default',
-                'base_unittests'], mbw=mbw, ret=1, err=expected_err)
+                'base_unittests'], mbw=mbw, ret=1)
+    self.assertEqual(mbw.out[-len(expected_err):], expected_err)
+
 
   def test_run(self):
     files = {

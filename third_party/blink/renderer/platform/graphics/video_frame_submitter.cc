@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -12,6 +14,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
@@ -26,8 +29,7 @@ namespace blink {
 VideoFrameSubmitter::VideoFrameSubmitter(
     WebContextProviderCallback context_provider_callback,
     std::unique_ptr<VideoFrameResourceProvider> resource_provider)
-    : binding_(this),
-      context_provider_callback_(context_provider_callback),
+    : context_provider_callback_(context_provider_callback),
       resource_provider_(std::move(resource_provider)),
       rotation_(media::VIDEO_ROTATION_0) {
   DETACH_FROM_THREAD(thread_checker_);
@@ -135,8 +137,7 @@ void VideoFrameSubmitter::SetForceSubmit(bool force_submit) {
 
 void VideoFrameSubmitter::OnContextLost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (binding_.is_bound())
-    binding_.Unbind();
+  receiver_.reset();
 
   if (context_provider_)
     context_provider_->RemoveObserver(this);
@@ -298,14 +299,12 @@ void VideoFrameSubmitter::StartSubmitting() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(frame_sink_id_.is_valid());
 
-  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
+  mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&provider));
+      provider.BindNewPipeAndPassReceiver());
 
-  viz::mojom::blink::CompositorFrameSinkClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
   provider->CreateCompositorFrameSink(
-      frame_sink_id_, std::move(client),
+      frame_sink_id_, receiver_.BindNewPipeAndPassRemote(),
       mojo::MakeRequest(&compositor_frame_sink_));
   if (!surface_embedder_.is_bound()) {
     provider->ConnectToEmbedder(frame_sink_id_,

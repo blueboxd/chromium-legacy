@@ -5,9 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_COMPOSITOR_FRAME_SINK_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_COMPOSITOR_FRAME_SINK_H_
 
+#include <utility>
+
 #include "base/memory/read_only_shared_memory_region.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "gpu/ipc/common/mailbox.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
@@ -20,9 +24,9 @@ namespace blink {
 class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
  public:
   MockCompositorFrameSink(
-      viz::mojom::blink::CompositorFrameSinkRequest request,
-      int num_expected_set_needs_begin_frame_on_construction)
-      : binding_(this, std::move(request)) {
+      mojo::PendingReceiver<viz::mojom::blink::CompositorFrameSink> receiver,
+      int num_expected_set_needs_begin_frame_on_construction) {
+    receiver_.Bind(std::move(receiver));
     EXPECT_CALL(*this, SetNeedsBeginFrame(true))
         .Times(num_expected_set_needs_begin_frame_on_construction);
     if (!num_expected_set_needs_begin_frame_on_construction)
@@ -56,7 +60,7 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
   MOCK_METHOD1(SetPreferredFrameInterval, void(base::TimeDelta));
 
  private:
-  mojo::Binding<viz::mojom::blink::CompositorFrameSink> binding_;
+  mojo::Receiver<viz::mojom::blink::CompositorFrameSink> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockCompositorFrameSink);
 };

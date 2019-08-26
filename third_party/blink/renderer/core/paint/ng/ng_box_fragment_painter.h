@@ -82,9 +82,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintInternal(const PaintInfo&);
   void PaintAllPhasesAtomically(const PaintInfo&);
   void PaintBlockChildren(const PaintInfo&);
-  void PaintInlineItems(const NGFragmentItems&,
-                        const PaintInfo&,
-                        const PhysicalOffset& paint_offset);
+  void PaintInlineItems(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintLineBoxChildren(NGPaintFragment::ChildList,
                             const PaintInfo&,
                             const PhysicalOffset& paint_offset);
@@ -99,6 +97,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintTextChild(const NGPaintFragment&,
                       const PaintInfo&,
                       const PhysicalOffset& paint_offset);
+  void PaintTextItem(const NGFragmentItem& item,
+                     const PaintInfo&,
+                     const PhysicalOffset& paint_offset);
   void PaintInlineFloatingChildren(NGPaintFragment::ChildList,
                                    const PaintInfo&);
   void PaintBlockFloatingChildren(const NGPhysicalContainerFragment&,
@@ -180,7 +181,11 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   const NGBorderEdges& BorderEdges() const;
 
   const NGPhysicalBoxFragment& box_fragment_;
+  // If this box has inline children, either |paint_fragment_| or |items_| is
+  // not null, depends on |LayoutNGFragmentItemEnabled|. TODO(kojii): Remove
+  // |NGPaintFragment| once the transition is done. crbug.com/982194
   const NGPaintFragment* paint_fragment_;
+  const NGFragmentItems* items_;
   mutable base::Optional<NGBorderEdges> border_edges_;
 };
 
@@ -191,7 +196,8 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
                      box.Style(),
                      box.GetLayoutObject()->GeneratingNode()),
       box_fragment_(box),
-      paint_fragment_(paint_fragment) {
+      paint_fragment_(paint_fragment),
+      items_(box.Items()) {
   DCHECK(box.IsBox() || box.IsRenderedLegend());
 #if DCHECK_IS_ON()
   if (box.IsInlineBox()) {

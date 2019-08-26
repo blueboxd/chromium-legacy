@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -19,7 +21,8 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/video_frame.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
@@ -64,8 +67,9 @@ class VideoMockCompositorFrameSink
     : public viz::mojom::blink::CompositorFrameSink {
  public:
   VideoMockCompositorFrameSink(
-      viz::mojom::blink::CompositorFrameSinkRequest* request)
-      : binding_(this, std::move(*request)) {}
+      mojo::PendingReceiver<viz::mojom::blink::CompositorFrameSink> receiver) {
+    receiver_.Bind(std::move(receiver));
+  }
   ~VideoMockCompositorFrameSink() override = default;
 
   const viz::CompositorFrame& last_submitted_compositor_frame() const {
@@ -111,7 +115,7 @@ class VideoMockCompositorFrameSink
   }
 
  private:
-  mojo::Binding<viz::mojom::blink::CompositorFrameSink> binding_;
+  mojo::Receiver<viz::mojom::blink::CompositorFrameSink> receiver_{this};
 
   viz::CompositorFrame last_submitted_compositor_frame_;
 
@@ -171,16 +175,15 @@ class VideoFrameSubmitterTest : public testing::Test {
         base::WrapUnique<MockVideoFrameResourceProvider>(resource_provider_));
 
     submitter_->Initialize(video_frame_provider_.get());
-    viz::mojom::blink::CompositorFrameSinkPtr submitter_sink;
-    viz::mojom::blink::CompositorFrameSinkRequest request =
-        mojo::MakeRequest(&submitter_sink);
-    sink_ =
-        std::make_unique<StrictMock<VideoMockCompositorFrameSink>>(&request);
+    mojo::PendingRemote<viz::mojom::blink::CompositorFrameSink> submitter_sink;
+    sink_ = std::make_unique<StrictMock<VideoMockCompositorFrameSink>>(
+        submitter_sink.InitWithNewPipeAndPassReceiver());
 
     // By setting the submission state before we set the sink, we can make
     // testing easier without having to worry about the first sent frame.
     submitter_->SetIsSurfaceVisible(true);
-    submitter_->compositor_frame_sink_ = std::move(submitter_sink);
+    submitter_->compositor_frame_sink_ =
+        viz::mojom::blink::CompositorFrameSinkPtr(std::move(submitter_sink));
     mojom::blink::SurfaceEmbedderPtr embedder;
     mojo::MakeRequest(&embedder);
     submitter_->surface_embedder_ = std::move(embedder);

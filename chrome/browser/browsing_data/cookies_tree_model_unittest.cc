@@ -92,7 +92,7 @@ class CookiesTreeModelTest : public testing::Test {
     scoped_refptr<content_settings::CookieSettings> cookie_settings =
         new content_settings::CookieSettings(
             HostContentSettingsMapFactory::GetForProfile(profile_.get()),
-            profile_->GetPrefs(),
+            profile_->GetPrefs(), profile_->IsIncognitoProfile(),
             kExtensionScheme);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     special_storage_policy_ =

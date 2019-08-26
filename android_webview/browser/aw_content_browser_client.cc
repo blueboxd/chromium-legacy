@@ -977,16 +977,16 @@ bool AwContentBrowserClient::WillCreateRestrictedCookieManager(
     bool is_service_worker,
     int process_id,
     int routing_id,
-    network::mojom::RestrictedCookieManagerRequest* request) {
-  network::mojom::RestrictedCookieManagerRequest orig_request =
-      std::move(*request);
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager>* receiver) {
+  mojo::PendingReceiver<network::mojom::RestrictedCookieManager> orig_receiver =
+      std::move(*receiver);
 
   network::mojom::RestrictedCookieManagerPtrInfo target_rcm_info;
-  *request = mojo::MakeRequest(&target_rcm_info);
+  *receiver = mojo::MakeRequest(&target_rcm_info);
 
   AwProxyingRestrictedCookieManager::CreateAndBind(
       std::move(target_rcm_info), is_service_worker, process_id, routing_id,
-      std::move(orig_request));
+      std::move(orig_receiver));
 
   return false;  // only made a proxy, still need the actual impl to be made.
 }

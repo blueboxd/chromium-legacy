@@ -513,9 +513,10 @@ void RemotePlayback::OnConnectionSuccess(
   if (!presentation_controller)
     return;
 
-  // Note: Messages on |connection_request| are ignored.
-  target_presentation_connection_.Bind(std::move(result->connection_ptr));
-  presentation_connection_receiver_.Bind(std::move(result->connection_request));
+  // Note: Messages on |connection_receiver| are ignored.
+  target_presentation_connection_.Bind(std::move(result->connection_remote));
+  presentation_connection_receiver_.Bind(
+      std::move(result->connection_receiver));
 }
 
 void RemotePlayback::OnConnectionError(

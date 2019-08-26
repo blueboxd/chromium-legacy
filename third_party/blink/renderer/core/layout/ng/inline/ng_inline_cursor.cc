@@ -49,6 +49,17 @@ bool NGInlineCursor::IsLineBox() const {
   return false;
 }
 
+const NGPhysicalBoxFragment* NGInlineCursor::CurrentBoxFragment() const {
+  if (current_item_)
+    return current_item_->BoxFragment();
+  if (current_paint_fragment_) {
+    return DynamicTo<NGPhysicalBoxFragment>(
+        &current_paint_fragment_->PhysicalFragment());
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 const LayoutObject* NGInlineCursor::CurrentLayoutObject() const {
   if (current_item_)
     return current_item_->GetLayoutObject();
@@ -56,6 +67,15 @@ const LayoutObject* NGInlineCursor::CurrentLayoutObject() const {
     return current_paint_fragment_->GetLayoutObject();
   NOTREACHED();
   return nullptr;
+}
+
+const PhysicalOffset NGInlineCursor::CurrentOffset() const {
+  if (current_item_)
+    return current_item_->Offset();
+  if (current_paint_fragment_)
+    return current_paint_fragment_->InlineOffsetToContainerBox();
+  NOTREACHED();
+  return PhysicalOffset();
 }
 
 bool NGInlineCursor::MoveToNext() {

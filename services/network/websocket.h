@@ -140,8 +140,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // Datapipe functions to receive.
   void OnWritable(MojoResult result, const mojo::HandleSignalsState& state);
   void SendPendingDataFrames();
-  // Returns false if mojo error occurs.
-  bool SendDataFrame(DataFrame*);
+  void SendDataFrame(DataFrame*);
 
   // |factory_| owns |this|.
   WebSocketFactory* const factory_;

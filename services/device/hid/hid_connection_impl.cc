@@ -11,11 +11,11 @@ namespace device {
 
 HidConnectionImpl::HidConnectionImpl(
     scoped_refptr<device::HidConnection> connection,
-    mojom::HidConnectionClientPtr connection_client)
+    mojo::PendingRemote<mojom::HidConnectionClient> connection_client)
     : hid_connection_(std::move(connection)) {
   if (connection_client) {
     hid_connection_->SetClient(this);
-    client_ = std::move(connection_client);
+    client_.Bind(std::move(connection_client));
   }
 }
 

@@ -1177,11 +1177,11 @@ static LayoutUnit ComputeContentSize(
       }
     }
 
-    void ForceLineBreak(const NGInlineItem& item) {
-      // Add all text up to the forced break. There may be spaces that were
+    void ForceLineBreak(const NGLineInfo& line_info) {
+      // Add all text up to the end of the line. There may be spaces that were
       // removed during the line breaking.
-      AddTextUntil(&item);
-      next_item = std::next(&item);
+      CHECK_LE(line_info.EndItemIndex(), items_data.items.size());
+      AddTextUntil(items_data.items.begin() + line_info.EndItemIndex());
       max_size = floats->ComputeMaxSizeForLine(position.ClampNegativeToZero(),
                                                max_size);
       position = LayoutUnit();
@@ -1215,6 +1215,7 @@ static LayoutUnit ComputeContentSize(
         is_after_break = false;
       }
 
+      bool has_forced_break = false;
       for (const NGInlineItemResult& result : line_info.Results()) {
         const NGInlineItem& item = *result.item;
         if (item.Type() == NGInlineItem::kText) {
@@ -1232,7 +1233,11 @@ static LayoutUnit ComputeContentSize(
         if (item.Type() == NGInlineItem::kControl) {
           UChar c = items_data.text_content[item.StartOffset()];
           if (c == kNewlineCharacter) {
-            ForceLineBreak(item);
+            // Compute the forced break after all results were handled, because
+            // when close tags appear after a forced break, they are included in
+            // the line, and they may have inline sizes. crbug.com/991320.
+            DCHECK(!has_forced_break);
+            has_forced_break = true;
             continue;
           }
           // Tabulation characters change the widths by their positions, so
@@ -1245,6 +1250,8 @@ static LayoutUnit ComputeContentSize(
         }
         position += result.inline_size;
       }
+      if (has_forced_break)
+        ForceLineBreak(line_info);
     }
   };
   FloatsMaxSize floats_max_size(input);

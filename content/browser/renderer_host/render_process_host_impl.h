@@ -573,7 +573,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
 
   void CreateEmbeddedFrameSinkProvider(
-      blink::mojom::EmbeddedFrameSinkProviderRequest request);
+      mojo::PendingReceiver<blink::mojom::EmbeddedFrameSinkProvider> receiver);
   void BindFrameSinkProvider(mojom::FrameSinkProviderRequest request);
   void BindCompositingModeReporter(
       viz::mojom::CompositingModeReporterRequest request);

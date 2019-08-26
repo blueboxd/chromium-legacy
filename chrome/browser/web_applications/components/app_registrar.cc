@@ -28,6 +28,10 @@ extensions::BookmarkAppRegistrar* AppRegistrar::AsBookmarkAppRegistrar() {
   return nullptr;
 }
 
+bool AppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
+  return IsLocallyInstalled(GenerateAppIdFromURL(start_url));
+}
+
 void AppRegistrar::AddObserver(AppRegistrarObserver* observer) {
   observers_.AddObserver(observer);
 }

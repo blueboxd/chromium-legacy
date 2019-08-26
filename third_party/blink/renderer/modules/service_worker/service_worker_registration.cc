@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -131,7 +133,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
     : ContextLifecycleObserver(execution_context),
       registration_id_(info.registration_id),
       scope_(std::move(info.scope)),
-      binding_(this),
       stopped_(false) {
   DCHECK_NE(mojom::blink::kInvalidServiceWorkerRegistrationId,
             registration_id_);
@@ -144,17 +145,16 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
     : ContextLifecycleObserver(execution_context),
       registration_id_(info->registration_id),
       scope_(std::move(info->scope)),
-      binding_(this),
       stopped_(false) {
   DCHECK_NE(mojom::blink::kInvalidServiceWorkerRegistrationId,
             registration_id_);
 
   host_.Bind(
-      std::move(info->host_ptr_info),
+      std::move(info->host_remote),
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault));
-  // The host expects us to use |info.request| so bind to it.
-  binding_.Bind(
-      std::move(info->request),
+  // The host expects us to use |info.receiver| so bind to it.
+  receiver_.Bind(
+      std::move(info->receiver),
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault));
 
   update_via_cache_ = info->update_via_cache;
@@ -171,20 +171,21 @@ void ServiceWorkerRegistration::Attach(
   DCHECK_EQ(scope_.GetString(), WTF::String(info.scope.GetString()));
 
   // If |host_| is bound, it already points to the same object host as
-  // |info.host_ptr_info|, so there is no need to bind again.
+  // |info.host_remote|, so there is no need to bind again.
   if (!host_) {
-    host_.Bind(
-        mojom::blink::ServiceWorkerRegistrationObjectHostAssociatedPtrInfo(
-            std::move(info.host_ptr_info),
-            mojom::blink::ServiceWorkerRegistrationObjectHost::Version_),
-        GetExecutionContext()->GetTaskRunner(
-            blink::TaskType::kInternalDefault));
+    host_.Bind(mojo::PendingAssociatedRemote<
+                   mojom::blink::ServiceWorkerRegistrationObjectHost>(
+                   std::move(info.host_remote),
+                   mojom::blink::ServiceWorkerRegistrationObjectHost::Version_),
+               GetExecutionContext()->GetTaskRunner(
+                   blink::TaskType::kInternalDefault));
   }
-  // The host expects us to use |info.request| so bind to it.
-  binding_.Close();
-  binding_.Bind(
-      mojom::blink::ServiceWorkerRegistrationObjectAssociatedRequest(
-          std::move(info.request)),
+  // The host expects us to use |info.receiver| so bind to it.
+  receiver_.reset();
+  receiver_.Bind(
+      mojo::PendingAssociatedReceiver<
+          mojom::blink::ServiceWorkerRegistrationObject>(
+          std::move(info.receiver)),
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kInternalDefault));
 
   update_via_cache_ = info.update_via_cache;
@@ -279,7 +280,7 @@ ServiceWorkerRegistration::~ServiceWorkerRegistration() = default;
 
 void ServiceWorkerRegistration::Dispose() {
   host_.reset();
-  binding_.Close();
+  receiver_.reset();
 }
 
 void ServiceWorkerRegistration::Trace(blink::Visitor* visitor) {

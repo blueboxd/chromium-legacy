@@ -12,7 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -39,7 +40,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
       scoped_refptr<ServiceWorkerRegistration> registration);
   ~ServiceWorkerRegistrationObjectHost() override;
 
-  // Establishes a new mojo connection into |bindings_|.
+  // Establishes a new mojo connection into |receivers_|.
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr CreateObjectInfo();
 
   ServiceWorkerRegistration* registration() { return registration_.get(); }
@@ -133,12 +134,12 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
 
-  mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
-      bindings_;
+  mojo::AssociatedReceiverSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
+      receivers_;
   // Mojo connection to the content::WebServiceWorkerRegistrationImpl in the
   // renderer, which corresponds to the ServiceWorkerRegistration JavaScript
   // object.
-  blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerRegistrationObject>
       remote_registration_;
 
   base::WeakPtrFactory<ServiceWorkerRegistrationObjectHost> weak_ptr_factory_{

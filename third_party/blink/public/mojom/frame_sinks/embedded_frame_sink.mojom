@@ -20,7 +20,7 @@ interface SurfaceEmbedder {
 interface EmbeddedFrameSinkClient {
   // Called when a CompositorFrameSink is created for this frame sink.
   // Establishes a direct connection from the embedee to the embedder.
-  BindSurfaceEmbedder(SurfaceEmbedder& embedder);
+  BindSurfaceEmbedder(pending_receiver<SurfaceEmbedder> embedder);
 };
 
 // Provides embedded CompositorFrameSinks for the renderer. The renderer should
@@ -33,25 +33,25 @@ interface EmbeddedFrameSinkProvider {
   // the parent must be specified at this time.
   RegisterEmbeddedFrameSink(viz.mojom.FrameSinkId parent_frame_sink_id,
                             viz.mojom.FrameSinkId frame_sink_id,
-                            EmbeddedFrameSinkClient client);
+                            pending_remote<EmbeddedFrameSinkClient> client);
 
   // Create a CompositorFrameSink for |frame_sink_id|. This must happen after
   // calling RegisterEmbeddedFrameSink() for |frame_sink_id|.
   CreateCompositorFrameSink(viz.mojom.FrameSinkId frame_sink_id,
-                            viz.mojom.CompositorFrameSinkClient client,
-                            viz.mojom.CompositorFrameSink& sink);
+                            pending_remote<viz.mojom.CompositorFrameSinkClient> client,
+                            pending_receiver<viz.mojom.CompositorFrameSink> sink);
 
   // Create CompositorFrameSink directly in a single call (instead of going
   // through both function above).
   CreateSimpleCompositorFrameSink(viz.mojom.FrameSinkId parent_frame_sink_id,
                                   viz.mojom.FrameSinkId frame_sink_id,
-                                  EmbeddedFrameSinkClient surface_client,
-                                  viz.mojom.CompositorFrameSinkClient client,
-                                  viz.mojom.CompositorFrameSink& sink);
+                                  pending_remote<EmbeddedFrameSinkClient> surface_client,
+                                  pending_remote<viz.mojom.CompositorFrameSinkClient> client,
+                                  pending_receiver<viz.mojom.CompositorFrameSink> sink);
 
   // Establishes a direct connection to the embedder of |frame_sink_id|. This
   // will allow the client to let the embedder know what LocalSurfaceId it is
   // using.
   ConnectToEmbedder(viz.mojom.FrameSinkId frame_sink_id,
-                    SurfaceEmbedder& embedder);
+                    pending_receiver<SurfaceEmbedder> embedder);
 };

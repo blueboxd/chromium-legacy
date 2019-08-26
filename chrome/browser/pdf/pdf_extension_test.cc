@@ -2407,44 +2407,13 @@ class PDFExtensionAccessibilityTreeDumpTest
  private:
   using PropertyFilter = content::AccessibilityTreeFormatter::PropertyFilter;
 
-  //  See chrome/test/data/pdf/accessibility/readme.md for more info.
-  void ParsePdfForExtraDirectives(
-      const std::string& pdf_contents,
-      content::AccessibilityTreeFormatter* formatter,
-      std::vector<PropertyFilter>* property_filters) {
-    const char kCommentMark = '%';
-    for (const std::string& line : base::SplitString(
-             pdf_contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-      if (line.size() > 1 && line[0] == kCommentMark) {
-        // Remove first character since it's the comment mark.
-        std::string trimmed_line = line.substr(1);
-        const std::string& allow_str = formatter->GetAllowString();
-        if (base::StartsWith(trimmed_line, allow_str,
-                             base::CompareCase::SENSITIVE)) {
-          property_filters->push_back(PropertyFilter(
-              base::UTF8ToUTF16(trimmed_line.substr(allow_str.size())),
-              PropertyFilter::ALLOW));
-        }
-      }
-    }
-  }
-
   void RunTest(const base::FilePath& test_file_path, const char* file_dir) {
-    std::string pdf_contents;
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      ASSERT_TRUE(base::ReadFileToString(test_file_path, &pdf_contents));
-    }
-
-    // Set up the tree formatter. Parse filters and other directives in the test
-    // file.
+    // Set up the tree formatter.
     std::unique_ptr<content::AccessibilityTreeFormatter> formatter =
         test_pass_.create_formatter();
     std::vector<PropertyFilter> property_filters;
     formatter->AddDefaultFilters(&property_filters);
     AddDefaultFilters(&property_filters);
-    ParsePdfForExtraDirectives(pdf_contents, formatter.get(),
-                               &property_filters);
     formatter->SetPropertyFilters(property_filters);
 
     // Exit without running the test if we can't find an expectation file or if
@@ -2562,8 +2531,4 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, MultiPage) {
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
                        DirectionalTextRuns) {
   RunPDFTest(FILE_PATH_LITERAL("directional-text-runs.pdf"));
-}
-
-IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextDirection) {
-  RunPDFTest(FILE_PATH_LITERAL("text-direction.pdf"));
 }

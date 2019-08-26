@@ -111,9 +111,10 @@ js_library("network_proxy_section") {
     "../controls:settings_checkbox",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:network_proxy",
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }

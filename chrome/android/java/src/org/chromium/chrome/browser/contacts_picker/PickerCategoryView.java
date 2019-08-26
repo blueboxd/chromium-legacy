@@ -50,6 +50,15 @@ public class PickerCategoryView extends RelativeLayout
     private static final int ACTION_CONTACTS_SELECTED = 1;
     private static final int ACTION_BOUNDARY = 2;
 
+    // These values are written to logs as bitmasks (combination of names/emails and/or telephones).
+    // New enum values can be added, but existing enums must never be renumbered or deleted and
+    // reused.
+    private static final int PROPERTIES_NONE = 0;
+    private static final int PROPERTIES_TELS = 1 << 0;
+    private static final int PROPERTIES_EMAILS = 1 << 1;
+    private static final int PROPERTIES_NAMES = 1 << 2;
+    private static final int PROPERTIES_BOUNDARY = 1 << 3;
+
     // Constants for the RoundedIconGenerator.
     private static final int ICON_SIZE_DP = 36;
     private static final int ICON_CORNER_RADIUS_DP = 20;
@@ -267,12 +276,14 @@ public class PickerCategoryView extends RelativeLayout
             mSelectionDelegate.setSelectedItems(
                     new HashSet<ContactDetails>(mPickerAdapter.getAllContacts()));
             mListener.onContactsPickerUserAction(
-                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, null, 0);
+                    ContactsPickerListener.ContactsPickerAction.SELECT_ALL, /*contacts=*/null,
+                    /*percentageShared=*/0, /*propertiesRequested=*/0);
         } else {
             mSelectionDelegate.setSelectedItems(new HashSet<ContactDetails>());
             mPreviousSelection = null;
             mListener.onContactsPickerUserAction(
-                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, null, 0);
+                    ContactsPickerListener.ContactsPickerAction.UNDO_SELECT_ALL, /*contacts=*/null,
+                    /*percentageShared=*/0, /*propertiesRequested=*/0);
         }
     }
 
@@ -372,10 +383,18 @@ public class PickerCategoryView extends RelativeLayout
         int selectCount = contacts != null ? contacts.size() : 0;
         int contactCount = mPickerAdapter.getAllContacts().size();
         int percentageShared = (100 * selectCount) / contactCount;
-        mListener.onContactsPickerUserAction(action, contacts, percentageShared);
+
+        int propertiesRequested = PROPERTIES_NONE;
+        if (includeNames) propertiesRequested |= PROPERTIES_NAMES;
+        if (includeEmails) propertiesRequested |= PROPERTIES_EMAILS;
+        if (includeTel) propertiesRequested |= PROPERTIES_TELS;
+
+        mListener.onContactsPickerUserAction(
+                action, contacts, percentageShared, propertiesRequested);
         mDialog.dismiss();
         UiUtils.onContactsPickerDismissed();
-        recordFinalUmaStats(umaId, contactCount, selectCount, percentageShared);
+        recordFinalUmaStats(
+                umaId, contactCount, selectCount, percentageShared, propertiesRequested);
     }
 
     /**
@@ -384,15 +403,18 @@ public class PickerCategoryView extends RelativeLayout
      * @param contactCount The number of contacts in the contact list.
      * @param selectCount The number of contacts selected.
      * @param percentageShared The percentage shared (of the whole contact list).
+     * @param propertiesRequested The properties (names/emails/tels) requested by the website.
      */
-    private void recordFinalUmaStats(
-            int action, int contactCount, int selectCount, int percentageShared) {
+    private void recordFinalUmaStats(int action, int contactCount, int selectCount,
+            int percentageShared, int propertiesRequested) {
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.ContactsPicker.DialogAction", action, ACTION_BOUNDARY);
         RecordHistogram.recordCountHistogram("Android.ContactsPicker.ContactCount", contactCount);
         RecordHistogram.recordCountHistogram("Android.ContactsPicker.SelectCount", selectCount);
         RecordHistogram.recordPercentageHistogram(
                 "Android.ContactsPicker.SelectPercentage", percentageShared);
+        RecordHistogram.recordEnumeratedHistogram("Android.ContactsPicker.PropertiesRequested",
+                propertiesRequested, PROPERTIES_BOUNDARY);
     }
 
     @VisibleForTesting

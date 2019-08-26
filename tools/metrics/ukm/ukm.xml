@@ -2459,6 +2459,13 @@ be describing additional metrics about the same event.
     Measures statistics about the contacts shared in the contacts picker (when
     the Contacts Picker dialog is dismissed.)
   </summary>
+  <metric name="PropertiesRequested">
+    <summary>
+      Measures the contact properties requested by the website (names, emails,
+      telephone numbers). Bit 1 - telephone numbers, bit 2 - emails, bit 3 -
+      names.
+    </summary>
+  </metric>
   <metric name="SelectCount">
     <summary>
       Measures the total number of contacts selected in the contacts picker.

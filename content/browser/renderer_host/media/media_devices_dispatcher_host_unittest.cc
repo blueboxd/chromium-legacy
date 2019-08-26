@@ -31,7 +31,8 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_system_impl.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -71,14 +72,15 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
                void(blink::MediaDeviceType,
                     const blink::WebMediaDeviceInfoArray&));
 
-  blink::mojom::MediaDevicesListenerPtr CreateInterfacePtrAndBind() {
-    blink::mojom::MediaDevicesListenerPtr listener;
-    bindings_.AddBinding(this, mojo::MakeRequest(&listener));
+  mojo::PendingRemote<blink::mojom::MediaDevicesListener>
+  CreatePendingRemoteAndBind() {
+    mojo::PendingRemote<blink::mojom::MediaDevicesListener> listener;
+    receivers_.Add(this, listener.InitWithNewPipeAndPassReceiver());
     return listener;
   }
 
  private:
-  mojo::BindingSet<blink::mojom::MediaDevicesListener> bindings_;
+  mojo::ReceiverSet<blink::mojom::MediaDevicesListener> receivers_;
 };
 
 }  // namespace
@@ -369,7 +371,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
           type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT,
           type == blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT,
           type == blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT,
-          device_change_listener.CreateInterfacePtrAndBind());
+          device_change_listener.CreatePendingRemoteAndBind());
       blink::WebMediaDeviceInfoArray changed_devices;
       EXPECT_CALL(device_change_listener, OnDevicesChanged(type, _))
           .WillRepeatedly(SaveArg<1>(&changed_devices));

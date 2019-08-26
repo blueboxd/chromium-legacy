@@ -114,8 +114,8 @@ export class StdToastElement extends HTMLElement {
 
   get action() {
     return this.#actionSlot.assignedNodes().length !== 0 ?
-      this.#actionSlot.assignedNodes()[0] :
-      null;
+        this.#actionSlot.assignedNodes()[0] :
+        null;
   }
 
   set action(val) {
@@ -173,8 +173,9 @@ export class StdToastElement extends HTMLElement {
 
   show({duration = DEFAULT_DURATION} = {}) {
     if (duration <= 0) {
-      throw new RangeError(`Invalid Argument: duration must be greater ` +
-                           `than 0 [${duration} given]`);
+      throw new RangeError(
+          `Invalid Argument: duration must be greater ` +
+          `than 0 [${duration} given]`);
     }
 
     this.setAttribute('open', '');
@@ -224,12 +225,7 @@ delete StdToastElement.prototype.connectedCallback;
 export function showToast(message, options = {}) {
   const toast = new StdToastElement(message);
 
-  const {
-    action,
-    closeButton,
-    type,
-    ...showOptions
-  } = options;
+  const {action, closeButton, type, ...showOptions} = options;
 
   if (isElement(action)) {
     toast.action = action;
@@ -258,8 +254,7 @@ export function showToast(message, options = {}) {
   return toast;
 }
 
-const idGetter =
-  Object.getOwnPropertyDescriptor(Element.prototype, 'id').get;
+const idGetter = Object.getOwnPropertyDescriptor(Element.prototype, 'id').get;
 function isElement(value) {
   try {
     idGetter.call(value);

@@ -51,7 +51,8 @@ void ContactsProviderAndroid::Select(bool multiple,
                                      bool include_tel,
                                      ContactsSelectedCallback callback) {
   if (!dialog_) {
-    std::move(callback).Run(base::nullopt, /*percentage_shared=*/-1);
+    std::move(callback).Run(base::nullopt, /*percentage_shared=*/-1,
+                            /*properties_requested*/ -1);
     return;
   }
 
@@ -101,14 +102,17 @@ void ContactsProviderAndroid::AddContact(
 }
 
 void ContactsProviderAndroid::EndContactsList(JNIEnv* env,
-                                              jint percentage_shared) {
+                                              jint percentage_shared,
+                                              jint properties_requested) {
   DCHECK(callback_);
-  std::move(callback_).Run(std::move(contacts_), percentage_shared);
+  std::move(callback_).Run(std::move(contacts_), percentage_shared,
+                           properties_requested);
 }
 
 void ContactsProviderAndroid::EndWithPermissionDenied(JNIEnv* env) {
   DCHECK(callback_);
-  std::move(callback_).Run(base::nullopt, /*percentage_shared=*/-1);
+  std::move(callback_).Run(base::nullopt, /*percentage_shared=*/-1,
+                           /*properties_requested*/ -1);
 }
 
 }  // namespace content

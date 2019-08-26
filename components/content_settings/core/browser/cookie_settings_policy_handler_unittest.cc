@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/values.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
@@ -39,21 +40,23 @@ TEST_F(CookieSettingsPolicyHandlerTest, ThirdPartyCookieBlockingNotSet) {
   policy::PolicyMap policy;
   UpdateProviderPolicy(policy);
   const base::Value* value;
-  EXPECT_FALSE(store_->GetValue(prefs::kCookieControlsEnabled, &value));
+  EXPECT_FALSE(store_->GetValue(prefs::kCookieControlsMode, &value));
 }
 
 TEST_F(CookieSettingsPolicyHandlerTest, ThirdPartyCookieBlockingEnabled) {
   SetThirdPartyCookiePolicy(true);
   const base::Value* value;
-  ASSERT_TRUE(store_->GetValue(prefs::kCookieControlsEnabled, &value));
-  EXPECT_FALSE(value->GetBool());
+  ASSERT_TRUE(store_->GetValue(prefs::kCookieControlsMode, &value));
+  EXPECT_EQ(static_cast<CookieControlsMode>(value->GetInt()),
+            CookieControlsMode::kOff);
 }
 
 TEST_F(CookieSettingsPolicyHandlerTest, ThirdPartyCookieBlockingDisabled) {
   SetThirdPartyCookiePolicy(false);
   const base::Value* value;
-  ASSERT_TRUE(store_->GetValue(prefs::kCookieControlsEnabled, &value));
-  EXPECT_FALSE(value->GetBool());
+  ASSERT_TRUE(store_->GetValue(prefs::kCookieControlsMode, &value));
+  EXPECT_EQ(static_cast<CookieControlsMode>(value->GetInt()),
+            CookieControlsMode::kOff);
 }
 
 }  // namespace content_settings

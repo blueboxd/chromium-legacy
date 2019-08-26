@@ -244,7 +244,8 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   input_format_fourcc_ =
       V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_, true);
 
-  if (!device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
+  if (!input_format_fourcc_ ||
+      !device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
     VLOGF(1) << "Failed to open device for profile: " << config.profile
              << " fourcc: " << FourccToString(input_format_fourcc_);
     return false;

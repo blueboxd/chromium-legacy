@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .identifier_ir_map import IdentifierIRMap
+from .ir_map import IRMap
 from .idl_compiler import IdlCompiler
 from .idl_type import IdlTypeFactory
 from .ir_builder import load_and_register_idl_definitions
@@ -21,7 +21,7 @@ def build_database(filepaths, report_error):
             to terminate the program in this callback.
     """
 
-    ir_map = IdentifierIRMap()
+    ir_map = IRMap()
     ref_to_idl_type_factory = RefByIdFactory()
     ref_to_idl_def_factory = RefByIdFactory()
     idl_type_factory = IdlTypeFactory()

@@ -581,10 +581,7 @@ void WebSocket::SendPendingDataFrames() {
            << ", pending_data_frames_.size=" << pending_data_frames_.size();
   while (!pending_data_frames_.empty()) {
     WebSocket::DataFrame& data_frame = pending_data_frames_.front();
-    if (!SendDataFrame(&data_frame)) {
-      Reset();
-      return;
-    }
+    SendDataFrame(&data_frame);
     if (data_frame.size > 0) {
       // Mojo doesn't have any write buffer so far.
       writable_watcher_.ArmOrNotify();
@@ -594,7 +591,7 @@ void WebSocket::SendPendingDataFrames() {
   }
 }
 
-bool WebSocket::SendDataFrame(DataFrame* data_frame) {
+void WebSocket::SendDataFrame(DataFrame* data_frame) {
   DCHECK_GT(data_frame->size, 0u);
   MojoResult begin_result;
   void* buffer;
@@ -618,9 +615,12 @@ bool WebSocket::SendDataFrame(DataFrame* data_frame) {
   if (begin_result != MOJO_RESULT_OK &&
       begin_result != MOJO_RESULT_SHOULD_WAIT) {
     DVLOG(1) << "WebSocket::OnWritable mojo error=" << begin_result;
-    return false;
+    DCHECK_EQ(begin_result, MOJO_RESULT_FAILED_PRECONDITION);
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&WebSocket::OnConnectionError,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
-  return true;
+  return;
 }
 
 void WebSocket::OnSSLCertificateErrorResponse(

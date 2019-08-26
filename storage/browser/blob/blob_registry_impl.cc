@@ -493,7 +493,7 @@ void BlobRegistryImpl::Bind(blink::mojom::BlobRegistryRequest request,
 }
 
 void BlobRegistryImpl::Register(
-    blink::mojom::BlobRequest blob,
+    mojo::PendingReceiver<blink::mojom::Blob> blob,
     const std::string& uuid,
     const std::string& content_type,
     const std::string& content_disposition,
@@ -576,9 +576,10 @@ void BlobRegistryImpl::RegisterFromStream(
                           std::move(progress_client));
 }
 
-void BlobRegistryImpl::GetBlobFromUUID(blink::mojom::BlobRequest blob,
-                                       const std::string& uuid,
-                                       GetBlobFromUUIDCallback callback) {
+void BlobRegistryImpl::GetBlobFromUUID(
+    mojo::PendingReceiver<blink::mojom::Blob> blob,
+    const std::string& uuid,
+    GetBlobFromUUIDCallback callback) {
   if (!context_) {
     std::move(callback).Run();
     return;

@@ -36,18 +36,20 @@ class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
   void GetDevicesAndSetClient(mojom::HidManagerClientAssociatedPtrInfo client,
                               GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
-  void Connect(const std::string& device_guid,
-               mojom::HidConnectionClientPtr connection_client,
-               ConnectCallback callback) override;
+  void Connect(
+      const std::string& device_guid,
+      mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+      ConnectCallback callback) override;
 
  private:
   void CreateDeviceList(GetDevicesCallback callback,
                         mojom::HidManagerClientAssociatedPtrInfo client,
                         std::vector<mojom::HidDeviceInfoPtr> devices);
 
-  void CreateConnection(ConnectCallback callback,
-                        mojom::HidConnectionClientPtr connection_client,
-                        scoped_refptr<HidConnection> connection);
+  void CreateConnection(
+      ConnectCallback callback,
+      mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+      scoped_refptr<HidConnection> connection);
 
   // HidService::Observer:
   void OnDeviceAdded(mojom::HidDeviceInfoPtr device_info) override;

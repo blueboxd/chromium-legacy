@@ -45,7 +45,7 @@ TypeConverter<blink::WebServiceWorkerRegistrationObjectInfo,
   }
   return blink::WebServiceWorkerRegistrationObjectInfo(
       input->registration_id, input->scope, input->update_via_cache,
-      input->host_ptr_info.PassHandle(), input->request.PassHandle(),
+      input->host_remote.PassHandle(), input->receiver.PassHandle(),
       input->installing.To<blink::WebServiceWorkerObjectInfo>(),
       input->waiting.To<blink::WebServiceWorkerObjectInfo>(),
       input->active.To<blink::WebServiceWorkerObjectInfo>());

@@ -1326,10 +1326,6 @@
       status: {"Android": "stable", "default": ""},
     },
     {
-      name: "RenderingPipelineThrottling",
-      status: "stable",
-    },
-    {
       name: "ResourceLoadScheduler",
       status: "experimental",
     },
@@ -1762,6 +1758,10 @@
       name: "WebShareV2",
       status: "experimental",
       depends_on: ["WebShare"],
+    },
+    {
+      name: "WebSocketStream",
+      status: "experimental",
     },
     {
       name: "WebUSB",

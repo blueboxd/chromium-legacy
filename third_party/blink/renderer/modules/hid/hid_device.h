@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_DEVICE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_DEVICE_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/hid.mojom-blink.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
@@ -96,7 +96,7 @@ class MODULES_EXPORT HIDDevice
   Member<HID> parent_;
   device::mojom::blink::HidDeviceInfoPtr device_info_;
   device::mojom::blink::HidConnectionPtr connection_;
-  mojo::Binding<device::mojom::blink::HidConnectionClient> binding_;
+  mojo::Receiver<device::mojom::blink::HidConnectionClient> receiver_{this};
   HeapHashSet<Member<ScriptPromiseResolver>> device_requests_;
   HeapVector<Member<HIDCollectionInfo>> collections_;
   bool device_state_change_in_progress_ = false;

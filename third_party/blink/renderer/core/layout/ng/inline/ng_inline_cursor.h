@@ -15,6 +15,8 @@ class LayoutBlockFlow;
 class NGFragmentItem;
 class NGFragmentItems;
 class NGPaintFragment;
+class NGPhysicalBoxFragment;
+struct PhysicalOffset;
 
 // This class traverses fragments in an inline formatting context.
 //
@@ -42,7 +44,11 @@ class CORE_EXPORT NGInlineCursor {
   const NGPaintFragment* CurrentPaintFragment() const {
     return current_paint_fragment_;
   }
+  const NGPhysicalBoxFragment* CurrentBoxFragment() const;
   const LayoutObject* CurrentLayoutObject() const;
+
+  // The offset relative to the root of the inline formatting context.
+  const PhysicalOffset CurrentOffset() const;
 
   //
   // Functions to move the current position.

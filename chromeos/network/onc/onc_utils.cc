@@ -1090,6 +1090,10 @@ base::Value ConvertOncProxySettingsToProxyConfig(
   if (type == ::onc::proxy::kManual) {
     const base::Value* manual_dict =
         onc_proxy_settings.FindKey(::onc::proxy::kManual);
+    if (!manual_dict) {
+      NOTREACHED() << "Manual proxy missing dictionary";
+      return base::Value();
+    }
     std::string manual_spec;
     AppendProxyServerForScheme(*manual_dict, ::onc::proxy::kFtp, &manual_spec);
     AppendProxyServerForScheme(*manual_dict, ::onc::proxy::kHttp, &manual_spec);

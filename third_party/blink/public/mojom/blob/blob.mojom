@@ -30,7 +30,7 @@ interface BlobReaderClient {
 // This interface provides access to a blob in the blob system.
 interface Blob {
   // Creates a copy of this Blob reference.
-  Clone(Blob& blob);
+  Clone(pending_receiver<Blob> blob);
 
   // Creates a reference to this Blob as a DataPipeGetter.
   AsDataPipeGetter(network.mojom.DataPipeGetter& data_pipe_getter);

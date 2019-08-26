@@ -13,6 +13,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -29,20 +30,16 @@ SurfaceLayerBridge::SurfaceLayerBridge(
     : observer_(observer),
       update_submission_state_callback_(
           std::move(update_submission_state_callback)),
-      binding_(this),
-      surface_embedder_binding_(this),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(parent_frame_sink_id) {
-  mojom::blink::EmbeddedFrameSinkProviderPtr provider;
+  mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&provider));
+      provider.BindNewPipeAndPassReceiver());
   // TODO(xlai): Ensure OffscreenCanvas commit() is still functional when a
   // frame-less HTML canvas's document is reparenting under another frame.
   // See crbug.com/683172.
-  blink::mojom::blink::EmbeddedFrameSinkClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
   provider->RegisterEmbeddedFrameSink(parent_frame_sink_id_, frame_sink_id_,
-                                      std::move(client));
+                                      receiver_.BindNewPipeAndPassRemote());
 }
 
 SurfaceLayerBridge::~SurfaceLayerBridge() = default;
@@ -91,8 +88,8 @@ void SurfaceLayerBridge::EmbedSurface(const viz::SurfaceId& surface_id) {
 }
 
 void SurfaceLayerBridge::BindSurfaceEmbedder(
-    mojom::blink::SurfaceEmbedderRequest request) {
-  surface_embedder_binding_.Bind(std::move(request));
+    mojo::PendingReceiver<mojom::blink::SurfaceEmbedder> receiver) {
+  surface_embedder_receiver_.Bind(std::move(receiver));
 }
 
 cc::Layer* SurfaceLayerBridge::GetCcLayer() const {

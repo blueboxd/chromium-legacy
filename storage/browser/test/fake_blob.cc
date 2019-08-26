@@ -4,7 +4,7 @@
 
 #include "storage/browser/test/fake_blob.h"
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace storage {
 
@@ -16,9 +16,9 @@ blink::mojom::BlobPtr FakeBlob::Clone() {
   return result;
 }
 
-void FakeBlob::Clone(blink::mojom::BlobRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<FakeBlob>(uuid_),
-                          std::move(request));
+void FakeBlob::Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FakeBlob>(uuid_),
+                              std::move(receiver));
 }
 
 void FakeBlob::AsDataPipeGetter(network::mojom::DataPipeGetterRequest) {

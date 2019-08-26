@@ -1213,19 +1213,11 @@ Polymer({
 
   /**
    * Event triggered when the Proxy configuration element changes.
-   * @param {!CustomEvent<!{field: string, value: !CrOnc.ProxySettings}>} event
-   *     The network-proxy change event.
+   * @param {!CustomEvent<!mojom.ProxySettings>} event
    * @private
    */
   onProxyChange_: function(event) {
-    const field = event.detail.field;
-    const value = event.detail.value;
-    if (field != 'ProxySettings') {
-      return;
-    }
-    const onc = this.getEmptyNetworkProperties_();
-    CrOnc.setProperty(onc, 'ProxySettings', /** @type {!Object} */ (value));
-    this.setNetworkProperties_(onc);
+    this.setMojoNetworkProperties_({proxySettings: event.detail});
   },
 
   /**

@@ -1433,8 +1433,8 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
   // Set ServiceWorkerGlobalScope#registration.
   DCHECK_NE(registration_info->registration_id,
             mojom::blink::kInvalidServiceWorkerRegistrationId);
-  DCHECK(registration_info->host_ptr_info.is_valid());
-  DCHECK(registration_info->request.is_pending());
+  DCHECK(registration_info->host_remote.is_valid());
+  DCHECK(registration_info->receiver.is_valid());
   registration_ = MakeGarbageCollected<ServiceWorkerRegistration>(
       GetExecutionContext(), std::move(registration_info));
 

@@ -37,7 +37,7 @@ function installGetter(proto, propName, getter) {
 export function installPropertiesAndFunctions(proto, internals) {
   reflection.installBool(proto, 'disabled');
   reflection.installString(proto, 'name');
-  installGetter(proto, 'type', function () {
+  installGetter(proto, 'type', function() {
     if (!(this instanceof proto.constructor)) {
       throw new TypeError(
           'The context object is not an instance of ' + proto.contructor.name);
@@ -45,28 +45,28 @@ export function installPropertiesAndFunctions(proto, internals) {
     return this.localName;
   });
 
-  installGetter(proto, 'form', function () {
+  installGetter(proto, 'form', function() {
     return this[internals].form;
   });
-  installGetter(proto, 'willValidate', function () {
+  installGetter(proto, 'willValidate', function() {
     return this[internals].willValidate;
   });
-  installGetter(proto, 'validity', function () {
+  installGetter(proto, 'validity', function() {
     return this[internals].validity;
   });
-  installGetter(proto, 'validationMessage', function () {
+  installGetter(proto, 'validationMessage', function() {
     return this[internals].validationMessage;
   });
-  installGetter(proto, 'labels', function () {
+  installGetter(proto, 'labels', function() {
     return this[internals].labels;
   });
-  proto.checkValidity = function () {
+  proto.checkValidity = function() {
     return this[internals].checkValidity();
   };
-  proto.reportValidity = function () {
+  proto.reportValidity = function() {
     return this[internals].reportValidity();
   };
-  proto.setCustomValidity = function (error) {
+  proto.setCustomValidity = function(error) {
     if (error === undefined) {
       throw new TypeError('Too few arguments');
     }

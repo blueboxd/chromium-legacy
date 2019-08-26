@@ -322,7 +322,8 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   VideoCodecProfile profile = config.profile();
   uint32_t input_format_fourcc =
       V4L2Device::VideoCodecProfileToV4L2PixFmt(profile, true);
-  if (!device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc)) {
+  if (!input_format_fourcc ||
+      !device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc)) {
     VLOGF(1) << "Failed to open device for profile: " << profile
              << " fourcc: " << FourccToString(input_format_fourcc);
     client_task_runner_->PostTask(FROM_HERE,

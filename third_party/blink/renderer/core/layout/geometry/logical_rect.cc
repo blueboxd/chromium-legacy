@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 
 #include <algorithm>
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -35,6 +36,25 @@ void LogicalRect::Unite(const LogicalRect& other) {
   LogicalOffset new_end_offset(Max(EndOffset(), other.EndOffset()));
   offset = Min(offset, other.offset);
   size = new_end_offset - offset;
+}
+
+PhysicalRect LogicalRect::ConvertToPhysical(
+    WritingMode writing_mode,
+    const PhysicalSize& outer_size) const {
+  if (IsHorizontalWritingMode(writing_mode)) {
+    return {offset.inline_offset, offset.block_offset, size.inline_size,
+            size.block_size};
+  }
+
+  // Vertical, clock-wise rotation.
+  if (writing_mode != WritingMode::kSidewaysLr) {
+    return {outer_size.width - BlockEndOffset(), offset.inline_offset,
+            size.block_size, size.inline_size};
+  }
+
+  // Vertical, counter-clock-wise rotation.
+  return {offset.block_offset, outer_size.height - InlineEndOffset(),
+          size.block_size, size.inline_size};
 }
 
 String LogicalRect::ToString() const {

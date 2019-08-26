@@ -22,7 +22,6 @@ namespace {
 
 using mojom::blink::Blob;
 using mojom::blink::BlobPtr;
-using mojom::blink::BlobRequest;
 using mojom::blink::BlobURLStore;
 using mojom::blink::BlobURLStoreAssociatedPtr;
 

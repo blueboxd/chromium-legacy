@@ -380,6 +380,10 @@ SiblingInvalidationSet::SiblingInvalidationSet(
       max_direct_adjacent_selectors_(1),
       descendant_invalidation_set_(std::move(descendants)) {}
 
+SiblingInvalidationSet::SiblingInvalidationSet()
+    : InvalidationSet(InvalidationType::kInvalidateNthSiblings),
+      max_direct_adjacent_selectors_(kDirectAdjacentMax) {}
+
 DescendantInvalidationSet& SiblingInvalidationSet::EnsureSiblingDescendants() {
   if (!sibling_descendant_invalidation_set_)
     sibling_descendant_invalidation_set_ = DescendantInvalidationSet::Create();

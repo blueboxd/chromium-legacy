@@ -485,6 +485,9 @@ const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
 constexpr char kLocalProfileId[] = "profile.local_profile_id";
 #endif
 
+// Deprecated 8/2019
+const char kLastStartupTimestamp[] = "startup_metric.last_startup_timestamp";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -714,6 +717,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(kNtpActivateHideShortcutsFieldTrial, false);
 #endif  // !defined(OS_ANDROID)
+  registry->RegisterInt64Pref(kLastStartupTimestamp, 0);
 
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
@@ -1033,6 +1037,9 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Added 7/2019.
   local_state->ClearPref(kNtpActivateHideShortcutsFieldTrial);
 #endif  // !defined(OS_ANDROID)
+
+  // Added 8/2019.
+  local_state->ClearPref(kLastStartupTimestamp);
 }
 
 // This method should be periodically pruned of year+ old migrations.

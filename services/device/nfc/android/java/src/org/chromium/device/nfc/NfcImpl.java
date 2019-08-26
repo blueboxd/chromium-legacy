@@ -321,7 +321,8 @@ public class NfcImpl implements Nfc {
 
     @Override
     public void onConnectionError(MojoException e) {
-        close();
+        // We do nothing here since close() is always called no matter the connection gets closed
+        // normally or abnormally.
     }
 
     /**

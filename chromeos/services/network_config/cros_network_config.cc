@@ -1546,6 +1546,8 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
     SetString(::onc::ipconfig::kType, ip_config.type, &ip_config_dict);
     SetString(::onc::ipconfig::kWebProxyAutoDiscoveryUrl,
               ip_config.web_proxy_auto_discovery_url, &ip_config_dict);
+    onc.SetKey(::onc::network_config::kStaticIPConfig,
+               std::move(ip_config_dict));
   }
   if (!type_dict.DictEmpty()) {
     std::string type = network_util::TranslateShillTypeToONC(network->type());

@@ -120,9 +120,10 @@ bool IsURLBlockedForCustomProxy(const net::URLRequest& request) {
 
 NetworkServiceProxyDelegate::NetworkServiceProxyDelegate(
     mojom::CustomProxyConfigPtr initial_config,
-    mojom::CustomProxyConfigClientRequest config_client_request)
+    mojo::PendingReceiver<mojom::CustomProxyConfigClient>
+        config_client_receiver)
     : proxy_config_(std::move(initial_config)),
-      binding_(this, std::move(config_client_request)) {
+      receiver_(this, std::move(config_client_receiver)) {
   // Make sure there is always a valid proxy config so we don't need to null
   // check it.
   if (!proxy_config_)

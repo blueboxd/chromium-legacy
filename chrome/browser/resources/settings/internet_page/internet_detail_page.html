@@ -303,8 +303,8 @@
 
             <!-- APN -->
             <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
-              <network-apnlist on-apn-change="onNetworkPropertyChange_"
-                  network-properties="[[networkProperties_]]">
+              <network-apnlist on-apn-change="onApnChange_"
+                  managed-properties="[[managedProperties_]]">
               </network-apnlist>
             </template>
 
@@ -312,10 +312,10 @@
             <template is="dom-if"
                 if="[[isRememberedOrConnected_(managedProperties_)]]">
               <network-ip-config on-ip-change="onIPConfigChange_"
-                  network-properties="[[networkProperties_]]">
+                  managed-properties="[[managedProperties_]]">
               </network-ip-config>
               <network-nameservers on-nameservers-change="onIPConfigChange_"
-                  network-properties="[[networkProperties_]]">
+                  managed-properties="[[managedProperties_]]">
               </network-nameservers>
             </template>
           </div>

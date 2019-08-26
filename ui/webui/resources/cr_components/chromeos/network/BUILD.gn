@@ -19,6 +19,7 @@ js_type_check("closure_compile") {
     ":network_nameservers",
     ":network_password_input",
     ":network_property_list",
+    ":network_property_list_mojo",
     ":network_proxy",
     ":network_proxy_exclusions",
     ":network_proxy_input",
@@ -35,7 +36,7 @@ js_library("mojo_interface_provider") {
 
 js_library("network_apnlist") {
   deps = [
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
+    "//ui/webui/resources/cr_components/chromeos/network:network_config",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
@@ -97,13 +98,16 @@ js_library("network_ip_config") {
   deps = [
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
 }
 
 js_library("network_nameservers") {
   deps = [
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
 }
 
@@ -123,6 +127,15 @@ js_library("network_property_list") {
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("network_property_list_mojo") {
+  deps = [
+    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
 }
 

@@ -195,6 +195,14 @@
                file="cr_components/chromeos/network/network_property_list.js"
                type="chrome_html"
                compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_MOJO_HTML"
+               file="cr_components/chromeos/network/network_property_list_mojo.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_MOJO_JS"
+               file="cr_components/chromeos/network/network_property_list_mojo.js"
+               type="chrome_html"
+               compress="gzip" />
     <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROXY_HTML"
                file="cr_components/chromeos/network/network_proxy.html"
                type="chrome_html"

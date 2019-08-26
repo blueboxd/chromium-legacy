@@ -85,20 +85,6 @@ CrOnc.ProxyLocation;
 /** @typedef {chrome.networkingPrivate.ProxySettings} */
 CrOnc.ProxySettings;
 
-// Modified version of IPConfigProperties to store RoutingPrefix as a
-// human-readable string instead of as a number.
-/**
- * @typedef {{
- *   Gateway: (string|undefined),
- *   IPAddress: (string|undefined),
- *   NameServers: (!Array<string>|undefined),
- *   RoutingPrefix: (string|undefined),
- *   Type: (string|undefined),
- *   WebProxyAutoDiscoveryUrl: (string|undefined)
- * }}
- */
-CrOnc.IPConfigUIProperties;
-
 /** @typedef {chrome.networkingPrivate.PaymentPortal} */
 CrOnc.PaymentPortal;
 
@@ -507,53 +493,6 @@ CrOnc.isSimLocked = function(properties) {
   return simLockStatus.LockType == CrOnc.LockType.PIN ||
       simLockStatus.LockType == CrOnc.LockType.PUK;
 };
-
-/**
- * Modifies |config| to include the correct set of properties for configuring
- * a network IP Address and NameServer configuration for |state|. Existing
- * properties in |config| will be preserved unless invalid.
- * @param {!chrome.networkingPrivate.NetworkConfigProperties} config A partial
- *     ONC configuration.
- * @param {CrOnc.NetworkProperties|undefined} properties The ONC properties.
- */
-CrOnc.setValidStaticIPConfig = function(config, properties) {
-  if (!config.IPAddressConfigType) {
-    const ipConfigType = /** @type {chrome.networkingPrivate.IPConfigType} */ (
-        CrOnc.getActiveValue(properties.IPAddressConfigType));
-    config.IPAddressConfigType = ipConfigType || CrOnc.IPConfigType.DHCP;
-  }
-  if (!config.NameServersConfigType) {
-    const nsConfigType = /** @type {chrome.networkingPrivate.IPConfigType} */ (
-        CrOnc.getActiveValue(properties.NameServersConfigType));
-    config.NameServersConfigType = nsConfigType || CrOnc.IPConfigType.DHCP;
-  }
-  if (config.IPAddressConfigType != CrOnc.IPConfigType.STATIC &&
-      config.NameServersConfigType != CrOnc.IPConfigType.STATIC) {
-    if (config.hasOwnProperty('StaticIPConfig')) {
-      delete config.StaticIPConfig;
-    }
-    return;
-  }
-
-  if (!config.hasOwnProperty('StaticIPConfig')) {
-    config.StaticIPConfig =
-        /** @type {chrome.networkingPrivate.IPConfigProperties} */ ({});
-  }
-  const staticIP = config.StaticIPConfig;
-  const stateIPConfig = CrOnc.getIPConfigForType(properties, CrOnc.IPType.IPV4);
-  if (config.IPAddressConfigType == 'Static') {
-    staticIP.Gateway = staticIP.Gateway || stateIPConfig.Gateway || '';
-    staticIP.IPAddress = staticIP.IPAddress || stateIPConfig.IPAddress || '';
-    staticIP.RoutingPrefix =
-        staticIP.RoutingPrefix || stateIPConfig.RoutingPrefix || 0;
-    staticIP.Type = staticIP.Type || stateIPConfig.Type || CrOnc.IPType.IPV4;
-  }
-  if (config.NameServersConfigType == 'Static') {
-    staticIP.NameServers =
-        staticIP.NameServers || stateIPConfig.NameServers || [];
-  }
-};
-
 
 /**
  * Sets the value of a property in an ONC dictionary.

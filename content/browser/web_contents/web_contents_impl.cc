@@ -171,6 +171,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/java_interfaces_impl.h"
+#include "content/browser/android/nfc_host.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #else  // !OS_ANDROID
@@ -3286,9 +3287,8 @@ device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockContext() {
 
 #if defined(OS_ANDROID)
 void WebContentsImpl::GetNFC(device::mojom::NFCRequest request) {
-  if (!nfc_host_)
-    nfc_host_.reset(new NFCHost(this));
-  nfc_host_->GetNFC(std::move(request));
+  NFCHost nfc_host(this);
+  nfc_host.GetNFC(std::move(request));
 }
 #endif
 

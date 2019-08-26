@@ -1735,11 +1735,11 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   builder.set_network_delegate(std::move(network_delegate));
 
   if (params_->initial_custom_proxy_config ||
-      params_->custom_proxy_config_client_request) {
+      params_->custom_proxy_config_client_receiver) {
     std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate =
         std::make_unique<NetworkServiceProxyDelegate>(
             std::move(params_->initial_custom_proxy_config),
-            std::move(params_->custom_proxy_config_client_request));
+            std::move(params_->custom_proxy_config_client_receiver));
     proxy_delegate_ = proxy_delegate.get();
     builder.set_proxy_delegate(std::move(proxy_delegate));
   }

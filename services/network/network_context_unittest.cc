@@ -5000,10 +5000,10 @@ TEST_F(NetworkContextMockHostTest, CustomProxyAddsHeaders) {
   net::test_server::RegisterDefaultHandlers(&proxy_test_server);
   ASSERT_TRUE(proxy_test_server.Start());
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -5053,10 +5053,10 @@ TEST_F(NetworkContextMockHostTest, CanUseProxyOnHttpSelfRedirect) {
 
   ASSERT_TRUE(proxy_test_server.Start());
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   auto config = mojom::CustomProxyConfig::New();
@@ -5103,10 +5103,10 @@ TEST_F(NetworkContextMockHostTest, CanUseProxyOnHttpRedirectCycles) {
 
   ASSERT_TRUE(proxy_test_server.Start());
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
   auto config = mojom::CustomProxyConfig::New();
@@ -5139,10 +5139,10 @@ TEST_F(NetworkContextMockHostTest, CustomProxyHeadersAreMerged) {
   net::test_server::RegisterDefaultHandlers(&proxy_test_server);
   ASSERT_TRUE(proxy_test_server.Start());
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -5182,10 +5182,10 @@ TEST_F(NetworkContextMockHostTest, CustomProxyConfigHeadersAddedBeforeCache) {
   net::test_server::RegisterDefaultHandlers(&proxy_test_server);
   ASSERT_TRUE(proxy_test_server.Start());
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -5244,10 +5244,10 @@ TEST_F(NetworkContextMockHostTest, CustomProxyRequestHeadersAddedBeforeCache) {
   net::test_server::RegisterDefaultHandlers(&proxy_test_server);
   ASSERT_TRUE(proxy_test_server.Start());
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -5300,10 +5300,10 @@ TEST_F(NetworkContextMockHostTest,
   net::test_server::RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -5347,9 +5347,9 @@ TEST_F(NetworkContextMockHostTest,
   context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
       proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -5381,10 +5381,10 @@ TEST_F(NetworkContextMockHostTest, CustomProxyUsesSpecifiedProxyList) {
   net::test_server::RegisterDefaultHandlers(&proxy_test_server);
   ASSERT_TRUE(proxy_test_server.Start());
 
-  mojom::CustomProxyConfigClientPtr proxy_config_client;
+  mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->custom_proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
+  context_params->custom_proxy_config_client_receiver =
+      proxy_config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -5443,10 +5443,10 @@ TEST_F(NetworkContextMockHostTest,
   };
 
   for (const TestCase& test_case : test_cases) {
-    mojom::CustomProxyConfigClientPtr proxy_config_client;
+    mojo::Remote<mojom::CustomProxyConfigClient> proxy_config_client;
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-    context_params->custom_proxy_config_client_request =
-        mojo::MakeRequest(&proxy_config_client);
+    context_params->custom_proxy_config_client_receiver =
+        proxy_config_client.BindNewPipeAndPassReceiver();
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
     auto config = mojom::CustomProxyConfig::New();

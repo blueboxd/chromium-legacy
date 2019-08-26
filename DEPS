@@ -160,7 +160,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '92b33354ddac6c281d26c51d3cbdedc10a026967',
+  'skia_revision': '27afcf5d12c0dce30ce550476412f9fb92b0f85e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -291,7 +291,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '3367690414ae896453e97561a8a26c0c7515d5e6',
+  'shaderc_revision': '8e49d0a2b16028a9bf727a4dfb080bfb7b0439df',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -840,7 +840,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '765375356dc514dbf1bb039d6abd8e2a9dd04928',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'd5163953610a3e2369e5857f7ee6e252d7a4c89b',
       'condition': 'checkout_linux',
   },
 
@@ -865,7 +865,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4016d1b393a1ea0530c5c243e9d26e20a5cb60b0',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '31f187e5c0d7d13d71348dd9bd6a891bf3643ba6',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1447,7 +1447,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@62d93b5f32619aa0577ae0dfd1dc03f08d2def02',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cee7bf091f42743121e8b41b79b5da6227d22a7d',
     'condition': 'checkout_src_internal',
   },
 

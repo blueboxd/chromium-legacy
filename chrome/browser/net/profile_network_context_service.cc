@@ -43,7 +43,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/base/features.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_util.h"
@@ -560,7 +559,7 @@ ProfileNetworkContextService::CreateNetworkContextParams(
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
     if (drp_settings) {
       mojo::Remote<network::mojom::CustomProxyConfigClient> config_client;
-      network_context_params->custom_proxy_config_client_request =
+      network_context_params->custom_proxy_config_client_receiver =
           config_client.BindNewPipeAndPassReceiver();
       drp_settings->AddCustomProxyConfigClient(std::move(config_client));
     }

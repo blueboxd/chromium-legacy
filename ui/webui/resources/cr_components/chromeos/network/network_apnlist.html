@@ -1,10 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
-<link rel="import" href="network_property_list.html">
+<link rel="import" href="network_property_list_mojo.html">
 <link rel="import" href="network_shared_css.html">
 
 <dom-module id="network-apnlist">
@@ -20,17 +19,17 @@
           value="[[selectedApn_]]"
           aria-label="[[i18n('networkAccessPoint')]]">
         <template is="dom-repeat" items="[[apnSelectList_]]">
-          <option value="[[item.AccessPointName]]">[[apnDesc_(item)]]</option>
+          <option value="[[item.accessPointName]]">[[apnDesc_(item)]]</option>
         </template>
       </select>
     </div>
 
     <div class="property-box single-column indented"
-        hidden$="[[!isOtherSelected_(selectedApn_, networkProperties)]]">
-      <network-property-list on-property-change="onOtherApnChange_"
+        hidden$="[[!isOtherSelected_(selectedApn_, managedProperties)]]">
+      <network-property-list-mojo on-property-change="onOtherApnChange_"
           fields="[[otherApnFields_]]" property-dict="[[otherApn_]]"
-          edit-field-types="[[otherApnEditTypes_]]" prefix="Cellular.APN.">
-      </network-property-list>
+          edit-field-types="[[otherApnEditTypes_]]" prefix="cellular.apn.">
+      </network-property-list-mojo>
       <cr-button class="action-button" on-click="onSaveOtherTap_">
         [[i18n('save')]]
       </cr-button>

@@ -273,6 +273,24 @@ Polymer({
   },
 
   /**
+   * @param {!mojom.ConfigProperties} config
+   * @private
+   */
+  setMojoNetworkProperties_: function(config) {
+    if (!this.networkPropertiesReceived_ || !this.guid) {
+      return;
+    }
+    this.networkConfig_.setProperties(this.guid, config).then(response => {
+      if (!response.success) {
+        console.error('Unable to set properties: ' + JSON.stringify(config));
+        // An error typically indicates invalid input; request the properties
+        // to update any invalid fields.
+        this.getNetworkDetails_();
+      }
+    });
+  },
+
+  /**
    * @return {!chrome.networkingPrivate.NetworkConfigProperties} An ONC
    *     dictionary with just the Type property set. Used for passing properties
    *     to setNetworkProperties_.
@@ -469,111 +487,35 @@ Polymer({
   },
 
   /**
-   * Event triggered for elements associated with network properties.
-   * @param {!CustomEvent<!{field: string, value: (string|!Object)}>} event
+   * @param {!CustomEvent<!mojom.ApnProperties>} event
    * @private
    */
-  onNetworkPropertyChange_: function(event) {
-    if (!this.networkProperties) {
+  onApnChange_: function(event) {
+    if (!this.networkPropertiesReceived_) {
       return;
     }
-    const field = event.detail.field;
-    const value = event.detail.value;
-    const onc = this.getEmptyNetworkProperties_();
-    if (field == 'APN') {
-      CrOnc.setTypeProperty(onc, 'APN', value);
-    } else {
-      console.error('Unexpected property change event: ' + field);
-      return;
-    }
-    this.setNetworkProperties_(onc);
+    const apn = event.detail;
+    const config = {cellular: {apn: apn}};
+    this.setMojoNetworkProperties_(config);
   },
 
   /**
    * Event triggered when the IP Config or NameServers element changes.
-   * TODO(stevenjb): Move this logic down to network_ip_config.js and
-   * network_nameservers.js and remove it from here and internet_detail_page.js.
    * @param {!CustomEvent<!{
    *     field: string,
-   *     value: (string|!CrOnc.IPConfigProperties|!Array<string>)
+   *     value: (string|!mojom.IPConfigProperties|!Array<string>)
    * }>} event The network-ip-config or network-nameservers change event.
    * @private
    */
   onIPConfigChange_: function(event) {
-    if (!this.networkProperties) {
+    if (!this.managedProperties_) {
       return;
     }
-    const field = event.detail.field;
-    const value = event.detail.value;
-    // Get an empty ONC dictionary and set just the IP Config properties that
-    // need to change.
-    const onc = this.getEmptyNetworkProperties_();
-    const ipConfigType =
-        /** @type {chrome.networkingPrivate.IPConfigType|undefined} */ (
-            CrOnc.getActiveValue(this.networkProperties.IPAddressConfigType));
-    if (field == 'IPAddressConfigType') {
-      const newIpConfigType =
-          /** @type {chrome.networkingPrivate.IPConfigType} */ (value);
-      if (newIpConfigType == ipConfigType) {
-        return;
-      }
-      onc.IPAddressConfigType = newIpConfigType;
-    } else if (field == 'NameServersConfigType') {
-      const nsConfigType =
-          /** @type {chrome.networkingPrivate.IPConfigType|undefined} */ (
-              CrOnc.getActiveValue(
-                  this.networkProperties.NameServersConfigType));
-      const newNsConfigType =
-          /** @type {chrome.networkingPrivate.IPConfigType} */ (value);
-      if (newNsConfigType == nsConfigType) {
-        return;
-      }
-      onc.NameServersConfigType = newNsConfigType;
-    } else if (field == 'StaticIPConfig') {
-      if (ipConfigType == CrOnc.IPConfigType.STATIC) {
-        const staticIpConfig = this.networkProperties.StaticIPConfig;
-        const ipConfigValue = /** @type {!Object} */ (value);
-        if (staticIpConfig &&
-            this.allPropertiesMatch_(staticIpConfig, ipConfigValue)) {
-          return;
-        }
-      }
-      onc.IPAddressConfigType = CrOnc.IPConfigType.STATIC;
-      if (!onc.StaticIPConfig) {
-        onc.StaticIPConfig =
-            /** @type {!chrome.networkingPrivate.IPConfigProperties} */ ({});
-      }
-      // Only copy Static IP properties.
-      const keysToCopy = ['Type', 'IPAddress', 'RoutingPrefix', 'Gateway'];
-      for (let i = 0; i < keysToCopy.length; ++i) {
-        const key = keysToCopy[i];
-        if (key in value) {
-          onc.StaticIPConfig[key] = value[key];
-        }
-      }
-    } else if (field == 'NameServers') {
-      // If a StaticIPConfig property is specified and its NameServers value
-      // matches the new value, no need to set anything.
-      const nameServers = /** @type {!Array<string>} */ (value);
-      if (onc.NameServersConfigType == CrOnc.IPConfigType.STATIC &&
-          onc.StaticIPConfig && onc.StaticIPConfig.NameServers == nameServers) {
-        return;
-      }
-      onc.NameServersConfigType = CrOnc.IPConfigType.STATIC;
-      if (!onc.StaticIPConfig) {
-        onc.StaticIPConfig =
-            /** @type {!chrome.networkingPrivate.IPConfigProperties} */ ({});
-      }
-      onc.StaticIPConfig.NameServers = nameServers;
-    } else {
-      console.error('Unexpected change field: ' + field);
-      return;
+    const config = OncMojo.getUpdatedIPConfigProperties(
+        this.managedProperties_, event.detail.field, event.detail.value);
+    if (config) {
+      this.setMojoNetworkProperties_(config);
     }
-    // setValidStaticIPConfig will fill in any other properties from
-    // networkProperties. This is necessary since we update IP Address and
-    // NameServers independently.
-    CrOnc.setValidStaticIPConfig(onc, this.networkProperties);
-    this.setNetworkProperties_(onc);
   },
 
   /**
@@ -635,19 +577,5 @@ Polymer({
     fields.push('MacAddress');
     return fields;
   },
-
-  /**
-   * @param {!Object} curValue
-   * @param {!Object} newValue
-   * @return {boolean} True if all properties set in |newValue| are equal to
-   *     the corresponding properties in |curValue|. Note: Not all properties
-   *     of |curValue| need to be specified in |newValue| for this to return
-   *     true.
-   * @private
-   */
-  allPropertiesMatch_: function(curValue, newValue) {
-    return Object.getOwnPropertyNames(newValue).every(
-        key => newValue[key] == curValue[key]);
-  }
 });
 })();

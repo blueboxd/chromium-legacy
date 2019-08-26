@@ -73,7 +73,6 @@
 #include "ui/native_theme/native_theme_observer.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/nfc_host.h"
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
@@ -1793,10 +1792,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   mojo::ReceiverSet<blink::mojom::ColorChooserFactory>
       color_chooser_factory_receivers_;
-
-#if defined(OS_ANDROID)
-  std::unique_ptr<NFCHost> nfc_host_;
-#endif
 
   std::unique_ptr<ScreenOrientationProvider> screen_orientation_provider_;
 

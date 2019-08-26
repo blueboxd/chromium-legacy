@@ -216,19 +216,4 @@ const CrPolicyNetworkBehavior = {
     return this.isNetworkPolicyEnforced(
         this.getManagedSettingAtPath_(networkProperties, path));
   },
-
-  /**
-   * Get policy indicator type for the setting at |path|.
-   * @param {CrOnc.NetworkProperties} networkProperties
-   * @param {string} path
-   * @return {CrPolicyIndicatorType}
-   */
-  getPolicyIndicatorType_: function(networkProperties, path) {
-    if (!this.isNetworkPolicyPathManaged(networkProperties, path)) {
-      return CrPolicyIndicatorType.NONE;
-    }
-    return networkProperties.Source == CrOnc.Source.DEVICE_POLICY ?
-        CrPolicyIndicatorType.DEVICE_POLICY :
-        CrPolicyIndicatorType.USER_POLICY;
-  },
 };

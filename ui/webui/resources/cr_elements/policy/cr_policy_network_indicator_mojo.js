@@ -9,8 +9,6 @@
 (function() {
 'use strict';
 
-const mojom = chromeos.networkConfig.mojom;
-
 Polymer({
   is: 'cr-policy-network-indicator-mojo',
 
@@ -21,8 +19,9 @@ Polymer({
      * Network property associated with the indicator. Note: |property| may
      * be null or undefined, depending on how the properties dictionary is
      * generated.
-     * @type {?mojom.ManagedBoolean|?mojom.ManagedInt32|?mojom.ManagedString|
-     *        undefined}
+     * @type {?chromeos.networkConfig.mojom.ManagedBoolean|
+     *        ?chromeos.networkConfig.mojom.ManagedInt32|
+     *        ?chromeos.networkConfig.mojom.ManagedString|undefined}
      */
     property: Object,
 
@@ -46,21 +45,22 @@ Polymer({
       this.indicatorType = CrPolicyIndicatorType.NONE;
       return;
     }
+    const PolicySource = chromeos.networkConfig.mojom.PolicySource;
     switch (property.policySource) {
-      case mojom.PolicySource.kNone:
+      case PolicySource.kNone:
         this.indicatorType = CrPolicyIndicatorType.NONE;
         break;
-      case mojom.PolicySource.kUserPolicyEnforced:
+      case PolicySource.kUserPolicyEnforced:
         this.indicatorType = CrPolicyIndicatorType.USER_POLICY;
         break;
-      case mojom.PolicySource.kDevicePolicyEnforced:
+      case PolicySource.kDevicePolicyEnforced:
         this.indicatorType = CrPolicyIndicatorType.DEVICE_POLICY;
         break;
-      case mojom.PolicySource.kUserPolicyRecommended:
-      case mojom.PolicySource.kDevicePolicyRecommended:
+      case PolicySource.kUserPolicyRecommended:
+      case PolicySource.kDevicePolicyRecommended:
         this.indicatorType = CrPolicyIndicatorType.RECOMMENDED;
         break;
-      case mojom.PolicySource.kActiveExtension:
+      case PolicySource.kActiveExtension:
         this.indicatorType = CrPolicyIndicatorType.EXTENSION;
         break;
     }

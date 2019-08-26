@@ -662,8 +662,11 @@ class OncMojo {
   /**
    * @param {!chromeos.networkConfig.mojom.ManagedBoolean|
    *         !chromeos.networkConfig.mojom.ManagedInt32|
-   *         !chromeos.networkConfig.mojom.ManagedString|undefined} property
-   * @return {boolean|number|string|undefined}
+   *         !chromeos.networkConfig.mojom.ManagedString|
+   *         !chromeos.networkConfig.mojom.ManagedStringList|
+   *         !chromeos.networkConfig.mojom.ManagedApnList|undefined} property
+   * @return {boolean|number|string|!Array<string>|
+   *          !Array<!chromeos.networkConfig.mojom.ApnProperties>|undefined}
    */
   static getActiveValue(property) {
     if (!property) {
@@ -696,7 +699,7 @@ class OncMojo {
     let ipConfig;
     if (ipConfigs) {
       ipConfig = ipConfigs.find(ipconfig => ipconfig.type == desiredType);
-      if (ipConfig && desiredType != CrOnc.IPType.IPV4) {
+      if (ipConfig && desiredType != 'IPv4') {
         return ipConfig;
       }
     }
@@ -733,6 +736,119 @@ class OncMojo {
       }
     }
     return ipConfig;
+  }
+
+  /**
+   * Compares the IP config properties of a new unmanaged dictionary to the
+   * corresponding IP properties in an existing managed dictionary. Returns true
+   * if all properties specified in the new dictionary match the values in the
+   * existing dictionary.
+   * @param {!chromeos.networkConfig.mojom.ManagedIPConfigProperties}
+   *     staticValue
+   * @param {!chromeos.networkConfig.mojom.IPConfigProperties} newValue
+   * @return {boolean} True if all properties set in |newValue| are equal to
+   *     the corresponding properties in |staticValue|.
+   */
+  static ipConfigPropertiesMatch(staticValue, newValue) {
+    // If the existing type is unset, or the types do not match, return false.
+    if (!staticValue.type || staticValue.type.activeValue != newValue.type) {
+      return false;
+    }
+    if (newValue.gateway !== undefined &&
+        (!staticValue.gateway ||
+         staticValue.gateway.activeValue != newValue.gateway)) {
+      return false;
+    }
+    if (newValue.ipAddress !== undefined &&
+        (!staticValue.ipAddress ||
+         staticValue.ipAddress.activeValue != newValue.ipAddress)) {
+      return false;
+    }
+    if (!staticValue.routingPrefix ||
+        staticValue.routingPrefix.activeValue != newValue.routingPrefix) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Extracts existing ip config properties from |managedProperties| and applies
+   * |newValue| to |field|. Returns a mojom.ConfigProperties object with the
+   * IP Config related properties set, or null if no changes were applied.
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
+   * @param {string} field
+   * @param {string|!Array<string>|
+   *     !chromeos.networkConfig.mojom.IPConfigProperties} newValue
+   * @return {?chromeos.networkConfig.mojom.ConfigProperties}
+   */
+  static getUpdatedIPConfigProperties(managedProperties, field, newValue) {
+    const mojom = chromeos.networkConfig.mojom;
+    // Get an empty ONC dictionary and set just the IP Config properties that
+    // need to change.
+    let ipConfigType =
+        OncMojo.getActiveString(managedProperties.ipAddressConfigType) ||
+        'DHCP';
+    let nsConfigType =
+        OncMojo.getActiveString(managedProperties.nameServersConfigType) ||
+        'DHCP';
+    let staticIpConfig = OncMojo.getIPConfigForType(managedProperties, 'IPv4');
+    let nameServers = staticIpConfig ? staticIpConfig.nameServers : undefined;
+    if (field == 'ipAddressConfigType') {
+      const newIpConfigType = /** @type {string} */ (newValue);
+      if (newIpConfigType == ipConfigType) {
+        return null;
+      }
+      ipConfigType = newIpConfigType;
+    } else if (field == 'nameServersConfigType') {
+      const newNsConfigType = /** @type {string} */ (newValue);
+      if (newNsConfigType == nsConfigType) {
+        return null;
+      }
+      nsConfigType = newNsConfigType;
+    } else if (field == 'staticIpConfig') {
+      const ipConfigValue =
+          /** @type {!mojom.IPConfigProperties} */ (newValue);
+      if (!ipConfigValue.type || !ipConfigValue.ipAddress) {
+        console.error('Invalid StaticIPConfig: ' + JSON.stringify(newValue));
+        return null;
+      }
+      if (ipConfigType == 'Static' && staticIpConfig &&
+          OncMojo.ipConfigPropertiesMatch(staticIpConfig, ipConfigValue)) {
+        return null;
+      }
+      ipConfigType = 'Static';
+      staticIpConfig = ipConfigValue;
+    } else if (field == 'nameServers') {
+      const newNameServers = /** @type {!Array<string>} */ (newValue);
+      if (!newNameServers || !newNameServers.length) {
+        console.error('Invalid NameServers: ' + JSON.stringify(newValue));
+      }
+      if (nsConfigType == 'Static' &&
+          JSON.stringify(nameServers) == JSON.stringify(newNameServers)) {
+        return null;
+      }
+      nsConfigType = 'Static';
+      nameServers = newNameServers;
+    } else {
+      console.error('Unexpected field: ' + field);
+      return null;
+    }
+
+    // Set ONC IP config properties to existing values + new values.
+    const config = {};
+    config.ipAddressConfigType = ipConfigType;
+    config.nameServersConfigType = nsConfigType;
+    if (ipConfigType == 'Static') {
+      assert(staticIpConfig && staticIpConfig.type && staticIpConfig.ipAddress);
+      config.staticIpConfig = staticIpConfig;
+    }
+    if (nsConfigType == 'Static') {
+      assert(nameServers && nameServers.length);
+      config.staticIpConfig = config.staticIpConfig ||
+          /** @type{!mojom.IPConfigProperties}*/ ({routingPrefix: 0});
+      config.staticIpConfig.nameServers = nameServers;
+    }
+    return config;
   }
 
   /**
@@ -829,3 +945,17 @@ OncMojo.ManagedProperty;
 
 /** @typedef {chromeos.networkConfig.mojom.ManagedProperties} */
 OncMojo.ManagedProperties;
+
+/**
+ * Modified version of mojom.IPConfigProperties to store routingPrefix as a
+ * human-readable string instead of as a number. Used in network_ip_config.js.
+ * @typedef {{
+ *   gateway: (string|undefined),
+ *   ipAddress: (string|undefined),
+ *   nameServers: (!Array<string>|undefined),
+ *   routingPrefix: (string|undefined),
+ *   type: (string|undefined),
+ *   webProxyAutoDiscoveryUrl: (string|undefined),
+ * }}
+ */
+OncMojo.IPConfigUIProperties;

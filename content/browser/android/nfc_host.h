@@ -31,8 +31,6 @@ class NFCHost {
 
   device::mojom::NFCProviderPtr nfc_provider_;
 
-  base::android::ScopedJavaGlobalRef<jobject> java_nfc_host_;
-
   DISALLOW_COPY_AND_ASSIGN(NFCHost);
 };
 

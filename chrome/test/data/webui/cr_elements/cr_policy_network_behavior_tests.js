@@ -55,9 +55,6 @@ suite('CrPolicyNetworkBehavior', function() {
     assertTrue(testBehavior.isEditable(properties.a));
     assertFalse(testBehavior.isNetworkPolicyEnforced(properties.a));
     assertTrue(testBehavior.isNetworkPolicyRecommended(properties.a));
-    assertEquals(
-        CrPolicyIndicatorType.USER_POLICY,
-        testBehavior.getPolicyIndicatorType_(properties, 'a'));
   });
 
   test('device_recommended', function() {
@@ -76,9 +73,6 @@ suite('CrPolicyNetworkBehavior', function() {
     assertTrue(testBehavior.isEditable(properties.a));
     assertFalse(testBehavior.isNetworkPolicyEnforced(properties.a));
     assertTrue(testBehavior.isNetworkPolicyRecommended(properties.a));
-    assertEquals(
-        CrPolicyIndicatorType.DEVICE_POLICY,
-        testBehavior.getPolicyIndicatorType_(properties, 'a'));
   });
 
   test('user_enforced', function() {
@@ -96,9 +90,6 @@ suite('CrPolicyNetworkBehavior', function() {
     assertFalse(testBehavior.isEditable(properties.a));
     assertTrue(testBehavior.isNetworkPolicyEnforced(properties.a));
     assertFalse(testBehavior.isNetworkPolicyRecommended(properties.a));
-    assertEquals(
-        CrPolicyIndicatorType.USER_POLICY,
-        testBehavior.getPolicyIndicatorType_(properties, 'a'));
   });
 
   test('device_enforced', function() {
@@ -116,9 +107,6 @@ suite('CrPolicyNetworkBehavior', function() {
     assertFalse(testBehavior.isEditable(properties.a));
     assertTrue(testBehavior.isNetworkPolicyEnforced(properties.a));
     assertFalse(testBehavior.isNetworkPolicyRecommended(properties.a));
-    assertEquals(
-        CrPolicyIndicatorType.DEVICE_POLICY,
-        testBehavior.getPolicyIndicatorType_(properties, 'a'));
   });
 
   test('extension_controlled', function() {
@@ -136,11 +124,5 @@ suite('CrPolicyNetworkBehavior', function() {
     assertFalse(testBehavior.isEditable(properties.a));
     assertFalse(testBehavior.isNetworkPolicyEnforced(properties.a));
     assertFalse(testBehavior.isNetworkPolicyRecommended(properties.a));
-
-    // TODO(stevenjb): We should probably show the correct indicator for
-    // extension controlled properties; fix this in the mojo code.
-    assertEquals(
-        CrPolicyIndicatorType.NONE,
-        testBehavior.getPolicyIndicatorType_(properties, 'a'));
   });
 });

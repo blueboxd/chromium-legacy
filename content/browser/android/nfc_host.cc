@@ -27,8 +27,8 @@ NFCHost::NFCHost(WebContents* web_contents)
 
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  java_nfc_host_.Reset(
-      Java_NfcHost_create(env, web_contents_->GetJavaWebContents(), id_));
+  // The created instance's reference is kept inside a map in Java world.
+  Java_NfcHost_create(env, web_contents_->GetJavaWebContents(), id_);
 
   service_manager::Connector* connector = content::GetSystemConnector();
   if (connector) {

@@ -118,8 +118,8 @@
     <!-- APN (Cellular only) -->
     <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
       <div class="section single-column">
-        <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
-            network-properties="[[networkProperties]]">
+        <network-apnlist editable on-apn-change="onApnChange_"
+            managed-properties="[[managedProperties_]]">
         </network-apnlist>
       </div>
     </template>
@@ -145,7 +145,7 @@
       <!-- IP Config -->
       <div class="section single-column">
         <network-ip-config editable on-ip-change="onIPConfigChange_"
-            network-properties="[[networkProperties]]">
+            managed-properties="[[managedProperties_]]">
         </network-ip-config>
       </div>
 
@@ -153,7 +153,7 @@
       <div class="section single-column">
         <network-nameservers editable
             on-nameservers-change="onIPConfigChange_"
-            network-properties="[[networkProperties]]">
+            managed-properties="[[managedProperties_]]">
         </network-nameservers>
       </div>
     </template>
@@ -163,8 +163,7 @@
       <div class="section single-column indented">
         <network-property-list
             fields="[[getInfoFields_(networkProperties)]]"
-            property-dict="[[networkProperties]]"
-            on-property-change="onNetworkPropertyChange_">
+            property-dict="[[networkProperties]]">
         </network-property-list>
       </div>
     </template>

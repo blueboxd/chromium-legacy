@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -19,12 +19,12 @@ namespace blink {
 
 void WebLaunchServiceImpl::Create(
     LocalFrame* frame,
-    mojom::blink::WebLaunchServiceAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<mojom::blink::WebLaunchService> receiver) {
   DCHECK(frame);
 
-  mojo::MakeStrongAssociatedBinding(
+  mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<WebLaunchServiceImpl>(*frame->DomWindow()),
-      std::move(request));
+      std::move(receiver));
 }
 
 WebLaunchServiceImpl::WebLaunchServiceImpl(LocalDOMWindow& window)

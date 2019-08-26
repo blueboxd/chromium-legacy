@@ -18,6 +18,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
 #include "url/origin.h"
@@ -117,7 +118,7 @@ void WebLaunchFilesHelper::MaybeSendLaunchEntries() {
   if (launch_url_ != web_contents()->GetLastCommittedURL())
     return;
 
-  blink::mojom::WebLaunchServiceAssociatedPtr launch_service;
+  mojo::AssociatedRemote<blink::mojom::WebLaunchService> launch_service;
   web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
       &launch_service);
   DCHECK(launch_service);

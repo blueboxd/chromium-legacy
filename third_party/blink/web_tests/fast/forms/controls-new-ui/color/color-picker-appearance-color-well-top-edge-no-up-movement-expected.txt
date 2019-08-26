@@ -1,2 +1,0 @@
-Popup did not open.
-TEST COMPLETE

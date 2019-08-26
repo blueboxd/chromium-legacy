@@ -9,7 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/proxy_delegate.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -23,14 +23,15 @@ namespace network {
 
 // NetworkServiceProxyDelegate is used to support the custom proxy
 // configuration, which can be set in
-// NetworkContextParams.custom_proxy_config_client_request.
+// NetworkContextParams.custom_proxy_config_client_receiver.
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
     : public net::ProxyDelegate,
       public mojom::CustomProxyConfigClient {
  public:
   explicit NetworkServiceProxyDelegate(
       mojom::CustomProxyConfigPtr initial_config,
-      mojom::CustomProxyConfigClientRequest config_client_request);
+      mojo::PendingReceiver<mojom::CustomProxyConfigClient>
+          config_client_receiver);
   ~NetworkServiceProxyDelegate() override;
 
   void SetProxyResolutionService(
@@ -87,7 +88,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   void ClearBadProxiesCache() override;
 
   mojom::CustomProxyConfigPtr proxy_config_;
-  mojo::Binding<mojom::CustomProxyConfigClient> binding_;
+  mojo::Receiver<mojom::CustomProxyConfigClient> receiver_;
 
   // Cache of URLs for which the usage of custom proxy results
   // in redirect loops. A container is used here since it's possible that

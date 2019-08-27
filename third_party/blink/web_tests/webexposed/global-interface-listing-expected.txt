@@ -8024,6 +8024,9 @@ interface TrustedTypePolicy
 interface TrustedTypePolicyFactory
     attribute @@toStringTag
     method constructor
+    method getAttributeType
+    method getPropertyType
+    method getTypeMapping
 interface TrustedURL
     attribute @@toStringTag
     method constructor

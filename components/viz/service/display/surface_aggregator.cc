@@ -443,7 +443,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
                      surface_quad->stretch_content_to_fill_bounds, dest_pass,
                      ignore_undamaged, damage_rect_in_quad_space,
                      damage_rect_in_quad_space_valid, rounded_corner_info,
-                     surface_quad->is_reflection);
+                     surface_quad->is_reflection, surface_quad->allow_merge);
 }
 
 void SurfaceAggregator::EmitSurfaceContent(
@@ -460,7 +460,8 @@ void SurfaceAggregator::EmitSurfaceContent(
     gfx::Rect* damage_rect_in_quad_space,
     bool* damage_rect_in_quad_space_valid,
     const RoundedCornerInfo& rounded_corner_info,
-    bool is_reflection) {
+    bool is_reflection,
+    bool allow_merge) {
   // If this surface's id is already in our referenced set then it creates
   // a cycle in the graph and should be dropped.
   SurfaceId surface_id = surface->surface_id();
@@ -538,7 +539,7 @@ void SurfaceAggregator::EmitSurfaceContent(
       !scaled_quad_to_target_transform.IsIdentityOrTranslation();
 
   bool merge_pass =
-      !reflected_and_scaled &&
+      allow_merge && !reflected_and_scaled &&
       base::IsApproximatelyEqual(source_sqs->opacity, 1.f, kOpacityEpsilon) &&
       copy_requests.empty() && combined_transform.Preserves2dAxisAlignment() &&
       CanMergeRoundedCorner(rounded_corner_info, *render_pass_list.back());

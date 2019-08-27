@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/payments/autofill_wallet_data_type_controller.h"
 #include "components/autofill/core/browser/payments/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_model_type_controller.h"
@@ -189,21 +188,10 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // Wallet data nor Wallet metadata sync is explicitly disabled.
     if (!disabled_types.Has(syncer::AUTOFILL_WALLET_DATA) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
-      if (base::FeatureList::IsEnabled(
-              switches::kSyncUSSAutofillWalletMetadata)) {
-        controllers.push_back(CreateWalletModelTypeController(
-            syncer::AUTOFILL_WALLET_METADATA,
-            base::BindRepeating(&AutofillWalletMetadataDelegateFromDataService),
-            sync_service));
-      } else {
-        controllers.push_back(
-            std::make_unique<AutofillWalletDataTypeController>(
-                syncer::AUTOFILL_WALLET_METADATA, db_thread_, dump_stack,
-                sync_service, sync_client_,
-                base::BindRepeating(&BrowserSyncClient::GetPersonalDataManager,
-                                    base::Unretained(sync_client_)),
-                web_data_service_on_disk_));
-      }
+      controllers.push_back(CreateWalletModelTypeController(
+          syncer::AUTOFILL_WALLET_METADATA,
+          base::BindRepeating(&AutofillWalletMetadataDelegateFromDataService),
+          sync_service));
     }
   }
 

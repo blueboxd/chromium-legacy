@@ -135,7 +135,7 @@ class WilcoDtcSupportdBridge final
   wilco_dtc_supportd::mojom::WilcoDtcSupportdServicePtr
       wilco_dtc_supportd_service_mojo_ptr_;
 
-  // The service to perform diagnostics_processor's web requests.
+  // The service to perform wilco_dtc_supportd's web requests.
   WilcoDtcSupportdWebRequestService web_request_service_;
 
   // The wilco_dtc_supportd notification controller in charge of sending

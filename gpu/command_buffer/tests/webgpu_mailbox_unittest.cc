@@ -97,7 +97,7 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
         webgpu()->ReserveTexture(device.Get());
 
     webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                               DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT,
+                               DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT,
                                reinterpret_cast<GLbyte*>(&mailbox));
     dawn::Texture texture = dawn::Texture::Acquire(reservation.texture);
 
@@ -141,15 +141,14 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     webgpu()->FlushCommands();
 
     webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                               DAWN_TEXTURE_USAGE_BIT_COPY_SRC,
+                               DAWN_TEXTURE_USAGE_COPY_SRC,
                                reinterpret_cast<GLbyte*>(&mailbox));
     dawn::Texture texture = dawn::Texture::Acquire(reservation.texture);
 
     // Copy the texture in a mappable buffer.
     dawn::BufferDescriptor buffer_desc;
     buffer_desc.size = 4;
-    buffer_desc.usage =
-        dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::CopyDst;
+    buffer_desc.usage = dawn::BufferUsage::MapRead | dawn::BufferUsage::CopyDst;
     dawn::Buffer readback_buffer = device.CreateBuffer(&buffer_desc);
 
     dawn::TextureCopyView copy_src;
@@ -218,7 +217,7 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
   dawn::Texture texture = dawn::Texture::Acquire(reservation.texture);
 
   webgpu()->AssociateMailbox(0, 0, reservation.id, reservation.generation,
-                             DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT,
+                             DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT,
                              reinterpret_cast<GLbyte*>(&mailbox));
   webgpu()->DissociateMailbox(reservation.id, reservation.generation);
 

@@ -534,6 +534,30 @@ void CrostiniManager::SetContainerSshfsMounted(std::string vm_name,
   }
 }
 
+void CrostiniManager::SetContainerOsRelease(
+    std::string vm_name,
+    std::string container_name,
+    const vm_tools::cicerone::OsRelease& os_release) {
+  container_os_releases_.emplace(ContainerId(vm_name, container_name),
+                                 os_release);
+  VLOG(1) << "vm_name: " << vm_name << " container_name: " << container_name;
+  VLOG(1) << "os_release.pretty_name " << os_release.pretty_name();
+  VLOG(1) << "os_release.name " << os_release.name();
+  VLOG(1) << "os_release.version " << os_release.version();
+  VLOG(1) << "os_release.version_id " << os_release.version_id();
+  VLOG(1) << "os_release.id " << os_release.id();
+}
+
+const vm_tools::cicerone::OsRelease* CrostiniManager::GetContainerOsRelease(
+    std::string vm_name,
+    std::string container_name) {
+  auto it = container_os_releases_.find(ContainerId(vm_name, container_name));
+  if (it != container_os_releases_.end()) {
+    return &it->second;
+  }
+  return nullptr;
+}
+
 base::Optional<ContainerInfo> CrostiniManager::GetContainerInfo(
     std::string vm_name,
     std::string container_name) {
@@ -2117,6 +2141,9 @@ void CrostiniManager::OnStartLxdContainer(
       NOTREACHED();
       break;
   }
+  if (response->has_os_release()) {
+    SetContainerOsRelease(vm_name, container_name, response->os_release());
+  }
 }
 
 void CrostiniManager::OnSetUpLxdContainerUser(
@@ -2256,6 +2283,10 @@ void CrostiniManager::OnLxdContainerStarting(
       !GetContainerInfo(signal.vm_name(), signal.container_name())) {
     VLOG(1) << "Awaiting ContainerStarted signal from Garcon";
     return;
+  }
+  if (signal.has_os_release()) {
+    SetContainerOsRelease(signal.vm_name(), signal.container_name(),
+                          signal.os_release());
   }
   // Find the callbacks to call, then erase them from the map.
   auto range = start_container_callbacks_.equal_range(

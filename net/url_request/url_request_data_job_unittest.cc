@@ -21,9 +21,9 @@ TEST(BuildResponseTest, Simple) {
   scoped_refptr<HttpResponseHeaders> headers(
       new HttpResponseHeaders(std::string()));
 
-  ASSERT_EQ(OK,
-            URLRequestDataJob::BuildResponse(GURL("data:,Hello"), &mime_type,
-                                             &charset, &data, headers.get()));
+  ASSERT_EQ(OK, URLRequestDataJob::BuildResponse(GURL("data:,Hello"), "GET",
+                                                 &mime_type, &charset, &data,
+                                                 headers.get()));
 
   EXPECT_EQ("text/plain", mime_type);
   EXPECT_EQ("US-ASCII", charset);
@@ -39,6 +39,30 @@ TEST(BuildResponseTest, Simple) {
   value.clear();
 }
 
+TEST(BuildResponseTest, HeadMethod) {
+  std::string mime_type;
+  std::string charset;
+  std::string data;
+  scoped_refptr<HttpResponseHeaders> headers =
+      HttpResponseHeaders::TryToCreate("");
+
+  ASSERT_EQ(OK, URLRequestDataJob::BuildResponse(GURL("data:,Hello"), "HEAD",
+                                                 &mime_type, &charset, &data,
+                                                 headers.get()));
+
+  EXPECT_EQ("text/plain", mime_type);
+  EXPECT_EQ("US-ASCII", charset);
+  EXPECT_EQ("", data);
+
+  HttpVersion version = headers->GetHttpVersion();
+  EXPECT_EQ(1, version.major_value());
+  EXPECT_EQ(1, version.minor_value());
+  EXPECT_EQ("OK", headers->GetStatusText());
+  std::string content_type;
+  EXPECT_TRUE(headers->GetNormalizedHeader("Content-Type", &content_type));
+  EXPECT_EQ(content_type, "text/plain;charset=US-ASCII");
+}
+
 TEST(BuildResponseTest, InvalidInput) {
   std::string mime_type;
   std::string charset;
@@ -47,7 +71,7 @@ TEST(BuildResponseTest, InvalidInput) {
       new HttpResponseHeaders(std::string()));
 
   EXPECT_EQ(ERR_INVALID_URL,
-            URLRequestDataJob::BuildResponse(GURL("bogus"), &mime_type,
+            URLRequestDataJob::BuildResponse(GURL("bogus"), "GET", &mime_type,
                                              &charset, &data, headers.get()));
 }
 
@@ -61,8 +85,8 @@ TEST(BuildResponseTest, InvalidMimeType) {
   // MIME type contains delimiters. Must be accepted but Content-Type header
   // should be generated as if the mediatype was text/plain.
   EXPECT_EQ(OK, URLRequestDataJob::BuildResponse(GURL("data:f(o/b)r,test"),
-                                                 &mime_type, &charset, &data,
-                                                 headers.get()));
+                                                 "GET", &mime_type, &charset,
+                                                 &data, headers.get()));
 
   std::string value;
   EXPECT_TRUE(headers->GetNormalizedHeader("Content-Type", &value));
@@ -78,7 +102,7 @@ TEST(BuildResponseTest, InvalidCharset) {
 
   // MIME type contains delimiters. Must be rejected.
   EXPECT_EQ(ERR_INVALID_URL, URLRequestDataJob::BuildResponse(
-                                 GURL("data:text/html;charset=(),test"),
+                                 GURL("data:text/html;charset=(),test"), "GET",
                                  &mime_type, &charset, &data, headers.get()));
 }
 

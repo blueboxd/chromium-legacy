@@ -4,7 +4,10 @@
 
 #include "ash/wm/window_preview_view.h"
 
+#include "ash/wm/window_mirror_view_pip.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/window.h"
@@ -111,8 +114,11 @@ void WindowPreviewView::AddWindow(aura::Window* window) {
   DCHECK(!mirror_views_.contains(window));
 
   window->AddObserver(this);
+
   auto* mirror_view =
-      new WindowMirrorView(window, trilinear_filtering_on_init_);
+      window_util::IsArcPipWindow(window)
+          ? new WindowMirrorViewPip(window, trilinear_filtering_on_init_)
+          : new WindowMirrorView(window, trilinear_filtering_on_init_);
   mirror_views_[window] = mirror_view;
   AddChildView(mirror_view);
 }

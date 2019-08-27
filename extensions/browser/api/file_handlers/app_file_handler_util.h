@@ -46,6 +46,12 @@ std::vector<FileHandlerMatch> FindFileHandlerMatchesForEntries(
     const Extension& extension,
     const std::vector<EntryInfo>& entries);
 
+// Returns the handlers that can handle all files in |entries|
+// along with metadata about how the handler matched (MIME or file)
+std::vector<FileHandlerMatch> MatchesFromFileHandlersForEntries(
+    const FileHandlersInfo& file_handlers,
+    const std::vector<EntryInfo>& entries);
+
 bool FileHandlerCanHandleEntry(const apps::FileHandlerInfo& handler,
                                const EntryInfo& entry);
 

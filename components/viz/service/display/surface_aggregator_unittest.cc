@@ -1493,7 +1493,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ReflectedSurfaceDrawQuadScaled) {
                          SurfaceRange(base::nullopt, root_surface_id),
                          SK_ColorBLACK,
                          /*stretch_content_to_fill_bounds=*/true,
-                         /*ignores_input_event=*/false, /*is_reflection=*/true);
+                         /*ignores_input_event=*/false, /*is_reflection=*/true,
+                         /*allow_merge=*/true);
 
     CompositorFrame frame =
         CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
@@ -1574,7 +1575,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ReflectedSurfaceDrawQuadNotScaled) {
                          SurfaceRange(base::nullopt, root_surface_id),
                          SK_ColorBLACK,
                          /*stretch_content_to_fill_bounds=*/true,
-                         /*ignores_input_event=*/false, /*is_reflection=*/true);
+                         /*ignores_input_event=*/false, /*is_reflection=*/true,
+                         /*allow_merge=*/true);
 
     CompositorFrame frame =
         CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
@@ -5857,6 +5859,90 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
                                  expected_damage_rect, next_display_time()));
   CompositorFrame aggregated_frame_2 = AggregateFrame(root_surface_id);
   testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
+}
+
+// Verify that a SurfaceDrawQuad with !|allow_merge| won't be merged into the
+// parent renderpass.
+TEST_F(SurfaceAggregatorValidSurfaceTest, AllowMerge) {
+  // Child surface.
+  gfx::Rect child_rect(5, 5);
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  {
+    std::vector<Quad> child_quads = {
+        Quad::SolidColorQuad(SK_ColorGREEN, child_rect)};
+    std::vector<Pass> child_passes = {Pass(child_quads, 1, SurfaceSize())};
+
+    CompositorFrame child_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_frame.render_pass_list, child_passes,
+              &child_frame.metadata.referenced_surfaces);
+
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_frame));
+  }
+
+  gfx::Rect root_rect(SurfaceSize());
+
+  // Submit a SurfaceDrawQuad that allows merging.
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, root_rect, root_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->opacity = 1.f;
+
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetAll(sqs, child_rect, child_rect,
+                         /*needs_blending=*/false,
+                         SurfaceRange(base::nullopt, child_surface_id),
+                         SK_ColorWHITE,
+                         /*stretch_content_to_fill_bounds=*/false,
+                         /*ignores_input_event=*/false, /*is_reflection=*/false,
+                         /*allow_merge=*/true);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    root_sink_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
+
+    SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                              root_local_surface_id_);
+
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+    // Merging allowed, so 1 pass should be present.
+    EXPECT_EQ(1u, aggregated_frame.render_pass_list.size());
+  }
+
+  // Submit a SurfaceDrawQuad that does not allow merging
+  {
+    auto pass = RenderPass::Create();
+    pass->SetNew(1, root_rect, root_rect, gfx::Transform());
+    auto* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->opacity = 1.f;
+
+    auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetAll(sqs, child_rect, child_rect,
+                         /*needs_blending=*/false,
+                         SurfaceRange(base::nullopt, child_surface_id),
+                         SK_ColorWHITE,
+                         /*stretch_content_to_fill_bounds=*/false,
+                         /*ignores_input_event=*/false, /*is_reflection=*/false,
+                         /*allow_merge=*/false);
+
+    CompositorFrame frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+    root_sink_->SubmitCompositorFrame(root_local_surface_id_, std::move(frame));
+
+    SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                              root_local_surface_id_);
+
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+    // Merging not allowed, so 2 passes should be present.
+    EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
+  }
 }
 
 }  // namespace

@@ -121,14 +121,14 @@ class CookieManagerImplTest : public testing::Test {
     if (mojo_cookie_manager_.is_bound())
       return;
     network_context_->GetCookieManager(
-        mojo::MakeRequest(&mojo_cookie_manager_));
+        mojo_cookie_manager_.BindNewPipeAndPassReceiver());
   }
 
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<network::NetworkService> network_service_;
   network::mojom::NetworkContextPtr network_context_;
-  network::mojom::CookieManagerPtr mojo_cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> mojo_cookie_manager_;
 
   CookieManagerImpl cookie_manager_;
 

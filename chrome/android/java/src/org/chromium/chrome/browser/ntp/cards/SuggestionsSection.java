@@ -106,7 +106,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         // No header when touchless. The header allows users to choose to collapse/hide suggestions,
         // but when touchless collapsing the suggestions shouldn't be necessary. There is no omnibox
         // to distract from.
-        if (SuggestionsConfig.isTouchless()) {
+        if (!SuggestionsConfig.isTouchless()) {
             mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
                               this::updateSuggestionsVisibilityForExpandableHeader)
                                    : new SectionHeader(info.getTitle());

@@ -64,6 +64,7 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -91,9 +92,9 @@ void InjectCookieDoneCallback(
 // Injects a cookie into |storage_partition|, so we can test for cookie presence
 // later to infer if the StoragePartition has been cleared.
 void InjectCookie(content::StoragePartition* storage_partition) {
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   storage_partition->GetNetworkContext()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager));
+      cookie_manager.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
@@ -116,9 +117,9 @@ void GetAllCookiesCallback(std::string* cookies_out,
 // Returns all cookies present in |storage_partition| as a HTTP header cookie
 // line. Will be an empty string if there are no cookies.
 std::string GetAllCookies(content::StoragePartition* storage_partition) {
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   storage_partition->GetNetworkContext()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager));
+      cookie_manager.BindNewPipeAndPassReceiver());
 
   std::string cookies;
   base::RunLoop run_loop;

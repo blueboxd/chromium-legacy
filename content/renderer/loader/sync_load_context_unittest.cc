@@ -106,7 +106,7 @@ class SyncLoadContextTest : public testing::Test {
                        out_response, redirect_or_response_event,
                        nullptr /* terminate_sync_load_event */,
                        base::TimeDelta::FromSeconds(60) /* timeout */,
-                       nullptr /* download_to_blob_registry */));
+                       mojo::NullRemote() /* download_to_blob_registry */));
   }
 
   static void RunSyncLoadContextViaDataPipe(
@@ -120,7 +120,7 @@ class SyncLoadContextTest : public testing::Test {
         request, std::make_unique<MockSharedURLLoaderFactoryInfo>(), response,
         redirect_or_response_event, nullptr /* terminate_sync_load_event */,
         base::TimeDelta::FromSeconds(60) /* timeout */,
-        nullptr /* download_to_blob_registry */, task_runner);
+        mojo::NullRemote() /* download_to_blob_registry */, task_runner);
 
     // Override |resource_dispatcher_| for testing.
     auto dispatcher = std::make_unique<MockResourceDispatcher>();

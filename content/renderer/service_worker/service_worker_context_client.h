@@ -244,7 +244,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Must be accessed on the initiator thread only.
   EmbeddedWorkerInstanceClientImpl* owner_;
 
-  blink::mojom::BlobRegistryPtr blob_registry_;
+  mojo::Remote<blink::mojom::BlobRegistry> blob_registry_;
 
   // Initialized on the worker thread in WorkerContextStarted and
   // destructed on the worker thread in WillDestroyWorkerContext.

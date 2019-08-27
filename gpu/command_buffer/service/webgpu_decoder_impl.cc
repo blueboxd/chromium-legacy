@@ -574,7 +574,7 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   uint32_t device_generation = static_cast<uint32_t>(c.device_generation);
   uint32_t id = static_cast<uint32_t>(c.id);
   uint32_t generation = static_cast<uint32_t>(c.generation);
-  uint32_t usage = static_cast<DawnTextureUsageBit>(c.usage);
+  uint32_t usage = static_cast<DawnTextureUsage>(c.usage);
 
   // Unpack the mailbox
   if (sizeof(Mailbox) > immediate_data_size) {
@@ -599,14 +599,13 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   }
 
   static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
-      DAWN_TEXTURE_USAGE_BIT_COPY_SRC | DAWN_TEXTURE_USAGE_BIT_COPY_DST |
-      DAWN_TEXTURE_USAGE_BIT_SAMPLED |
-      DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT);
+      DAWN_TEXTURE_USAGE_COPY_SRC | DAWN_TEXTURE_USAGE_COPY_DST |
+      DAWN_TEXTURE_USAGE_SAMPLED | DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT);
   if (usage & ~kAllowedTextureUsages) {
     DLOG(ERROR) << "AssociateMailbox: Invalid usage";
     return error::kInvalidArguments;
   }
-  DawnTextureUsageBit dawn_usage = static_cast<DawnTextureUsageBit>(usage);
+  DawnTextureUsage dawn_usage = static_cast<DawnTextureUsage>(usage);
 
   // Create a DawnTexture from the mailbox.
   std::unique_ptr<SharedImageRepresentationDawn> shared_image =

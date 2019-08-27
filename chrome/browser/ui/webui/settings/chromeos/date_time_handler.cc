@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
@@ -76,6 +77,9 @@ DateTimeHandler* DateTimeHandler::Create(
   html_source->AddString(
       "timeZoneID",
       system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
+  html_source->AddBoolean(
+      "timeActionsProtectedForChild",
+      base::FeatureList::IsEnabled(features::kParentAccessCodeForTimeChange));
 
   return new DateTimeHandler;
 }

@@ -72,7 +72,8 @@ WebTestMessageFilter::WebTestMessageFilter(
       database_tracker_(database_tracker),
       quota_manager_(quota_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
+  network_context->GetCookieManager(
+      cookie_manager_.BindNewPipeAndPassReceiver());
 }
 
 WebTestMessageFilter::~WebTestMessageFilter() {}

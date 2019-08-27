@@ -53,10 +53,6 @@ class AutofillWalletMetadataSyncBridge
       AutofillWebDataBackend* web_data_backend);
   ~AutofillWalletMetadataSyncBridge() override;
 
-  // Determines whether this bridge should be monitoring the Wallet data. This
-  // should be called whenever the data bridge sync state changes.
-  void OnWalletDataTrackingStateChanged(bool is_tracking);
-
   base::WeakPtr<AutofillWalletMetadataSyncBridge> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -134,11 +130,6 @@ class AutofillWalletMetadataSyncBridge
   // Cache of the local data that allows figuring out the diff for local
   // changes; keyed by storage keys.
   std::map<std::string, AutofillMetadata> cache_;
-
-  // Indicates whether we should rely on wallet data being actively synced. If
-  // true, the bridge will prune metadata entries without corresponding wallet
-  // data entry.
-  bool track_wallet_data_;
 
   // The bridge should be used on the same sequence where it is constructed.
   SEQUENCE_CHECKER(sequence_checker_);

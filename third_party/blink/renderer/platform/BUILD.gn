@@ -1228,6 +1228,8 @@ jumbo_component("platform") {
     "mojo/string16_mojom_traits.h",
     "peerconnection/audio_codec_factory.cc",
     "peerconnection/rtc_answer_options_platform.h",
+    "peerconnection/rtc_dtmf_sender_handler.cc",
+    "peerconnection/rtc_dtmf_sender_handler.h",
     "peerconnection/rtc_offer_options_platform.h",
     "peerconnection/rtc_session_description_request.h",
     "peerconnection/rtc_stats_request.h",

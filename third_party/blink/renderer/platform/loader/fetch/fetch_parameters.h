@@ -123,8 +123,7 @@ class PLATFORM_EXPORT FetchParameters {
   SpeculativePreloadType GetSpeculativePreloadType() const {
     return speculative_preload_type_;
   }
-  void SetSpeculativePreloadType(SpeculativePreloadType,
-                                 double discovery_time = 0);
+  void SetSpeculativePreloadType(SpeculativePreloadType);
 
   bool IsLinkPreload() const { return options_.initiator_info.is_link_preload; }
   void SetLinkPreload(bool is_link_preload) {

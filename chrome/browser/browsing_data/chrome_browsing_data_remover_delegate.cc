@@ -104,6 +104,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_transaction_factory.h"
 
 #if defined(OS_ANDROID)
@@ -257,9 +258,10 @@ bool DoesOriginMatchEmbedderMask(int origin_type_mask,
 // Callback for when cookies have been deleted. Invokes NotifyIfDone.
 // Receiving |cookie_manager| as a parameter so that the receive pipe is
 // not deleted before the response is received.
-void OnClearedCookies(base::OnceClosure done,
-                      network::mojom::CookieManagerPtr cookie_manager,
-                      uint32_t num_deleted) {
+void OnClearedCookies(
+    base::OnceClosure done,
+    mojo::Remote<network::mojom::CookieManager> cookie_manager,
+    uint32_t num_deleted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::move(done).Run();
 }
@@ -665,9 +667,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       safe_browsing::SafeBrowsingService* sb_service =
           g_browser_process->safe_browsing_service();
       if (sb_service) {
-        network::mojom::CookieManagerPtr cookie_manager;
+        mojo::Remote<network::mojom::CookieManager> cookie_manager;
         sb_service->GetNetworkContext()->GetCookieManager(
-            mojo::MakeRequest(&cookie_manager));
+            cookie_manager.BindNewPipeAndPassReceiver());
 
         network::mojom::CookieManager* manager_ptr = cookie_manager.get();
 

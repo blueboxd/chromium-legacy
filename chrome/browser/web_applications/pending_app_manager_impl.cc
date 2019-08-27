@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/pending_app_manager_observer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/pending_app_registration_task.h"
@@ -174,7 +173,8 @@ void PendingAppManagerImpl::MaybeStartNext() {
 
       // Otherwise no need to do anything.
       std::move(front->callback)
-          .Run(install_options.url, InstallResultCode::kAlreadyInstalled);
+          .Run(install_options.url,
+               InstallResultCode::kSuccessAlreadyInstalled);
       continue;
     }
 
@@ -222,13 +222,12 @@ void PendingAppManagerImpl::StartInstallationTask(
 }
 
 bool PendingAppManagerImpl::RunNextRegistration() {
-  if (pending_registrations_.empty()) {
+  if (pending_registrations_.empty())
     return false;
-  }
 
-  GURL front = pending_registrations_.front();
+  GURL url_to_check = std::move(pending_registrations_.front());
   pending_registrations_.pop_front();
-  current_registration_ = StartRegistration(front);
+  current_registration_ = StartRegistration(std::move(url_to_check));
   return true;
 }
 
@@ -255,7 +254,7 @@ void PendingAppManagerImpl::OnInstalled(PendingAppInstallTask::Result result) {
 void PendingAppManagerImpl::CurrentInstallationFinished(
     const base::Optional<AppId>& app_id,
     InstallResultCode code) {
-  if (app_id && code == InstallResultCode::kSuccess) {
+  if (app_id && code == InstallResultCode::kSuccessNewInstall) {
     const GURL& launch_url = registrar()->GetAppLaunchURL(*app_id);
     if (!launch_url.is_empty() && launch_url.scheme() != "chrome")
       pending_registrations_.push_back(launch_url);

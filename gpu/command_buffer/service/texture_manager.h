@@ -33,10 +33,6 @@ namespace gl {
 class ProgressReporter;
 }
 
-namespace media {
-class SharedImageVideo;
-}
-
 namespace gpu {
 class DecoderContext;
 class ExternalVkImageBacking;
@@ -52,6 +48,7 @@ class SharedImageBackingIOSurface;
 class SharedImageRepresentationGLTextureIOSurface;
 class SharedImageRepresentationSkiaIOSurface;
 class SharedImageBackingD3D;
+class SharedImageVideo;
 class StreamTexture;
 class SharedImageBackingFactoryD3D;
 
@@ -435,7 +432,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class MailboxManagerTest;
   friend class gpu::ExternalVkImageBacking;
   friend class gpu::ExternalVkImageGlRepresentation;
-  friend class media::SharedImageVideo;
+  friend class gpu::SharedImageVideo;
   friend class gpu::SharedImageBackingGLTexture;
   friend class gpu::SharedImageBackingFactoryGLTexture;
   friend class gpu::SharedImageBackingAHB;

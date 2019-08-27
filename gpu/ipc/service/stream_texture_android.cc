@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/android/android_image_reader_compat.h"
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -19,12 +20,14 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image_video.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_binders.h"
@@ -57,45 +60,6 @@ TextureOwner::Mode GetTextureOwnerMode() {
              ? TextureOwner::Mode::kAImageReaderInsecure
              : TextureOwner::Mode::kSurfaceTextureInsecure;
 }
-
-class SharedImageBackingStreamTexture : public gpu::SharedImageBacking {
- public:
-  SharedImageBackingStreamTexture(
-      const gpu::Mailbox& mailbox,
-      const gfx::Size& size,
-      std::unique_ptr<gpu::gles2::AbstractTexture> abstract_texture)
-      : SharedImageBacking(
-            mailbox,
-            viz::RGBA_8888,
-            size,
-            gfx::ColorSpace(),
-            gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_GLES2,
-            viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size,
-                                                             viz::RGBA_8888),
-            false /* is_thread_safe */),
-        abstract_texture_(std::move(abstract_texture)) {}
-
-  ~SharedImageBackingStreamTexture() override {}
-
-  // SharedImageBacking implementation.
-  bool IsCleared() const override { return true; }
-  void SetCleared() override {}
-  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {
-    NOTREACHED();
-  }
-  bool ProduceLegacyMailbox(gpu::MailboxManager* mailbox_manager) override {
-    mailbox_manager->ProduceTexture(mailbox(),
-                                    abstract_texture_->GetTextureBase());
-    return true;
-  }
-  void Destroy() override {}
-
- private:
-  // |abstract_texture_| is only used for legacy mailbox.
-  std::unique_ptr<gpu::gles2::AbstractTexture> abstract_texture_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedImageBackingStreamTexture);
-};
 
 }  // namespace
 
@@ -175,31 +139,66 @@ void StreamTexture::ReleaseChannel() {
 // gpu::gles2::GLStreamTextureMatrix implementation
 void StreamTexture::GetTextureMatrix(float xform[16]) {
   if (texture_owner_) {
-    UpdateTexImage();
+    // We need to ensure here that the tex image is bound to the texture. This
+    // is because when UpdateTexImage via GetTextureMatrix() is called, it sets
+    // the |has_pending_frame_| to false. Hence any futurre call of CopyTexImage
+    // will do nothing by calling UpdateTexImage().
+    UpdateTexImage(BindingsMode::kEnsureTexImageBound);
     texture_owner_->GetTransformMatrix(current_matrix_);
   }
   memcpy(xform, current_matrix_, sizeof(current_matrix_));
   YInvertMatrix(xform);
 }
 
+bool StreamTexture::IsUsingGpuMemory() const {
+  // Once the image is bound during the first update, we just replace/update the
+  // same image every time in future and hence the image is always bound to a
+  // texture. This means that it always uses gpu memory.
+  return true;
+}
+
+void StreamTexture::UpdateAndBindTexImage() {
+  UpdateTexImage(BindingsMode::kEnsureTexImageBound);
+}
+
+bool StreamTexture::HasTextureOwner() const {
+  return !!texture_owner_;
+}
+
+gles2::Texture* StreamTexture::GetTexture() const {
+  DCHECK(texture_owner_);
+  return gles2::Texture::CheckedCast(texture_owner_->GetTextureBase());
+}
+
 void StreamTexture::OnContextLost() {
   texture_owner_ = nullptr;
 }
 
-void StreamTexture::UpdateTexImage() {
+void StreamTexture::UpdateTexImage(BindingsMode bindings_mode) {
   DCHECK(texture_owner_.get());
 
   if (!has_pending_frame_) return;
 
   auto scoped_make_current = MakeCurrent(context_state_.get());
+
+  // We also restore the previous binding even if the previous binding is same
+  // as the one which we are going to bind. This could be little inefficient.
+  // TODO(vikassoni): Update logic similar to what CodecImage does to optimize.
   gl::ScopedTextureBinder scoped_bind_texture(GL_TEXTURE_EXTERNAL_OES,
                                               texture_owner_->GetTextureId());
   texture_owner_->UpdateTexImage();
-
-  // Binds the egl image to the texture_id if its not already bound.
-  if (!texture_owner_->binds_texture_on_update())
-    texture_owner_->EnsureTexImageBound();
+  EnsureBoundIfNeeded(bindings_mode);
   has_pending_frame_ = false;
+}
+
+void StreamTexture::EnsureBoundIfNeeded(BindingsMode mode) {
+  DCHECK(texture_owner_);
+
+  if (texture_owner_->binds_texture_on_update())
+    return;
+  if (mode != BindingsMode::kEnsureTexImageBound)
+    return;
+  texture_owner_->EnsureTexImageBound();
 }
 
 bool StreamTexture::CopyTexImage(unsigned target) {
@@ -221,7 +220,7 @@ bool StreamTexture::CopyTexImage(unsigned target) {
       static_cast<unsigned>(texture_id) != texture_owner_->GetTextureId())
     return false;
 
-  UpdateTexImage();
+  UpdateTexImage(BindingsMode::kEnsureTexImageBound);
 
   return true;
 }
@@ -296,8 +295,11 @@ void StreamTexture::OnCreateSharedImage(const gpu::Mailbox& mailbox,
   legacy_mailbox_texture->BindStreamTextureImage(
       this, texture_owner_->GetTextureId());
 
-  auto shared_image = std::make_unique<SharedImageBackingStreamTexture>(
-      mailbox, size_, std::move(legacy_mailbox_texture));
+  // TODO(vikassoni): Hardcoding colorspace to SRGB. Figure how if we have a
+  // colorspace and wire it here.
+  auto shared_image = std::make_unique<SharedImageVideo>(
+      mailbox, gfx::ColorSpace::CreateSRGB(), this,
+      std::move(legacy_mailbox_texture), context_state_, false);
   channel_->shared_image_stub()->factory()->RegisterBacking(
       std::move(shared_image), true /* allow_legacy_mailbox */);
 
@@ -355,6 +357,16 @@ void StreamTexture::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 
 bool StreamTexture::HasMutableState() const {
   return false;
+}
+
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+StreamTexture::GetAHardwareBuffer() {
+  DCHECK(texture_owner_);
+
+  // Using BindingsMode::kDontRestoreIfBound here since we do not want to bind
+  // the image. We just want to get the AHardwareBuffer from the latest image.
+  UpdateTexImage(BindingsMode::kDontRestoreIfBound);
+  return texture_owner_->GetAHardwareBuffer();
 }
 
 }  // namespace gpu

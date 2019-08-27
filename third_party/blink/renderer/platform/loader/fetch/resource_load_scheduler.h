@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -325,7 +326,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   // Remembers elapsed times in seconds when the top request in each queue is
   // processed.
-  std::map<ThrottleOption, double> pending_queue_update_times_;
+  std::map<ThrottleOption, base::Time> pending_queue_update_times_;
 
   // Holds an internal class instance to monitor and report traffic.
   std::unique_ptr<TrafficMonitor> traffic_monitor_;

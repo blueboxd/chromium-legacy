@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/pending_app_manager_observer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
 namespace web_app {
@@ -33,7 +32,9 @@ PendingAppManager::SynchronizeRequest::SynchronizeRequest(
 
 PendingAppManager::PendingAppManager() = default;
 
-PendingAppManager::~PendingAppManager() = default;
+PendingAppManager::~PendingAppManager() {
+  DCHECK(!registration_callback_);
+}
 
 void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
                                       WebAppUiManager* ui_manager,
@@ -97,34 +98,28 @@ void PendingAppManager::SynchronizeInstalledApps(
                           weak_ptr_factory_.GetWeakPtr(), install_source));
 }
 
-void PendingAppManager::AddObserver(PendingAppManagerObserver* observer) {
-  observers_.AddObserver(observer);
+void PendingAppManager::SetRegistrationCallbackForTesting(
+    RegistrationCallback callback) {
+  registration_callback_ = callback;
 }
 
-void PendingAppManager::RemoveObserver(
-    const PendingAppManagerObserver* observer) {
-  observers_.RemoveObserver(observer);
+void PendingAppManager::ClearRegistrationCallbackForTesting() {
+  registration_callback_ = RegistrationCallback();
 }
 
 void PendingAppManager::OnRegistrationFinished(const GURL& launch_url,
                                                RegistrationResultCode result) {
-  for (PendingAppManagerObserver& observer : observers_)
-    observer.OnRegistrationFinished(launch_url, result);
+  if (registration_callback_)
+    registration_callback_.Run(launch_url, result);
 }
 
 void PendingAppManager::InstallForSynchronizeCallback(
     ExternalInstallSource source,
     const GURL& app_url,
     InstallResultCode code) {
-  switch (code) {
-    case InstallResultCode::kSuccess:
-    case InstallResultCode::kAlreadyInstalled:
-      break;
-    default:
-      LOG(ERROR) << app_url << " from install source "
-                 << static_cast<int>(source)
-                 << " failed to install with reason " << static_cast<int>(code);
-      break;
+  if (!IsSuccess(code)) {
+    LOG(ERROR) << app_url << " from install source " << static_cast<int>(source)
+               << " failed to install with reason " << static_cast<int>(code);
   }
 
   auto source_and_request = synchronize_requests_.find(source);

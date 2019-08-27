@@ -361,6 +361,7 @@ if (enable_openxr) {
       "openxr/openxr_util.cc",
       "openxr/openxr_util.h",
       "openxr/test/fake_openxr_impl_api.cc",
+      "openxr/test/openxr.def",
       "openxr/test/openxr_negotiate.h",
       "openxr/test/openxr_test_helper.cc",
       "openxr/test/openxr_test_helper.h",
@@ -374,9 +375,12 @@ if (enable_openxr) {
 
     deps = [
       "//base",
-      "//device/vr:json_mock",
       "//device/vr/public/mojom:test_mojom",
       "//third_party/openxr:openxr_headers",
+    ]
+
+    data_deps = [
+      "//device/vr:json_mock",
     ]
   }
 }

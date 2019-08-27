@@ -218,25 +218,25 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
 }
 
 network::mojom::CookieManager* WebUIInfoSingleton::GetCookieManager() {
-  if (!cookie_manager_ptr_)
+  if (!cookie_manager_remote_)
     InitializeCookieManager();
 
-  return cookie_manager_ptr_.get();
+  return cookie_manager_remote_.get();
 }
 
 void WebUIInfoSingleton::InitializeCookieManager() {
   DCHECK(network_context_);
 
-  // Reset |cookie_manager_ptr_|, and only re-initialize it if we have a
+  // Reset |cookie_manager_remote_|, and only re-initialize it if we have a
   // listening SafeBrowsingUIHandler.
-  cookie_manager_ptr_ = nullptr;
+  cookie_manager_remote_.reset();
 
   if (HasListener()) {
     network_context_->GetNetworkContext()->GetCookieManager(
-        mojo::MakeRequest(&cookie_manager_ptr_));
+        cookie_manager_remote_.BindNewPipeAndPassReceiver());
 
-    // base::Unretained is safe because |this| owns |cookie_manager_ptr_|.
-    cookie_manager_ptr_.set_connection_error_handler(base::BindOnce(
+    // base::Unretained is safe because |this| owns |cookie_manager_remote_|.
+    cookie_manager_remote_.set_disconnect_handler(base::BindOnce(
         &WebUIInfoSingleton::InitializeCookieManager, base::Unretained(this)));
   }
 }

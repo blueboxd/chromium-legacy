@@ -57,7 +57,8 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 
 void WindowCycleController::StartCycling() {
   WindowCycleList::WindowList window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kAllDesks);
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleWithPipList(
+          kAllDesks);
   // Window cycle list windows will handle showing their transient related
   // windows, so if a window in |window_list| has a transient root also in
   // |window_list|, we can remove it as the transient root will handle showing

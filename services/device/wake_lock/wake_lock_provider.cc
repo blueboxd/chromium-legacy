@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/wake_lock/wake_lock.h"
 
 namespace device {
@@ -56,12 +56,12 @@ void WakeLockProvider::AddBinding(mojom::WakeLockProviderRequest request) {
 
 void WakeLockProvider::GetWakeLockContextForID(
     int context_id,
-    mojom::WakeLockContextRequest request) {
+    mojo::PendingReceiver<mojom::WakeLockContext> receiver) {
   DCHECK_GE(context_id, 0);
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<WakeLockContext>(context_id, file_task_runner_,
                                         native_view_getter_),
-      std::move(request));
+      std::move(receiver));
 }
 
 void WakeLockProvider::GetWakeLockWithoutContext(

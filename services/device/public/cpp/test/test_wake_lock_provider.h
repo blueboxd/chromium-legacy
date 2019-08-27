@@ -39,7 +39,7 @@ class TestWakeLockProvider : public mojom::WakeLockProvider,
   // mojom::WakeLockProvider:
   void GetWakeLockContextForID(
       int context_id,
-      mojo::InterfaceRequest<mojom::WakeLockContext> request) override;
+      mojo::PendingReceiver<mojom::WakeLockContext> receiver) override;
   void GetWakeLockWithoutContext(mojom::WakeLockType type,
                                  mojom::WakeLockReason reason,
                                  const std::string& description,

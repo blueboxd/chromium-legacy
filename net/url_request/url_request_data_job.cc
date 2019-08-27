@@ -14,6 +14,7 @@
 namespace net {
 
 int URLRequestDataJob::BuildResponse(const GURL& url,
+                                     base::StringPiece method,
                                      std::string* mime_type,
                                      std::string* charset,
                                      std::string* data,
@@ -39,6 +40,10 @@ int URLRequestDataJob::BuildResponse(const GURL& url,
     headers->AddHeader(content_type_header);
   }
 
+  if (base::EqualsCaseInsensitiveASCII(method, "HEAD")) {
+    data->clear();
+  }
+
   return OK;
 }
 
@@ -59,7 +64,8 @@ int URLRequestDataJob::GetData(std::string* mime_type,
 
   // TODO(tyoshino): Get the headers and export via
   // URLRequestJob::GetResponseInfo().
-  return BuildResponse(url, mime_type, charset, data, nullptr);
+  return BuildResponse(url, request_->method(), mime_type, charset, data,
+                       nullptr);
 }
 
 URLRequestDataJob::~URLRequestDataJob() = default;

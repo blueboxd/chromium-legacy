@@ -189,9 +189,9 @@ void AppBannerManagerDesktop::DidFinishCreatingWebApp(
   if (!contents)
     return;
 
-  // Catch only kSuccess and kUserInstallDeclined. Report nothing on all other
-  // errors.
-  if (code == web_app::InstallResultCode::kSuccess) {
+  // Catch only kSuccessNewInstall and kUserInstallDeclined. Report nothing on
+  // all other errors.
+  if (code == web_app::InstallResultCode::kSuccessNewInstall) {
     SendBannerAccepted();
     TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
     AppBannerSettingsHelper::RecordBannerInstallEvent(

@@ -40,9 +40,11 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 
 namespace resource_coordinator {
 
@@ -496,9 +498,10 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
 
   UsbTabHelper* usb_tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents_);
+  mojo::Remote<blink::mojom::WebUsbService> web_usb_service;
   usb_tab_helper->CreateWebUsbService(
       web_contents_->GetMainFrame(),
-      mojo::InterfaceRequest<blink::mojom::WebUsbService>());
+      web_usb_service.BindNewPipeAndPassReceiver());
 
   // Page could be intending to use the WebUSB API, but there's no connection
   // open yet, so it can still be discarded/frozen.

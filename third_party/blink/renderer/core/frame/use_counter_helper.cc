@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/frame/use_counter_helper.h"
 
-#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"

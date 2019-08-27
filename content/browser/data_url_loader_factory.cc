@@ -58,8 +58,8 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
     url = &request.url;
   }
 
-  int result = net::URLRequestDataJob::BuildResponse(*url, &mime_type, &charset,
-                                                     &data, headers.get());
+  int result = net::URLRequestDataJob::BuildResponse(
+      *url, request.method, &mime_type, &charset, &data, headers.get());
   url_ = GURL();  // Don't need it anymore.
 
   if (result != net::OK) {

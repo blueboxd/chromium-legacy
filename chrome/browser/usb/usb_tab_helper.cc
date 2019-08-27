@@ -55,7 +55,7 @@ UsbTabHelper::~UsbTabHelper() {}
 
 void UsbTabHelper::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {
+    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
   if (!AllowedByFeaturePolicy(render_frame_host)) {
     mojo::ReportBadMessage(kFeaturePolicyViolation);
     return;
@@ -66,7 +66,7 @@ void UsbTabHelper::CreateWebUsbService(
     frame_usb_services->web_usb_service.reset(new WebUsbServiceImpl(
         render_frame_host, GetUsbChooser(render_frame_host)));
   }
-  frame_usb_services->web_usb_service->BindRequest(std::move(request));
+  frame_usb_services->web_usb_service->BindReceiver(std::move(receiver));
 }
 
 void UsbTabHelper::IncrementConnectionCount(

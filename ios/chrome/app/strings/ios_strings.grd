@@ -2117,6 +2117,9 @@ New Search
       to dismiss a presented view with pending changes.">
         Cancel
       </message>
+      <message name="IDS_IOS_ADD_CREDIT_CARD_VIEW_CONTROLLER_DISMISS_ALERT_TITLE" desc="Text displayed on an alert as a title whenever trying to dismiss a presented 'add new credit card view' with pending changes.">
+        Are you sure you want to discard this new card?
+      </message>
       <message name="IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP" desc="Alert to let the user know that the website is trying repeatedly to open another application. [iOS only]">
           This website is repeatedly trying to open another application.
       </message>

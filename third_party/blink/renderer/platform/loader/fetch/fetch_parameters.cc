@@ -94,8 +94,7 @@ void FetchParameters::SetResourceWidth(ResourceWidth resource_width) {
 }
 
 void FetchParameters::SetSpeculativePreloadType(
-    SpeculativePreloadType speculative_preload_type,
-    double discovery_time) {
+    SpeculativePreloadType speculative_preload_type) {
   speculative_preload_type_ = speculative_preload_type;
 }
 

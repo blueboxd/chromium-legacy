@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/html_time_element.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {

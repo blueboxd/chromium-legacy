@@ -50,11 +50,6 @@ bool ArcPictureInPictureWindowControllerImpl::IsPlayerActive() {
   return false;
 }
 
-bool ArcPictureInPictureWindowControllerImpl::IsPlayerMuted() {
-  // Should be a no-op on ARC. This is managed on the Android side.
-  return false;
-}
-
 content::WebContents*
 ArcPictureInPictureWindowControllerImpl::GetInitiatorWebContents() {
   // Should be a no-op on ARC. This is managed on the Android side.
@@ -67,26 +62,12 @@ void ArcPictureInPictureWindowControllerImpl::UpdatePlaybackState(
   // Should be a no-op on ARC. This is managed on the Android side.
 }
 
-void ArcPictureInPictureWindowControllerImpl::UpdateMutedState() {
-  // Should be a no-op on ARC. This is managed on the Android side.
-}
-
 bool ArcPictureInPictureWindowControllerImpl::TogglePlayPause() {
   // Should be a no-op on ARC. This is managed on the Android side.
   return false;
 }
 
-bool ArcPictureInPictureWindowControllerImpl::ToggleMute() {
-  // Should be a no-op on ARC. This is managed on the Android side.
-  return false;
-}
-
 void ArcPictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
-    bool is_visible) {
-  // Should be a no-op on ARC. This is managed on the Android side.
-}
-
-void ArcPictureInPictureWindowControllerImpl::SetAlwaysHideMuteButton(
     bool is_visible) {
   // Should be a no-op on ARC. This is managed on the Android side.
 }

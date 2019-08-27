@@ -329,8 +329,7 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(web_data_backend),
-      scoped_observer_(this),
-      track_wallet_data_(false) {
+      scoped_observer_(this) {
   DCHECK(web_data_backend_);
   scoped_observer_.Add(web_data_backend_);
 
@@ -341,11 +340,6 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
 
 AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void AutofillWalletMetadataSyncBridge::OnWalletDataTrackingStateChanged(
-    bool is_tracking) {
-  track_wallet_data_ = is_tracking;
 }
 
 std::unique_ptr<syncer::MetadataChangeList>

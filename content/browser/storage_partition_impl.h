@@ -471,7 +471,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::URLLoaderFactoryPtr
       url_loader_factory_for_browser_process_with_corb_;
   bool is_test_url_loader_factory_for_browser_process_with_corb_ = false;
-  network::mojom::CookieManagerPtr cookie_manager_for_browser_process_;
+  mojo::Remote<network::mojom::CookieManager>
+      cookie_manager_for_browser_process_;
   network::mojom::OriginPolicyManagerPtr
       origin_policy_manager_for_browser_process_;
 

@@ -262,7 +262,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
     // Send success code for last attempt.
     test_pending_app_manager_->SetInstallResultCode(
-        web_app::InstallResultCode::kSuccess);
+        web_app::InstallResultCode::kSuccessNewInstall);
     task_environment_.FastForwardBy(
         AndroidSmsAppSetupControllerImpl::kInstallRetryDelay *
         (1 << (num_failure_tries - 1)));
@@ -318,9 +318,10 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     }
 
     if (num_expected_app_installs) {
-      histogram_tester.ExpectBucketCount("AndroidSms.PWAInstallationResult",
-                                         web_app::InstallResultCode::kSuccess,
-                                         num_expected_app_installs);
+      histogram_tester.ExpectBucketCount(
+          "AndroidSms.PWAInstallationResult",
+          web_app::InstallResultCode::kSuccessNewInstall,
+          num_expected_app_installs);
       histogram_tester.ExpectBucketCount(
           "AndroidSms.EffectivePWAInstallationSuccess", true, 1);
     }

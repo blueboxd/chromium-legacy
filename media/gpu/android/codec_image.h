@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
+#include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
 #include "media/gpu/android/codec_buffer_wait_coordinator.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/promotion_hint_aggregator.h"
@@ -28,7 +29,8 @@ namespace media {
 
 // A GLImage that renders MediaCodec buffers to a TextureOwner or overlay
 // as needed in order to draw them.
-class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
+class MEDIA_GPU_EXPORT CodecImage
+    : public gpu::StreamTextureSharedImageInterface {
  public:
   // Callback to notify that a codec image is now unused in the sense of not
   // being out for display.  This lets us signal interested folks once a video
@@ -90,6 +92,13 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
                            int display_width,
                            int display_height) override;
 
+  // gpu::StreamTextureSharedImageInterface implementation.
+  void ReleaseResources() override;
+  bool IsUsingGpuMemory() const override;
+  void UpdateAndBindTexImage() override;
+  bool HasTextureOwner() const override;
+  gpu::gles2::Texture* GetTexture() const override;
+
   // Whether the codec buffer has been rendered to the front buffer.
   bool was_rendered_to_front_buffer() const {
     return phase_ == Phase::kInFrontBuffer;
@@ -144,19 +153,6 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // Renders this image to the texture owner front buffer by first rendering
   // it to the back buffer if it's not already there, and then waiting for the
   // frame available event before calling UpdateTexImage().
-  enum class BindingsMode {
-    // Ensures that the TextureOwner's texture is bound to the latest image, if
-    // it requires explicit binding.
-    kEnsureTexImageBound,
-
-    // Updates the current image but does not bind it. If updating the image
-    // implicitly binds the texture, the current bindings will be restored.
-    kRestoreIfBound,
-
-    // Updates the current image but does not bind it. If updating the image
-    // implicitly binds the texture, the current bindings will not be restored.
-    kDontRestoreIfBound
-  };
   bool RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode);
   void EnsureBoundIfNeeded(BindingsMode mode);
 

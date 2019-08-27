@@ -20,6 +20,7 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
@@ -108,7 +109,7 @@ class CookiesGetFunction : public ExtensionFunction {
                              const net::CookieStatusList& excluded_cookies);
 
   GURL url_;
-  network::mojom::CookieManagerPtr store_browser_cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> store_browser_cookie_manager_;
   std::unique_ptr<api::cookies::Get::Params> parsed_args_;
 };
 
@@ -133,7 +134,7 @@ class CookiesGetAllFunction : public ExtensionFunction {
                              const net::CookieStatusList& excluded_cookies);
 
   GURL url_;
-  network::mojom::CookieManagerPtr store_browser_cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> store_browser_cookie_manager_;
   std::unique_ptr<api::cookies::GetAll::Params> parsed_args_;
 };
 
@@ -157,7 +158,7 @@ class CookiesSetFunction : public ExtensionFunction {
   enum { NO_RESPONSE, SET_COMPLETED, GET_COMPLETED } state_;
   GURL url_;
   bool success_;
-  network::mojom::CookieManagerPtr store_browser_cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> store_browser_cookie_manager_;
   std::unique_ptr<api::cookies::Set::Params> parsed_args_;
 };
 
@@ -178,7 +179,7 @@ class CookiesRemoveFunction : public ExtensionFunction {
   void RemoveCookieCallback(uint32_t /* num_deleted */);
 
   GURL url_;
-  network::mojom::CookieManagerPtr store_browser_cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> store_browser_cookie_manager_;
   std::unique_ptr<api::cookies::Remove::Params> parsed_args_;
 };
 

@@ -7,10 +7,6 @@
 
 #include "base/component_export.h"
 
-namespace base {
-class CommandLine;
-}  // namespace base
-
 namespace tracing {
 
 // Returns true if InitTracingPostThreadPoolStartAndFeatureList has been called
@@ -26,11 +22,6 @@ void COMPONENT_EXPORT(TRACING_CPP) EnableStartupTracingIfNeeded();
 // IsTracingInitialized() to return true.
 void COMPONENT_EXPORT(TRACING_CPP)
     InitTracingPostThreadPoolStartAndFeatureList();
-
-// If tracing is enabled, grabs the current trace config & mode and tells the
-// child to begin tracing right away via startup tracing command line flags.
-void COMPONENT_EXPORT(TRACING_CPP)
-    PropagateTracingFlagsToChildProcessCmdLine(base::CommandLine* cmd_line);
 
 }  // namespace tracing
 

@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
@@ -40,10 +41,13 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     private ContactDetails mContactDetails;
 
     // The display name of the contact.
-    public TextView mDisplayName;
+    private TextView mDisplayName;
 
     // The contact details for the contact.
-    public TextView mDetailsView;
+    private TextView mEmail;
+    private TextView mEmailOverflowCount;
+    private TextView mPhoneNumber;
+    private TextView mPhoneNumberOverflowCount;
 
     // The dialog manager to use to show contact details.
     private ModalDialogManager mManager;
@@ -66,8 +70,23 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         super.onFinishInflate();
 
         mDisplayName = findViewById(R.id.title);
-        mDetailsView = findViewById(R.id.description);
-        mDetailsView.setMaxLines(2);
+        mEmail = findViewById(R.id.email);
+        mEmailOverflowCount = findViewById(R.id.email_overflow_count);
+        mPhoneNumber = findViewById(R.id.telephone_number);
+        mPhoneNumberOverflowCount = findViewById(R.id.telephone_number_overflow_count);
+
+        mEmailOverflowCount.setOnClickListener(this);
+        mPhoneNumberOverflowCount.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.email_overflow_count || id == R.id.telephone_number_overflow_count) {
+            onLongClick(this);
+        } else {
+            super.onClick(view);
+        }
     }
 
     @Override
@@ -94,9 +113,9 @@ public class ContactView extends SelectableItemView<ContactDetails> {
                          .with(ModalDialogProperties.CONTROLLER, controller)
                          .with(ModalDialogProperties.TITLE, mContactDetails.getDisplayName())
                          .with(ModalDialogProperties.MESSAGE,
-                                 mContactDetails.getContactDetailsAsString(true,
+                                 mContactDetails.getContactDetailsAsString(
                                          PickerAdapter.includesEmails(),
-                                         PickerAdapter.includesTelephones(), null))
+                                         PickerAdapter.includesTelephones()))
                          .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mContext.getResources(),
                                  R.string.close)
                          .build();
@@ -130,6 +149,11 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         setSelectionDelegate(mSelectionDelegate);
     }
 
+    private void updateTextViewVisibilityAndContent(TextView view, String text) {
+        view.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
+        view.setText(text);
+    }
+
     /**
      * Completes the initialization of the ContactView. Must be called before the
      * {@link ContactView} can respond to click events.
@@ -145,11 +169,17 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         String displayName = contactDetails.getDisplayName();
         mDisplayName.setText(displayName);
 
-        String details = contactDetails.getContactDetailsAsString(
-                /*longVersion=*/false, /*includeEmails=*/PickerAdapter.includesEmails(),
-                /*includeTels=*/PickerAdapter.includesTelephones(), mContext.getResources());
-        mDetailsView.setText(details);
-        mDetailsView.setVisibility(details.isEmpty() ? View.GONE : View.VISIBLE);
+        ContactDetails.AbbreviatedContactDetails details =
+                contactDetails.getAbbreviatedContactDetails(
+                        /*includeEmails=*/PickerAdapter.includesEmails(),
+                        /*includeTels=*/PickerAdapter.includesTelephones(),
+                        mContext.getResources());
+
+        updateTextViewVisibilityAndContent(mEmail, details.primaryEmail);
+        updateTextViewVisibilityAndContent(mEmailOverflowCount, details.overflowEmailCount);
+        updateTextViewVisibilityAndContent(mPhoneNumber, details.primaryTelephoneNumber);
+        updateTextViewVisibilityAndContent(
+                mPhoneNumberOverflowCount, details.overflowTelephoneNumberCount);
 
         if (icon == null) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
@@ -178,6 +208,9 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     private void resetTile() {
         setIconDrawable(null);
         mDisplayName.setText("");
-        mDetailsView.setText("");
+        mEmail.setText("");
+        mEmailOverflowCount.setText("");
+        mPhoneNumber.setText("");
+        mPhoneNumberOverflowCount.setText("");
     }
 }

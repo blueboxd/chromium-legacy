@@ -38,8 +38,7 @@ class VideoWakeLockPictureInPictureSession
   void Update(uint32_t player_id,
               const base::Optional<viz::SurfaceId>&,
               const blink::WebSize&,
-              bool show_play_pause_button,
-              bool show_mute_button) final {}
+              bool show_play_pause_button) final {}
 
  private:
   mojo::Receiver<mojom::blink::PictureInPictureSession> receiver_;
@@ -63,7 +62,6 @@ class VideoWakeLockPictureInPictureService
       uint32_t,
       const base::Optional<viz::SurfaceId>&,
       const blink::WebSize&,
-      bool,
       bool,
       mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
       StartSessionCallback callback) final {

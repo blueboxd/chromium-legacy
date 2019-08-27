@@ -17,4 +17,9 @@ const char* LaunchContainerEnumToStr(LaunchContainer launch_container) {
   }
 }
 
+bool IsSuccess(InstallResultCode code) {
+  return code == InstallResultCode::kSuccessNewInstall ||
+         code == InstallResultCode::kSuccessAlreadyInstalled;
+}
+
 }  // namespace web_app

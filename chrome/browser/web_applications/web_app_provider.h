@@ -30,6 +30,7 @@ namespace web_app {
 
 // Forward declarations of generalized interfaces.
 class ExternalWebAppManager;
+class FileHandlerManager;
 class InstallFinalizer;
 class SystemWebAppManager;
 class WebAppAudioFocusIdMap;
@@ -71,6 +72,7 @@ class WebAppProvider : public WebAppProviderBase {
   WebAppPolicyManager& policy_manager() override;
   WebAppUiManager& ui_manager() override;
   WebAppAudioFocusIdMap& audio_focus_id_map() override;
+  FileHandlerManager& file_handler_manager() override;
 
   WebAppDatabaseFactory& database_factory() { return *database_factory_; }
   WebAppSyncManager& sync_manager() { return *sync_manager_; }
@@ -114,6 +116,7 @@ class WebAppProvider : public WebAppProviderBase {
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
   std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
+  std::unique_ptr<FileHandlerManager> file_handler_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;

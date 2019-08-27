@@ -189,7 +189,6 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
   }
 
  private:
-
   // Returns the size for the mirror view, scaled to fit within the max bounds.
   // Scaling is always 1:1 and we only scale down, never up.
   gfx::Size GetMirrorViewScaledSize() const {
@@ -441,7 +440,7 @@ WindowCycleList::~WindowCycleList() {
   if (!windows_.empty() && user_did_accept_) {
     auto* target_window = windows_[current_index_];
     target_window->Show();
-    WindowState::Get(target_window)->Activate();
+    SelectWindow(target_window);
   }
 
   if (cycle_ui_widget_)
@@ -464,8 +463,7 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   // window is minimized, we should also show it.
   if (windows_.size() == 1) {
     ::wm::AnimateWindow(windows_[0], ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-    windows_[0]->Show();
-    WindowState::Get(windows_[0])->Activate();
+    SelectWindow(windows_[0]);
     return;
   }
 
@@ -575,6 +573,15 @@ void WindowCycleList::InitWindowCycleView() {
   screen_observer_.Add(display::Screen::GetScreen());
   widget->Show();
   cycle_ui_widget_ = widget;
+}
+
+void WindowCycleList::SelectWindow(aura::Window* window) {
+  window->Show();
+  auto* window_state = WindowState::Get(window);
+  if (window_util::IsArcPipWindow(window))
+    window_state->Restore();
+  else
+    window_state->Activate();
 }
 
 }  // namespace ash

@@ -179,17 +179,18 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
     return it == map.end() ? nullptr : it->second;
   }
 
-  InterceptionJob(DevToolsURLLoaderInterceptor::Impl* interceptor,
-                  const std::string& id,
-                  const base::UnguessableToken& frame_token,
-                  int32_t process_id,
-                  const base::Optional<std::string>& renderer_request_id,
-                  std::unique_ptr<CreateLoaderParameters> create_loader_params,
-                  bool is_download,
-                  network::mojom::URLLoaderRequest loader_request,
-                  network::mojom::URLLoaderClientPtr client,
-                  network::mojom::URLLoaderFactoryPtr target_factory,
-                  network::mojom::CookieManagerPtr cookie_manager);
+  InterceptionJob(
+      DevToolsURLLoaderInterceptor::Impl* interceptor,
+      const std::string& id,
+      const base::UnguessableToken& frame_token,
+      int32_t process_id,
+      const base::Optional<std::string>& renderer_request_id,
+      std::unique_ptr<CreateLoaderParameters> create_loader_params,
+      bool is_download,
+      network::mojom::URLLoaderRequest loader_request,
+      network::mojom::URLLoaderClientPtr client,
+      network::mojom::URLLoaderFactoryPtr target_factory,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
 
   void GetResponseBody(
       std::unique_ptr<GetResponseBodyForInterceptionCallback> callback);
@@ -298,7 +299,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   network::mojom::URLLoaderClientPtr client_;
   network::mojom::URLLoaderPtr loader_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
 
   enum State {
     kNotStarted,
@@ -344,15 +345,16 @@ class DevToolsURLLoaderInterceptor::Impl
       entry.second->Detach();
   }
 
-  void CreateJob(const base::UnguessableToken& frame_token,
-                 int32_t process_id,
-                 bool is_download,
-                 const base::Optional<std::string>& renderer_request_id,
-                 std::unique_ptr<CreateLoaderParameters> create_params,
-                 network::mojom::URLLoaderRequest loader_request,
-                 network::mojom::URLLoaderClientPtr client,
-                 network::mojom::URLLoaderFactoryPtr target_factory,
-                 network::mojom::CookieManagerPtr cookie_manager) {
+  void CreateJob(
+      const base::UnguessableToken& frame_token,
+      int32_t process_id,
+      bool is_download,
+      const base::Optional<std::string>& renderer_request_id,
+      std::unique_ptr<CreateLoaderParameters> create_params,
+      network::mojom::URLLoaderRequest loader_request,
+      network::mojom::URLLoaderClientPtr client,
+      network::mojom::URLLoaderFactoryPtr target_factory,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager) {
     DCHECK(!frame_token.is_empty());
 
     static int last_id = 0;
@@ -452,7 +454,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
       bool is_download,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      network::mojom::CookieManagerPtrInfo cookie_manager,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager,
       base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor);
   ~DevToolsURLLoaderFactoryProxy() override;
 
@@ -468,9 +470,10 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
-  void StartOnIO(network::mojom::URLLoaderFactoryRequest loader_request,
-                 network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-                 network::mojom::CookieManagerPtrInfo cookie_manager);
+  void StartOnIO(
+      network::mojom::URLLoaderFactoryRequest loader_request,
+      network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
   void OnProxyBindingError();
   void OnTargetFactoryError();
 
@@ -479,7 +482,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
   const bool is_download_;
 
   network::mojom::URLLoaderFactoryPtr target_factory_;
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
   base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 
@@ -492,7 +495,7 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
     bool is_download,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    network::mojom::CookieManagerPtrInfo cookie_manager,
+    mojo::PendingRemote<network::mojom::CookieManager> cookie_manager,
     base::WeakPtr<DevToolsURLLoaderInterceptor::Impl> interceptor)
     : frame_token_(frame_token),
       process_id_(process_id),
@@ -530,8 +533,9 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
       routing_id, request_id, options, request, traffic_annotation);
   network::mojom::URLLoaderFactoryPtr factory_clone;
   target_factory_->Clone(MakeRequest(&factory_clone));
-  network::mojom::CookieManagerPtr cookie_manager_clone;
-  cookie_manager_->CloneInterface(mojo::MakeRequest(&cookie_manager_clone));
+  mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_clone;
+  cookie_manager_->CloneInterface(
+      cookie_manager_clone.InitWithNewPipeAndPassReceiver());
   interceptor->CreateJob(
       frame_token_, process_id_, is_download_, request.devtools_request_id,
       std::move(creation_params), std::move(loader), std::move(client),
@@ -541,7 +545,7 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
 void DevToolsURLLoaderFactoryProxy::StartOnIO(
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    network::mojom::CookieManagerPtrInfo cookie_manager) {
+    mojo::PendingRemote<network::mojom::CookieManager> cookie_manager) {
   target_factory_.Bind(std::move(target_factory_info));
   target_factory_.set_connection_error_handler(
       base::BindOnce(&DevToolsURLLoaderFactoryProxy::OnTargetFactoryError,
@@ -553,7 +557,7 @@ void DevToolsURLLoaderFactoryProxy::StartOnIO(
                           base::Unretained(this)));
 
   cookie_manager_.Bind(std::move(cookie_manager));
-  cookie_manager_.set_connection_error_handler(
+  cookie_manager_.set_disconnect_handler(
       base::BindOnce(&DevToolsURLLoaderFactoryProxy::OnTargetFactoryError,
                      base::Unretained(this)));
 }
@@ -651,10 +655,10 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
       std::move(*receiver);
   network::mojom::URLLoaderFactoryPtrInfo target_ptr_info;
   *receiver = MakeRequest(&target_ptr_info);
-  network::mojom::CookieManagerPtrInfo cookie_manager;
+  mojo::PendingRemote<network::mojom::CookieManager> cookie_manager;
   int process_id = is_navigation ? 0 : rph->GetID();
   rph->GetStoragePartition()->GetNetworkContext()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager));
+      cookie_manager.InitWithNewPipeAndPassReceiver());
   new DevToolsURLLoaderFactoryProxy(
       frame_token, process_id, is_download, std::move(original_request),
       std::move(target_ptr_info), std::move(cookie_manager), weak_impl_);
@@ -672,7 +676,7 @@ InterceptionJob::InterceptionJob(
     network::mojom::URLLoaderRequest loader_request,
     network::mojom::URLLoaderClientPtr client,
     network::mojom::URLLoaderFactoryPtr target_factory,
-    network::mojom::CookieManagerPtr cookie_manager)
+    mojo::PendingRemote<network::mojom::CookieManager> cookie_manager)
     : id_prefix_(id),
       global_req_id_(
           std::make_tuple(process_id,

@@ -1647,8 +1647,15 @@ void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
                                           orientation == kVerticalScrollbar);
 }
 
+bool PaintLayerScrollableArea::HasOverflowControls() const {
+  // We do not need to check for ScrollCorner because it only exists iff there
+  // are scrollbars, see: |ScrollCornerRect| and |UpdateScrollCornerStyle|.
+  DCHECK(!ScrollCorner() || HasScrollbar());
+  return HasScrollbar() || GetLayoutBox()->CanResize();
+}
+
 void PaintLayerScrollableArea::PositionOverflowControls() {
-  if (!HasOverflowControls() && !GetLayoutBox()->CanResize())
+  if (!HasOverflowControls())
     return;
 
   const IntRect border_box =
@@ -1660,9 +1667,8 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
   if (Scrollbar* horizontal_scrollbar = HorizontalScrollbar())
     horizontal_scrollbar->SetFrameRect(RectForHorizontalScrollbar(border_box));
 
-  const IntRect& scroll_corner = ScrollCornerRect();
   if (scroll_corner_)
-    scroll_corner_->SetFrameRect(LayoutRect(scroll_corner));
+    scroll_corner_->SetFrameRect(LayoutRect(ScrollCornerRect()));
 
   if (resizer_)
     resizer_->SetFrameRect(
@@ -1704,7 +1710,7 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
 bool PaintLayerScrollableArea::HitTestOverflowControls(
     HitTestResult& result,
     const IntPoint& local_point) {
-  if (!HasScrollbar() && !GetLayoutBox()->CanResize())
+  if (!HasOverflowControls())
     return false;
 
   IntRect resize_control_rect;

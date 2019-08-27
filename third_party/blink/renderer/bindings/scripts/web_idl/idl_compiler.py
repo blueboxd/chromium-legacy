@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
+
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .composition_parts import Identifier
@@ -13,6 +15,7 @@ from .ir_map import IRMap
 from .idl_type import IdlTypeFactory
 from .interface import Interface
 from .make_copy import make_copy
+from .operation import OperationGroup
 from .reference import RefByIdFactory
 from .typedef import Typedef
 from .union import Union
@@ -74,10 +77,14 @@ class IdlCompiler(object):
         self._did_run = True
 
         # Merge partial definitions.
+        self._propagate_extattrs_per_idl_fragment()
         self._merge_partial_interfaces()
         self._merge_partial_dictionaries()
         # Merge mixins.
         self._merge_interface_mixins()
+
+        self._group_overloaded_functions()
+
         # Process inheritances.
         self._process_interface_inheritances()
 
@@ -93,6 +100,42 @@ class IdlCompiler(object):
 
         return Database(self._db)
 
+    def _propagate_extattrs_per_idl_fragment(self):
+        def process_interface_like(ir):
+            ir = make_copy(ir)
+
+            implemented_as = ir.extended_attributes.get('ImplementedAs')
+            if implemented_as:
+                ir.code_generator_info.set_receiver_implemented_as(
+                    implemented_as.value)
+            map(process_member_like, ir.attributes)
+            map(process_member_like, ir.constants)
+            map(process_member_like, ir.operations)
+
+            self._ir_map.add(ir)
+
+        def process_member_like(prop):
+            implemented_as = prop.extended_attributes.get('ImplementedAs')
+            if implemented_as:
+                prop.code_generator_info.set_property_implemented_as(
+                    implemented_as.value)
+
+        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
+        old_mixins = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
+        old_partial_interfaces = self._ir_map.find_by_kind(
+            IRMap.IR.Kind.PARTIAL_INTERFACE)
+        old_partial_mixins = self._ir_map.find_by_kind(
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
+
+        self._ir_map.move_to_new_phase()
+
+        map(process_interface_like, old_interfaces.itervalues())
+        map(process_interface_like, old_mixins.itervalues())
+        for partials in old_partial_interfaces.itervalues():
+            map(process_interface_like, partials)
+        for partials in old_partial_mixins.itervalues():
+            map(process_interface_like, partials)
+
     def _merge_partial_interfaces(self):
         old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
         partial_interfaces = self._ir_map.find_by_kind(
@@ -102,6 +145,7 @@ class IdlCompiler(object):
             IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
 
         self._ir_map.move_to_new_phase()
+
         self._merge_interfaces(old_interfaces, partial_interfaces)
         self._merge_interfaces(old_mixins, partial_mixins)
 
@@ -138,6 +182,7 @@ class IdlCompiler(object):
         }
 
         self._ir_map.move_to_new_phase()
+
         self._merge_interfaces(interfaces, identifier_to_mixin_map)
 
     def _merge_interfaces(self, old_interfaces, interfaces_to_be_merged):
@@ -155,6 +200,25 @@ class IdlCompiler(object):
                     make_copy(to_be_merged.operations))
             self._ir_map.add(new_interface)
 
+    def _group_overloaded_functions(self):
+        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_interface in old_interfaces.itervalues():
+            assert not old_interface.operation_groups
+            new_interface = make_copy(old_interface)
+
+            sort_key = lambda x: x.identifier
+            sorted_operations = sorted(new_interface.operations, key=sort_key)
+            new_interface.operation_groups = [
+                OperationGroup.IR(operations=list(operations))
+                for identifier, operations in itertools.groupby(
+                    sorted_operations, key=sort_key) if identifier
+            ]
+
+            self._ir_map.add(new_interface)
+
     def _process_interface_inheritances(self):
         def is_own_member(member):
             return 'Unfogeable' in member.extended_attributes
@@ -166,7 +230,9 @@ class IdlCompiler(object):
                 table[obj.inherited.identifier], table)
 
         old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
+
         self._ir_map.move_to_new_phase()
+
         for old_interface in old_interfaces.itervalues():
             new_interface = make_copy(old_interface)
             inheritance_stack = create_inheritance_stack(

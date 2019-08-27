@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
@@ -43,6 +44,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // The AddCreditCardViewControllerDelegate for this ViewController.
 @property(nonatomic, weak) id<AddCreditCardViewControllerDelegate> delegate;
 
+// The card holder name updated with the text in tableview cell.
+@property(nonatomic, strong) NSString* cardHolderName;
+
+// The card number set from the CreditCardConsumer protocol, used to update the
+// UI.
+@property(nonatomic, strong) NSString* cardNumber;
+
+// The expiration month set from the CreditCardConsumer protocol, used to update
+// the UI.
+@property(nonatomic, strong) NSString* expirationMonth;
+
+// The expiration year set from the CreditCardConsumer protocol, used to update
+// the UI.
+@property(nonatomic, strong) NSString* expirationYear;
+
 @end
 
 @implementation AutofillAddCreditCardViewController
@@ -73,7 +89,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Adds 'Cancel' and 'Add' buttons to Navigation bar.
   self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_CANCEL_BUTTON)
-              style:UIBarButtonItemStyleDone
+              style:UIBarButtonItemStylePlain
              target:self
              action:@selector(handleCancelButton:)];
 
@@ -85,6 +101,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self loadModel];
 }
 
+- (BOOL)tableViewHasUserInput {
+  [self updateCreditCardData];
+
+  return self.cardHolderName.length || self.cardNumber.length ||
+         self.expirationMonth.length || self.expirationYear.length;
+}
+
 #pragma mark - ChromeTableViewController
 
 - (void)loadModel {
@@ -93,12 +116,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierName];
   [model addSectionWithIdentifier:SectionIdentifierCreditCardDetails];
-  [model addSectionWithIdentifier:SectionIdentifierCameraButton];
 
   AutofillEditItem* cardHolderNameItem =
       [self createTableViewItemWithType:ItemTypeName
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_CARDHOLDER)
+                         textFieldValue:self.cardHolderName
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_HOLDER_NAME)
@@ -111,6 +134,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self createTableViewItemWithType:ItemTypeCardNumber
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_CARD_NUMBER)
+                         textFieldValue:self.cardNumber
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER)
@@ -123,6 +147,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self createTableViewItemWithType:ItemTypeExpirationMonth
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_EXP_MONTH)
+                         textFieldValue:self.expirationMonth
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH)
@@ -135,6 +160,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self createTableViewItemWithType:ItemTypeExpirationYear
                           textFieldName:l10n_util::GetNSString(
                                             IDS_IOS_AUTOFILL_EXP_YEAR)
+                         textFieldValue:self.expirationYear
                    textFieldPlaceholder:
                        l10n_util::GetNSString(
                            IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRATION_YEAR)
@@ -149,8 +175,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cameraButtonItem.text = l10n_util::GetNSString(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
   cameraButtonItem.textAlignment = NSTextAlignmentCenter;
-  [model addItem:cameraButtonItem
-      toSectionWithIdentifier:SectionIdentifierCameraButton];
+  if (@available(iOS 13, *)) {
+    [model addSectionWithIdentifier:SectionIdentifierCameraButton];
+    [model addItem:cameraButtonItem
+        toSectionWithIdentifier:SectionIdentifierCameraButton];
+  }
 }
 
 #pragma mark - UITableViewDelegate
@@ -174,31 +203,52 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
   return nil;
 }
+#pragma mark - CreditCardConsumer
+
+// TODO(crbug.com/984545): This method will be called from
+// CreditCardScannerMediator after it is implemented.
+- (void)setCreditCardNumber:(NSString*)cardNumber
+            expirationMonth:(NSString*)expirationMonth
+             expirationYear:(NSString*)expirationYear {
+  self.cardNumber = cardNumber;
+  self.expirationMonth = expirationMonth;
+  self.expirationYear = expirationYear;
+
+  // TODO(crbug.com/984545): Update each tableview cell independently.
+  // Reload the model.
+  [self loadModel];
+  [self.tableView reloadData];
+}
 
 #pragma mark - Private
 
-// Reads the data from text fields and sends it to the mediator.
+// Handles Add button to add a new credit card.
 - (void)didTapAddButton:(id)sender {
-  NSString* cardHolderName = [self readTextFromItemtype:ItemTypeName
-                                      sectionIdentifier:SectionIdentifierName];
+  [self updateCreditCardData];
 
-  NSString* cardNumber =
+  [self.delegate addCreditCardViewController:self
+                 addCreditCardWithHolderName:self.cardHolderName
+                                  cardNumber:self.cardNumber
+                             expirationMonth:self.expirationMonth
+                              expirationYear:self.expirationYear];
+}
+
+// Updates credit card data properties with the text in TableView cells.
+- (void)updateCreditCardData {
+  self.cardHolderName = [self readTextFromItemtype:ItemTypeName
+                                 sectionIdentifier:SectionIdentifierName];
+
+  self.cardNumber =
       [self readTextFromItemtype:ItemTypeCardNumber
                sectionIdentifier:SectionIdentifierCreditCardDetails];
 
-  NSString* expirationMonth =
+  self.expirationMonth =
       [self readTextFromItemtype:ItemTypeExpirationMonth
                sectionIdentifier:SectionIdentifierCreditCardDetails];
 
-  NSString* expirationYear =
+  self.expirationYear =
       [self readTextFromItemtype:ItemTypeExpirationYear
                sectionIdentifier:SectionIdentifierCreditCardDetails];
-
-  [self.delegate addCreditCardViewController:self
-                 addCreditCardWithHolderName:cardHolderName
-                                  cardNumber:cardNumber
-                             expirationMonth:expirationMonth
-                              expirationYear:expirationYear];
 }
 
 // Reads and returns the data from the item with passed |itemType| and
@@ -222,12 +272,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Returns initialized tableViewItem with passed arguments.
 - (AutofillEditItem*)createTableViewItemWithType:(NSInteger)itemType
                                    textFieldName:(NSString*)textFieldName
+                                  textFieldValue:(NSString*)textFieldValue
                             textFieldPlaceholder:(NSString*)textFieldPlaceholder
                                     keyboardType:(UIKeyboardType)keyboardType
                                   autofillUIType:
                                       (AutofillUIType)autofillUIType {
   AutofillEditItem* item = [[AutofillEditItem alloc] initWithType:itemType];
   item.textFieldName = textFieldName;
+  item.textFieldValue = textFieldValue;
   item.textFieldPlaceholder = textFieldPlaceholder;
   item.keyboardType = keyboardType;
   item.hideEditIcon = NO;

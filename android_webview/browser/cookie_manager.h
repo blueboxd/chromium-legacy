@@ -11,6 +11,8 @@
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -41,13 +43,13 @@ class CookieManager {
  public:
   static CookieManager* GetInstance();
 
-  // Passes a |cookie_manager_info|, which this will use for CookieManager APIs
-  // going forward. Only called in the Network Service path, with the intention
-  // this is called once during content initialization (when we create the
-  // only NetworkContext). Note: no other cookie tasks will be processed while
-  // this operation is running.
+  // Passes a |cookie_manager_remote|, which this will use for CookieManager
+  // APIs going forward. Only called in the Network Service path, with the
+  // intention this is called once during content initialization (when we create
+  // the only NetworkContext). Note: no other cookie tasks will be processed
+  // while this operation is running.
   void SetMojoCookieManager(
-      network::mojom::CookieManagerPtrInfo cookie_manager_info);
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote);
 
   void SetShouldAcceptCookies(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj,
@@ -147,10 +149,10 @@ class CookieManager {
   void FlushCookieStoreAsyncHelper(base::OnceClosure complete);
 
   void SetMojoCookieManagerAsync(
-      network::mojom::CookieManagerPtrInfo cookie_manager_info,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote,
       base::OnceClosure complete);
   void SwapMojoCookieManagerAsync(
-      network::mojom::CookieManagerPtrInfo cookie_manager_info,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote,
       base::OnceClosure complete);
 
   void HasCookiesAsyncHelper(bool* result, base::OnceClosure complete);
@@ -197,7 +199,7 @@ class CookieManager {
   base::circular_deque<base::OnceClosure> tasks_;
 
   // The CookieManager shared with the NetworkContext.
-  network::mojom::CookieManagerPtr mojo_cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> mojo_cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };

@@ -509,6 +509,12 @@ XrResult xrGetActionStatePose(XrSession session,
   return XR_SUCCESS;
 }
 
+XrResult xrGetInstanceProperties(XrInstance instance,
+                                 XrInstanceProperties* instanceProperties) {
+  // TODO(https://crbug.com/996502)
+  return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
 XrResult xrGetSystem(XrInstance instance,
                      const XrSystemGetInfo* get_info,
                      XrSystemId* system_id) {
@@ -523,6 +529,14 @@ XrResult xrGetSystem(XrInstance instance,
 
   *system_id = g_test_helper.GetSystemId();
 
+  return XR_SUCCESS;
+}
+
+XrResult xrGetSystemProperties(XrInstance instance,
+                               XrSystemId systemId,
+                               XrSystemProperties* properties) {
+  // TODO(https://crbug.com/996502)
+  properties->trackingProperties.positionTracking = true;
   return XR_SUCCESS;
 }
 

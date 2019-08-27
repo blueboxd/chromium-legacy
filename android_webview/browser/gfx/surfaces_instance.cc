@@ -16,11 +16,13 @@
 #include "android_webview/browser/gfx/skia_output_surface_dependency_webview.h"
 #include "android_webview/browser/gfx/task_queue_web_view.h"
 #include "android_webview/common/aw_switches.h"
+#include "base/android/build_info.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -214,6 +216,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                        viz::SurfaceRange(base::nullopt, child_id),
                        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
                        /*ignores_input_event=*/false);
+  surface_quad->allow_merge = !BackdropFiltersPreventMerge(child_id);
 
   viz::CompositorFrame frame;
   // We draw synchronously, so acknowledge a manual BeginFrame.
@@ -323,6 +326,42 @@ void SurfacesInstance::OnBeginFramePausedChanged(bool paused) {}
 base::TimeDelta SurfacesInstance::GetPreferredFrameIntervalForFrameSinkId(
     const viz::FrameSinkId& id) {
   return frame_sink_manager_->GetPreferredFrameIntervalForFrameSinkId(id);
+}
+
+bool SurfacesInstance::BackdropFiltersPreventMerge(
+    const viz::SurfaceId& surface_id) {
+  // TODO(ericrk): This function makes the pessemistic assumption that any
+  // backdrop filter prevents merging this surface. This is not true in a
+  // number of cases:
+  //  - SkiaRenderer may handle framebuffer readback in some cases.
+  //  - This is not needed if framebuffer format is not floating point.
+  //
+  //  In the future we should optimize this more and avoid the intermediate
+  //  in the cases listed above. crbug.com/996434
+  const viz::Surface* surface =
+      frame_sink_manager_->surface_manager()->GetSurfaceForId(surface_id);
+  const auto& frame = surface->GetActiveFrame();
+  base::flat_set<viz::RenderPassId> backdrop_filter_passes;
+  for (const auto& render_pass : frame.render_pass_list) {
+    if (!render_pass->backdrop_filters.IsEmpty())
+      backdrop_filter_passes.insert(render_pass->id);
+  }
+
+  if (backdrop_filter_passes.empty())
+    return false;
+
+  const auto* root_pass = frame.render_pass_list.back().get();
+  for (const auto* quad : root_pass->quad_list) {
+    if (quad->material != viz::DrawQuad::Material::kRenderPass)
+      continue;
+    const auto* pass_quad = viz::RenderPassDrawQuad::MaterialCast(quad);
+    if (backdrop_filter_passes.find(pass_quad->render_pass_id) !=
+        backdrop_filter_passes.end()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace android_webview

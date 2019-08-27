@@ -14,7 +14,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       text_({text.TextShapeResult(), text.StartOffset(), text.EndOffset()}),
       rect_({PhysicalOffset(), text.Size()}),
       type_(kText),
-      style_variant_(static_cast<unsigned>(text.StyleVariant())) {
+      style_variant_(static_cast<unsigned>(text.StyleVariant())),
+      is_hidden_for_paint_(false) {
   DCHECK_LE(text_.start_offset, text_.end_offset);
 #if DCHECK_IS_ON()
   if (text_.shape_result) {
@@ -31,7 +32,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
              item_count}),
       rect_({PhysicalOffset(), line.Size()}),
       type_(kLine),
-      style_variant_(static_cast<unsigned>(line.StyleVariant())) {}
+      style_variant_(static_cast<unsigned>(line.StyleVariant())),
+      is_hidden_for_paint_(false) {}
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
                                wtf_size_t item_count)
@@ -39,7 +41,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
       box_({&box, item_count}),
       rect_({PhysicalOffset(), box.Size()}),
       type_(kBox),
-      style_variant_(static_cast<unsigned>(box.StyleVariant())) {}
+      style_variant_(static_cast<unsigned>(box.StyleVariant())),
+      is_hidden_for_paint_(false) {}
 
 NGFragmentItem::~NGFragmentItem() {
   switch (Type()) {
@@ -56,6 +59,11 @@ NGFragmentItem::~NGFragmentItem() {
       box_.~BoxItem();
       break;
   }
+}
+
+PhysicalRect NGFragmentItem::SelfInkOverflow() const {
+  // TODO(kojii): Implement.
+  return LocalRect();
 }
 
 StringView NGFragmentItem::Text(const NGFragmentItems& items) const {
@@ -83,8 +91,25 @@ String NGFragmentItem::DebugName() const {
 }
 
 IntRect NGFragmentItem::VisualRect() const {
-  // TODO(kojii): Implement.
-  return IntRect();
+  // TODO(kojii): Need to reconsider the storage of |VisualRect|, to integrate
+  // better with |FragmentData| and to avoid dependency to |LayoutObject|.
+  return GetLayoutObject()->VisualRectForInlineBox();
+}
+
+PhysicalRect NGFragmentItem::LocalVisualRectFor(
+    const LayoutObject& layout_object) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
+
+  PhysicalRect visual_rect;
+  for (const NGFragmentItem& item : ItemsFor(layout_object)) {
+    if (UNLIKELY(item.IsHiddenForPaint()))
+      continue;
+    PhysicalRect child_visual_rect = item.SelfInkOverflow();
+    child_visual_rect.offset += item.Offset();
+    visual_rect.Unite(child_visual_rect);
+  }
+  return visual_rect;
 }
 
 NGFragmentItem::ItemsForLayoutObject NGFragmentItem::ItemsFor(

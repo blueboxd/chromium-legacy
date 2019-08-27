@@ -8,5 +8,6 @@ include_rules = [
     # Dependencies.
     "+third_party/blink/renderer/platform/bindings/script_wrappable.h",
     "+third_party/blink/renderer/platform/heap",
+    "+third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h",
     "+third_party/blink/renderer/platform/wtf",
 ]

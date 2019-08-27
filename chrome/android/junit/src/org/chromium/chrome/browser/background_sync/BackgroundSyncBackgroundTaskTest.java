@@ -154,4 +154,32 @@ public class BackgroundSyncBackgroundTaskTest {
         verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
         verify(mTaskScheduler, times(0)).schedule(any(Context.class), any(TaskInfo.class));
     }
+
+    @Test
+    @Feature("BackgroundSync")
+    public void onStopTaskBeforeNativeLoaded() {
+        TaskParameters params = TaskParameters.create(TaskIds.BACKGROUND_SYNC_ONE_SHOT_JOB_ID)
+                                        .addExtras(mTaskExtras)
+                                        .build();
+
+        new BackgroundSyncBackgroundTask().onStopTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params);
+
+        verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
+        verify(mTaskScheduler, times(0)).schedule(any(Context.class), any(TaskInfo.class));
+    }
+
+    @Test
+    @Feature("BackgroundSync")
+    public void testOnStopTaskWithNative() {
+        TaskParameters params = TaskParameters.create(TaskIds.BACKGROUND_SYNC_ONE_SHOT_JOB_ID)
+                                        .addExtras(mTaskExtras)
+                                        .build();
+
+        new BackgroundSyncBackgroundTask().onStopTaskWithNative(
+                RuntimeEnvironment.application, params);
+
+        verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
+        verify(mTaskScheduler, times(0)).schedule(any(Context.class), any(TaskInfo.class));
+    }
 }

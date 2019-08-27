@@ -1246,7 +1246,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     // CanHandleDataURLRequestLocally() has already checked if the data url can
     // be handled here.
     std::tie(result, response, data) =
-        network_utils::ParseDataURL(resource_->Url());
+        network_utils::ParseDataURL(resource_->Url(), request.HttpMethod());
     if (result != net::OK) {
       error_out = WebURLError(result, resource_->Url());
     } else {
@@ -1454,8 +1454,8 @@ void ResourceLoader::HandleDataUrl() {
   // data url with invalid mime type in some cases.
   // CanHandleDataURLRequestLocally() has already checked if the data url can be
   // handled here.
-  std::tie(result, response, data) =
-      network_utils::ParseDataURL(resource_->Url());
+  std::tie(result, response, data) = network_utils::ParseDataURL(
+      resource_->Url(), resource_->GetResourceRequest().HttpMethod());
   if (result != net::OK) {
     HandleError(ResourceError(result, resource_->Url(), base::nullopt));
     return;

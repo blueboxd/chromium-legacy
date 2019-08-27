@@ -4,28 +4,30 @@
 
 #include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
 
+#include "base/test/bind_test_util.h"
+
 namespace web_app {
 
-WebAppRegistrationWaiter::WebAppRegistrationWaiter(PendingAppManager* manager) {
-  observer_.Add(manager);
+WebAppRegistrationWaiter::WebAppRegistrationWaiter(PendingAppManager* manager)
+    : manager_(manager) {
+  manager_->SetRegistrationCallbackForTesting(base::BindLambdaForTesting(
+      [this](const GURL& launch_url, RegistrationResultCode code) {
+        CHECK_EQ(launch_url_, launch_url);
+        CHECK_EQ(code_, code);
+        run_loop_.Quit();
+      }));
 }
 
-WebAppRegistrationWaiter::~WebAppRegistrationWaiter() = default;
+WebAppRegistrationWaiter::~WebAppRegistrationWaiter() {
+  manager_->ClearRegistrationCallbackForTesting();
+}
 
 void WebAppRegistrationWaiter::AwaitNextRegistration(
     const GURL& launch_url,
-    RegistrationResultCode result) {
+    RegistrationResultCode code) {
   launch_url_ = launch_url;
-  result_ = result;
+  code_ = code;
   run_loop_.Run();
-}
-
-void WebAppRegistrationWaiter::OnRegistrationFinished(
-    const GURL& launch_url,
-    RegistrationResultCode result) {
-  CHECK_EQ(launch_url_, launch_url);
-  CHECK_EQ(result_, result);
-  run_loop_.Quit();
 }
 
 }  // namespace web_app

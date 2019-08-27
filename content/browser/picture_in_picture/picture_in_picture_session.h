@@ -33,7 +33,6 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
       const base::Optional<viz::SurfaceId>& surface_id,
       const gfx::Size& natural_size,
       bool show_play_pause_button,
-      bool show_mute_button,
       mojo::PendingReceiver<blink::mojom::PictureInPictureSession> receiver,
       mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>
           observer,
@@ -45,8 +44,7 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   void Update(uint32_t player_id,
               const base::Optional<viz::SurfaceId>& surface_id,
               const gfx::Size& natural_size,
-              bool show_play_pause_button,
-              bool show_mute_button) final;
+              bool show_play_pause_button) final;
 
   void NotifyWindowResized(const gfx::Size& size);
 

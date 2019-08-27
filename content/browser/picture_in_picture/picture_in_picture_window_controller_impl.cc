@@ -201,34 +201,10 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   return true /* playing */;
 }
 
-void PictureInPictureWindowControllerImpl::UpdateMutedState() {
-  if (!window_)
-    return;
-
-  if (always_hide_mute_button_) {
-    window_->SetMutedState(OverlayWindow::MutedState::kNoAudio);
-    return;
-  }
-
-  window_->SetMutedState(IsPlayerMuted() ? OverlayWindow::MutedState::kMuted
-                                         : OverlayWindow::MutedState::kUnmuted);
-}
-
-bool PictureInPictureWindowControllerImpl::ToggleMute() {
-  DCHECK(window_);
-
-  bool new_muted_status = !IsPlayerMuted();
-  media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Muted(
-      media_player_id_->render_frame_host->GetRoutingID(),
-      media_player_id_->delegate_id, new_muted_status));
-  return new_muted_status;
-}
-
 void PictureInPictureWindowControllerImpl::UpdateMediaPlayerId() {
   media_player_id_ =
       active_session_ ? active_session_->player_id() : base::nullopt;
   UpdatePlaybackState(IsPlayerActive(), !media_player_id_.has_value());
-  UpdateMutedState();
 }
 
 void PictureInPictureWindowControllerImpl::SetActiveSession(
@@ -246,12 +222,6 @@ void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
     bool is_visible) {
   always_hide_play_pause_button_ = is_visible;
   UpdatePlayPauseButtonVisibility();
-}
-
-void PictureInPictureWindowControllerImpl::SetAlwaysHideMuteButton(
-    bool is_visible) {
-  always_hide_mute_button_ = !is_visible;
-  UpdateMutedState();
 }
 
 void PictureInPictureWindowControllerImpl::SkipAd() {
@@ -317,7 +287,6 @@ void PictureInPictureWindowControllerImpl::MediaStartedPlaying(
     return;
 
   UpdatePlaybackState(true /* is_playing */, false /* reached_end_of_stream */);
-  UpdateMutedState();
 }
 
 void PictureInPictureWindowControllerImpl::MediaStoppedPlaying(
@@ -333,58 +302,6 @@ void PictureInPictureWindowControllerImpl::MediaStoppedPlaying(
   UpdatePlaybackState(
       false /* is_playing */,
       reason == WebContentsObserver::MediaStoppedReason::kReachedEndOfStream);
-}
-
-void PictureInPictureWindowControllerImpl::MediaMutedStatusChanged(
-    const MediaPlayerId& media_player_id,
-    bool muted) {
-  if (initiator_->IsBeingDestroyed())
-    return;
-
-  if (muted)
-    AddMutedPlayerEntry(media_player_id);
-  else
-    RemoveMutedPlayerEntry(media_player_id);
-
-  if (media_player_id_ == media_player_id)
-    UpdateMutedState();
-}
-
-void PictureInPictureWindowControllerImpl::AddMutedPlayerEntry(
-    const MediaPlayerId& id) {
-  muted_players_[id.render_frame_host].insert(id.delegate_id);
-}
-
-bool PictureInPictureWindowControllerImpl::RemoveMutedPlayerEntry(
-    const MediaPlayerId& id) {
-  auto it = muted_players_.find(id.render_frame_host);
-  if (it == muted_players_.end())
-    return false;
-
-  // Remove the player.
-  bool did_remove = it->second.erase(id.delegate_id) == 1;
-  if (!did_remove)
-    return false;
-
-  // If there are no players left, remove the entry.
-  if (it->second.empty())
-    muted_players_.erase(it);
-
-  return true;
-}
-
-bool PictureInPictureWindowControllerImpl::IsPlayerMuted() {
-  // At creation time, the player id may not be set.
-  if (!media_player_id_.has_value())
-    return false;
-
-  const auto& players =
-      muted_players_.find(media_player_id_->render_frame_host);
-  if (players == muted_players_.end())
-    return false;
-
-  return players->second.find(media_player_id_->delegate_id) !=
-         players->second.end();
 }
 
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(

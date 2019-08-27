@@ -90,6 +90,7 @@
 #include "content/public/common/web_preferences.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -222,12 +223,14 @@ void PassMojoCookieManagerToAwCookieManager(
     CookieManager* cookie_manager,
     const network::mojom::NetworkContextPtr& network_context) {
   // Get the CookieManager from the NetworkContext.
-  network::mojom::CookieManagerPtrInfo cookie_manager_info;
-  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_info));
+  mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote;
+  network_context->GetCookieManager(
+      cookie_manager_remote.InitWithNewPipeAndPassReceiver());
 
-  // Pass the CookieManagerPtrInfo to android_webview::CookieManager, so it can
-  // implement its APIs with this mojo CookieManager.
-  cookie_manager->SetMojoCookieManager(std::move(cookie_manager_info));
+  // Pass the mojo::PendingRemote<network::mojom::CookieManager> to
+  // android_webview::CookieManager, so it can implement its APIs with this mojo
+  // CookieManager.
+  cookie_manager->SetMojoCookieManager(std::move(cookie_manager_remote));
 }
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)

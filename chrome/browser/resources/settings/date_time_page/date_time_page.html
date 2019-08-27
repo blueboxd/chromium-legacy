@@ -65,7 +65,11 @@
         </settings-toggle-button>
         <cr-link-row class="hr" id="setDateTime"
             on-click="onSetDateTimeTap_" hidden$="[[!canSetDateTime_]]"
-            label="$i18n{setDateTime}"></cr-link-row>
+            label="$i18n{setDateTime}">
+          <template is="dom-if" if="[[displayManagedByParentIcon_]]">
+            <cr-policy-indicator indicator-type="parent"></cr-policy-indicator>
+          </template>
+        </cr-link-row>
       </div>
       <template is="dom-if" route-path="/dateTime/timeZone">
         <settings-subpage data-route="DATETIME_TIMEZONE_SUBPAGE"

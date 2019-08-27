@@ -140,8 +140,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
     startup_tracing_timeout_ = timeout_us;
   }
 
-  bool privacy_filtering_enabled() const { return privacy_filtering_enabled_; }
-
  private:
   friend class base::NoDestructor<TraceEventDataSource>;
 

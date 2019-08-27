@@ -124,7 +124,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                           gfx::Rect* damage_rect_in_quad_space,
                           bool* damage_rect_in_quad_space_valid,
                           const RoundedCornerInfo& rounded_corner_info,
-                          bool is_reflection);
+                          bool is_reflection,
+                          bool allow_merge);
 
   void EmitDefaultBackgroundColorQuad(
       const SurfaceDrawQuad* surface_quad,

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -120,6 +121,204 @@ bool TrustedTypePolicyFactory::isURL(ScriptState* script_state,
 
 TrustedHTML* TrustedTypePolicyFactory::emptyHTML() const {
   return empty_html_.Get();
+}
+
+const struct {
+  const char* element;
+  const char* property;
+  const char* element_namespace;
+  SpecificTrustedType type;
+  // We use this table for both attributes and properties. Most are both,
+  // because DOM "reflects" the attributes onto their specified poperties.
+  // We use is_not_* so that the default value initialization (false) will
+  // match the common case and we only need to explicitly provide the uncommon
+  // values.
+  bool is_not_property : 1;
+  bool is_not_attribute : 1;
+} kTypeTable[] = {
+    {"a", "href", nullptr, SpecificTrustedType::kTrustedURL},
+    {"area", "href", nullptr, SpecificTrustedType::kTrustedURL},
+    {"audio", "src", nullptr, SpecificTrustedType::kTrustedURL},
+    {"base", "href", nullptr, SpecificTrustedType::kTrustedURL},
+    {"button", "formAction", nullptr, SpecificTrustedType::kTrustedURL},
+    {"embed", "src", nullptr, SpecificTrustedType::kTrustedScriptURL},
+    {"form", "action", nullptr, SpecificTrustedType::kTrustedURL},
+    {"frame", "src", nullptr, SpecificTrustedType::kTrustedURL},
+    {"iframe", "src", nullptr, SpecificTrustedType::kTrustedURL},
+    {"iframe", "srcdoc", nullptr, SpecificTrustedType::kTrustedHTML},
+    {"img", "src", nullptr, SpecificTrustedType::kTrustedURL},
+    {"input", "formAction", nullptr, SpecificTrustedType::kTrustedURL},
+    {"input", "src", nullptr, SpecificTrustedType::kTrustedURL},
+    {"link", "href", nullptr, SpecificTrustedType::kTrustedURL},
+    {"object", "codeBase", nullptr, SpecificTrustedType::kTrustedScriptURL},
+    {"object", "data", nullptr, SpecificTrustedType::kTrustedScriptURL},
+    {"script", "innerText", nullptr, SpecificTrustedType::kTrustedScript, false,
+     true},
+    {"script", "src", nullptr, SpecificTrustedType::kTrustedScriptURL},
+    {"script", "text", nullptr, SpecificTrustedType::kTrustedScript, false,
+     true},
+    {"script", "textContent", nullptr, SpecificTrustedType::kTrustedScript,
+     false, true},
+    {"source", "src", nullptr, SpecificTrustedType::kTrustedURL},
+    {"track", "src", nullptr, SpecificTrustedType::kTrustedURL},
+    {"video", "src", nullptr, SpecificTrustedType::kTrustedURL},
+    {"*", "innerHTML", nullptr, SpecificTrustedType::kTrustedHTML, false, true},
+    {"*", "outerHTML", nullptr, SpecificTrustedType::kTrustedHTML, false, true},
+    {"*", "on*", nullptr, SpecificTrustedType::kTrustedScript, true, false},
+};
+
+// Does a type table entry match a property?
+// (Properties are evaluated by JavaScript and are case-sensitive.)
+bool EqualsProperty(decltype(*kTypeTable)& left,
+                    const String& tag,
+                    const String& attr,
+                    const String& ns) {
+  DCHECK_EQ(tag.LowerASCII(), tag);
+  return (left.element == tag || !strcmp(left.element, "*")) &&
+         (left.property == attr ||
+          (!strcmp(left.property, "on*") && attr.StartsWith("on"))) &&
+         left.element_namespace == ns && !left.is_not_property;
+}
+
+// Does a type table entry match an attribute?
+// (Attributes get queried by calling acecssor methods on the DOM. These are
+//  case-insensitivem, because DOM.)
+bool EqualsAttribute(decltype(*kTypeTable)& left,
+                     const String& tag,
+                     const String& attr,
+                     const String& ns) {
+  DCHECK_EQ(tag.LowerASCII(), tag);
+  return (left.element == tag || !strcmp(left.element, "*")) &&
+         (String(left.property).LowerASCII() == attr.LowerASCII() ||
+          (!strcmp(left.property, "on*") && attr.StartsWith("on"))) &&
+         left.element_namespace == ns && !left.is_not_attribute;
+}
+
+String getTrustedTypeName(SpecificTrustedType type) {
+  switch (type) {
+    case SpecificTrustedType::kTrustedHTML:
+      return "TrustedHTML";
+    case SpecificTrustedType::kTrustedScript:
+      return "TrustedScript";
+    case SpecificTrustedType::kTrustedScriptURL:
+      return "TrustedScriptURL";
+    case SpecificTrustedType::kTrustedURL:
+      return "TrustedURL";
+    case SpecificTrustedType::kNone:
+      return String();
+  }
+}
+
+typedef bool (*PropertyEqualsFn)(decltype(*kTypeTable)&,
+                                 const String&,
+                                 const String&,
+                                 const String&);
+
+String FindTypeInTypeTable(const String& tagName,
+                           const String& propertyName,
+                           const String& elementNS,
+                           PropertyEqualsFn equals) {
+  SpecificTrustedType type = SpecificTrustedType::kNone;
+  for (auto* it = std::cbegin(kTypeTable); it != std::cend(kTypeTable); it++) {
+    if ((*equals)(*it, tagName, propertyName, elementNS)) {
+      type = it->type;
+      break;
+    }
+  }
+  return getTrustedTypeName(type);
+}
+
+String TrustedTypePolicyFactory::getPropertyType(
+    const String& tagName,
+    const String& propertyName,
+    const String& elementNS) const {
+  return FindTypeInTypeTable(tagName.LowerASCII(), propertyName, elementNS,
+                             &EqualsProperty);
+}
+
+String TrustedTypePolicyFactory::getAttributeType(
+    const String& tagName,
+    const String& attributeName,
+    const String& tagNS,
+    const String& attributeNS) const {
+  return FindTypeInTypeTable(tagName.LowerASCII(), attributeName, tagNS,
+                             &EqualsAttribute);
+}
+
+String TrustedTypePolicyFactory::getPropertyType(
+    const String& tagName,
+    const String& propertyName) const {
+  return getPropertyType(tagName, propertyName, String());
+}
+
+String TrustedTypePolicyFactory::getAttributeType(
+    const String& tagName,
+    const String& attributeName) const {
+  return getAttributeType(tagName, attributeName, String(), String());
+}
+
+String TrustedTypePolicyFactory::getAttributeType(const String& tagName,
+                                                  const String& attributeName,
+                                                  const String& tagNS) const {
+  return getAttributeType(tagName, attributeName, tagNS, String());
+}
+
+ScriptValue TrustedTypePolicyFactory::getTypeMapping(
+    ScriptState* script_state) const {
+  return getTypeMapping(script_state, String());
+}
+
+ScriptValue TrustedTypePolicyFactory::getTypeMapping(ScriptState* script_state,
+                                                     const String& ns) const {
+  // Create three-deep dictionary of properties, like so:
+  // {tagname: { ["attributes"|"properties"]: { attribute: type }}}
+
+  if (!ns.IsEmpty())
+    return ScriptValue();
+
+  v8::HandleScope handle_scope(script_state->GetIsolate());
+  v8::Local<v8::Object> top = v8::Object::New(script_state->GetIsolate());
+  v8::Local<v8::Object> properties;
+  v8::Local<v8::Object> attributes;
+  const char* element = nullptr;
+  for (const auto& iter : kTypeTable) {
+    if (properties.IsEmpty() || !element || strcmp(iter.element, element)) {
+      element = iter.element;
+      v8::Local<v8::Object> middle =
+          v8::Object::New(script_state->GetIsolate());
+      top->Set(script_state->GetContext(),
+               V8String(script_state->GetIsolate(), iter.element), middle)
+          .Check();
+      properties = v8::Object::New(script_state->GetIsolate());
+      middle
+          ->Set(script_state->GetContext(),
+                V8String(script_state->GetIsolate(), "properties"), properties)
+          .Check();
+      attributes = v8::Object::New(script_state->GetIsolate());
+      middle
+          ->Set(script_state->GetContext(),
+                V8String(script_state->GetIsolate(), "attributes"), attributes)
+          .Check();
+    }
+    if (!iter.is_not_property) {
+      properties
+          ->Set(script_state->GetContext(),
+                V8String(script_state->GetIsolate(), iter.property),
+                V8String(script_state->GetIsolate(),
+                         getTrustedTypeName(iter.type)))
+          .Check();
+    }
+    if (!iter.is_not_attribute) {
+      attributes
+          ->Set(script_state->GetContext(),
+                V8String(script_state->GetIsolate(), iter.property),
+                V8String(script_state->GetIsolate(),
+                         getTrustedTypeName(iter.type)))
+          .Check();
+    }
+  }
+
+  return ScriptValue(script_state, top);
 }
 
 void TrustedTypePolicyFactory::CountTrustedTypeAssignmentError() {

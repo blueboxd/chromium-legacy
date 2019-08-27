@@ -124,7 +124,8 @@ network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
 network::mojom::CookieManager* BrowserState::GetCookieManager() {
   if (!cookie_manager_) {
     CreateNetworkContextIfNecessary();
-    network_context_->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
+    network_context_->GetCookieManager(
+        cookie_manager_.BindNewPipeAndPassReceiver());
   }
   return cookie_manager_.get();
 }

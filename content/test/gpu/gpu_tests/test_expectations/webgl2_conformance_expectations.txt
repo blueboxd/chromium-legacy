@@ -624,6 +624,7 @@ crbug.com/911216 [ linux no-passthrough amd ] conformance2/textures/misc/copy-te
 crbug.com/483282 [ linux amd ] deqp/functional/gles3/texturespecification/teximage2d_depth_pbo.html [ Failure ]
 crbug.com/483282 [ linux amd ] deqp/functional/gles3/draw/random.html [ Failure ]
 crbug.com/483282 [ linux amd ] deqp/functional/gles3/fbomultisample* [ Failure ]
+crbug.com/483282 [ linux amd ] deqp/functional/gles3/framebufferblit/conversion_07.html [ Failure ]
 crbug.com/658832 [ linux amd ] deqp/functional/gles3/framebufferblit/default_framebuffer_00.html [ Failure ]
 crbug.com/483282 [ linux amd ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
 crbug.com/483282 [ no-angle linux amd ] conformance2/reading/read-pixels-pack-parameters.html [ Failure ]

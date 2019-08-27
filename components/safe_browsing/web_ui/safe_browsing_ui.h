@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -365,7 +366,7 @@ class WebUIInfoSingleton {
   SafeBrowsingNetworkContext* network_context_ = nullptr;
 
   // The current CookieManager for the Safe Browsing cookie.
-  network::mojom::CookieManagerPtr cookie_manager_ptr_ = nullptr;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_remote_;
 
   // Whether there is a test listener.
   bool has_test_listener_ = false;

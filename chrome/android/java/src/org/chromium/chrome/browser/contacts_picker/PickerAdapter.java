@@ -155,9 +155,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             String query_lower = query.toLowerCase(Locale.getDefault());
             for (ContactDetails contact : mContactDetails) {
                 if (contact.getDisplayName().toLowerCase(Locale.getDefault()).contains(query_lower)
-                        || contact.getContactDetailsAsString(
-                                          /*longVersion=*/true, includesEmails(),
-                                          includesTelephones(), /*resources=*/null)
+                        || contact.getContactDetailsAsString(includesEmails(), includesTelephones())
                                    .toLowerCase(Locale.getDefault())
                                    .contains(query_lower)) {
                     mSearchResults.add(count);

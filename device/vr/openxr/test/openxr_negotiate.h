@@ -18,9 +18,9 @@
 // fake_openxr_impl_api.cc.
 
 // Please add new OpenXR APIs below in alphabetical order.
-XrResult GetInstanceProcAddress(XrInstance instance,
-                                const char* name,
-                                PFN_xrVoidFunction* function) {
+XrResult XRAPI_PTR GetInstanceProcAddress(XrInstance instance,
+                                          const char* name,
+                                          PFN_xrVoidFunction* function) {
   if (strcmp(name, "xrAcquireSwapchainImage") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrAcquireSwapchainImage);
   } else if (strcmp(name, "xrAttachSessionActionSets") == 0) {
@@ -74,8 +74,12 @@ XrResult GetInstanceProcAddress(XrInstance instance,
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetActionStateVector2f);
   } else if (strcmp(name, "xrGetActionStatePose") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetActionStatePose);
+  } else if (strcmp(name, "xrGetInstanceProperties") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetInstanceProperties);
   } else if (strcmp(name, "xrGetSystem") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetSystem);
+  } else if (strcmp(name, "xrGetSystemProperties") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrGetSystemProperties);
   } else if (strcmp(name, "xrLocateSpace") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrLocateSpace);
   } else if (strcmp(name, "xrLocateViews") == 0) {
@@ -103,9 +107,7 @@ XrResult GetInstanceProcAddress(XrInstance instance,
 // The single exported function in fake OpenXR Runtime DLL which the OpenXR
 // loader calls for negotiation. GetInstanceProcAddress is returned to the
 // loader, which is then used by the loader to call OpenXR APIs.
-// extern "C" is needed because the OpenXR Loader expects the name of this
-// function to be unmangled. The real OpenXR runtime does this as well.
-extern "C" __declspec(dllexport) XrResult xrNegotiateLoaderRuntimeInterface(
+XrResult __stdcall xrNegotiateLoaderRuntimeInterface(
     const XrNegotiateLoaderInfo* loaderInfo,
     XrNegotiateRuntimeRequest* runtimeRequest) {
   runtimeRequest->runtimeInterfaceVersion = 1;

@@ -9,7 +9,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
                    scoped_refptr<FileSystemContext> file_system_context);
   ~BlobRegistryImpl() override;
 
-  void Bind(blink::mojom::BlobRegistryRequest request,
+  void Bind(mojo::PendingReceiver<blink::mojom::BlobRegistry> receiver,
             std::unique_ptr<Delegate> delegate);
 
   void Register(mojo::PendingReceiver<blink::mojom::Blob> blob,
@@ -87,8 +87,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
   base::WeakPtr<BlobStorageContext> context_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
-  mojo::BindingSet<blink::mojom::BlobRegistry, std::unique_ptr<Delegate>>
-      bindings_;
+  mojo::ReceiverSet<blink::mojom::BlobRegistry, std::unique_ptr<Delegate>>
+      receivers_;
 
   std::map<std::string, std::unique_ptr<BlobUnderConstruction>>
       blobs_under_construction_;

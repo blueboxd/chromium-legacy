@@ -12,7 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_deletion_info.h"
@@ -77,7 +77,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   void CloneInterface(
       mojo::PendingReceiver<mojom::CookieManager> new_interface) override;
 
-  size_t GetClientsBoundForTesting() const { return bindings_.size(); }
+  size_t GetClientsBoundForTesting() const { return receivers_.size(); }
   size_t GetListenersRegisteredForTesting() const {
     return listener_registrations_.size();
   }
@@ -124,7 +124,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
 
   net::CookieStore* const cookie_store_;
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store_;
-  mojo::BindingSet<mojom::CookieManager> bindings_;
+  mojo::ReceiverSet<mojom::CookieManager> receivers_;
   std::vector<std::unique_ptr<ListenerRegistration>> listener_registrations_;
   // Note: RestrictedCookieManager stores pointers to |cookie_settings_|.
   CookieSettings cookie_settings_;

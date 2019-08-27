@@ -56,6 +56,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
@@ -593,9 +594,9 @@ class NetworkContextConfigurationBrowserTest
                                        const GURL& url) {
     std::string cookies;
     base::RunLoop run_loop;
-    network::mojom::CookieManagerPtr cookie_manager;
+    mojo::Remote<network::mojom::CookieManager> cookie_manager;
     GetNetworkContextForContextType(network_context_type)
-        ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+        ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
     cookie_manager->GetCookieList(
         url, net::CookieOptions(),
         base::BindOnce(

@@ -229,7 +229,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // context menu.
         mFooter.setVisible(!SuggestionsConfig.scrollToLoad()
                 && (areRemoteSuggestionsEnabled || isArticleSectionVisible)
-                && SuggestionsConfig.isTouchless());
+                && !SuggestionsConfig.isTouchless());
     }
 
     private boolean areArticlesLoading() {

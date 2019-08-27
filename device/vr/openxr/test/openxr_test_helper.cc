@@ -9,6 +9,7 @@
 
 #include "device/vr/openxr/openxr_util.h"
 #include "third_party/openxr/src/include/openxr/openxr_platform.h"
+#include "third_party/openxr/src/src/common/hex_and_handles.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -112,14 +113,12 @@ XrSystemId OpenXrTestHelper::GetSystemId() {
 }
 
 XrSession OpenXrTestHelper::GetSession() {
-  // reinterpret_cast needed because XrSession is a pointer type.
-  session_ = reinterpret_cast<XrSession>(2);
+  session_ = TreatIntegerAsHandle<XrSession>(2);
   return session_;
 }
 
 XrSwapchain OpenXrTestHelper::GetSwapchain() {
-  // reinterpret_cast needed because XrSwapchain is a pointer type.
-  swapchain_ = reinterpret_cast<XrSwapchain>(3);
+  swapchain_ = TreatIntegerAsHandle<XrSwapchain>(3);
   return swapchain_;
 }
 
@@ -165,14 +164,12 @@ XrResult OpenXrTestHelper::GetActionStatePose(XrAction action,
 }
 
 XrSpace OpenXrTestHelper::CreateLocalSpace() {
-  // reinterpret_cast needed because XrSpace is a pointer type.
-  local_space_ = reinterpret_cast<XrSpace>(++next_action_space_);
+  local_space_ = TreatIntegerAsHandle<XrSpace>(++next_action_space_);
   return local_space_;
 }
 
 XrSpace OpenXrTestHelper::CreateViewSpace() {
-  // reinterpret_cast needed because XrSpace is a pointer type.
-  view_space_ = reinterpret_cast<XrSpace>(++next_action_space_);
+  view_space_ = TreatIntegerAsHandle<XrSpace>(++next_action_space_);
   return view_space_;
 }
 
@@ -180,9 +177,8 @@ XrAction OpenXrTestHelper::CreateAction(XrActionSet action_set,
                                         const XrActionCreateInfo& create_info) {
   action_names_.emplace(create_info.actionName);
   action_localized_names_.emplace(create_info.localizedActionName);
-  // reinterpret_cast needed because XrAction is a pointer type.
-  // And it can not be 0 else OpenXR Loader error will return Error
-  XrAction cur_action = reinterpret_cast<XrAction>(actions_.size() + 1);
+  // The OpenXR Loader will return an error if the action handle is 0.
+  XrAction cur_action = TreatIntegerAsHandle<XrAction>(actions_.size() + 1);
   ActionProperties cur_action_properties;
   cur_action_properties.type = create_info.actionType;
   switch (create_info.actionType) {
@@ -214,17 +210,15 @@ XrActionSet OpenXrTestHelper::CreateActionSet(
     const XrActionSetCreateInfo& createInfo) {
   action_set_names_.emplace(createInfo.actionSetName);
   action_set_localized_names_.emplace(createInfo.localizedActionSetName);
-  // XrActionSet can not be re-interpreted from 0 else OpenXR Loader will
-  // return Error
+  // The OpenXR Loader will return an error if the action set handle is 0.
   XrActionSet cur_action_set =
-      reinterpret_cast<XrActionSet>(action_sets_.size() + 1);
+      TreatIntegerAsHandle<XrActionSet>(action_sets_.size() + 1);
   action_sets_[cur_action_set];
   return cur_action_set;
 }
 
 XrSpace OpenXrTestHelper::CreateActionSpace() {
-  // reinterpret_cast needed because XrSpace is a pointer type.
-  return reinterpret_cast<XrSpace>(++next_action_space_);
+  return TreatIntegerAsHandle<XrSpace>(++next_action_space_);
 }
 
 XrPath OpenXrTestHelper::GetPath(const char* path_string) {
@@ -534,7 +528,7 @@ XrResult OpenXrTestHelper::ValidateSwapchain(XrSwapchain swapchain) const {
 XrResult OpenXrTestHelper::ValidateSpace(XrSpace space) const {
   RETURN_IF(space == XR_NULL_HANDLE, XR_ERROR_HANDLE_INVALID,
             "XrSpace has not been queried");
-  RETURN_IF(reinterpret_cast<uint32_t>(space) > next_action_space_,
+  RETURN_IF(MakeHandleGeneric(space) > next_action_space_,
             XR_ERROR_HANDLE_INVALID, "XrSpace invalid");
 
   return XR_SUCCESS;

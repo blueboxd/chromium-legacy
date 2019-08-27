@@ -4276,8 +4276,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
       base::Unretained(this)));
 
-  registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(this)));
+  registry_->AddInterface(
+      base::BindRepeating(&RenderFrameHostImpl::CreateWebUsbServiceForRequest,
+                          base::Unretained(this)));
 
   registry_->AddInterface<media::mojom::InterfaceFactory>(
       base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
@@ -6130,9 +6131,16 @@ void RenderFrameHostImpl::DeleteWebBluetoothService(
   web_bluetooth_services_.erase(it);
 }
 
-void RenderFrameHostImpl::CreateWebUsbService(
+void RenderFrameHostImpl::CreateWebUsbServiceForRequest(
     blink::mojom::WebUsbServiceRequest request) {
-  GetContentClient()->browser()->CreateWebUsbService(this, std::move(request));
+  // Implicit conversion from WebUsbServiceRequest to
+  // mojo::PendingReceiver<blink::mojom::WebUsbService>.
+  CreateWebUsbService(std::move(request));
+}
+
+void RenderFrameHostImpl::CreateWebUsbService(
+    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
+  GetContentClient()->browser()->CreateWebUsbService(this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::ResetFeaturePolicy() {

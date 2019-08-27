@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
@@ -57,6 +58,12 @@ TestWebAppProvider::~TestWebAppProvider() = default;
 void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
   CheckNotStarted();
   registrar_ = std::move(registrar);
+}
+
+void TestWebAppProvider::SetFileHandlerManager(
+    std::unique_ptr<FileHandlerManager> file_handler_manager) {
+  CheckNotStarted();
+  file_handler_manager_ = std::move(file_handler_manager);
 }
 
 void TestWebAppProvider::SetInstallManager(

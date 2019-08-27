@@ -7685,6 +7685,11 @@ histogram as enum -->
   <int value="3" label="Reading"/>
 </enum>
 
+<enum name="ChromeOSJankinessTriggerStatus">
+  <int value="0" label="CollectionAttempted"/>
+  <int value="1" label="Throttled"/>
+</enum>
+
 <enum name="ChromeOSMachineIdReason">
   <int value="0" label="Unknown"/>
   <int value="1" label="Network"/>
@@ -25572,6 +25577,7 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Drive App"/>
   <int value="4" label="ARC App"/>
   <int value="5" label="Crostini App"/>
+  <int value="6" label="Web App"/>
 </enum>
 
 <enum name="FileManagerVolumeType">
@@ -62088,8 +62094,8 @@ Full version information for the fingerprint enum values:
   <int value="5" label="WebContentsDestroyed"/>
   <int value="6" label="WriteDataFailed"/>
   <int value="7" label="UserInstallDeclined"/>
-  <int value="8" label="InstallManagerDestroyed"/>
-  <int value="9" label="WindowOpened"/>
+  <int value="8" label="ProfileDestroyed"/>
+  <int value="9" label="DEPRECATED: WindowOpened"/>
   <int value="10" label="NotValidManifestForWebApp"/>
   <int value="11" label="IntentToPlayStore"/>
   <int value="12" label="WebAppDisabled"/>

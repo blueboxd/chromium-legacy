@@ -36,7 +36,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Parse until the end of stream/unsupported stream/error in stream is found.
   while (ivf_parser.ParseNextFrame(&ivf_frame_header, &ivf_payload)) {
     media::Vp9FrameHeader vp9_frame_header;
-    vp9_parser.SetStream(ivf_payload, ivf_frame_header.frame_size, {}, nullptr);
+    vp9_parser.SetStream(ivf_payload, ivf_frame_header.frame_size, nullptr);
     // TODO(kcwu): further fuzzing the case of Vp9Parser::kAwaitingRefresh.
     std::unique_ptr<media::DecryptConfig> null_config;
     gfx::Size allocate_size;

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/dom/mutation_observer_notifier.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"

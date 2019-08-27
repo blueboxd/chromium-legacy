@@ -1231,7 +1231,6 @@ void SAMLPolicyTest::GetCookies() {
       user_manager::UserManager::Get()->GetActiveUser());
   ASSERT_TRUE(profile);
   base::RunLoop run_loop;
-  network::mojom::CookieManagerPtr cookie_manager;
   content::BrowserContext::GetDefaultStoragePartition(profile)
       ->GetCookieManagerForBrowserProcess()
       ->GetAllCookies(base::BindLambdaForTesting(

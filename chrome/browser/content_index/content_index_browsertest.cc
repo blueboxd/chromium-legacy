@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_index/content_index_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -269,7 +270,13 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, UserDeletedEntryDispatchesEvent) {
   EXPECT_TRUE(GetAllItems().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ContentIndexTest, MetricsCollected) {
+// Flaky almost universally.  http://crbug.com/998049
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_MetricsCollected DISABLED_MetricsCollected
+#else
+#define MAYBE_MetricsCollected MetricsCollected
+#endif
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, MAYBE_MetricsCollected) {
   // Inititally there is no content.
   {
     base::HistogramTester histogram_tester;

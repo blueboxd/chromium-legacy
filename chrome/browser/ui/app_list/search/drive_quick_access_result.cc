@@ -21,6 +21,7 @@ DriveQuickAccessResult::DriveQuickAccessResult(const base::FilePath& filepath,
                                                Profile* profile)
     : ZeroStateFileResult(filepath, relevance, profile) {
   set_id(kDriveQuickAccessResultPrefix + filepath.value());
+  SetResultType(ResultType::kDriveQuickAccess);
 }
 
 SearchResultType DriveQuickAccessResult::GetSearchResultType() const {

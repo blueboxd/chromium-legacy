@@ -320,19 +320,21 @@ net::CookieStore* CookieManager::GetCookieStore() {
 
 network::mojom::CookieManager* CookieManager::GetMojoCookieManager() {
   DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
+  if (!mojo_cookie_manager_.is_bound())
+    return nullptr;
   return mojo_cookie_manager_.get();
 }
 
 void CookieManager::SetMojoCookieManager(
-    network::mojom::CookieManagerPtrInfo cookie_manager_info) {
+    mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ExecCookieTaskSync(base::BindOnce(&CookieManager::SetMojoCookieManagerAsync,
                                     base::Unretained(this),
-                                    std::move(cookie_manager_info)));
+                                    std::move(cookie_manager_remote)));
 }
 
 void CookieManager::SetMojoCookieManagerAsync(
-    network::mojom::CookieManagerPtrInfo cookie_manager_info,
+    mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote,
     base::OnceClosure complete) {
   DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
   setting_new_mojo_cookie_manager_ = true;
@@ -340,21 +342,21 @@ void CookieManager::SetMojoCookieManagerAsync(
   // must sometimes flush the mojo_cookie_manager_ instead of cookie_store_).
   DCHECK(!mojo_cookie_manager_.is_bound());
   if (!cookie_store_created_) {
-    SwapMojoCookieManagerAsync(std::move(cookie_manager_info),
+    SwapMojoCookieManagerAsync(std::move(cookie_manager_remote),
                                std::move(complete));
     return;
   }
 
   GetCookieStore()->FlushStore(base::BindOnce(
       &CookieManager::SwapMojoCookieManagerAsync, base::Unretained(this),
-      std::move(cookie_manager_info), std::move(complete)));
+      std::move(cookie_manager_remote), std::move(complete)));
 }
 
 void CookieManager::SwapMojoCookieManagerAsync(
-    network::mojom::CookieManagerPtrInfo cookie_manager_info,
+    mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote,
     base::OnceClosure complete) {
   DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
-  mojo_cookie_manager_.Bind(std::move(cookie_manager_info));
+  mojo_cookie_manager_.Bind(std::move(cookie_manager_remote));
   setting_new_mojo_cookie_manager_ = false;
   std::move(complete).Run();  // unblock content initialization
   RunPendingCookieTasks();

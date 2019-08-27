@@ -190,9 +190,9 @@ void WilcoDtcSupportdWebRequestService::MaybeStartNextRequest() {
             sender: "WilcoDtcSupportd"
             description: "Perform a web request."
             trigger:
-                "diagnostics_processor performs a web request to their server."
+                "wilco_dtc_supportd performs a web request to their server."
             data:
-                "diagnostics_processor's proprietary data."
+                "wilco_dtc_supportd's proprietary data."
             destination: OTHER
           }
           policy {

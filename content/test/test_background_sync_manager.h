@@ -109,11 +109,11 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   }
 
   bool IsBrowserWakeupForOneShotSyncScheduled() const {
-    return !soonest_one_shot_sync_wakeup_delta_.is_max();
+    return delayed_processing_scheduled_one_shot_sync_;
   }
 
   bool IsBrowserWakeupForPeriodicSyncScheduled() const {
-    return !soonest_periodic_sync_wakeup_delta_.is_max();
+    return delayed_processing_scheduled_periodic_sync_;
   }
 
   bool EqualsSoonestOneShotWakeupDelta(base::TimeDelta compare_to) const {

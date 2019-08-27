@@ -16,6 +16,7 @@ namespace web_app {
 class PendingAppManager;
 class InstallManager;
 class AppRegistrar;
+class FileHandlerManager;
 class WebAppPolicyManager;
 class WebAppAudioFocusIdMap;
 class WebAppUiManager;
@@ -41,6 +42,8 @@ class WebAppProviderBase : public KeyedService {
   virtual WebAppUiManager& ui_manager() = 0;
 
   virtual WebAppAudioFocusIdMap& audio_focus_id_map() = 0;
+
+  virtual FileHandlerManager& file_handler_manager() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProviderBase);
 };

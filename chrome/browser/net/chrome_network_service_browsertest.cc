@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_test.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -28,7 +29,7 @@ constexpr char kCookieName[] = "Name";
 constexpr char kCookieValue[] = "Value";
 
 net::CookieList GetCookies(
-    const network::mojom::CookieManagerPtr& cookie_manager) {
+    const mojo::Remote<network::mojom::CookieManager>& cookie_manager) {
   base::RunLoop run_loop;
   net::CookieList cookies_out;
   cookie_manager->GetAllCookies(
@@ -40,7 +41,8 @@ net::CookieList GetCookies(
   return cookies_out;
 }
 
-void SetCookie(const network::mojom::CookieManagerPtr& cookie_manager) {
+void SetCookie(
+    const mojo::Remote<network::mojom::CookieManager>& cookie_manager) {
   base::Time t = base::Time::Now();
   net::CanonicalCookie cookie(kCookieName, kCookieValue, "www.test.com", "/", t,
                               t + base::TimeDelta::FromDays(1), base::Time(),
@@ -83,8 +85,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
   // First set a cookie with cookie encryption enabled.
   network::mojom::NetworkContextPtr context =
       CreateNetworkContext(/*enable_encrypted_cookies=*/true);
-  network::mojom::CookieManagerPtr cookie_manager;
-  context->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
+  context->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
 
   SetCookie(cookie_manager);
 
@@ -120,8 +122,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest,
   // Now attempt to read the cookie with encryption disabled.
   network::mojom::NetworkContextPtr context =
       CreateNetworkContext(/*enable_encrypted_cookies=*/false);
-  network::mojom::CookieManagerPtr cookie_manager;
-  context->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
+  context->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
 
   net::CookieList cookies = GetCookies(cookie_manager);
   ASSERT_EQ(1u, cookies.size());

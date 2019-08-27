@@ -42,7 +42,6 @@ void PictureInPictureServiceImpl::StartSession(
     const base::Optional<viz::SurfaceId>& surface_id,
     const gfx::Size& natural_size,
     bool show_play_pause_button,
-    bool show_mute_button,
     mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
     StartSessionCallback callback) {
   gfx::Size window_size;
@@ -60,7 +59,7 @@ void PictureInPictureServiceImpl::StartSession(
   if (result == PictureInPictureResult::kSuccess) {
     active_session_ = std::make_unique<PictureInPictureSession>(
         this, MediaPlayerId(render_frame_host_, player_id), surface_id,
-        natural_size, show_play_pause_button, show_mute_button,
+        natural_size, show_play_pause_button,
         session_remote.InitWithNewPipeAndPassReceiver(), std::move(observer),
         &window_size);
   }

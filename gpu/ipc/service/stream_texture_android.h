@@ -15,6 +15,7 @@
 #include "base/unguessable_token.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
 #include "gpu/ipc/common/android/texture_owner.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
@@ -29,7 +30,7 @@ namespace gpu {
 class GpuChannel;
 struct Mailbox;
 
-class StreamTexture : public gpu::gles2::GLStreamTextureImage,
+class StreamTexture : public StreamTextureSharedImageInterface,
                       public IPC::Listener,
                       public SharedContextState::ContextLostObserver {
  public:
@@ -75,6 +76,8 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
   bool HasMutableState() const override;
+  std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+  GetAHardwareBuffer() override;
 
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
@@ -84,10 +87,18 @@ class StreamTexture : public gpu::gles2::GLStreamTextureImage,
                            int display_width,
                            int display_height) override {}
 
+  // gpu::StreamTextureSharedImageInterface implementation.
+  void ReleaseResources() override {}
+  bool IsUsingGpuMemory() const override;
+  void UpdateAndBindTexImage() override;
+  bool HasTextureOwner() const override;
+  gles2::Texture* GetTexture() const override;
+
   // SharedContextState::ContextLostObserver implementation.
   void OnContextLost() override;
 
-  void UpdateTexImage();
+  void UpdateTexImage(BindingsMode bindings_mode);
+  void EnsureBoundIfNeeded(BindingsMode mode);
 
   // Called when a new frame is available for the SurfaceOwner.
   void OnFrameAvailable();

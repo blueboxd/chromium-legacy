@@ -193,6 +193,7 @@ TEST_F(ExtensionWebRequestPermissionsTest, TestHideRequestForURL) {
 
 TEST_F(ExtensionWebRequestPermissionsTest,
        CanExtensionAccessURLWithWithheldPermissions) {
+  ExtensionsAPIClient api_client;
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("ext").AddPermission("<all_urls>").Build();
   URLPatternSet all_urls(

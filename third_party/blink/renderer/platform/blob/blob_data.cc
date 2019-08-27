@@ -36,7 +36,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
@@ -57,7 +57,6 @@ namespace blink {
 
 using mojom::blink::BlobPtr;
 using mojom::blink::BlobPtrInfo;
-using mojom::blink::BlobRegistryPtr;
 using mojom::blink::BytesProviderPtr;
 using mojom::blink::BytesProviderPtrInfo;
 using mojom::blink::BytesProviderRequest;
@@ -87,14 +86,14 @@ mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
   if (UNLIKELY(g_blob_registry_for_testing))
     return g_blob_registry_for_testing;
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<BlobRegistryPtr>, registry,
-                                  ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      ThreadSpecific<mojo::Remote<mojom::blink::BlobRegistry>>, registry, ());
   if (UNLIKELY(!registry.IsSet())) {
-    // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
-    // ends up going through the main thread. Ideally workers wouldn't need
-    // to do that.
+    // TODO(mek): Going through InterfaceProvider to get a
+    // mojom::blink::BlobRegistry ends up going through the main thread. Ideally
+    // workers wouldn't need to do that.
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        MakeRequest(&*registry));
+        (*registry).BindNewPipeAndPassReceiver());
   }
   return registry->get();
 }

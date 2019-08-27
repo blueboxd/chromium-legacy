@@ -66,7 +66,8 @@ class TestPendingAppManager : public PendingAppManager {
   int deduped_install_count_;
   int deduped_uninstall_count_;
 
-  InstallResultCode install_result_code_ = InstallResultCode::kSuccess;
+  InstallResultCode install_result_code_ =
+      InstallResultCode::kSuccessNewInstall;
 
   TestAppRegistrar* registrar_;
 

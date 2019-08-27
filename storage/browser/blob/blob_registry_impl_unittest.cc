@@ -75,7 +75,8 @@ class BlobRegistryImplTest : public testing::Test {
                                                         file_system_context_);
     auto delegate = std::make_unique<MockBlobRegistryDelegate>();
     delegate_ptr_ = delegate.get();
-    registry_impl_->Bind(MakeRequest(&registry_), std::move(delegate));
+    registry_impl_->Bind(registry_.BindNewPipeAndPassReceiver(),
+                         std::move(delegate));
 
     mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &BlobRegistryImplTest::OnBadMessage, base::Unretained(this)));
@@ -181,7 +182,7 @@ class BlobRegistryImplTest : public testing::Test {
   std::unique_ptr<BlobStorageContext> context_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   std::unique_ptr<BlobRegistryImpl> registry_impl_;
-  blink::mojom::BlobRegistryPtr registry_;
+  mojo::Remote<blink::mojom::BlobRegistry> registry_;
   MockBlobRegistryDelegate* delegate_ptr_;
   scoped_refptr<base::SequencedTaskRunner> bytes_provider_runner_;
 
@@ -229,7 +230,7 @@ TEST_F(BlobRegistryImplTest, Register_EmptyUUID) {
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
-  EXPECT_TRUE(registry_.encountered_error());
+  EXPECT_FALSE(registry_.is_connected());
 
   blob.FlushForTesting();
   EXPECT_TRUE(blob.encountered_error());
@@ -249,7 +250,7 @@ TEST_F(BlobRegistryImplTest, Register_ExistingUUID) {
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
-  EXPECT_TRUE(registry_.encountered_error());
+  EXPECT_FALSE(registry_.is_connected());
 
   blob.FlushForTesting();
   EXPECT_TRUE(blob.encountered_error());
@@ -329,7 +330,7 @@ TEST_F(BlobRegistryImplTest, Register_SelfReference) {
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
-  EXPECT_TRUE(registry_.encountered_error());
+  EXPECT_FALSE(registry_.is_connected());
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
@@ -393,7 +394,7 @@ TEST_F(BlobRegistryImplTest, Register_CircularReference) {
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
-  EXPECT_TRUE(registry_.encountered_error());
+  EXPECT_FALSE(registry_.is_connected());
   EXPECT_EQ(0u, BlobsUnderConstruction());
 #endif
 }
@@ -424,7 +425,7 @@ TEST_F(BlobRegistryImplTest, Register_NonExistentBlob) {
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
-  EXPECT_TRUE(registry_.encountered_error());
+  EXPECT_FALSE(registry_.is_connected());
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
@@ -615,7 +616,7 @@ TEST_F(BlobRegistryImplTest, Register_BytesInvalidEmbeddedData) {
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
-  EXPECT_TRUE(registry_.encountered_error());
+  EXPECT_FALSE(registry_.is_connected());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   WaitForBlobCompletion(handle.get());
@@ -649,7 +650,7 @@ TEST_F(BlobRegistryImplTest, Register_BytesInvalidDataSize) {
   EXPECT_EQ(1u, bad_messages_.size());
 
   registry_.FlushForTesting();
-  EXPECT_TRUE(registry_.encountered_error());
+  EXPECT_FALSE(registry_.is_connected());
 
   std::unique_ptr<BlobDataHandle> handle = context_->GetBlobDataFromUUID(kId);
   WaitForBlobCompletion(handle.get());

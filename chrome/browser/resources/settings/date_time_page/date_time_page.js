@@ -58,6 +58,17 @@ Polymer({
 
     /** @private */
     isChild_: {type: Boolean, value: loadTimeData.getBoolean('isChild')},
+
+    /**
+     * Whether the icon informing that this action is managed by a parent is
+     * displayed.
+     * @private
+     */
+    displayManagedByParentIcon_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('isChild') &&
+          loadTimeData.getBoolean('timeActionsProtectedForChild')
+    },
   },
 
   /** @override */

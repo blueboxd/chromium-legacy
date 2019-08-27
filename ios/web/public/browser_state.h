@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/supports_user_data.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
@@ -104,7 +105,7 @@ class BrowserState : public base::SupportsUserData {
   void CreateNetworkContextIfNecessary();
 
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
       proto_database_provider_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>

@@ -1057,7 +1057,7 @@ void VP9Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
   // partition numbers/sizes. For now assume one frame per buffer.
   Vp9FrameHeader header;
   gfx::Size allocate_size;
-  parser_.SetStream(stream, size, {}, nullptr);
+  parser_.SetStream(stream, size, nullptr);
   EXPECT_TRUE(Vp9Parser::kInvalidStream !=
               parser_.ParseNextFrame(&header, &allocate_size, nullptr));
   if (header.IsKeyframe()) {

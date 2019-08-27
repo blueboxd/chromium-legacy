@@ -2097,8 +2097,9 @@ bool SetCookieHelper(NetworkContext* network_context,
                      const GURL& url,
                      const std::string& key,
                      const std::string& value) {
-  mojom::CookieManagerPtr cookie_manager;
-  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  mojo::Remote<mojom::CookieManager> cookie_manager;
+  network_context->GetCookieManager(
+      cookie_manager.BindNewPipeAndPassReceiver());
   base::RunLoop run_loop;
   bool result = false;
   cookie_manager->SetCanonicalCookie(
@@ -2116,17 +2117,16 @@ TEST_F(NetworkContextTest, CookieManager) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(mojom::NetworkContextParams::New());
 
-  mojom::CookieManagerPtr cookie_manager_ptr;
-  mojom::CookieManagerRequest cookie_manager_request(
-      mojo::MakeRequest(&cookie_manager_ptr));
-  network_context->GetCookieManager(std::move(cookie_manager_request));
+  mojo::Remote<mojom::CookieManager> cookie_manager_remote;
+  network_context->GetCookieManager(
+      cookie_manager_remote.BindNewPipeAndPassReceiver());
 
   // Set a cookie through the cookie interface.
   base::RunLoop run_loop1;
   bool result = false;
   net::CookieOptions options;
   options.set_include_httponly();
-  cookie_manager_ptr->SetCanonicalCookie(
+  cookie_manager_remote->SetCanonicalCookie(
       net::CanonicalCookie("TestCookie", "1", "www.test.com", "/", base::Time(),
                            base::Time(), base::Time(), false, false,
                            net::CookieSameSite::NO_RESTRICTION,

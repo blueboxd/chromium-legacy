@@ -275,7 +275,6 @@ class JavaHandlerThread;
 }
 
 namespace internal {
-class JobTaskSource;
 class TaskTracker;
 }
 
@@ -451,7 +450,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class audio::OutputDevice;
   friend class base::sequence_manager::internal::TaskQueueImpl;
   friend class base::FileDescriptorWatcher;
-  friend class base::internal::JobTaskSource;
   friend class base::MessageLoopImpl;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;

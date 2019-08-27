@@ -39,6 +39,10 @@ class PerfOutputCall {
   // Stop() is made virtual for mocks in testing.
   virtual void Stop();
 
+ protected:
+  // Exposed for mocking in unit test.
+  PerfOutputCall();
+
  private:
   // Internal callbacks.
   void OnIOComplete(base::Optional<std::string> data);

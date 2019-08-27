@@ -44,6 +44,23 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
 
   TrustedHTML* emptyHTML() const;
 
+  String getPropertyType(const String& tagName,
+                         const String& propertyName) const;
+  String getPropertyType(const String& tagName,
+                         const String& propertyName,
+                         const String& elementNS) const;
+  String getAttributeType(const String& tagName,
+                          const String& attributeName) const;
+  String getAttributeType(const String& tagName,
+                          const String& attributeName,
+                          const String& tagNS) const;
+  String getAttributeType(const String& tagName,
+                          const String& attributeName,
+                          const String& tagNS,
+                          const String& attributeNS) const;
+  ScriptValue getTypeMapping(ScriptState*) const;
+  ScriptValue getTypeMapping(ScriptState*, const String& ns) const;
+
   // Count whether a Trusted Type error occured during DOM operations.
   // (We aggregate this here to get a count per document, so that we can
   //  relate it to the total number of TT enabled documents.)

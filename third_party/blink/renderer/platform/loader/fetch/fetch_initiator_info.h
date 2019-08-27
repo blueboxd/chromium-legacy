@@ -38,12 +38,10 @@ struct FetchInitiatorInfo {
   FetchInitiatorInfo()
       : name(),
         position(TextPosition::BelowRangePosition()),
-        start_time(0.0),
         is_link_preload(false) {}
 
   AtomicString name;
   TextPosition position;
-  double start_time;
   bool is_link_preload;
   String imported_module_referrer;
 };

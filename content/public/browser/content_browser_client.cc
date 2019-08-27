@@ -820,7 +820,7 @@ bool ContentBrowserClient::ShouldForceDownloadResource(
 
 void ContentBrowserClient::CreateWebUsbService(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {}
+    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {}
 
 #if !defined(OS_ANDROID)
 SerialDelegate* ContentBrowserClient::GetSerialDelegate() {

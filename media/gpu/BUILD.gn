@@ -124,8 +124,6 @@ component("gpu") {
       "android/promotion_hint_aggregator.h",
       "android/promotion_hint_aggregator_impl.cc",
       "android/promotion_hint_aggregator_impl.h",
-      "android/shared_image_video.cc",
-      "android/shared_image_video.h",
       "android/shared_image_video_provider.cc",
       "android/shared_image_video_provider.h",
       "android/surface_chooser_helper.cc",
@@ -136,6 +134,7 @@ component("gpu") {
     ]
     libs += [ "android" ]
     deps += [
+      "//gpu/command_buffer/service:shared_image_video",
       "//gpu/ipc/common:android_image_reader_utils",
       "//gpu/ipc/common:android_texture_owner",
 

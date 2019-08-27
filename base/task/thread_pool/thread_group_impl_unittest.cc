@@ -311,8 +311,7 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
       }),
       /* num_tasks_to_run */ kMaxTasks);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, {ThreadPool(), TaskPriority::USER_VISIBLE},
-      &mock_pooled_task_runner_delegate_);
+      FROM_HERE, {ThreadPool(), TaskPriority::USER_VISIBLE});
 
   auto registered_task_source = task_tracker_.RegisterTaskSource(task_source);
   ASSERT_TRUE(registered_task_source);

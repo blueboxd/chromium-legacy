@@ -40,7 +40,7 @@ WakeLockContextHost::WakeLockContextHost(WebContents* web_contents)
     connector->BindInterface(device::mojom::kServiceName,
                              mojo::MakeRequest(&wake_lock_provider));
     wake_lock_provider->GetWakeLockContextForID(
-        id_, mojo::MakeRequest(&wake_lock_context_));
+        id_, wake_lock_context_.BindNewPipeAndPassReceiver());
   }
 }
 

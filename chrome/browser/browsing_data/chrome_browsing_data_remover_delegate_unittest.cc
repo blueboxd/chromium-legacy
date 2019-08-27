@@ -92,6 +92,7 @@
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/net_buildflags.h"
@@ -298,12 +299,13 @@ class RemoveCookieTester {
   }
 
  protected:
-  void SetCookieManager(network::mojom::CookieManagerPtr cookie_manager) {
+  void SetCookieManager(
+      mojo::Remote<network::mojom::CookieManager> cookie_manager) {
     cookie_manager_ = std::move(cookie_manager);
   }
 
  private:
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
 };
@@ -324,9 +326,9 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
     // Make sure the safe browsing cookie store has no cookies.
     // TODO(mmenke): Is this really needed?
     base::RunLoop run_loop;
-    network::mojom::CookieManagerPtr cookie_manager;
+    mojo::Remote<network::mojom::CookieManager> cookie_manager;
     sb_service->GetNetworkContext()->GetCookieManager(
-        mojo::MakeRequest(&cookie_manager));
+        cookie_manager.BindNewPipeAndPassReceiver());
     cookie_manager->DeleteCookies(
         network::mojom::CookieDeletionFilter::New(),
         base::BindLambdaForTesting(

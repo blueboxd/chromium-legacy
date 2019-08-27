@@ -5,14 +5,14 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_RTC_EVENT_LOG_OUTPUT_SINK_PROXY_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_EVENT_LOG_OUTPUT_SINK_PROXY_H_
 
-#include "content/renderer/media/webrtc/rtc_event_log_output_sink.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
 
 namespace content {
 
 class RtcEventLogOutputSinkProxy final : public webrtc::RtcEventLogOutput {
  public:
-  RtcEventLogOutputSinkProxy(RtcEventLogOutputSink* sink);
+  RtcEventLogOutputSinkProxy(blink::RtcEventLogOutputSink* sink);
   ~RtcEventLogOutputSinkProxy() override;
 
   bool IsActive() const override;
@@ -20,7 +20,7 @@ class RtcEventLogOutputSinkProxy final : public webrtc::RtcEventLogOutput {
   bool Write(const std::string& output) override;
 
  private:
-  RtcEventLogOutputSink* const sink_;
+  blink::RtcEventLogOutputSink* const sink_;
 };
 
 }  // namespace content

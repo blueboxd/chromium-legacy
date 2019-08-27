@@ -260,7 +260,7 @@ class WebAppInstallTaskTest : public WebAppTest {
 
   AppId InstallWebAppFromManifestWithFallback() {
     InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
-    DCHECK_EQ(InstallResultCode::kSuccess, result.code);
+    DCHECK_EQ(InstallResultCode::kSuccessNewInstall, result.code);
     return result.app_id;
   }
 
@@ -272,7 +272,7 @@ class WebAppInstallTaskTest : public WebAppTest {
         web_contents(), params, WebappInstallSource::EXTERNAL_DEFAULT,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
-              ASSERT_EQ(InstallResultCode::kSuccess, code);
+              ASSERT_EQ(InstallResultCode::kSuccessNewInstall, code);
               app_id = installed_app_id;
               run_loop.Quit();
             }));
@@ -292,7 +292,7 @@ class WebAppInstallTaskTest : public WebAppTest {
         WebappInstallSource::SYNC,
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
-              ASSERT_EQ(InstallResultCode::kSuccess, code);
+              ASSERT_EQ(InstallResultCode::kSuccessNewInstall, code);
               app_id = installed_app_id;
               run_loop.Quit();
             }));
@@ -357,7 +357,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app_id, installed_app_id);
             callback_called = true;
             run_loop.Quit();
@@ -402,7 +402,7 @@ TEST_F(WebAppInstallTaskTest, AlreadyInstalled) {
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& already_installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kAlreadyInstalled, code);
+            EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
             EXPECT_EQ(app_id, already_installed_app_id);
             callback_called = true;
             run_loop.Quit();
@@ -495,7 +495,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app_id, installed_app_id);
             callback_called = true;
             run_loop.Quit();
@@ -763,7 +763,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app_id, installed_app_id);
             run_loop.Quit();
           }));
@@ -788,7 +788,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
       WebappInstallSource::MENU_BROWSER_TAB,
       base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                      InstallResultCode code) {
-        EXPECT_EQ(InstallResultCode::kSuccess, code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
         EXPECT_EQ(app_id, installed_app_id);
 
         std::unique_ptr<WebApplicationInfo> final_web_app_info =
@@ -900,7 +900,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
       WebappInstallSource::SYNC,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app_id, installed_app_id);
 
             EXPECT_TRUE(test_install_finalizer()
@@ -948,7 +948,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
       WebappInstallSource::SYNC,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app_id, installed_app_id);
 
             EXPECT_FALSE(test_install_finalizer()
@@ -987,7 +987,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
       base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
 
             std::unique_ptr<WebApplicationInfo> final_web_app_info =
                 test_install_finalizer().web_app_info();
@@ -1070,7 +1070,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
       WebappInstallSource::EXTERNAL_DEFAULT,
       base::BindLambdaForTesting(
           [&](const AppId& app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             run_loop.Quit();
           }));
   run_loop.Run();

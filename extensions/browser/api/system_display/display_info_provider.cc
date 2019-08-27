@@ -188,10 +188,16 @@ void DisplayInfoProvider::SetMirrorMode(
 }
 
 void DisplayInfoProvider::DispatchOnDisplayChangedEvent() {
+  // This function will dispatch the OnDisplayChangedEvent to both on-the-record
+  // and off-the-record profiles. This allows extensions running in incognito
+  // to be notified mirroring is enabled / disabled, which allows the Virtual
+  // keyboard on ChromeOS to correctly disable key highlighting when typing
+  // passwords on the login page (crbug/824656)
+  constexpr bool dispatch_to_off_the_record_profiles = true;
   ExtensionsBrowserClient::Get()->BroadcastEventToRenderers(
       events::SYSTEM_DISPLAY_ON_DISPLAY_CHANGED,
       extensions::api::system_display::OnDisplayChanged::kEventName,
-      std::make_unique<base::ListValue>());
+      std::make_unique<base::ListValue>(), dispatch_to_off_the_record_profiles);
 }
 
 void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(

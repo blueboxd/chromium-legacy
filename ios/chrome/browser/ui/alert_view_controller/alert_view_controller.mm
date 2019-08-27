@@ -118,10 +118,8 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
                 previousTraitCollection]) {
-      [self.traitCollection performAsCurrentTraitCollection:^{
-        self.textFieldStackHolder.layer.borderColor =
-            UIColor.cr_separatorColor.CGColor;
-      }];
+      self.textFieldStackHolder.layer.borderColor =
+          UIColor.cr_separatorColor.CGColor;
     }
   }
 }

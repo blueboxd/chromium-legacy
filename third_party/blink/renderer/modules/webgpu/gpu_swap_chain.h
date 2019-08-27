@@ -48,7 +48,7 @@ class GPUSwapChain : public DawnObjectBase,
 
   Member<GPUDevice> device_;
   Member<GPUCanvasContext> context_;
-  DawnTextureUsageBit usage_;
+  DawnTextureUsage usage_;
 
   Member<GPUTexture> texture_;
 };

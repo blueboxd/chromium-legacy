@@ -9,14 +9,17 @@ from .idl_type import IdlType
 
 class FunctionLike(WithIdentifier):
     class IR(WithIdentifier):
-        def __init__(self, identifier, arguments, return_type):
+        def __init__(self, identifier, arguments, return_type,
+                     is_static=False):
             assert isinstance(arguments, (list, tuple)) and all(
                 isinstance(arg, Argument.IR) for arg in arguments)
             assert isinstance(return_type, IdlType)
+            assert isinstance(is_static, bool)
 
             WithIdentifier.__init__(self, identifier)
             self.arguments = list(arguments)
             self.return_type = return_type
+            self.is_static = is_static
 
     def __init__(self, ir):
         assert isinstance(ir, FunctionLike.IR)
@@ -25,6 +28,7 @@ class FunctionLike(WithIdentifier):
         self._arguments = tuple(
             [Argument(arg_ir, self) for arg_ir in ir.arguments])
         self._return_type = ir.return_type
+        self._is_static = ir.is_static
 
     @property
     def arguments(self):
@@ -35,3 +39,8 @@ class FunctionLike(WithIdentifier):
     def return_type(self):
         """Returns the return type."""
         return self._return_type
+
+    @property
+    def is_static(self):
+        """Returns True if this is a static function."""
+        return self._is_static

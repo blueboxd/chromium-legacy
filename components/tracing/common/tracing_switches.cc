@@ -37,7 +37,7 @@ const char kTraceStartupDuration[]          = "trace-startup-duration";
 // all events since startup.
 const char kTraceStartupFile[]              = "trace-startup-file";
 
-// If supplied, sets the tracing record mode and options; otherwise, the default
+// If supplied, sets the tracing record mode; otherwise, the default
 // "record-until-full" mode will be used.
 const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
 
@@ -57,11 +57,6 @@ const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
 // tracing on a supported platform (currently only Android). Session is stopped
 // through the normal methods for stopping system traces.
 const char kTraceStartupOwner[] = "trace-startup-owner";
-
-// If the perfetto tracing backend is used, this enables privacy filtering in
-// the TraceEvent data sources for the startup tracing session.
-const char kTraceStartupEnablePrivacyFiltering[] =
-    "trace-startup-enable-privacy-filtering";
 
 // Disables the perfetto tracing backend. We need a separate command line
 // argument from the kTracingPerfettoBackend feature, because feature flags are

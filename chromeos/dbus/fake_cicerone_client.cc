@@ -192,6 +192,8 @@ void FakeCiceroneClient::StartLxdContainer(
     const vm_tools::cicerone::StartLxdContainerRequest& request,
     DBusMethodCallback<vm_tools::cicerone::StartLxdContainerResponse>
         callback) {
+  start_lxd_container_response_.mutable_os_release()->CopyFrom(
+      lxd_container_os_release_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), start_lxd_container_response_));
@@ -202,6 +204,7 @@ void FakeCiceroneClient::StartLxdContainer(
     signal.set_vm_name(request.vm_name());
     signal.set_container_name(request.container_name());
     signal.set_status(lxd_container_starting_signal_status_);
+    signal.mutable_os_release()->CopyFrom(lxd_container_os_release_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerStarting,

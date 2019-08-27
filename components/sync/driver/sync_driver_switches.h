@@ -32,7 +32,6 @@ extern const base::Feature
 extern const base::Feature kSyncSendTabToSelf;
 extern const base::Feature kSyncUSSBookmarks;
 extern const base::Feature kSyncUSSPasswords;
-extern const base::Feature kSyncUSSAutofillWalletMetadata;
 extern const base::Feature kSyncUSSNigori;
 extern const base::Feature kSyncWifiConfigurations;
 

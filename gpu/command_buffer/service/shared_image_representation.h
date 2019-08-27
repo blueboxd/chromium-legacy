@@ -303,7 +303,7 @@ class SharedImageRepresentationDawn : public SharedImageRepresentation {
   // TODO(penghuang): Add ScopedAccess helper class.
   // This can return null in case of a Dawn validation error, for example if
   // usage is invalid.
-  virtual DawnTexture BeginAccess(DawnTextureUsageBit usage) = 0;
+  virtual DawnTexture BeginAccess(DawnTextureUsage usage) = 0;
   virtual void EndAccess() = 0;
 };
 

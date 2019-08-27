@@ -42,11 +42,14 @@ void GeneratedTimeZonePrefBase::UpdateTimeZonePrefControlledBy(
           IsTimeZoneResolutionPolicyControlled()) {
     out_pref->controlled_by = settings_api::CONTROLLED_BY_DEVICE_POLICY;
     out_pref->enforcement = settings_api::ENFORCEMENT_ENFORCED;
-  } else if (profile_->IsChild() &&
-             !base::FeatureList::IsEnabled(
-                 features::kParentAccessCodeForTimeChange)) {
-    out_pref->controlled_by = settings_api::ControlledBy::CONTROLLED_BY_PARENT;
-    out_pref->enforcement = settings_api::ENFORCEMENT_ENFORCED;
+  } else if (profile_->IsChild()) {
+    out_pref->controlled_by = settings_api::CONTROLLED_BY_PARENT;
+    if (base::FeatureList::IsEnabled(
+            features::kParentAccessCodeForTimeChange)) {
+      out_pref->enforcement = settings_api::ENFORCEMENT_PARENT_SUPERVISED;
+    } else {
+      out_pref->enforcement = settings_api::ENFORCEMENT_ENFORCED;
+    }
   } else if (!profile_->IsSameProfile(
                  ProfileManager::GetPrimaryUserProfile())) {
     out_pref->controlled_by = settings_api::CONTROLLED_BY_PRIMARY_USER;

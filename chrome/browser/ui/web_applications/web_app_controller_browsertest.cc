@@ -65,7 +65,7 @@ AppId WebAppControllerBrowserTest::InstallWebApp(
       WebappInstallSource::OMNIBOX_INSTALL_ICON,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, web_app::InstallResultCode code) {
-            EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+            EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
             app_id = installed_app_id;
             run_loop.Quit();
           }));

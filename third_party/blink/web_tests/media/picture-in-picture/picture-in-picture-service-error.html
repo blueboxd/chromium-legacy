@@ -22,7 +22,7 @@ class PictureInPictureServiceMock {
   }
 
   async startSession(playerId, surfaceId, naturalSize, showPlayPauseButton,
-        showMuteButton, observer, callback) {
+        observer, callback) {
     return { session: null, size: new gfx.mojom.Size() };
   }
 };

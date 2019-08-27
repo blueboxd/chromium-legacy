@@ -9,6 +9,7 @@ import("//third_party/blink/renderer/bindings/modules/v8/v8.gni")
 
 bindings_core_v8_files =
     get_path_info([
+                    "core/v8/active_script_wrappable.cc",
                     "core/v8/active_script_wrappable.h",
                     "core/v8/array_value.cc",
                     "core/v8/array_value.h",

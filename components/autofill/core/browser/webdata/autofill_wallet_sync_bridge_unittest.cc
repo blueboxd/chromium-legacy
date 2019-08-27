@@ -188,33 +188,9 @@ MATCHER_P2(AddChange, key, data, "") {
   return true;
 }
 
-// Class that enables or disables USS based on test parameter. Must be the first
-// base class of the test fixture.
-// TODO(jkrcal): When the new implementation fully launches, remove this class,
-// convert all tests from *_P back to *_F and remove the instance at the end.
-class UssSwitchToggler : public testing::WithParamInterface<bool> {
- public:
-  UssSwitchToggler() {
-    if (IsWalletMetadataOnUSS()) {
-      override_features_.InitAndEnableFeature(
-          ::switches::kSyncUSSAutofillWalletMetadata);
-    } else {
-      override_features_.InitAndDisableFeature(
-          ::switches::kSyncUSSAutofillWalletMetadata);
-    }
-  }
-
- protected:
-  bool IsWalletMetadataOnUSS() { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
 }  // namespace
 
-class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
-                                     public testing::Test {
+class AutofillWalletSyncBridgeTest : public testing::Test {
  public:
   AutofillWalletSyncBridgeTest() {}
   ~AutofillWalletSyncBridgeTest() override {}
@@ -249,8 +225,7 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
     EXPECT_TRUE(table()->UpdateModelTypeState(syncer::AUTOFILL_WALLET_DATA,
                                               model_type_state));
     bridge_ = std::make_unique<AutofillWalletSyncBridge>(
-        active_callback_.Get(), mock_processor_.CreateForwardingProcessor(),
-        &backend_);
+        mock_processor_.CreateForwardingProcessor(), &backend_);
   }
 
   void StartSyncing(
@@ -329,10 +304,6 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
 
   MockAutofillWebDataBackend* backend() { return &backend_; }
 
-  base::MockCallback<base::RepeatingCallback<void(bool)>>* active_callback() {
-    return &active_callback_;
-  }
-
  private:
   autofill::TestAutofillClock test_clock_;
   ScopedTempDir temp_dir_;
@@ -343,28 +314,26 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor> real_processor_;
   std::unique_ptr<AutofillWalletSyncBridge> bridge_;
-  NiceMock<base::MockCallback<base::RepeatingCallback<void(bool)>>>
-      active_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletSyncBridgeTest);
 };
 
 // The following 3 tests make sure client tags stay stable.
-TEST_P(AutofillWalletSyncBridgeTest, GetClientTagForAddress) {
+TEST_F(AutofillWalletSyncBridgeTest, GetClientTagForAddress) {
   AutofillWalletSpecifics specifics =
       CreateAutofillWalletSpecificsForAddress(kAddr1SpecificsId);
   EXPECT_EQ(bridge()->GetClientTag(*SpecificsToEntity(specifics)),
             kAddr1SyncTag);
 }
 
-TEST_P(AutofillWalletSyncBridgeTest, GetClientTagForCard) {
+TEST_F(AutofillWalletSyncBridgeTest, GetClientTagForCard) {
   AutofillWalletSpecifics specifics =
       CreateAutofillWalletSpecificsForCard(kCard1SpecificsId);
   EXPECT_EQ(bridge()->GetClientTag(*SpecificsToEntity(specifics)),
             kCard1SyncTag);
 }
 
-TEST_P(AutofillWalletSyncBridgeTest, GetClientTagForCustomerData) {
+TEST_F(AutofillWalletSyncBridgeTest, GetClientTagForCustomerData) {
   AutofillWalletSpecifics specifics =
       CreateAutofillWalletSpecificsForPaymentsCustomerData(
           kCustomerDataSyncTag);
@@ -373,28 +342,28 @@ TEST_P(AutofillWalletSyncBridgeTest, GetClientTagForCustomerData) {
 }
 
 // The following 3 tests make sure storage keys stay stable.
-TEST_P(AutofillWalletSyncBridgeTest, GetStorageKeyForAddress) {
+TEST_F(AutofillWalletSyncBridgeTest, GetStorageKeyForAddress) {
   AutofillWalletSpecifics specifics1 =
       CreateAutofillWalletSpecificsForAddress(kAddr1SpecificsId);
   EXPECT_EQ(bridge()->GetStorageKey(*SpecificsToEntity(specifics1)),
             kAddr1SpecificsId);
 }
 
-TEST_P(AutofillWalletSyncBridgeTest, GetStorageKeyForCard) {
+TEST_F(AutofillWalletSyncBridgeTest, GetStorageKeyForCard) {
   AutofillWalletSpecifics specifics2 =
       CreateAutofillWalletSpecificsForCard(kCard1SpecificsId);
   EXPECT_EQ(bridge()->GetStorageKey(*SpecificsToEntity(specifics2)),
             kCard1SpecificsId);
 }
 
-TEST_P(AutofillWalletSyncBridgeTest, GetStorageKeyForCustomerData) {
+TEST_F(AutofillWalletSyncBridgeTest, GetStorageKeyForCustomerData) {
   AutofillWalletSpecifics specifics3 =
       CreateAutofillWalletSpecificsForPaymentsCustomerData(kCustomerDataId);
   EXPECT_EQ(bridge()->GetStorageKey(*SpecificsToEntity(specifics3)),
             kCustomerDataId);
 }
 
-TEST_P(AutofillWalletSyncBridgeTest,
+TEST_F(AutofillWalletSyncBridgeTest,
        GetAllDataForDebugging_ShouldReturnAllData) {
   AutofillProfile address1 = test::GetServerProfile();
   AutofillProfile address2 = test::GetServerProfile2();
@@ -427,7 +396,7 @@ TEST_P(AutofillWalletSyncBridgeTest,
 
 // Tests that when a new wallet card and new wallet address are sent by the
 // server, the client only keeps the new data.
-TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
   // Create one profile and one card on the client.
   AutofillProfile address1 = test::GetServerProfile();
   table()->SetServerProfiles({address1});
@@ -459,12 +428,9 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
               NotifyOfCreditCardChanged(RemoveChange(card1.server_id())));
   StartSyncing({profile_specifics2, card_specifics2, customer_data_specifics});
 
-  if (IsWalletMetadataOnUSS()) {
-    // This bridge does not store metadata, i.e. billing_address_id. Strip it
-    // off so that the expectations below pass.
-    card_specifics2.mutable_masked_card()->set_billing_address_id(
-        std::string());
-  }
+  // This bridge does not store metadata, i.e. billing_address_id. Strip it
+  // off so that the expectations below pass.
+  card_specifics2.mutable_masked_card()->set_billing_address_id(std::string());
 
   // Only the server card should be present on the client.
   EXPECT_THAT(GetAllLocalData(),
@@ -475,7 +441,7 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
 
 // Tests that in initial sync, no metrics are recorded for new addresses and
 // cards.
-TEST_P(AutofillWalletSyncBridgeTest,
+TEST_F(AutofillWalletSyncBridgeTest,
        MergeSyncData_NewWalletAddressAndCardNoMetricsInitialSync) {
   ResetProcessor();
   ResetBridge(/*initial_sync_done=*/false);
@@ -496,13 +462,11 @@ TEST_P(AutofillWalletSyncBridgeTest,
   EXPECT_CALL(*backend(), CommitChanges());
   StartSyncing({profile_specifics, card_specifics, customer_data_specifics});
 
-  if (IsWalletMetadataOnUSS()) {
-    ExpectCountsOfWalletMetadataInDB(/*cards_count=*/0u, /*address_count=*/0u);
+  ExpectCountsOfWalletMetadataInDB(/*cards_count=*/0u, /*address_count=*/0u);
 
-    // This bridge does not store metadata, i.e. billing_address_id. Strip it
-    // off so that the expectations below pass.
-    card_specifics.mutable_masked_card()->set_billing_address_id(std::string());
-  }
+  // This bridge does not store metadata, i.e. billing_address_id. Strip it
+  // off so that the expectations below pass.
+  card_specifics.mutable_masked_card()->set_billing_address_id(std::string());
 
   EXPECT_THAT(GetAllLocalData(),
               UnorderedElementsAre(EqualsSpecifics(profile_specifics),
@@ -512,7 +476,7 @@ TEST_P(AutofillWalletSyncBridgeTest,
 
 // Tests that when a new payments customer data is sent by the server, the
 // client only keeps the new data.
-TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NewPaymentsCustomerData) {
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NewPaymentsCustomerData) {
   // Create one profile, one card and one customer data entry on the client.
   AutofillProfile address = test::GetServerProfile();
   table()->SetServerProfiles({address});
@@ -546,7 +510,7 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NewPaymentsCustomerData) {
 
 // Tests that when the server sends no cards or address, the client should
 // delete all it's existing data.
-TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NoWalletAddressOrCard) {
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_NoWalletAddressOrCard) {
   // Create one profile and one card on the client.
   AutofillProfile local_profile = test::GetServerProfile();
   table()->SetServerProfiles({local_profile});
@@ -561,18 +525,16 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NoWalletAddressOrCard) {
               NotifyOfCreditCardChanged(RemoveChange(local_card.server_id())));
   StartSyncing({});
 
-  if (IsWalletMetadataOnUSS()) {
-    // This bridge should not touch the metadata; should get deleted by the
-    // metadata bridge.
-    ExpectCountsOfWalletMetadataInDB(/*cards_count=*/1u, /*address_count=*/1u);
-  }
+  // This bridge should not touch the metadata; should get deleted by the
+  // metadata bridge.
+  ExpectCountsOfWalletMetadataInDB(/*cards_count=*/1u, /*address_count=*/1u);
 
   EXPECT_TRUE(GetAllLocalData().empty());
 }
 
 // Test that when the server sends the same address and card as the client has,
 // nothing changes on the client.
-TEST_P(AutofillWalletSyncBridgeTest,
+TEST_F(AutofillWalletSyncBridgeTest,
        MergeSyncData_SameWalletAddressAndCardAndCustomerData) {
   // Create one profile and one card on the client.
   AutofillProfile profile = test::GetServerProfile();
@@ -606,7 +568,7 @@ TEST_P(AutofillWalletSyncBridgeTest,
 
 // Tests that when there are multiple changes happening at the same time, the
 // data from the server is what the client ends up with.
-TEST_P(AutofillWalletSyncBridgeTest,
+TEST_F(AutofillWalletSyncBridgeTest,
        MergeSyncData_AddRemoveAndPreserveWalletAddressAndCard) {
   // Create two profile and one card on the client.
   AutofillProfile profile = test::GetServerProfile();
@@ -638,12 +600,9 @@ TEST_P(AutofillWalletSyncBridgeTest,
               NotifyOfCreditCardChanged(AddChange(card2.server_id(), card2)));
   StartSyncing({profile_specifics, card2_specifics, customer_data_specifics});
 
-  if (IsWalletMetadataOnUSS()) {
-    // This bridge does not store metadata, i.e. billing_address_id. Strip it
-    // off so that the expectations below pass.
-    card2_specifics.mutable_masked_card()->set_billing_address_id(
-        std::string());
-  }
+  // This bridge does not store metadata, i.e. billing_address_id. Strip it
+  // off so that the expectations below pass.
+  card2_specifics.mutable_masked_card()->set_billing_address_id(std::string());
 
   // Make sure that the client only has the data from the server.
   EXPECT_THAT(GetAllLocalData(),
@@ -654,7 +613,7 @@ TEST_P(AutofillWalletSyncBridgeTest,
 
 // Test that all field values for a address sent form the server are copied on
 // the address on the client.
-TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletAddressData) {
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletAddressData) {
   // Create a profile to be synced from the server.
   AutofillProfile profile = test::GetServerProfile();
   AutofillWalletSpecifics profile_specifics;
@@ -708,7 +667,7 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletAddressData) {
 
 // Test that all field values for a card sent form the server are copied on the
 // card on the client.
-TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
+TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   // Create a card to be synced from the server.
   CreditCard card = test::GetMaskedServerCard();
   // Add this value type as it is not added by default but should be synced.
@@ -718,12 +677,10 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
 
   StartSyncing({card_specifics});
 
-  if (IsWalletMetadataOnUSS()) {
-    // This bridge does not store metadata, i.e. billing_address_id. Strip it
-    // off so that the expectations below pass.
-    card.set_billing_address_id(std::string());
-    card_specifics.mutable_masked_card()->set_billing_address_id(std::string());
-  }
+  // This bridge does not store metadata, i.e. billing_address_id. Strip it
+  // off so that the expectations below pass.
+  card.set_billing_address_id(std::string());
+  card_specifics.mutable_masked_card()->set_billing_address_id(std::string());
 
   EXPECT_THAT(GetAllLocalData(),
               UnorderedElementsAre(EqualsSpecifics(card_specifics)));
@@ -747,14 +704,11 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_FALSE(card.LastFourDigits().empty());
   EXPECT_NE(0, card.expiration_month());
   EXPECT_NE(0, card.expiration_year());
-  if (!IsWalletMetadataOnUSS()) {
-    EXPECT_FALSE(card.billing_address_id().empty());
-  }
   EXPECT_NE(CreditCard::CARD_TYPE_UNKNOWN, card.card_type());
   EXPECT_FALSE(card.bank_name().empty());
 }
 
-TEST_P(AutofillWalletSyncBridgeTest, LoadMetadataCalled) {
+TEST_F(AutofillWalletSyncBridgeTest, LoadMetadataCalled) {
   EXPECT_TRUE(table()->UpdateSyncMetadata(syncer::AUTOFILL_WALLET_DATA, "key",
                                           EntityMetadata()));
 
@@ -765,7 +719,7 @@ TEST_P(AutofillWalletSyncBridgeTest, LoadMetadataCalled) {
   ResetBridge(/*initial_sync_done=*/true);
 }
 
-TEST_P(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
+TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
   // Create one profile and one card on the client.
   AutofillProfile local_profile = test::GetServerProfile();
   table()->SetServerProfiles({local_profile});
@@ -782,16 +736,14 @@ TEST_P(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
   bridge()->ApplyStopSyncChanges(
       std::make_unique<syncer::InMemoryMetadataChangeList>());
 
-  if (IsWalletMetadataOnUSS()) {
-    // This bridge should not touch the metadata; should get deleted by the
-    // metadata bridge.
-    ExpectCountsOfWalletMetadataInDB(/*cards_count=*/1u, /*address_count=*/1u);
-  }
+  // This bridge should not touch the metadata; should get deleted by the
+  // metadata bridge.
+  ExpectCountsOfWalletMetadataInDB(/*cards_count=*/1u, /*address_count=*/1u);
 
   EXPECT_TRUE(GetAllLocalData().empty());
 }
 
-TEST_P(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {
+TEST_F(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {
   // Create one profile and one card on the client.
   AutofillProfile local_profile = test::GetServerProfile();
   table()->SetServerProfiles({local_profile});
@@ -810,34 +762,5 @@ TEST_P(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_KeepData) {
 
   EXPECT_FALSE(GetAllLocalData().empty());
 }
-
-TEST_P(AutofillWalletSyncBridgeTest, NotifiesWhenActivelySyncing) {
-  testing::InSequence seq;
-
-  ResetProcessor();
-
-  EXPECT_CALL(*active_callback(), Run(true));
-  ResetBridge(/*initial_sync_done=*/true);
-
-  // Start and stop sync to check that we notify the callback.
-  StartSyncing({});
-
-  EXPECT_CALL(*active_callback(), Run(false));
-  // Stopping sync with change list to indicate that the type is disabled.
-  bridge()->ApplyStopSyncChanges(
-      std::make_unique<syncer::InMemoryMetadataChangeList>());
-
-  EXPECT_CALL(*active_callback(), Run(true));
-  // Start and stop sync again to make sure we notify the callback again.
-  StartSyncing({});
-  // Passing in a non-null metadata change list indicates to the bridge that
-  // sync is stopping but the data type is not disabled, so we should not get
-  // a callback.
-  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
-}
-
-INSTANTIATE_TEST_SUITE_P(USS,
-                         AutofillWalletSyncBridgeTest,
-                         ::testing::Values(false, true));
 
 }  // namespace autofill

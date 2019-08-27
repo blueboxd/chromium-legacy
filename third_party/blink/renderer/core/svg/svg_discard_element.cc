@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_discard_element.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {

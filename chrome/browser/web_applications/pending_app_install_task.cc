@@ -30,7 +30,7 @@ namespace web_app {
 PendingAppInstallTask::Result::Result(InstallResultCode code,
                                       base::Optional<AppId> app_id)
     : code(code), app_id(std::move(app_id)) {
-  DCHECK_EQ(code == InstallResultCode::kSuccess, app_id.has_value());
+  DCHECK_EQ(code == InstallResultCode::kSuccessNewInstall, app_id.has_value());
 }
 
 PendingAppInstallTask::Result::Result(Result&&) = default;
@@ -154,8 +154,9 @@ void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
   if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
     // No need to install a placeholder app again.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  Result(InstallResultCode::kSuccess, app_id)));
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       Result(InstallResultCode::kSuccessNewInstall, app_id)));
     return;
   }
 
@@ -187,7 +188,7 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
                                               ResultCallback result_callback,
                                               const AppId& app_id,
                                               InstallResultCode code) {
-  if (code != InstallResultCode::kSuccess) {
+  if (code != InstallResultCode::kSuccessNewInstall) {
     std::move(result_callback).Run(Result(code, base::nullopt));
     return;
   }
@@ -204,8 +205,9 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
   externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
                                                    is_placeholder);
 
-  base::ScopedClosureRunner scoped_closure(base::BindOnce(
-      std::move(result_callback), Result(InstallResultCode::kSuccess, app_id)));
+  base::ScopedClosureRunner scoped_closure(
+      base::BindOnce(std::move(result_callback),
+                     Result(InstallResultCode::kSuccessNewInstall, app_id)));
 
   if (!is_placeholder) {
     return;

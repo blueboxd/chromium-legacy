@@ -76,6 +76,13 @@ bool CanIncludeWindowInCycleList(aura::Window* window) {
          !window_util::ShouldExcludeForCycleList(window);
 }
 
+// A predicate that determines whether |window| can be included in the list
+// built for alt-tab cycling, including Android PIP windows.
+bool CanIncludeWindowInCycleWithPipList(aura::Window* window) {
+  return CanIncludeWindowInCycleList(window) ||
+         window_util::IsArcPipWindow(window);
+}
+
 // Returns a list of windows ordered by their stacking order such that the most
 // recently used window is at the front of the list.
 // If |mru_windows| is passed, these windows are moved to the front of the list.
@@ -202,6 +209,12 @@ MruWindowTracker::WindowList MruWindowTracker::BuildWindowForCycleList(
     DesksMruType desks_mru_type) const {
   return BuildWindowListInternal(&mru_windows_, desks_mru_type,
                                  CanIncludeWindowInCycleList);
+}
+
+MruWindowTracker::WindowList MruWindowTracker::BuildWindowForCycleWithPipList(
+    DesksMruType desks_mru_type) const {
+  return BuildWindowListInternal(&mru_windows_, desks_mru_type,
+                                 CanIncludeWindowInCycleWithPipList);
 }
 
 void MruWindowTracker::SetIgnoreActivations(bool ignore) {

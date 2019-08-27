@@ -16,7 +16,7 @@ import org.chromium.content_public.browser.NavigationHistory;
  * native/rendered pages in tabbed mode. Uses interface methods of {@link Tab}.
  */
 public class TabbedSheetDelegate implements NavigationSheet.Delegate {
-    private static final int MAXIMUM_HISTORY_ITEMS = 12;
+    private static final int MAXIMUM_HISTORY_ITEMS = 8;
     private static final int FULL_HISTORY_ENTRY_INDEX = -1;
 
     private final Tab mTab;

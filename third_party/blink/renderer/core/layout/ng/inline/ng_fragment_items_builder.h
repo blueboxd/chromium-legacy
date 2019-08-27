@@ -32,10 +32,22 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   }
   void SetTextContent(const NGInlineNode& node);
 
-  // Add a line at once. The children in the given list maybe moved out.
+  // The caller should create a |ChildList| for a complete line and add to this
+  // builder.
+  //
+  // Adding a line is a two-pass operation, because |NGInlineLayoutAlgorithm|
+  // creates and positions children within a line box, but its parent algorithm
+  // positions the line box. |SetCurrentLine| sets the children, and the next
+  // |AddLine| adds them.
+  //
+  // TODO(kojii): Moving |ChildList| is not cheap because it has inline
+  // capacity. Reconsider the ownership.
   using Child = NGLineBoxFragmentBuilder::Child;
   using ChildList = NGLineBoxFragmentBuilder::ChildList;
-  void AddLine(const NGPhysicalLineBoxFragment& line, ChildList& children);
+  void SetCurrentLine(const NGPhysicalLineBoxFragment& line,
+                      ChildList&& children);
+  void AddLine(const NGPhysicalLineBoxFragment& line,
+               const LogicalOffset& offset);
 
   // Build a |NGFragmentItems|. The builder cannot build twice because data set
   // to this builder may be cleared.
@@ -56,7 +68,11 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   String text_content_;
   String first_line_text_content_;
 
+  // Keeps children of a line until the offset is determined. See |AddLine|.
+  ChildList current_line_;
+
 #if DCHECK_IS_ON()
+  const NGPhysicalLineBoxFragment* current_line_fragment_ = nullptr;
   bool is_converted_to_physical_ = false;
 #endif
 

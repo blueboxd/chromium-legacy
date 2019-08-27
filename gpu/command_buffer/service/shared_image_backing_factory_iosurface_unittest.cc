@@ -290,9 +290,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
 
   // Clear the shared image to green using Dawn.
   {
-    dawn::Texture texture =
-        dawn::Texture::Acquire(dawn_representation->BeginAccess(
-            DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT));
+    dawn::Texture texture = dawn::Texture::Acquire(
+        dawn_representation->BeginAccess(DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT));
 
     dawn::RenderPassColorAttachmentDescriptor color_desc;
     color_desc.attachment = texture.CreateDefaultView();

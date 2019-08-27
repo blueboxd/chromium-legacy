@@ -25,6 +25,7 @@ class NET_EXPORT URLRequestDataJob : public URLRequestSimpleJob {
   // Extracts info from a data scheme URL. Returns OK if successful. Returns
   // ERR_INVALID_URL otherwise.
   static int BuildResponse(const GURL& url,
+                           base::StringPiece method,
                            std::string* mime_type,
                            std::string* charset,
                            std::string* data,

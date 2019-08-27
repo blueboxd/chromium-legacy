@@ -8,7 +8,7 @@
 namespace content {
 
 RtcEventLogOutputSinkProxy::RtcEventLogOutputSinkProxy(
-    RtcEventLogOutputSink* sink)
+    blink::RtcEventLogOutputSink* sink)
     : sink_(sink) {
   CHECK(sink_);
 }

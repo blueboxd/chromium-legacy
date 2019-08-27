@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -49,7 +50,7 @@ class RemoveCookieTester {
   std::vector<net::CanonicalCookie> last_cookies_;
   bool waiting_callback_;
   Profile* profile_;
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
@@ -61,7 +62,8 @@ RemoveCookieTester::RemoveCookieTester(Profile* profile)
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetNetworkContext();
-  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
+  network_context->GetCookieManager(
+      cookie_manager_.BindNewPipeAndPassReceiver());
 }
 
 RemoveCookieTester::~RemoveCookieTester() {}

@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -49,7 +50,7 @@ class SessionDataDeleter
   void DeleteSessionOnlyOriginCookies(
       const std::vector<net::CanonicalCookie>& cookies);
 
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
   scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
   const bool delete_only_by_session_only_policy_;
 
@@ -78,7 +79,7 @@ void SessionDataDeleter::Run(content::StoragePartition* storage_partition) {
   }
 
   storage_partition->GetNetworkContext()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager_));
+      cookie_manager_.BindNewPipeAndPassReceiver());
 
   if (!delete_only_by_session_only_policy_) {
     network::mojom::CookieDeletionFilterPtr filter(
@@ -101,7 +102,7 @@ void SessionDataDeleter::Run(content::StoragePartition* storage_partition) {
   // created by Bind() is released (after execution of that function), the
   // object will be deleted.  This may result in any callbacks passed to
   // |*cookie_manager_.get()| methods not being executed because of the
-  // destruction of the CookieManagerPtr, but the model of the
+  // destruction of the mojo::Remote<CookieManager>, but the model of the
   // SessionDataDeleter is "fire-and-forget" and all such callbacks are
   // empty, so that is ok.  Mojo guarantees that all messages pushed onto a
   // pipe will be executed by the server side of the pipe even if the client

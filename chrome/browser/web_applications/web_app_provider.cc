@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/external_web_app_manager.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
@@ -104,6 +106,11 @@ WebAppAudioFocusIdMap& WebAppProvider::audio_focus_id_map() {
   return *audio_focus_id_map_;
 }
 
+FileHandlerManager& WebAppProvider::file_handler_manager() {
+  CheckIsConnected();
+  return *file_handler_manager_;
+}
+
 SystemWebAppManager& WebAppProvider::system_web_app_manager() {
   CheckIsConnected();
   return *system_web_app_manager_;
@@ -137,12 +144,15 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
       profile, std::make_unique<FileUtilsWrapper>());
   install_finalizer_ =
       std::make_unique<WebAppInstallFinalizer>(icon_manager_.get());
+  file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile);
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
+  file_handler_manager_ =
+      std::make_unique<extensions::BookmarkAppFileHandlerManager>(profile);
 }
 
 void WebAppProvider::ConnectSubsystems() {

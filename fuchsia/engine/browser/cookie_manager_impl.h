@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "fuchsia/engine/web_engine_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace network {
@@ -46,10 +47,10 @@ class WEB_ENGINE_EXPORT CookieManagerImpl : public fuchsia::web::CookieManager {
   void EnsureCookieManager();
 
   // Handles errors on the |cookie_manager_| Mojo channel.
-  void OnMojoError();
+  void OnMojoDisconnect();
 
   const GetNetworkContextCallback get_network_context_;
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManagerImpl);
 };

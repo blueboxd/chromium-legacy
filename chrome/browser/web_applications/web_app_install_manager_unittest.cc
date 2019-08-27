@@ -158,7 +158,7 @@ TEST_F(WebAppInstallManagerTest,
       app1_id, CreateWebAppInfo(url1),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app1_id, installed_app_id);
             event_order.push_back(Event::App1_CallbackCalled);
             app1_installed_run_loop.Quit();
@@ -174,7 +174,7 @@ TEST_F(WebAppInstallManagerTest,
       app2_id, CreateWebAppInfo(url2),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app2_id, installed_app_id);
             event_order.push_back(Event::App2_CallbackCalled);
             app2_installed_run_loop.Quit();
@@ -261,7 +261,7 @@ TEST_F(WebAppInstallManagerTest,
       app_id, CreateWebAppInfo(app_url),
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(InstallResultCode::kAlreadyInstalled, code);
+        EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
         EXPECT_EQ(app_id, installed_app_id);
         run_loop.Quit();
       }));

@@ -531,6 +531,12 @@ void Vp9Parser::SetStream(const uint8_t* stream,
   stream_decrypt_config_ = std::move(stream_config);
 }
 
+void Vp9Parser::SetStream(const uint8_t* stream,
+                          off_t stream_size,
+                          std::unique_ptr<DecryptConfig> stream_config) {
+  SetStream(stream, stream_size, {}, std::move(stream_config));
+}
+
 void Vp9Parser::Reset() {
   stream_ = nullptr;
   bytes_left_ = 0;

@@ -2,20 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
-
 from .argument import Argument
+from .code_generator_info import CodeGeneratorInfo
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
-from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 from .function_like import FunctionLike
 from .idl_type import IdlType
+from .make_copy import make_copy
+from .overload_group import OverloadGroup
 
 
-class Operation(object):
+class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
+                WithOwner, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-operations"""
 
     class IR(FunctionLike.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
@@ -30,43 +31,59 @@ class Operation(object):
                      component=None,
                      components=None,
                      debug_info=None):
-            assert isinstance(is_static, bool)
-
             FunctionLike.IR.__init__(
                 self,
                 identifier=identifier,
                 arguments=arguments,
-                return_type=return_type)
+                return_type=return_type,
+                is_static=is_static)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(
                 self, component=component, components=components)
             WithDebugInfo.__init__(self, debug_info)
 
-            self.is_static = is_static
+    def __init__(self, ir, owner):
+        assert isinstance(ir, Operation.IR)
 
-    @property
-    def is_static(self):
-        """
-        Returns True if 'static' is specified.
-        @return bool
-        """
-        raise exceptions.NotImplementedError()
+        FunctionLike.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
+        WithOwner.__init__(self, owner)
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info)
 
 
-class OperationGroup(WithIdentifier, WithCodeGeneratorInfo, WithOwner,
-                     WithComponent, WithDebugInfo):
+class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithOwner,
+                     WithDebugInfo):
     """
-    OperationGroup class has all Operation's with a same identifier, even if the
-    operation is not overloaded. Then we can handle overloaded and
-    non-overloaded operations seamlessly.
-    From the ES bindings' view point, OperationGroup tells something for properties,
-    and Operation tells something for actual behaviors.
+    Represents a group of operations with the same identifier.
+
+    The number of operations in this group may be 1 or 2+.  In the latter case,
+    the operations are overloaded.
     """
 
-    def operations(self):
-        """
-        Returns a list of operations whose identifier is |identifier()|
-        @return tuple(Operation)
-        """
-        raise exceptions.NotImplementedError()
+    class IR(OverloadGroup.IR, WithCodeGeneratorInfo, WithDebugInfo):
+        def __init__(self,
+                     operations,
+                     code_generator_info=None,
+                     debug_info=None):
+            OverloadGroup.IR.__init__(self, operations)
+            WithCodeGeneratorInfo.__init__(self, code_generator_info)
+            WithDebugInfo.__init__(self, debug_info)
+
+    def __init__(self, ir, operations, owner):
+        assert isinstance(ir, OperationGroup.IR)
+        assert isinstance(operations, (list, tuple))
+        assert all(
+            isinstance(operation, Operation) for operation in operations)
+        assert all(
+            operation.identifier == ir.identifier for operation in operations)
+
+        ir = make_copy(ir)
+        OverloadGroup.__init__(self, functions=operations)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
+        WithOwner.__init__(self, owner)
+        WithDebugInfo.__init__(self, ir.debug_info)

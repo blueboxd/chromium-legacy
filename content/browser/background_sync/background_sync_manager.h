@@ -441,6 +441,28 @@ class CONTENT_EXPORT BackgroundSyncManager
   // false otherwise.
   bool AllRegistrationsWaitingToBeResolved() const;
 
+  // Returns true if a registration can fire immediately once we have network
+  // connectivity.
+  bool AllConditionsExceptConnectivitySatisfied(
+      const BackgroundSyncRegistration& registration,
+      int64_t service_worker_id);
+
+  // Returns true if any registration of |sync_type| can be fired right when we
+  // have network connectivity.
+  bool CanFireAnyRegistrationUponConnectivity(
+      blink::mojom::BackgroundSyncType sync_type);
+
+  // Returns a reference to the bool that notes whether delayed processing for
+  // registrations of |sync_type| is currently scheduled.
+  bool& delayed_processing_scheduled(
+      blink::mojom::BackgroundSyncType sync_type);
+
+  // If we should schedule delayed processing, this does so.
+  // If we should cancel delayed processing, this does so.
+  // Else, this does nothing.
+  void ScheduleOrCancelDelayedProcessing(
+      blink::mojom::BackgroundSyncType sync_type);
+
   // Map from service worker registration id to its Background Sync
   // registrations.
   std::map<int64_t, BackgroundSyncRegistrations> active_registrations_;
@@ -461,6 +483,9 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   base::CancelableOnceClosure delayed_one_shot_sync_task_;
   base::CancelableOnceClosure delayed_periodic_sync_task_;
+
+  bool delayed_processing_scheduled_one_shot_sync_ = false;
+  bool delayed_processing_scheduled_periodic_sync_ = false;
 
   std::unique_ptr<BackgroundSyncNetworkObserver> network_observer_;
 

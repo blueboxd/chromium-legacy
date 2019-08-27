@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
@@ -2000,9 +2001,15 @@ PhysicalRect LayoutText::PhysicalLinesBoundingBox() const {
 }
 
 PhysicalRect LayoutText::PhysicalVisualOverflowRect() const {
-  if (base::Optional<PhysicalRect> rect =
-          NGPaintFragment::LocalVisualRectFor(*this))
-    return *rect;
+  if (IsInLayoutNGInlineFormattingContext()) {
+    DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
+    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+      return NGFragmentItem::LocalVisualRectFor(*this);
+
+    if (base::Optional<PhysicalRect> rect =
+            NGPaintFragment::LocalVisualRectFor(*this))
+      return *rect;
+  }
 
   if (!FirstTextBox())
     return PhysicalRect();

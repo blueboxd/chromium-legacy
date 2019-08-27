@@ -106,6 +106,46 @@ PerfStatProto GetExamplePerfStatProto() {
   return proto;
 }
 
+// A mock PerfOutputCall class for testing, which outputs example perf data
+// after the profile duration elapses.
+class FakePerfOutputCall : public PerfOutputCall {
+ public:
+  using PerfOutputCall::DoneCallback;
+  FakePerfOutputCall(base::TimeDelta duration,
+                     DoneCallback done_callback,
+                     base::OnceClosure on_stop)
+      : PerfOutputCall(),
+        done_callback_(std::move(done_callback)),
+        on_stop_(std::move(on_stop)) {
+    // Simulates collection done after profiling duration.
+    collection_done_timer_.Start(FROM_HERE, duration, this,
+                                 &FakePerfOutputCall::OnCollectionDone);
+  }
+  ~FakePerfOutputCall() override = default;
+
+  void Stop() override {
+    // Notify the observer that Stop() is called.
+    std::move(on_stop_).Run();
+
+    // Simulates that collection is done when we stop the perf session. Note
+    // that this may destroy |this| and should be the last action in Stop().
+    if (collection_done_timer_.IsRunning())
+      collection_done_timer_.FireNow();
+  }
+
+ private:
+  void OnCollectionDone() {
+    std::move(done_callback_)
+        .Run(GetExamplePerfDataProto().SerializeAsString());
+  }
+
+  DoneCallback done_callback_;
+  base::OneShotTimer collection_done_timer_;
+  base::OnceClosure on_stop_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakePerfOutputCall);
+};
+
 // Allows testing of PerfCollector behavior when an incognito window is opened.
 class TestIncognitoObserver : public WindowedIncognitoObserver {
  public:
@@ -135,14 +175,11 @@ class TestPerfCollector : public PerfCollector {
  public:
   TestPerfCollector() = default;
 
-  void CollectProfile(
-      std::unique_ptr<SampledProfile> sampled_profile) override {
-    PerfDataProto perf_data_proto = GetExamplePerfDataProto();
-    SaveSerializedPerfProto(std::move(sampled_profile),
-                            PerfProtoType::PERF_TYPE_DATA,
-                            perf_data_proto.SerializeAsString());
-  }
-
+  using MetricCollector::CollectPerfDataAfterSessionRestore;
+  using MetricCollector::OnJankStarted;
+  using MetricCollector::OnJankStopped;
+  using MetricCollector::ShouldCollect;
+  using MetricCollector::StopTimer;
   using PerfCollector::AddCachedDataDelta;
   using PerfCollector::collection_params;
   using PerfCollector::command_selector;
@@ -154,11 +191,39 @@ class TestPerfCollector : public PerfCollector {
   using PerfCollector::RecordUserLogin;
   using PerfCollector::set_profile_done_callback;
 
+  bool collection_stopped() { return collection_stopped_; }
+  bool collection_done() { return !real_callback_; }
+
+ protected:
+  std::unique_ptr<PerfOutputCall> CreatePerfOutputCall(
+      base::TimeDelta duration,
+      const std::vector<std::string>& perf_args,
+      PerfOutputCall::DoneCallback callback) override {
+    real_callback_ = std::move(callback);
+
+    return std::make_unique<FakePerfOutputCall>(
+        duration,
+        base::BindOnce(&TestPerfCollector::OnCollectionDone,
+                       base::Unretained(this)),
+        base::BindOnce(&TestPerfCollector::OnCollectionStopped,
+                       base::Unretained(this)));
+  }
+
+  void OnCollectionDone(std::string perf_output) {
+    std::move(real_callback_).Run(std::move(perf_output));
+  }
+
+  void OnCollectionStopped() { collection_stopped_ = true; }
+
+  PerfOutputCall::DoneCallback real_callback_;
+  bool collection_stopped_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TestPerfCollector);
 };
 
 const base::TimeDelta kPeriodicCollectionInterval =
     base::TimeDelta::FromHours(1);
+const base::TimeDelta kCollectionDuration = base::TimeDelta::FromSeconds(2);
 
 }  // namespace
 
@@ -178,6 +243,10 @@ class PerfCollectorTest : public testing::Test {
     // fast forward the time.
     perf_collector_->collection_params().periodic_interval =
         kPeriodicCollectionInterval;
+    // Set collection duration to a known quantity for fast forwarding time.
+    perf_collector_->collection_params().collection_duration =
+        kCollectionDuration;
+
     perf_collector_->set_profile_done_callback(base::BindRepeating(
         &PerfCollectorTest::SaveProfile, base::Unretained(this)));
 
@@ -641,6 +710,109 @@ TEST_F(PerfCollectorTest, CommandMatching_SpecificModel_LongestMatch) {
 
   EXPECT_EQ("interesting-model-500x",
             internal::FindBestCpuSpecifierFromParams(params, cpuid));
+}
+
+// Testing that jankiness collection trigger doesn't interfere with an ongoing
+// collection.
+TEST_F(PerfCollectorTest, StopCollection_AnotherTrigger) {
+  const int kRestoredTabs = 1;
+
+  perf_collector_->CollectPerfDataAfterSessionRestore(
+      base::TimeDelta::FromSeconds(1), kRestoredTabs);
+  // Timer is active after the OnSessionRestoreDone call.
+  EXPECT_TRUE(perf_collector_->IsRunning());
+  // A collection in action: should reject another collection request.
+  EXPECT_FALSE(perf_collector_->ShouldCollect());
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  // A collection is ongoing. Triggering a jankiness collection should have no
+  // effect on the existing collection.
+  perf_collector_->OnJankStarted();
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  // This doesn't stop the existing collection.
+  perf_collector_->OnJankStopped();
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(perf_collector_->collection_done());
+  EXPECT_FALSE(perf_collector_->collection_stopped());
+
+  // Fast forward time past the collection duration to complete the collection.
+  task_environment_.FastForwardBy(
+      perf_collector_->collection_params().collection_duration);
+  // The collection finishes automatically without being stopped.
+  EXPECT_FALSE(perf_collector_->collection_stopped());
+  EXPECT_TRUE(perf_collector_->collection_done());
+
+  ASSERT_EQ(1U, cached_profile_data_.size());
+
+  // Timer is rearmed for periodic collection after each collection.
+  EXPECT_TRUE(perf_collector_->IsRunning());
+
+  const SampledProfile& profile = cached_profile_data_[0];
+  EXPECT_EQ(SampledProfile::RESTORE_SESSION, profile.trigger_event());
+  EXPECT_EQ(kRestoredTabs, profile.num_tabs_restored());
+  EXPECT_FALSE(profile.has_ms_after_resume());
+  EXPECT_TRUE(profile.has_ms_after_login());
+  EXPECT_TRUE(profile.has_ms_after_boot());
+}
+
+// Test stopping a jankiness collection.
+TEST_F(PerfCollectorTest, JankinessCollectionStopped) {
+  EXPECT_TRUE(perf_collector_->ShouldCollect());
+  perf_collector_->OnJankStarted();
+  // A collection in action: should reject another collection request.
+  EXPECT_FALSE(perf_collector_->ShouldCollect());
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+
+  perf_collector_->OnJankStopped();
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(perf_collector_->collection_done());
+  EXPECT_TRUE(perf_collector_->collection_stopped());
+
+  ASSERT_EQ(1U, cached_profile_data_.size());
+
+  // Timer is rearmed for periodic collection after each collection.
+  EXPECT_TRUE(perf_collector_->IsRunning());
+
+  const SampledProfile& profile = cached_profile_data_[0];
+  EXPECT_EQ(SampledProfile::JANKY_TASK, profile.trigger_event());
+  EXPECT_FALSE(profile.has_ms_after_resume());
+  EXPECT_TRUE(profile.has_ms_after_login());
+  EXPECT_TRUE(profile.has_ms_after_boot());
+}
+
+// Test a jankiness collection is done when the collection duration elapses.
+TEST_F(PerfCollectorTest, JankinessCollectionDurationElapsed) {
+  EXPECT_TRUE(perf_collector_->ShouldCollect());
+  perf_collector_->OnJankStarted();
+  // A collection in action: should reject another collection request.
+  EXPECT_FALSE(perf_collector_->ShouldCollect());
+
+  // The jank lasts for 2 collection durations. The collection should be done
+  // before the jank stops.
+  task_environment_.FastForwardBy(
+      2 * perf_collector_->collection_params().collection_duration);
+  // The collection is done without being stopped.
+  EXPECT_TRUE(perf_collector_->collection_done());
+  EXPECT_FALSE(perf_collector_->collection_stopped());
+
+  ASSERT_EQ(1U, cached_profile_data_.size());
+
+  // Timer is rearmed for periodic collection after each collection.
+  EXPECT_TRUE(perf_collector_->IsRunning());
+
+  const SampledProfile& profile = cached_profile_data_[0];
+  EXPECT_EQ(SampledProfile::JANKY_TASK, profile.trigger_event());
+  EXPECT_FALSE(profile.has_ms_after_resume());
+  EXPECT_TRUE(profile.has_ms_after_login());
+  EXPECT_TRUE(profile.has_ms_after_boot());
+
+  perf_collector_->OnJankStopped();
+  task_environment_.RunUntilIdle();
+  // The arrival of OnJankStopped() has no effect on PerfCollector after the
+  // collection is done.
+  EXPECT_TRUE(perf_collector_->collection_done());
+  EXPECT_FALSE(perf_collector_->collection_stopped());
 }
 
 class PerfCollectorCollectionParamsTest : public testing::Test {

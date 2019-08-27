@@ -534,7 +534,8 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTasks) {
   ASSERT_TRUE(tasks.empty());
 }
 
-TEST_F(FileManagerFileTasksComplexTest, WebAppsCanHandleFiles) {
+TEST_F(FileManagerFileTasksComplexTest,
+       BookmarkAppsAreNotListedInFileHandlerTasks) {
   const char kGraphrId[] = "ppcpljkgngnngojbghcdiojhbneibgdg";
   const char kGraphrFileAction[] = "https://graphr.tld/open-files/?name=raw";
   extensions::ExtensionBuilder graphr;
@@ -581,34 +582,12 @@ TEST_F(FileManagerFileTasksComplexTest, WebAppsCanHandleFiles) {
                            .AppendASCII("foo.csv"),
                        "text/csv", false);
 
-  {
-    // Bookmark Apps should not be able to handle files unless
-    // kNativeFileSystemAPI and kFileHandlingAPI are enabled.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({},
-                                         {blink::features::kNativeFileSystemAPI,
-                                          blink::features::kFileHandlingAPI});
-    FindFileHandlerTasks(&test_profile_, entries, &tasks);
-    EXPECT_EQ(0u, tasks.size());
-    tasks.clear();
-  }
-
-  {
-    // When the flags are enabled, it should be possible to handle files from
-    // bookmark apps.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
-                                          blink::features::kFileHandlingAPI},
-                                         {});
-    // Test that when enabled, bookmark apps can handle files
-    FindFileHandlerTasks(&test_profile_, entries, &tasks);
-    // Graphr should be a valid handler.
-    ASSERT_EQ(1u, tasks.size());
-    EXPECT_EQ(kGraphrId, tasks[0].task_descriptor().app_id);
-    EXPECT_EQ(kGraphrFileAction, tasks[0].task_descriptor().action_id);
-    EXPECT_EQ(file_tasks::TaskType::TASK_TYPE_FILE_HANDLER,
-              tasks[0].task_descriptor().task_type);
-  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({blink::features::kNativeFileSystemAPI,
+                                        blink::features::kFileHandlingAPI},
+                                       {});
+  FindFileHandlerTasks(&test_profile_, entries, &tasks);
+  EXPECT_EQ(0u, tasks.size());
 }
 
 // The basic logic is similar to a test case for FindFileHandlerTasks above.

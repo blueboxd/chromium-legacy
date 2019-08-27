@@ -342,6 +342,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
         std::move(cancel_import_lxd_container_response);
   }
 
+  void set_lxd_container_os_release(vm_tools::cicerone::OsRelease os_release) {
+    lxd_container_os_release_ = std::move(os_release);
+  }
+
   // Additional functions to allow tests to trigger Signals.
   void NotifyLxdContainerCreated(
       const vm_tools::cicerone::LxdContainerCreatedSignal& signal);
@@ -417,6 +421,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       cancel_export_lxd_container_response_;
   vm_tools::cicerone::CancelImportLxdContainerResponse
       cancel_import_lxd_container_response_;
+
+  vm_tools::cicerone::OsRelease lxd_container_os_release_;
 
   UninstallPackageOwningFileCallback uninstall_package_owning_file_callback_;
 

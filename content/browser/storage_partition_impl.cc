@@ -467,37 +467,37 @@ void ReportCookiesReadOnUI(
   }
 }
 
-void OnServiceWorkerCookiesReadOnIO(
+void OnServiceWorkerCookiesReadOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const GURL& url,
     const GURL& site_for_cookies,
     const std::vector<net::CookieWithStatus>& cookie_list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // Notify all the frames associated with this service worker of its cookie
   // activity.
   std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
       service_worker_context->GetProviderHostIds(url.GetOrigin());
   if (!host_ids->empty()) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(ReportCookiesReadOnUI, *host_ids, url,
-                                  site_for_cookies, cookie_list));
+    RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                          base::BindOnce(ReportCookiesReadOnUI, *host_ids, url,
+                                         site_for_cookies, cookie_list));
   }
 }
 
-void OnServiceWorkerCookiesChangedOnIO(
+void OnServiceWorkerCookiesChangedOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const GURL& url,
     const GURL& site_for_cookies,
     const std::vector<net::CookieWithStatus>& cookie_list) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // Notify all the frames associated with this service worker of its cookie
   // activity.
   std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
       service_worker_context->GetProviderHostIds(url.GetOrigin());
   if (!host_ids->empty()) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(ReportCookiesChangedOnUI, *host_ids, url,
-                                  site_for_cookies, cookie_list));
+    RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                          base::BindOnce(ReportCookiesChangedOnUI, *host_ids,
+                                         url, site_for_cookies, cookie_list));
   }
 }
 
@@ -1362,9 +1362,11 @@ StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
   DCHECK(initialized_);
   // Create the CookieManager as needed.
   if (!cookie_manager_for_browser_process_ ||
-      cookie_manager_for_browser_process_.encountered_error()) {
+      !cookie_manager_for_browser_process_.is_connected()) {
+    // Reset |cookie_manager_for_browser_process_| before binding it again.
+    cookie_manager_for_browser_process_.reset();
     GetNetworkContext()->GetCookieManager(
-        mojo::MakeRequest(&cookie_manager_for_browser_process_));
+        cookie_manager_for_browser_process_.BindNewPipeAndPassReceiver());
   }
   return cookie_manager_for_browser_process_.get();
 }
@@ -1723,10 +1725,11 @@ void StoragePartitionImpl::OnCookiesChanged(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(initialized_);
   if (is_service_worker) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&OnServiceWorkerCookiesChangedOnIO,
-                                  service_worker_context_, url,
-                                  site_for_cookies, std::move(cookie_list)));
+    RunOrPostTaskOnThread(
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+        base::BindOnce(&OnServiceWorkerCookiesChangedOnCoreThread,
+                       service_worker_context_, url, site_for_cookies,
+                       std::move(cookie_list)));
   } else {
     std::vector<GlobalFrameRoutingId> destination;
     destination.emplace_back(process_id, routing_id);
@@ -1744,10 +1747,11 @@ void StoragePartitionImpl::OnCookiesRead(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(initialized_);
   if (is_service_worker) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&OnServiceWorkerCookiesReadOnIO, service_worker_context_,
-                       url, site_for_cookies, std::move(cookie_list)));
+    RunOrPostTaskOnThread(
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+        base::BindOnce(&OnServiceWorkerCookiesReadOnCoreThread,
+                       service_worker_context_, url, site_for_cookies,
+                       std::move(cookie_list)));
   } else {
     std::vector<GlobalFrameRoutingId> destination;
     destination.emplace_back(process_id, routing_id);

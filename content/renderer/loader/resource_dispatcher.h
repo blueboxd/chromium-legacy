@@ -100,7 +100,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       base::TimeDelta timeout,
-      blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
+      mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
       std::unique_ptr<RequestPeer> peer);
 
   // Call this method to initiate the request. If this method succeeds, then

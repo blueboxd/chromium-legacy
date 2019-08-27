@@ -350,15 +350,6 @@ bool BackgroundTracingActiveScenario::StartTracing() {
   uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
   if (!chrome_config.event_filters().empty())
     modes |= base::trace_event::TraceLog::FILTERING_MODE;
-
-  // Perfetto backend configures buffer sizes when tracing is started in the
-  // service (see perfetto_config.cc). Zero them out here to avoid DCHECKs in
-  // TraceConfig::Merge.
-  if (tracing::TracingUsesPerfettoBackend()) {
-    chrome_config.SetTraceBufferSizeInKb(0);
-    chrome_config.SetTraceBufferSizeInEvents(0);
-  }
-
   base::trace_event::TraceLog::GetInstance()->SetEnabled(chrome_config, modes);
 
   DCHECK(!tracing_session_);

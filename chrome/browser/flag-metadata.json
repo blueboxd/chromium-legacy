@@ -1279,7 +1279,7 @@
   {
     "name": "enable-implicit-root-scroller",
     "owners": [ "bokan", "input-dev" ],
-    "expiry_milestone": 75
+    "expiry_milestone": 80
   },
   {
     "name": "enable-incognito-window-counter",
@@ -1736,7 +1736,7 @@
   {
     "name": "enable-text-fragment-anchor",
     "owners": [ "bokan", "input-dev" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 80
   },
   {
     "name": "enable-tls13-early-data",

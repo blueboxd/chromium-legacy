@@ -205,7 +205,8 @@ void OnGenerateAppForLinkCompleted(
     extensions::ManagementGenerateAppForLinkFunction* function,
     const web_app::AppId& app_id,
     web_app::InstallResultCode code) {
-  const bool install_success = code == web_app::InstallResultCode::kSuccess;
+  const bool install_success =
+      code == web_app::InstallResultCode::kSuccessNewInstall;
   function->FinishCreateWebApp(app_id, install_success);
 }
 
@@ -258,7 +259,7 @@ void OnWebAppInstallCompleted(InstallWebAppCallback callback,
   // TODO(loyso): Update this when more of the web_app::InstallResultCodes are
   // actually set.
   switch (code) {
-    case web_app::InstallResultCode::kSuccess:
+    case web_app::InstallResultCode::kSuccessNewInstall:
       result = InstallWebAppResult::kSuccess;
       break;
     default:

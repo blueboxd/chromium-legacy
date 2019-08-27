@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/pending_app_manager_observer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/pending_app_registration_task.h"
@@ -96,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, InstallSucceeds) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
   InstallApp(CreateInstallOptions(url));
-  EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
   base::Optional<AppId> app_id =
       ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
           .LookupAppId(url);
@@ -184,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,
   GURL url(embedded_test_server()->GetURL(
       "/banners/manifest_test_page.html?manifest=manifest_chrome_url.json"));
   InstallApp(CreateInstallOptions(url));
-  EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
   base::Optional<AppId> app_id =
       ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
           .LookupAppId(url);
@@ -225,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, RegistrationSucceeds) {
   ExternalInstallOptions install_options = CreateInstallOptions(url);
   install_options.bypass_service_worker_check = true;
   InstallApp(std::move(install_options));
-  EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
   WebAppRegistrationWaiter(&pending_app_manager())
       .AwaitNextRegistration(launch_url, RegistrationResultCode::kSuccess);
   CheckServiceWorkerStatus(
@@ -245,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, AlreadyRegistered) {
     install_options.force_reinstall = true;
     install_options.bypass_service_worker_check = true;
     InstallApp(std::move(install_options));
-    EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
     WebAppRegistrationWaiter(&pending_app_manager())
         .AwaitNextRegistration(launch_url, RegistrationResultCode::kSuccess);
   }
@@ -259,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, AlreadyRegistered) {
     install_options.force_reinstall = true;
     install_options.bypass_service_worker_check = true;
     InstallApp(std::move(install_options));
-    EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
     WebAppRegistrationWaiter(&pending_app_manager())
         .AwaitNextRegistration(launch_url,
                                RegistrationResultCode::kAlreadyRegistered);
@@ -276,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, RegistrationTimeout) {
   ExternalInstallOptions install_options = CreateInstallOptions(url);
   install_options.bypass_service_worker_check = true;
   InstallApp(std::move(install_options));
-  EXPECT_EQ(InstallResultCode::kSuccess, result_code_.value());
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
   WebAppRegistrationWaiter(&pending_app_manager())
       .AwaitNextRegistration(url, RegistrationResultCode::kTimeout);
 }

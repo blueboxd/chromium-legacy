@@ -83,12 +83,6 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
                        std::unique_ptr<WebSocketHandle>);
   ~WebSocketChannelImpl() override;
 
-  // Allows the caller to provide the Mojo pipe through which the socket is
-  // connected, overriding the interface provider of the Document.
-  bool Connect(const KURL&,
-               const String& protocol,
-               network::mojom::blink::WebSocketPtr);
-
   // WebSocketChannel functions.
   bool Connect(const KURL&, const String& protocol) override;
   SendResult Send(const std::string& message,

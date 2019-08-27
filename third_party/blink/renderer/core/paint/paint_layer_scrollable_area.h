@@ -377,9 +377,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool HasScrollbar() const {
     return HasHorizontalScrollbar() || HasVerticalScrollbar();
   }
-  bool HasOverflowControls() const {
-    return HasScrollbar() || ScrollCorner() || Resizer();
-  }
+  // Overflow controls are scrollbars, scroll corners, and resizers. The
+  // |scroll_corner_| and |resizer_| scrollbar parts are only created for
+  // specific pseudo styles but there can still be a scroll corner control or
+  // resize control without these custom styled scrollbar parts.
+  bool HasOverflowControls() const;
   bool HasOverflow() const {
     return HasHorizontalOverflow() || HasVerticalOverflow();
   }

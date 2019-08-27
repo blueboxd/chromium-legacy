@@ -187,6 +187,7 @@ crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGB
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasUnacceleratedLowLatency2D [ Skip ]
+crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Skip ]

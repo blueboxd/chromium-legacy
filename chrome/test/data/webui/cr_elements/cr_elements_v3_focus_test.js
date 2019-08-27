@@ -60,6 +60,6 @@ var CrElementsInputV3Test = class extends CrElementsV3FocusTest {
   }
 };
 
-TEST_F('CrElementsInputV3Test', 'All', function() {
+TEST_F('CrElementsInputV3Test', 'DISABLED_All', function() {
   mocha.run();
 });

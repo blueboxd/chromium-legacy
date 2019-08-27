@@ -97,7 +97,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,
     base::TimeDelta timeout,
-    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry) {
+    mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry) {
   auto* context = new SyncLoadContext(
       request.get(), std::move(url_loader_factory_info), response,
       redirect_or_response_event, abort_event, timeout,
@@ -116,7 +116,7 @@ SyncLoadContext::SyncLoadContext(
     base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,
     base::TimeDelta timeout,
-    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
+    mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : response_(response),
       body_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),

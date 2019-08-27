@@ -31,7 +31,14 @@ class BlobRegistryWrapper
       scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
       scoped_refptr<storage::FileSystemContext> file_system_context);
 
-  void Bind(int process_id, blink::mojom::BlobRegistryRequest request);
+  void Bind(int process_id,
+            mojo::PendingReceiver<blink::mojom::BlobRegistry> receiver);
+
+  // TODO(https://crbug.com/955171): Remove this method and use Bind once
+  // RenderProcessHostImpl uses service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
+  void BindForRequest(int process_id,
+                      blink::mojom::BlobRegistryRequest request);
 
  private:
   BlobRegistryWrapper();

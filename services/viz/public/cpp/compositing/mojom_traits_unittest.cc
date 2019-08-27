@@ -770,6 +770,9 @@ TEST_F(StructTraitsTest, RenderPass) {
           SurfaceId(FrameSinkId(1337, 1234),
                     LocalSurfaceId(1234, base::UnguessableToken::Create()))),
       SK_ColorYELLOW, false, false);
+  // Test non-default values.
+  surface_quad->is_reflection = !surface_quad->is_reflection;
+  surface_quad->allow_merge = !surface_quad->allow_merge;
 
   std::unique_ptr<RenderPass> output;
   mojo::test::SerializeAndDeserialize<mojom::RenderPass>(&input, &output);
@@ -848,6 +851,8 @@ TEST_F(StructTraitsTest, RenderPass) {
             out_surface_quad->default_background_color);
   EXPECT_EQ(surface_quad->stretch_content_to_fill_bounds,
             out_surface_quad->stretch_content_to_fill_bounds);
+  EXPECT_EQ(surface_quad->allow_merge, out_surface_quad->allow_merge);
+  EXPECT_EQ(surface_quad->is_reflection, out_surface_quad->is_reflection);
 }
 
 TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {

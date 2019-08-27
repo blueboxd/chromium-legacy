@@ -283,7 +283,7 @@ class CookieManagerTest : public testing::Test {
 
   // Return the cookie service at the client end of the mojo pipe.
   mojom::CookieManager* cookie_service_client() {
-    return cookie_service_ptr_.get();
+    return cookie_service_remote_.get();
   }
 
   // Synchronous wrapper
@@ -304,16 +304,20 @@ class CookieManagerTest : public testing::Test {
       cookie_monster_->FlushStore(callback.MakeCallback());
       callback.WaitUntilDone();
     }
+    // Reset |cookie_service_remote_| to allow re-initialize with params
+    // for FlushableCookieManagerTest and SessionCleanupCookieManagerTest.
+    cookie_service_remote_.reset();
 
     connection_error_seen_ = false;
     cookie_monster_ = std::make_unique<net::CookieMonster>(
         std::move(store), nullptr /* netlog */);
     cookie_service_ = std::make_unique<CookieManager>(
         cookie_monster_.get(), std::move(cleanup_store), nullptr);
-    cookie_service_->AddReceiver(mojo::MakeRequest(&cookie_service_ptr_));
-    service_wrapper_ =
-        std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
-    cookie_service_ptr_.set_connection_error_handler(base::BindOnce(
+    cookie_service_->AddReceiver(
+        cookie_service_remote_.BindNewPipeAndPassReceiver());
+    service_wrapper_ = std::make_unique<SynchronousCookieManager>(
+        cookie_service_remote_.get());
+    cookie_service_remote_.set_disconnect_handler(base::BindOnce(
         &CookieManagerTest::OnConnectionError, base::Unretained(this)));
   }
 
@@ -326,7 +330,7 @@ class CookieManagerTest : public testing::Test {
 
   std::unique_ptr<net::CookieMonster> cookie_monster_;
   std::unique_ptr<CookieManager> cookie_service_;
-  mojom::CookieManagerPtr cookie_service_ptr_;
+  mojo::Remote<mojom::CookieManager> cookie_service_remote_;
   std::unique_ptr<SynchronousCookieManager> service_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManagerTest);
@@ -1952,10 +1956,11 @@ TEST_F(CookieManagerTest, CloningAndClientDestructVisible) {
   EXPECT_EQ(1u, service()->GetClientsBoundForTesting());
 
   // Clone the interface.
-  mojom::CookieManagerPtr new_ptr;
-  cookie_service_client()->CloneInterface(mojo::MakeRequest(&new_ptr));
+  mojo::Remote<mojom::CookieManager> new_remote;
+  cookie_service_client()->CloneInterface(
+      new_remote.BindNewPipeAndPassReceiver());
 
-  SynchronousCookieManager new_wrapper(new_ptr.get());
+  SynchronousCookieManager new_wrapper(new_remote.get());
 
   // Set a cookie on the new interface and make sure it's visible on the
   // old one.
@@ -1976,7 +1981,7 @@ TEST_F(CookieManagerTest, CloningAndClientDestructVisible) {
   // should be reflected in the bindings seen on the server.
   EXPECT_EQ(2u, service()->GetClientsBoundForTesting());
 
-  new_ptr.reset();
+  new_remote.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, service()->GetClientsBoundForTesting());
 }

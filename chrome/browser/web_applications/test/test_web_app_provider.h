@@ -47,6 +47,8 @@ class TestWebAppProvider : public WebAppProvider {
   ~TestWebAppProvider() override;
 
   void SetRegistrar(std::unique_ptr<AppRegistrar> registrar);
+  void SetFileHandlerManager(
+      std::unique_ptr<FileHandlerManager> file_handler_manager);
   void SetInstallManager(std::unique_ptr<WebAppInstallManager> install_manager);
   void SetInstallFinalizer(std::unique_ptr<InstallFinalizer> install_finalizer);
   void SetPendingAppManager(

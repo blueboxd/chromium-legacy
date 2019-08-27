@@ -19,7 +19,7 @@ DawnTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
 
   DawnTextureDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
-  dawn_desc.usage = static_cast<DawnTextureUsageBit>(webgpu_desc->usage());
+  dawn_desc.usage = static_cast<DawnTextureUsage>(webgpu_desc->usage());
   dawn_desc.dimension =
       AsDawnEnum<DawnTextureDimension>(webgpu_desc->dimension());
   dawn_desc.size = AsDawnType(webgpu_desc->size());

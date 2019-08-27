@@ -28,6 +28,7 @@
 
 #include <bitset>
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
@@ -163,13 +164,10 @@ class CORE_EXPORT UseCounterHelper final {
   std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
       features_recorded_;
 
-  // TODO(majidvp): Use CSSSampleId::kMaxValue here. We insert CSSSampleId into
-  // this bitset so max value should reflect that. At the moment
-  // numCSSPropertyIDs (currently 995) is larger than CSSSampleId:kMaxValue
-  // (currently 645) so while inefficient it is safe to use but this can change
-  // in future.
-  std::bitset<numCSSPropertyIDs> css_recorded_;
-  std::bitset<numCSSPropertyIDs> animated_css_recorded_;
+  static constexpr size_t kMaxSample =
+      static_cast<size_t>(mojom::CSSSampleId::kMaxValue) + 1;
+  std::bitset<kMaxSample> css_recorded_;
+  std::bitset<kMaxSample> animated_css_recorded_;
 
   HeapHashSet<Member<Observer>> observers_;
 

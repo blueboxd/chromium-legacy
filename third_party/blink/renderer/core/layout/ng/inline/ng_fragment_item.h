@@ -67,6 +67,8 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   ItemType Type() const { return static_cast<ItemType>(type_); }
 
+  bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
+
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);
   }
@@ -88,6 +90,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   const PhysicalOffset& Offset() const { return rect_.offset; }
   const PhysicalSize& Size() const { return rect_.size; }
   void SetOffset(const PhysicalOffset& offset) { rect_.offset = offset; }
+
+  PhysicalRect LocalRect() const { return {PhysicalOffset(), Size()}; }
+  PhysicalRect SelfInkOverflow() const;
 
   // Count of following items that are descendants of this item in the box tree,
   // including this item. 1 means this is a box (box or line box) without
@@ -164,6 +169,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     unsigned first_index_;
   };
   static ItemsForLayoutObject ItemsFor(const LayoutObject& layout_object);
+  static PhysicalRect LocalVisualRectFor(const LayoutObject& layout_object);
 
   // Painters can use const methods only, except for these explicitly declared
   // methods.
@@ -217,6 +223,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   unsigned type_ : 2;           // ItemType
   unsigned style_variant_ : 2;  // NGStyleVariant
+  unsigned is_hidden_for_paint_ : 1;
 };
 
 }  // namespace blink

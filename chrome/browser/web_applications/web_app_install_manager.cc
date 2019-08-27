@@ -104,7 +104,8 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
   if (finalizer()->CanSkipAppUpdateForSync(app_id, *web_application_info)) {
-    std::move(callback).Run(app_id, InstallResultCode::kAlreadyInstalled);
+    std::move(callback).Run(app_id,
+                            InstallResultCode::kSuccessAlreadyInstalled);
     return;
   }
 

@@ -310,7 +310,8 @@ TEST(DrawQuadTest, CopySurfaceDrawQuad) {
   CREATE_QUAD_ALL(SurfaceDrawQuad,
                   SurfaceRange(fallback_surface_id, primary_surface_id),
                   SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
-                  /*ignores_input_event=*/false, /*is_reflection=*/false);
+                  /*ignores_input_event=*/false, /*is_reflection=*/false,
+                  /*allow_merge=*/true);
   EXPECT_EQ(DrawQuad::Material::kSurfaceContent, copy_quad->material);
   EXPECT_EQ(primary_surface_id, copy_quad->surface_range.end());
   EXPECT_EQ(fallback_surface_id, *copy_quad->surface_range.start());

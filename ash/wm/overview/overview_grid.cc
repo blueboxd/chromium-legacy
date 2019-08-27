@@ -37,6 +37,7 @@
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
@@ -965,8 +966,27 @@ void OverviewGrid::CalculateWindowListAnimationStates(
               return false;
             });
 
-  gfx::Rect screen_bounds = GetGridEffectiveBounds();
   SkRegion occluded_region;
+  auto* split_view_controller = Shell::Get()->split_view_controller();
+  if (split_view_controller->InSplitViewMode()) {
+    // Snapped windows and the split view divider are not included in
+    // |target_bounds| or |window_list_|, but can occlude other windows, so add
+    // them manually to |region| here.
+    SkIRect snapped_window_bounds = gfx::RectToSkIRect(
+        split_view_controller->GetDefaultSnappedWindow()->GetBoundsInScreen());
+    occluded_region.op(snapped_window_bounds, SkRegion::kUnion_Op);
+
+    auto* divider = split_view_controller->split_view_divider();
+    if (divider) {
+      aura::Window* divider_window =
+          divider->divider_widget()->GetNativeWindow();
+      SkIRect divider_bounds =
+          gfx::RectToSkIRect(divider_window->GetBoundsInScreen());
+      occluded_region.op(divider_bounds, SkRegion::kUnion_Op);
+    }
+  }
+
+  gfx::Rect screen_bounds = GetGridEffectiveBounds();
   for (size_t i = 0; i < items.size(); ++i) {
     const bool minimized =
         WindowState::Get(items[i]->GetWindow())->IsMinimized();
@@ -995,6 +1015,7 @@ void OverviewGrid::CalculateWindowListAnimationStates(
         ::wm::ConvertRectToScreen(items[i]->root_window(), &src_bounds_temp);
       }
     }
+
     SkIRect src_bounds = gfx::RectToSkIRect(src_bounds_temp);
     SkIRect dst_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(
         transition == OverviewTransition::kEnter ? target_bounds[i]

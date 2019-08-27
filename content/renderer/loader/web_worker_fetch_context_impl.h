@@ -270,7 +270,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
-  scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
+  scoped_refptr<base::RefCountedData<mojo::Remote<blink::mojom::BlobRegistry>>>
       blob_registry_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

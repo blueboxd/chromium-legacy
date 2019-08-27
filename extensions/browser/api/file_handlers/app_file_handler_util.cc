@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -225,17 +227,24 @@ const apps::FileHandlerInfo* FileHandlerForId(const Extension& app,
 std::vector<FileHandlerMatch> FindFileHandlerMatchesForEntries(
     const Extension& app,
     const std::vector<EntryInfo>& entries) {
-  std::vector<FileHandlerMatch> matches;
   if (entries.empty())
-    return matches;
+    return std::vector<FileHandlerMatch>();
 
   // Look for file handlers which can handle all the MIME types
   // or file name extensions specified.
   const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
   if (!file_handlers)
-    return matches;
+    return std::vector<FileHandlerMatch>();
 
-  for (const apps::FileHandlerInfo& handler : *file_handlers) {
+  return MatchesFromFileHandlersForEntries(*file_handlers, entries);
+}
+
+std::vector<FileHandlerMatch> MatchesFromFileHandlersForEntries(
+    const FileHandlersInfo& file_handlers,
+    const std::vector<EntryInfo>& entries) {
+  std::vector<FileHandlerMatch> matches;
+
+  for (const apps::FileHandlerInfo& handler : file_handlers) {
     bool handles_all_types = true;
     FileHandlerMatch match;
 

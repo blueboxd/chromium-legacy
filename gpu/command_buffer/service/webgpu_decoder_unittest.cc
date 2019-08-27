@@ -109,7 +109,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   {
     gpu::Mailbox bad_mailbox;
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_BIT_SAMPLED, bad_mailbox.name);
+    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_SAMPLED, bad_mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(bad_mailbox.name)));
   }
@@ -117,7 +117,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: device doesn't exist.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(42, 42, 1, 0, DAWN_TEXTURE_USAGE_BIT_SAMPLED, mailbox.name);
+    cmd.cmd.Init(42, 42, 1, 0, DAWN_TEXTURE_USAGE_SAMPLED, mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -125,7 +125,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: texture ID invalid for the wire server.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 42, 42, DAWN_TEXTURE_USAGE_BIT_SAMPLED, mailbox.name);
+    cmd.cmd.Init(0, 0, 42, 42, DAWN_TEXTURE_USAGE_SAMPLED, mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -133,7 +133,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: invalid usage.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 42, 42, DAWN_TEXTURE_USAGE_BIT_SAMPLED, mailbox.name);
+    cmd.cmd.Init(0, 0, 42, 42, DAWN_TEXTURE_USAGE_SAMPLED, mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -141,7 +141,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: invalid texture usage.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_BIT_FORCE32, mailbox.name);
+    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_FORCE32, mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -153,7 +153,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // and generation invalid.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_BIT_SAMPLED, mailbox.name);
+    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_SAMPLED, mailbox.name);
     EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -161,7 +161,7 @@ TEST_F(WebGPUDecoderTest, AssociateMailbox) {
   // Error case: associated to an already associated texture.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_BIT_SAMPLED, mailbox.name);
+    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_SAMPLED, mailbox.name);
     EXPECT_EQ(error::kInvalidArguments,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }
@@ -188,7 +188,7 @@ TEST_F(WebGPUDecoderTest, DissociateMailbox) {
   // Associate a mailbox so we can later dissociate it.
   {
     AssociateMailboxCmdStorage cmd;
-    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_BIT_SAMPLED, mailbox.name);
+    cmd.cmd.Init(0, 0, 1, 0, DAWN_TEXTURE_USAGE_SAMPLED, mailbox.name);
     EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd.cmd, sizeof(mailbox.name)));
   }

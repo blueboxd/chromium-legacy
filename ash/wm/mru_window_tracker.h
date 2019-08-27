@@ -64,6 +64,15 @@ class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
   // inactive desks.
   WindowList BuildWindowForCycleList(DesksMruType desks_mru_type) const;
 
+  // This does the same thing as |BuildWindowForCycleList()| but includes
+  // ARC PIP windows if they exist. Entering PIP for Android can consume the
+  // window (in contrast to Chrome PIP, which creates a new window). To support
+  // the same interaction as Chrome PIP auto-pip, include the Android PIP window
+  // in alt-tab. This will let alt tabbing back to the 'original window' restore
+  // that window from PIP, which matches behaviour for Chrome PIP, where
+  // alt-tabbing back to the original Chrome tab or app ends auto-PIP.
+  WindowList BuildWindowForCycleWithPipList(DesksMruType desks_mru_type) const;
+
   // Starts or stops ignoring window activations. If no longer ignoring
   // activations the currently active window is moved to the front of the
   // MRU window list. Used by WindowCycleList to avoid adding all cycled

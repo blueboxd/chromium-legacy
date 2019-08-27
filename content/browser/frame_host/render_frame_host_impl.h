@@ -85,6 +85,7 @@
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
+#include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
@@ -1476,9 +1477,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DeleteWebBluetoothService(
       WebBluetoothServiceImpl* web_bluetooth_service);
 
+  // TODO(https://crbug.com/955171): Remove this method and use
+  // CreateWebUsbService directly once |this| uses
+  // service_manager::BinderMap instead of |registry_|.
+  void CreateWebUsbServiceForRequest(
+      blink::mojom::WebUsbServiceRequest request);
+
   // Creates connections to WebUSB interfaces bound to this frame.
   void CreateWebUsbService(
-      mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
   void CreateAudioInputStreamFactory(
       mojom::RendererAudioInputStreamFactoryRequest request);

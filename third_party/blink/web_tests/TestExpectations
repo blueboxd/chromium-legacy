@@ -3252,6 +3252,16 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-007.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-007.html [ Failure ]
+crbug.com/626703 [ Win ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-007.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Failure ]
+crbug.com/626703 [ Win ] virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Failure ]
+crbug.com/626703 [ Win10 ] external/wpt/css/css-paint-api/color-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Retina ] virtual/cascade/external/wpt/css/css-paint-api/one-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-scroll-anchoring/infinite-scroll-event.tentative.html [ Timeout ]
@@ -6259,7 +6269,6 @@ crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
 crbug.com/972476 std-switch/switch-appearance-customization.html [ Failure ]
 
 # Sheriff 2019-05-20
-crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
 crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 crbug.com/965389 [ Mac ] virtual/audio-service/media/track/track-cue-rendering-position-auto.html [ Pass Failure ]

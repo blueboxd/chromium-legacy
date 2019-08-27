@@ -122,6 +122,7 @@ bool StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad>::Read(
   quad->default_background_color = data.default_background_color();
   quad->stretch_content_to_fill_bounds = data.stretch_content_to_fill_bounds();
   quad->is_reflection = data.is_reflection();
+  quad->allow_merge = data.allow_merge();
   return data.ReadSurfaceRange(&quad->surface_range);
 }
 

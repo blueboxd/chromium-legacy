@@ -116,10 +116,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // initialized successfully.
   bool EnsureService();
 
-  // Returns true if video has an audio track and if MuteButton origin trial is
-  // enabled. Otherwise it returns false.
-  bool ShouldShowMuteButton(const HTMLVideoElement& element);
-
   // The Picture-in-Picture element for the associated document.
   Member<HTMLVideoElement> picture_in_picture_element_;
 

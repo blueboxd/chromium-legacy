@@ -44,11 +44,10 @@ class MockPictureInPictureSession
   ~MockPictureInPictureSession() override = default;
 
   MOCK_METHOD1(Stop, void(StopCallback));
-  MOCK_METHOD5(Update,
+  MOCK_METHOD4(Update,
                void(uint32_t,
                     const base::Optional<viz::SurfaceId>&,
                     const blink::WebSize&,
-                    bool,
                     bool));
 
  private:
@@ -63,7 +62,7 @@ class MockPictureInPictureService
  public:
   MockPictureInPictureService() {
     // Setup default implementations.
-    ON_CALL(*this, StartSession(_, _, _, _, _, _, _))
+    ON_CALL(*this, StartSession(_, _, _, _, _, _))
         .WillByDefault(testing::Invoke(
             this, &MockPictureInPictureService::StartSessionInternal));
   }
@@ -77,12 +76,11 @@ class MockPictureInPictureService
         session_remote_.InitWithNewPipeAndPassReceiver()));
   }
 
-  MOCK_METHOD7(
+  MOCK_METHOD6(
       StartSession,
       void(uint32_t,
            const base::Optional<viz::SurfaceId>&,
            const blink::WebSize&,
-           bool,
            bool,
            mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
            StartSessionCallback));
@@ -93,7 +91,6 @@ class MockPictureInPictureService
       uint32_t,
       const base::Optional<viz::SurfaceId>&,
       const blink::WebSize&,
-      bool,
       bool,
       mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
       StartSessionCallback callback) {
@@ -203,7 +200,7 @@ TEST_F(PictureInPictureControllerTest, EnterPictureInPictureFiresEvent) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), true, false, _, _));
+                           player->NaturalSize(), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -223,7 +220,7 @@ TEST_F(PictureInPictureControllerTest, ExitPictureInPictureFiresEvent) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), true, false, _, _));
+                           player->NaturalSize(), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -251,7 +248,7 @@ TEST_F(PictureInPictureControllerTest, StartObserving) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), true, false, _, _));
+                           player->NaturalSize(), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -271,7 +268,7 @@ TEST_F(PictureInPictureControllerTest, StopObserving) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), true, false, _, _));
+                           player->NaturalSize(), true, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -300,7 +297,7 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_InfiniteDuration) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), false, false, _, _));
+                           player->NaturalSize(), false, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,
@@ -320,7 +317,7 @@ TEST_F(PictureInPictureControllerTest, PlayPauseButton_MediaSource) {
   WebMediaPlayer* player = Video()->GetWebMediaPlayer();
   EXPECT_CALL(Service(),
               StartSession(player->GetDelegateId(), player->GetSurfaceId(),
-                           player->NaturalSize(), false, false, _, _));
+                           player->NaturalSize(), false, _, _));
 
   PictureInPictureControllerImpl::From(GetDocument())
       .EnterPictureInPicture(Video(), nullptr /* options */,

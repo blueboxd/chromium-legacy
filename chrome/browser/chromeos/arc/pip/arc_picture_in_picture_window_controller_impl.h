@@ -37,15 +37,11 @@ class ArcPictureInPictureWindowControllerImpl
   content::OverlayWindow* GetWindowForTesting() override;
   void UpdateLayerBounds() override;
   bool IsPlayerActive() override;
-  bool IsPlayerMuted() override;
   content::WebContents* GetInitiatorWebContents() override;
   bool TogglePlayPause() override;
-  bool ToggleMute() override;
   void UpdatePlaybackState(bool is_playing,
                            bool reached_end_of_stream) override;
-  void UpdateMutedState() override;
   void SetAlwaysHidePlayPauseButton(bool is_visible) override;
-  void SetAlwaysHideMuteButton(bool is_visible) override;
   void SkipAd() override;
   void NextTrack() override;
   void PreviousTrack() override;

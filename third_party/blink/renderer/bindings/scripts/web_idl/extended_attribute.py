@@ -229,7 +229,7 @@ class ExtendedAttributes(object):
         if len(values) == 1:
             return values[0]
         raise ValueError(
-            'There are multiple extended attributes for the key "{}"'.format(
+            "There are multiple extended attributes for the key '{}'.".format(
                 key))
 
     def get_list_of(self, key):

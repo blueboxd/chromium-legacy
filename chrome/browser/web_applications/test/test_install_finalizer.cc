@@ -35,7 +35,7 @@ void TestInstallFinalizer::FinalizeInstall(
     next_app_id_.reset();
   }
 
-  InstallResultCode code = InstallResultCode::kSuccess;
+  InstallResultCode code = InstallResultCode::kSuccessNewInstall;
   if (next_result_code_.has_value()) {
     code = next_result_code_.value();
     next_result_code_.reset();

@@ -328,7 +328,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
         SystemWebAppManager::kInstallResultHistogramName, 1);
     histograms.ExpectBucketCount(
         SystemWebAppManager::kInstallResultHistogramName,
-        InstallResultCode::kSuccess, 1);
+        InstallResultCode::kSuccessNewInstall, 1);
   }
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
@@ -336,7 +336,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     system_apps[SystemAppType::DISCOVER] = SystemAppInfo(kAppUrl2);
     system_web_app_manager()->SetSystemApps(system_apps);
     pending_app_manager()->SetInstallResultCode(
-        InstallResultCode::kInstallManagerDestroyed);
+        InstallResultCode::kProfileDestroyed);
 
     system_web_app_manager()->Start();
     base::RunLoop().RunUntilIdle();
@@ -344,7 +344,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
         SystemWebAppManager::kInstallResultHistogramName, 3);
     histograms.ExpectBucketCount(
         SystemWebAppManager::kInstallResultHistogramName,
-        InstallResultCode::kInstallManagerDestroyed, 2);
+        InstallResultCode::kProfileDestroyed, 2);
   }
 }
 

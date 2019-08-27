@@ -40,7 +40,7 @@ class BatchElementChecker {
   using GetFieldValueCallback =
       base::OnceCallback<void(bool, const std::string&)>;
 
-  // Checks an an element.
+  // Checks an element.
   //
   // New element checks cannot be added once Run has been called.
   void AddElementCheck(const Selector& selector, ElementCheckCallback callback);

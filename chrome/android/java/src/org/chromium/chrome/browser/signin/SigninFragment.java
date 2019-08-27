@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -145,7 +146,10 @@ public class SigninFragment extends SigninFragmentBase {
                         }
 
                         recordSigninCompletedHistogramAccountInfo();
-                        getActivity().finish();
+
+                        Activity activity = getActivity();
+                        if (activity != null) activity.finish();
+
                         callback.run();
                     }
 

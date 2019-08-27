@@ -36,15 +36,15 @@ WebUsbServiceImpl::WebUsbServiceImpl(
   chooser_context_ = UsbChooserContextFactory::GetForProfile(profile);
   DCHECK(chooser_context_);
 
-  bindings_.set_connection_error_handler(base::BindRepeating(
-      &WebUsbServiceImpl::OnBindingConnectionError, base::Unretained(this)));
+  receivers_.set_disconnect_handler(base::BindRepeating(
+      &WebUsbServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
 WebUsbServiceImpl::~WebUsbServiceImpl() = default;
 
-void WebUsbServiceImpl::BindRequest(
-    blink::mojom::WebUsbServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void WebUsbServiceImpl::BindReceiver(
+    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
+  receivers_.Add(this, std::move(receiver));
 
   // Listen to UsbChooserContext for add/remove device events from UsbService.
   // We can't set WebUsbServiceImpl as a UsbDeviceManagerClient because
@@ -172,7 +172,7 @@ void WebUsbServiceImpl::OnDeviceRemoved(
 void WebUsbServiceImpl::OnDeviceManagerConnectionError() {
   // Close the connection with blink.
   clients_.CloseAll();
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
 
   // Remove itself from UsbChooserContext's ObserverList.
   device_observer_.RemoveAll();
@@ -196,8 +196,8 @@ void WebUsbServiceImpl::OnDeviceClosed() {
   tab_helper->DecrementConnectionCount(render_frame_host_);
 }
 
-void WebUsbServiceImpl::OnBindingConnectionError() {
-  if (bindings_.empty()) {
+void WebUsbServiceImpl::OnConnectionError() {
+  if (receivers_.empty()) {
     device_observer_.RemoveAll();
     permission_observer_.RemoveAll();
   }

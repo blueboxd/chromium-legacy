@@ -18,13 +18,13 @@
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image_video.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
-#include "media/gpu/android/shared_image_video.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_make_current.h"
@@ -238,7 +238,7 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
   // colorspace and wire it here.
   // TODO(vikassoni): This shared image need to be thread safe eventually for
   // webview to work with shared images.
-  auto shared_image = std::make_unique<SharedImageVideo>(
+  auto shared_image = std::make_unique<gpu::SharedImageVideo>(
       mailbox, gfx::ColorSpace::CreateSRGB(), std::move(image),
       std::move(texture), std::move(shared_context),
       false /* is_thread_safe */);

@@ -1047,7 +1047,7 @@ void BackgroundSyncManager::UnregisterPeriodicSyncDidStore(
   }
 
   BackgroundSyncMetrics::CountUnregisterPeriodicSync(BACKGROUND_SYNC_STATUS_OK);
-  ScheduleDelayedProcessingOfRegistrations(BackgroundSyncType::PERIODIC);
+  ScheduleOrCancelDelayedProcessing(BackgroundSyncType::PERIODIC);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK));
@@ -1196,7 +1196,7 @@ void BackgroundSyncManager::RegisterDidStore(
       registration_could_fire,
       BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE);
 
-  ScheduleDelayedProcessingOfRegistrations(BackgroundSyncType::PERIODIC);
+  ScheduleOrCancelDelayedProcessing(BackgroundSyncType::PERIODIC);
 
   // Tell the client that the registration is ready. We won't fire it until the
   // client has resolved the registration event.
@@ -1486,7 +1486,7 @@ bool BackgroundSyncManager::AreOptionConditionsMet() {
   return network_observer_->NetworkSufficient();
 }
 
-bool BackgroundSyncManager::IsRegistrationReadyToFire(
+bool BackgroundSyncManager::AllConditionsExceptConnectivitySatisfied(
     const BackgroundSyncRegistration& registration,
     int64_t service_worker_id) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -1504,13 +1504,70 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   if (registration.is_suspended())
     return false;
 
-  if (clock_->Now() < registration.delay_until())
-    return false;
-
   if (base::Contains(emulated_offline_sw_, service_worker_id))
     return false;
 
-  return AreOptionConditionsMet();
+  return true;
+}
+
+bool BackgroundSyncManager::CanFireAnyRegistrationUponConnectivity(
+    BackgroundSyncType sync_type) {
+  for (const auto& sw_reg_id_and_registrations : active_registrations_) {
+    int64_t service_worker_registration_id = sw_reg_id_and_registrations.first;
+    for (const auto& key_and_registration :
+         sw_reg_id_and_registrations.second.registration_map) {
+      const BackgroundSyncRegistration& registration =
+          key_and_registration.second;
+      if (sync_type != registration.sync_type())
+        continue;
+
+      if (AllConditionsExceptConnectivitySatisfied(
+              registration, service_worker_registration_id)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool& BackgroundSyncManager::delayed_processing_scheduled(
+    BackgroundSyncType sync_type) {
+  if (sync_type == BackgroundSyncType::ONE_SHOT)
+    return delayed_processing_scheduled_one_shot_sync_;
+  else
+    return delayed_processing_scheduled_periodic_sync_;
+}
+
+void BackgroundSyncManager::ScheduleOrCancelDelayedProcessing(
+    BackgroundSyncType sync_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  bool can_fire_with_connectivity =
+      CanFireAnyRegistrationUponConnectivity(sync_type);
+
+  if (delayed_processing_scheduled(sync_type) && !can_fire_with_connectivity &&
+      !GetNumFiringRegistrations(sync_type)) {
+    // TODO(crbug.com/996166): Split out a path to cancel delayed processing.
+    ScheduleDelayedProcessingOfRegistrations(sync_type);
+    delayed_processing_scheduled(sync_type) = false;
+  } else if (can_fire_with_connectivity ||
+             GetNumFiringRegistrations(sync_type)) {
+    ScheduleDelayedProcessingOfRegistrations(sync_type);
+    delayed_processing_scheduled(sync_type) = true;
+  }
+}
+
+bool BackgroundSyncManager::IsRegistrationReadyToFire(
+    const BackgroundSyncRegistration& registration,
+    int64_t service_worker_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (clock_->Now() < registration.delay_until())
+    return false;
+
+  return AllConditionsExceptConnectivitySatisfied(registration,
+                                                  service_worker_id) &&
+         AreOptionConditionsMet();
 }
 
 int BackgroundSyncManager::GetNumFiringRegistrations(
@@ -1804,7 +1861,7 @@ void BackgroundSyncManager::ReviveDidStoreRegistration(
 void BackgroundSyncManager::DidReceiveDelaysForSuspendedRegistrations(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  ScheduleDelayedProcessingOfRegistrations(BackgroundSyncType::PERIODIC);
+  ScheduleOrCancelDelayedProcessing(BackgroundSyncType::PERIODIC);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
@@ -1819,12 +1876,19 @@ void BackgroundSyncManager::ScheduleDelayedProcessingOfRegistrations(
   proxy_.ScheduleBrowserWakeUp(sync_type);
 }
 
+// TODO(crbug.com/996166): Remove reschedule from method signatures.
 void BackgroundSyncManager::FireReadyEvents(
     blink::mojom::BackgroundSyncType sync_type,
     bool reschedule,
     base::OnceClosure callback,
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  if (!reschedule) {
+    // This invocation has come from scheduled processing of registrations.
+    // Since this delayed processing is one-off, update internal state.
+    delayed_processing_scheduled(sync_type) = false;
+  }
 
   auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
@@ -1878,14 +1942,12 @@ void BackgroundSyncManager::FireReadyEventsImpl(
   }
 
   if (to_fire.empty()) {
-    if (reschedule)
-      ScheduleDelayedProcessingOfRegistrations(sync_type);
-    else {
+    ScheduleOrCancelDelayedProcessing(sync_type);
+    if (!reschedule) {
       // This method has been called from a Chrome wakeup task.
       BackgroundSyncMetrics::RecordEventsFiredFromWakeupTask(
           sync_type, /* events_fired= */ false);
     }
-
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
     return;
@@ -2007,8 +2069,8 @@ void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
     bool reschedule,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (reschedule)
-    ScheduleDelayedProcessingOfRegistrations(sync_type);
+
+  ScheduleOrCancelDelayedProcessing(sync_type);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 

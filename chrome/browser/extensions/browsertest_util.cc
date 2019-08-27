@@ -70,7 +70,7 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
       /*install_source=*/WebappInstallSource::OMNIBOX_INSTALL_ICON,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        DCHECK_EQ(web_app::InstallResultCode::kSuccess, code);
+        DCHECK_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
         app_id = installed_app_id;
         run_loop.Quit();
       }));

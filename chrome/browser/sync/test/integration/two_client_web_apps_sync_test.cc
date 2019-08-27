@@ -31,7 +31,7 @@ class TwoClientWebAppsSyncTest : public SyncTest {
         base::BindLambdaForTesting(
             [&run_loop, &app_id](const AppId& new_app_id,
                                  InstallResultCode code) {
-              DCHECK_EQ(code, InstallResultCode::kSuccess);
+              DCHECK_EQ(code, InstallResultCode::kSuccessNewInstall);
               app_id = new_app_id;
               run_loop.Quit();
             }));

@@ -346,10 +346,17 @@
           SEARCH_ENGINE_GOOGLE) {
     searchEngineIcon = SEARCH_ENGINE_ICON_GOOGLE_SEARCH;
   }
+  BOOL useDarkIcon = self.incognito;
+  // In iOS 13, incognito coloring overrides the userInterfaceStyle, so one
+  // imageset holds both the regular image and the dark mode/incognito image.
+  // TODO(crbug.com/981889): After iOS 12 is removed, this can be cleaned up.
+  if (@available(iOS 13, *)) {
+    useDarkIcon = NO;
+  }
   UIImage* searchIcon =
       ios::GetChromeBrowserProvider()
           ->GetBrandedImageProvider()
-          ->GetToolbarSearchIcon(searchEngineIcon, self.incognito);
+          ->GetToolbarSearchIcon(searchEngineIcon, useDarkIcon);
   DCHECK(searchIcon);
   [self.consumer setSearchIcon:searchIcon];
 }

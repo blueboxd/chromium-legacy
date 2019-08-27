@@ -275,10 +275,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
                 previousTraitCollection]) {
-      [self.traitCollection performAsCurrentTraitCollection:^{
-        [self.view.layer
-            setShadowColor:[UIColor colorNamed:kToolbarShadowColor].CGColor];
-      }];
+      [self.view.layer
+          setShadowColor:[UIColor colorNamed:kToolbarShadowColor].CGColor];
     }
   }
 }

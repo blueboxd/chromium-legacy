@@ -346,6 +346,12 @@ struct StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad> {
     return quad->is_reflection;
   }
 
+  static bool allow_merge(const viz::DrawQuad& input) {
+    const viz::SurfaceDrawQuad* quad =
+        viz::SurfaceDrawQuad::MaterialCast(&input);
+    return quad->allow_merge;
+  }
+
   static bool Read(viz::mojom::SurfaceQuadStateDataView data,
                    viz::DrawQuad* out);
 };

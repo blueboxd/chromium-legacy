@@ -23,7 +23,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -106,15 +106,15 @@ class TestContentBrowserClient : public ChromeContentBrowserClient {
   // ChromeContentBrowserClient:
   void CreateWebUsbService(
       content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<blink::mojom::WebUsbService> request) override {
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) override {
     if (use_real_chooser_) {
       ChromeContentBrowserClient::CreateWebUsbService(render_frame_host,
-                                                      std::move(request));
+                                                      std::move(receiver));
     } else {
       usb_chooser_.reset(new FakeUsbChooser(render_frame_host));
       web_usb_service_.reset(
           new WebUsbServiceImpl(render_frame_host, usb_chooser_->GetWeakPtr()));
-      web_usb_service_->BindRequest(std::move(request));
+      web_usb_service_->BindReceiver(std::move(receiver));
     }
   }
 

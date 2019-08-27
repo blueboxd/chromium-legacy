@@ -252,9 +252,7 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
     const GURL& install_url,
     web_app::InstallResultCode code) {
   UMA_HISTOGRAM_ENUMERATION("AndroidSms.PWAInstallationResult", code);
-  bool install_succeeded =
-      code == web_app::InstallResultCode::kSuccess ||
-      code == web_app::InstallResultCode::kAlreadyInstalled;
+  const bool install_succeeded = web_app::IsSuccess(code);
 
   if (!install_succeeded && num_attempts_so_far < kMaxInstallRetryCount) {
     base::TimeDelta retry_delay =

@@ -115,7 +115,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
         *info, options,
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          ASSERT_EQ(web_app::InstallResultCode::kSuccess, code);
+          ASSERT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           app_id = installed_app_id;
           run_loop.Quit();
         }));
@@ -165,7 +165,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
         app_id = installed_app_id;
         callback_called = true;
         run_loop.Quit();
@@ -232,7 +232,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
         web_application_info, options,
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           EXPECT_EQ(installed_app_id, web_app::GenerateAppIdFromURL(url1));
           callback1_called = true;
           if (callback2_called)
@@ -249,7 +249,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
         web_application_info, options,
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           EXPECT_EQ(installed_app_id, web_app::GenerateAppIdFromURL(url2));
           callback2_called = true;
           if (callback1_called)
@@ -276,7 +276,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
 
         auto* extension =
             ExtensionRegistry::Get(profile())->GetInstalledExtension(
@@ -303,7 +303,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
 
         auto* extension =
             ExtensionRegistry::Get(profile())->GetInstalledExtension(
@@ -329,7 +329,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
 
         auto* extension =
             ExtensionRegistry::Get(profile())->GetInstalledExtension(
@@ -355,7 +355,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallForArc) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
 
         auto* extension =
             ExtensionRegistry::Get(profile())->GetInstalledExtension(
@@ -386,7 +386,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
         EXPECT_EQ(app_id, installed_app_id);
         run_loop.Quit();
       }));
@@ -516,7 +516,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, NotLocallyInstalled) {
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
 
         auto* extension =
             ExtensionRegistry::Get(profile())->GetInstalledExtension(

@@ -384,6 +384,7 @@ target(link_target_type, "gles2_sources") {
       "ahardwarebuffer_utils.h",
       "shared_image_backing_factory_ahardwarebuffer.cc",
       "shared_image_backing_factory_ahardwarebuffer.h",
+      "stream_texture_shared_image_interface.h",
     ]
 
     # TODO(cblume): http://crbug.com/911313
@@ -404,6 +405,34 @@ target(link_target_type, "gles2_sources") {
     sources += [
       "shared_image_backing_factory_d3d.cc",
       "shared_image_backing_factory_d3d.h",
+    ]
+  }
+}
+
+if (is_android) {
+  component("shared_image_video") {
+    sources = [
+      "shared_image_video.cc",
+      "shared_image_video.h",
+    ]
+    configs += [ "//gpu:gpu_gles2_implementation" ]
+    deps = [
+      "//base",
+      "//components/viz/common:resource_format_utils",
+      "//components/viz/common:vulkan_context_provider",
+      "//gpu/command_buffer/service:gles2_sources",
+      "//gpu/command_buffer/service:service_sources",
+      "//gpu/ipc/common:android_texture_owner",
+      "//gpu/ipc/common:common",
+      "//ui/gl",
+    ]
+    if (enable_vulkan) {
+      deps += [ "//gpu/vulkan:vulkan" ]
+    }
+
+    visibility = [
+      "//gpu/*",
+      "//media/gpu:gpu",
     ]
   }
 }

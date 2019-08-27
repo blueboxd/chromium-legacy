@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
     web_app::SetInstalledCallbackForTesting(
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           EXPECT_EQ(installed_app_id, web_app::GenerateAppIdFromURL(url));
           callback_called = true;
         }));

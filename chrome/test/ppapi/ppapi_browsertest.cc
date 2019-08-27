@@ -922,7 +922,8 @@ TCP_SOCKET_FAILURE_TEST(TCPSocket_BindError,
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindHangs,
                         TCPSocket_BindHangs,
                         TCPFailureType::kBindHangs)
-TCP_SOCKET_FAILURE_TEST(TCPSocket_ListenClosePipe,
+// https://crbug.com/997840. Flaky.
+TCP_SOCKET_FAILURE_TEST(DISABLED_TCPSocket_ListenClosePipe,
                         TCPSocket_ListenFails,
                         TCPFailureType::kCreateTCPServerSocketClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ListenError,
@@ -946,7 +947,8 @@ TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketWriteClosePipe,
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketWriteError,
                         TCPSocket_AcceptedSocketWriteFails,
                         TCPFailureType::kWriteError)
-TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketReadClosePipe,
+// https://crbug.com/997840. Flaky.
+TCP_SOCKET_FAILURE_TEST(DISABLED_TCPSocket_AcceptedSocketReadClosePipe,
                         TCPSocket_AcceptedSocketReadFails,
                         TCPFailureType::kReadClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketReadError,
@@ -1229,11 +1231,13 @@ UDPSOCKET_FAILURE_TEST(UDPSocket_SendToBeforeDropPipeFails,
 UDPSOCKET_FAILURE_TEST(UDPSocket_DropPipeAfterBindSendToFails,
                        UDPSocket_SendToFails,
                        WrappedUDPSocket::FailureType::kSendToError)
-UDPSOCKET_FAILURE_TEST(UDPSocket_ReadError,
+// https://crbug.com/997840. Flaky.
+UDPSOCKET_FAILURE_TEST(DISABLED_UDPSocket_ReadError,
                        UDPSocket_ReadFails,
                        WrappedUDPSocket::FailureType::kReadError)
+// https://crbug.com/997840. Flaky.
 UDPSOCKET_FAILURE_TEST(
-    UDPSocket_DropListenerPipeOnConstruction,
+    DISABLED_UDPSocket_DropListenerPipeOnConstruction,
     UDPSocket_ReadFails,
     WrappedUDPSocket::FailureType::kDropListenerPipeOnConstruction)
 // Flaky on all platforms. http://crbug.com/997785.
@@ -1751,7 +1755,8 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetworkMonitor) {
   RUN_NETWORK_MONITOR_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(NetworkMonitor)) {
+// https://crbug.com/997840. Universally flaky.
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, DISABLED_NetworkMonitor) {
   RUN_NETWORK_MONITOR_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(NetworkMonitor)) {
@@ -2115,7 +2120,13 @@ TEST_PPAPI_NACL(MAYBE_TrueTypeFont)
 #endif
 TEST_PPAPI_NACL(MAYBE_VideoDecoder)
 
-TEST_PPAPI_NACL(VideoEncoder)
+// https://crbug.com/997840.
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+#define MAYBE_VideoEncoder DISABLED_VideoEncoder
+#else
+#define MAYBE_VideoEncoder VideoEncoder
+#endif
+TEST_PPAPI_NACL(MAYBE_VideoEncoder)
 
 // Printing doesn't work in content_browsertests.
 TEST_PPAPI_OUT_OF_PROCESS(Printing)

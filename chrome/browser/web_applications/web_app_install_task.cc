@@ -476,7 +476,7 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
   if (ShouldStopInstall())
     return;
 
-  if (code != InstallResultCode::kSuccess) {
+  if (code != InstallResultCode::kSuccessNewInstall) {
     CallInstallCallback(app_id, code);
     return;
   }
@@ -535,7 +535,7 @@ void WebAppInstallTask::OnShortcutsCreated(
       install_finalizer_->RevealAppShim(app_id);
   }
 
-  CallInstallCallback(app_id, InstallResultCode::kSuccess);
+  CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
 }
 
 }  // namespace web_app

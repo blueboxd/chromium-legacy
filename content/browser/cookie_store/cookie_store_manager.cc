@@ -77,12 +77,12 @@ void CookieStoreManager::LoadAllSubscriptions(
 }
 
 void CookieStoreManager::ListenToCookieChanges(
-    ::network::mojom::CookieManagerPtr cookie_manager,
+    mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager,
     base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(!cookie_manager_) << __func__ << " already called";
-  cookie_manager_ = std::move(cookie_manager);
+  cookie_manager_.Bind(std::move(cookie_manager));
 
   DCHECK(!cookie_change_listener_receiver_.is_bound());
   // TODO(pwnall): Switch to an API with subscription confirmation.

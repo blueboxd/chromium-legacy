@@ -6,8 +6,11 @@ package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
+import static android.support.test.espresso.matcher.ViewMatchers.isSelected;
+import static android.support.test.espresso.matcher.ViewMatchers.withChild;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.is;
@@ -246,11 +249,13 @@ public class KeyboardAccessoryModernViewTest {
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_password));
+        onView(withChild(withText("Johnathan"))).check(matches(isSelected()));
         onView(withText("Johnathan")).perform(click());
 
         assertThat(tracker.wasDismissed(), is(true));
         assertThat(tracker.getLastEmittedEvent(),
                 is(EventConstants.KEYBOARD_ACCESSORY_PASSWORD_AUTOFILLED));
+        onView(withChild(withText("Johnathan"))).check(matches(not(isSelected())));
     }
 
     @Test

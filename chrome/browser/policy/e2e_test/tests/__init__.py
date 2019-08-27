@@ -10,6 +10,7 @@ from extension_blacklist.extension_blacklist import *
 from extension_forcelist.extension_forcelist import *
 from extension_whitelist.extension_whitelist import *
 from force_google_safe_search.force_google_safe_search import *
+from fullscreen_allowed.fullscreen_allowed import *
 from homepage.homepage import *
 from password_manager_enabled.password_manager_enabled import *
 from popups_allowed.popups_allowed import *

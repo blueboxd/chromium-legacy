@@ -296,7 +296,7 @@ class SharedImageRepresentationDawnIOSurface
     dawn_procs_.deviceRelease(device_);
   }
 
-  DawnTexture BeginAccess(DawnTextureUsageBit usage) final {
+  DawnTexture BeginAccess(DawnTextureUsage usage) final {
     DawnTextureDescriptor desc;
     desc.nextInChain = nullptr;
     desc.format = dawn_format_;

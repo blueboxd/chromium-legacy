@@ -76,7 +76,7 @@ class AppBrowserControllerBrowserTest
         WebappInstallSource::OMNIBOX_INSTALL_ICON,
         base::BindLambdaForTesting(
             [&](const std::string& installed_app_id, InstallResultCode code) {
-              EXPECT_EQ(InstallResultCode::kSuccess, code);
+              EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
               app_id = installed_app_id;
               run_loop.Quit();
             }));

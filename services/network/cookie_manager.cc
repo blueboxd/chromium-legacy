@@ -66,7 +66,7 @@ CookieManager::~CookieManager() {
 
 void CookieManager::AddReceiver(
     mojo::PendingReceiver<mojom::CookieManager> receiver) {
-  bindings_.AddBinding(this, std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {

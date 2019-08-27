@@ -77,6 +77,10 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   // Initializes and shows |cycle_view_|.
   void InitWindowCycleView();
 
+  // Selects a window, which either activates it or expands it in the case of
+  // PIP.
+  void SelectWindow(aura::Window* window);
+
   // List of weak pointers to windows to use while cycling with the keyboard.
   // List is built when the user initiates the gesture (i.e. hits alt-tab the
   // first time) and is emptied when the gesture is complete (i.e. releases the

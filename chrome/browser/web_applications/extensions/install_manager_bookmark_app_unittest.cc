@@ -260,7 +260,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
         base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           app_id = installed_app_id;
           run_loop.Quit();
         }));
@@ -285,7 +285,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
         web_contents(), install_params, install_source,
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           app_id = installed_app_id;
           run_loop.Quit();
         }));
@@ -601,7 +601,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
       WebappInstallSource::ARC,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
         app_id = installed_app_id;
         run_loop.Quit();
       }));
@@ -666,7 +666,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
         app_id, std::move(web_app_info),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           app_id = installed_app_id;
           run_loop.Quit();
         }));
@@ -712,7 +712,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
         app_id, std::move(web_app_info2),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           EXPECT_EQ(app_id, installed_app_id);
           run_loop.Quit();
         }));

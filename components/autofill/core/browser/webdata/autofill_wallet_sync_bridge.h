@@ -35,11 +35,8 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // Factory method that hides dealing with change_processor and also stores the
   // created bridge within |web_data_service|. This method should only be
   // called on |web_data_service|'s DB thread.
-  // |active_callback| will be called with a boolean describing whether Wallet
-  // data is actively sync whenever the state changes.
   static void CreateForWebDataServiceAndBackend(
       const std::string& app_locale,
-      const base::RepeatingCallback<void(bool)>& active_callback,
       AutofillWebDataBackend* webdata_backend,
       AutofillWebDataService* web_data_service);
 
@@ -47,7 +44,6 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
       AutofillWebDataService* web_data_service);
 
   explicit AutofillWalletSyncBridge(
-      const base::RepeatingCallback<void(bool)>& active_callback,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       AutofillWebDataBackend* web_data_backend);
   ~AutofillWalletSyncBridge() override;
@@ -129,13 +125,6 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   // Synchronously load sync metadata from the autofill table and pass it to the
   // processor so that it can start tracking changes.
   void LoadMetadata();
-
-  // Callback to let the metadata bridge know that whether the card data
-  // is actively syncing.
-  const base::RepeatingCallback<void(bool)> active_callback_;
-
-  // Stores whether initial sync has been done.
-  bool initial_sync_done_;
 
   // AutofillProfileSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.

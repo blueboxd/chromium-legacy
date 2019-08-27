@@ -402,7 +402,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramDefaultApp) {
   GURL example_url(
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
   InstallDefaultAppAndCountApps(CreateInstallOptions(example_url));
-  ASSERT_EQ(web_app::InstallResultCode::kSuccess, result_code_.value());
+  ASSERT_EQ(web_app::InstallResultCode::kSuccessNewInstall,
+            result_code_.value());
 
   const extensions::Extension* app = extensions::util::GetInstalledPwaForUrl(
       browser()->profile(), example_url);

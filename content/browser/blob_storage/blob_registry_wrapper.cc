@@ -65,11 +65,20 @@ scoped_refptr<BlobRegistryWrapper> BlobRegistryWrapper::Create(
 BlobRegistryWrapper::BlobRegistryWrapper() {
 }
 
-void BlobRegistryWrapper::Bind(int process_id,
-                               blink::mojom::BlobRegistryRequest request) {
+void BlobRegistryWrapper::Bind(
+    int process_id,
+    mojo::PendingReceiver<blink::mojom::BlobRegistry> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  blob_registry_->Bind(std::move(request),
+  blob_registry_->Bind(std::move(receiver),
                        std::make_unique<BindingDelegate>(process_id));
+}
+
+void BlobRegistryWrapper::BindForRequest(
+    int process_id,
+    blink::mojom::BlobRegistryRequest request) {
+  // Implicit conversion |request| to
+  // mojo::PendingReceiver<blink::mojom::BlobRegistry>.
+  Bind(process_id, std::move(request));
 }
 
 BlobRegistryWrapper::~BlobRegistryWrapper() {}

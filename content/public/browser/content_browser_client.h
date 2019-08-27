@@ -1404,7 +1404,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   virtual void CreateWebUsbService(
       RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
 #if !defined(OS_ANDROID)
   // Allows the embedder to provide an implementation of the Serial API.

@@ -60,7 +60,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   if (registrar_->GetAppById(app_id)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), app_id,
-                                  InstallResultCode::kAlreadyInstalled));
+                                  InstallResultCode::kSuccessAlreadyInstalled));
     return;
   }
 
@@ -106,7 +106,8 @@ void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
   // TODO(loyso): NotifyWebAppInstalled should be a part of RegisterApp.
   registrar_->NotifyWebAppInstalled(app_id);
 
-  std::move(callback).Run(std::move(app_id), InstallResultCode::kSuccess);
+  std::move(callback).Run(std::move(app_id),
+                          InstallResultCode::kSuccessNewInstall);
 }
 
 bool WebAppInstallFinalizer::CanCreateOsShortcuts() const {

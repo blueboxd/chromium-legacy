@@ -28,8 +28,7 @@ interface PictureInPictureSession {
   Update(uint32 player_id,
       viz.mojom.SurfaceId? surface_id,
       gfx.mojom.Size natural_size,
-      bool show_play_pause_button,
-      bool show_mute_button);
+      bool show_play_pause_button);
 
   // Request to stop the current session. It will close the Picture-in-Picture
   // window and make other calls related to the session no-ops.
@@ -51,15 +50,12 @@ interface PictureInPictureService {
   // natural_size: Size of the video frames.
   // show_play_pause_button: Whether a play/pause control should be offered in
   //                         the Picture-in-Picture window.
-  // show_mute_button: Whether a mute control should be offered in the
-  //                   Picture-in-Picture window.
   // observer: Observer to be associated with the session.
   StartSession(
       uint32 player_id,
       viz.mojom.SurfaceId? surface_id,
       gfx.mojom.Size natural_size,
       bool show_play_pause_button,
-      bool show_mute_button,
       pending_remote<PictureInPictureSessionObserver> observer)
           => (pending_remote<PictureInPictureSession>? session, gfx.mojom.Size size);
 };

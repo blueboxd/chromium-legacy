@@ -137,6 +137,7 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/common/verifier_formats.h"
 #include "extensions/test/test_extension_dir.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -5043,8 +5044,9 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile())
           ->GetNetworkContext();
-  network::mojom::CookieManagerPtr cookie_manager_ptr;
-  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_ptr));
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_remote;
+  network_context->GetCookieManager(
+      cookie_manager_remote.BindNewPipeAndPassReceiver());
 
   std::unique_ptr<net::CanonicalCookie> cc(
       net::CanonicalCookie::Create(origin1, "dummy=value", base::Time::Now(),
@@ -5054,7 +5056,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   {
     bool set_result = false;
     base::RunLoop run_loop;
-    cookie_manager_ptr->SetCanonicalCookie(
+    cookie_manager_remote->SetCanonicalCookie(
         *cc.get(), origin1.scheme(), net::CookieOptions(),
         base::BindOnce(&SetCookieSaveData, &set_result,
                        run_loop.QuitClosure()));
@@ -5065,7 +5067,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   {
     base::RunLoop run_loop;
     std::vector<net::CanonicalCookie> cookies_result;
-    cookie_manager_ptr->GetCookieList(
+    cookie_manager_remote->GetCookieList(
         origin1, net::CookieOptions(),
         base::BindOnce(&GetCookiesSaveData, &cookies_result,
                        run_loop.QuitClosure()));
@@ -5115,7 +5117,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
     // Check that the cookie is still there.
     base::RunLoop run_loop;
     std::vector<net::CanonicalCookie> cookies_result;
-    cookie_manager_ptr->GetCookieList(
+    cookie_manager_remote->GetCookieList(
         origin1, net::CookieOptions(),
         base::BindOnce(&GetCookiesSaveData, &cookies_result,
                        run_loop.QuitClosure()));
@@ -5134,7 +5136,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
     // Check that the cookie is gone.
     base::RunLoop run_loop;
     std::vector<net::CanonicalCookie> cookies_result;
-    cookie_manager_ptr->GetCookieList(
+    cookie_manager_remote->GetCookieList(
         origin1, net::CookieOptions(),
         base::BindOnce(&GetCookiesSaveData, &cookies_result,
                        run_loop.QuitClosure()));

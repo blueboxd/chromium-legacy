@@ -197,7 +197,8 @@ bool TrafficAnnotationAuditor::RunExtractor(
 
   // Get list of files/folders to process.
   std::vector<std::string> file_paths;
-  GenerateFilesListForClangTool(path_filters, filter_files_based_on_heuristics,
+  GenerateFilesListForClangTool(backend, path_filters,
+                                filter_files_based_on_heuristics,
                                 use_compile_commands, &file_paths);
   if (file_paths.empty())
     return true;
@@ -334,26 +335,32 @@ void TrafficAnnotationAuditor::WritePythonScriptOptions(FILE* options_file) {
 }
 
 void TrafficAnnotationAuditor::GenerateFilesListForClangTool(
+    ExtractorBackend backend,
     const std::vector<std::string>& path_filters,
     bool filter_files_based_on_heuristics,
     bool use_compile_commands,
     std::vector<std::string>* file_paths) {
+  TrafficAnnotationFileFilter filter;
+
   // If |use_compile_commands| is requested or
   // |filter_files_based_on_heuristics| is false, we pass all given file paths
   // to the running script and the files in the safe list will be later removed
   // from the results.
   if (!filter_files_based_on_heuristics || use_compile_commands) {
-    // If no path filter is specified, return current location. The clang tool
-    // will be run from the repository 'src' folder and hence this will point to
-    // repository root.
-    if (path_filters.empty())
+    if (backend == ExtractorBackend::PYTHON_SCRIPT) {
+      // With python_script, simply run on the whole directory.
+      filter.GetFilesFromGit(absolute_source_path_);
+      *file_paths = filter.git_files();
+    } else if (path_filters.empty()) {
+      // If no path filter is specified, return current location. The clang tool
+      // will be run from the repository 'src' folder and hence this will point
+      // to repository root.
       file_paths->push_back("./");
-    else
+    } else {
       *file_paths = path_filters;
+    }
     return;
   }
-
-  TrafficAnnotationFileFilter filter;
 
   // If no path filter is provided, get all relevant files, except the safe
   // listed ones.

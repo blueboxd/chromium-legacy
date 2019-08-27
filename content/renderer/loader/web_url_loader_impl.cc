@@ -821,10 +821,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
 
-    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry;
+    mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry;
     if (request.PassResponsePipeToClient()) {
       blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
-          MakeRequest(&download_to_blob_registry));
+          download_to_blob_registry.InitWithNewPipeAndPassReceiver());
     }
     TimeTicks start_time = TimeTicks::Now();
     resource_dispatcher_->StartSync(

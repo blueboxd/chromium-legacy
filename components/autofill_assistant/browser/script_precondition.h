@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/element_precondition.h"
 #include "components/autofill_assistant/browser/service.pb.h"
-#include "components/autofill_assistant/browser/web_controller.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 
 namespace re2 {
 class RE2;

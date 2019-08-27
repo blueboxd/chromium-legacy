@@ -59,7 +59,7 @@ public final class SuggestionsConfig {
      *         or UI elements may want to change to better support this configuration.
      */
     public static boolean isTouchless() {
-        return !FeatureUtilities.isNoTouchModeEnabled();
+        return FeatureUtilities.isNoTouchModeEnabled();
     }
 
     /**

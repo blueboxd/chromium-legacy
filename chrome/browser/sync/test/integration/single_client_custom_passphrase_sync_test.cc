@@ -185,7 +185,6 @@ class SingleClientCustomPassphraseSyncTestWithUssTests
       override_features_.InitWithFeatures(
           /*enabled_features=*/{switches::kSyncUSSBookmarks,
                                 switches::kSyncUSSPasswords,
-                                switches::kSyncUSSAutofillWalletMetadata,
                                 switches::kSyncUSSNigori},
           /*disabled_features=*/{});
     } else {
@@ -421,7 +420,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   override_features.InitWithFeatures(
       /*enabled_features=*/{switches::kSyncUSSBookmarks,
                             switches::kSyncUSSPasswords,
-                            switches::kSyncUSSAutofillWalletMetadata,
                             switches::kSyncUSSNigori},
       /*disabled_features=*/{switches::kSyncUseScryptForNewCustomPassphrases});
   ASSERT_TRUE(SetupSync());
@@ -495,7 +493,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   override_features.InitWithFeatures(
       /*enabled_features=*/{switches::kSyncUSSBookmarks,
                             switches::kSyncUSSPasswords,
-                            switches::kSyncUSSAutofillWalletMetadata,
                             switches::kSyncUSSNigori},
       /*disabled_features=*/{});
   NigoriSpecifics nigori;

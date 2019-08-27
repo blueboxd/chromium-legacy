@@ -9,19 +9,21 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 
 namespace content {
 
 CookieStoreContext::CookieStoreContext()
     : base::RefCountedDeleteOnSequence<CookieStoreContext>(
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO})) {}
+          base::CreateSingleThreadTaskRunner(
+              {ServiceWorkerContext::GetCoreThreadId()})) {}
 
 CookieStoreContext::~CookieStoreContext() {
-  // The destructor must be called on the IO thread, because it runs
+  // The destructor must be called on the core thread, because it runs
   // cookie_store_manager_'s destructor, and the latter is only accessed on the
-  // IO thread.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // core thread.
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
 void CookieStoreContext::Initialize(
@@ -33,10 +35,10 @@ void CookieStoreContext::Initialize(
   initialize_called_ = true;
 #endif  // DCHECK_IS_ON()
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(
-          &CookieStoreContext::InitializeOnIOThread, this,
+          &CookieStoreContext::InitializeOnCoreThread, this,
           std::move(service_worker_context),
           base::BindOnce(
               [](scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -56,15 +58,15 @@ void CookieStoreContext::ListenToCookieChanges(
   DCHECK(initialize_called_) << __func__ << " called before Initialize()";
 #endif  // DCHECK_IS_ON()
 
-  ::network::mojom::CookieManagerPtrInfo cookie_manager_ptr_info;
+  mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager_remote;
   network_context->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager_ptr_info));
+      cookie_manager_remote.InitWithNewPipeAndPassReceiver());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(
-          &CookieStoreContext::ListenToCookieChangesOnIOThread, this,
-          std::move(cookie_manager_ptr_info),
+          &CookieStoreContext::ListenToCookieChangesOnCoreThread, this,
+          std::move(cookie_manager_remote),
           base::BindOnce(
               [](scoped_refptr<base::SequencedTaskRunner> task_runner,
                  base::OnceCallback<void(bool)> callback, bool result) {
@@ -83,15 +85,16 @@ void CookieStoreContext::CreateService(
   DCHECK(initialize_called_) << __func__ << " called before Initialize()";
 #endif  // DCHECK_IS_ON()
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&CookieStoreContext::CreateServiceOnIOThread,
-                                this, std::move(receiver), origin));
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(&CookieStoreContext::CreateServiceOnCoreThread, this,
+                     std::move(receiver), origin));
 }
 
-void CookieStoreContext::InitializeOnIOThread(
+void CookieStoreContext::InitializeOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     base::OnceCallback<void(bool)> success_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(!cookie_store_manager_) << __func__ << " called more than once";
 
   cookie_store_manager_ =
@@ -99,21 +102,20 @@ void CookieStoreContext::InitializeOnIOThread(
   cookie_store_manager_->LoadAllSubscriptions(std::move(success_callback));
 }
 
-void CookieStoreContext::ListenToCookieChangesOnIOThread(
-    ::network::mojom::CookieManagerPtrInfo cookie_manager_ptr_info,
+void CookieStoreContext::ListenToCookieChangesOnCoreThread(
+    mojo::PendingRemote<::network::mojom::CookieManager> cookie_manager_remote,
     base::OnceCallback<void(bool)> success_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(cookie_store_manager_);
 
-  cookie_store_manager_->ListenToCookieChanges(
-      ::network::mojom::CookieManagerPtr(std::move(cookie_manager_ptr_info)),
-      std::move(success_callback));
+  cookie_store_manager_->ListenToCookieChanges(std::move(cookie_manager_remote),
+                                               std::move(success_callback));
 }
 
-void CookieStoreContext::CreateServiceOnIOThread(
+void CookieStoreContext::CreateServiceOnCoreThread(
     mojo::PendingReceiver<blink::mojom::CookieStore> receiver,
     const url::Origin& origin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(cookie_store_manager_);
 
   cookie_store_manager_->CreateService(std::move(receiver), origin);

@@ -22,6 +22,7 @@
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
@@ -297,6 +298,15 @@ aura::Window* GetRootWindowMatching(const gfx::Rect& rect_in_screen) {
       Shell::GetRootWindowControllerWithDisplayId(display.id());
   return root_window_controller ? root_window_controller->GetRootWindow()
                                 : nullptr;
+}
+
+bool IsArcWindow(const aura::Window* window) {
+  return window->GetProperty(aura::client::kAppType) ==
+         static_cast<int>(ash::AppType::ARC_APP);
+}
+
+bool IsArcPipWindow(const aura::Window* window) {
+  return WindowState::Get(window)->IsPip() && window_util::IsArcWindow(window);
 }
 
 }  // namespace window_util

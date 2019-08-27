@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
+#include "chrome/browser/chromeos/file_manager/web_file_tasks.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -75,6 +76,7 @@ const char kFileBrowserHandlerTaskType[] = "file";
 const char kFileHandlerTaskType[] = "app";
 const char kArcAppTaskType[] = "arc";
 const char kCrostiniAppTaskType[] = "crostini";
+const char kWebAppTaskType[] = "web";
 
 // Converts a TaskType to a string.
 std::string TaskTypeToString(TaskType task_type) {
@@ -87,6 +89,8 @@ std::string TaskTypeToString(TaskType task_type) {
       return kArcAppTaskType;
     case TASK_TYPE_CROSTINI_APP:
       return kCrostiniAppTaskType;
+    case TASK_TYPE_WEB_APP:
+      return kWebAppTaskType;
     case TASK_TYPE_UNKNOWN:
     case DEPRECATED_TASK_TYPE_DRIVE_APP:
     case NUM_TASK_TYPE:
@@ -106,6 +110,8 @@ TaskType StringToTaskType(const std::string& str) {
     return TASK_TYPE_ARC_APP;
   if (str == kCrostiniAppTaskType)
     return TASK_TYPE_CROSTINI_APP;
+  if (str == kWebAppTaskType)
+    return TASK_TYPE_WEB_APP;
   return TASK_TYPE_UNKNOWN;
 }
 
@@ -390,6 +396,11 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
+  if (task.task_type == TASK_TYPE_WEB_APP) {
+    ExecuteWebTask(profile, task, file_urls, std::move(done));
+    return true;
+  }
+
   // Some action IDs of the file manager's file browser handlers require the
   // files to be directly opened with the browser.
   if (ShouldBeOpenedWithBrowser(task.app_id, task.action_id)) {
@@ -421,22 +432,9 @@ bool ExecuteFileTask(Profile* profile,
     for (size_t i = 0; i != file_urls.size(); ++i)
       paths.push_back(file_urls[i].path());
 
-    if (!extension->from_bookmark()) {
-      apps::LaunchPlatformAppWithFileHandler(extension_task_profile, extension,
-                                             task.action_id, paths);
-    } else {
-      extensions::LaunchContainer launch_container =
-          extensions::GetLaunchContainer(
-              extensions::ExtensionPrefs::Get(extension_task_profile),
-              extension);
-      AppLaunchParams params(extension_task_profile, task.app_id,
-                             launch_container,
-                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             apps::mojom::AppLaunchSource::kSourceFileHandler);
-      params.override_url = GURL(task.action_id);
-      params.launch_files = std::move(paths);
-      apps::LaunchService::Get(extension_task_profile)->OpenApplication(params);
-    }
+    DCHECK(!extension->from_bookmark());
+    apps::LaunchPlatformAppWithFileHandler(extension_task_profile, extension,
+                                           task.action_id, paths);
     if (!done.is_null())
       std::move(done).Run(
           extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
@@ -485,16 +483,9 @@ void FindFileHandlerTasks(Profile* profile,
        ++iter) {
     const Extension* extension = iter->get();
 
-    bool is_bookmark_app =
-        extension->from_bookmark() &&
-        extension->GetType() == extensions::Manifest::TYPE_HOSTED_APP;
     // Check that the extension can be launched with files. This includes all
-    // platform apps plus whitelisted extensions, and bookmark apps, if
-    // file handling is enabled.
-    if (!CanLaunchViaEvent(extension) &&
-        (!is_bookmark_app ||
-         !base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI) ||
-         !base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI))) {
+    // platform apps and whitelisted extensions.
+    if (!CanLaunchViaEvent(extension)) {
       continue;
     }
 
@@ -617,15 +608,18 @@ void FindExtensionAndAppTasks(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list) {
   std::vector<FullTaskDescriptor>* result_list_ptr = result_list.get();
 
-  // 2. Continues from FindAllTypesOfTasks. Find and append file handler tasks.
+  // 2. Find and append Web tasks.
+  FindWebTasks(profile, entries, result_list_ptr);
+
+  // 3. Continues from FindAllTypesOfTasks. Find and append file handler tasks.
   FindFileHandlerTasks(profile, entries, result_list_ptr);
 
-  // 3. Find and append file browser handler tasks. We know there aren't
+  // 4. Find and append file browser handler tasks. We know there aren't
   // duplicates because "file_browser_handlers" and "file_handlers" shouldn't
   // be used in the same manifest.json.
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
-  // 4. Find and append Crostini tasks.
+  // 5. Find and append Crostini tasks.
   FindCrostiniTasks(
       profile, entries, result_list_ptr,
       // Done. Apply post-filtering and callback.
@@ -641,7 +635,7 @@ void FindAllTypesOfTasks(Profile* profile,
   std::unique_ptr<std::vector<FullTaskDescriptor>> result_list(
       new std::vector<FullTaskDescriptor>);
 
-  // Find and append ARC handler tasks.
+  // 1. Find and append ARC handler tasks.
   FindArcTasks(profile, entries, file_urls, std::move(result_list),
                base::BindOnce(&FindExtensionAndAppTasks, profile, entries,
                               file_urls, std::move(callback)));

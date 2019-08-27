@@ -29,7 +29,7 @@ viz::ResourceFormat DawnFormatToViz(DawnTextureFormat format) {
 WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
     Client* client,
     scoped_refptr<DawnControlClientHolder> dawn_control_client,
-    DawnTextureUsageBit usage,
+    DawnTextureUsage usage,
     DawnTextureFormat format)
     : dawn_control_client_(dawn_control_client),
       client_(client),

@@ -46,7 +46,6 @@ class SingleClientNigoriSyncTestWithUssTests
       override_features_.InitWithFeatures(
           /*enabled_features=*/{switches::kSyncUSSBookmarks,
                                 switches::kSyncUSSPasswords,
-                                switches::kSyncUSSAutofillWalletMetadata,
                                 switches::kSyncUSSNigori},
           /*disabled_features=*/{});
     } else {

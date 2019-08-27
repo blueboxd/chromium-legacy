@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -29,13 +30,13 @@
 
 using ::testing::_;
 
-using blink::mojom::WebUsbServicePtr;
+using blink::mojom::WebUsbService;
+using device::FakeUsbDeviceInfo;
+using device::mojom::UsbDeviceClient;
 using device::mojom::UsbDeviceInfo;
 using device::mojom::UsbDeviceInfoPtr;
 using device::mojom::UsbDeviceManagerClient;
 using device::mojom::UsbDeviceManagerClientAssociatedPtrInfo;
-using device::mojom::UsbDeviceClient;
-using device::FakeUsbDeviceInfo;
 
 namespace {
 
@@ -62,7 +63,8 @@ class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SimulateDeviceServiceCrash() { device_manager()->CloseAllBindings(); }
 
-  void ConnectToService(blink::mojom::WebUsbServiceRequest request) {
+  void ConnectToService(
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
     // Set fake device manager for UsbChooserContext.
     if (!device_manager()->IsBound()) {
       device::mojom::UsbDeviceManagerPtr device_manager_ptr;
@@ -74,7 +76,7 @@ class WebUsbServiceImplTest : public ChromeRenderViewHostTestHarness {
     if (!web_usb_service_)
       web_usb_service_.reset(new WebUsbServiceImpl(main_rfh(), nullptr));
 
-    web_usb_service_->BindRequest(std::move(request));
+    web_usb_service_->BindReceiver(std::move(receiver));
   }
 
   UsbChooserContext* GetChooserContext() {
@@ -156,8 +158,8 @@ TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
   GetChooserContext()->GrantDevicePermission(origin, origin, *device_info_1);
   device_manager()->AddDevice(no_permission_device1);
 
-  WebUsbServicePtr web_usb_service;
-  ConnectToService(mojo::MakeRequest(&web_usb_service));
+  mojo::Remote<WebUsbService> web_usb_service;
+  ConnectToService(web_usb_service.BindNewPipeAndPassReceiver());
   MockDeviceManagerClient mock_client;
   web_usb_service->SetClient(mock_client.CreateInterfacePtrAndBind());
 
@@ -224,8 +226,8 @@ TEST_F(WebUsbServiceImplTest, ReconnectDeviceManager) {
   auto ephemeral_device_info = device_manager()->AddDevice(ephemeral_device);
   context->GrantDevicePermission(origin, origin, *ephemeral_device_info);
 
-  WebUsbServicePtr web_usb_service;
-  ConnectToService(mojo::MakeRequest(&web_usb_service));
+  mojo::Remote<WebUsbService> web_usb_service;
+  ConnectToService(web_usb_service.BindNewPipeAndPassReceiver());
   MockDeviceManagerClient mock_client;
   web_usb_service->SetClient(mock_client.CreateInterfacePtrAndBind());
 
@@ -269,7 +271,7 @@ TEST_F(WebUsbServiceImplTest, ReconnectDeviceManager) {
 
   // Reconnect the service.
   web_usb_service.reset();
-  ConnectToService(mojo::MakeRequest(&web_usb_service));
+  ConnectToService(web_usb_service.BindNewPipeAndPassReceiver());
   web_usb_service->SetClient(mock_client.CreateInterfacePtrAndBind());
 
   {
@@ -295,8 +297,8 @@ TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
   auto device_info = device_manager()->CreateAndAddDevice(
       0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
 
-  WebUsbServicePtr web_usb_service;
-  ConnectToService(mojo::MakeRequest(&web_usb_service));
+  mojo::Remote<WebUsbService> web_usb_service;
+  ConnectToService(web_usb_service.BindNewPipeAndPassReceiver());
   base::RunLoop().RunUntilIdle();
   {
     std::set<std::string> guids;

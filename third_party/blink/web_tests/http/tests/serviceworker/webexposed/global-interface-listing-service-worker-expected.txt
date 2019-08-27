@@ -1358,6 +1358,9 @@ interface TransformStream
 interface TrustedTypePolicyFactory
     attribute @@toStringTag
     method constructor
+    method getAttributeType
+    method getPropertyType
+    method getTypeMapping
 interface URL
     attribute @@toStringTag
     getter hash

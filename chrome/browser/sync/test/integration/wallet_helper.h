@@ -179,28 +179,4 @@ class AutofillWalletMetadataSizeChecker
   bool checking_exit_condition_in_flight_ = false;
 };
 
-// Class that enables or disables USS for Wallet metadata based on test
-// parameter. Must be the first base class of the test fixture.
-// TODO(jkrcal): When the new implementation fully launches, remove this class,
-// convert all tests from *_P back to *_F and remove the instance at the end.
-class UssWalletSwitchToggler : public testing::WithParamInterface<bool> {
- public:
-  UssWalletSwitchToggler();
-
-  // Sets up feature overrides, based on the parameter of the test. Must be
-  // called before the test body is entered (otherwise TSan complains about a
-  // data race).
-  void InitWithDefaultFeatures();
-
-  // Sets up feature overrides, adds the toggled feature on top of specified
-  // |enabled_features| and |disabled_features|. Vectors are passed by value
-  // because we need to alter them anyway. Must be called before the test body
-  // is entered (otherwise TSan complains about a data race).
-  void InitWithFeatures(std::vector<base::Feature> enabled_features,
-                        std::vector<base::Feature> disabled_features);
-
- private:
-  base::test::ScopedFeatureList override_features_;
-};
-
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_WALLET_HELPER_H_

@@ -18,6 +18,8 @@
 #include "chrome/browser/usb/web_usb_chooser.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/origin.h"
@@ -43,7 +45,8 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
                     base::WeakPtr<WebUsbChooser> usb_chooser);
   ~WebUsbServiceImpl() override;
 
-  void BindRequest(blink::mojom::WebUsbServiceRequest request);
+  void BindReceiver(
+      mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 
  private:
   bool HasDevicePermission(
@@ -77,7 +80,7 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   void OnDeviceOpened() override;
   void OnDeviceClosed() override;
 
-  void OnBindingConnectionError();
+  void OnConnectionError();
 
   content::RenderFrameHost* const render_frame_host_;
   base::WeakPtr<WebUsbChooser> usb_chooser_;
@@ -86,7 +89,7 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   url::Origin embedding_origin_;
 
   // Used to bind with Blink.
-  mojo::BindingSet<blink::mojom::WebUsbService> bindings_;
+  mojo::ReceiverSet<blink::mojom::WebUsbService> receivers_;
   mojo::AssociatedInterfacePtrSet<device::mojom::UsbDeviceManagerClient>
       clients_;
 

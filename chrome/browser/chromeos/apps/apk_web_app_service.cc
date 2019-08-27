@@ -323,7 +323,7 @@ void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
                                           const web_app::AppId& web_app_id,
                                           web_app::InstallResultCode code) {
   // Do nothing: any error cancels installation.
-  if (code != web_app::InstallResultCode::kSuccess)
+  if (code != web_app::InstallResultCode::kSuccessNewInstall)
     return;
 
   // Set a pref to map |web_app_id| to |package_name| for future uninstallation.

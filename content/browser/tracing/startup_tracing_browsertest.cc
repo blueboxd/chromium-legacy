@@ -128,10 +128,6 @@ IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest, TestFilledStartupBuffer) {
 
   auto config = tracing::TraceStartupConfig::GetInstance()
                     ->GetDefaultBrowserStartupConfig();
-  if (tracing::TracingUsesPerfettoBackend()) {
-    config.SetTraceBufferSizeInEvents(0);
-    config.SetTraceBufferSizeInKb(0);
-  }
   uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
   base::trace_event::TraceLog::GetInstance()->SetEnabled(config, modes);
 

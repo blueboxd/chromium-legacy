@@ -151,4 +151,34 @@ public class PeriodicBackgroundSyncChromeWakeUpTaskTest {
         verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
         verify(mTaskScheduler, times(0)).schedule(any(Context.class), any(TaskInfo.class));
     }
+
+    @Test
+    @Feature("BackgroundSync")
+    public void onStopTaskBeforeNativeLoaded() {
+        TaskParameters params =
+                TaskParameters.create(TaskIds.PERIODIC_BACKGROUND_SYNC_CHROME_WAKEUP_TASK_JOB_ID)
+                        .addExtras(mTaskExtras)
+                        .build();
+
+        new PeriodicBackgroundSyncChromeWakeUpTask().onStopTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params);
+
+        verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
+        verify(mTaskScheduler, times(0)).schedule(any(Context.class), any(TaskInfo.class));
+    }
+
+    @Test
+    @Feature("BackgroundSync")
+    public void testOnStopTaskWithNative() {
+        TaskParameters params =
+                TaskParameters.create(TaskIds.PERIODIC_BACKGROUND_SYNC_CHROME_WAKEUP_TASK_JOB_ID)
+                        .addExtras(mTaskExtras)
+                        .build();
+
+        new PeriodicBackgroundSyncChromeWakeUpTask().onStopTaskWithNative(
+                RuntimeEnvironment.application, params);
+
+        verify(mTaskFinishedCallback, times(0)).taskFinished(anyBoolean());
+        verify(mTaskScheduler, times(0)).schedule(any(Context.class), any(TaskInfo.class));
+    }
 }

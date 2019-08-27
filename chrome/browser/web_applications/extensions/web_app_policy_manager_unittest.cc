@@ -497,14 +497,14 @@ TEST_F(WebAppPolicyManagerTest, InstallResultHistogram) {
         WebAppPolicyManager::kInstallResultHistogramName, 1);
     histograms.ExpectBucketCount(
         WebAppPolicyManager::kInstallResultHistogramName,
-        InstallResultCode::kSuccess, 1);
+        InstallResultCode::kSuccessNewInstall, 1);
   }
   {
     base::Value list(base::Value::Type::LIST);
     list.GetList().push_back(GetTabbedItem());
     list.GetList().push_back(GetNoContainerItem());
     pending_app_manager()->SetInstallResultCode(
-        InstallResultCode::kInstallManagerDestroyed);
+        InstallResultCode::kProfileDestroyed);
 
     profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));
 
@@ -513,7 +513,7 @@ TEST_F(WebAppPolicyManagerTest, InstallResultHistogram) {
         WebAppPolicyManager::kInstallResultHistogramName, 3);
     histograms.ExpectBucketCount(
         WebAppPolicyManager::kInstallResultHistogramName,
-        InstallResultCode::kInstallManagerDestroyed, 2);
+        InstallResultCode::kProfileDestroyed, 2);
   }
 }
 

@@ -177,8 +177,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
       video_element->GetWebMediaPlayer()->GetDelegateId(),
       video_element->GetWebMediaPlayer()->GetSurfaceId(),
       video_element->GetWebMediaPlayer()->NaturalSize(),
-      ShouldShowPlayPauseButton(*video_element),
-      ShouldShowMuteButton(*video_element), std::move(session_observer),
+      ShouldShowPlayPauseButton(*video_element), std::move(session_observer),
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                 WrapPersistent(this), WrapPersistent(video_element),
                 WrapPersistent(resolver)));
@@ -386,8 +385,7 @@ void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
       picture_in_picture_element_->GetWebMediaPlayer()->GetDelegateId(),
       picture_in_picture_element_->GetWebMediaPlayer()->GetSurfaceId(),
       picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize(),
-      ShouldShowPlayPauseButton(*picture_in_picture_element_),
-      ShouldShowMuteButton(*picture_in_picture_element_));
+      ShouldShowPlayPauseButton(*picture_in_picture_element_));
 }
 
 void PictureInPictureControllerImpl::OnWindowSizeChanged(
@@ -398,13 +396,6 @@ void PictureInPictureControllerImpl::OnWindowSizeChanged(
 
 void PictureInPictureControllerImpl::OnStopped() {
   OnExitedPictureInPicture(nullptr);
-}
-
-bool PictureInPictureControllerImpl::ShouldShowMuteButton(
-    const HTMLVideoElement& element) {
-  DCHECK(GetSupplementable());
-  return element.HasAudio() && RuntimeEnabledFeatures::MuteButtonEnabled(
-                                   GetSupplementable()->GetExecutionContext());
 }
 
 void PictureInPictureControllerImpl::Trace(blink::Visitor* visitor) {

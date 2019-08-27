@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
+#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 
 namespace content {
 
@@ -208,8 +208,7 @@ class RTCRtpSender::RTCRtpSenderInternal
     // webrtc signalling thread.
     DCHECK(main_task_runner_->BelongsToCurrentThread());
     auto dtmf_sender = webrtc_sender_->GetDtmfSender();
-    return std::make_unique<RtcDtmfSenderHandler>(main_task_runner_,
-                                                  dtmf_sender);
+    return blink::CreateRTCDTMFSenderHandler(main_task_runner_, dtmf_sender);
   }
 
   std::unique_ptr<webrtc::RtpParameters> GetParameters() {

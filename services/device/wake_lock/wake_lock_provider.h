@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/device/wake_lock/wake_lock.h"
@@ -33,8 +34,9 @@ class WakeLockProvider : public mojom::WakeLockProvider,
   void AddBinding(mojom::WakeLockProviderRequest request);
 
   // mojom::WakeLockProvider overrides.
-  void GetWakeLockContextForID(int context_id,
-                               mojom::WakeLockContextRequest request) override;
+  void GetWakeLockContextForID(
+      int context_id,
+      mojo::PendingReceiver<mojom::WakeLockContext> receiver) override;
   void GetWakeLockWithoutContext(mojom::WakeLockType type,
                                  mojom::WakeLockReason reason,
                                  const std::string& description,

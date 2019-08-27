@@ -246,7 +246,7 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
   registrar_->NotifyWebAppInstalled(extension->id());
 
   std::move(callback).Run(extension->id(),
-                          web_app::InstallResultCode::kSuccess);
+                          web_app::InstallResultCode::kSuccessNewInstall);
 }
 
 }  // namespace extensions

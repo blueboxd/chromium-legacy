@@ -5010,7 +5010,7 @@ bool ChromeContentBrowserClient::ShouldForceDownloadResource(
 
 void ChromeContentBrowserClient::CreateWebUsbService(
     content::RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<blink::mojom::WebUsbService> request) {
+    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     return;
 
@@ -5023,7 +5023,7 @@ void ChromeContentBrowserClient::CreateWebUsbService(
 
   UsbTabHelper* tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
-  tab_helper->CreateWebUsbService(render_frame_host, std::move(request));
+  tab_helper->CreateWebUsbService(render_frame_host, std::move(receiver));
 }
 
 #if !defined(OS_ANDROID)

@@ -226,12 +226,12 @@ void CookieManagerImpl::EnsureCookieManager() {
   if (cookie_manager_.is_bound())
     return;
   get_network_context_.Run()->GetCookieManager(
-      mojo::MakeRequest(&cookie_manager_));
-  cookie_manager_.set_connection_error_handler(
-      base::BindOnce(&CookieManagerImpl::OnMojoError, base::Unretained(this)));
+      cookie_manager_.BindNewPipeAndPassReceiver());
+  cookie_manager_.set_disconnect_handler(base::BindOnce(
+      &CookieManagerImpl::OnMojoDisconnect, base::Unretained(this)));
 }
 
-void CookieManagerImpl::OnMojoError() {
+void CookieManagerImpl::OnMojoDisconnect() {
   LOG(ERROR) << "NetworkService disconnected CookieManager.";
   cookie_manager_.reset();
 }

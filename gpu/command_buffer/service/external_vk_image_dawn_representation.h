@@ -22,7 +22,7 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
                                     uint32_t memory_type_index);
   ~ExternalVkImageDawnRepresentation() override;
 
-  DawnTexture BeginAccess(DawnTextureUsageBit usage) override;
+  DawnTexture BeginAccess(DawnTextureUsage usage) override;
   void EndAccess() override;
 
  private:

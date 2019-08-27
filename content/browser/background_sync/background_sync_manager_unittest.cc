@@ -1662,7 +1662,7 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalledForOneShotSync) {
 
   // The BackgroundSyncManager should declare in initialization
   // that it doesn't need to be woken up since it has no registrations.
-  EXPECT_LT(0, GetController()->run_in_background_count());
+  EXPECT_EQ(0, GetController()->run_in_background_count());
   EXPECT_FALSE(
       test_background_sync_manager()->IsBrowserWakeupForOneShotSyncScheduled());
 
@@ -1700,7 +1700,7 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalledForPeriodicSync) {
 
   // The BackgroundSyncManager should declare in initialization
   // that it doesn't need to be woken up since it has no registrations.
-  EXPECT_LT(0, GetController()->run_in_background_periodic_sync_count());
+  EXPECT_EQ(0, GetController()->run_in_background_periodic_sync_count());
   EXPECT_FALSE(test_background_sync_manager()
                    ->IsBrowserWakeupForPeriodicSyncScheduled());
 

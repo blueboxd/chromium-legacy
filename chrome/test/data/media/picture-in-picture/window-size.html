@@ -123,12 +123,6 @@
     navigator.mediaSession.setActionHandler(name, null);
   }
 
-  function addVolumeChangeEventListener() {
-    video.addEventListener('volumechange', () => {
-      document.title = 'muted: ' + video.muted;
-    });
-  }
-
   function addPictureInPictureEventListeners() {
     video.addEventListener('enterpictureinpicture', () => {
       document.title = 'enterpictureinpicture';

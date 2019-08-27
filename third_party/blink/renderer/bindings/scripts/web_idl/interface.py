@@ -13,6 +13,7 @@ from .idl_type import IdlType
 from .ir_map import IRMap
 from .make_copy import make_copy
 from .operation import Operation
+from .operation import OperationGroup
 from .reference import RefById
 from .user_defined_type import UserDefinedType
 
@@ -85,6 +86,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.attributes = list(attributes)
             self.constants = list(constants)
             self.operations = list(operations)
+            self.operation_groups = []
             self.iterable = iterable
             self.maplike = maplike
             self.setlike = setlike
@@ -109,6 +111,17 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         ])
         self._constants = tuple([
             Constant(constant_ir, owner=self) for constant_ir in ir.constants
+        ])
+        self._operations = tuple([
+            Operation(operation_ir, owner=self)
+            for operation_ir in ir.operations
+        ])
+        self._operation_groups = tuple([
+            OperationGroup(
+                operation_group_ir,
+                filter(lambda x: x.identifier == operation_group_ir.identifier,
+                       self._operations),
+                owner=self) for operation_group_ir in ir.operation_groups
         ])
         self._iterable = ir.iterable
         self._maplike = ir.maplike

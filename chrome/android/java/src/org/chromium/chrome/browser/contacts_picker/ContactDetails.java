@@ -17,6 +17,18 @@ import java.util.List;
  * A class to keep track of the metadata associated with a contact.
  */
 public class ContactDetails implements Comparable<ContactDetails> {
+    /**
+     * A container class for delivering contact details in abbreviated form
+     * (where only the first email and phone numbers are returned and the rest
+     * is indicated with "+n more" strings).
+     */
+    public static class AbbreviatedContactDetails {
+        public String primaryEmail;
+        public String overflowEmailCount;
+        public String primaryTelephoneNumber;
+        public String overflowTelephoneNumberCount;
+    }
+
     // The unique id for the contact.
     private final String mId;
 
@@ -87,16 +99,11 @@ public class ContactDetails implements Comparable<ContactDetails> {
     /**
      * Accessor for the list of contact details (emails and phone numbers). Returned as strings
      * separated by newline).
-     * @param longVersion Whether to get all the details (for emails and phone numbers) or only what
-     *                    will fit in the allotted space on the dialog.
      * @param includeEmails Whether to include emails in the returned results.
      * @param includeTels Whether to include telephones in the returned results.
-     * @param resources The resources to use for fetching the string. Must be provided if
-     *                  longVersion is false, otherwise it can be null.
      * @return A string containing all the contact details registered for this contact.
      */
-    public String getContactDetailsAsString(boolean longVersion, boolean includeEmails,
-            boolean includeTels, @Nullable Resources resources) {
+    public String getContactDetailsAsString(boolean includeEmails, boolean includeTels) {
         int count = 0;
         StringBuilder builder = new StringBuilder();
         if (includeEmails) {
@@ -105,12 +112,6 @@ public class ContactDetails implements Comparable<ContactDetails> {
                     builder.append("\n");
                 }
                 builder.append(email);
-                if (!longVersion && mEmails.size() > 1) {
-                    int size = mEmails.size() - 1;
-                    builder.append(resources.getQuantityString(
-                            R.plurals.contacts_picker_more_details, size, size));
-                    break;
-                }
             }
         }
         if (includeTels) {
@@ -119,16 +120,46 @@ public class ContactDetails implements Comparable<ContactDetails> {
                     builder.append("\n");
                 }
                 builder.append(phoneNumber);
-                if (!longVersion && mPhoneNumbers.size() > 1) {
-                    int size = mPhoneNumbers.size() - 1;
-                    builder.append(resources.getQuantityString(
-                            R.plurals.contacts_picker_more_details, size, size));
-                    break;
-                }
             }
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Accessor for the list of contact details (emails and phone numbers).
+     * @param includeEmails Whether to include emails in the returned results.
+     * @param includeTels Whether to include telephones in the returned results.
+     * @param resources The resources to use for fetching the string. Must be provided.
+     * @return The contact details registered for this contact.
+     */
+    public AbbreviatedContactDetails getAbbreviatedContactDetails(
+            boolean includeEmails, boolean includeTels, @Nullable Resources resources) {
+        AbbreviatedContactDetails results = new AbbreviatedContactDetails();
+
+        results.overflowEmailCount = "";
+        if (!includeEmails || mEmails.size() == 0) {
+            results.primaryEmail = "";
+        } else {
+            results.primaryEmail = mEmails.get(0);
+            if (mEmails.size() > 1) {
+                results.overflowEmailCount = resources.getQuantityString(
+                        R.plurals.contacts_picker_more_details, (mEmails.size() - 1));
+            }
+        }
+
+        results.overflowTelephoneNumberCount = "";
+        if (!includeTels || mPhoneNumbers.size() == 0) {
+            results.primaryTelephoneNumber = "";
+        } else {
+            results.primaryTelephoneNumber = mPhoneNumbers.get(0);
+            if (mPhoneNumbers.size() > 1) {
+                results.overflowTelephoneNumberCount = resources.getQuantityString(
+                        R.plurals.contacts_picker_more_details, (mPhoneNumbers.size() - 1));
+            }
+        }
+
+        return results;
     }
 
     /**

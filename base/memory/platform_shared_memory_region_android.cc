@@ -138,6 +138,9 @@ bool PlatformSharedMemoryRegion::MapAtInternal(off_t offset,
                                                size_t size,
                                                void** memory,
                                                size_t* mapped_size) const {
+  // IMPORTANT: Even if the mapping is readonly and the mapped data is not
+  // changing, the region must ALWAYS be mapped with MAP_SHARED, otherwise with
+  // ashmem the mapping is equivalent to a private anonymous mapping.
   bool write_allowed = mode_ != Mode::kReadOnly;
   *memory = mmap(nullptr, size, PROT_READ | (write_allowed ? PROT_WRITE : 0),
                  MAP_SHARED, handle_.get(), offset);

@@ -43,13 +43,10 @@ class PictureInPictureWindowController {
   virtual OverlayWindow* GetWindowForTesting() = 0;
   virtual void UpdateLayerBounds() = 0;
   virtual bool IsPlayerActive() = 0;
-  virtual bool IsPlayerMuted() = 0;
   virtual WebContents* GetInitiatorWebContents() = 0;
   virtual void UpdatePlaybackState(bool is_playing,
                                    bool reached_end_of_stream) = 0;
-  virtual void UpdateMutedState() = 0;
   virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;
-  virtual void SetAlwaysHideMuteButton(bool is_visible) = 0;
 
   // Called when the user interacts with the "Skip Ad" control.
   virtual void SkipAd() = 0;
@@ -64,9 +61,6 @@ class PictureInPictureWindowController {
   // Returns true if the player is active (i.e. currently playing) after this
   // call.
   virtual bool TogglePlayPause() = 0;
-
-  // Returns true if the player is muted after this call.
-  virtual bool ToggleMute() = 0;
 
  protected:
   // Use PictureInPictureWindowController::GetOrCreateForWebContents() to

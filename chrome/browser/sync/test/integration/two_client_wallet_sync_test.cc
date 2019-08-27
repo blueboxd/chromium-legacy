@@ -53,11 +53,9 @@ const base::Time kArbitraryDefaultTime = base::Time::FromDoubleT(25);
 const base::Time kLaterTime = base::Time::FromDoubleT(5000);
 const base::Time kEvenLaterTime = base::Time::FromDoubleT(6000);
 
-class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
+class TwoClientWalletSyncTest : public SyncTest {
  public:
-  TwoClientWalletSyncTest() : SyncTest(TWO_CLIENT) {
-    InitWithDefaultFeatures();
-  }
+  TwoClientWalletSyncTest() : SyncTest(TWO_CLIENT) {}
   ~TwoClientWalletSyncTest() override {}
 
   // Needed for AwaitQuiescence().
@@ -81,7 +79,7 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientWalletSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateCreditCardMetadata) {
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest, UpdateCreditCardMetadata) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -113,7 +111,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateCreditCardMetadata) {
   EXPECT_EQ(kLaterTime, credit_cards[0]->use_date());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        UpdateCreditCardMetadataWhileNotSyncing) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
@@ -154,7 +152,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(kLaterTime, credit_cards[0]->use_date());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        UpdateCreditCardMetadataConflictsWhileNotSyncing) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
@@ -202,7 +200,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(kEvenLaterTime, credit_cards[0]->use_date());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -235,7 +233,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateServerAddressMetadata) {
   EXPECT_EQ(kLaterTime, server_addresses[0]->use_date());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        UpdateServerAddressMetadataWhileNotSyncing) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
@@ -275,7 +273,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(kLaterTime, server_addresses[0]->use_date());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        UpdateServerAddressMetadataConflictsWhileNotSyncing) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
@@ -322,7 +320,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(kEvenLaterTime, server_addresses[0]->use_date());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        UpdateCreditCardMetadataWithNewBillingAddressId) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
@@ -351,7 +349,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(kDefaultBillingAddressID, credit_cards[0]->billing_address_id());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        UpdateCreditCardMetadataWithChangedBillingAddressId) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
@@ -380,7 +378,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(kDifferentBillingAddressId, credit_cards[0]->billing_address_id());
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     TwoClientWalletSyncTest,
     UpdateCreditCardMetadataWithChangedBillingAddressId_RemoteToLocal) {
   GetFakeServer()->SetWalletData(
@@ -411,7 +409,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(kLocalBillingAddressId, credit_cards[0]->billing_address_id());
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     TwoClientWalletSyncTest,
     UpdateCreditCardMetadataWithChangedBillingAddressId_RemoteToLocalConflict) {
   GetFakeServer()->SetWalletData(
@@ -466,7 +464,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Flaky. http://crbug.com/917498
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        DISABLED_ServerAddressConvertsToSameLocalAddress) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
@@ -498,7 +496,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_TRUE(local_address_0.EqualsForSyncPurposes(*local_addresses_1[0]));
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        DeleteServerCardMetadataWhenDataGetsRemoved) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
@@ -549,7 +547,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(1U, GetServerAddressesMetadata(1).size());
 }
 
-IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
                        DeleteServerAddressMetadataWhenDataGetsRemoved) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
@@ -600,9 +598,5 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(1U, GetServerCardsMetadata(0).size());
   EXPECT_EQ(1U, GetServerCardsMetadata(1).size());
 }
-
-INSTANTIATE_TEST_SUITE_P(USS,
-                         TwoClientWalletSyncTest,
-                         ::testing::Values(false, true));
 
 }  // namespace

@@ -7,6 +7,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_mediator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_mediator_delegate.h"
@@ -19,7 +20,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface AutofillAddCreditCardCoordinator () <AddCreditCardMediatorDelegate>
+@interface AutofillAddCreditCardCoordinator () <
+    AddCreditCardMediatorDelegate,
+    UIAdaptivePresentationControllerDelegate>
 
 // Displays message for invalid credit card data.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -34,6 +37,9 @@
 
 // The mediator for the view controller attatched to this coordinator.
 @property(nonatomic, strong) AutofillAddCreditCardMediator* mediator;
+
+// The action sheet coordinator, if one is currently being shown.
+@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
 @end
 
@@ -54,6 +60,7 @@
 
   UINavigationController* navigationController = [[UINavigationController alloc]
       initWithRootViewController:self.addCreditCardViewController];
+  navigationController.presentationController.delegate = self;
 
   [self.baseViewController presentViewController:navigationController
                                         animated:YES
@@ -97,7 +104,50 @@
   [self.creditCardScannerCoordinator start];
 }
 
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
+  return !self.addCreditCardViewController.tableViewHasUserInput;
+}
+
+- (void)presentationControllerDidAttemptToDismiss:
+    (UIPresentationController*)presentationController {
+  [self showActionSheetAlert];
+}
+
 #pragma mark - Helper Methods
+
+// Shows action sheet alert with a discard changes and a cancel action.
+- (void)showActionSheetAlert {
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.addCreditCardViewController
+                           title:
+                               l10n_util::GetNSString(
+                                   IDS_IOS_ADD_CREDIT_CARD_VIEW_CONTROLLER_DISMISS_ALERT_TITLE)
+                         message:nil
+                   barButtonItem:self.addCreditCardViewController.navigationItem
+                                     .leftBarButtonItem];
+
+  self.actionSheetCoordinator.popoverArrowDirection = UIPopoverArrowDirectionUp;
+  __weak __typeof(self) weakSelf = self;
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_VIEW_CONTROLLER_DISMISS_DISCARD_CHANGES)
+                action:^{
+                  [weakSelf stop];
+                }
+                 style:UIAlertActionStyleDestructive];
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_VIEW_CONTROLLER_DISMISS_CANCEL_CHANGES)
+                action:nil
+                 style:UIAlertActionStyleCancel];
+
+  [self.actionSheetCoordinator start];
+}
 
 // Shows alert with received message by |AlertCoordinator|.
 - (void)showAlertWithMessage:(NSString*)message {

@@ -1258,6 +1258,8 @@ component("ash") {
     "wm/window_finder.cc",
     "wm/window_mirror_view.cc",
     "wm/window_mirror_view.h",
+    "wm/window_mirror_view_pip.cc",
+    "wm/window_mirror_view_pip.h",
     "wm/window_positioner.cc",
     "wm/window_positioning_utils.cc",
     "wm/window_preview_view.cc",

@@ -12,7 +12,8 @@ interface WakeLockProvider {
   // Gets a WakeLockContext that is associated with |context_id|. |context_id|
   // is used to obtain the NativeView associated with the relevant context on
   // Android (see WakeLockContextCallback). |context_id| must be >= 0.
-  GetWakeLockContextForID(int32 context_id, WakeLockContext& context);
+  GetWakeLockContextForID(int32 context_id,
+                          pending_receiver<WakeLockContext> context);
 
   // Gets a WakeLock outside of any context. This method can be used
   // if the client does not have any context available (e.g., is not

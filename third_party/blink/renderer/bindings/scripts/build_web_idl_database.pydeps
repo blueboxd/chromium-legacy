@@ -30,6 +30,7 @@ web_idl/literal_constant.py
 web_idl/make_copy.py
 web_idl/namespace.py
 web_idl/operation.py
+web_idl/overload_group.py
 web_idl/reference.py
 web_idl/typedef.py
 web_idl/union.py

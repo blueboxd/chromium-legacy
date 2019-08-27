@@ -25,14 +25,6 @@ PromiseRejectionEvent::PromiseRejectionEvent(
 
 PromiseRejectionEvent::~PromiseRejectionEvent() = default;
 
-void PromiseRejectionEvent::Dispose() {
-  // Clear ScopedPersistents so that V8 doesn't call phantom callbacks
-  // (and touch the ScopedPersistents) after Oilpan starts lazy sweeping.
-  promise_.Clear();
-  reason_.Clear();
-  world_ = nullptr;
-}
-
 ScriptPromise PromiseRejectionEvent::promise(ScriptState* script_state) const {
   // Return null when the promise is accessed by a different world than the
   // world that created the promise.
@@ -57,7 +49,8 @@ const AtomicString& PromiseRejectionEvent::InterfaceName() const {
 
 bool PromiseRejectionEvent::CanBeDispatchedInWorld(
     const DOMWrapperWorld& world) const {
-  return world_ && world_->GetWorldId() == world.GetWorldId();
+  DCHECK(world_);
+  return world_->GetWorldId() == world.GetWorldId();
 }
 
 void PromiseRejectionEvent::Trace(blink::Visitor* visitor) {

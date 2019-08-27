@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 
 namespace device {
@@ -160,7 +159,7 @@ void TestWakeLockProvider::BindReceiver(
 
 void TestWakeLockProvider::GetWakeLockContextForID(
     int context_id,
-    mojo::InterfaceRequest<mojom::WakeLockContext> request) {
+    mojo::PendingReceiver<mojom::WakeLockContext> receiver) {
   // This method is only used on Android.
   NOTIMPLEMENTED();
 }

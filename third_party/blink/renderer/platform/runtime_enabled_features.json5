@@ -1025,12 +1025,6 @@
       name: "MouseSubframeNoImplicitCapture",
     },
     {
-      name: "MuteButton",
-      depends_on: ["PictureInPictureAPI"],
-      origin_trial_feature_name: "MuteButton",
-      status: "experimental",
-    },
-    {
       // Enabled when blink::features::kNativeFileSystemAPI is enabled.
       name: "NativeFileSystem",
     },

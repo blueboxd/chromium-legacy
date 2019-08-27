@@ -123,11 +123,11 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
   // web app will be automatically cleaned up by provider.
   if (!weak_owner_.get()) {
     CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kInstallManagerDestroyed);
+                         web_app::InstallResultCode::kProfileDestroyed);
     return;
   }
 
-  if (code != web_app::InstallResultCode::kSuccess) {
+  if (code != web_app::InstallResultCode::kSuccessNewInstall) {
     CompleteInstallation(app_id, code);
     return;
   }
@@ -154,7 +154,7 @@ void ApkWebAppInstaller::OnImageDecoded(const SkBitmap& decoded_image) {
     // Assume |profile_| is no longer valid - destroy this object and
     // terminate.
     CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kInstallManagerDestroyed);
+                         web_app::InstallResultCode::kProfileDestroyed);
     return;
   }
   DoInstall();

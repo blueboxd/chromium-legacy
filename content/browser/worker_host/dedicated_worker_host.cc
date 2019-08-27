@@ -214,8 +214,9 @@ void DedicatedWorkerHost::RegisterMojoInterfaces() {
   registry_.AddInterface(base::BindRepeating(
       &DedicatedWorkerHost::CreateWebSocketConnectorForRequest,
       base::Unretained(this)));
-  registry_.AddInterface(base::BindRepeating(
-      &DedicatedWorkerHost::CreateWebUsbService, base::Unretained(this)));
+  registry_.AddInterface(
+      base::BindRepeating(&DedicatedWorkerHost::CreateWebUsbServiceForRequest,
+                          base::Unretained(this)));
   registry_.AddInterface(
       base::BindRepeating(&DedicatedWorkerHost::CreateNestedDedicatedWorker,
                           base::Unretained(this)));
@@ -331,19 +332,26 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
   return pending_default_factory;
 }
 
-void DedicatedWorkerHost::CreateWebUsbService(
+void DedicatedWorkerHost::CreateWebUsbServiceForRequest(
     blink::mojom::WebUsbServiceRequest request) {
+  // Implicit conversion from WebUsbServiceRequest to
+  // mojo::PendingReceiver<blink::mojom::WebUsbService>.
+  CreateWebUsbService(std::move(request));
+}
+
+void DedicatedWorkerHost::CreateWebUsbService(
+    mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
   // TODO(nhiroki): Check if |ancestor_render_frame_host| is valid.
   GetContentClient()->browser()->CreateWebUsbService(ancestor_render_frame_host,
-                                                     std::move(request));
+                                                     std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateWebSocketConnectorForRequest(
     blink::mojom::WebSocketConnectorRequest request) {
-  // Implicit conversion from CreateWebSocketConnectorRequest to
+  // Implicit conversion from WebSocketConnectorRequest to
   // mojo::PendingReceiver<blink::mojom::WebSocketConnector>.
   CreateWebSocketConnector(std::move(request));
 }

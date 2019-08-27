@@ -48,7 +48,7 @@ ExternalVkImageDawnRepresentation::~ExternalVkImageDawnRepresentation() {
 }
 
 DawnTexture ExternalVkImageDawnRepresentation::BeginAccess(
-    DawnTextureUsageBit usage) {
+    DawnTextureUsage usage) {
   std::vector<SemaphoreHandle> handles;
 
   if (!backing_impl()->BeginAccess(false, &handles, false /* is_gl */)) {

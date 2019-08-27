@@ -15,7 +15,6 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "url/gurl.h"
@@ -23,12 +22,12 @@
 namespace web_app {
 
 enum class InstallResultCode;
-enum class RegistrationResultCode;
 
 class AppRegistrar;
 class InstallFinalizer;
-class PendingAppManagerObserver;
 class WebAppUiManager;
+
+enum class RegistrationResultCode { kSuccess, kAlreadyRegistered, kTimeout };
 
 // PendingAppManager installs, uninstalls, and updates apps.
 //
@@ -43,6 +42,9 @@ class PendingAppManager {
   using RepeatingInstallCallback =
       base::RepeatingCallback<void(const GURL& app_url,
                                    InstallResultCode code)>;
+  using RegistrationCallback =
+      base::RepeatingCallback<void(const GURL& launch_url,
+                                   RegistrationResultCode code)>;
   using UninstallCallback =
       base::RepeatingCallback<void(const GURL& app_url, bool succeeded)>;
   using SynchronizeCallback =
@@ -103,8 +105,8 @@ class PendingAppManager {
       ExternalInstallSource install_source,
       SynchronizeCallback callback);
 
-  void AddObserver(PendingAppManagerObserver* observer);
-  void RemoveObserver(const PendingAppManagerObserver* observer);
+  void SetRegistrationCallbackForTesting(RegistrationCallback callback);
+  void ClearRegistrationCallbackForTesting();
 
   virtual void Shutdown() = 0;
 
@@ -148,8 +150,7 @@ class PendingAppManager {
   base::flat_map<ExternalInstallSource, SynchronizeRequest>
       synchronize_requests_;
 
-  base::ObserverList<PendingAppManagerObserver, /*check_empty=*/true>
-      observers_;
+  RegistrationCallback registration_callback_;
 
   base::WeakPtrFactory<PendingAppManager> weak_ptr_factory_{this};
 

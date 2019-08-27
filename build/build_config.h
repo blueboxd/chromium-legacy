@@ -63,7 +63,7 @@
 #define OS_QNX 1
 #elif defined(_AIX)
 #define OS_AIX 1
-#elif defined(__asmjs__)
+#elif defined(__asmjs__) || defined(__wasm__)
 #define OS_ASMJS
 #else
 #error Please add support for your platform in build/build_config.h
@@ -139,7 +139,7 @@
 #define ARCH_CPU_ARM64 1
 #define ARCH_CPU_64_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
-#elif defined(__pnacl__) || defined(__asmjs__)
+#elif defined(__pnacl__) || defined(__asmjs__) || defined(__wasm__)
 #define ARCH_CPU_32_BITS 1
 #define ARCH_CPU_LITTLE_ENDIAN 1
 #elif defined(__MIPSEL__)

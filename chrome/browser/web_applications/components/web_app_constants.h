@@ -29,17 +29,24 @@ const char* LaunchContainerEnumToStr(LaunchContainer launch_container);
 // numeric values should never be reused. Update corresponding enums.xml entry
 // when making changes here.
 enum class InstallResultCode {
-  kSuccess = 0,
-  kAlreadyInstalled = 1,
-  // Catch-all failure category. More-specific failure categories are below.
+  // Success category:
+  kSuccessNewInstall = 0,
+  kSuccessAlreadyInstalled = 1,
+  // Failure category:
   kFailedUnknownReason = 2,
+  // An inter-process request to blink renderer failed.
   kGetWebApplicationInfoFailed = 3,
+  // A user previously uninstalled the app, user doesn't want to see it again.
   kPreviouslyUninstalled = 4,
+  // The blink renderer used to install the app was destroyed.
   kWebContentsDestroyed = 5,
+  // I/O error: Disk output failed.
   kWriteDataFailed = 6,
+  // A user rejected installation prompt.
   kUserInstallDeclined = 7,
-  kInstallManagerDestroyed = 8,
-  kWindowOpened = 9,
+  // A whole user profile was destroyed during installation.
+  kProfileDestroyed = 8,
+  // |require_manifest| was specified but the app had no valid manifest.
   kNotValidManifestForWebApp = 10,
   // We have terminated the installation pipeline and intented to the Play
   // Store, where the user still needs to accept the Play installation prompt to
@@ -49,6 +56,9 @@ enum class InstallResultCode {
   kWebAppDisabled = 12,
   kMaxValue = kWebAppDisabled
 };
+
+// Checks if InstallResultCode is not a failure.
+bool IsSuccess(InstallResultCode code);
 
 // PendingAppManager: Where an app was installed from. This affects what flags
 // will be used when installing the app.

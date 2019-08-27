@@ -58,7 +58,7 @@ class WebGPUSwapBufferProviderForTests : public WebGPUSwapBufferProvider {
       bool* alive,
       Client* client,
       scoped_refptr<DawnControlClientHolder> dawn_control_client,
-      DawnTextureUsageBit usage,
+      DawnTextureUsage usage,
       DawnTextureFormat format)
       : WebGPUSwapBufferProvider(client, dawn_control_client, usage, format),
         alive_(alive) {}
@@ -84,8 +84,7 @@ class WebGPUSwapBufferProviderTest : public testing::Test {
         base::MakeRefCounted<DawnControlClientHolder>(std::move(provider));
     provider_ = base::MakeRefCounted<WebGPUSwapBufferProviderForTests>(
         &provider_alive_, &client_, dawn_control_client_,
-        DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT,
-        DAWN_TEXTURE_FORMAT_RGBA8_UNORM);
+        DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT, DAWN_TEXTURE_FORMAT_RGBA8_UNORM);
   }
 
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;

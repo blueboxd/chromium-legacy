@@ -168,6 +168,15 @@ public class BackgroundTaskSchedulerPrefs {
         }
     }
 
+    /**
+     * Pre-load shared prefs to avoid being blocked on the disk reads in the future.
+     */
+    public static void warmUpSharedPrefs() {
+        try (TraceEvent te = TraceEvent.scoped("BackgroundTaskSchedulerPrefs.warmUpSharedPrefs")) {
+            getSharedPreferences();
+        }
+    }
+
     /** Returns the BackgroundTaskScheduler SharedPreferences. */
     private static SharedPreferences getSharedPreferences() {
         return ContextUtils.getApplicationContext().getSharedPreferences(

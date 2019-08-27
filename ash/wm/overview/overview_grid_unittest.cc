@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/workspace/backdrop_controller.h"
@@ -217,6 +218,32 @@ TEST_F(OverviewGridTest, WindowWithBackdrop) {
                                            gfx::RectF(100.f, 100.f)};
   CheckAnimationStates({window1.get(), window2.get()}, target_bounds,
                        {true, false}, {true, true});
+}
+
+// Tests that only one window animates when entering overview from splitview
+// double snapped.
+TEST_F(OverviewGridTest, SnappedWindow) {
+  auto window1 = CreateTestWindow(gfx::Rect(100, 100));
+  auto window2 = CreateTestWindow(gfx::Rect(100, 100));
+  auto window3 = CreateTestWindow(gfx::Rect(100, 100));
+  wm::ActivateWindow(window1.get());
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  Shell::Get()->split_view_controller()->SnapWindow(window1.get(),
+                                                    SplitViewController::LEFT);
+
+  // Snap |window2| and check that |window3| is maximized.
+  Shell::Get()->split_view_controller()->SnapWindow(window2.get(),
+                                                    SplitViewController::RIGHT);
+  EXPECT_TRUE(WindowState::Get(window3.get())->IsMaximized());
+
+  // Tests that |window3| is not animated even though its bounds are larger than
+  // |window2| because it is fully occluded by |window1| + |window2| and the
+  // split view divider.
+  std::vector<gfx::RectF> target_bounds = {gfx::RectF(100.f, 100.f),
+                                           gfx::RectF(100.f, 100.f)};
+  CheckAnimationStates({window2.get(), window3.get()}, target_bounds,
+                       {true, false}, {true, false});
 }
 
 }  // namespace ash

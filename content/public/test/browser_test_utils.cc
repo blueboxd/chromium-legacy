@@ -1763,10 +1763,10 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
 std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
   std::string cookies;
   base::RunLoop run_loop;
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+      ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
   // Allow access to SameSite cookies in tests.
   net::CookieOptions options;
   options.set_same_site_cookie_context(
@@ -1790,10 +1790,10 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
     const GURL& url) {
   std::vector<net::CanonicalCookie> cookies;
   base::RunLoop run_loop;
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+      ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
   // Allow access to SameSite cookies in tests.
   net::CookieOptions options;
   options.set_same_site_cookie_context(
@@ -1818,10 +1818,10 @@ bool SetCookie(BrowserContext* browser_context,
                const std::string& value) {
   bool result = false;
   base::RunLoop run_loop;
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+      ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       url, value, base::Time::Now(), base::nullopt /* server_time */));
   DCHECK(cc.get());

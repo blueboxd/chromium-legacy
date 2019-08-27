@@ -361,11 +361,12 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
         std::move(pending_service_worker_container_host_));
   }
 
-  blink::mojom::BlobRegistryPtr blob_registry_ptr;
-  process_host_->BindHostReceiver(mojo::MakeRequest(&blob_registry_ptr));
-  blob_registry_ =
-      base::MakeRefCounted<base::RefCountedData<blink::mojom::BlobRegistryPtr>>(
-          std::move(blob_registry_ptr));
+  mojo::Remote<blink::mojom::BlobRegistry> blob_registry_remote;
+  process_host_->BindHostReceiver(
+      blob_registry_remote.BindNewPipeAndPassReceiver());
+  blob_registry_ = base::MakeRefCounted<
+      base::RefCountedData<mojo::Remote<blink::mojom::BlobRegistry>>>(
+      std::move(blob_registry_remote));
 
   accept_languages_watcher_ = watcher;
 

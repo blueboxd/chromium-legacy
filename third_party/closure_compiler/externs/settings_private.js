@@ -47,6 +47,7 @@ chrome.settingsPrivate.ControlledBy = {
 chrome.settingsPrivate.Enforcement = {
   ENFORCED: 'ENFORCED',
   RECOMMENDED: 'RECOMMENDED',
+  PARENT_SUPERVISED: 'PARENT_SUPERVISED',
 };
 
 /**

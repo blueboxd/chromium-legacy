@@ -30,13 +30,36 @@ suite('cr-searchable-drop-down', function() {
     Polymer.dom.flush();
   }
 
+  function down() {
+    MockInteractions.keyDownOn(searchInput, 'ArrowDown', [], 'ArrowDown');
+  }
+
+  function up() {
+    MockInteractions.keyDownOn(searchInput, 'ArrowUp', [], 'ArrowUp');
+  }
+
+  function enter() {
+    MockInteractions.keyDownOn(searchInput, 'Enter', [], 'Enter');
+  }
+
+  function tab() {
+    MockInteractions.keyDownOn(searchInput, 'Tab', [], 'Tab');
+  }
+
+  function getSelectedElement() {
+    return dropDown.shadowRoot.querySelector('[selected_]');
+  }
+
   setup(function() {
     PolymerTest.clearBody();
     document.body.innerHTML = `
+      <p id="outside">Nothing to see here</p>
       <cr-searchable-drop-down label="test drop down">
       </cr-searchable-drop-down>
     `;
     dropDown = document.querySelector('cr-searchable-drop-down');
+    outsideElement = document.querySelector('#outside');
+    searchInput = dropDown.$.search;
     Polymer.dom.flush();
   });
 
@@ -46,9 +69,9 @@ suite('cr-searchable-drop-down', function() {
     let itemList = getList();
 
     assertEquals(3, itemList.length);
-    assertEquals('one', itemList[0].textContent);
-    assertEquals('two', itemList[1].textContent);
-    assertEquals('three', itemList[2].textContent);
+    assertEquals('one', itemList[0].textContent.trim());
+    assertEquals('two', itemList[1].textContent.trim());
+    assertEquals('three', itemList[2].textContent.trim());
   });
 
   test('filter works correctly', function() {
@@ -56,18 +79,18 @@ suite('cr-searchable-drop-down', function() {
 
     search('c');
     assertEquals(1, getList().length);
-    assertEquals('cat', getList()[0].textContent);
+    assertEquals('cat', getList()[0].textContent.trim());
 
     search('at');
     assertEquals(3, getList().length);
-    assertEquals('cat', getList()[0].textContent);
-    assertEquals('hat', getList()[1].textContent);
-    assertEquals('rat', getList()[2].textContent);
+    assertEquals('cat', getList()[0].textContent.trim());
+    assertEquals('hat', getList()[1].textContent.trim());
+    assertEquals('rat', getList()[2].textContent.trim());
 
     search('ra');
     assertEquals(2, getList().length);
-    assertEquals('rat', getList()[0].textContent);
-    assertEquals('rake', getList()[1].textContent);
+    assertEquals('rat', getList()[0].textContent.trim());
+    assertEquals('rake', getList()[1].textContent.trim());
   });
 
   test('value is set on click', function() {
@@ -104,7 +127,8 @@ suite('cr-searchable-drop-down', function() {
   test('click closes dropdown', function() {
     setItems(['dog', 'cat', 'mouse']);
 
-    dropDown.$.search.click();
+    // Dropdown opening is tied to focus.
+    dropDown.$.search.focus();
     assertTrue(dropDown.$$('iron-dropdown').opened);
 
     assertNotEquals('dog', dropDown.value);
@@ -112,6 +136,109 @@ suite('cr-searchable-drop-down', function() {
     getList()[0].click();
     assertEquals('dog', dropDown.value);
     assertFalse(dropDown.$$('iron-dropdown').opened);
+  });
+
+  test('click outside closes dropdown', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    // Dropdown opening is tied to focus.
+    dropDown.$.search.focus();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+    assertNotEquals('dog', dropDown.value);
+
+    MockInteractions.downAndUp(outsideElement, null, null);
+    assertNotEquals('dog', dropDown.value);
+    assertFalse(dropDown.$$('iron-dropdown').opened);
+  });
+
+  test('tab closes dropdown', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    // Dropdown opening is tied to focus.
+    dropDown.$.search.focus();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+
+    tab();
+    assertFalse(dropDown.$$('iron-dropdown').opened);
+  });
+
+  test('selected moves after up/down', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    dropDown.$.search.focus();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+
+    assertEquals(null, getSelectedElement());
+
+    down();
+    assertEquals('dog', getSelectedElement().textContent.trim());
+    down();
+    assertEquals('cat', getSelectedElement().textContent.trim());
+    down();
+    assertEquals('mouse', getSelectedElement().textContent.trim());
+    down();
+    assertEquals('dog', getSelectedElement().textContent.trim());
+
+    up();
+    assertEquals('mouse', getSelectedElement().textContent.trim());
+    up();
+    assertEquals('cat', getSelectedElement().textContent.trim());
+    up();
+    assertEquals('dog', getSelectedElement().textContent.trim());
+    up();
+    assertEquals('mouse', getSelectedElement().textContent.trim());
+
+    enter();
+    assertEquals('mouse', dropDown.value);
+    assertFalse(dropDown.$$('iron-dropdown').opened);
+  });
+
+  test('focus and up selects last item', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    dropDown.$.search.focus();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+
+    assertEquals(null, getSelectedElement());
+
+    up();
+    assertEquals('mouse', getSelectedElement().textContent.trim());
+  });
+
+  test('selected follows mouse', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    dropDown.$.search.focus();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+
+    assertEquals(null, getSelectedElement());
+
+    MockInteractions.move(getList()[1], {x: 0, y: 0}, {x: 0, y: 0}, 1);
+    assertEquals('cat', getSelectedElement().textContent.trim());
+    MockInteractions.move(getList()[2], {x: 0, y: 0}, {x: 0, y: 0}, 1);
+    assertEquals('mouse', getSelectedElement().textContent.trim());
+
+    // Interacting with the keyboard should update the selected element.
+    up();
+    assertEquals('cat', getSelectedElement().textContent.trim());
+
+    // When the user moves the mouse again, the selected element should change.
+    MockInteractions.move(getList()[0], {x: 0, y: 0}, {x: 0, y: 0}, 1);
+    assertEquals('dog', getSelectedElement().textContent.trim());
+  });
+
+  test('input retains focus', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    searchInput.focus();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+    assertEquals(searchInput, dropDown.shadowRoot.activeElement);
+
+    assertEquals(null, getSelectedElement());
+
+    down();
+    assertEquals('dog', getSelectedElement().textContent.trim());
+    assertEquals(searchInput, dropDown.shadowRoot.activeElement);
   });
 
   // If the error-message-allowed flag is passed and the |errorMessage| property

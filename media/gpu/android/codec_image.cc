@@ -187,6 +187,28 @@ void CodecImage::NotifyPromotionHint(bool promotion_hint,
       promotion_hint));
 }
 
+void CodecImage::ReleaseResources() {
+  ReleaseCodecBuffer();
+}
+
+bool CodecImage::IsUsingGpuMemory() const {
+  // Only the images which are bound to texture accounts for gpu memory.
+  return was_tex_image_bound_;
+}
+
+void CodecImage::UpdateAndBindTexImage() {
+  RenderToTextureOwnerFrontBuffer(BindingsMode::kEnsureTexImageBound);
+}
+
+bool CodecImage::HasTextureOwner() const {
+  return !!texture_owner();
+}
+
+gpu::gles2::Texture* CodecImage::GetTexture() const {
+  DCHECK(texture_owner());
+  return gpu::gles2::Texture::CheckedCast(texture_owner()->GetTextureBase());
+}
+
 bool CodecImage::RenderToFrontBuffer() {
   // This code is used to trigger early rendering of the image before it is used
   // for compositing, there is no need to bind the image.

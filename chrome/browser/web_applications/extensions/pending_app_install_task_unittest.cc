@@ -101,7 +101,7 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     DCHECK(!base::Contains(next_finalize_install_results_, url));
 
     AppId app_id;
-    if (code == InstallResultCode::kSuccess) {
+    if (code == InstallResultCode::kSuccessNewInstall) {
       app_id = GetAppIdForUrl(url);
     }
     next_finalize_install_results_[url] = {app_id, code};
@@ -344,7 +344,7 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
     data_retriever_->SetIcons(IconsMap{});
 
     install_finalizer_->SetNextFinalizeInstallResult(
-        options.url, InstallResultCode::kSuccess);
+        options.url, InstallResultCode::kSuccessNewInstall);
 
     install_finalizer_->SetNextCreateOsShortcutsResult(
         install_finalizer_->GetAppIdForUrl(options.url), true);
@@ -382,7 +382,7 @@ TEST_F(PendingAppInstallTaskTest,
             ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
                 .LookupAppId(kWebAppUrl);
 
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
         EXPECT_FALSE(IsPlaceholderApp(profile(), kWebAppUrl));
@@ -445,7 +445,7 @@ TEST_F(PendingAppInstallTaskTest,
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
@@ -473,7 +473,7 @@ TEST_F(PendingAppInstallTaskTest,
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
@@ -503,7 +503,7 @@ TEST_F(
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
@@ -530,7 +530,7 @@ TEST_F(PendingAppInstallTaskTest,
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
         EXPECT_TRUE(web_app_info().open_as_window);
         run_loop.Quit();
@@ -550,7 +550,7 @@ TEST_F(PendingAppInstallTaskTest,
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
         EXPECT_FALSE(web_app_info().open_as_window);
         run_loop.Quit();
@@ -569,7 +569,7 @@ TEST_F(PendingAppInstallTaskTest, WebAppOrShortcutFromContents_DefaultApp) {
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
         EXPECT_EQ(WebappInstallSource::INTERNAL_DEFAULT,
@@ -590,7 +590,7 @@ TEST_F(PendingAppInstallTaskTest, WebAppOrShortcutFromContents_AppFromPolicy) {
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
         EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
@@ -611,7 +611,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholder) {
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kRedirectedUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
         EXPECT_TRUE(IsPlaceholderApp(profile(), kWebAppUrl));
@@ -646,7 +646,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kRedirectedUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
 
         EXPECT_TRUE(IsPlaceholderApp(profile(), kWebAppUrl));
@@ -681,7 +681,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderTwice) {
     task->Install(
         web_contents(), WebAppUrlLoader::Result::kRedirectedUrlLoaded,
         base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-          EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+          EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
           placeholder_app_id = result.app_id.value();
 
           EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
@@ -696,7 +696,7 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholderTwice) {
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kRedirectedUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_EQ(placeholder_app_id, result.app_id.value());
 
         // There shouldn't be a second call to the finalizer.
@@ -721,7 +721,7 @@ TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderSucceeds) {
     task->Install(
         web_contents(), WebAppUrlLoader::Result::kRedirectedUrlLoaded,
         base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-          EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+          EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
           placeholder_app_id = result.app_id.value();
 
           EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
@@ -739,7 +739,7 @@ TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderSucceeds) {
   task->Install(
       web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
       base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
         EXPECT_TRUE(result.app_id.has_value());
         EXPECT_FALSE(IsPlaceholderApp(profile(), kWebAppUrl));
 
@@ -765,7 +765,7 @@ TEST_F(PendingAppInstallTaskTest, ReinstallPlaceholderFails) {
     task->Install(
         web_contents(), WebAppUrlLoader::Result::kRedirectedUrlLoaded,
         base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-          EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+          EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
           placeholder_app_id = result.app_id.value();
 
           EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
@@ -816,7 +816,7 @@ TEST_F(PendingAppInstallTaskTest, UninstallAndReplace) {
         base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
           app_id = *result.app_id;
 
-          EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+          EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
           EXPECT_EQ(app_id,
                     *ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
                          .LookupAppId(kWebAppUrl));
@@ -837,7 +837,7 @@ TEST_F(PendingAppInstallTaskTest, UninstallAndReplace) {
     task->Install(
         web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
         base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
-          EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+          EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
           EXPECT_EQ(app_id, *result.app_id);
 
           EXPECT_FALSE(ui_manager()->DidUninstallAndReplace("app3", app_id));

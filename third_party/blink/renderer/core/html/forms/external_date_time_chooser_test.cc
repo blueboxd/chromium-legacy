@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"

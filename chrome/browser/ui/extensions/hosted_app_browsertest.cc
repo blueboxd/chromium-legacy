@@ -1174,7 +1174,7 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallInstallableSite) {
   web_app::SetInstalledCallbackForTesting(
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
         app_id = installed_app_id;
         run_loop.Quit();
       }));

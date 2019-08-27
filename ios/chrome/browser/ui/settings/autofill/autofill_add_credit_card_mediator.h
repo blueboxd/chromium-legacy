@@ -7,12 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
 
 namespace autofill {
 class PersonalDataManager;
 }
+
+@protocol AddCreditCardMediatorDelegate;
 
 // The Mediator for validating and saving the credit card.
 @interface AutofillAddCreditCardMediator

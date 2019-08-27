@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 

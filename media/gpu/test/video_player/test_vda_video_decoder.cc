@@ -362,19 +362,19 @@ void TestVDAVideoDecoder::NotifyError(VideoDecodeAccelerator::Error error) {
 
   switch (error) {
     case VideoDecodeAccelerator::ILLEGAL_STATE:
-      LOG(FATAL) << "ILLEGAL_STATE";
+      LOG(ERROR) << "ILLEGAL_STATE";
       break;
     case VideoDecodeAccelerator::INVALID_ARGUMENT:
-      LOG(FATAL) << "INVALID_ARGUMENT";
+      LOG(ERROR) << "INVALID_ARGUMENT";
       break;
     case VideoDecodeAccelerator::UNREADABLE_INPUT:
-      LOG(FATAL) << "UNREADABLE_INPUT";
+      LOG(ERROR) << "UNREADABLE_INPUT";
       break;
     case VideoDecodeAccelerator::PLATFORM_FAILURE:
-      LOG(FATAL) << "PLATFORM_FAILURE";
+      LOG(ERROR) << "PLATFORM_FAILURE";
       break;
     default:
-      LOG(FATAL) << "Unknown error " << error;
+      LOG(ERROR) << "Unknown error " << error;
       break;
   }
 }

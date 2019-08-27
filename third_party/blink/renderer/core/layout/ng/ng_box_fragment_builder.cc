@@ -129,6 +129,14 @@ void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
                                      const LogicalOffset offset,
                                      const LayoutInline* inline_container) {
   const auto& fragment = child_layout_result.PhysicalFragment();
+  if (items_builder_) {
+    if (const NGPhysicalLineBoxFragment* line =
+            DynamicTo<NGPhysicalLineBoxFragment>(&fragment)) {
+      items_builder_->AddLine(*line, offset);
+      // TODO(kojii): We probably don't need to AddChild this line, but there
+      // maybe OOF objects. Investigate how to handle them.
+    }
+  }
   AddChild(fragment, offset, inline_container);
   if (fragment.IsBox())
     PropagateBreak(child_layout_result);

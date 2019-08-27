@@ -93,6 +93,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   std::vector<viz::SurfaceRange> GetChildIdsRanges();
 
+  bool BackdropFiltersPreventMerge(const viz::SurfaceId& surface_id);
+
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
 
   viz::FrameSinkId frame_sink_id_;

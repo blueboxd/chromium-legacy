@@ -685,7 +685,8 @@ Resource* ResourceFetcher::ResourceForStaticData(
   scoped_refptr<SharedBuffer> data;
   if (url.ProtocolIsData()) {
     int result;
-    std::tie(result, response, data) = network_utils::ParseDataURL(url);
+    std::tie(result, response, data) = network_utils::ParseDataURL(
+        url, params.GetResourceRequest().HttpMethod());
     if (result != net::OK) {
       return nullptr;
     }
@@ -2127,11 +2128,11 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
 }
 
 mojom::blink::BlobRegistry* ResourceFetcher::GetBlobRegistry() {
-  if (!blob_registry_ptr_) {
+  if (!blob_registry_remote_) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        MakeRequest(&blob_registry_ptr_, task_runner_));
+        blob_registry_remote_.BindNewPipeAndPassReceiver(task_runner_));
   }
-  return blob_registry_ptr_.get();
+  return blob_registry_remote_.get();
 }
 
 FrameScheduler* ResourceFetcher::GetFrameScheduler() {

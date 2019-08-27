@@ -74,8 +74,7 @@
         width: 100%;
       }
 
-      .list-item:focus,
-      .list-item:hover {
+      .list-item[selected_] {
         background-color: rgba(0, 0, 0, .04);
         outline: none;
       }
@@ -88,7 +87,8 @@
     <!-- |value| is one-way binding on purpose so that it doesn't change
       immediately as the user types unless the update-value-on-input flag is
       explicitly used. -->
-    <cr-input label="[[label]]" on-click="onClick_" value="[[value]]"
+    <cr-input label="[[label]]" on-focus="onFocus_" on-keydown="onKeyDown_"
+        value="[[value]]"
         on-input="onInput_" id="search" autofocus="[[autofocus]]"
         placeholder="[[placeholder]]" readonly="[[readonly]]"
         error-message="[[getErrorMessage_(errorMessage, errorMessageAllowed)]]"
@@ -100,11 +100,14 @@
         </div>
         <div id="dropdown-box">
           <iron-dropdown horizontal-align="left" vertical-align="top"
-              vertical-offset="4">
+              vertical-offset="4" no-cancel-on-outside-click
+              no-cancel-on-esc-key>
             <div slot="dropdown-content">
               <template is="dom-repeat" items="[[items]]"
                   filter="[[filterItems_(searchTerm_)]]">
-                <button class="list-item" on-click="onSelect_">[[item]]</button>
+                <button class="list-item" on-click="onSelect_" tabindex="-1">
+                  [[item]]
+                </button>
               </template>
             </div>
           </iron-dropdown>

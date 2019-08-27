@@ -140,13 +140,11 @@ std::unique_ptr<EntityData> CreateEntityDataFromPaymentsCustomerData(
 // static
 void AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
     const std::string& app_locale,
-    const base::RepeatingCallback<void(bool)>& active_callback,
     AutofillWebDataBackend* web_data_backend,
     AutofillWebDataService* web_data_service) {
   web_data_service->GetDBUserData()->SetUserData(
       &kAutofillWalletSyncBridgeUserDataKey,
       std::make_unique<AutofillWalletSyncBridge>(
-          active_callback,
           std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
               syncer::AUTOFILL_WALLET_DATA,
               /*dump_stack=*/base::RepeatingClosure()),
@@ -162,12 +160,9 @@ syncer::ModelTypeSyncBridge* AutofillWalletSyncBridge::FromWebDataService(
 }
 
 AutofillWalletSyncBridge::AutofillWalletSyncBridge(
-    const base::RepeatingCallback<void(bool)>& active_callback,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      active_callback_(active_callback),
-      initial_sync_done_(false),
       web_data_backend_(web_data_backend) {
   DCHECK(web_data_backend_);
 
@@ -201,11 +196,6 @@ base::Optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
   // metadata bridge can track changes in the data bridge and react accordingly.
   SetSyncData(entity_data, /*notify_metadata_bridge=*/true);
 
-  // After the first sync, we are sure that initial sync is done.
-  if (!initial_sync_done_) {
-    initial_sync_done_ = true;
-    active_callback_.Run(true);
-  }
   // TODO(crbug.com/853688): Update the AutofillTable API to know about write
   // errors and report them here.
   return base::nullopt;
@@ -260,16 +250,10 @@ void AutofillWalletSyncBridge::ApplyStopSyncChanges(
   // If a metadata change list gets passed in, that means sync is actually
   // disabled, so we want to delete the payments data.
   if (delete_metadata_change_list) {
-    if (initial_sync_done_) {
-      active_callback_.Run(false);
-    }
-
     // Do not notify the metadata bridge because we do not want to upstream the
     // deletions. The metadata bridge deletes its data independently when sync
     // gets stopped.
     SetSyncData(syncer::EntityChangeList(), /*notify_metadata_bridge=*/false);
-
-    initial_sync_done_ = false;
   }
 }
 
@@ -361,12 +345,7 @@ bool AutofillWalletSyncBridge::SetWalletCards(
       ComputeAutofillWalletDiff(existing_cards, wallet_cards);
 
   if (!diff.IsEmpty()) {
-    if (base::FeatureList::IsEnabled(
-            ::switches::kSyncUSSAutofillWalletMetadata)) {
-      table->SetServerCardsData(wallet_cards);
-    } else {
-      table->SetServerCreditCards(wallet_cards);
-    }
+    table->SetServerCardsData(wallet_cards);
     if (notify_metadata_bridge) {
       for (const CreditCardChange& change : diff.changes) {
         web_data_backend_->NotifyOfCreditCardChanged(change);
@@ -399,12 +378,7 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
       ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
 
   if (!diff.IsEmpty()) {
-    if (base::FeatureList::IsEnabled(
-            ::switches::kSyncUSSAutofillWalletMetadata)) {
-      table->SetServerAddressesData(wallet_addresses);
-    } else {
-      table->SetServerProfiles(wallet_addresses);
-    }
+    table->SetServerAddressesData(wallet_addresses);
     if (notify_metadata_bridge) {
       for (const AutofillProfileChange& change : diff.changes) {
         web_data_backend_->NotifyOfAutofillProfileChanged(change);
@@ -517,8 +491,6 @@ AutofillTable* AutofillWalletSyncBridge::GetAutofillTable() {
 }
 
 void AutofillWalletSyncBridge::LoadMetadata() {
-  DCHECK(!initial_sync_done_);
-
   if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
       !GetAutofillTable()) {
     change_processor()->ReportError(
@@ -535,10 +507,6 @@ void AutofillWalletSyncBridge::LoadMetadata() {
   }
 
   change_processor()->ModelReadyToSync(std::move(batch));
-  if (change_processor()->IsTrackingMetadata()) {
-    initial_sync_done_ = true;
-    active_callback_.Run(true);
-  }
 }
 
 }  // namespace autofill

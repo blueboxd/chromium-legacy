@@ -486,10 +486,11 @@ BlobRegistryImpl::~BlobRegistryImpl() {
     builder->Abort();
 }
 
-void BlobRegistryImpl::Bind(blink::mojom::BlobRegistryRequest request,
-                            std::unique_ptr<Delegate> delegate) {
+void BlobRegistryImpl::Bind(
+    mojo::PendingReceiver<blink::mojom::BlobRegistry> receiver,
+    std::unique_ptr<Delegate> delegate) {
   DCHECK(delegate);
-  bindings_.AddBinding(this, std::move(request), std::move(delegate));
+  receivers_.Add(this, std::move(receiver), std::move(delegate));
 }
 
 void BlobRegistryImpl::Register(
@@ -506,11 +507,12 @@ void BlobRegistryImpl::Register(
 
   if (uuid.empty() || context_->registry().HasEntry(uuid) ||
       base::Contains(blobs_under_construction_, uuid)) {
-    bindings_.ReportBadMessage("Invalid UUID passed to BlobRegistry::Register");
+    receivers_.ReportBadMessage(
+        "Invalid UUID passed to BlobRegistry::Register");
     return;
   }
 
-  Delegate* delegate = bindings_.dispatch_context().get();
+  Delegate* delegate = receivers_.current_context().get();
   DCHECK(delegate);
   for (const auto& element : elements) {
     if (element->is_file()) {
@@ -540,7 +542,7 @@ void BlobRegistryImpl::Register(
 
   blobs_under_construction_[uuid] = std::make_unique<BlobUnderConstruction>(
       this, uuid, content_type, content_disposition, std::move(elements),
-      bindings_.GetBadMessageCallback());
+      receivers_.GetBadMessageCallback());
 
   std::unique_ptr<BlobDataHandle> handle = context_->AddFutureBlob(
       uuid, content_type, content_disposition,
@@ -586,7 +588,7 @@ void BlobRegistryImpl::GetBlobFromUUID(
   }
 
   if (uuid.empty()) {
-    bindings_.ReportBadMessage(
+    receivers_.ReportBadMessage(
         "Invalid UUID passed to BlobRegistry::GetBlobFromUUID");
     return;
   }
@@ -605,7 +607,7 @@ void BlobRegistryImpl::URLStoreForOrigin(
   // TODO(mek): Pass origin on to BlobURLStoreImpl so it can use it to generate
   // Blob URLs, and verify at this point that the renderer can create URLs for
   // that origin.
-  Delegate* delegate = bindings_.dispatch_context().get();
+  Delegate* delegate = receivers_.current_context().get();
   DCHECK(delegate);
   auto binding = mojo::MakeStrongAssociatedBinding(
       std::make_unique<BlobURLStoreImpl>(context_, delegate),

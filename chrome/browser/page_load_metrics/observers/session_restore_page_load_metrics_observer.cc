@@ -63,8 +63,7 @@ SessionRestorePageLoadMetricsObserver::OnCommit(
 }
 
 void SessionRestorePageLoadMetricsObserver::OnFirstPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_paint.value(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(
@@ -75,7 +74,7 @@ void SessionRestorePageLoadMetricsObserver::OnFirstPaintInPage(
     // is no need to record again in FCP or FMP, because FP comes first.
     ukm::builders::
         TabManager_Experimental_SessionRestore_ForegroundTab_PageLoad(
-            extra_info.source_id)
+            GetDelegate().GetSourceId())
             .SetSessionRestoreTabCount(
                 g_browser_process->GetTabManager()->restored_tab_count())
             .SetSystemTabCount(
@@ -85,8 +84,7 @@ void SessionRestorePageLoadMetricsObserver::OnFirstPaintInPage(
 }
 
 void SessionRestorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_contentful_paint.value(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(
@@ -97,8 +95,7 @@ void SessionRestorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 
 void SessionRestorePageLoadMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
-        const page_load_metrics::mojom::PageLoadTiming& timing,
-        const page_load_metrics::PageLoadExtraInfo& extra_info) {
+        const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_meaningful_paint.value(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(

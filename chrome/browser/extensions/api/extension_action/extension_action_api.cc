@@ -166,8 +166,14 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
 
   if (event_name) {
     std::unique_ptr<base::ListValue> args(new base::ListValue());
+    // The action APIs (browserAction, pageAction, action) are only available
+    // to blessed extension contexts. As such, we deterministically know that
+    // the right context type here is blessed.
+    constexpr Feature::Context context_type =
+        Feature::BLESSED_EXTENSION_CONTEXT;
     ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-        ExtensionTabUtil::GetScrubTabBehavior(extension, web_contents);
+        ExtensionTabUtil::GetScrubTabBehavior(extension, context_type,
+                                              web_contents);
     args->Append(ExtensionTabUtil::CreateTabObject(
                      web_contents, scrub_tab_behavior, extension)
                      ->ToValue());

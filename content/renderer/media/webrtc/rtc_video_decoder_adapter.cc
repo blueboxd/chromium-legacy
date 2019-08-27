@@ -240,9 +240,13 @@ int32_t RTCVideoDecoderAdapter::Decode(
   // to software decoding. See https://crbug.com/webrtc/9304.
   if (video_codec_type_ == webrtc::kVideoCodecVP9 &&
       input_image.SpatialIndex().value_or(0) > 0) {
+#if defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
     if (!base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding)) {
       return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
     }
+#else
+    return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+#endif  // defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
   }
 
   if (missing_frames || !input_image._completeFrame) {

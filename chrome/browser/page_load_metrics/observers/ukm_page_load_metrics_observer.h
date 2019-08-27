@@ -57,19 +57,17 @@ class UkmPageLoadMetricsObserver
       const std::string& mime_type) const override;
 
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   ObservePolicy OnHidden(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   void OnFailedProvisionalLoad(
-      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info)
+      override;
 
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   void OnResourceDataUseObserved(
       content::RenderFrameHost* content,
@@ -81,8 +79,7 @@ class UkmPageLoadMetricsObserver
 
   void OnTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   void OnCpuTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
@@ -96,33 +93,29 @@ class UkmPageLoadMetricsObserver
   // Records page load timing related metrics available in PageLoadTiming, such
   // as first contentful paint.
   void RecordTimingMetrics(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
+      const page_load_metrics::mojom::PageLoadTiming& timing);
 
-  // Records metrics based on the PageLoadExtraInfo struct, as well as updating
-  // the URL. |app_background_time| should be set to a timestamp if the app was
-  // backgrounded, otherwise it should be set to a null TimeTicks.
-  void RecordPageLoadExtraInfoMetrics(
-      const page_load_metrics::PageLoadExtraInfo& info,
-      base::TimeTicks app_background_time);
+  // Records metrics based on the page load information exposed by the observer
+  // delegate, as well as updating the URL. |app_background_time| should be set
+  // to a timestamp if the app was backgrounded, otherwise it should be set to
+  // a null TimeTicks.
+  void RecordPageLoadMetrics(base::TimeTicks app_background_time);
 
   // Adds main resource timing metrics to |builder|.
   void ReportMainResourceTimingMetrics(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       ukm::builders::PageLoad* builder);
 
-  void ReportLayoutStability(const page_load_metrics::PageLoadExtraInfo& info);
+  void ReportLayoutStability();
 
   // Captures the site engagement score for the commited URL and
   // returns the score rounded to the nearest 10.
-  base::Optional<int64_t> GetRoundedSiteEngagementScore(
-      const page_load_metrics::PageLoadExtraInfo& info) const;
+  base::Optional<int64_t> GetRoundedSiteEngagementScore() const;
 
   // Returns whether third party cookie blocking is enabled for the committed
   // URL. This is only recorded for users who have prefs::kCookieControlsEnabled
   // set to true.
-  base::Optional<bool> GetThirdPartyCookieBlockingEnabled(
-      const page_load_metrics::PageLoadExtraInfo& info) const;
+  base::Optional<bool> GetThirdPartyCookieBlockingEnabled() const;
 
   // Records the metrics for the nostate prefetch to an event with UKM source ID
   // |source_id|.

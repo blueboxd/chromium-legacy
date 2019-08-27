@@ -10,7 +10,7 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
@@ -23,7 +23,7 @@ class AssistantSuggestionsModelObserver;
 class AssistantSuggestionsController
     : public AssistantControllerObserver,
       public AssistantUiModelObserver,
-      public DefaultVoiceInteractionObserver,
+      public AssistantStateObserver,
       public ProactiveSuggestionsClient::Delegate {
  public:
   explicit AssistantSuggestionsController(
@@ -55,8 +55,8 @@ class AssistantSuggestionsController
       scoped_refptr<ProactiveSuggestions> proactive_suggestions) override;
 
  private:
-  // DefaultVoiceInteractionObserver:
-  void OnVoiceInteractionContextEnabled(bool enabled) override;
+  // AssistantStateObserver:
+  void OnAssistantContextEnabled(bool enabled) override;
 
   void UpdateConversationStarters();
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 
-#include "ash/public/cpp/voice_interaction_controller.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -90,22 +90,22 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
   prefs->SetBoolean(prefs::kVoiceInteractionEnabled, true);
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
-  EXPECT_EQ(true, ash::VoiceInteractionController::Get()->settings_enabled());
+  EXPECT_EQ(true, ash::AssistantState::Get()->settings_enabled());
 
   ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled));
   prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled, true);
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled));
-  EXPECT_EQ(true, ash::VoiceInteractionController::Get()->context_enabled());
+  EXPECT_EQ(true, ash::AssistantState::Get()->context_enabled());
 
   ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
   prefs->SetBoolean(prefs::kVoiceInteractionHotwordEnabled, true);
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_EQ(true, ash::VoiceInteractionController::Get()->hotword_enabled());
+  EXPECT_EQ(true, ash::AssistantState::Get()->hotword_enabled());
 
   ASSERT_EQ("", prefs->GetString(language::prefs::kApplicationLocale));
   prefs->SetString(language::prefs::kApplicationLocale, "en-CA");
   ASSERT_EQ("en-CA", prefs->GetString(language::prefs::kApplicationLocale));
-  EXPECT_EQ("en-CA", ash::VoiceInteractionController::Get()->locale());
+  EXPECT_EQ("en-CA", ash::AssistantState::Get()->locale());
 }
 
 }  // namespace arc

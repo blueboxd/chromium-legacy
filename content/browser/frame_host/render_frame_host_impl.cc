@@ -4259,9 +4259,15 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       },
       base::Unretained(permission_service_context_.get())));
 
-  registry_->AddInterface(
-      base::Bind(&RenderFrameHostImpl::BindPresentationServiceRequest,
-                 base::Unretained(this)));
+  registry_->AddInterface(base::BindRepeating(
+      [](RenderFrameHostImpl* frame,
+         blink::mojom::PresentationServiceRequest request) {
+        if (!frame->presentation_service_)
+          frame->presentation_service_ = PresentationServiceImpl::Create(frame);
+
+        frame->presentation_service_->Bind(std::move(request));
+      },
+      base::Unretained(this)));
 
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
@@ -6260,14 +6266,6 @@ void RenderFrameHostImpl::BindAuthenticatorRequest(
   authenticator_impl_->Bind(std::move(receiver));
 }
 #endif
-
-void RenderFrameHostImpl::BindPresentationServiceRequest(
-    blink::mojom::PresentationServiceRequest request) {
-  if (!presentation_service_)
-    presentation_service_ = PresentationServiceImpl::Create(this);
-
-  presentation_service_->Bind(std::move(request));
-}
 
 void RenderFrameHostImpl::GetIdleManager(
     mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {

@@ -46,10 +46,8 @@ class SendResultsFatalException(SendResultException):
   pass
 
 
-def LuciAuthTokenGeneratorCallback(service_account_file):
+def LuciAuthTokenGeneratorCallback():
   args = ['luci-auth', 'token']
-  if service_account_file:
-    args += ['-service-account-json', service_account_file]
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if p.wait() == 0:
     return p.stdout.read()
@@ -60,7 +58,6 @@ def LuciAuthTokenGeneratorCallback(service_account_file):
 
 
 def SendResults(data, data_label, url, send_as_histograms=False,
-                service_account_file=None,
                 token_generator_callback=LuciAuthTokenGeneratorCallback,
                 num_retries=4):
   """Sends results to the Chrome Performance Dashboard.
@@ -73,14 +70,8 @@ def SendResults(data, data_label, url, send_as_histograms=False,
     logging purpose.
     url: Performance Dashboard URL (including schema).
     send_as_histograms: True if result is to be sent to /add_histograms.
-    service_account_file: string; path to service account file which is used
-      for authenticating when upload data to perf dashboard. This can be None
-      for the case of LUCI builder, which means the task service account of the
-      builder will be used.
     token_generator_callback: a callback for generating the authentication token
       to upload to perf dashboard.
-      This callback takes |service_account_file| and returns the token
-      string.
       If |token_generator_callback| is not specified, it's default to
       LuciAuthTokenGeneratorCallback.
     num_retries: Number of times to retry uploading to the perf dashboard upon
@@ -104,8 +95,7 @@ def SendResults(data, data_label, url, send_as_histograms=False,
       print 'Sending %s result of %s to dashboard (attempt %i out of %i).' % (
           data_type, data_label, i, num_retries)
       if send_as_histograms:
-        _SendHistogramJson(url, dashboard_data_str,
-                           service_account_file, token_generator_callback)
+        _SendHistogramJson(url, dashboard_data_str, token_generator_callback)
       else:
         # TODO(eakuefner): Remove this logic once all bots use histograms.
         _SendResultsJson(url, dashboard_data_str)
@@ -467,8 +457,7 @@ def _SendResultsJson(url, results_json):
     raise SendResultsRetryException(error)
 
 
-def _SendHistogramJson(url, histogramset_json,
-                       service_account_file, token_generator_callback):
+def _SendHistogramJson(url, histogramset_json, token_generator_callback):
   """POST a HistogramSet JSON to the Performance Dashboard.
 
   Args:
@@ -476,14 +465,14 @@ def _SendHistogramJson(url, histogramset_json,
         "https://chromeperf.appspot.com".
     histogramset_json: JSON string that contains a serialized HistogramSet.
 
-    For |service_account_file| and |token_generator_callback|, see SendResults's
+    For |token_generator_callback|, see SendResults's
     documentation.
 
   Returns:
     None if successful, or an error string if there were errors.
   """
   try:
-    oauth_token = token_generator_callback(service_account_file)
+    oauth_token = token_generator_callback()
 
     data = zlib.compress(histogramset_json)
     headers = {

@@ -30,8 +30,6 @@
 #include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -86,6 +84,7 @@ Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
 
 Service::~Service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  assistant_state_.RemoveObserver(this);
   auto* const session_controller = ash::SessionController::Get();
   if (observing_ash_session_ && session_controller) {
     session_controller->RemoveSessionActivationObserverForAccountId(account_id_,
@@ -118,8 +117,7 @@ bool Service::ShouldEnableHotword() {
 
   // Disable hotword if hotword is not set to always on and power source is not
   // connected.
-  if (!dsp_available &&
-      !pref_service_->GetBoolean(prefs::kAssistantHotwordAlwaysOn) &&
+  if (!dsp_available && !assistant_state_.hotword_always_on().value_or(false) &&
       !power_source_connected_) {
     return false;
   }
@@ -149,8 +147,9 @@ void Service::Init(mojom::ClientPtr client,
   client_ = std::move(client);
   device_actions_ = std::move(device_actions);
 
-  mojo::PendingRemote<ash::mojom::VoiceInteractionController> remote_controller;
-  client_->RequestVoiceInteractionController(
+  // TODO(b/138679823): Moving the logics into AssistantStateProxy.
+  mojo::PendingRemote<ash::mojom::AssistantStateController> remote_controller;
+  client_->RequestAssistantStateController(
       remote_controller.InitWithNewPipeAndPassReceiver());
   assistant_state_.Init(std::move(remote_controller));
   assistant_state_.AddObserver(this);
@@ -238,7 +237,7 @@ void Service::OnLockStateChanged(bool locked) {
   UpdateListeningState();
 }
 
-void Service::OnAssistantHotwordAlwaysOn() {
+void Service::OnAssistantHotwordAlwaysOn(bool hotword_always_on) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // No need to update hotword status if power source is connected.
   if (power_source_connected_)
@@ -247,11 +246,11 @@ void Service::OnAssistantHotwordAlwaysOn() {
   UpdateAssistantManagerState();
 }
 
-void Service::OnVoiceInteractionSettingsEnabled(bool enabled) {
+void Service::OnAssistantSettingsEnabled(bool enabled) {
   UpdateAssistantManagerState();
 }
 
-void Service::OnVoiceInteractionHotwordEnabled(bool enabled) {
+void Service::OnAssistantHotwordEnabled(bool enabled) {
   UpdateAssistantManagerState();
 }
 
@@ -336,14 +335,7 @@ void Service::OnPrefServiceConnected(
     return;
 
   pref_service_ = std::move(pref_service);
-
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(pref_service_.get());
-
-  pref_change_registrar_->Add(
-      chromeos::assistant::prefs::kAssistantHotwordAlwaysOn,
-      base::BindRepeating(&Service::OnAssistantHotwordAlwaysOn,
-                          base::Unretained(this)));
+  assistant_state_.RegisterPrefChanges(pref_service_.get());
 }
 
 identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {

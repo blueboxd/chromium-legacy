@@ -207,7 +207,7 @@ base::win::ScopedHICON IconUtil::CreateHICONFromSkBitmap(
     size_t bytes_per_line = (bitmap.width() + 0xF) / 16 * 2;
     size_t mask_bits_size = bytes_per_line * bitmap.height();
 
-    mask_bits.reset(new uint8_t[mask_bits_size]);
+    mask_bits = std::make_unique<uint8_t[]>(mask_bits_size);
     DCHECK(mask_bits.get());
 
     // Make all pixels transparent.

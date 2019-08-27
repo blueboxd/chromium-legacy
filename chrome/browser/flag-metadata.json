@@ -1377,11 +1377,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "enable-native-google-assistant",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-native-notifications",
     "owners": [ "peter", "finnur" ],
     "expiry_milestone": 76
@@ -2385,6 +2380,11 @@
     "expiry_milestone": 75
   },
   {
+    "name": "new-overview-tablet-layout",
+    "owners": [ "sammiequon" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "new-password-form-parsing",
     "owners": [ "dvadym" ],
     "expiry_milestone": 76
@@ -3183,11 +3183,6 @@
     // This flag is used for in-the-field debugging of animation issues on
     // Chrome OS.
     "expiry_milestone": -1
-  },
-  {
-    "name": "unfiltered-bluetooth-devices",
-    "owners": [ "sonnysasaka", "qiyuh@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "unified-consent",

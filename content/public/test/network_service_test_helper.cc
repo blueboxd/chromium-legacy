@@ -23,11 +23,9 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/http_network_session.h"
 #include "net/http/transport_security_state.h"
 #include "net/http/transport_security_state_test_util.h"
 #include "net/nqe/network_quality_estimator.h"
-#include "net/socket/client_socket_pool_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
@@ -225,14 +223,6 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::string value;
     base::Environment::Create()->GetVar(name, &value);
     std::move(callback).Run(value);
-  }
-
-  void GetMaxConnectionsPerProxy(
-      GetMaxConnectionsPerProxyCallback callback) override {
-    int max_sockets =
-        net::ClientSocketPoolManager::max_sockets_per_proxy_server(
-            net::HttpNetworkSession::NORMAL_SOCKET_POOL);
-    std::move(callback).Run(max_sockets);
   }
 
   void Log(const std::string& message, LogCallback callback) override {

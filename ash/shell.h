@@ -186,7 +186,6 @@ class TrayAction;
 class TrayBluetoothHelper;
 class VideoActivityNotifier;
 class VideoDetector;
-class VoiceInteractionController;
 class VpnList;
 class WallpaperControllerImpl;
 class WaylandServerController;
@@ -684,7 +683,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ToastManagerImpl> toast_manager_;
   std::unique_ptr<TouchDevicesController> touch_devices_controller_;
   std::unique_ptr<TrayAction> tray_action_;
-  std::unique_ptr<VoiceInteractionController> voice_interaction_controller_;
   std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperControllerImpl> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
+#include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -380,5 +381,18 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, AutoSigninNoFocus) {
   ui_test_utils::BrowserActivationWaiter waiter(browser());
   waiter.WaitForActivation();
 
+  EXPECT_FALSE(IsBubbleShowing());
+}
+
+// Test that triggering the leak detection dialog successfully hides a showing
+// bubble.
+IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, LeakPromptHidesBubble) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  SetupPendingPassword();
+  EXPECT_TRUE(IsBubbleShowing());
+
+  GetController()->OnCredentialLeak(
+      password_manager::CredentialLeakFlags::kPasswordSaved,
+      GURL("https://example.com"));
   EXPECT_FALSE(IsBubbleShowing());
 }

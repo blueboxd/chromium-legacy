@@ -148,8 +148,8 @@ class MessageCenterImplTest : public testing::Test {
   void SetUp() override {
     MessageCenter::Initialize(std::make_unique<FakeLockScreenController>());
     message_center_ = MessageCenter::Get();
-    loop_.reset(new base::MessageLoop);
-    run_loop_.reset(new base::RunLoop());
+    loop_ = std::make_unique<base::MessageLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
     closure_ = run_loop_->QuitClosure();
   }
 

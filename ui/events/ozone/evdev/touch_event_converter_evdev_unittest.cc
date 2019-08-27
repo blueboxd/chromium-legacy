@@ -242,17 +242,17 @@ class TouchEventConverterEvdevTest : public testing::Test {
     // Device creation happens on a worker thread since it may involve blocking
     // operations. Simulate that by creating it before creating a UI message
     // loop.
-    shared_palm_state_.reset(new ui::SharedPalmDetectionFilterState);
+    shared_palm_state_ = std::make_unique<ui::SharedPalmDetectionFilterState>();
     EventDeviceInfo devinfo;
-    dispatcher_.reset(new ui::MockDeviceEventDispatcherEvdev(
+    dispatcher_ = std::make_unique<ui::MockDeviceEventDispatcherEvdev>(
         base::BindRepeating(&TouchEventConverterEvdevTest::DispatchCallback,
-                            base::Unretained(this))));
-    device_.reset(new ui::MockTouchEventConverterEvdev(
+                            base::Unretained(this)));
+    device_ = std::make_unique<ui::MockTouchEventConverterEvdev>(
         std::move(events_in), base::FilePath(kTestDevicePath), devinfo,
-        shared_palm_state_.get(), dispatcher_.get()));
+        shared_palm_state_.get(), dispatcher_.get());
     device_->Initialize(devinfo);
 
-    test_clock_.reset(new ui::test::ScopedEventTestTickClock());
+    test_clock_ = std::make_unique<ui::test::ScopedEventTestTickClock>();
     ui::DeviceDataManager::CreateInstance();
   }
 

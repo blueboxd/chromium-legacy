@@ -7571,6 +7571,14 @@ bool GLES2DecoderImpl::GetHelper(
         Sampler* sampler =
             state_.sampler_units[state_.active_texture_unit].get();
         *params = sampler ? sampler->client_id() : 0;
+
+#if DCHECK_IS_ON()
+        if (sampler) {
+          GLint bound_sampler = 0;
+          glGetIntegerv(GL_SAMPLER_BINDING, &bound_sampler);
+          DCHECK_EQ(static_cast<GLuint>(bound_sampler), sampler->service_id());
+        }
+#endif
       }
       return true;
     case GL_TRANSFORM_FEEDBACK_BINDING:

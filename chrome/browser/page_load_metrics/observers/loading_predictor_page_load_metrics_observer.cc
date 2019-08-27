@@ -65,19 +65,17 @@ LoadingPredictorPageLoadMetricsObserver::OnStart(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 LoadingPredictorPageLoadMetricsObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   record_histogram_preconnectable_ = false;
   return CONTINUE_OBSERVING;
 }
 
 void LoadingPredictorPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   predictors::NavigationID navigation_id(GetDelegate().GetWebContents());
 
   collector_->RecordFirstContentfulPaint(
-      navigation_id, extra_info.navigation_start +
+      navigation_id, GetDelegate().GetNavigationStart() +
                          timing.paint_timing->first_contentful_paint.value());
   if (record_histogram_preconnectable_) {
     PAGE_LOAD_HISTOGRAM(
@@ -88,8 +86,7 @@ void LoadingPredictorPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 
 void LoadingPredictorPageLoadMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
-        const page_load_metrics::mojom::PageLoadTiming& timing,
-        const page_load_metrics::PageLoadExtraInfo& extra_info) {
+        const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (record_histogram_preconnectable_) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramLoadingPredictorFirstMeaningfulPaintPreconnectable,

@@ -12,7 +12,7 @@ class OpenPalmDetectionFilterTest : public testing::Test {
  public:
   OpenPalmDetectionFilterTest() = default;
   void SetUp() override {
-    shared_palm_state.reset(new SharedPalmDetectionFilterState);
+    shared_palm_state = std::make_unique<SharedPalmDetectionFilterState>();
     palm_detection_filter_.reset(
         new OpenPalmDetectionFilter(shared_palm_state.get()));
   }

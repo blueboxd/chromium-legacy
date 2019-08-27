@@ -338,7 +338,13 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
   DISALLOW_COPY_AND_ASSIGN(TabManagerTestWithTwoTabs);
 };
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
+// Flaky on Linux/ChromeOS only. http://crbug.com/997719
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_TabManagerBasics DISABLED_TabManagerBasics
+#else
+#define MAYBE_TabManagerBasics TabManagerBasics
+#endif
+IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   using content::WindowedNotificationObserver;
 
   // Get three tabs open.

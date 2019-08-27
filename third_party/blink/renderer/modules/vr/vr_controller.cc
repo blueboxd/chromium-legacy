@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -18,7 +19,6 @@ namespace blink {
 VRController::VRController(NavigatorVR* navigator_vr)
     : ContextLifecycleObserver(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
-      binding_(this),
       feature_handle_for_scheduler_(
           navigator_vr->GetDocument()->GetScheduler()->RegisterFeature(
               SchedulingPolicy::Feature::kWebVR,
@@ -27,13 +27,11 @@ VRController::VRController(NavigatorVR* navigator_vr)
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       navigator_vr->GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   navigator_vr->GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&service_, task_runner));
-  service_.set_connection_error_handler(
+      service_.BindNewPipeAndPassReceiver(task_runner));
+  service_.set_disconnect_handler(
       WTF::Bind(&VRController::Dispose, WrapWeakPersistent(this)));
 
-  device::mojom::blink::VRServiceClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
-  service_->SetClient(std::move(client));
+  service_->SetClient(receiver_.BindNewPipeAndPassRemote(task_runner));
 
   // Request display info. If we get it, we have a device.
   service_->GetImmersiveVRDisplayInfo(WTF::Bind(
@@ -225,7 +223,7 @@ void VRController::Dispose() {
   // If the document context was destroyed, shut down the client connection
   // and never call the mojo service again.
   service_.reset();
-  binding_.Close();
+  receiver_.reset();
 
   // Shutdown all displays' message pipe
   if (display_) {

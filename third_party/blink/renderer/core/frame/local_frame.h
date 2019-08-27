@@ -147,6 +147,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DidChangeVisibilityState() override;
   void DidFreeze() override;
   void DidResume() override;
+  void HookBackForwardCacheEviction() override;
+  void RemoveBackForwardCacheEviction() override;
   // This sets the is_inert_ flag and also recurses through this frame's
   // subtree, updating the inert bit on all descendant frames.
   void SetIsInert(bool) override;

@@ -10,6 +10,7 @@
 #include "content/public/browser/devtools_permission_overrides.h"
 #include "content/public/browser/permission_controller.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -32,10 +33,10 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
   // For the given |origin|, grant permissions in |overrides| and reject all
   // others.
   OverrideStatus GrantOverridesForDevTools(
-      const GURL& origin,
+      const url::Origin& origin,
       const std::vector<PermissionType>& permissions);
   OverrideStatus SetOverrideForDevTools(
-      const GURL& origin,
+      const url::Origin& origin,
       const PermissionType& permission,
       const blink::mojom::PermissionStatus& status);
   void ResetOverridesForDevTools();
@@ -91,7 +92,7 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
   void NotifyChangedSubscriptions(const SubscriptionsStatusMap& old_statuses);
   void OnDelegatePermissionStatusChange(Subscription* subscription,
                                         blink::mojom::PermissionStatus status);
-  void UpdateDelegateOverridesForDevTools(const GURL& origin);
+  void UpdateDelegateOverridesForDevTools(const url::Origin& origin);
 
   DevToolsPermissionOverrides devtools_permission_overrides_;
   SubscriptionsMap subscriptions_;

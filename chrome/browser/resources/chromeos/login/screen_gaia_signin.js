@@ -1222,6 +1222,9 @@ Polymer({
       chrome.send(
           'completeAdAuthentication',
           [credentials.username, credentials.password]);
+    } else if (credentials.publicSAML) {
+      this.email_ = credentials.email;
+      chrome.send('launchSAMLPublicSession', [credentials.email]);
     } else if (credentials.useOffline) {
       this.email_ = credentials.email;
       chrome.send(

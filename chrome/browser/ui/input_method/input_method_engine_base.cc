@@ -209,7 +209,7 @@ void InputMethodEngineBase::Enable(const std::string& component_id) {
 void InputMethodEngineBase::Disable() {
   std::string last_component_id{active_component_id_};
   active_component_id_.clear();
-  ConfirmCompositionText();
+  ConfirmCompositionText(/* reset_engine */ true);
   observer_->OnDeactivated(last_component_id);
 }
 
@@ -412,7 +412,7 @@ bool InputMethodEngineBase::SetCompositionRange(
 
   // When there is composition text, commit it to the text field first before
   // changing the composition range.
-  ConfirmCompositionText();
+  ConfirmCompositionText(/* reset_engine */ false);
 
   std::vector<ui::ImeTextSpan> text_spans;
   for (const auto& segment : segments) {
@@ -487,11 +487,11 @@ void InputMethodEngineBase::DeleteSurroundingTextToInputContext(
     input_context->DeleteSurroundingText(offset, number_of_chars);
 }
 
-void InputMethodEngineBase::ConfirmCompositionText() {
+void InputMethodEngineBase::ConfirmCompositionText(bool reset_engine) {
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (input_context)
-    input_context->ConfirmCompositionText();
+    input_context->ConfirmCompositionText(reset_engine);
 }
 
 }  // namespace input_method

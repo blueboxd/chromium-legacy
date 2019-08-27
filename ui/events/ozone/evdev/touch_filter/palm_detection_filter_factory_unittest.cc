@@ -26,7 +26,7 @@ class PalmDetectionFilterFactoryTest : public testing::Test {
     EXPECT_TRUE(
         CapabilitiesToDeviceInfo(kNocturneStylus, &nocturne_stylus_info_));
     EXPECT_TRUE(CapabilitiesToDeviceInfo(kEveStylus, &eve_stylus_info_));
-    scoped_feature_list_.reset(new base::test::ScopedFeatureList);
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
  protected:

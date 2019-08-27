@@ -18,11 +18,7 @@ const char kAdvancedProtectionDownloadLearnMoreURL[] =
     "https://support.google.com/accounts/?p=ap_faq";
 
 const char kBluetoothAdapterOffHelpURL[] =
-#if defined(OS_CHROMEOS)
-    "chrome://settings/?search=bluetooth";
-#else
     "https://support.google.com/chrome?p=bluetooth";
-#endif
 
 const char kCastCloudServicesHelpURL[] =
     "https://support.google.com/chromecast/?p=casting_cloud_services";
@@ -159,6 +155,17 @@ const char kGoogleAccountChooserURL[] =
     "https://accounts.google.com/AccountChooser";
 
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
+
+const char kPasswordCheckupURL[] =
+#if defined(OS_ANDROID)
+    "https://passwords.google.com/checkup/"
+    "start?utm_source=chrome&utm_medium=android&utm_campaign=leak_dialog&crch="
+    "true";
+#else
+    "https://passwords.google.com/checkup/"
+    "start?utm_source=chrome&utm_medium=desktop&utm_campaign=leak_dialog&crch="
+    "true";
+#endif
 
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";

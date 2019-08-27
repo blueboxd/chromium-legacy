@@ -189,6 +189,8 @@ class Command(object):
   SET_USER_VERIFIED = (
       _Method.POST,
       '/session/:sessionId/webauthn/authenticator/:authenticatorId/uv')
+  SET_PERMISSION = (
+      _Method.POST, '/session/:sessionId/permissions')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

@@ -1281,8 +1281,6 @@ TransformationMatrix& TransformationMatrix::Zoom(double zoom_factor) {
 // prod.Multiply(rhs);
 // lhs.MapPoint(rhs.MapPoint(p)) == prod.MapPoint(p)
 // Also 'prod' corresponds to CSS transform:rotateZ(90deg)translate(12px,34px).
-// TODO(crbug.com/584508): As of 2017-04-11, the ARM64 CQ bots skip
-// blink_platform_unittests, therefore the ARM64 branch is not tested by CQ.
 TransformationMatrix& TransformationMatrix::Multiply(
     const TransformationMatrix& mat) {
 #if defined(ARCH_CPU_ARM64)

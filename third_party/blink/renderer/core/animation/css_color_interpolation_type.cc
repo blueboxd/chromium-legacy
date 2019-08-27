@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 
@@ -72,7 +73,9 @@ CSSColorInterpolationType::CreateInterpolableColor(CSSValueID keyword) {
       return CreateInterpolableColor(LayoutTheme::GetTheme().FocusRingColor());
     default:
       DCHECK(StyleColor::IsColorKeyword(keyword));
-      return CreateInterpolableColor(StyleColor::ColorFromKeyword(keyword));
+      // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
+      return CreateInterpolableColor(StyleColor::ColorFromKeyword(
+          keyword, ComputedStyle::InitialStyle().UsedColorScheme()));
   }
 }
 

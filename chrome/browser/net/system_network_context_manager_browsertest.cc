@@ -4,14 +4,11 @@
 
 #include "chrome/browser/net/system_network_context_manager.h"
 
-#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -21,23 +18,12 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
-#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/network_service_util.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
-#include "net/socket/client_socket_pool_manager.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/network_service_test.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -271,77 +257,6 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
   EXPECT_EQ(true, dynamic_params->allow_gssapi_library_load);
 #endif  // defined(OS_CHROMEOS)
-}
-
-IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest,
-                       DefaultMaxConnectionsPerProxy) {
-  int max_connections = 0;
-  if (content::IsInProcessNetworkService()) {
-    base::RunLoop run_loop;
-    content::GetNetworkTaskRunner()->PostTask(
-        FROM_HERE, base::BindLambdaForTesting([&run_loop, &max_connections] {
-          max_connections =
-              net::ClientSocketPoolManager::max_sockets_per_proxy_server(
-                  net::HttpNetworkSession::NORMAL_SOCKET_POOL);
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-  } else {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
-
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-
-    bool available =
-        network_service_test->GetMaxConnectionsPerProxy(&max_connections);
-    EXPECT_TRUE(available);
-  }
-  EXPECT_EQ(net::DefaultMaxValues::kDefaultMaxSocketsPerProxyServer,
-            max_connections);
-}
-
-class SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest
-    : public SystemNetworkContextManagerBrowsertest {
- public:
-  const int kTestMaxConnectionsPerProxy = 42;
-
-  SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest() = default;
-  ~SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest() override =
-      default;
-
-  void SetUpInProcessBrowserTestFixture() override {
-    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-    policy::PolicyMap policies;
-    policies.Set(policy::key::kMaxConnectionsPerProxy,
-                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(kTestMaxConnectionsPerProxy),
-                 /*external_data_fetcher=*/nullptr);
-    provider_.UpdateChromePolicy(policies);
-  }
-
- private:
-  policy::MockConfigurationPolicyProvider provider_;
-};
-
-// Flaky on Linux Tests. https://crbug.com/993059
-IN_PROC_BROWSER_TEST_F(
-    SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest,
-    DISABLED_MaxConnectionsPerProxy) {
-  network::mojom::NetworkServiceTestPtr network_service_test;
-  content::GetSystemConnector()->BindInterface(
-      content::mojom::kNetworkServiceName, &network_service_test);
-
-  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-
-  int max_connections = 0;
-  bool available =
-      network_service_test->GetMaxConnectionsPerProxy(&max_connections);
-  EXPECT_TRUE(available);
-  EXPECT_EQ(kTestMaxConnectionsPerProxy, max_connections);
 }
 
 class SystemNetworkContextManagerStubResolverBrowsertest

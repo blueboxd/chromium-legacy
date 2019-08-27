@@ -7,7 +7,7 @@
 #include <sstream>
 #include <utility>
 
-#include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/public/notification_data.h"
@@ -105,8 +105,12 @@ std::string DebugString(const NotificationEntry* entry) {
            << " : " << static_cast<int>(mapping.second);
   }
 
-  stream << " \n small_icons_id:" << entry->small_icon_uuid << "  ";
-  stream << " \n large_icons_id:" << entry->large_icon_uuid << "  ";
+  if (base::Contains(entry->icons_uuid, IconType::kSmallIcon))
+    stream << " \n small_icons_id:"
+           << entry->icons_uuid.at(IconType::kSmallIcon);
+  if (base::Contains(entry->icons_uuid, IconType::kLargeIcon))
+    stream << " \n large_icons_id:"
+           << entry->icons_uuid.at(IconType::kLargeIcon);
   return stream.str();
 }
 

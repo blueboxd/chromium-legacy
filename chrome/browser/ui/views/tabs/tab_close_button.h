@@ -46,6 +46,7 @@ class TabCloseButton : public views::ImageButton,
   const char* GetClassName() const override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
  protected:
   void PaintButtonContents(gfx::Canvas* canvas) override;

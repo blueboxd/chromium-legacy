@@ -239,7 +239,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   void ApplyPanGestureScroll(int scroll_x, int scroll_y) override;
   void ApplyPanGestureFling(int scroll_x, int scroll_y) override;
   void ApplyPanGestureScrollBegin(int scroll_x, int scroll_y) override;
-  void ApplyPanGestureScrollEnd() override;
+  void ApplyPanGestureScrollEnd(bool transitioning_to_pinch) override;
   void ApplyPanGestureFlingBegin() override;
   void ApplyPanGestureFlingEnd() override;
 

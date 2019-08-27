@@ -52,6 +52,24 @@ suite('cr-drawer', function() {
         });
   });
 
+  test('tapping icon closes drawer', async () => {
+    // Create a drawer with an icon and open it.
+    document.body.innerHTML = `
+      <cr-drawer id="drawer" align="ltr" icon-name="menu" icon-title="close">
+      </cr-drawer>
+    `;
+    Polymer.dom.flush();
+    const drawer = document.getElementById('drawer');
+    drawer.openDrawer();
+    await test_util.eventToPromise('cr-drawer-opened', drawer);
+
+    // Tapping the icon closes the drawer.
+    MockInteractions.tap(drawer.$.iconButton);
+    await test_util.eventToPromise('close', drawer);
+    assertFalse(drawer.open);
+    assertTrue(drawer.wasCanceled());
+  });
+
   test('align=ltr', function() {
     const drawer = createDrawer('ltr');
     drawer.openDrawer();

@@ -114,8 +114,11 @@ class UI_BASE_EXPORT WindowEventTarget {
   // to ApplyPanGestureScroll(), ApplyPanGestureScrollEnd(),
   // ApplyPanGestureFlingBegin(), any number of calls to ApplyPanGestureFling(),
   // and finally ApplyPanGestureFlingEnd().
+  // |transition_to_pinch| is a hint to know if the scroll end will be followed
+  // by a pinch begin or not, so that momentum_phase can be set to Blocked if
+  // a momentum scroll/fling will not be happening next.
   virtual void ApplyPanGestureScrollBegin(int scroll_x, int scroll_y) = 0;
-  virtual void ApplyPanGestureScrollEnd() = 0;
+  virtual void ApplyPanGestureScrollEnd(bool transition_to_pinch) = 0;
   virtual void ApplyPanGestureFlingBegin() = 0;
   virtual void ApplyPanGestureFlingEnd() = 0;
 

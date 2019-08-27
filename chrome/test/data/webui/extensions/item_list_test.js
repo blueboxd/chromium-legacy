@@ -106,7 +106,7 @@ cr.define('extension_item_list_tests', function() {
     test(assert(TestNames.LoadTimeData), function() {
       // Check that loadTimeData contains these values.
       loadTimeData.getBoolean('isManaged');
-      loadTimeData.getString('managedByOrg');
+      loadTimeData.getString('browserManagedByOrg');
     });
   });
 

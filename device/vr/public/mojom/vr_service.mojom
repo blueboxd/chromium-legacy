@@ -422,7 +422,7 @@ union RequestSessionResult {
 interface VRService {
   // Optionally supply a VRServiceClient to listen for changes to the XRDevice.
   // A bad message will be reported if this is called multiple times.
-  SetClient(VRServiceClient client);
+  SetClient(pending_remote<VRServiceClient> client);
 
   // WebVR 1.1 functionality compatibility method. To stop listening pass a null
   // client.

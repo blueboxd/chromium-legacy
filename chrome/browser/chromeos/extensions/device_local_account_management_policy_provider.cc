@@ -832,7 +832,8 @@ std::string DeviceLocalAccountManagementPolicyProvider::
 bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
     const extensions::Extension* extension,
     base::string16* error) const {
-  if (account_type_ == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION) {
+  if (account_type_ == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
+      account_type_ == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION) {
     // Allow extension if it is a component of Chrome.
     if (extension->location() == extensions::Manifest::EXTERNAL_COMPONENT ||
         extension->location() == extensions::Manifest::COMPONENT) {

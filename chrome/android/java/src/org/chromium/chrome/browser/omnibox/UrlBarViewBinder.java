@@ -55,6 +55,7 @@ class UrlBarViewBinder {
             UrlBarTextState state = model.get(UrlBarProperties.TEXT_STATE);
             view.setIgnoreTextChangesForAutocomplete(true);
             view.setText(state.text);
+            view.setTextForAutofillServices(state.textForAutofillServices);
             view.setScrollState(state.scrollType, state.scrollToIndex);
             view.setIgnoreTextChangesForAutocomplete(false);
 

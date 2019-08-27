@@ -129,8 +129,7 @@ UseCounterPageLoadMetricsObserver::OnCommit(
 
 void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
     content::RenderFrameHost* rfh,
-    const Features& features,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const Features& features) {
   for (WebFeature feature : features.features) {
     // Verify that kPageVisits is observed at most once per observer.
     if (feature == WebFeature::kPageVisits) {
@@ -217,29 +216,26 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
 }
 
 void UseCounterPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    extra_info.source_id);
+                    GetDelegate().GetSourceId());
 }
 
 void UseCounterPageLoadMetricsObserver::OnFailedProvisionalLoad(
     const page_load_metrics::FailedProvisionalLoadInfo&
-        failed_provisional_load_info,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+        failed_provisional_load_info) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    extra_info.source_id);
+                    GetDelegate().GetSourceId());
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 UseCounterPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
                     main_frame_features_recorded_, &ukm_features_recorded_,
-                    extra_info.source_id);
+                    GetDelegate().GetSourceId());
   return CONTINUE_OBSERVING;
 }
 

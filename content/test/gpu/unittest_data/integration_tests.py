@@ -38,6 +38,13 @@ class _BaseSampleIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.StartBrowser()
 
   @classmethod
+  def GenerateTags(cls, possible_browser, finder_options):
+    # TODO(crbug.com/992260) Delete this after crrev.com/c/1769732 is merged.
+    # We should keep this for now so that a browser instance is not spawned
+    del possible_browser, finder_options
+    return []
+
+  @classmethod
   def AddCommandlineArgs(cls, parser):
     super(_BaseSampleIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option('--test-state-json-path',
@@ -58,11 +65,6 @@ class SimpleTest(_BaseSampleIntegrationTest):
     'num_flaky_runs_to_fail': 2,
     'num_browser_starts': 0
   }
-
-  @classmethod
-  def GenerateTags(cls, finder_options, possible_browser):
-    del finder_options, possible_browser
-    return ['foo']
 
   @classmethod
   def Name(cls):
@@ -201,8 +203,16 @@ class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
   _flaky_test_run = 0
 
   @classmethod
-  def GenerateTags(cls, finder_options, possible_browser):
-    del finder_options, possible_browser
+  def GenerateTags(cls, possible_browser, finder_options):
+    # TODO(crbug.com/992260) Delete this after crrev.com/c/1769732 is merged.
+    # We should keep this for now so that a browser instance is not spawned
+    del possible_browser, finder_options
+    return cls.GetPlatformTags(
+        fakes.FakeBrowser(fakes.FakeLinuxPlatform, 'debug'))
+
+  @classmethod
+  def GetPlatformTags(cls, browser):
+    assert isinstance(browser, fakes.FakeBrowser)
     return ['foo']
 
   @classmethod
@@ -279,11 +289,6 @@ class TestAlsoRunDisabledTests(_BaseSampleIntegrationTest):
   @classmethod
   def Name(cls):
     return 'test_also_run_disabled_tests'
-
-  @classmethod
-  def GenerateTags(cls, finder_options, possible_browser):
-    del finder_options, possible_browser
-    return ['foo']
 
   @classmethod
   def GenerateGpuTests(cls, options):

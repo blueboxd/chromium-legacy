@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "weblayer/public/browser_observer.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -37,9 +38,9 @@ class Profile;
 
 // This represents one window of the Web Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-class Shell {
+class Shell : public BrowserObserver {
  public:
-  ~Shell();
+  ~Shell() override;
 
   void LoadURL(const GURL& url);
   void GoBackOrForward(int offset);
@@ -71,6 +72,11 @@ class Shell {
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
   explicit Shell(std::unique_ptr<BrowserController> browser_controller);
+
+  // BrowserObserver implementation:
+  void LoadingStateChanged(bool is_loading,
+                           bool to_different_document) override;
+  void DisplayedURLChanged(const GURL& url) override;
 
   // Helper to create a new Shell.
   static Shell* CreateShell(
@@ -112,14 +118,6 @@ class Shell {
 
   // Set the title of shell window
   void PlatformSetTitle(const base::string16& title);
-
-#if defined(OS_ANDROID)
-  void PlatformToggleFullscreenModeForTab(WebContents* web_contents,
-                                          bool enter_fullscreen);
-
-  bool PlatformIsFullscreenForTabOrPending(
-      const WebContents* web_contents) const;
-#endif
 
   std::unique_ptr<BrowserController> browser_controller_;
 

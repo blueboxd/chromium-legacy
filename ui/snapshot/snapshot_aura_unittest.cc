@@ -136,7 +136,8 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
   }
 
   void SetupTestWindow(const gfx::Rect& window_bounds) {
-    delegate_.reset(new TestPaintingWindowDelegate(window_bounds.size()));
+    delegate_ =
+        std::make_unique<TestPaintingWindowDelegate>(window_bounds.size());
     test_window_.reset(aura::test::CreateTestWindowWithDelegate(
         delegate_.get(), 0, window_bounds, root_window()));
   }

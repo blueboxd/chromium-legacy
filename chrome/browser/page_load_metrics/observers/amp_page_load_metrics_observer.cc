@@ -124,8 +124,7 @@ void AMPPageLoadMetricsObserver::OnCommitSameDocumentNavigation(
 }
 
 void AMPPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -168,8 +167,7 @@ void AMPPageLoadMetricsObserver::OnFrameDeleted(content::RenderFrameHost* rfh) {
 
 void AMPPageLoadMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (subframe_rfh == nullptr)
     return;
 
@@ -182,8 +180,7 @@ void AMPPageLoadMetricsObserver::OnTimingUpdate(
 
 void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
     content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::FrameRenderDataUpdate& render_data,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::FrameRenderDataUpdate& render_data) {
   if (subframe_rfh == nullptr)
     return;
 
@@ -197,8 +194,7 @@ void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
 }
 
 void AMPPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   MaybeRecordAmpDocumentMetrics();
   current_main_frame_nav_info_ = nullptr;
 }
@@ -227,9 +223,8 @@ void AMPPageLoadMetricsObserver::ProcessMainFrameNavigation(
 
 void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     content::RenderFrameHost* subframe_rfh,
-    int behavior_flags,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordLoadingBehaviorObserved(info);
+    int behavior_flags) {
+  RecordLoadingBehaviorObserved();
 
   if (subframe_rfh == nullptr)
     return;
@@ -259,12 +254,11 @@ void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
   }
 }
 
-void AMPPageLoadMetricsObserver::RecordLoadingBehaviorObserved(
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  ukm::builders::AmpPageLoad builder(info.source_id);
+void AMPPageLoadMetricsObserver::RecordLoadingBehaviorObserved() {
+  ukm::builders::AmpPageLoad builder(GetDelegate().GetSourceId());
   bool should_record = false;
   if (!observed_amp_main_frame_ &&
-      (info.main_frame_metadata.behavior_flags &
+      (GetDelegate().GetMainFrameMetadata().behavior_flags &
        blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) !=
           0) {
     builder.SetMainFrameAmpPageLoad(true);
@@ -273,7 +267,7 @@ void AMPPageLoadMetricsObserver::RecordLoadingBehaviorObserved(
   }
 
   if (!observed_amp_sub_frame_ &&
-      (info.subframe_metadata.behavior_flags &
+      (GetDelegate().GetSubframeMetadata().behavior_flags &
        blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) !=
           0) {
     builder.SetSubFrameAmpPageLoad(true);

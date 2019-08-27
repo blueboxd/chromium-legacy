@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "device/base/features.h"
 
 namespace device {
@@ -64,7 +65,7 @@ BluetoothAdapter::DeviceList GetLimitedNumDevices(
 // Filter out unknown devices from the list.
 BluetoothAdapter::DeviceList FilterUnknownDevices(
     const BluetoothAdapter::DeviceList& devices) {
-  if (base::FeatureList::IsEnabled(device::kUnfilteredBluetoothDevices))
+  if (chromeos::switches::IsUnfilteredBluetoothDevicesEnabled())
     return devices;
 
   BluetoothAdapter::DeviceList result;

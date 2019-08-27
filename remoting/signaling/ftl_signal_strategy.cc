@@ -325,6 +325,10 @@ void FtlSignalStrategy::Core::OnMessageReceived(
   DCHECK(message.xmpp().has_stanza());
   auto stanza = base::WrapUnique<jingle_xmpp::XmlElement>(
       jingle_xmpp::XmlElement::ForStr(message.xmpp().stanza()));
+  if (!stanza) {
+    LOG(WARNING) << "Failed to parse XMPP: " << message.xmpp().stanza();
+    return;
+  }
   OnStanza(sender_address, std::move(stanza));
 }
 

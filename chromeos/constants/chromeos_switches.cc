@@ -426,8 +426,13 @@ const char kOobeSkipToLogin[] = "oobe-skip-to-login";
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
 
-// Url addrress of SAML provider for a SAML public session.
-// TODO: Remove when https://crbug.com/984021 is fixed.
+// SAML assertion consumer URL, used to detect when Gaia-less SAML flows end
+// (e.g. for SAML managed guest sessions)
+// TODO(984021): Remove when URL is sent by DMServer.
+const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
+
+// Url address of SAML provider for a SAML public session.
+// TODO(984021): Remove when URL is sent by DMServer.
 const char kPublicAccountsSamlUrl[] = "public-accounts-saml-url";
 
 // If set to "true", the profile requires policy during restart (policy load
@@ -440,8 +445,8 @@ const char kRedirectLibassistantLogging[] = "redirect-libassistant-logging";
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
 
-// Password change url for SAML users. Remove when https://crbug.com/941489 is
-// fixed.
+// Password change url for SAML users.
+// TODO(941489): Remove when the bug is fixed.
 const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 
 // Smaller, denser shelf in clamshell mode.
@@ -488,6 +493,9 @@ const char kTetherStub[] = "tether-stub";
 // cases with no preexisting connection. Should be used only for testing.
 const char kTetherHostScansIgnoreWiredConnections[] =
     "tether-host-scans-ignore-wired-connections";
+
+// Shows all Bluetooth devices in UI (System Tray/Settings Page.)
+const char kUnfilteredBluetoothDevices[] = "unfiltered-bluetooth-devices";
 
 // Used to tell the policy infrastructure to not let profile initialization
 // complete until policy is manually set by a test. This is used to provide
@@ -575,6 +583,11 @@ bool IsGaiaServicesDisabled() {
 bool IsArcCpuRestrictionDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableArcCpuRestriction);
+}
+
+bool IsUnfilteredBluetoothDevicesEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kUnfilteredBluetoothDevices);
 }
 
 }  // namespace switches

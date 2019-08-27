@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
@@ -72,8 +73,14 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   bool UsesFirstLineStyle() const {
     return StyleVariant() == NGStyleVariant::kFirstLine;
   }
+  // Returns the style for this fragment.
+  //
+  // For a line box, this returns the style of the containing block. This mostly
+  // represents the style for the line box, except 1) |style.Direction()| maybe
+  // incorrect, use |BaseDirection()| instead, and 2) margin/border/padding,
+  // background etc. do not apply to the line box.
   const ComputedStyle& Style() const {
-    return layout_object_->StyleRef(UsesFirstLineStyle());
+    return layout_object_->EffectiveStyle(StyleVariant());
   }
   const LayoutObject* GetLayoutObject() const { return layout_object_; }
 

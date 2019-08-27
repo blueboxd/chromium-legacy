@@ -42,6 +42,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/crx_file/id_util.h"
+#include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync/model/string_ordinal.h"
@@ -435,9 +436,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
     session_tracker()
         ->GetTab(kForeignSessionTag1, kTabId1)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "http://url1", "title1"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "http://url1", "title1"));
     session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
         kTimestamp1;
     session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
@@ -449,9 +449,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kForeignSessionTag2, kWindowId2, kTabId2);
     session_tracker()
         ->GetTab(kForeignSessionTag2, kTabId2)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "http://url2", "title2"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "http://url2", "title2"));
     session_tracker()->GetTab(kForeignSessionTag2, kTabId2)->timestamp =
         kTimestamp2;
     session_tracker()->GetSession(kForeignSessionTag2)->modified_time =
@@ -463,9 +462,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kForeignSessionTag3, kWindowId3, kTabId3);
     session_tracker()
         ->GetTab(kForeignSessionTag3, kTabId3)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "http://url3", "title3"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "http://url3", "title3"));
     session_tracker()->GetTab(kForeignSessionTag3, kTabId3)->timestamp =
         kTimestamp3;
     session_tracker()->GetSession(kForeignSessionTag3)->modified_time =
@@ -488,9 +486,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kLocalSessionTag, kWindowId1, kTabId1);
     session_tracker()
         ->GetTab(kLocalSessionTag, kTabId1)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "http://url1", "title1"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "http://url1", "title1"));
     session_tracker()->GetTab(kLocalSessionTag, kTabId1)->timestamp =
         kTimestamp1;
     session_tracker()->GetSession(kLocalSessionTag)->modified_time =
@@ -514,9 +511,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
     session_tracker()
         ->GetTab(kForeignSessionTag1, kTabId1)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "http://url1", "title1"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "http://url1", "title1"));
     session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
         kTimestamp1;
     session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
@@ -540,9 +536,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
     session_tracker()
         ->GetTab(kForeignSessionTag1, kTabId1)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "http://url1", "title1"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "http://url1", "title1"));
     session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
         kTimestamp1;
     session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
@@ -566,9 +561,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
     session_tracker()
         ->GetTab(kForeignSessionTag1, kTabId1)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "http://url1", "title1"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "http://url1", "title1"));
     session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
         kTimestamp1;
     session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
@@ -592,9 +586,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
     session_tracker()
         ->GetTab(kForeignSessionTag1, kTabId1)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "data://url1", "title1"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "data://url1", "title1"));
     session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
         kTimestamp1;
     session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
@@ -617,9 +610,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
     session_tracker()
         ->GetTab(kForeignSessionTag1, kTabId1)
-        ->navigations.push_back(
-            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-                "http://url1", "title1"));
+        ->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+            "http://url1", "title1"));
     session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
         kTimestamp1;
     session_tracker()->GetSession(kForeignSessionTag1)->modified_time =

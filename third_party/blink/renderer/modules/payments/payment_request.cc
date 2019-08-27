@@ -1051,7 +1051,6 @@ PaymentRequest::PaymentRequest(
     ExceptionState& exception_state)
     : ContextLifecycleObserver(execution_context),
       options_(options),
-      client_binding_(this),
       complete_timer_(
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
@@ -1111,8 +1110,8 @@ PaymentRequest::PaymentRequest(
       WTF::Bind(&PaymentRequest::OnConnectionError, WrapWeakPersistent(this)));
 
   UseCounter::Count(execution_context, WebFeature::kPaymentRequestInitialized);
-  payments::mojom::blink::PaymentRequestClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
+  mojo::PendingRemote<payments::mojom::blink::PaymentRequestClient> client;
+  client_receiver_.Bind(client.InitWithNewPipeAndPassReceiver(), task_runner);
   payment_provider_->Init(std::move(client), std::move(validated_method_data),
                           std::move(validated_details),
                           payments::mojom::blink::PaymentOptions::From(
@@ -1451,8 +1450,8 @@ void PaymentRequest::ClearResolversAndCloseMojoConnection() {
   abort_resolver_.Clear();
   can_make_payment_resolver_.Clear();
   has_enrolled_instrument_resolver_.Clear();
-  if (client_binding_.is_bound())
-    client_binding_.Close();
+  if (client_receiver_.is_bound())
+    client_receiver_.reset();
   payment_provider_.reset();
 }
 

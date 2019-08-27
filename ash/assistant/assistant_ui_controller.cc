@@ -18,7 +18,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/toast_data.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -321,7 +320,7 @@ void AssistantUiController::OnUiVisibilityChanged(
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
     base::Optional<AssistantExitPoint> exit_point) {
-  VoiceInteractionController::Get()->NotifyStatusChanged(
+  AssistantState::Get()->NotifyStatusChanged(
       new_visibility == AssistantVisibility::kVisible
           ? mojom::VoiceInteractionState::RUNNING
           : mojom::VoiceInteractionState::STOPPED);
@@ -402,16 +401,15 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
   if (assistant_setup && assistant_setup->BounceOptInWindowIfActive())
     return;
 
-  auto* voice_interaction_controller = VoiceInteractionController::Get();
+  auto* assistant_state = AssistantState::Get();
 
-  if (!voice_interaction_controller->settings_enabled().value_or(false) ||
-      voice_interaction_controller->locked_full_screen_enabled().value_or(
-          false)) {
+  if (!assistant_state->settings_enabled().value_or(false) ||
+      assistant_state->locked_full_screen_enabled().value_or(false)) {
     return;
   }
 
   // TODO(dmblack): Show a more helpful message to the user.
-  if (VoiceInteractionController::Get()->voice_interaction_state() ==
+  if (assistant_state->voice_interaction_state() ==
       mojom::VoiceInteractionState::NOT_READY) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;

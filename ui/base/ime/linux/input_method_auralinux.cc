@@ -411,7 +411,7 @@ void InputMethodAuraLinux::OnPreeditEnd() {
 void InputMethodAuraLinux::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
-  ConfirmCompositionText();
+  ConfirmCompositionText(/* reset_engine */ true);
 }
 
 void InputMethodAuraLinux::OnDidChangeFocusedClient(
@@ -448,9 +448,9 @@ ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
   return details;
 }
 
-void InputMethodAuraLinux::ConfirmCompositionText() {
-  InputMethodBase::ConfirmCompositionText();
-  if (GetEngine())
+void InputMethodAuraLinux::ConfirmCompositionText(bool reset_engine) {
+  InputMethodBase::ConfirmCompositionText(reset_engine);
+  if (reset_engine && GetEngine())
     GetEngine()->Reset();
   ResetContext();
 }

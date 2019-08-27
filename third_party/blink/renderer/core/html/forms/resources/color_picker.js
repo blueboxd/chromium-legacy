@@ -649,10 +649,21 @@ class ColorSelectionArea extends HTMLElement {
     this.colorSelectionRing_ = new ColorSelectionRing(this.colorPalette_);
     this.append(this.colorPalette_, this.colorSelectionRing_);
     this.initialized_ = false;
+
+    this.colorSelectionRing_.addEventListener('focus', this.onColorSelectionRingFocus_);
+    this.colorSelectionRing_.addEventListener('blur', this.onColorSelectionRingBlur_);
   }
 
   get initialized() {
     return this.initialized_;
+  }
+
+  onColorSelectionRingFocus_ = () => {
+    this.focused_ = true;
+  }
+
+  onColorSelectionRingBlur_ = () => {
+    this.focused_ = false;
   }
 
   /**
@@ -853,6 +864,7 @@ class ColorSelectionRing extends HTMLElement {
   constructor(backingColorPalette) {
     super();
 
+    this.setAttribute('tabIndex', 0);
     this.backingColorPalette_ = backingColorPalette;
     this.position_ = new Point(0, 0);
     this.drag_ = false;
@@ -1486,6 +1498,7 @@ class FormatToggler extends HTMLElement {
   constructor(initialColorFormat) {
     super();
 
+    this.setAttribute('tabIndex', 0);
     this.currentColorFormat_ = initialColorFormat;
     this.hexFormatLabel_ = new FormatLabel(ColorFormat.HEX);
     this.rgbFormatLabel_ = new FormatLabel(ColorFormat.RGB);

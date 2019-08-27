@@ -22,6 +22,8 @@
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -50,7 +52,8 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
                      device::mojom::VRServiceRequest request);
 
   // device::mojom::VRService implementation
-  void SetClient(device::mojom::VRServiceClientPtr service_client) override;
+  void SetClient(mojo::PendingRemote<device::mojom::VRServiceClient>
+                     service_client) override;
   void RequestSession(
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::RequestSessionCallback callback) override;
@@ -149,7 +152,7 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   scoped_refptr<XRRuntimeManager> runtime_manager_;
   mojo::InterfacePtrSet<device::mojom::XRSessionClient> session_clients_;
-  device::mojom::VRServiceClientPtr service_client_;
+  mojo::Remote<device::mojom::VRServiceClient> service_client_;
   content::RenderFrameHost* render_frame_host_;
   mojo::StrongBindingPtr<VRService> binding_;
   InterfaceSet<device::mojom::XRSessionControllerPtr> magic_window_controllers_;

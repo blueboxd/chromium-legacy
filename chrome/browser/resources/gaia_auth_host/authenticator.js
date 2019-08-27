@@ -112,6 +112,9 @@ cr.define('cr.login', function() {
     // If the authentication is done via external IdP, 'startsOnSamlPage'
     // indicates whether the flow should start on the IdP page.
     'startsOnSamlPage',
+    // SAML assertion consumer URL, used to detect when Gaia-less SAML flows end
+    // (e.g. for SAML managed guest sessions).
+    'samlAclUrl',
   ];
 
 
@@ -258,6 +261,7 @@ cr.define('cr.login', function() {
        * @private
        */
       this.isSamlUserPasswordless_ = null;
+      this.samlAclUrl_ = null;
 
       window.addEventListener(
           'message', this.onMessageFromWebview_.bind(this), false);
@@ -458,6 +462,12 @@ cr.define('cr.login', function() {
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
+      this.samlAclUrl_ = data.samlAclUrl;
+      // The email field is repurposed as public session email in SAML guest
+      // mode, ie when frameUrl is not empty.
+      if (data.samlAclUrl) {
+        this.email_ = data.email;
+      }
 
       if (data.startsOnSamlPage) {
         this.samlHandler_.startsOnSamlPage = true;
@@ -968,6 +978,7 @@ cr.define('cr.login', function() {
               gaiaId: this.gaiaId_ || '',
               password: this.password_ || '',
               usingSAML: this.authFlow == AuthFlow.SAML,
+              publicSAML: this.samlAclUrl_ || false,
               chooseWhatToSync: this.chooseWhatToSync_,
               skipForNow: this.skipForNow_,
               sessionIndex: this.sessionIndex_ || '',
@@ -1093,6 +1104,9 @@ cr.define('cr.login', function() {
         this.webview_.focus();
       } else if (currentUrl == BLANK_PAGE_URL) {
         this.fireReadyEvent_();
+      } else if (currentUrl == this.samlAclUrl_) {
+        this.skipForNow_ = true;
+        this.onAuthCompleted_();
       }
     }
 

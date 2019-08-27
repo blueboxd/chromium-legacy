@@ -56,7 +56,7 @@ constexpr uint64_t kDisallowedFeatures =
 
 void SetPageFrozenImpl(
     RenderFrameHostImpl* render_frame_host,
-    bool freeze,
+    bool frozen,
     std::unordered_set<RenderViewHostImpl*>* render_view_hosts) {
   RenderViewHostImpl* render_view_host = render_frame_host->render_view_host();
   // (Un)Freeze the frame's page if it is not (un)frozen yet.
@@ -66,14 +66,12 @@ void SetPageFrozenImpl(
     //
     // See: https://developers.google.com/web/updates/2018/07/page-lifecycle-api
     int rvh_routing_id = render_view_host->GetRoutingID();
-    if (freeze) {
-      // TODO(yuzus): Reconsider sending WasHidden here and investigate what
-      // other browser vendors do.
-      render_view_host->Send(new PageMsg_WasHidden(rvh_routing_id));
-      render_view_host->Send(new PageMsg_SetPageFrozen(rvh_routing_id, true));
+    if (frozen) {
+      render_view_host->Send(
+          new PageMsg_PutPageIntoBackForwardCache(rvh_routing_id));
     } else {
-      render_view_host->Send(new PageMsg_SetPageFrozen(rvh_routing_id, false));
-      render_view_host->Send(new PageMsg_WasShown(rvh_routing_id));
+      render_view_host->Send(
+          new PageMsg_RestorePageFromBackForwardCache(rvh_routing_id));
     }
     render_view_hosts->insert(render_view_host);
   }
@@ -81,7 +79,7 @@ void SetPageFrozenImpl(
   for (size_t index = 0; index < render_frame_host->child_count(); ++index) {
     RenderFrameHostImpl* child_frame_host =
         render_frame_host->child_at(index)->current_frame_host();
-    SetPageFrozenImpl(child_frame_host, freeze, render_view_hosts);
+    SetPageFrozenImpl(child_frame_host, frozen, render_view_hosts);
   }
 }
 
@@ -172,14 +170,14 @@ void BackForwardCache::Freeze(RenderFrameHostImpl* main_rfh) {
   // |frozen_render_view_hosts| keeps track of the ones that freezing has been
   // applied to.
   std::unordered_set<RenderViewHostImpl*> frozen_render_view_hosts;
-  SetPageFrozenImpl(main_rfh, /*freeze = */ true, &frozen_render_view_hosts);
+  SetPageFrozenImpl(main_rfh, /*frozen = */ true, &frozen_render_view_hosts);
 }
 
 void BackForwardCache::Resume(RenderFrameHostImpl* main_rfh) {
   // |unfrozen_render_view_hosts| keeps track of the ones that resuming has
   // been applied to.
   std::unordered_set<RenderViewHostImpl*> unfrozen_render_view_hosts;
-  SetPageFrozenImpl(main_rfh, /*freeze = */ false, &unfrozen_render_view_hosts);
+  SetPageFrozenImpl(main_rfh, /*frozen = */ false, &unfrozen_render_view_hosts);
 }
 
 void BackForwardCache::EvictDocument(RenderFrameHostImpl* render_frame_host) {

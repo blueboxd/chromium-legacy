@@ -11,6 +11,15 @@
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "v8/include/v8.h"
 
+namespace v8 {
+
+template <typename T>
+struct TracedGlobalTrait<v8::TracedGlobal<T>> {
+  static constexpr bool kRequiresExplicitDestruction = false;
+};
+
+}  // namespace v8
+
 namespace blink {
 
 /**
@@ -26,8 +35,6 @@ class TraceWrapperV8Reference {
   TraceWrapperV8Reference(v8::Isolate* isolate, v8::Local<T> handle) {
     InternalSet(isolate, handle);
   }
-
-  ~TraceWrapperV8Reference() { Clear(); }
 
   bool operator==(const TraceWrapperV8Reference& other) const {
     return handle_ == other.handle_;

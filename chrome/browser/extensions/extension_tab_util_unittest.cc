@@ -42,8 +42,9 @@ TEST(ExtensionTabUtilTest, Delegate) {
   auto extension = ExtensionBuilder("test").AddPermission("tabs").Build();
 
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-      ExtensionTabUtil::GetScrubTabBehavior(extension.get(),
-                                            GURL("http://www.google.com"));
+      ExtensionTabUtil::GetScrubTabBehavior(
+          extension.get(), Feature::Context::UNSPECIFIED_CONTEXT,
+          GURL("http://www.google.com"));
   EXPECT_EQ(ExtensionTabUtil::kScrubTabUrlToOrigin, scrub_tab_behavior);
 
   // Unset the delegate.
@@ -55,16 +56,18 @@ TEST(ExtensionTabUtilTest, ScrubTabBehaviorForTabsPermission) {
                        .AddPermission("tabs")
                        .Build();
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-      ExtensionTabUtil::GetScrubTabBehavior(extension.get(),
-                                            GURL("http://www.google.com"));
+      ExtensionTabUtil::GetScrubTabBehavior(
+          extension.get(), Feature::Context::UNSPECIFIED_CONTEXT,
+          GURL("http://www.google.com"));
   EXPECT_EQ(ExtensionTabUtil::kDontScrubTab, scrub_tab_behavior);
 }
 
 TEST(ExtensionTabUtilTest, ScrubTabBehaviorForNoPermission) {
   auto extension = ExtensionBuilder("Extension with no permissions").Build();
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-      ExtensionTabUtil::GetScrubTabBehavior(extension.get(),
-                                            GURL("http://www.google.com"));
+      ExtensionTabUtil::GetScrubTabBehavior(
+          extension.get(), Feature::Context::UNSPECIFIED_CONTEXT,
+          GURL("http://www.google.com"));
   EXPECT_EQ(ExtensionTabUtil::kScrubTabFully, scrub_tab_behavior);
 }
 
@@ -74,15 +77,25 @@ TEST(ExtensionTabUtilTest, ScrubTabBehaviorForHostPermission) {
                        .Build();
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
       ExtensionTabUtil::GetScrubTabBehavior(
-          extension.get(), GURL("http://www.google.com/some/path"));
+          extension.get(), Feature::Context::UNSPECIFIED_CONTEXT,
+          GURL("http://www.google.com/some/path"));
   EXPECT_EQ(ExtensionTabUtil::kDontScrubTab, scrub_tab_behavior);
 }
 
 TEST(ExtensionTabUtilTest, ScrubTabBehaviorForNoExtension) {
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-      ExtensionTabUtil::GetScrubTabBehavior(nullptr,
-                                            GURL("http://www.google.com"));
+      ExtensionTabUtil::GetScrubTabBehavior(
+          nullptr, Feature::Context::UNSPECIFIED_CONTEXT,
+          GURL("http://www.google.com"));
   EXPECT_EQ(ExtensionTabUtil::kScrubTabFully, scrub_tab_behavior);
+}
+
+TEST(ExtensionTabUtilTest, ScrubTabBehaviorForWebUI) {
+  ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+      ExtensionTabUtil::GetScrubTabBehavior(nullptr,
+                                            Feature::Context::WEBUI_CONTEXT,
+                                            GURL("http://www.google.com"));
+  EXPECT_EQ(ExtensionTabUtil::kDontScrubTab, scrub_tab_behavior);
 }
 
 }  // namespace extensions

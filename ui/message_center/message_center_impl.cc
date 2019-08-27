@@ -37,7 +37,7 @@ MessageCenterImpl::MessageCenterImpl(
       lock_screen_controller_(std::move(lock_screen_controller)),
       popup_timers_controller_(std::make_unique<PopupTimersController>(this)),
       stats_collector_(this) {
-  notification_list_.reset(new NotificationList(this));
+  notification_list_ = std::make_unique<NotificationList>(this);
 }
 
 MessageCenterImpl::~MessageCenterImpl() {
@@ -459,7 +459,7 @@ void MessageCenterImpl::EnterQuietModeWithExpire(
     for (auto& observer : observer_list_)
       observer.OnQuietModeChanged(true);
 
-    quiet_mode_timer_.reset(new base::OneShotTimer);
+    quiet_mode_timer_ = std::make_unique<base::OneShotTimer>();
     quiet_mode_timer_->Start(
         FROM_HERE,
         expires_in,

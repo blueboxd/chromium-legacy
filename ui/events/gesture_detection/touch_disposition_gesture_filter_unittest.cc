@@ -31,7 +31,7 @@ class TouchDispositionGestureFilterTest
 
   // testing::Test
   void SetUp() override {
-    queue_.reset(new TouchDispositionGestureFilter(this));
+    queue_ = std::make_unique<TouchDispositionGestureFilter>(this);
     touch_event_.set_flags(kDefaultEventFlags);
   }
 
@@ -42,7 +42,7 @@ class TouchDispositionGestureFilterTest
     EXPECT_EQ(GestureDeviceType::DEVICE_TOUCHSCREEN,
               event.details.device_type());
     ++sent_gesture_count_;
-    last_sent_gesture_.reset(new GestureEventData(event));
+    last_sent_gesture_ = std::make_unique<GestureEventData>(event);
     sent_gestures_.push_back(event.type());
     if (event.type() == ET_GESTURE_SHOW_PRESS)
       show_press_bounding_box_ = event.details.bounding_box();

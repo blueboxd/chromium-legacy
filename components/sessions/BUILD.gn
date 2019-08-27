@@ -151,6 +151,17 @@ static_library("test_support") {
       "core/base_session_service_test_helper.h",
     ]
   }
+
+  if (!is_ios) {
+    sources += [
+      "content/content_test_helper.cc",
+      "content/content_test_helper.h",
+    ]
+    deps += [
+      "//content/public/browser",
+      "//content/public/common",
+    ]
+  }
 }
 
 source_set("unit_tests") {

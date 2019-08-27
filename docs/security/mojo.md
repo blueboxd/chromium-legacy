@@ -689,9 +689,9 @@ IDLDictionary* FromMojo(const mojom::blink::DictionaryPtr& in) {
 
 ### Use the proper abstractions
 
-`mojo::BindingSet` implies multiple clients may connect. If this actually isn't
+`mojo::ReceiverSet` implies multiple clients may connect. If this actually isn't
 the case, please do not use it. For example, if an interface can be rebound,
-then use the singular `mojo::Binding` and simply `Close()` the existing binding
+then use the singular `mojo::Receiver` and simply `reset()` the existing receiver
 before reusing it.
 
 

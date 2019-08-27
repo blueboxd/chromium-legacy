@@ -66,11 +66,12 @@ component("cpp") {
     "assistant/assistant_interface_binder.h",
     "assistant/assistant_setup.cc",
     "assistant/assistant_setup.h",
+    "assistant/assistant_state.cc",
+    "assistant/assistant_state.h",
     "assistant/assistant_state_base.cc",
     "assistant/assistant_state_base.h",
     "assistant/assistant_state_proxy.cc",
     "assistant/assistant_state_proxy.h",
-    "assistant/default_voice_interaction_observer.h",
     "assistant/proactive_suggestions.cc",
     "assistant/proactive_suggestions.h",
     "assistant/proactive_suggestions_client.cc",
@@ -210,8 +211,6 @@ component("cpp") {
     "update_types.h",
     "view_shadow.cc",
     "view_shadow.h",
-    "voice_interaction_controller.cc",
-    "voice_interaction_controller.h",
     "wallpaper_controller.cc",
     "wallpaper_controller.h",
     "wallpaper_controller_client.h",
@@ -234,6 +233,7 @@ component("cpp") {
     "//ash/public/cpp/vector_icons",
     "//chromeos/constants",
     "//chromeos/dbus/power:power_manager_proto",
+    "//chromeos/services/assistant/public/cpp:prefs",
     "//chromeos/services/network_config:in_process_instance",
     "//components/prefs",
     "//components/sync:rest_of_sync",
@@ -313,7 +313,6 @@ source_set("unit_tests") {
     "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
     "view_shadow_unittest.cc",
-    "voice_interaction_controller_unittest.cc",
   ]
 
   deps = [

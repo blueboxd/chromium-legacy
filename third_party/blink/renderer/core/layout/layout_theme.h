@@ -159,9 +159,11 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   // Highlight and text colors for TextMatches.
   Color PlatformTextSearchHighlightColor(bool active_match,
-                                         bool in_forced_colors_mode) const;
+                                         bool in_forced_colors_mode,
+                                         WebColorScheme color_scheme) const;
   Color PlatformTextSearchColor(bool active_match,
-                                bool in_forced_colors_mode) const;
+                                bool in_forced_colors_mode,
+                                WebColorScheme color_scheme) const;
 
   virtual bool IsFocusRingOutset() const;
   Color FocusRingColor() const;
@@ -191,7 +193,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
                           float& font_size,
                           AtomicString& font_family) const = 0;
   void SystemFont(CSSValueID system_font_id, FontDescription&);
-  virtual Color SystemColor(CSSValueID) const;
+  virtual Color SystemColor(CSSValueID, WebColorScheme color_scheme) const;
 
   // Whether the default system font should have its average character width
   // adjusted to match MS Shell Dlg.

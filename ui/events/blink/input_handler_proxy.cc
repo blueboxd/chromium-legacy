@@ -1197,7 +1197,7 @@ void InputHandlerProxy::HandleOverscroll(
                scroll_result.unused_scroll_delta.y());
 
   // Bundle overscroll message with triggering event response, saving an IPC.
-  current_overscroll_params_.reset(new DidOverscrollParams());
+  current_overscroll_params_ = std::make_unique<DidOverscrollParams>();
   current_overscroll_params_->accumulated_overscroll =
       scroll_result.accumulated_root_overscroll;
   current_overscroll_params_->latest_overscroll_delta =

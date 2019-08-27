@@ -15,7 +15,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
-#include "url/origin.h"
 
 class GURL;
 
@@ -185,7 +184,7 @@ void PermissionControllerImpl::NotifyChangedSubscriptions(
 
 PermissionControllerImpl::OverrideStatus
 PermissionControllerImpl::SetOverrideForDevTools(
-    const GURL& origin,
+    const url::Origin& origin,
     const PermissionType& permission,
     const blink::mojom::PermissionStatus& status) {
   PermissionControllerDelegate* delegate =
@@ -194,10 +193,9 @@ PermissionControllerImpl::SetOverrideForDevTools(
       !delegate->IsPermissionOverridableByDevTools(permission, origin)) {
     return OverrideStatus::kOverrideNotSet;
   }
-  const auto old_statuses = GetSubscriptionsStatuses(origin);
+  const auto old_statuses = GetSubscriptionsStatuses(origin.GetURL());
 
-  devtools_permission_overrides_.Set(url::Origin::Create(origin), permission,
-                                     status);
+  devtools_permission_overrides_.Set(origin, permission, status);
   NotifyChangedSubscriptions(old_statuses);
 
   UpdateDelegateOverridesForDevTools(origin);
@@ -206,7 +204,7 @@ PermissionControllerImpl::SetOverrideForDevTools(
 
 PermissionControllerImpl::OverrideStatus
 PermissionControllerImpl::GrantOverridesForDevTools(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::vector<PermissionType>& permissions) {
   PermissionControllerDelegate* delegate =
       browser_context_->GetPermissionControllerDelegate();
@@ -215,9 +213,8 @@ PermissionControllerImpl::GrantOverridesForDevTools(
       if (!delegate->IsPermissionOverridableByDevTools(permission, origin))
         return OverrideStatus::kOverrideNotSet;
 
-  const auto old_statuses = GetSubscriptionsStatuses(origin);
-  devtools_permission_overrides_.GrantPermissions(url::Origin::Create(origin),
-                                                  permissions);
+  const auto old_statuses = GetSubscriptionsStatuses(origin.GetURL());
+  devtools_permission_overrides_.GrantPermissions(origin, permissions);
   // If any statuses changed because they lose overrides or the new overrides
   // modify their previous state (overridden or not), subscribers must be
   // notified manually.
@@ -242,7 +239,7 @@ void PermissionControllerImpl::ResetOverridesForDevTools() {
 }
 
 void PermissionControllerImpl::UpdateDelegateOverridesForDevTools(
-    const GURL& origin) {
+    const url::Origin& origin) {
   PermissionControllerDelegate* delegate =
       browser_context_->GetPermissionControllerDelegate();
   if (!delegate)
@@ -250,7 +247,7 @@ void PermissionControllerImpl::UpdateDelegateOverridesForDevTools(
 
   // If no overrides exist, still want to update with "blank" overrides.
   PermissionOverrides current_overrides =
-      devtools_permission_overrides_.GetAll(url::Origin::Create(origin));
+      devtools_permission_overrides_.GetAll(origin);
   delegate->SetPermissionOverridesForDevTools(origin, current_overrides);
 }
 

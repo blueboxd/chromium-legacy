@@ -292,13 +292,15 @@ source_set("wayland_unittests") {
 fuzzer_test("wayland_buffer_fuzzer") {
   defines = [ "WL_HIDE_DEPRECATED" ]
   sources = [
-    "wayland_buffer_fuzzer.cc",
+    "fuzzer/wayland_buffer_fuzzer.cc",
   ]
   deps = [
     ":test_support",
     ":wayland",
     "//base/test:test_support",
     "//build/config/linux/libdrm",
+    "//mojo/core/embedder",
+    "//mojo/public/cpp/system",
     "//ui/gfx:test_support",
     "//ui/platform_window:platform_window",
   ]

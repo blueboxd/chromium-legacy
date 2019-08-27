@@ -92,10 +92,10 @@ void HardwareDisplayControllerTest::SetUp() {
   drm_ = new ui::MockDrmDevice(std::move(gbm_device));
   InitializeDrmDevice(/* use_atomic= */ true);
 
-  controller_.reset(new ui::HardwareDisplayController(
-      std::unique_ptr<ui::CrtcController>(
-          new ui::CrtcController(drm_.get(), kPrimaryCrtc, kPrimaryConnector)),
-      gfx::Point()));
+  controller_ = std::make_unique<ui::HardwareDisplayController>(
+      std::make_unique<ui::CrtcController>(drm_.get(), kPrimaryCrtc,
+                                           kPrimaryConnector),
+      gfx::Point());
 }
 
 void HardwareDisplayControllerTest::TearDown() {
@@ -438,8 +438,8 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
   ASSERT_TRUE(primary_crtc_plane != nullptr);
 
   std::unique_ptr<ui::HardwareDisplayController> hdc_controller;
-  hdc_controller.reset(new ui::HardwareDisplayController(
-      controller_->RemoveCrtc(drm_, kPrimaryCrtc), controller_->origin()));
+  hdc_controller = std::make_unique<ui::HardwareDisplayController>(
+      controller_->RemoveCrtc(drm_, kPrimaryCrtc), controller_->origin());
   SchedulePageFlip(ui::DrmOverlayPlane::Clone(planes));
   drm_->RunCallbacks();
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, last_swap_result_);

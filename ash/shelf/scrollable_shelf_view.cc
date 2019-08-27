@@ -442,31 +442,36 @@ gfx::Insets ScrollableShelfView::CalculateEdgePadding() const {
 }
 
 bool ScrollableShelfView::ShouldHandleGestures(const ui::GestureEvent& event) {
-  if (!cross_main_axis_scrolling_ && !event.IsScrollGestureEvent())
-    return true;
+  // ScrollableShelfView only handles the gesture scrolling along the main axis.
+  // For other gesture events, including the scrolling across the main axis,
+  // they are handled by ShelfView.
+
+  if (scroll_status_ == kNotInScroll && !event.IsScrollGestureEvent())
+    return false;
 
   if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    CHECK_EQ(false, cross_main_axis_scrolling_);
+    CHECK_EQ(scroll_status_, kNotInScroll);
 
     float main_offset = event.details().scroll_x_hint();
     float cross_offset = event.details().scroll_y_hint();
     if (!GetShelf()->IsHorizontalAlignment())
       std::swap(main_offset, cross_offset);
 
-    cross_main_axis_scrolling_ = std::abs(main_offset) < std::abs(cross_offset);
+    scroll_status_ = std::abs(main_offset) < std::abs(cross_offset)
+                         ? kAcrossMainAxisScroll
+                         : kAlongMainAxisScroll;
   }
 
-  // Gesture scrollings perpendicular to the main axis should be handled by
-  // ShelfView.
-  bool should_handle_gestures = !cross_main_axis_scrolling_;
+  bool should_handle_gestures = scroll_status_ == kAlongMainAxisScroll;
 
-  if (should_handle_gestures && event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+  if (scroll_status_ == kAlongMainAxisScroll &&
+      event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     scroll_offset_before_main_axis_scrolling_ = scroll_offset_;
     layout_strategy_before_main_axis_scrolling_ = layout_strategy_;
   }
 
   if (event.type() == ui::ET_GESTURE_END) {
-    cross_main_axis_scrolling_ = false;
+    scroll_status_ = kNotInScroll;
 
     if (should_handle_gestures) {
       scroll_offset_before_main_axis_scrolling_ = gfx::Vector2dF();

@@ -338,7 +338,8 @@ TEST_F(InputMethodAuraLinuxTest, BasicSyncModeTest) {
   test_result_->Verify();
 
   input_method_auralinux_->DetachTextInputClient(client.get());
-  client.reset(new TextInputClientForTesting(TEXT_INPUT_TYPE_PASSWORD));
+  client =
+      std::make_unique<TextInputClientForTesting>(TEXT_INPUT_TYPE_PASSWORD);
   context_simple_->SetSyncMode(true);
   context_simple_->SetEatKey(false);
 
@@ -371,7 +372,8 @@ TEST_F(InputMethodAuraLinuxTest, BasicAsyncModeTest) {
   test_result_->Verify();
 
   input_method_auralinux_->DetachTextInputClient(client.get());
-  client.reset(new TextInputClientForTesting(TEXT_INPUT_TYPE_PASSWORD));
+  client =
+      std::make_unique<TextInputClientForTesting>(TEXT_INPUT_TYPE_PASSWORD);
   context_simple_->SetSyncMode(false);
   context_simple_->SetEatKey(false);
 

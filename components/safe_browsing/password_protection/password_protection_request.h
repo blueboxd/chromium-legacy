@@ -174,6 +174,13 @@ class PasswordProtectionRequest
   // Called when the DOM feature extraction is complete.
   void OnGetDomFeatures(const std::string& verdict);
 
+  // Called when the DOM feature extraction times out.
+  void OnGetDomFeatureTimeout();
+
+  // If appropriate, collects visual features, otherwise continues on to sending
+  // the request.
+  void MaybeCollectVisualFeatures();
+
   // WebContents of the password protection event.
   content::WebContents* web_contents_;
 
@@ -248,6 +255,10 @@ class PasswordProtectionRequest
   // feature extraction, which is logged at
   // PasswordProtection.DomFeatureExtractionDuration.
   base::TimeTicks dom_feature_start_time_;
+
+  // Whether the DOM features collection is finished, either by timeout or by
+  // successfully gathering the features.
+  bool dom_features_collection_complete_;
 
   base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);

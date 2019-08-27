@@ -102,12 +102,18 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
     private void pushTextToModel() {
         CharSequence text =
                 !mHasFocus ? mUrlBarData.displayText : mUrlBarData.getEditingOrDisplayText();
+        CharSequence textForAutofillServices = text;
+
+        if (!(mHasFocus || TextUtils.isEmpty(text) || mUrlBarData.url == null)) {
+            textForAutofillServices = mUrlBarData.url;
+        }
+
         @ScrollType
         int scrollType = mHasFocus ? UrlBar.ScrollType.NO_SCROLL : mScrollType;
         if (text == null) text = "";
 
-        UrlBarTextState state =
-                new UrlBarTextState(text, scrollType, mUrlBarData.originEndIndex, mSelectionState);
+        UrlBarTextState state = new UrlBarTextState(text, textForAutofillServices, scrollType,
+                mUrlBarData.originEndIndex, mSelectionState);
         mModel.set(UrlBarProperties.TEXT_STATE, state);
     }
 

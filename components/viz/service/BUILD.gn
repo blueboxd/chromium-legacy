@@ -274,6 +274,10 @@ viz_component("service") {
     public_deps += [ "//ui/ozone" ]
   }
 
+  if (is_chromecast) {
+    defines += [ "ALWAYS_ENABLE_BLENDING_FOR_PRIMARY" ]
+  }
+
   if (is_win) {
     sources += [
       "display_embedder/output_device_backing.cc",

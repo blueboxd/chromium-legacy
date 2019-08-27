@@ -712,7 +712,8 @@ void LayoutTheme::SystemFont(CSSValueID system_font_id,
   font_description.SetGenericFamily(FontDescription::kNoFamily);
 }
 
-Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
+Color LayoutTheme::SystemColor(CSSValueID css_value_id,
+                               WebColorScheme color_scheme) const {
   switch (css_value_id) {
     case CSSValueID::kActiveborder:
       return 0xFFFFFFFF;
@@ -793,19 +794,21 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
 
 Color LayoutTheme::PlatformTextSearchHighlightColor(
     bool active_match,
-    bool in_forced_colors_mode) const {
+    bool in_forced_colors_mode,
+    WebColorScheme color_scheme) const {
   if (active_match) {
     if (in_forced_colors_mode)
-      return GetTheme().SystemColor(CSSValueID::kHighlight);
+      return GetTheme().SystemColor(CSSValueID::kHighlight, color_scheme);
     return Color(255, 150, 50);  // Orange.
   }
   return Color(255, 255, 0);     // Yellow.
 }
 
 Color LayoutTheme::PlatformTextSearchColor(bool active_match,
-                                           bool in_forced_colors_mode) const {
+                                           bool in_forced_colors_mode,
+                                           WebColorScheme color_scheme) const {
   if (in_forced_colors_mode && active_match)
-    return GetTheme().SystemColor(CSSValueID::kHighlighttext);
+    return GetTheme().SystemColor(CSSValueID::kHighlighttext, color_scheme);
   return Color::kBlack;
 }
 

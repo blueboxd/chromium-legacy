@@ -1499,8 +1499,6 @@ jumbo_split_static_library("browser") {
     "renderer_host/chrome_render_widget_host_view_mac_history_swiper.mm",
     "renderer_preferences_util.cc",
     "renderer_preferences_util.h",
-    "resource_coordinator/discard_before_unload_helper.cc",
-    "resource_coordinator/discard_before_unload_helper.h",
     "resource_coordinator/resource_coordinator_parts.cc",
     "resource_coordinator/resource_coordinator_parts.h",
     "resource_coordinator/session_restore_policy.cc",

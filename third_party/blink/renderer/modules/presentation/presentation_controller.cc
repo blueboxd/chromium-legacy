@@ -151,21 +151,21 @@ PresentationController::FindExistingConnection(
   return nullptr;
 }
 
-mojom::blink::PresentationServicePtr&
+mojo::Remote<mojom::blink::PresentationService>&
 PresentationController::GetPresentationService() {
-  if (!presentation_service_ && GetFrame() && GetFrame()->Client()) {
+  if (!presentation_service_remote_ && GetFrame() && GetFrame()->Client()) {
     auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
 
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GetFrame()->GetTaskRunner(TaskType::kPresentation);
     interface_provider->GetInterface(
-        mojo::MakeRequest(&presentation_service_, task_runner));
+        presentation_service_remote_.BindNewPipeAndPassReceiver(task_runner));
 
-    presentation_service_->SetController(
+    presentation_service_remote_->SetController(
         presentation_controller_receiver_.BindNewPipeAndPassRemote(
             task_runner));
   }
-  return presentation_service_;
+  return presentation_service_remote_;
 }
 
 ControllerPresentationConnection* PresentationController::FindConnection(

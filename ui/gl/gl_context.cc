@@ -149,7 +149,7 @@ YUVToRGBConverter* GLContext::GetYUVToRGBConverter(
 
 CurrentGL* GLContext::GetCurrentGL() {
   if (!static_bindings_initialized_) {
-    driver_gl_.reset(new DriverGL);
+    driver_gl_ = std::make_unique<DriverGL>();
     driver_gl_->InitializeStaticBindings();
 
     gl_api_.reset(CreateGLApi(driver_gl_.get()));
@@ -157,16 +157,16 @@ CurrentGL* GLContext::GetCurrentGL() {
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableGPUServiceTracing)) {
-      trace_gl_api_.reset(new TraceGLApi(final_api));
+      trace_gl_api_ = std::make_unique<TraceGLApi>(final_api);
       final_api = trace_gl_api_.get();
     }
 
     if (GetDebugGLBindingsInitializedGL()) {
-      debug_gl_api_.reset(new DebugGLApi(final_api));
+      debug_gl_api_ = std::make_unique<DebugGLApi>(final_api);
       final_api = debug_gl_api_.get();
     }
 
-    current_gl_.reset(new CurrentGL);
+    current_gl_ = std::make_unique<CurrentGL>();
     current_gl_->Driver = driver_gl_.get();
     current_gl_->Api = final_api;
     current_gl_->Version = version_info_.get();

@@ -139,10 +139,13 @@ MEDIA_EXPORT extern const base::Feature kVaapiH264AMDEncoder;
 MEDIA_EXPORT extern const base::Feature kVaapiLowPowerEncoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP8Encoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP9Encoder;
-MEDIA_EXPORT extern const base::Feature kVp9kSVCHWDecoding;
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 MEDIA_EXPORT extern const base::Feature kWidevineAv1;
 MEDIA_EXPORT extern const base::Feature kWidevineAv1ForceSupportForTesting;
+
+#if defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
+MEDIA_EXPORT extern const base::Feature kVp9kSVCHWDecoding;
+#endif  // defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const base::Feature kMediaControlsExpandGesture;

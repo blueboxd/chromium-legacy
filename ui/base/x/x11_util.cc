@@ -1425,7 +1425,8 @@ XVisualManager::XVisualManager()
   gfx::XScopedPtr<XVisualInfo[]> visual_list(XGetVisualInfo(
       display_, VisualScreenMask, &visual_template, &visuals_len));
   for (int i = 0; i < visuals_len; ++i)
-    visuals_[visual_list[i].visualid].reset(new XVisualData(visual_list[i]));
+    visuals_[visual_list[i].visualid] =
+        std::make_unique<XVisualData>(visual_list[i]);
 
   XAtom NET_WM_CM_S0 = gfx::GetAtom("_NET_WM_CM_S0");
   using_compositing_wm_ =

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 208 tests; 202 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 206 tests; 202 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Return null when getting the blur event handler of a windowless body
 PASS Ignore setting of blur window event handlers on windowless body
 PASS Return null when getting the error event handler of a windowless body
@@ -74,7 +74,6 @@ PASS keypress is unaffected on a windowless body
 PASS keyup is unaffected on a windowless body
 PASS loadeddata is unaffected on a windowless body
 PASS loadedmetadata is unaffected on a windowless body
-FAIL loadend is unaffected on a windowless body assert_equals: expected (object) null but got (undefined) undefined
 PASS loadstart is unaffected on a windowless body
 PASS mousedown is unaffected on a windowless body
 PASS mouseenter is unaffected on a windowless body
@@ -178,7 +177,6 @@ PASS keypress is unaffected on a windowless frameset
 PASS keyup is unaffected on a windowless frameset
 PASS loadeddata is unaffected on a windowless frameset
 PASS loadedmetadata is unaffected on a windowless frameset
-FAIL loadend is unaffected on a windowless frameset assert_equals: expected (object) null but got (undefined) undefined
 PASS loadstart is unaffected on a windowless frameset
 PASS mousedown is unaffected on a windowless frameset
 PASS mouseenter is unaffected on a windowless frameset

@@ -32,15 +32,15 @@ OverlayWindowAndroid::OverlayWindowAndroid(
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PictureInPictureActivity_createActivity(
-      env, reinterpret_cast<long>(this),
+      env, reinterpret_cast<intptr_t>(this),
       TabAndroid::FromWebContents(controller_->GetInitiatorWebContents())
           ->GetJavaObject());
 }
 
 OverlayWindowAndroid::~OverlayWindowAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PictureInPictureActivity_onWindowDestroyed(env,
-                                                  reinterpret_cast<long>(this));
+  Java_PictureInPictureActivity_onWindowDestroyed(
+      env, reinterpret_cast<intptr_t>(this));
 }
 
 void OverlayWindowAndroid::OnActivityStart(

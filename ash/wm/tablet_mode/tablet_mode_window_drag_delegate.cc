@@ -41,9 +41,9 @@ namespace {
 constexpr float kIndicatorsThresholdRatio = 0.1;
 
 // Duration of a drag that it will be considered as an intended drag. Must be at
-// least the duration of the split view divider snap animation, or else there
-// will be an issue similar to https://crbug.com/946601 but involving dragging a
-// snapped window from the top.
+// least the duration of the split view divider snap animation, or else issues
+// like crbug.com/946601, crbug.com/997764, and https://crbug.com/997765, which
+// all refer to dragging from overview, will apply to dragging from the top.
 constexpr base::TimeDelta kIsWindowMovedTimeoutMs =
     base::TimeDelta::FromMilliseconds(300);
 

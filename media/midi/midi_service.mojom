@@ -60,7 +60,8 @@ interface MidiSessionClient {
 // Interface used by the renderer to start a MIDI session in the browser.
 interface MidiSessionProvider {
   // Start session to access MIDI hardware.
-  StartSession(MidiSession& request, MidiSessionClient client);
+  StartSession(pending_receiver<MidiSession> receiver,
+               pending_remote<MidiSessionClient> client);
 };
 
 // Represents an active MIDI session.

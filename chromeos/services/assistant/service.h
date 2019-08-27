@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback.h"
@@ -33,7 +32,6 @@
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class GoogleServiceAuthError;
-class PrefChangeRegistrar;
 class PrefService;
 
 namespace base {
@@ -63,7 +61,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     : public mojom::AssistantService,
       public chromeos::PowerManagerClient::Observer,
       public ash::SessionActivationObserver,
-      public ash::DefaultVoiceInteractionObserver {
+      public ash::AssistantStateObserver {
  public:
   Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
           std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -139,12 +137,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
-  // Called when the hotword always on status is changed from the pref service.
-  void OnAssistantHotwordAlwaysOn();
-
-  // ash::mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override;
+  // ash::AssistantStateObserver:
+  void OnAssistantHotwordAlwaysOn(bool hotword_always_on) override;
+  void OnAssistantSettingsEnabled(bool enabled) override;
+  void OnAssistantHotwordEnabled(bool enabled) override;
   void OnLocaleChanged(const std::string& locale) override;
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
@@ -209,6 +205,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   base::Optional<std::string> access_token_;
 
   mojom::AssistantControllerPtr assistant_controller_;
+
+  // NOTE: |pref_service_| is used by |assistant_state_| and must be declared
+  // before so it will be destructed after.
+  std::unique_ptr<PrefService> pref_service_;
+
   ash::mojom::AssistantAlarmTimerControllerPtr
       assistant_alarm_timer_controller_;
   ash::mojom::AssistantNotificationControllerPtr
@@ -220,12 +221,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // non-null until |assistant_manager_service_| is created.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
 
-  std::unique_ptr<PrefService> pref_service_;
-
   std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
-
-  // Observes user profile prefs for the Assistant.
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::CancelableOnceClosure update_assistant_manager_callback_;
 

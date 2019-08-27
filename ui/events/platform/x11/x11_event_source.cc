@@ -300,7 +300,7 @@ void X11EventSource::StopCurrentEventStream() {
 
 void X11EventSource::OnDispatcherListChanged() {
   if (!hotplug_event_handler_) {
-    hotplug_event_handler_.reset(new X11HotplugEventHandler());
+    hotplug_event_handler_ = std::make_unique<X11HotplugEventHandler>();
     // Force the initial device query to have an update list of active devices.
     hotplug_event_handler_->OnHotplugEvent();
   }

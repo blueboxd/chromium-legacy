@@ -17,8 +17,6 @@ source_set("lib") {
     "collection_store.h",
     "display_decider.cc",
     "display_decider.h",
-    "distribution_policy.cc",
-    "distribution_policy.h",
     "icon_converter.h",
     "icon_converter_result.cc",
     "icon_converter_result.h",
@@ -81,7 +79,6 @@ source_set("unit_tests") {
   sources = [
     "background_task_coordinator_unittest.cc",
     "display_decider_unittest.cc",
-    "distribution_policy_unittest.cc",
     "icon_converter_unittest.cc",
     "icon_store_unittest.cc",
     "impression_history_tracker_unittest.cc",

@@ -30,7 +30,6 @@
  */
 
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 #include <memory>
 #include <utility>
@@ -101,6 +100,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -1021,19 +1021,15 @@ void ChromeClientImpl::SetEventListenerProperties(
 
   client->SetEventListenerProperties(event_class, properties);
 
-  bool has_touch_end_or_cancel_handler =
-      client->EventListenerProperties(
-          cc::EventListenerClass::kTouchEndOrCancel) !=
-      cc::EventListenerProperties::kNone;
-
-  if (event_class == cc::EventListenerClass::kTouchStartOrMove) {
-    client->SetHasTouchEventHandlers(properties !=
-                                         cc::EventListenerProperties::kNone ||
-                                     has_touch_end_or_cancel_handler);
-  } else if (event_class == cc::EventListenerClass::kTouchEndOrCancel) {
-    client->SetHasTouchEventHandlers(properties !=
-                                         cc::EventListenerProperties::kNone ||
-                                     has_touch_end_or_cancel_handler);
+  if (event_class == cc::EventListenerClass::kTouchStartOrMove ||
+      event_class == cc::EventListenerClass::kTouchEndOrCancel) {
+    client->SetHasTouchEventHandlers(
+        client->EventListenerProperties(
+            cc::EventListenerClass::kTouchStartOrMove) !=
+            cc::EventListenerProperties::kNone ||
+        client->EventListenerProperties(
+            cc::EventListenerClass::kTouchEndOrCancel) !=
+            cc::EventListenerProperties::kNone);
   } else if (event_class == cc::EventListenerClass::kPointerRawUpdate) {
     client->SetHasPointerRawUpdateEventHandlers(
         properties != cc::EventListenerProperties::kNone);

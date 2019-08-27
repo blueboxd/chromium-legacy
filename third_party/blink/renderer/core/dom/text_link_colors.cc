@@ -82,7 +82,7 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
     case CSSValueID::kInternalRootColor:
       return LayoutTheme::GetTheme().RootElementColor(color_scheme);
     default:
-      return StyleColor::ColorFromKeyword(value_id);
+      return StyleColor::ColorFromKeyword(value_id, color_scheme);
   }
 }
 

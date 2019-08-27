@@ -13,7 +13,7 @@ AXPlatformNodeTest::AXPlatformNodeTest() {}
 AXPlatformNodeTest::~AXPlatformNodeTest() {}
 
 void AXPlatformNodeTest::Init(const AXTreeUpdate& initial_state) {
-  tree_.reset(new AXTree(initial_state));
+  tree_ = std::make_unique<AXTree>(initial_state);
 }
 
 void AXPlatformNodeTest::Init(

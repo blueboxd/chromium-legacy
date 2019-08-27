@@ -77,15 +77,17 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
   void Show(ui::SelectFileDialog::Type type,
             const base::FilePath& default_path) {
     AddRef();  // Balanced in the three listener outcomes.
+    base::FilePath::StringType ext;
+    ui::SelectFileDialog::FileTypeInfo file_type_info;
+    if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE &&
+        default_path.Extension().length() > 0) {
+      ext = default_path.Extension().substr(1);
+      file_type_info.extensions.resize(1);
+      file_type_info.extensions[0].push_back(ext);
+    }
     select_file_dialog_->SelectFile(
-      type,
-      base::string16(),
-      default_path,
-      NULL,
-      0,
-      base::FilePath::StringType(),
-      platform_util::GetTopLevel(web_contents_->GetNativeView()),
-      NULL);
+        type, base::string16(), default_path, &file_type_info, 0, ext,
+        platform_util::GetTopLevel(web_contents_->GetNativeView()), nullptr);
   }
 
   // ui::SelectFileDialog::Listener implementation.

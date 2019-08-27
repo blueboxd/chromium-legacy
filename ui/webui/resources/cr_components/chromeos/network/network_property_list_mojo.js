@@ -100,14 +100,33 @@ Polymer({
     subKeys.forEach(subKey => {
       // Check for exceptions to CamelCase vs camelCase naming conventions.
       if (subKey == 'ipv4' || subKey == 'ipv6') {
-        result += subKey + '-';
+        result += subKey;
       } else if (subKey == 'apn') {
-        result += 'APN-';
+        result += 'APN';
       } else if (subKey == 'ipAddress') {
-        result += 'IPAddress-';
+        result += 'IPAddress';
+      } else if (subKey == 'ipSec') {
+        result += 'IPSec';
+      } else if (subKey == 'l2tp') {
+        result += 'L2TP';
+      } else if (subKey == 'modelId') {
+        result += 'ModelID';
+      } else if (subKey == 'openVpn') {
+        result += 'OpenVPN';
+      } else if (subKey == 'otp') {
+        result += 'OTP';
+      } else if (subKey == 'ssid') {
+        result += 'SSID';
+      } else if (subKey == 'serverCa') {
+        result += 'ServerCA';
+      } else if (subKey == 'vpn') {
+        result += 'VPN';
+      } else if (subKey == 'wifi') {
+        result += 'WiFi';
       } else {
-        result += subKey.charAt(0).toUpperCase() + subKey.slice(1) + '-';
+        result += subKey.charAt(0).toUpperCase() + subKey.slice(1);
       }
+      result += '-';
     });
     return 'Onc' + result.slice(0, result.length - 1);
   },
@@ -165,7 +184,7 @@ Polymer({
     const property =
         /** @type{OncMojo.ManagedProperty|undefined} */ (
             this.get(key, propertyDict));
-    if (property === undefined) {
+    if (property === undefined || property === null) {
       // Unspecified properties in policy configurations are not user
       // modifiable. https://crbug.com/819837.
       const source = propertyDict.source;
@@ -228,7 +247,7 @@ Polymer({
    */
   getProperty_: function(key, propertyDict) {
     const property = this.get(key, this.propertyDict);
-    if (property === undefined) {
+    if (property === undefined || property === null) {
       // If the dictionary is policy controlled, provide an empty property
       // object with the network policy source. See https://crbug.com/819837 for
       // more info.
@@ -261,7 +280,7 @@ Polymer({
    */
   getPropertyValue_: function(key, prefix, propertyDict) {
     let value = this.get(key, propertyDict);
-    if (value === undefined) {
+    if (value === undefined || value === null) {
       return '';
     }
     if (typeof value == 'object' && !Array.isArray(value)) {
@@ -277,13 +296,30 @@ Polymer({
     if (customValue) {
       return customValue;
     }
-    if (typeof value == 'number' || typeof value == 'boolean') {
+    if (typeof value == 'boolean') {
       return value.toString();
     }
 
-    assert(typeof value == 'string');
-    const valueStr = /** @type {string} */ (value);
-
+    let valueStr;
+    if (typeof value == 'number') {
+      // Special case typed managed properties.
+      if (key == 'cellular.activationState') {
+        valueStr = OncMojo.getActivationStateTypeString(
+            /** @type{!chromeos.networkConfig.mojom.ActivationStateType}*/ (
+                value));
+      } else if (key == 'vpn.type') {
+        valueStr = OncMojo.getVPNTypeString(
+            /** @type{!chromeos.networkConfig.mojom.VPNType}*/ (value));
+      } else if (key == 'wifi.security') {
+        valueStr = OncMojo.getSecurityTypeString(
+            /** @type{!chromeos.networkConfig.mojom.SecurityType}*/ (value));
+      } else {
+        return value.toString();
+      }
+    } else {
+      assert(typeof value == 'string');
+      valueStr = /** @type {string} */ (value);
+    }
     const oncKey = this.getOncKey_(key, prefix) + '_' + valueStr;
     if (this.i18nExists(oncKey)) {
       return this.i18n(oncKey);

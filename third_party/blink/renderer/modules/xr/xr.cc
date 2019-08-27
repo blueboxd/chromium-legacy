@@ -227,7 +227,6 @@ XR::XR(LocalFrame& frame, int64_t ukm_source_id)
     : ContextLifecycleObserver(frame.GetDocument()),
       FocusChangedObserver(frame.GetPage()),
       ukm_source_id_(ukm_source_id),
-      binding_(this),
       navigation_start_(
           frame.Loader().GetDocumentLoader()->GetTiming().NavigationStart()),
       feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
@@ -699,11 +698,8 @@ void XR::AddedEventListener(const AtomicString& event_type,
     // See https://bit.ly/2S0zRAS for task types.
     auto task_runner =
         GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-    if (!binding_.is_bound()) {
-      device::mojom::blink::VRServiceClientPtr client;
-      binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
-      service_->SetClient(std::move(client));
-    }
+    if (!receiver_.is_bound())
+      service_->SetClient(receiver_.BindNewPipeAndPassRemote(task_runner));
   }
 }
 
@@ -761,7 +757,7 @@ void XR::Dispose() {
   // If the document context was destroyed, shut down the client connection
   // and never call the mojo service again.
   service_.reset();
-  binding_.Close();
+  receiver_.reset();
 
   // Shutdown frame provider, which manages the message pipes.
   if (frame_provider_)

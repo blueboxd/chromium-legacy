@@ -178,6 +178,7 @@ bool MockCryptoClientStream::CryptoConnect() {
       session()->connection()->SetDefaultEncryptionLevel(
           ENCRYPTION_FORWARD_SECURE);
       session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+      session()->connection()->OnHandshakeComplete();
       break;
     }
 

@@ -11,6 +11,7 @@
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "crypto/secure_hash.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
@@ -31,6 +32,33 @@ quarantine::mojom::QuarantineFileResult AnnotateFileSync(
   quarantine::mojom::QuarantineFileResult result = quarantine::QuarantineFile(
       path, /*source_url=*/GURL(), referrer_url, client_id);
   return result;
+}
+
+std::pair<base::File::Error, std::string> ReadAndComputeSHA256Checksum(
+    const base::FilePath& path) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+
+  if (!file.IsValid())
+    return std::make_pair(file.error_details(), std::string());
+
+  std::unique_ptr<crypto::SecureHash> hash =
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256);
+  std::vector<char> buffer(8 * 1024);
+  int bytes_read = file.ReadAtCurrentPos(buffer.data(), buffer.size());
+
+  while (bytes_read > 0) {
+    hash->Update(buffer.data(), bytes_read);
+    bytes_read = file.ReadAtCurrentPos(buffer.data(), buffer.size());
+  }
+
+  // If bytes_read is -ve, it means there were issues reading from disk.
+  if (bytes_read < 0)
+    return std::make_pair(file.error_details(), std::string());
+
+  std::string hash_str(hash->GetHashLength(), 0);
+  hash->Finish(base::data(hash_str), hash_str.size());
+
+  return std::make_pair(file.error_details(), hash_str);
 }
 
 }  // namespace
@@ -312,6 +340,20 @@ void NativeFileSystemFileWriterImpl::DidAnnotateFile(
   }
 
   std::move(callback).Run(native_file_system_error::Ok());
+}
+
+void NativeFileSystemFileWriterImpl::ComputeSecureHashForFile(
+    const base::FilePath& path,
+    HashCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&ReadAndComputeSHA256Checksum, path),
+      base::BindOnce(
+          [](HashCallback callback,
+             const std::pair<base::File::Error, std::string>& result) {
+            std::move(callback).Run(result.first, result.second);
+          },
+          std::move(callback)));
 }
 
 base::WeakPtr<NativeFileSystemHandleBase>

@@ -86,7 +86,8 @@ void X11WindowBase::Create() {
                     LeaveWindowMask | ExposureMask | VisibilityChangeMask |
                     StructureNotifyMask | PropertyChangeMask |
                     PointerMotionMask;
-  xwindow_events_.reset(new ui::XScopedEventSelector(xwindow_, event_mask));
+  xwindow_events_ =
+      std::make_unique<ui::XScopedEventSelector>(xwindow_, event_mask);
 
   // Setup XInput2 event mask.
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];

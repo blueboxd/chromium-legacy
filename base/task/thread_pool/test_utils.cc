@@ -56,8 +56,8 @@ bool MockJobTaskRunner::PostDelayedTask(const Location& from_here,
     return false;
 
   auto job_task = base::MakeRefCounted<MockJobTask>(std::move(closure));
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(from_here, traits_);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      from_here, traits_, pooled_task_runner_delegate_);
   return pooled_task_runner_delegate_->EnqueueJobTaskSource(
       std::move(task_source));
 }
@@ -217,6 +217,10 @@ void MockPooledTaskRunnerDelegate::PostTaskWithSequenceNow(
   }
 }
 
+bool MockPooledTaskRunnerDelegate::ShouldYield(TaskSource* task_source) const {
+  return thread_group_->ShouldYield(task_source->priority_racy());
+}
+
 bool MockPooledTaskRunnerDelegate::EnqueueJobTaskSource(
     scoped_refptr<JobTaskSource> task_source) {
   // |thread_group_| must be initialized with SetThreadGroup() before
@@ -277,8 +281,6 @@ size_t MockJobTask::GetMaxConcurrency() const {
 }
 
 void MockJobTask::Run(experimental::JobDelegate* delegate) {
-  if (delegate->ShouldYield())
-    return;
   worker_task_.Run(delegate);
   size_t before = remaining_num_tasks_to_run_.fetch_sub(1);
   DCHECK_GT(before, 0U);
@@ -286,10 +288,12 @@ void MockJobTask::Run(experimental::JobDelegate* delegate) {
 
 scoped_refptr<JobTaskSource> MockJobTask::GetJobTaskSource(
     const Location& from_here,
-    const TaskTraits& traits) {
+    const TaskTraits& traits,
+    PooledTaskRunnerDelegate* delegate) {
   return MakeRefCounted<JobTaskSource>(
       from_here, traits, base::BindRepeating(&test::MockJobTask::Run, this),
-      base::BindRepeating(&test::MockJobTask::GetMaxConcurrency, this));
+      base::BindRepeating(&test::MockJobTask::GetMaxConcurrency, this),
+      delegate);
 }
 
 RegisteredTaskSource QueueAndRunTaskSource(

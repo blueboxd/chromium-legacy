@@ -158,7 +158,6 @@ const char kSpellcheckDictionaryLocale[] = "dictionary_locale";
 const char kSpellcheckDictionaryPath[] = "dictionary_path";
 const char kStorageManagedSchema[] = "storage.managed_schema";
 const char kSuggestedKey[] = "suggested_key";
-const char kSynthesizeExtensionAction[] = "_synthesize_extension_action";
 const char kSystemIndicator[] = "system_indicator";
 const char kTheme[] = "theme";
 const char kThemeColors[] = "colors";

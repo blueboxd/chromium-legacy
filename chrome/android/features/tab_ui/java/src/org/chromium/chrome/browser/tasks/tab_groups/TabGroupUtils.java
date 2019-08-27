@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.tasks.tab_groups;
 
+import android.app.Activity;
 import android.support.annotation.StringRes;
 import android.view.View;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -72,23 +75,25 @@ public class TabGroupUtils {
 
     /**
      * Start a TabModelSelectorTabObserver to show IPH for TabGroups.
-     * @param selector The selector that owns the Tabs that should be observed.
      */
-    public static void startObservingForTabGroupsIPH(TabModelSelector selector) {
+    public static void startObservingForCreationIPH() {
         if (sTabModelSelectorTabObserver != null) return;
+
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (!(activity instanceof ChromeTabbedActivity)) return;
+        TabModelSelector selector = ((ChromeTabbedActivity) activity).getTabModelSelector();
+
         sTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
-                if (!navigationHandle.isInMainFrame() || navigationHandle.pageTransition() == null)
-                    return;
+                if (!navigationHandle.isInMainFrame()) return;
                 if (tab.isIncognito()) return;
-                if (navigationHandle.pageTransition() == null) return;
-
-                int coreTransitionType =
-                        navigationHandle.pageTransition() & PageTransition.CORE_MASK;
+                Integer transition = navigationHandle.pageTransition();
                 // Searching from omnibox results in PageTransition.GENERATED.
                 if (navigationHandle.isValidSearchFormUrl()
-                        || coreTransitionType == PageTransition.GENERATED) {
+                        || (transition != null
+                                && (transition & PageTransition.CORE_MASK)
+                                        == PageTransition.GENERATED)) {
                     maybeShowIPH(FeatureConstants.TAB_GROUPS_QUICKLY_COMPARE_PAGES_FEATURE,
                             tab.getView());
                     sTabModelSelectorTabObserver.destroy();

@@ -49,6 +49,9 @@ namespace {
 // the size of the report. UMA suggests 99.9% will have < 200 domains.
 const int kMaxReusedDomains = 200;
 
+// The maximum time to wait for DOM features to be collected, in milliseconds.
+const int kDomFeatureTimeoutMs = 3000;
+
 // Parameters chosen to ensure privacy is preserved by visual features.
 const int kMinWidthForVisualFeatures = 576;
 const int kMinHeightForVisualFeatures = 576;
@@ -265,14 +268,25 @@ void PasswordProtectionRequest::FillRequestProto() {
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
   password_protection_service_->GetPhishingDetector(rfh->GetRemoteInterfaces(),
                                                     &phishing_detector_);
+  dom_features_collection_complete_ = false;
   phishing_detector_->StartPhishingDetection(
       main_frame_url_,
       base::BindRepeating(&PasswordProtectionRequest::OnGetDomFeatures,
                           GetWeakPtr()));
+  base::PostDelayedTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&PasswordProtectionRequest::OnGetDomFeatureTimeout,
+                     GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kDomFeatureTimeoutMs));
   dom_feature_start_time_ = base::TimeTicks::Now();
 }
 
 void PasswordProtectionRequest::OnGetDomFeatures(const std::string& verdict) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (dom_features_collection_complete_)
+    return;
+
+  dom_features_collection_complete_ = true;
   ClientPhishingRequest dom_features_request;
   if (dom_features_request.ParseFromString(verdict)) {
     for (const ClientPhishingRequest::Feature& feature :
@@ -300,6 +314,18 @@ void PasswordProtectionRequest::OnGetDomFeatures(const std::string& verdict) {
   UMA_HISTOGRAM_TIMES("PasswordProtection.DomFeatureExtractionDuration",
                       base::TimeTicks::Now() - dom_feature_start_time_);
 
+  MaybeCollectVisualFeatures();
+}
+
+void PasswordProtectionRequest::OnGetDomFeatureTimeout() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!dom_features_collection_complete_) {
+    dom_features_collection_complete_ = true;
+    MaybeCollectVisualFeatures();
+  }
+}
+
+void PasswordProtectionRequest::MaybeCollectVisualFeatures() {
   // Once the DOM features are collected, either collect visual features, or go
   // straight to sending the ping.
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&

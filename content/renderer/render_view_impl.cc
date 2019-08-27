@@ -1266,6 +1266,10 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_UpdatePageVisualProperties,
                         OnUpdatePageVisualProperties)
     IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
+    IPC_MESSAGE_HANDLER(PageMsg_PutPageIntoBackForwardCache,
+                        PutPageIntoBackForwardCache)
+    IPC_MESSAGE_HANDLER(PageMsg_RestorePageFromBackForwardCache,
+                        RestorePageFromBackForwardCache)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
                         OnTextAutosizerPageInfoChanged)
 
@@ -2046,6 +2050,16 @@ void RenderViewImpl::ResizeVisualViewportForWidget(
 void RenderViewImpl::SetPageFrozen(bool frozen) {
   if (webview())
     webview()->SetPageFrozen(frozen);
+}
+
+void RenderViewImpl::PutPageIntoBackForwardCache() {
+  if (webview())
+    webview()->PutPageIntoBackForwardCache();
+}
+
+void RenderViewImpl::RestorePageFromBackForwardCache() {
+  if (webview())
+    webview()->RestorePageFromBackForwardCache();
 }
 
 // This function receives TextAutosizerPageInfo from the main frame's renderer

@@ -480,10 +480,7 @@ cr.define('settings', function() {
           r.PLUGIN_VM.createChild('/pluginVm/sharedPaths');
     }
 
-    if (loadTimeData.valueExists('assistantEnabled') &&
-        loadTimeData.getBoolean('assistantEnabled')) {
-      r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
-    }
+    r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
 
     // This if/else accounts for sections that were added or refactored in
     // the settings split (crbug.com/950007) and some routes that were created

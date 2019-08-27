@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/network_config_service.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
@@ -173,9 +172,10 @@ void AssistantClient::RequestAssistantVolumeControl(
       std::move(receiver));
 }
 
-void AssistantClient::RequestVoiceInteractionController(
-    mojo::PendingReceiver<ash::mojom::VoiceInteractionController> receiver) {
-  ash::VoiceInteractionController::Get()->BindRequest(std::move(receiver));
+void AssistantClient::RequestAssistantStateController(
+    mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver) {
+  ash::AssistantInterfaceBinder::GetInstance()->BindStateController(
+      std::move(receiver));
 }
 
 void AssistantClient::RequestPrefStoreConnector(
@@ -247,9 +247,6 @@ void AssistantClient::OnExtendedAccountInfoUpdated(const AccountInfo& info) {
 }
 
 void AssistantClient::OnUserProfileLoaded(const AccountId& account_id) {
-  if (!chromeos::features::IsAssistantEnabled())
-    return;
-
   // Initialize Assistant when primary user profile is loaded so that it could
   // be used in post oobe steps. OnUserSessionStarted() is too late
   // because it happens after post oobe steps

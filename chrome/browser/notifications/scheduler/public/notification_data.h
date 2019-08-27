@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "chrome/browser/notifications/scheduler/public/icon_bundle.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace notifications {
 
@@ -38,14 +38,6 @@ struct NotificationData {
     std::string id;
   };
 
-  struct Icon {
-    Icon();
-    ~Icon();
-
-    // The icon bitmap.
-    SkBitmap bitmap;
-  };
-
   using CustomData = std::map<std::string, std::string>;
   NotificationData();
   NotificationData(const NotificationData& other);
@@ -58,11 +50,8 @@ struct NotificationData {
   // The body text of the notification.
   base::string16 message;
 
-  // The small icon of the notification.
-  Icon small_icon;
-
-  // The large icon of the notification.
-  Icon large_icon;
+  // The icons of the notification.
+  std::map<IconType, IconBundle> icons;
 
   // Custom key value pair data associated with each notification. Will be sent
   // back after user interaction.

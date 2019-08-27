@@ -830,7 +830,7 @@ html[dir=rtl] .menu-option {
   height: 32px;
   line-height: 32px;
   margin-inline-start: 16px;
-  max-width: 126px;
+  max-width: 125px;
   overflow: hidden;
   text-overflow: ellipsis;
   user-select: none;
@@ -891,6 +891,7 @@ html[dir=rtl] .menu-option {
   margin-inline-start: 40px;
   position: relative;
   width: 568px;
+  z-index: 1;
 }
 
 .menu-panel {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.gesturenav;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Build;
@@ -17,15 +18,40 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.ColorUtils;
 
 /**
  * View class for a bubble used in gesture navigation UI that consists of an icon
  * and an optional text.
  */
 public class NavigationBubble extends LinearLayout {
-    private ImageView mIcon;
-    private final ColorStateList mBlueTint;
+    private static final int COLOR_TRANSITION_DURATION_MS = 250;
+
+    private final ValueAnimator mColorAnimator;
+    private final int mBlue;
+    private final int mBlack;
+
+    private class ColorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
+        private int mStart;
+        private int mEnd;
+
+        private void setTransitionColors(int start, int end) {
+            mStart = start;
+            mEnd = end;
+        }
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            float fraction = (float) animation.getAnimatedValue();
+            ApiCompatibilityUtils.setImageTintList(mIcon,
+                    ColorStateList.valueOf(ColorUtils.getColorWithOverlay(mStart, mEnd, fraction)));
+        }
+    }
+
+    private final ColorUpdateListener mColorUpdateListener;
+
     private TextView mText;
+    private ImageView mIcon;
     private AnimationListener mListener;
 
     /**
@@ -44,7 +70,12 @@ public class NavigationBubble extends LinearLayout {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
-        mBlueTint = context.getResources().getColorStateList(R.color.blue_mode_tint);
+        mBlack = ApiCompatibilityUtils.getColor(getResources(), android.R.color.black);
+        mBlue = ApiCompatibilityUtils.getColor(getResources(), R.color.default_icon_color_blue);
+
+        mColorUpdateListener = new ColorUpdateListener();
+        mColorAnimator = ValueAnimator.ofFloat(0, 1).setDuration(COLOR_TRANSITION_DURATION_MS);
+        mColorAnimator.addUpdateListener(mColorUpdateListener);
     }
 
     @Override
@@ -115,11 +146,9 @@ public class NavigationBubble extends LinearLayout {
      */
     public void setImageTint(boolean navigate) {
         assert mIcon != null;
-        if (navigate) {
-            ApiCompatibilityUtils.setImageTintList(mIcon, mBlueTint);
-        } else {
-            ApiCompatibilityUtils.setImageTintList(mIcon, mText.getTextColors());
-        }
+        mColorUpdateListener.setTransitionColors(
+                navigate ? mBlack : mBlue, navigate ? mBlue : mBlack);
+        mColorAnimator.start();
     }
 
     /**

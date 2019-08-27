@@ -96,6 +96,7 @@ void CrostiniExportImportNotification::SetStatusRunning(int progress_percent) {
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL))});
   notification_->set_never_timeout(true);
   notification_->set_progress(progress_percent);
+  notification_->set_pinned(true);
 
   ForceRedisplay();
 }
@@ -119,6 +120,7 @@ void CrostiniExportImportNotification::SetStatusCancelling() {
   notification_->set_buttons({});
   notification_->set_never_timeout(true);
   notification_->set_progress(-1);  // Infinite progress bar
+  notification_->set_pinned(false);
 
   ForceRedisplay();
 }
@@ -141,6 +143,7 @@ void CrostiniExportImportNotification::SetStatusDone() {
           : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE));
   notification_->set_buttons({});
   notification_->set_never_timeout(false);
+  notification_->set_pinned(false);
 
   ForceRedisplay();
 }
@@ -201,6 +204,7 @@ void CrostiniExportImportNotification::SetStatusFailed(
   notification_->set_message(message);
   notification_->set_buttons({});
   notification_->set_never_timeout(false);
+  notification_->set_pinned(false);
 
   ForceRedisplay();
 }

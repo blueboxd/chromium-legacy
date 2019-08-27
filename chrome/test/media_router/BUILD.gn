@@ -46,9 +46,6 @@ source_set("browser_tests") {
     ":browser_test_resources",
     "//chrome/browser/resources/media_router/extension:media_router",
   ]
-  data = [
-    "$root_gen_dir/chrome/browser/resources/media_router/extension/",
-  ]
 }
 
 copy("browser_test_resources") {

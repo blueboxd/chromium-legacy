@@ -13,7 +13,6 @@
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/feature_list.h"
@@ -69,7 +68,7 @@ AssistantSuggestionsController::AssistantSuggestionsController(
     : assistant_controller_(assistant_controller) {
   UpdateConversationStarters();
   assistant_controller_->AddObserver(this);
-  VoiceInteractionController::Get()->AddLocalObserver(this);
+  AssistantState::Get()->AddObserver(this);
 }
 
 AssistantSuggestionsController::~AssistantSuggestionsController() {
@@ -78,7 +77,7 @@ AssistantSuggestionsController::~AssistantSuggestionsController() {
     client->SetDelegate(nullptr);
 
   assistant_controller_->RemoveObserver(this);
-  VoiceInteractionController::Get()->RemoveLocalObserver(this);
+  AssistantState::Get()->RemoveObserver(this);
 }
 
 void AssistantSuggestionsController::AddModelObserver(
@@ -118,8 +117,7 @@ void AssistantSuggestionsController::OnUiVisibilityChanged(
     UpdateConversationStarters();
 }
 
-void AssistantSuggestionsController::OnVoiceInteractionContextEnabled(
-    bool enabled) {
+void AssistantSuggestionsController::OnAssistantContextEnabled(bool enabled) {
   UpdateConversationStarters();
 }
 
@@ -159,7 +157,7 @@ void AssistantSuggestionsController::UpdateConversationStarters() {
 
   // If enabled, always show the "What's on my screen?" conversation starter.
   if (kWhatsOnMyScreenChipEnabled.Get() &&
-      VoiceInteractionController::Get()->context_enabled().value_or(false)) {
+      AssistantState::Get()->context_enabled().value_or(false)) {
     AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN,
                            assistant::util::CreateWhatsOnMyScreenDeepLink());
   }

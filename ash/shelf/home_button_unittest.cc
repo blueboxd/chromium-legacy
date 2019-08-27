@@ -13,11 +13,11 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/test_assistant_service.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -63,6 +63,8 @@ class HomeButtonTest : public AshTestBase {
   const HomeButton* home_button() const {
     return GetPrimaryShelf()->shelf_widget()->GetHomeButton();
   }
+
+  AssistantState* assistant_state() const { return AssistantState::Get(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HomeButtonTest);
@@ -147,11 +149,20 @@ TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
 
   ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  test_api.RunMessageLoopUntilAnimationsDone();
+  // Wait for the navigation widget's animation.
+  test_api.RunMessageLoopUntilAnimationsDone(
+      GetPrimaryShelf()
+          ->shelf_widget()
+          ->navigation_widget()
+          ->get_bounds_animator_for_testing());
   EXPECT_GT(home_button()->bounds().x(), 0);
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  test_api.RunMessageLoopUntilAnimationsDone();
+  test_api.RunMessageLoopUntilAnimationsDone(
+      GetPrimaryShelf()
+          ->shelf_widget()
+          ->navigation_widget()
+          ->get_bounds_animator_for_testing());
   // Visual space around the home button is set at the widget level.
   EXPECT_EQ(0, home_button()->bounds().x());
 }
@@ -163,11 +174,10 @@ TEST_F(HomeButtonTest, LongPressGesture) {
   CreateUserSessions(2);
 
   // Enable voice interaction in system settings.
-  VoiceInteractionController::Get()->NotifySettingsEnabled(true);
-  VoiceInteractionController::Get()->NotifyFeatureAllowed(
+  assistant_state()->NotifySettingsEnabled(true);
+  assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
-  VoiceInteractionController::Get()->NotifyStatusChanged(
-      mojom::VoiceInteractionState::STOPPED);
+  assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::STOPPED);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -193,11 +203,11 @@ TEST_F(HomeButtonTest, LongPressGesture) {
 
 TEST_F(HomeButtonTest, LongPressGestureWithSecondaryUser) {
   // Disallowed by secondary user.
-  VoiceInteractionController::Get()->NotifyFeatureAllowed(
+  assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
 
   // Enable voice interaction in system settings.
-  VoiceInteractionController::Get()->NotifySettingsEnabled(true);
+  assistant_state()->NotifySettingsEnabled(true);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -224,8 +234,8 @@ TEST_F(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
 
   // Simulate a user who has already completed setup flow, but disabled voice
   // interaction in settings.
-  VoiceInteractionController::Get()->NotifySettingsEnabled(false);
-  VoiceInteractionController::Get()->NotifyFeatureAllowed(
+  assistant_state()->NotifySettingsEnabled(false);
+  assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
 
   ui::GestureEvent long_press =

@@ -495,7 +495,10 @@ void LocalFrame::DidChangeVisibilityState() {
 
 void LocalFrame::DidFreeze() {
   if (GetDocument()) {
-    if (GetDocument()->GetResourceCoordinator()) {
+    if (GetDocument()->GetResourceCoordinator() &&
+        !RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
+      // TODO(yuzus): Skip this block if DidFreeze is triggered by bfcache.
+
       // Determine if there is a beforeunload handler by dispatching a
       // beforeunload that will *not* launch a user dialog. If
       // |proceed| is false then there is a non-empty beforeunload
@@ -521,45 +524,11 @@ void LocalFrame::DidFreeze() {
       document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kFrozen);
     }
-
-    // Register a callback dispatched when JavaScript is executed on the frame.
-    // The callback evicts the frame. If a frame is frozen by BackForwardCache,
-    // the frame must not be mutated e.g., by JavaScript execution, then the
-    // frame must be evicted in such cases.
-    if (RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
-      // TODO(hajimehoshi): Set the callback only when the frame is frozen by
-      // BackForwardCache. See https://crbug.com/990718.
-      Vector<scoped_refptr<DOMWrapperWorld>> worlds;
-      DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
-      for (const auto& world : worlds) {
-        ScriptState* script_state = ToScriptState(this, *world);
-        ScriptState::Scope scope(script_state);
-        script_state->GetContext()->SetAbortScriptExecution(
-            [](v8::Isolate* isolate, v8::Local<v8::Context> context) {
-              ScriptState* script_state = ScriptState::From(context);
-              LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-              DCHECK(window);
-              LocalFrame* frame = window->GetFrame();
-              if (frame)
-                frame->EvictFromBackForwardCache();
-            });
-      }
-    }
   }
 }
 
 void LocalFrame::DidResume() {
   if (GetDocument()) {
-    // TODO(hajimehoshi): Unset the callback only when the frame is unfrozen by
-    // BackForwardCache. See https://crbug.com/990718.
-    Vector<scoped_refptr<DOMWrapperWorld>> worlds;
-    DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
-    for (const auto& world : worlds) {
-      ScriptState* script_state = ToScriptState(this, *world);
-      ScriptState::Scope scope(script_state);
-      script_state->GetContext()->SetAbortScriptExecution(nullptr);
-    }
-
     const base::TimeTicks resume_event_start = base::TimeTicks::Now();
     GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
     const base::TimeTicks resume_event_end = base::TimeTicks::Now();
@@ -574,6 +543,40 @@ void LocalFrame::DidResume() {
       document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kRunning);
     }
+  }
+}
+
+void LocalFrame::HookBackForwardCacheEviction() {
+  // Register a callback dispatched when JavaScript is executed on the frame.
+  // The callback evicts the frame. If a frame is frozen by BackForwardCache,
+  // the frame must not be mutated e.g., by JavaScript execution, then the
+  // frame must be evicted in such cases.
+  DCHECK(RuntimeEnabledFeatures::BackForwardCacheEnabled());
+  Vector<scoped_refptr<DOMWrapperWorld>> worlds;
+  DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
+  for (const auto& world : worlds) {
+    ScriptState* script_state = ToScriptState(this, *world);
+    ScriptState::Scope scope(script_state);
+    script_state->GetContext()->SetAbortScriptExecution(
+        [](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+          ScriptState* script_state = ScriptState::From(context);
+          LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+          DCHECK(window);
+          LocalFrame* frame = window->GetFrame();
+          if (frame)
+            frame->EvictFromBackForwardCache();
+        });
+  }
+}
+
+void LocalFrame::RemoveBackForwardCacheEviction() {
+  DCHECK(RuntimeEnabledFeatures::BackForwardCacheEnabled());
+  Vector<scoped_refptr<DOMWrapperWorld>> worlds;
+  DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
+  for (const auto& world : worlds) {
+    ScriptState* script_state = ToScriptState(this, *world);
+    ScriptState::Scope scope(script_state);
+    script_state->GetContext()->SetAbortScriptExecution(nullptr);
   }
 }
 
@@ -1708,7 +1711,6 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
   // Don't allow lifecycle state changes for detached frames.
   if (!IsAttached())
     return;
-
   // If we have asked to be frozen we will only do this once the
   // load event has fired.
   if ((state == mojom::FrameLifecycleState::kFrozen ||

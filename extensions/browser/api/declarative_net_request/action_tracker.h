@@ -29,6 +29,11 @@ class ActionTracker {
   // Called whenever a request matches with a rule.
   void OnRuleMatched(const std::vector<ExtensionId>& extension_ids, int tab_id);
 
+  // Updates the action count for all tabs for the specified |extension_id|'s
+  // extension action. Called when chrome.setActionCountAsBadgeText(true) is
+  // called by an extension.
+  void OnPreferenceEnabled(const ExtensionId& extension_id) const;
+
   // Clears the action count for the specified |extension_id| for all tabs.
   // Called when an extension's ruleset is removed.
   void ClearExtensionData(const ExtensionId& extension_id);

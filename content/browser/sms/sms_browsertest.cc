@@ -95,7 +95,8 @@ class SmsBrowserTest : public ContentBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
+// Flaky. crbug.com/997549
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Receive) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
@@ -130,7 +131,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
+// Flaky. crbug.com/997549
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_AtMostOnePendingSmsRequest) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
@@ -172,7 +174,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
+// Flaky. crbug.com/997549
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Reload) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
@@ -249,7 +252,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
   ExpectNoOutcomeUKM();
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
+// Flaky. crbug.com/997549
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
@@ -347,7 +351,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
+// Flaky. crbug.com/997549
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
@@ -458,7 +463,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
   ExpectNoOutcomeUKM();
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
+// Flaky. crbug.com/997549
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Cancels) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 

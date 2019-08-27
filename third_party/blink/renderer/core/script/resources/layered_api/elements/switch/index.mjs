@@ -13,12 +13,6 @@ const generateStyleSheet = style.styleSheetFactory();
 // https://github.com/tkent-google/std-switch/issues/2
 const STATE_ATTR = 'on';
 
-// Private property symbols
-// TODO(tkent): Use private fields.
-const _internals = Symbol('an ElementInternals field');
-const _track = Symbol('a track element field');
-const _containerElement = Symbol('A container element field');
-
 export class StdSwitchElement extends HTMLElement {
   // TODO(tkent): The following should be |static fooBar = value;|
   // after enabling babel-eslint.
@@ -29,6 +23,9 @@ export class StdSwitchElement extends HTMLElement {
     return [STATE_ATTR];
   }
 
+  #internals;
+  #track;
+  #containerElement;
   #inUserAction = false;
 
   constructor() {
@@ -38,24 +35,24 @@ export class StdSwitchElement extends HTMLElement {
           'Illegal constructor: StdSwitchElement is not ' +
           'extensible for now');
     }
-    this[_internals] = this.attachInternals();
-    this._initializeDOM();
+    this.#internals = this.attachInternals();
+    this.#initializeDOM();
 
-    this.addEventListener('click', this._onClick);
-    this.addEventListener('keypress', this._onKeyPress);
+    this.addEventListener('click', this.#onClick);
+    this.addEventListener('keypress', this.#onKeyPress);
   }
 
   attributeChangedCallback(attrName, oldValue, newValue) {
     if (attrName === STATE_ATTR) {
-      this[_track].value = newValue !== null;
-      if (this[_internals].ariaChecked !== undefined) {
-        this[_internals].ariaChecked = newValue !== null ? 'true' : 'false';
+      this.#track.value = newValue !== null;
+      if (this.#internals.ariaChecked !== undefined) {
+        this.#internals.ariaChecked = newValue !== null ? 'true' : 'false';
       } else {
         // TODO(tkent): Remove this when we ship AOM.
         this.setAttribute('aria-checked', newValue !== null ? 'true' : 'false');
       }
       if (!this.#inUserAction) {
-        for (const element of this[_containerElement].querySelectorAll('*')) {
+        for (const element of this.#containerElement.querySelectorAll('*')) {
           style.unmarkTransition(element);
         }
       }
@@ -69,8 +66,8 @@ export class StdSwitchElement extends HTMLElement {
       this.setAttribute('tabindex', '0');
     }
 
-    if (this[_internals].role !== undefined) {
-      this[_internals].role = 'switch';
+    if (this.#internals.role !== undefined) {
+      this.#internals.role = 'switch';
     } else {
       // TODO(tkent): Remove this when we ship AOM.
       if (!this.hasAttribute('role')) {
@@ -79,31 +76,29 @@ export class StdSwitchElement extends HTMLElement {
     }
   }
 
-  // TODO(tkent): Make this private.
-  _initializeDOM() {
+  #initializeDOM = () => {
     const factory = this.ownerDocument;
     const root = this.attachShadow({mode: 'closed'});
-    this[_containerElement] = factory.createElement('span');
-    this[_containerElement].id = 'container';
+    this.#containerElement = factory.createElement('span');
+    this.#containerElement.id = 'container';
     // Shadow elements should be invisible for a11y technologies.
-    this[_containerElement].setAttribute('aria-hidden', 'true');
-    root.appendChild(this[_containerElement]);
+    this.#containerElement.setAttribute('aria-hidden', 'true');
+    root.appendChild(this.#containerElement);
 
-    this[_track] = new SwitchTrack(factory);
-    this[_containerElement].appendChild(this[_track].element);
-    this[_track].value = this.on;
+    this.#track = new SwitchTrack(factory);
+    this.#containerElement.appendChild(this.#track.element);
+    this.#track.value = this.on;
 
     const thumbElement =
-        this[_containerElement].appendChild(factory.createElement('span'));
+        this.#containerElement.appendChild(factory.createElement('span'));
     thumbElement.id = 'thumb';
     thumbElement.part.add('thumb');
 
     root.adoptedStyleSheets = [generateStyleSheet()];
-  }
+  };
 
-  // TODO(tkent): Make this private.
-  _onClick() {
-    for (const element of this[_containerElement].querySelectorAll('*')) {
+  #onClick = () => {
+    for (const element of this.#containerElement.querySelectorAll('*')) {
       style.markTransition(element);
     }
     this.#inUserAction = true;
@@ -114,15 +109,45 @@ export class StdSwitchElement extends HTMLElement {
     }
     this.dispatchEvent(new Event('input', {bubbles: true}));
     this.dispatchEvent(new Event('change', {bubbles: true}));
-  }
+  };
 
-  // TODO(tkent): Make this private.
-  _onKeyPress(event) {
+  #onKeyPress = event => {
     if (event.code === 'Space') {
       // Do not scroll the page.
       event.preventDefault();
-      this._onClick(event);
+      this.#onClick(event);
     }
+  };
+
+  // -------- Boilerplate code for form-associated custom elements --------
+  // They can't be in face_utils.mjs because private fields are available
+  // only in the class.
+  get form() {
+    return this.#internals.form;
+  }
+  get willValidate() {
+    return this.#internals.willValidate;
+  }
+  get validity() {
+    return this.#internals.validity;
+  }
+  get validationMessage() {
+    return this.#internals.validationMessage;
+  }
+  get labels() {
+    return this.#internals.labels;
+  }
+  checkValidity() {
+    return this.#internals.checkValidity();
+  }
+  reportValidity() {
+    return this.#internals.reportValidity();
+  }
+  setCustomValidity(error) {
+    if (error === undefined) {
+      throw new TypeError('Too few arguments');
+    }
+    this.#internals.setValidity({customError: true}, error);
   }
 }
 
@@ -130,7 +155,7 @@ reflection.installBool(StdSwitchElement.prototype, STATE_ATTR);
 reflection.installBool(
     StdSwitchElement.prototype, 'default' + STATE_ATTR,
     'default' + STATE_ATTR.charAt(0).toUpperCase() + STATE_ATTR.substring(1));
-face.installPropertiesAndFunctions(StdSwitchElement.prototype, _internals);
+face.installProperties(StdSwitchElement.prototype);
 
 // This is necessary for anyObject.toString.call(switchInstance).
 Object.defineProperty(StdSwitchElement.prototype, Symbol.toStringTag, {

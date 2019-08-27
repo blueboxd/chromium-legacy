@@ -137,8 +137,8 @@ implicit ordering dependencies. A few simple APIs exist to support this.
 associated interface requests:
 
 ``` cpp
-magic::mojom::GoatTeleporterAssociatedPtr teleporter;
-channel_->GetRemoteAssociatedInterfaces()->GetInterface(&teleporter);
+mojo::PendingAssociatedRemote<magic::mojom::GoatTeleporter> teleporter;
+channel_->GetRemoteAssociatedInterfaces()->GetInterface(teleporter.BindNewEndpointAndPassReceiver());
 
 // These messages are all guaranteed to arrive in the same order they were sent.
 channel_->Send(new FooMsg_SomeLegacyIPC);
@@ -424,7 +424,7 @@ Mojo methods that return a value take an instance of `base::OnceCallback`.
 Use `WTF::Bind()` and an appropriate wrapper function depending on the type of
 object and the callback.
 
-For garbage-collected (Oilpan) classes owning the `InterfacePtr`, it is recommended
+For garbage-collected (Oilpan) classes owning the `mojo::Remote`, it is recommended
 to use `WrapWeakPersistent(this)` for connection error handlers since they
 are not guaranteed to get called in a finite time period (wrapping the object
 with `WrapPersistent` in this case would cause memory leaks).
@@ -455,14 +455,14 @@ nfc_->CancelAllWatches(WTF::Bind(&NFC::OnRequestCompleted,
 ```
 
 Non-garbage-collected objects can use `WTF::Unretained(this)` for both response
-and error handler callbacks when the `InterfacePtr` is owned by the object bound
+and error handler callbacks when the `mojo::Remote` is owned by the object bound
 to the callback or the object is guaranteed to outlive the Mojo connection for
 another reason. Otherwise a weak pointer should be used. However, it is not a
 common pattern since using Oilpan is recommended for all Blink code.
 
 ### Implementing Mojo interfaces in Blink
 
-Only a `mojo::Binding` or `mojo::BindingSet` should be used when implementing a
+Only a `mojo::Receiver` or `mojo::ReceiverSet` should be used when implementing a
 Mojo interface in an Oilpan-managed object. The object must then have a pre-finalizer
 to close any open pipes when the object is about to be swept as lazy sweeping
 means that it may be invalid long before the destructor is called. This requires
@@ -481,12 +481,12 @@ class MyObject : public GarbageCollected,
   // Implementation of example::mojom::blink::Example.
 
  private:
-  mojo::Binding<example::mojom::blink::Example> m_binding{this};
+  mojo::Receiver<example::mojom::blink::Example> m_receiver{this};
 };
 
 // MyObject.cpp
 void MyObject::Dispose() {
-  m_binding.Close();
+  m_receiver.Close();
 }
 ```
 

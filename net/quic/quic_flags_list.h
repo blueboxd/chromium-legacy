@@ -72,6 +72,10 @@ QUIC_FLAG(uint32_t, FLAGS_quic_buffered_data_threshold, 8192u)
 // Max size of data slice in bytes for QUIC stream send buffer.
 QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 
+// Anti-amplification factor. Before address validation, server will
+// send no more than factor times bytes received.
+QUIC_FLAG(int32_t, FLAGS_quic_anti_amplification_factor, 3)
+
 // If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
 // protocol.
 QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
@@ -174,11 +178,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
 
-// If true, log leaf cert subject name into warning log.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
-          true)
-
 // If true, enable QUIC version 47.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 
@@ -219,27 +218,16 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_conservative_cwnd_and_pacing_gains,
           false)
 
-// When true, QuicConnectionId will allocate long connection IDs on the heap
-// instead of inline in the object.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_allocated_connection_ids, true)
-
 // If enabled, do not call OnStreamFrame() with empty frame after receiving
 // empty or too large headers with FIN.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_avoid_empty_frame_after_empty_headers,
           true)
 
-// If true, disable QUIC version 44.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, true)
-
 // If true, ignore TLPR if there is no pending stream data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
           true)
-
-// If true, when detecting losses, use packets_acked of corresponding packet
-// number space.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packets_acked, true)
 
 // When true, QuicDispatcher will drop packets that have an initial destination
 // connection ID that is too short, instead of responding with a Version
@@ -295,7 +283,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_reject_unprocessable_packets_statelessly,
-    true)
+    false)
 
 // When true, QuicConnectionId::Hash uses SipHash instead of XOR.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, true)

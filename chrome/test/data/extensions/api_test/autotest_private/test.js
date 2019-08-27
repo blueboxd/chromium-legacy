@@ -234,21 +234,21 @@ var defaultTests = [
   function setAssistantEnabled() {
     chrome.autotestPrivate.setAssistantEnabled(true, 1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 9'));
+            'Assistant not allowed - state: 8'));
   },
   function sendAssistantTextQuery() {
     chrome.autotestPrivate.sendAssistantTextQuery(
         'what time is it?' /* query */,
         1000 /* timeout_ms */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 9'));
+            'Assistant not allowed - state: 8'));
   },
   function setWhitelistedPref() {
     chrome.autotestPrivate.setWhitelistedPref(
         'settings.voice_interaction.hotword.enabled' /* pref_name */,
         true /* value */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 9'));
+            'Assistant not allowed - state: 8'));
   },
   // This test verifies that getArcState returns provisioned False in case ARC
   // is not provisioned by default.

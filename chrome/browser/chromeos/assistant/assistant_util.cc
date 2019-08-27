@@ -25,9 +25,6 @@ namespace assistant {
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile) {
-  if (!chromeos::features::IsAssistantEnabled())
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_FLAG;
-
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER;
 

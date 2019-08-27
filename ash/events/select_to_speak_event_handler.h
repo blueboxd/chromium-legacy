@@ -97,7 +97,7 @@ class ASH_EXPORT SelectToSpeakEventHandler : public ui::EventHandler {
 
   State state_ = INACTIVE;
 
-  ui::PointerId touch_id_ = ui::PointerDetails::kUnknownPointerId;
+  ui::PointerId touch_id_ = ui::kPointerIdUnknown;
 
   ui::EventPointerType touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
 

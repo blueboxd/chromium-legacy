@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
@@ -150,10 +151,11 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
-  // TODO(mek): Cache NativeFileSystemManagerPtr associated with an
-  // ExecutionContext, so we don't have to request a new one for each operation,
-  // and can avoid code duplication between here and other uses.
-  mojom::blink::NativeFileSystemManagerPtr manager;
+  // TODO(mek): Cache mojo::Remote<mojom::blink::NativeFileSystemManager>
+  // associated with an ExecutionContext, so we don't have to request a new one
+  // for each operation, and can avoid code duplication between here and other
+  // uses.
+  mojo::Remote<mojom::blink::NativeFileSystemManager> manager;
   auto* provider = ExecutionContext::From(script_state)->GetInterfaceProvider();
   if (!provider) {
     resolver->Reject(file_error::CreateDOMException(
@@ -161,11 +163,11 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
     return result;
   }
 
-  provider->GetInterface(&manager);
+  provider->GetInterface(manager.BindNewPipeAndPassReceiver());
   auto* raw_manager = manager.get();
   raw_manager->GetSandboxedFileSystem(WTF::Bind(
       [](ScriptPromiseResolver* resolver,
-         mojom::blink::NativeFileSystemManagerPtr,
+         mojo::Remote<mojom::blink::NativeFileSystemManager>,
          NativeFileSystemErrorPtr result,
          mojom::blink::NativeFileSystemDirectoryHandlePtr handle) {
         ExecutionContext* context = resolver->GetExecutionContext();

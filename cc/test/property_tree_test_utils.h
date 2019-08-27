@@ -67,6 +67,19 @@ ScrollNode* GetScrollNode(LayerType* layer) {
   return GetPropertyTrees(layer)->scroll_tree.Node(layer->scroll_tree_index());
 }
 
+// Creates viewport layers and (in layer list mode) paint properties.
+// Convenient overload of the method below that creates a scrolling layer as
+// the outer viewport scroll layer.
+void SetupViewport(Layer* root,
+                   const gfx::Size& outer_bounds,
+                   const gfx::Size& scroll_bounds);
+
+// Creates viewport layers and (in layer list mode) paint properties.
+// Uses the given scroll layer as the content "outer viewport scroll layer".
+void SetupViewport(Layer* root,
+                   scoped_refptr<Layer> outer_scroll_layer,
+                   const gfx::Size& outer_bounds);
+
 // TODO(wangxianzhu): Add functions to create property nodes not based on
 // layers when needed.
 

@@ -20,12 +20,11 @@ class MediaPageLoadMetricsObserver
   ~MediaPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy
   FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnResourceDataUseObserved(
       content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&

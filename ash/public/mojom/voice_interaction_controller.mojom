@@ -29,8 +29,6 @@ enum AssistantAllowedState {
   DISALLOWED_BY_POLICY,
   // Disallowed because user's locale is not compatible.
   DISALLOWED_BY_LOCALE,
-  // Disallowed because the feature flag is off.
-  DISALLOWED_BY_FLAG,
   // Disallowed because current user is not primary user.
   DISALLOWED_BY_NONPRIMARY_USER,
   // Disallowed because current user is supervised user.

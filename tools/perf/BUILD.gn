@@ -30,9 +30,6 @@ group("perf") {
     # For image_decoding.measurement
     "//chrome/test/data/image_decoding/",
 
-    # For ad tagging ruleset
-    "$root_gen_dir/components/subresource_filter/tools/",
-
     # For Pylib used by VR tests
     "//build/android/pylib/",
   ]
@@ -82,9 +79,6 @@ group("perf_without_chrome") {
 
     # For image_decoding.measurement
     "//chrome/test/data/image_decoding/",
-
-    # For ad tagging ruleset
-    "$root_gen_dir/components/subresource_filter/tools/",
 
     # For Pylib used by VR tests
     "//build/android/pylib/",

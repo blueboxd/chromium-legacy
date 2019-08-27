@@ -21,7 +21,7 @@ TEST(OverlayCandidateValidatorSurfaceControlTest, NoClipOrNegativeOffset) {
   candidates.push_back(candidate);
 
   OverlayCandidateValidatorSurfaceControl validator;
-  validator.CheckOverlaySupport(&candidates);
+  validator.CheckOverlaySupport(nullptr, &candidates);
   EXPECT_TRUE(candidates.at(0).overlay_handled);
   EXPECT_RECTF_EQ(candidates.at(0).display_rect, gfx::RectF(10.f, 10.f));
 }
@@ -38,7 +38,7 @@ TEST(OverlayCandidateValidatorSurfaceControlTest, Clipped) {
   candidates.push_back(candidate);
 
   OverlayCandidateValidatorSurfaceControl validator;
-  validator.CheckOverlaySupport(&candidates);
+  validator.CheckOverlaySupport(nullptr, &candidates);
   EXPECT_TRUE(candidates.at(0).overlay_handled);
   EXPECT_RECTF_EQ(candidates.at(0).display_rect,
                   gfx::RectF(2.f, 2.f, 5.f, 5.f));
@@ -57,7 +57,7 @@ TEST(OverlayCandidateValidatorSurfaceControlTest, NegativeOffset) {
   candidates.push_back(candidate);
 
   OverlayCandidateValidatorSurfaceControl validator;
-  validator.CheckOverlaySupport(&candidates);
+  validator.CheckOverlaySupport(nullptr, &candidates);
   EXPECT_TRUE(candidates.at(0).overlay_handled);
   EXPECT_RECTF_EQ(candidates.at(0).display_rect,
                   gfx::RectF(0.f, 0.f, 8.f, 6.f));
@@ -76,7 +76,7 @@ TEST(OverlayCandidateValidatorSurfaceControlTest, ClipAndNegativeOffset) {
   candidates.push_back(candidate);
 
   OverlayCandidateValidatorSurfaceControl validator;
-  validator.CheckOverlaySupport(&candidates);
+  validator.CheckOverlaySupport(nullptr, &candidates);
   EXPECT_TRUE(candidates.at(0).overlay_handled);
   EXPECT_RECTF_EQ(candidates.at(0).display_rect,
                   gfx::RectF(0.f, 0.f, 5.f, 5.f));
@@ -87,7 +87,6 @@ TEST(OverlayCandidateValidatorSurfaceControlTest, ClipAndNegativeOffset) {
 TEST(OverlayCandidateValidatorSurfaceControlTest, DisplayTransformOverlay) {
   OverlayCandidate candidate;
   candidate.display_rect = gfx::RectF(10, 10, 50, 100);
-  candidate.use_output_surface_for_resource = false;
   candidate.overlay_handled = false;
 
   OverlayCandidateList candidates;
@@ -100,11 +99,11 @@ TEST(OverlayCandidateValidatorSurfaceControlTest, DisplayTransformOverlay) {
   // First use a different transform than the display transform, the overlay is
   // rejected.
   candidates.back().transform = gfx::OVERLAY_TRANSFORM_NONE;
-  validator.CheckOverlaySupport(&candidates);
+  validator.CheckOverlaySupport(nullptr, &candidates);
   EXPECT_FALSE(candidates.back().overlay_handled);
 
   candidates.back().transform = gfx::OVERLAY_TRANSFORM_ROTATE_90;
-  validator.CheckOverlaySupport(&candidates);
+  validator.CheckOverlaySupport(nullptr, &candidates);
   EXPECT_TRUE(candidates.back().overlay_handled);
   EXPECT_EQ(candidates.back().transform, gfx::OVERLAY_TRANSFORM_NONE);
   EXPECT_RECTF_EQ(candidates.back().display_rect, gfx::RectF(10, 40, 100, 50));
@@ -112,17 +111,14 @@ TEST(OverlayCandidateValidatorSurfaceControlTest, DisplayTransformOverlay) {
 
 TEST(OverlayCandidateValidatorSurfaceControlTest,
      DisplayTransformOutputSurfaceOverlay) {
-  OverlayCandidate candidate;
+  OverlayProcessor::OutputSurfaceOverlayPlane candidate;
   candidate.display_rect = gfx::RectF(100, 200);
-  candidate.use_output_surface_for_resource = true;
-  candidate.overlay_handled = false;
   candidate.transform = gfx::OVERLAY_TRANSFORM_NONE;
 
   OverlayCandidateValidatorSurfaceControl validator;
   validator.SetViewportSize(gfx::Size(100, 200));
   validator.SetDisplayTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
   validator.AdjustOutputSurfaceOverlay(&candidate);
-  EXPECT_TRUE(candidate.overlay_handled);
   EXPECT_RECTF_EQ(candidate.display_rect, gfx::RectF(200, 100));
   EXPECT_EQ(candidate.transform, gfx::OVERLAY_TRANSFORM_ROTATE_90);
 }
@@ -130,7 +126,6 @@ TEST(OverlayCandidateValidatorSurfaceControlTest,
 TEST(OverlayCandidateValidatorTest, OverlayDamageRectForOutputSurface) {
   OverlayCandidate candidate;
   candidate.display_rect = gfx::RectF(10, 10, 50, 100);
-  candidate.use_output_surface_for_resource = false;
   candidate.transform = gfx::OVERLAY_TRANSFORM_ROTATE_90;
   candidate.overlay_handled = false;
 
@@ -138,12 +133,9 @@ TEST(OverlayCandidateValidatorTest, OverlayDamageRectForOutputSurface) {
   validator.SetViewportSize(gfx::Size(100, 200));
   validator.SetDisplayTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
 
-  EXPECT_EQ(validator.GetOverlayDamageRectForOutputSurface(candidate),
-            gfx::Rect(10, 10, 50, 100));
-
   OverlayCandidateList candidates;
   candidates.push_back(candidate);
-  validator.CheckOverlaySupport(&candidates);
+  validator.CheckOverlaySupport(nullptr, &candidates);
   EXPECT_TRUE(candidates.back().overlay_handled);
   EXPECT_RECTF_EQ(candidates.back().display_rect, gfx::RectF(10, 40, 100, 50));
   EXPECT_EQ(validator.GetOverlayDamageRectForOutputSurface(candidates.back()),

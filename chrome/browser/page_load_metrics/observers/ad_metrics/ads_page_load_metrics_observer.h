@@ -69,8 +69,7 @@ class AdsPageLoadMetricsObserver
                          ukm::SourceId source_id) override;
   void OnTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnCpuTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::CpuTiming& timing) override;
@@ -81,20 +80,17 @@ class AdsPageLoadMetricsObserver
   void ReadyToCommitNextNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      content::NavigationHandle* navigation_handle) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnResourceDataUseObserved(
       content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   void OnPageInteractive(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh) override;
   void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
                                 bool is_display_none) override;

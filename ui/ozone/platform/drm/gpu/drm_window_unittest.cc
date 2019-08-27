@@ -104,12 +104,12 @@ void DrmWindowTest::SetUp() {
 
   auto gbm_device = std::make_unique<ui::MockGbmDevice>();
   drm_ = new ui::MockDrmDevice(std::move(gbm_device));
-  screen_manager_.reset(new ui::ScreenManager());
+  screen_manager_ = std::make_unique<ui::ScreenManager>();
   screen_manager_->AddDisplayController(drm_, kDefaultCrtc, kDefaultConnector);
   screen_manager_->ConfigureDisplayController(
       drm_, kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
 
-  drm_device_manager_.reset(new ui::DrmDeviceManager(nullptr));
+  drm_device_manager_ = std::make_unique<ui::DrmDeviceManager>(nullptr);
 
   std::unique_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));

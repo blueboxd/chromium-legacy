@@ -10879,6 +10879,10 @@ Called by update_net_error_codes.py.-->
   <int value="210" label="Nvmem Pre Erase Mismatch"/>
   <int value="211" label="Nvmem Page List Oveflow"/>
   <int value="212" label="Nvmem Cipher Error"/>
+  <int value="213" label="Nvmem Corrupted Init"/>
+  <int value="214" label="Nvmem Container Hash Mismatch"/>
+  <int value="215" label="Nvmem Unrecoverable Init Error"/>
+  <int value="216" label="Nvmem Wiped Out"/>
 </enum>
 
 <enum name="Cr50U2FCommands">
@@ -35127,7 +35131,6 @@ from previous Chrome versions.
 
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
-  <int value="-1084855234" label="UnfilteredBluetoothDevices:disabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
   <int value="-1083547717" label="NotificationExpansionAnimation:disabled"/>
   <int value="-1082302549" label="scan-cards-in-web-payments"/>
@@ -35470,6 +35473,7 @@ from previous Chrome versions.
   <int value="-621044227" label="OmniboxReverseTabSwitchLogic:enabled"/>
   <int value="-620030047" label="CrosCompUpdates:disabled"/>
   <int value="-619740638" label="ListAllDisplayModes:enabled"/>
+  <int value="-619178844" label="NewOverviewLayout:disabled"/>
   <int value="-617452890" label="media-router"/>
   <int value="-616818899" label="SameSiteByDefaultCookies:enabled"/>
   <int value="-614223913"
@@ -35718,7 +35722,6 @@ from previous Chrome versions.
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
-  <int value="-260355779" label="UnfilteredBluetoothDevices:enabled"/>
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
   <int value="-255264176" label="OmniboxSearchEngineLogo:disabled"/>
   <int value="-254887599" label="google-profile-info"/>
@@ -37006,6 +37009,7 @@ from previous Chrome versions.
   <int value="1566084951" label="PrefetchRedirectError:disabled"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
+  <int value="1570178909" label="NewOverviewLayout:enabled"/>
   <int value="1571998166" label="DetectingHeavyPages:disabled"/>
   <int value="1575978252" label="PasswordLeakDetection:enabled"/>
   <int value="1577205328"

@@ -39,6 +39,15 @@ suite('TabList', () => {
     ],
   };
 
+  function getUnpinnedTabs() {
+    return tabList.shadowRoot.querySelectorAll('#tabsContainer tabstrip-tab');
+  }
+
+  function getPinnedTabs() {
+    return tabList.shadowRoot.querySelectorAll(
+        '#pinnedTabsContainer tabstrip-tab');
+  }
+
   setup(() => {
     document.body.innerHTML = '';
 
@@ -54,7 +63,7 @@ suite('TabList', () => {
   });
 
   test('creates a tab element for each tab', () => {
-    const tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
+    const tabElements = getUnpinnedTabs();
     assertEquals(currentWindow.tabs.length, tabElements.length);
     currentWindow.tabs.forEach((tab, index) => {
       assertEquals(tabElements[index].tab, tab);
@@ -69,7 +78,7 @@ suite('TabList', () => {
       windowId: currentWindow.id,
     };
     callbackRouter.onCreated.dispatchEvent(appendedTab);
-    let tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
+    let tabElements = getUnpinnedTabs();
     assertEquals(currentWindow.tabs.length + 1, tabElements.length);
     assertEquals(tabElements[currentWindow.tabs.length].tab, appendedTab);
 
@@ -80,7 +89,7 @@ suite('TabList', () => {
       windowId: currentWindow.id,
     };
     callbackRouter.onCreated.dispatchEvent(prependedTab);
-    tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
+    tabElements = getUnpinnedTabs();
     assertEquals(currentWindow.tabs.length + 2, tabElements.length);
     assertEquals(tabElements[0].tab, prependedTab);
   });
@@ -95,7 +104,7 @@ suite('TabList', () => {
           windowId: currentWindow.id + 1,
         };
         callbackRouter.onCreated.dispatchEvent(newTab);
-        const tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
+        const tabElements = getUnpinnedTabs();
         assertEquals(currentWindow.tabs.length, tabElements.length);
       });
 
@@ -104,7 +113,7 @@ suite('TabList', () => {
     callbackRouter.onRemoved.dispatchEvent(tabToRemove.id, {
       windowId: currentWindow.id,
     });
-    const tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
+    const tabElements = getUnpinnedTabs();
     assertEquals(currentWindow.tabs.length - 1, tabElements.length);
   });
 
@@ -115,12 +124,12 @@ suite('TabList', () => {
     callbackRouter.onUpdated.dispatchEvent(
         tabToUpdate.id, changeInfo, updatedTab);
 
-    const tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
+    const tabElements = getUnpinnedTabs();
     assertEquals(tabElements[0].tab, updatedTab);
   });
 
   test('updates tabs when a new tab is activated', () => {
-    const tabElements = tabList.shadowRoot.querySelectorAll('tabstrip-tab');
+    const tabElements = getUnpinnedTabs();
 
     // Mock activating the 2nd tab
     callbackRouter.onActivated.dispatchEvent({
@@ -130,5 +139,39 @@ suite('TabList', () => {
     assertFalse(tabElements[0].tab.active);
     assertTrue(tabElements[1].tab.active);
     assertFalse(tabElements[2].tab.active);
+  });
+
+  test('adds a pinned tab to its designated container', () => {
+    callbackRouter.onCreated.dispatchEvent({
+      index: 0,
+      title: 'New pinned tab',
+      pinned: true,
+      windowId: currentWindow.id,
+    });
+    const pinnedTabElements = getPinnedTabs();
+    assertEquals(pinnedTabElements.length, 1);
+    assertTrue(pinnedTabElements[0].tab.pinned);
+  });
+
+  test('moves pinned tabs to designated containers', () => {
+    const tabToPin = currentWindow.tabs[1];
+    const changeInfo = {index: 0, pinned: true};
+    let updatedTab = Object.assign({}, tabToPin, changeInfo);
+    callbackRouter.onUpdated.dispatchEvent(tabToPin.id, changeInfo, updatedTab);
+    let pinnedTabElements = getPinnedTabs();
+    assertEquals(pinnedTabElements.length, 1);
+    assertTrue(pinnedTabElements[0].tab.pinned);
+    assertEquals(pinnedTabElements[0].tab.id, tabToPin.id);
+    assertEquals(getUnpinnedTabs().length, 2);
+
+    // Unpin the tab so that it's now at index 0
+    changeInfo.index = 0;
+    changeInfo.pinned = false;
+    updatedTab = Object.assign({}, updatedTab, changeInfo);
+    callbackRouter.onUpdated.dispatchEvent(tabToPin.id, changeInfo, updatedTab);
+    const unpinnedTabElements = getUnpinnedTabs();
+    assertEquals(getPinnedTabs().length, 0);
+    assertEquals(unpinnedTabElements.length, 3);
+    assertEquals(unpinnedTabElements[0].tab.id, tabToPin.id);
   });
 });

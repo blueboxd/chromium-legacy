@@ -45,11 +45,11 @@ AssistantFooterView::AssistantFooterView(AssistantViewDelegate* delegate)
               &AssistantFooterView::OnAnimationEnded,
               base::Unretained(this)))) {
   InitLayout();
-  delegate_->AddStateObserver(this);
+  AssistantState::Get()->AddObserver(this);
 }
 
 AssistantFooterView::~AssistantFooterView() {
-  delegate_->RemoveStateObserver(this);
+  AssistantState::Get()->RemoveObserver(this);
 }
 
 const char* AssistantFooterView::GetClassName() const {
@@ -69,7 +69,7 @@ void AssistantFooterView::InitLayout() {
 
   // Initial view state is based on user consent state.
   const bool consent_given =
-      delegate_->GetState()->consent_status().value_or(
+      AssistantState::Get()->consent_status().value_or(
           chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
@@ -153,7 +153,7 @@ void AssistantFooterView::OnAnimationStarted(
 bool AssistantFooterView::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   const bool consent_given =
-      delegate_->GetState()->consent_status().value_or(
+      AssistantState::Get()->consent_status().value_or(
           chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
 

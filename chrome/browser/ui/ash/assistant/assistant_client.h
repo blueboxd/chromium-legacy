@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -57,8 +58,8 @@ class AssistantClient : chromeos::assistant::mojom::Client,
   void RequestAssistantVolumeControl(
       mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver)
       override;
-  void RequestVoiceInteractionController(
-      mojo::PendingReceiver<ash::mojom::VoiceInteractionController> receiver)
+  void RequestAssistantStateController(
+      mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver)
       override;
   void RequestPrefStoreConnector(
       mojo::PendingReceiver<prefs::mojom::PrefStoreConnector> receiver)

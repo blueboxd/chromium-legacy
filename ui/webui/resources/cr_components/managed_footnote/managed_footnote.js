@@ -19,8 +19,9 @@ Polymer({
 
   properties: {
     /**
-     * Whether the browser is managed by their organization through enterprise
+     * Whether the user is managed by their organization through enterprise
      * policies.
+     * @type {boolean}
      * @private
      */
     isManaged_: {
@@ -30,6 +31,16 @@ Polymer({
         return loadTimeData.getBoolean('isManaged');
       },
     },
+
+    /**
+     * Whether the device should be indicated as managed rather than the
+     * browser.
+     * @type {boolean}
+     */
+    showDeviceInfo: {
+      type: Boolean,
+      value: false,
+    }
   },
 
   /** @override */
@@ -38,6 +49,19 @@ Polymer({
       loadTimeData.overrideValues({isManaged: managed});
       this.isManaged_ = managed;
     });
+  },
+
+  /**
+   * @return {string} Message to display to the user.
+   * @private
+   */
+  getManagementString_: function() {
+    // <if expr="chromeos">
+    if (this.showDeviceInfo) {
+      return this.i18nAdvanced('deviceManagedByOrg');
+    }
+    // </if>
+    return this.i18nAdvanced('browserManagedByOrg');
   },
 });
 

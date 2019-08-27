@@ -80,56 +80,56 @@ TEST(CubicBezierTest, Range) {
   double epsilon = 0.00015;
 
   // Derivative is a constant.
-  std::unique_ptr<CubicBezier> function(
-      new CubicBezier(0.25, (1.0 / 3.0), 0.75, (2.0 / 3.0)));
+  std::unique_ptr<CubicBezier> function =
+      std::make_unique<CubicBezier>(0.25, (1.0 / 3.0), 0.75, (2.0 / 3.0));
   EXPECT_EQ(0, function->range_min());
   EXPECT_EQ(1, function->range_max());
 
   // Derivative is linear.
-  function.reset(new CubicBezier(0.25, -0.5, 0.75, (-1.0 / 6.0)));
+  function = std::make_unique<CubicBezier>(0.25, -0.5, 0.75, (-1.0 / 6.0));
   EXPECT_NEAR(function->range_min(), -0.225, epsilon);
   EXPECT_EQ(1, function->range_max());
 
   // Derivative has no real roots.
-  function.reset(new CubicBezier(0.25, 0.25, 0.75, 0.5));
+  function = std::make_unique<CubicBezier>(0.25, 0.25, 0.75, 0.5);
   EXPECT_EQ(0, function->range_min());
   EXPECT_EQ(1, function->range_max());
 
   // Derivative has exactly one real root.
-  function.reset(new CubicBezier(0.0, 1.0, 1.0, 0.0));
+  function = std::make_unique<CubicBezier>(0.0, 1.0, 1.0, 0.0);
   EXPECT_EQ(0, function->range_min());
   EXPECT_EQ(1, function->range_max());
 
   // Derivative has one root < 0 and one root > 1.
-  function.reset(new CubicBezier(0.25, 0.1, 0.75, 0.9));
+  function = std::make_unique<CubicBezier>(0.25, 0.1, 0.75, 0.9);
   EXPECT_EQ(0, function->range_min());
   EXPECT_EQ(1, function->range_max());
 
   // Derivative has two roots in [0,1].
-  function.reset(new CubicBezier(0.25, 2.5, 0.75, 0.5));
+  function = std::make_unique<CubicBezier>(0.25, 2.5, 0.75, 0.5);
   EXPECT_EQ(0, function->range_min());
   EXPECT_NEAR(function->range_max(), 1.28818, epsilon);
-  function.reset(new CubicBezier(0.25, 0.5, 0.75, -1.5));
+  function = std::make_unique<CubicBezier>(0.25, 0.5, 0.75, -1.5);
   EXPECT_NEAR(function->range_min(), -0.28818, epsilon);
   EXPECT_EQ(1, function->range_max());
 
   // Derivative has one root < 0 and one root in [0,1].
-  function.reset(new CubicBezier(0.25, 0.1, 0.75, 1.5));
+  function = std::make_unique<CubicBezier>(0.25, 0.1, 0.75, 1.5);
   EXPECT_EQ(0, function->range_min());
   EXPECT_NEAR(function->range_max(), 1.10755, epsilon);
 
   // Derivative has one root in [0,1] and one root > 1.
-  function.reset(new CubicBezier(0.25, -0.5, 0.75, 0.9));
+  function = std::make_unique<CubicBezier>(0.25, -0.5, 0.75, 0.9);
   EXPECT_NEAR(function->range_min(), -0.10755, epsilon);
   EXPECT_EQ(1, function->range_max());
 
   // Derivative has two roots < 0.
-  function.reset(new CubicBezier(0.25, 0.3, 0.75, 0.633));
+  function = std::make_unique<CubicBezier>(0.25, 0.3, 0.75, 0.633);
   EXPECT_EQ(0, function->range_min());
   EXPECT_EQ(1, function->range_max());
 
   // Derivative has two roots > 1.
-  function.reset(new CubicBezier(0.25, 0.367, 0.75, 0.7));
+  function = std::make_unique<CubicBezier>(0.25, 0.367, 0.75, 0.7);
   EXPECT_EQ(0.f, function->range_min());
   EXPECT_EQ(1.f, function->range_max());
 }

@@ -21,6 +21,7 @@
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/service_worker_context.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -201,7 +202,7 @@ void DedicatedWorkerHost::StartScriptLoad(
       request_initiator_origin, network_isolation_key_, credentials_mode,
       std::move(outside_fetch_client_settings_object), ResourceType::kWorker,
       storage_partition_impl->GetServiceWorkerContext(),
-      service_worker_handle_.get(), appcache_handle_->core(),
+      service_worker_handle_.get(), appcache_handle_->host()->GetWeakPtr(),
       std::move(blob_url_loader_factory), nullptr, storage_partition_impl,
       storage_domain,
       base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
@@ -284,8 +285,8 @@ void DedicatedWorkerHost::DidStartScriptLoad(
   // made on it until its receiver is sent. Now that the receiver was sent, it
   // can be used, so add it to ServiceWorkerObjectHost.
   if (service_worker_remote_object) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
+    RunOrPostTaskOnThread(
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(
             &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
             controller_service_worker_object_host,

@@ -9,7 +9,6 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_notification_expiry_monitor.h"
-#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
@@ -205,9 +204,8 @@ void AssistantNotificationController::SetQuietMode(bool enabled) {
 void AssistantNotificationController::OnNotificationAdded(
     const AssistantNotification* notification) {
   // Do not show system notifications if the setting is disabled.
-  if (!assistant_controller_->state()->notification_enabled().value_or(true)) {
+  if (!AssistantState::Get()->notification_enabled().value_or(true))
     return;
-  }
 
   // We only show system notifications in the Message Center.
   if (!IsSystemNotification(notification))
@@ -220,9 +218,8 @@ void AssistantNotificationController::OnNotificationAdded(
 void AssistantNotificationController::OnNotificationUpdated(
     const AssistantNotification* notification) {
   // Do not show system notifications if the setting is disabled.
-  if (!assistant_controller_->state()->notification_enabled().value_or(true)) {
+  if (!AssistantState::Get()->notification_enabled().value_or(true))
     return;
-  }
 
   // If the notification that was updated is *not* a system notification, we
   // need to ensure that it is removed from the Message Center (given that it

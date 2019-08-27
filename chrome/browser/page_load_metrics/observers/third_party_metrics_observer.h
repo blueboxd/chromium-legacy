@@ -23,10 +23,9 @@ class ThirdPartyMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnCookiesRead(const GURL& url,
                      const GURL& first_party_url,
                      const net::CookieList& cookie_list,

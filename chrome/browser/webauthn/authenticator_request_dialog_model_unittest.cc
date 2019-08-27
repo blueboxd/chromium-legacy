@@ -108,6 +108,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
   enum class TransportAvailabilityParam {
     kHasTouchIdCredential,
     kHasWinNativeAuthenticator,
+    kHasCableExtension,
   };
   const struct {
     RequestType request_type;
@@ -145,7 +146,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
-       {},
+       {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
 
       // The last used transport is available (and caBLE is not).
@@ -225,13 +226,13 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {RequestType::kGetAssertion,
        kAllTransports,
        base::nullopt,
-       {},
+       {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy,
         AuthenticatorTransport::kUsbHumanInterfaceDevice},
        AuthenticatorTransport::kUsbHumanInterfaceDevice,
-       {},
+       {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
 
       // caBLE should not enjoy this same high priority for MakeCredential
@@ -277,7 +278,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
-       {},
+       {TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
       {RequestType::kMakeCredential,
        {AuthenticatorTransport::kUsbHumanInterfaceDevice},
@@ -294,7 +295,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
       {RequestType::kGetAssertion,
        {AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy},
        base::nullopt,
-       {TransportAvailabilityParam::kHasWinNativeAuthenticator},
+       {TransportAvailabilityParam::kHasWinNativeAuthenticator,
+        TransportAvailabilityParam::kHasCableExtension},
        Step::kCableActivate},
   };
 
@@ -313,6 +315,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
             TransportAvailabilityParam::kHasWinNativeAuthenticator)) {
       transports_info.has_win_native_api_authenticator = true;
       transports_info.win_native_api_authenticator_id = "some_authenticator_id";
+    }
+
+    if (base::Contains(test_case.transport_params,
+                       TransportAvailabilityParam::kHasCableExtension)) {
+      transports_info.cable_pairing_data_supplied = true;
     }
 
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
@@ -486,6 +493,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterAlreadyPowered) {
     transports_info.available_transports = {test_case.transport};
     transports_info.can_power_on_ble_adapter = true;
     transports_info.is_ble_powered = true;
+    transports_info.cable_pairing_data_supplied = true;
 
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");
@@ -513,6 +521,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapterNeedToBeManuallyPowered) {
     transports_info.available_transports = {test_case.transport};
     transports_info.can_power_on_ble_adapter = false;
     transports_info.is_ble_powered = false;
+    transports_info.cable_pairing_data_supplied = true;
 
     testing::NiceMock<MockDialogModelObserver> mock_observer;
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
@@ -555,6 +564,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
     transports_info.available_transports = {test_case.transport};
     transports_info.can_power_on_ble_adapter = true;
     transports_info.is_ble_powered = false;
+    transports_info.cable_pairing_data_supplied = true;
 
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model(/*relying_party_id=*/"example.com");

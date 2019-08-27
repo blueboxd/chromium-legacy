@@ -5408,7 +5408,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"group";
 
     case ax::mojom::Role::kFigcaption:
-      return L"group";
+      return L"description";
 
     case ax::mojom::Role::kFigure:
       return L"group";
@@ -6049,7 +6049,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kFigcaption:
-      return UIA_GroupControlTypeId;
+      return UIA_TextControlTypeId;
 
     case ax::mojom::Role::kFigure:
       return UIA_GroupControlTypeId;

@@ -20,7 +20,6 @@
 #include "components/download/public/common/download_stats.h"
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/data_url_loader_factory.h"
@@ -340,7 +339,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                  service_worker_navigation_handle /* for UI thread only */,
              ServiceWorkerNavigationHandleCore*
                  service_worker_navigation_handle_core /* for IO thread only */,
-             AppCacheNavigationHandleCore* appcache_handle_core,
+             AppCacheNavigationHandle* appcache_handle,
              scoped_refptr<PrefetchedSignedExchangeCache>
                  prefetched_signed_exchange_cache,
              scoped_refptr<SignedExchangePrefetchMetricRecorder>
@@ -415,14 +414,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       return;
     }
 
-    CreateInterceptors(request_info.get(), appcache_handle_core,
+    CreateInterceptors(request_info.get(), appcache_handle,
                        prefetched_signed_exchange_cache,
                        signed_exchange_prefetch_metric_recorder, accept_langs);
     Restart();
   }
 
   void CreateInterceptors(NavigationRequestInfo* request_info,
-                          AppCacheNavigationHandleCore* appcache_handle_core,
+                          AppCacheNavigationHandle* appcache_handle,
                           scoped_refptr<PrefetchedSignedExchangeCache>
                               prefetched_signed_exchange_cache,
                           scoped_refptr<SignedExchangePrefetchMetricRecorder>
@@ -451,13 +450,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         interceptors_.push_back(std::move(service_worker_interceptor));
     }
 
-    // Set-up an interceptor for AppCache if non-null |appcache_handle_core|
-    // is given.
-    if (appcache_handle_core) {
-      CHECK(appcache_handle_core->host());
+    // Set-up an interceptor for AppCache if non-null |appcache_handle| is
+    // given.
+    if (appcache_handle) {
+      CHECK(appcache_handle->host());
       std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
           AppCacheRequestHandler::InitializeForMainResourceNetworkService(
-              *resource_request_, appcache_handle_core->host()->GetWeakPtr());
+              *resource_request_, appcache_handle->host()->GetWeakPtr());
       if (appcache_interceptor)
         interceptors_.push_back(std::move(appcache_interceptor));
     }
@@ -1226,9 +1225,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
           ? service_worker_navigation_handle->core()
           : nullptr;
 
-  AppCacheNavigationHandleCore* appcache_handle_core =
-      appcache_handle ? appcache_handle->core() : nullptr;
-
   std::unique_ptr<network::ResourceRequest> new_request =
       CreateResourceRequest(request_info.get(), frame_tree_node_id);
 
@@ -1355,7 +1351,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       weak_factory_.GetWeakPtr());
   request_controller_->Start(
       std::move(network_factory_info), service_worker_navigation_handle,
-      service_worker_navigation_handle_core, appcache_handle_core,
+      service_worker_navigation_handle_core, appcache_handle,
       std::move(prefetched_signed_exchange_cache),
       std::move(signed_exchange_prefetch_metric_recorder),
       std::move(request_info), std::move(navigation_ui_data),

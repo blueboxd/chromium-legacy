@@ -10,8 +10,6 @@ import("//build/config/fuchsia/package.gni")
 import("//build/config/sysroot.gni")
 import("//build/util/generate_wrapper.gni")
 
-blobstore_qcow_path = "$root_out_dir/fvm.blk.qcow2"
-
 # Generates a script which deploys and executes a package on a device.
 #
 # Parameters:
@@ -71,7 +69,6 @@ template("fuchsia_package_runner") {
       wrapper_script = script_path
 
       deps = [
-        "//build/config/fuchsia:blobstore_extended_qcow2",
         invoker.package,
       ]
 
@@ -79,14 +76,22 @@ template("fuchsia_package_runner") {
         deps += invoker.deps
       }
 
+      # Declares the files that are needed for test execution on the
+      # swarming test client.
       data = [
         _manifest_path,
         "//build/fuchsia/",
         "//build/util/lib/",
         "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
         "${qemu_root}/",
-        "${fuchsia_sdk}/",
-        "${boot_image_root}/",
+        "${fuchsia_sdk}/tools/fvm",
+        "${fuchsia_sdk}/tools/pm",
+        "${fuchsia_sdk}/tools/symbolize",
+        "${fuchsia_sdk}/tools/zbi",
+        "${fuchsia_sdk}/.build-id/",
+        "${boot_image_root}/qemu/qemu-kernel.kernel",
+        "${boot_image_root}/qemu/storage-full.blk",
+        "${boot_image_root}/qemu/zircon-a.zbi",
       ]
 
       data_deps = [

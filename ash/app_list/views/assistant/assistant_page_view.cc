@@ -17,6 +17,7 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
@@ -157,6 +158,12 @@ void AssistantPageView::ChildVisibilityChanged(views::View* child) {
   MaybeUpdateAppListState(child->GetHeightForWidth(width()));
 }
 
+void AssistantPageView::VisibilityChanged(views::View* starting_from,
+                                          bool is_visible) {
+  if (starting_from == this && !is_visible)
+    min_height_dip_ = ash::kMinHeightEmbeddedDip;
+}
+
 void AssistantPageView::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -181,6 +188,12 @@ void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
+}
+
+void AssistantPageView::OnShown() {
+  // The preferred size might be different from the previous time, so updating
+  // to the correct size here.
+  SetSize(CalculatePreferredSize());
 }
 
 void AssistantPageView::OnAnimationStarted(ash::AppListState from_state,
@@ -247,8 +260,7 @@ void AssistantPageView::OnUiVisibilityChanged(
 
   const bool prefer_voice =
       assistant_view_delegate_->IsTabletMode() ||
-      assistant_view_delegate_->GetState()->launch_with_mic_open().value_or(
-          false);
+      ash::AssistantState::Get()->launch_with_mic_open().value_or(false);
   if (!ash::assistant::util::IsVoiceEntryPoint(entry_point.value(),
                                                prefer_voice)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);

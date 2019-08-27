@@ -17,6 +17,7 @@
 #include "device/vr/test/fake_vr_device_provider.h"
 #include "device/vr/test/fake_vr_service_client.h"
 #include "device/vr/vr_device_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace vr {
@@ -41,8 +42,8 @@ class XRRuntimeManagerTest : public testing::Test {
   }
 
   std::unique_ptr<VRServiceImpl> BindService() {
-    device::mojom::VRServiceClientPtr proxy;
-    device::FakeVRServiceClient client(mojo::MakeRequest(&proxy));
+    mojo::PendingRemote<device::mojom::VRServiceClient> proxy;
+    device::FakeVRServiceClient client(proxy.InitWithNewPipeAndPassReceiver());
     auto service = base::WrapUnique(new VRServiceImpl());
     service->SetClient(std::move(proxy));
     return service;

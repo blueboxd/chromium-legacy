@@ -41,35 +41,32 @@ AndroidPageLoadMetricsObserver::OnStart(
 }
 
 void AndroidPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t first_contentful_paint_ms =
       timing.paint_timing->first_contentful_paint->InMilliseconds();
   ReportFirstContentfulPaint(
-      (extra_info.navigation_start - base::TimeTicks()).InMicroseconds(),
+      (GetDelegate().GetNavigationStart() - base::TimeTicks()).InMicroseconds(),
       first_contentful_paint_ms);
 }
 
 void AndroidPageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t first_meaningful_paint_ms =
       timing.paint_timing->first_meaningful_paint->InMilliseconds();
   ReportFirstMeaningfulPaint(
-      (extra_info.navigation_start - base::TimeTicks()).InMicroseconds(),
+      (GetDelegate().GetNavigationStart() - base::TimeTicks()).InMicroseconds(),
       first_meaningful_paint_ms);
 }
 
 void AndroidPageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t load_event_start_ms =
       timing.document_timing->load_event_start->InMilliseconds();
   ReportLoadEventStart(
-      (info.navigation_start - base::TimeTicks()).InMicroseconds(),
+      (GetDelegate().GetNavigationStart() - base::TimeTicks()).InMicroseconds(),
       load_event_start_ms);
 }
 

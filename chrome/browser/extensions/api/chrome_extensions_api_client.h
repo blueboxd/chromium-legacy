@@ -42,7 +42,10 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   void UpdateActionCount(content::BrowserContext* context,
                          const ExtensionId& extension_id,
                          int tab_id,
-                         int action_count) override;
+                         int action_count,
+                         bool clear_badge_text) override;
+  void ClearActionCount(content::BrowserContext* context,
+                        const Extension& extension) override;
   AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
   ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
       ExtensionOptionsGuest* guest) const override;

@@ -18,34 +18,48 @@ import stat
 import sys
 
 # Embedded vpython spec to provide `win32file` when this is invoked with
-# vpython.
+# vpython on windows.
 #
 # [VPYTHON:BEGIN]
 # wheel: <
 #   name: "infra/python/wheels/pypiwin32/${vpython_platform}"
 #   version: "version:219"
+#   match_tag: < platform: "win32" >
+#   match_tag: < platform: "win_amd64" >
 # >
 # [VPYTHON:END]
 
-try:
-  # First, try the normal way. This will work for python installations which
-  # have win32file already, or for vpython invocations of this script.
-  import win32file
-except ImportError:
-  # Otherwise, do a hack to locate the depot_tools specific version of
-  # win32file.
-  #
-  # tool_wrapper.py doesn't get invoked through python.bat so the Python bin
-  # directory doesn't get added to the path. The Python module search logic
-  # handles this fine and finds win32file.pyd. However the Windows module
-  # search logic then looks for pywintypes27.dll and other DLLs in the path and
-  # if it finds versions with a different bitness first then win32file.pyd will
-  # fail to load with a cryptic error:
-  #     ImportError: DLL load failed: %1 is not a valid Win32 application.
-  if sys.platform == 'win32':
-    os.environ['PATH'] = os.path.dirname(sys.executable) + \
-                         os.pathsep + os.environ['PATH']
-    import win32file    # pylint: disable=import-error
+if sys.platform == "win32":
+  try:
+    # First, try the normal way. This will work for python installations which
+    # have win32file already, or for vpython invocations of this script.
+    import win32file
+  except ImportError:
+    # Otherwise, do a hack to locate the depot_tools specific version of
+    # win32file.
+    #
+    # tool_wrapper.py doesn't get invoked through python.bat so the Python bin
+    # directory doesn't get added to the path. The Python module search logic
+    # handles this fine and finds win32file.pyd. However the Windows module
+    # search logic then looks for pywintypes27.dll and other DLLs in the path
+    # and if it finds versions with a different bitness first then win32file.pyd
+    # will fail to load with a cryptic error:
+    #     ImportError: DLL load failed: %1 is not a valid Win32 application.
+    if sys.platform == 'win32':
+      os.environ['PATH'] = os.path.dirname(sys.executable) + \
+                           os.pathsep + os.environ['PATH']
+      import win32file    # pylint: disable=import-error
+
+  def superflush(pe_name):
+    # Flush the file buffers to try to work around a Windows 10 kernel bug,
+    # https://crbug.com/644525
+    output_handle = win32file.CreateFile(pe_name, win32file.GENERIC_WRITE,
+                                    0, None, win32file.OPEN_EXISTING, 0, 0)
+    win32file.FlushFileBuffers(output_handle)
+    output_handle.Close()
+else:
+  def superflush(pe_name):
+    return None
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -176,12 +190,7 @@ class WinTool(object):
         print(line)
     result = link.wait()
     if result == 0 and sys.platform == 'win32':
-      # Flush the file buffers to try to work around a Windows 10 kernel bug,
-      # https://crbug.com/644525
-      output_handle = win32file.CreateFile(pe_name, win32file.GENERIC_WRITE,
-                                      0, None, win32file.OPEN_EXISTING, 0, 0)
-      win32file.FlushFileBuffers(output_handle)
-      output_handle.Close()
+      superflush(pe_name)
     return result
 
   def ExecAsmWrapper(self, arch, *args):

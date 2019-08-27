@@ -60,6 +60,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -1908,9 +1909,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
   sessions::SessionTab tab;
   tab.tab_visual_index = 0;
   tab.current_navigation_index = 1;
-  tab.navigations.push_back(
-      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-          GetTestURL().spec(), "one"));
+  tab.navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+      GetTestURL().spec(), "one"));
   tab.navigations.back().set_encoded_page_state("");
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
@@ -1973,9 +1973,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
     tab1->tab_visual_index = 0;
     tab1->current_navigation_index = 0;
     tab1->pinned = true;
-    tab1->navigations.push_back(
-        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-            GetTestURL().spec(), "one"));
+    tab1->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+        GetTestURL().spec(), "one"));
     tab1->navigations.back().set_encoded_page_state("");
     window.tabs.push_back(std::move(tab1));
   }
@@ -1985,9 +1984,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
     tab2->tab_visual_index = 1;
     tab2->current_navigation_index = 0;
     tab2->pinned = false;
-    tab2->navigations.push_back(
-        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-            GetTestURL2().spec(), "two"));
+    tab2->navigations.push_back(sessions::ContentTestHelper::CreateNavigation(
+        GetTestURL2().spec(), "two"));
     tab2->navigations.back().set_encoded_page_state("");
     window.tabs.push_back(std::move(tab2));
   }

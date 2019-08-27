@@ -448,4 +448,11 @@ Status ExecuteGetIssueMessage(Session* session,
                               std::unique_ptr<base::Value>* value,
                               Timeout* timeout);
 
+// Sets permissions.
+Status ExecuteSetPermission(Session* session,
+                            WebView* web_view,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_WINDOW_COMMANDS_H_

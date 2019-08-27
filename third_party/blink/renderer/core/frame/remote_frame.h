@@ -41,6 +41,8 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   bool ShouldClose() override;
   void DidFreeze() override;
   void DidResume() override;
+  void HookBackForwardCacheEviction() override {}
+  void RemoveBackForwardCacheEviction() override {}
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
   bool BubbleLogicalScrollFromChildFrame(ScrollDirection direction,

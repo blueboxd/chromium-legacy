@@ -884,7 +884,8 @@ void InlineTextBoxPainter::PaintTextMatchMarkerBackground(
 
   Color color = LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
       marker.IsActiveMatch(),
-      inline_text_box_.GetLineLayoutItem().GetDocument().InForcedColorsMode());
+      inline_text_box_.GetLineLayoutItem().GetDocument().InForcedColorsMode(),
+      style.UsedColorScheme());
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
 

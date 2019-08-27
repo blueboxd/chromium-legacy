@@ -315,8 +315,7 @@ CorePageLoadMetricsObserver::OnCommit(
 }
 
 void CorePageLoadMetricsObserver::OnDomContentLoadedEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->dom_content_loaded_event_start,
           GetDelegate())) {
@@ -331,8 +330,7 @@ void CorePageLoadMetricsObserver::OnDomContentLoadedEventStart(
 }
 
 void CorePageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->load_event_start, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLoad,
@@ -344,8 +342,7 @@ void CorePageLoadMetricsObserver::OnLoadEventStart(
 }
 
 void CorePageLoadMetricsObserver::OnFirstLayout(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->first_layout, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstLayout,
@@ -357,10 +354,9 @@ void CorePageLoadMetricsObserver::OnFirstLayout(
 }
 
 void CorePageLoadMetricsObserver::OnFirstPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  first_paint_ =
-      info.navigation_start + timing.paint_timing->first_paint.value();
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  first_paint_ = GetDelegate().GetNavigationStart() +
+                 timing.paint_timing->first_paint.value();
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstPaint,
@@ -384,13 +380,12 @@ void CorePageLoadMetricsObserver::OnFirstPaintInPage(
           timing.paint_timing->first_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstPaint,
                         timing.paint_timing->first_paint.value() -
-                            info.first_foreground_time.value());
+                            GetDelegate().GetFirstForegroundTime().value());
   }
 }
 
 void CorePageLoadMetricsObserver::OnFirstImagePaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_image_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstImagePaint,
@@ -402,8 +397,7 @@ void CorePageLoadMetricsObserver::OnFirstImagePaintInPage(
 }
 
 void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_contentful_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaint,
@@ -413,7 +407,7 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
                             timing.parse_timing->parse_start.value());
     UMA_HISTOGRAM_ENUMERATION(
         internal::kHistogramFirstContentfulPaintInitiatingProcess,
-        info.user_initiated_info.browser_initiated
+        GetDelegate().GetUserInitiatedInfo().browser_initiated
             ? content::PROCESS_TYPE_BROWSER
             : content::PROCESS_TYPE_RENDERER,
         content::PROCESS_TYPE_CONTENT_END);
@@ -425,8 +419,8 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 
     // TODO(bmcquade): consider adding a histogram that uses
     // UserInputInfo.user_input_event.
-    if (info.user_initiated_info.browser_initiated ||
-        info.user_initiated_info.user_gesture) {
+    if (GetDelegate().GetUserInitiatedInfo().browser_initiated ||
+        GetDelegate().GetUserInitiatedInfo().user_gesture) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintUserInitiated,
                           timing.paint_timing->first_contentful_paint.value());
     }
@@ -458,8 +452,8 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
             timing.paint_timing->first_contentful_paint.value());
         // TODO(bmcquade): consider adding a histogram that uses
         // UserInputInfo.user_input_event.
-        if (info.user_initiated_info.browser_initiated ||
-            info.user_initiated_info.user_gesture) {
+        if (GetDelegate().GetUserInitiatedInfo().browser_initiated ||
+            GetDelegate().GetUserInitiatedInfo().user_gesture) {
           PAGE_LOAD_HISTOGRAM(
               internal::kHistogramLoadTypeFirstContentfulPaintReloadByGesture,
               timing.paint_timing->first_contentful_paint.value());
@@ -506,13 +500,12 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
           timing.paint_timing->first_contentful_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstContentfulPaint,
                         timing.paint_timing->first_contentful_paint.value() -
-                            info.first_foreground_time.value());
+                            GetDelegate().GetFirstForegroundTime().value());
   }
 }
 
 void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstMeaningfulPaint,
@@ -530,13 +523,12 @@ void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
           timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstMeaningfulPaint,
                         timing.paint_timing->first_meaningful_paint.value() -
-                            info.first_foreground_time.value());
+                            GetDelegate().GetFirstForegroundTime().value());
   }
 }
 
 void CorePageLoadMetricsObserver::OnPageInteractive(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // Both interactive and interactive detection time must be present.
   DCHECK(timing.interactive_timing->interactive);
   DCHECK(timing.interactive_timing->interactive_detection);
@@ -570,8 +562,7 @@ void CorePageLoadMetricsObserver::OnPageInteractive(
 }
 
 void CorePageLoadMetricsObserver::OnFirstInputInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.interactive_timing->first_input_timestamp, GetDelegate())) {
     return;
@@ -618,8 +609,7 @@ void CorePageLoadMetricsObserver::OnFirstInputInPage(
 }
 
 void CorePageLoadMetricsObserver::OnParseStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_start, GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramParseStart,
@@ -654,8 +644,7 @@ void CorePageLoadMetricsObserver::OnParseStart(
 }
 
 void CorePageLoadMetricsObserver::OnParseStop(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   base::TimeDelta parse_duration = timing.parse_timing->parse_stop.value() -
                                    timing.parse_timing->parse_start.value();
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
@@ -693,32 +682,29 @@ void CorePageLoadMetricsObserver::OnParseStop(
 }
 
 void CorePageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordTimingHistograms(timing, info);
-  RecordByteAndResourceHistograms(timing, info);
-  RecordForegroundDurationHistograms(timing, info, base::TimeTicks());
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  RecordTimingHistograms(timing);
+  RecordByteAndResourceHistograms(timing);
+  RecordForegroundDurationHistograms(timing, base::TimeTicks());
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 CorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we record final metrics collected up to this point.
-  if (info.did_commit) {
-    RecordTimingHistograms(timing, info);
-    RecordByteAndResourceHistograms(timing, info);
+  if (GetDelegate().DidCommit()) {
+    RecordTimingHistograms(timing);
+    RecordByteAndResourceHistograms(timing);
   }
-  RecordForegroundDurationHistograms(timing, info, base::TimeTicks::Now());
+  RecordForegroundDurationHistograms(timing, base::TimeTicks::Now());
   return STOP_OBSERVING;
 }
 
 void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
-    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info) {
   // Only handle actual failures; provisional loads that failed due to another
   // committed load or due to user action are recorded in
   // AbortsPageLoadMetricsObserver.
@@ -733,13 +719,12 @@ void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
   // Provide an empty PageLoadTiming, since we don't have any timing metrics
   // for failed provisional loads.
   RecordForegroundDurationHistograms(page_load_metrics::mojom::PageLoadTiming(),
-                                     extra_info, base::TimeTicks());
+                                     base::TimeTicks());
 }
 
 void CorePageLoadMetricsObserver::OnUserInput(
     const blink::WebInputEvent& event,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   base::TimeTicks now;
 
   if (first_paint_.is_null())
@@ -790,13 +775,13 @@ void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
 // collected yet. This is meant to be called at the end of a page lifetime, for
 // example, when the user is navigating away from the page.
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
-    const page_load_metrics::mojom::PageLoadTiming& main_frame_timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& main_frame_timing) {
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
-  if (!info.started_in_foreground && info.first_foreground_time) {
+  if (!GetDelegate().StartedInForeground() &&
+      GetDelegate().GetFirstForegroundTime()) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
-                        info.first_foreground_time.value());
+                        GetDelegate().GetFirstForegroundTime().value());
   }
 
   const page_load_metrics::ContentfulPaintTimingInfo&
@@ -878,7 +863,6 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
 
 void CorePageLoadMetricsObserver::RecordForegroundDurationHistograms(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info,
     base::TimeTicks app_background_time) {
   base::Optional<base::TimeDelta> foreground_duration =
       page_load_metrics::GetInitialForegroundDuration(GetDelegate(),
@@ -886,7 +870,7 @@ void CorePageLoadMetricsObserver::RecordForegroundDurationHistograms(
   if (!foreground_duration)
     return;
 
-  if (info.did_commit) {
+  if (GetDelegate().DidCommit()) {
     PAGE_LOAD_LONG_HISTOGRAM(internal::kHistogramPageTimingForegroundDuration,
                              foreground_duration.value());
     if (timing.paint_timing->first_paint &&
@@ -909,18 +893,17 @@ void CorePageLoadMetricsObserver::RecordForegroundDurationHistograms(
         foreground_duration.value());
   }
 
-  if (info.page_end_reason == page_load_metrics::END_FORWARD_BACK &&
-      info.user_initiated_info.user_gesture &&
-      !info.user_initiated_info.browser_initiated &&
-      info.page_end_time <= foreground_duration) {
+  if (GetDelegate().GetPageEndReason() == page_load_metrics::END_FORWARD_BACK &&
+      GetDelegate().GetUserInitiatedInfo().user_gesture &&
+      !GetDelegate().GetUserInitiatedInfo().browser_initiated &&
+      GetDelegate().GetPageEndTime() <= foreground_duration) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramUserGestureNavigationToForwardBack,
-                        info.page_end_time.value());
+                        GetDelegate().GetPageEndTime().value());
   }
 }
 
 void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_GE(network_bytes_, 0);
   DCHECK_GE(cache_bytes_, 0);
   int64_t total_bytes = network_bytes_ + cache_bytes_;
@@ -980,15 +963,13 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
 
 void CorePageLoadMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
                                                  subframe_rfh);
 }
 
 void CorePageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    content::NavigationHandle* navigation_handle) {
   largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
-      navigation_handle, extra_info);
+      navigation_handle, GetDelegate());
 }

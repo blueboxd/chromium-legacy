@@ -22,9 +22,9 @@
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "url/gurl.h"
@@ -64,9 +64,9 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   ~PresentationServiceImpl() override;
 
-  // Creates a binding between this object and |request|. Note that a
-  // PresentationServiceImpl instance can be bound to multiple requests.
-  void Bind(blink::mojom::PresentationServiceRequest request);
+  // Creates a binding between this object and |receiver|. Note that a
+  // PresentationServiceImpl instance can be bound to multiple receivers.
+  void Bind(mojo::PendingReceiver<blink::mojom::PresentationService> receiver);
 
   // PresentationService implementation.
   void SetDefaultPresentationUrls(
@@ -278,8 +278,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   std::unordered_map<int, std::unique_ptr<NewPresentationCallbackWrapper>>
       pending_reconnect_presentation_cbs_;
 
-  // RAII binding of |this| to PresentationService request.
-  mojo::Binding<blink::mojom::PresentationService> binding_;
+  // RAII receiver of |this| to PresentationService request.
+  mojo::Receiver<blink::mojom::PresentationService>
+      presentation_service_receiver_{this};
 
   // ID of the RenderFrameHost this object is associated with.
   int render_process_id_;

@@ -23,6 +23,10 @@
 #endif
 
 #if defined(OS_FUCHSIA)
+#include <zircon/types.h>
+// <vulkan/vulkan_fuchsia.h> must be included after <zircon/types.h>
+#include <vulkan/vulkan_fuchsia.h>
+
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
@@ -97,6 +101,11 @@ struct VulkanFunctionPointers {
 #if defined(OS_ANDROID)
   PFN_vkCreateAndroidSurfaceKHR vkCreateAndroidSurfaceKHRFn = nullptr;
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_FUCHSIA)
+  PFN_vkCreateImagePipeSurfaceFUCHSIA vkCreateImagePipeSurfaceFUCHSIAFn =
+      nullptr;
+#endif  // defined(OS_FUCHSIA)
 
   PFN_vkGetPhysicalDeviceFeatures2 vkGetPhysicalDeviceFeatures2Fn = nullptr;
 
@@ -246,6 +255,11 @@ struct VulkanFunctionPointers {
 #define vkCreateAndroidSurfaceKHR \
   gpu::GetVulkanFunctionPointers()->vkCreateAndroidSurfaceKHRFn
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_FUCHSIA)
+#define vkCreateImagePipeSurfaceFUCHSIA \
+  gpu::GetVulkanFunctionPointers()->vkCreateImagePipeSurfaceFUCHSIAFn
+#endif  // defined(OS_FUCHSIA)
 
 #define vkGetPhysicalDeviceFeatures2 \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceFeatures2Fn

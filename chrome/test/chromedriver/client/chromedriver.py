@@ -365,6 +365,9 @@ class ChromeDriver(object):
     return self.ExecuteCommand(
         Command.EXECUTE_SCRIPT, {'script': script, 'args': converted_args})
 
+  def SetPermission(self, parameters):
+    return self.ExecuteCommand(Command.SET_PERMISSION, parameters)
+
   def ExecuteAsyncScript(self, script, *args):
     converted_args = list(args)
     return self.ExecuteCommand(

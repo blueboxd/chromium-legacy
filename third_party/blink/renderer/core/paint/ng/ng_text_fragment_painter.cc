@@ -174,7 +174,8 @@ void PaintDocumentMarkers(GraphicsContext& context,
           const Color color =
               LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
                   text_match_marker.IsActiveMatch(),
-                  text_fragment.GetNode()->GetDocument().InForcedColorsMode());
+                  text_fragment.GetNode()->GetDocument().InForcedColorsMode(),
+                  style.UsedColorScheme());
           PaintRect(
               context, PhysicalOffset(box_origin),
               text_fragment.LocalRect(paint_start_offset, paint_end_offset),

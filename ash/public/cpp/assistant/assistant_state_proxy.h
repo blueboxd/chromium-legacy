@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/assistant/assistant_state_base.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -25,34 +25,29 @@ namespace ash {
 // will fire if this client already have data.
 class ASH_PUBLIC_EXPORT AssistantStateProxy
     : public AssistantStateBase,
-      public mojom::VoiceInteractionObserver {
+      public mojom::AssistantStateObserver {
  public:
   AssistantStateProxy();
   ~AssistantStateProxy() override;
 
-  void Init(mojo::PendingRemote<mojom::VoiceInteractionController>
-                voice_interaction_controller);
-  void AddObserver(DefaultVoiceInteractionObserver* observer);
-  void RemoveObserver(DefaultVoiceInteractionObserver* observer);
+  void Init(mojo::PendingRemote<mojom::AssistantStateController>
+                assistant_state_controller);
 
  private:
-  // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override;
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionContextEnabled(bool enabled) override;
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override;
+  // mojom::AssistantStateObserver:
+  void OnAssistantStatusChanged(mojom::VoiceInteractionState state) override;
+  void OnAssistantSettingsEnabled(bool enabled) override;
+  void OnAssistantContextEnabled(bool enabled) override;
+  void OnAssistantHotwordEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
   void OnLocaleChanged(const std::string& locale) override;
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
-  base::ObserverList<DefaultVoiceInteractionObserver> observers_;
-
-  mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
-  mojo::Binding<mojom::VoiceInteractionObserver>
-      voice_interaction_observer_binding_;
+  mojom::AssistantStateControllerPtr assistant_state_controller_;
+  mojo::Binding<mojom::AssistantStateObserver>
+      assistant_state_observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantStateProxy);
 };

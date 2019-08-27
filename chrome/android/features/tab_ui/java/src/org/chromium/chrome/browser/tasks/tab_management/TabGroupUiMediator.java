@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -71,7 +72,7 @@ public class TabGroupUiMediator {
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private boolean mIsTabGroupUiVisible;
-    private boolean mIsClosingAGroup;
+    private boolean mIsShowingOverViewMode;
     private final TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
 
     TabGroupUiMediator(
@@ -125,17 +126,20 @@ public class TabGroupUiMediator {
 
             @Override
             public void tabClosureUndone(Tab tab) {
-                if (!mIsTabGroupUiVisible) resetTabStripWithRelatedTabsForId(tab.getId());
+                if (!mIsTabGroupUiVisible && !mIsShowingOverViewMode)
+                    resetTabStripWithRelatedTabsForId(tab.getId());
             }
         };
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
             public void onOverviewModeStartedShowing(boolean showToolbar) {
+                mIsShowingOverViewMode = true;
                 resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
             }
 
             @Override
             public void onOverviewModeFinishedHiding() {
+                mIsShowingOverViewMode = false;
                 Tab tab = mTabModelSelector.getCurrentTab();
                 if (tab == null) return;
                 resetTabStripWithRelatedTabsForId(tab.getId());
@@ -260,5 +264,10 @@ public class TabGroupUiMediator {
         mThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.removeTintObserver(mTintObserver);
         mTabModelSelectorTabObserver.destroy();
+    }
+
+    @VisibleForTesting
+    boolean getIsShowingOverViewModeForTesting() {
+        return mIsShowingOverViewMode;
     }
 }

@@ -25,8 +25,8 @@ class GestureProviderAuraTest : public testing::Test,
                       GestureEvent* event) override {}
 
   void SetUp() override {
-    consumer_.reset(new GestureConsumer());
-    provider_.reset(new GestureProviderAura(consumer_.get(), this));
+    consumer_ = std::make_unique<GestureConsumer>();
+    provider_ = std::make_unique<GestureProviderAura>(consumer_.get(), this);
   }
 
   void TearDown() override { provider_.reset(); }

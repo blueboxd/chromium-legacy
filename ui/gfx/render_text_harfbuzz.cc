@@ -1505,8 +1505,8 @@ size_t RenderTextHarfBuzz::GetLineContainingCaret(const SelectionModel& caret) {
 base::i18n::BreakIterator* RenderTextHarfBuzz::GetGraphemeIterator() {
   if (update_grapheme_iterator_) {
     update_grapheme_iterator_ = false;
-    grapheme_iterator_.reset(new base::i18n::BreakIterator(
-        GetDisplayText(), base::i18n::BreakIterator::BREAK_CHARACTER));
+    grapheme_iterator_ = std::make_unique<base::i18n::BreakIterator>(
+        GetDisplayText(), base::i18n::BreakIterator::BREAK_CHARACTER);
     if (!grapheme_iterator_->Init())
       grapheme_iterator_.reset();
   }
@@ -1675,7 +1675,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
   if (update_display_run_list_) {
     DCHECK(text_elided());
     const base::string16& display_text = GetDisplayText();
-    display_run_list_.reset(new internal::TextRunList);
+    display_run_list_ = std::make_unique<internal::TextRunList>();
 
     if (!display_text.empty())
       ItemizeAndShapeText(display_text, display_run_list_.get());

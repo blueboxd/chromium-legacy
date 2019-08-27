@@ -863,7 +863,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
     for (const auto& bounds_change : pending_bounds_changes_) {
       SendBoundsChanged(bounds_change.first, bounds_change.second.display_id,
-                        bounds_change.second.bounds,
+                        bounds_change.second.bounds_in_display,
                         bounds_change.second.reason);
       clients.insert(wl_resource_get_client(bounds_change.first));
     }
@@ -911,7 +911,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       ash::WindowStateType current_state,
       ash::WindowStateType requested_state,
       int64_t display_id,
-      const gfx::Rect& bounds,
+      const gfx::Rect& bounds_in_display,
       bool resize,
       int bounds_change) {
     zcr_remote_surface_v1_bounds_change_reason reason =
@@ -940,34 +940,35 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
         pending_bounds_changes_.emplace(
             std::make_pair<wl_resource*, BoundsChangeData>(
                 std::move(resource),
-                BoundsChangeData(display_id, bounds, reason)));
+                BoundsChangeData(display_id, bounds_in_display, reason)));
         return;
       }
-      SendBoundsChanged(resource, display_id, bounds, reason);
+      SendBoundsChanged(resource, display_id, bounds_in_display, reason);
     } else {
+      gfx::Rect bounds_in_screen = gfx::Rect(bounds_in_display);
+      display::Display display;
+      display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                            &display);
+      // The display ID should be valid.
+      DCHECK(display.is_valid());
+      if (display.is_valid())
+        bounds_in_screen.Offset(display.bounds().OffsetFromOrigin());
+      else
+        LOG(ERROR) << "Invalid Display in send_bounds_changed:" << display_id;
+
       zcr_remote_surface_v1_send_bounds_changed(
           resource, static_cast<uint32_t>(display_id >> 32),
-          static_cast<uint32_t>(display_id), bounds.x(), bounds.y(),
-          bounds.width(), bounds.height(), reason);
+          static_cast<uint32_t>(display_id), bounds_in_screen.x(),
+          bounds_in_screen.y(), bounds_in_screen.width(),
+          bounds_in_screen.height(), reason);
     }
     wl_client_flush(wl_resource_get_client(resource));
   }
 
   void SendBoundsChanged(wl_resource* resource,
                          int64_t display_id,
-                         const gfx::Rect& bounds,
+                         const gfx::Rect& bounds_in_display,
                          zcr_remote_surface_v1_bounds_change_reason reason) {
-    // Notify bounds change by local bounds.
-    gfx::Rect bounds_in_display = gfx::Rect(bounds);
-    display::Display display;
-    display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id, &display);
-    // The display ID should be valid.
-    DCHECK(display.is_valid());
-    if (display.is_valid())
-      bounds_in_display.Offset(-display.bounds().OffsetFromOrigin());
-    else
-      LOG(ERROR) << "Invalid Display in send_bounds_changed:" << display_id;
-
     zcr_remote_surface_v1_send_bounds_changed(
         resource, static_cast<uint32_t>(display_id >> 32),
         static_cast<uint32_t>(display_id), bounds_in_display.x(),
@@ -1031,12 +1032,12 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
   struct BoundsChangeData {
     int64_t display_id;
-    gfx::Rect bounds;
+    gfx::Rect bounds_in_display;
     zcr_remote_surface_v1_bounds_change_reason reason;
     BoundsChangeData(int64_t display_id,
                      const gfx::Rect& bounds,
                      zcr_remote_surface_v1_bounds_change_reason reason)
-        : display_id(display_id), bounds(bounds), reason(reason) {}
+        : display_id(display_id), bounds_in_display(bounds), reason(reason) {}
   };
 
   // The exo display instance. Not owned.

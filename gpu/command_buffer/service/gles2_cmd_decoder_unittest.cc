@@ -1648,6 +1648,12 @@ TEST_P(GLES3DecoderTest, GetSamplerBinding) {
   DoCreateSampler(kClientID, kServiceID);
   DoBindSampler(kUnit, kClientID, kServiceID);
 
+#if DCHECK_IS_ON()
+  EXPECT_CALL(*gl_, GetIntegerv(GL_SAMPLER_BINDING, _))
+      .WillOnce(testing::SetArgumentPointee<1>(kServiceID))
+      .RetiresOnSaturation();
+#endif
+
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))

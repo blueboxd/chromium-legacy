@@ -75,7 +75,9 @@ class AvailabilityProber
   enum class ClientName {
     kLitepages = 0,
 
-    kMaxValue = kLitepages,
+    kLitepagesOriginCheck = 1,
+
+    kMaxValue = kLitepagesOriginCheck,
   };
 
   // This enum describes the different algorithms that can be used to calculate
@@ -174,7 +176,7 @@ class AvailabilityProber
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // Sets a repeating callback to notify the completion of a probe and whether
-  // it was successful.
+  // it was successful. It is safe to delete |this| during the callback.
   void SetOnCompleteCallback(AvailabilityProberOnCompleteCallback callback);
 
  protected:
@@ -207,6 +209,7 @@ class AvailabilityProber
   void RecordProbeResult(bool success);
   std::string GetCacheKeyForCurrentNetwork() const;
   std::string AppendNameToHistogram(const std::string& histogram) const;
+  void RunCallback(bool success);
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState new_state);
 #endif

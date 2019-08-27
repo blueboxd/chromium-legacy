@@ -449,11 +449,11 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
   if (!path.empty() && data_pack->LoadFromPath(path))
     AddDataPack(std::move(data_pack));
 
-  data_pack.reset(new DataPack(ui::SCALE_FACTOR_NONE));
+  data_pack = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
   if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
     locale_resources_data_ = std::move(data_pack);
   } else {
-    locale_resources_data_.reset(new DataPack(ui::SCALE_FACTOR_NONE));
+    locale_resources_data_ = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
   }
   // This is necessary to initialize ICU since we won't be calling
   // LoadLocaleResources in this case.

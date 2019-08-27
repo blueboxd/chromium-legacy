@@ -43,7 +43,7 @@ class EGLApiTest : public testing::Test {
   }
 
   void InitializeAPI(const char* disabled_extensions) {
-    api_.reset(new RealEGLApi());
+    api_ = std::make_unique<RealEGLApi>();
     g_current_egl_context = api_.get();
     api_->Initialize(&g_driver_egl);
     if (disabled_extensions) {

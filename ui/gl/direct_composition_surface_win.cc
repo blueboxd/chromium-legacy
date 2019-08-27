@@ -612,21 +612,13 @@ bool DirectCompositionSurfaceWin::SupportsGpuVSync() const {
   return base::FeatureList::IsEnabled(features::kDirectCompositionGpuVSync);
 }
 
-bool DirectCompositionSurfaceWin::NeedsVSync() const {
-  return vsync_callback_enabled_ || !pending_frames_.empty();
-}
-
 void DirectCompositionSurfaceWin::SetGpuVSyncEnabled(bool enabled) {
   DCHECK(vsync_thread_);
-  if (vsync_callback_enabled_ == enabled)
-    return;
-  vsync_callback_enabled_ = enabled;
-
-  if (NeedsVSync()) {
-    vsync_thread_->AddObserver(this);
-  } else {
-    vsync_thread_->RemoveObserver(this);
+  {
+    base::AutoLock lock(vsync_callback_lock_);
+    vsync_callback_enabled_ = enabled;
   }
+  StartOrStopVSyncThread();
 }
 
 void DirectCompositionSurfaceWin::CheckPendingFrames() {
@@ -659,8 +651,7 @@ void DirectCompositionSurfaceWin::CheckPendingFrames() {
     pending_frames_.pop_front();
   }
 
-  if (!NeedsVSync())
-    vsync_thread_->RemoveObserver(this);
+  StartOrStopVSyncThread();
 }
 
 void DirectCompositionSurfaceWin::EnqueuePendingFrame(
@@ -676,20 +667,35 @@ void DirectCompositionSurfaceWin::EnqueuePendingFrame(
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
     d3d11_device_->GetImmediateContext(&context);
     context->End(query.Get());
+    context->Flush();
   } else {
     DLOG(ERROR) << "CreateQuery failed with error 0x" << std::hex << hr;
   }
 
-  if (!NeedsVSync())
-    vsync_thread_->AddObserver(this);
-
   pending_frames_.emplace_back(std::move(query), std::move(callback));
+
+  StartOrStopVSyncThread();
+}
+
+bool DirectCompositionSurfaceWin::VSyncCallbackEnabled() const {
+  base::AutoLock lock(vsync_callback_lock_);
+  return vsync_callback_enabled_;
+}
+
+void DirectCompositionSurfaceWin::StartOrStopVSyncThread() {
+  if (VSyncCallbackEnabled() || !pending_frames_.empty()) {
+    vsync_thread_->AddObserver(this);
+  } else {
+    vsync_thread_->RemoveObserver(this);
+  }
 }
 
 void DirectCompositionSurfaceWin::OnVSync(base::TimeTicks vsync_time,
                                           base::TimeDelta interval) {
-  if (!SupportsLowLatencyPresentation() && vsync_callback_)
+  if (!SupportsLowLatencyPresentation() && VSyncCallbackEnabled()) {
+    DCHECK(vsync_callback_);
     vsync_callback_.Run(vsync_time, interval);
+  }
 
   if (SupportsPresentationFeedback()) {
     task_runner_->PostTask(
@@ -710,8 +716,9 @@ void DirectCompositionSurfaceWin::HandleVSyncOnMainThread(
   UMA_HISTOGRAM_COUNTS_100("GPU.DirectComposition.NumPendingFrames",
                            pending_frames_.size());
 
-  if (SupportsLowLatencyPresentation() && vsync_callback_ &&
+  if (SupportsLowLatencyPresentation() && VSyncCallbackEnabled() &&
       pending_frames_.size() < max_pending_frames_) {
+    DCHECK(vsync_callback_);
     vsync_callback_.Run(vsync_time, interval);
   }
 }

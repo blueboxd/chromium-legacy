@@ -567,7 +567,7 @@ const base::Feature kCloudPrinterHandler{"CloudPrinterHandler",
 // If enabled, the Print Preview UI will use a different layout. See
 // https://crbug.com/945619
 const base::Feature kNewPrintPreviewLayout{"NewPrintPreviewLayout",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables push subscriptions keeping Chrome running in the

@@ -801,6 +801,11 @@ HttpHandler::HttpHandler(
                         base::BindRepeating(
                             &ExecuteWebAuthnCommand,
                             base::BindRepeating(&ExecuteSetUserVerified)))),
+      // Extension for Permissions Standard Automation "set permission" command:
+      // https://w3c.github.io/permissions/#set-permission-command
+      CommandMapping(kPost, "session/:sessionId/permissions",
+                     WrapToCommand("SetPermission",
+                                   base::BindRepeating(&ExecuteSetPermission))),
 
       //
       // Non-standard extension commands

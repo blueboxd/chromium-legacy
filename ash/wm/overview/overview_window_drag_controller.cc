@@ -110,7 +110,9 @@ OverviewWindowDragController::OverviewWindowDragController(
       display_count_(Shell::GetAllRootWindows().size()),
       is_touch_dragging_(is_touch_dragging),
       should_allow_split_view_(ShouldAllowSplitView()),
-      virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {}
+      virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {
+  DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
+}
 
 OverviewWindowDragController::~OverviewWindowDragController() = default;
 
@@ -670,6 +672,7 @@ void OverviewWindowDragController::SnapWindow(
   DCHECK_NE(snap_position, SplitViewController::NONE);
 
   // |item_| will be deleted after SplitViewController::SnapWindow().
+  DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
   split_view_controller_->SnapWindow(item_->GetWindow(), snap_position,
                                      /*use_divider_spawn_animation=*/true);
   item_ = nullptr;

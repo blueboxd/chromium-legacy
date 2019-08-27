@@ -110,8 +110,12 @@ void ManagedUIHandler::RemoveObservers() {
 std::unique_ptr<base::DictionaryValue> ManagedUIHandler::GetDataSourceUpdate()
     const {
   auto update = std::make_unique<base::DictionaryValue>();
-  update->SetKey("managedByOrg",
+  update->SetKey("browserManagedByOrg",
                  base::Value(chrome::GetManagedUiWebUILabel(profile_)));
+#if defined(OS_CHROMEOS)
+  update->SetKey("deviceManagedByOrg",
+                 base::Value(chrome::GetDeviceManagedUiWebUILabel(profile_)));
+#endif
   update->SetKey("isManaged", base::Value(managed_));
   return update;
 }

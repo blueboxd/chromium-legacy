@@ -259,7 +259,9 @@ Color LayoutThemeMac::PlatformFocusRingColor() const {
   if (UsesTestModeFocusRingColor())
     return kOldAquaFocusRingColor;
 
-  return SystemColor(CSSValueID::kWebkitFocusRingColor);
+  // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
+  return SystemColor(CSSValueID::kWebkitFocusRingColor,
+                     ComputedStyle::InitialStyle().UsedColorScheme());
 }
 
 Color LayoutThemeMac::PlatformInactiveListBoxSelectionBackgroundColor() const {
@@ -329,7 +331,8 @@ void LayoutThemeMac::PlatformColorsDidChange() {
   LayoutTheme::PlatformColorsDidChange();
 }
 
-Color LayoutThemeMac::SystemColor(CSSValueID css_value_id) const {
+Color LayoutThemeMac::SystemColor(CSSValueID css_value_id,
+                                  WebColorScheme color_scheme) const {
   {
     HashMap<CSSValueID, RGBA32>::iterator it =
         system_color_cache_.find(css_value_id);
@@ -442,7 +445,7 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id) const {
   }
 
   if (needs_fallback)
-    color = LayoutTheme::SystemColor(css_value_id);
+    color = LayoutTheme::SystemColor(css_value_id, color_scheme);
 
   system_color_cache_.Set(css_value_id, color.Rgb());
 

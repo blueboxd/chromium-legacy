@@ -324,8 +324,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   base::TimeTicks navigation_start() const { return navigation_start_; }
 
-  PageLoadExtraInfo ComputePageLoadExtraInfo() const;
-
   ui::PageTransition page_transition() const { return page_transition_; }
 
   UserInitiatedInfo user_initiated_info() const { return user_initiated_info_; }

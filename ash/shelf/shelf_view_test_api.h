@@ -15,6 +15,7 @@ class Rect;
 }
 
 namespace views {
+class BoundsAnimator;
 class View;
 }
 
@@ -60,7 +61,13 @@ class ShelfViewTestAPI {
   // Sets animation duration in milliseconds for test.
   void SetAnimationDuration(int duration_ms);
 
-  // Runs message loop and waits until all add/remove animations are done.
+  // Runs message loop and waits until all add/remove animations are done for
+  // the given bounds animator.
+  void RunMessageLoopUntilAnimationsDone(
+      views::BoundsAnimator* bounds_animator);
+
+  // Runs message loop and waits until all add/remove animations are done on
+  // the shelf view.
   void RunMessageLoopUntilAnimationsDone();
 
   // Gets the anchor point that would be used for a context menu with these

@@ -29,7 +29,7 @@ PasswordGenerationDialogViewAndroid::PasswordGenerationDialogViewAndroid(
   DCHECK(window_android);
   java_object_.Reset(Java_PasswordGenerationDialogBridge_create(
       base::android::AttachCurrentThread(), window_android->GetJavaObject(),
-      reinterpret_cast<long>(this)));
+      reinterpret_cast<intptr_t>(this)));
 }
 
 PasswordGenerationDialogViewAndroid::~PasswordGenerationDialogViewAndroid() {

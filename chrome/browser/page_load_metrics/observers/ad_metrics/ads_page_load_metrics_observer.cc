@@ -145,8 +145,7 @@ AdsPageLoadMetricsObserver::OnCommit(
 
 void AdsPageLoadMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!subframe_rfh)
     return;
 
@@ -306,8 +305,7 @@ void AdsPageLoadMetricsObserver::ReadyToCommitNextNavigation(
 // ad, even if it navigates to a non-ad page. This function labels all of a
 // page's frames, even those that fail to commit.
 void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    content::NavigationHandle* navigation_handle) {
   // If the AdsPageLoadMetricsObserver is created, this does not return nullptr.
   auto* client = ChromeSubresourceFilterClient::FromWebContents(
       navigation_handle->GetWebContents());
@@ -340,27 +338,25 @@ void AdsPageLoadMetricsObserver::FrameReceivedFirstUserActivation(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 AdsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // The browser may come back, but there is no guarantee. To be safe, record
   // what we have now and ignore future changes to this navigation.
-  if (extra_info.did_commit) {
+  if (GetDelegate().DidCommit()) {
     if (timing.response_start) {
       time_commit_ =
           GetDelegate().GetNavigationStart() + *timing.response_start;
     }
-    RecordHistograms(extra_info.source_id);
+    RecordHistograms(GetDelegate().GetSourceId());
   }
 
   return STOP_OBSERVING;
 }
 
 void AdsPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.did_commit && timing.response_start)
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (GetDelegate().DidCommit() && timing.response_start)
     time_commit_ = GetDelegate().GetNavigationStart() + *timing.response_start;
-  RecordHistograms(info.source_id);
+  RecordHistograms(GetDelegate().GetSourceId());
 }
 
 void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
@@ -374,8 +370,7 @@ void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
 }
 
 void AdsPageLoadMetricsObserver::OnPageInteractive(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (timing.interactive_timing->interactive) {
     time_interactive_ = GetDelegate().GetNavigationStart() +
                         *timing.interactive_timing->interactive;

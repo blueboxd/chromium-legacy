@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -150,6 +151,13 @@ class ServiceWorkerTaskQueue : public KeyedService,
   std::map<LazyContextId, std::vector<PendingTask>> pending_tasks_;
 
   content::BrowserContext* const browser_context_ = nullptr;
+
+  // A map of Service Worker registrations if this instance is for an
+  // off-the-record BrowserContext. These are stored in the ExtensionPrefs
+  // for a regular profile.
+  // TODO(crbug.com/939664): Make this better by passing in something that
+  // will manage storing and retrieving this data.
+  std::unordered_map<ExtensionId, base::Version> off_the_record_registrations_;
 
   base::WeakPtrFactory<ServiceWorkerTaskQueue> weak_factory_{this};
 

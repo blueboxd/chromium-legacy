@@ -87,11 +87,8 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // |submitted_form| and |driver|) then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.
   // Otherwise returns false.
-  // |is_gaia_with_skip_save_password_form| is true iff this is Gaia form which
-  // should be skipped on saving.
   bool ProvisionallySave(const autofill::FormData& submitted_form,
-                         const PasswordManagerDriver* driver,
-                         bool is_gaia_with_skip_save_password_form);
+                         const PasswordManagerDriver* driver);
 
   // If |submitted_form| is managed by *this then saves |submitted_form| to
   // |submitted_form_| field, sets |is_submitted| = true and returns true.

@@ -451,15 +451,21 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
     const user_manager::User* const user =
         user_manager::UserManager::Get()->FindUser(account_id);
     if (user && user->using_saml() &&
-        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kPublicAccountsSamlUrl)) {
-        std::string saml_url =
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kPublicAccountsSamlUrl);
-        params.SetBoolean("startsOnSamlPage", true);
-        params.SetString("frameUrl", saml_url);
-      }
+        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT &&
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kPublicAccountsSamlUrl)) {
+      std::string saml_url =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kPublicAccountsSamlUrl);
+      params.SetBoolean("startsOnSamlPage", true);
+      params.SetString("frameUrl", saml_url);
+      params.SetString("email", account_id.GetUserEmail());
+      CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPublicAccountsSamlAclUrl));
+      std::string saml_acl_url =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kPublicAccountsSamlAclUrl);
+      params.SetString("samlAclUrl", saml_acl_url);
     }
   }
 

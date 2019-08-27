@@ -44,21 +44,18 @@ ProtocolPageLoadMetricsObserver::OnCommit(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ProtocolPageLoadMetricsObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   return STOP_OBSERVING;
 }
 
 void ProtocolPageLoadMetricsObserver::OnParseStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   PROTOCOL_HISTOGRAM("ParseTiming.NavigationToParseStart", protocol_,
                      timing.parse_timing->parse_start.value());
 }
 
 void ProtocolPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   PROTOCOL_HISTOGRAM("PaintTiming.NavigationToFirstContentfulPaint", protocol_,
                      timing.paint_timing->first_contentful_paint.value());
   PROTOCOL_HISTOGRAM("PaintTiming.ParseStartToFirstContentfulPaint", protocol_,
@@ -67,8 +64,7 @@ void ProtocolPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 }
 
 void ProtocolPageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   PROTOCOL_HISTOGRAM(
       "Experimental.PaintTiming.NavigationToFirstMeaningfulPaint", protocol_,
       timing.paint_timing->first_meaningful_paint.value());
@@ -79,16 +75,14 @@ void ProtocolPageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
 }
 
 void ProtocolPageLoadMetricsObserver::OnDomContentLoadedEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   PROTOCOL_HISTOGRAM(
       "DocumentTiming.NavigationToDOMContentLoadedEventFired", protocol_,
       timing.document_timing->dom_content_loaded_event_start.value());
 }
 
 void ProtocolPageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   PROTOCOL_HISTOGRAM("DocumentTiming.NavigationToLoadEventFired", protocol_,
                      timing.document_timing->load_event_start.value());
 }

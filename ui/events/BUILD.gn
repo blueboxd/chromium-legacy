@@ -145,6 +145,8 @@ jumbo_component("events_base") {
     "keycodes/keyboard_codes.h",
     "mobile_scroller.cc",
     "mobile_scroller.h",
+    "pointer_details.cc",
+    "pointer_details.h",
   ]
 
   defines = [ "EVENTS_BASE_IMPLEMENTATION" ]

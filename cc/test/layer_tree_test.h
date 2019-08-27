@@ -107,17 +107,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   AnimationHost* animation_host() const { return animation_host_.get(); }
 
-  // Creates viewport layers and (in layer list mode) paint properties.
-  // Convenient overload of the method below that creates a scrolling layer as
-  // the outer viewport scroll layer.
-  void SetupViewport(const gfx::Size& outer_bounds,
-                     const gfx::Size& scroll_bounds);
-
-  // Creates viewport layers and (in layer list mode) paint properties.
-  // Uses the given scroll layer as the content "outer viewport scroll layer".
-  void SetupViewport(scoped_refptr<Layer> outer_scroll_layer,
-                     const gfx::Size& outer_bounds);
-
   void SetUseLayerLists() { settings_.use_layer_lists = true; }
 
  protected:

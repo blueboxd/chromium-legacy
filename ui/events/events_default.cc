@@ -52,7 +52,7 @@ PointerDetails GetMousePointerDetailsFromNative(
       static_cast<const ui::MouseEvent*>(native_event);
   DCHECK(event->IsMouseEvent() || event->IsScrollEvent());
   PointerDetails pointer_detail = event->pointer_details();
-  pointer_detail.id = MouseEvent::kMousePointerId;
+  pointer_detail.id = kPointerIdMouse;
   return pointer_detail;
 }
 

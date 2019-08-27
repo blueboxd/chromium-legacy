@@ -23,7 +23,6 @@ var GoogleAssistantA11yTest = class extends PolymerTest {
     // legacy combined settings and we don't want to test everything twice.
     return {
       enabled: [
-        'chromeos::features::kAssistantFeature',
         'chromeos::features::kSplitSettings'
       ]
     };

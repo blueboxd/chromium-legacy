@@ -15,7 +15,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
@@ -66,7 +65,7 @@ void WorkerScriptFetchInitiator::Start(
     ResourceType resource_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     ServiceWorkerNavigationHandle* service_worker_handle,
-    AppCacheNavigationHandleCore* appcache_handle_core,
+    base::WeakPtr<AppCacheHost> appcache_host,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
     StoragePartitionImpl* storage_partition,
@@ -172,7 +171,7 @@ void WorkerScriptFetchInitiator::Start(
       storage_partition, std::move(factory_bundle_for_browser),
       std::move(subresource_loader_factories),
       std::move(service_worker_context), service_worker_handle,
-      appcache_handle_core, std::move(blob_url_loader_factory),
+      std::move(appcache_host), std::move(blob_url_loader_factory),
       std::move(url_loader_factory_override), std::move(callback));
 }
 
@@ -268,7 +267,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
         subresource_loader_factories,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     ServiceWorkerNavigationHandle* service_worker_handle,
-    AppCacheNavigationHandleCore* appcache_handle_core,
+    base::WeakPtr<AppCacheHost> appcache_host,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
     CompletionCallback callback) {
@@ -318,10 +317,6 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     url_loader_factory = base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
         std::move(factory_bundle_for_browser_info));
   }
-
-  base::WeakPtr<AppCacheHost> appcache_host =
-      appcache_handle_core ? appcache_handle_core->host()->GetWeakPtr()
-                           : nullptr;
 
   // Start loading a web worker main script.
   // TODO(nhiroki): Figure out what we should do in |wc_getter| for loading web

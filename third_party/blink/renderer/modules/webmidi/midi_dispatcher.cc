@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -24,15 +25,13 @@ static const size_t kMaxUnacknowledgedBytesSent = 10 * 1024 * 1024;  // 10 MB.
 
 MIDIDispatcher::MIDIDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : binding_(this), task_runner_(std::move(task_runner)) {
+    : task_runner_(std::move(task_runner)) {
   TRACE_EVENT0("midi", "MIDIDispatcher::MIDIDispatcher");
-  midi::mojom::blink::MidiSessionClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr, task_runner_), task_runner_);
-
   Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&midi_session_provider_, task_runner_));
-  midi_session_provider_->StartSession(mojo::MakeRequest(&midi_session_),
-                                       std::move(client_ptr));
+      midi_session_provider_.BindNewPipeAndPassReceiver(task_runner_));
+  midi_session_provider_->StartSession(
+      midi_session_.BindNewPipeAndPassReceiver(),
+      receiver_.BindNewPipeAndPassRemote());
 }
 
 MIDIDispatcher::~MIDIDispatcher() = default;

@@ -141,22 +141,8 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, UnknownDeviceType) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, AssistantSupported) {
-  // Enable native Assistant.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(chromeos::features::kAssistantFeature);
-
   ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
                                         "assistant supported"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, AssistantUnsupported) {
-  // Disable native Assistant.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(chromeos::features::kAssistantFeature);
-
-  ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
-                                        "assistant unsupported"))
       << message_;
 }
 

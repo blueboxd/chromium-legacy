@@ -150,7 +150,7 @@ cr.define('cr.login', function() {
       this.apiPasswordBytes_ = null;
 
       /**
-       * Whether to abort the authentication flow and show an error messagen
+       * Whether to abort the authentication flow and show an error message
        * when content served over an unencrypted connection is detected.
        * @type {boolean}
        */

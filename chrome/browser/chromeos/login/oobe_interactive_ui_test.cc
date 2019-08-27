@@ -376,9 +376,6 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
   void SetUp() override {
     LOG(INFO) << "OOBE end-to-end test  started with params "
               << params_.ToString();
-
-    if (params_.arc_state != ArcState::kNotAvailable)
-      feature_list_.InitAndEnableFeature(features::kAssistantFeature);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -31,8 +31,11 @@ bool OverlayStrategyUnderlayCast::Attempt(
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
     RenderPassList* render_pass_list,
+    const PrimaryPlane* primary_plane,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
+  // Before we attempt an overlay strategy, the candidate list should be empty.
+  DCHECK(candidate_list->empty());
   RenderPass* render_pass = render_pass_list->back().get();
   QuadList& quad_list = render_pass->quad_list;
   bool found_underlay = false;
@@ -79,14 +82,6 @@ bool OverlayStrategyUnderlayCast::Attempt(
   if (is_using_overlay_ != found_underlay) {
     is_using_overlay_ = found_underlay;
     VLOG(1) << (found_underlay ? "Overlay activated" : "Overlay deactivated");
-  }
-
-  // If the primary plane shows up in the candidates list make sure it isn't
-  // opaque otherwise the content underneath won't be visible.
-  if (!candidate_list->empty()) {
-    DCHECK_EQ(1u, candidate_list->size());
-    DCHECK(candidate_list->front().use_output_surface_for_resource);
-    candidate_list->front().is_opaque = false;
   }
 
   if (found_underlay) {

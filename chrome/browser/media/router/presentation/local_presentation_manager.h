@@ -56,8 +56,8 @@ namespace media_router {
 // Invoked on receiver's PresentationServiceImpl when controller connection is
 // established.
 //
-//   |presentation_receiver_client_|: blink::mojom::PresentationServiceClienPtr
-//   for the presentation receiver.
+//   |presentation_receiver_remote_|: mojo::Remote<T> for the implementation of
+//   the blink::mojom::PresentationService interface in the renderer process.
 //   |controller_connection_remote|: mojo::PendingRemote<T> for
 //   blink::PresentationConnection object in controlling frame's render process.
 //   |receiver_connection_receiver|: mojo::PendingReceiver<T> to be bind to
@@ -66,7 +66,7 @@ namespace media_router {
 //       const blink::mojom::PresentationInfo& presentation_info,
 //       PresentationConnectionRemote controller_connection_remote,
 //       PresentationConnectionReceiver receiver_connection_receiver) {
-//     presentation_receiver_client_->OnReceiverConnectionAvailable(
+//     presentation_receiver_remote_->OnReceiverConnectionAvailable(
 //         blink::mojom::PresentationInfo::From(presentation_info),
 //         std::move(controller_connection_remote),
 //         std::move(receiver_connection_receiver));

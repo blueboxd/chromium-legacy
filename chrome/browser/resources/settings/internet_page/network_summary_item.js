@@ -184,8 +184,7 @@ Polymer({
       return true;
     }
     const simLockType = deviceState.simLockStatus.lockType;
-    return simLockType == CrOnc.LockType.PIN ||
-        simLockType == CrOnc.LockType.PUK;
+    return simLockType == 'sim-pin' || simLockType == 'sim-puk';
   },
 
   /**

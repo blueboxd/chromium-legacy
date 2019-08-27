@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <unordered_map>
 
+#include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
@@ -1512,6 +1513,8 @@ void CopyTextureResourceManagerImpl::DoCopyTextureInternal(
     }
 #endif
 
+    if (decoder->GetFeatureInfo()->IsWebGL2OrES3OrHigherContext())
+      glBindSampler(0, 0);
     glUniform1i(info->sampler_handle, 0);
 
     glBindTexture(source_target, source_id);
@@ -1545,6 +1548,8 @@ void CopyTextureResourceManagerImpl::DoCopyTextureInternal(
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 
+  if (decoder->GetFeatureInfo()->IsWebGL2OrES3OrHigherContext())
+    decoder->GetContextState()->RestoreSamplerBinding(0, nullptr);
   decoder->RestoreAllAttributes();
   decoder->RestoreTextureState(source_id);
   decoder->RestoreTextureState(dest_id);

@@ -51,6 +51,11 @@ class ChromeImpl : public Chrome {
   Status CloseWebView(const std::string& id) override;
   Status ActivateWebView(const std::string& id) override;
   Status SetAcceptInsecureCerts() override;
+  Status SetPermission(
+      std::unique_ptr<base::DictionaryValue> permission_descriptor,
+      PermissionState desired_state,
+      bool unused_one_realm,
+      WebView* current_view) override;
   bool IsMobileEmulationEnabled() const override;
   bool HasTouchScreen() const override;
   std::string page_load_strategy() const override;
@@ -87,6 +92,11 @@ class ChromeImpl : public Chrome {
   std::unique_ptr<DevToolsClient> devtools_websocket_client_;
 
  private:
+  static Status PermissionNameToChromePermissions(
+      const base::DictionaryValue& permission_descriptor,
+      Chrome::PermissionState setting,
+      std::vector<std::string>* chrome_permissions);
+
   void UpdateWebViews(const WebViewsInfo& views_info, bool w3c_compliant);
 
   // Web views in this list are in the same order as they are opened.

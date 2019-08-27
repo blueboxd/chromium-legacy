@@ -19,9 +19,10 @@ LayoutTheme& LayoutTheme::NativeTheme() {
   return *layout_theme;
 }
 
-Color LayoutThemeWin::SystemColor(CSSValueID css_value_id) const {
+Color LayoutThemeWin::SystemColor(CSSValueID css_value_id,
+                                  WebColorScheme color_scheme) const {
   if (!RuntimeEnabledFeatures::UseWindowsSystemColorsEnabled()) {
-    return LayoutThemeDefault::SystemColor(css_value_id);
+    return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
   }
 
   int system_index;
@@ -53,7 +54,7 @@ Color LayoutThemeWin::SystemColor(CSSValueID css_value_id) const {
       system_index = COLOR_WINDOWTEXT;
       break;
     default:
-      return LayoutThemeDefault::SystemColor(css_value_id);
+      return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
   }
 
   return SystemColorBySystemIndex(system_index);

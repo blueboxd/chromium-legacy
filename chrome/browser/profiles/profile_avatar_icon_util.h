@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
@@ -22,9 +23,19 @@ namespace gfx {
 class Image;
 }
 
+class ProfileAttributesEntry;
 class SkBitmap;
 
 namespace profiles {
+
+#if defined(OS_WIN)
+// The avatar badge size needs to be half of the shortcut icon size because
+// the Windows taskbar icon is 32x32 and the avatar icon overlay is 16x16. So to
+// get the shortcut avatar badge and the avatar icon overlay to match up, we
+// need to preserve those ratios when creating the shortcut icon.
+const int kShortcutIconSizeWin = 48;
+const int kProfileAvatarBadgeSizeWin = kShortcutIconSizeWin / 2;
+#endif  // OS_WIN
 
 // Avatar access.
 extern const char kGAIAPictureFileName[];
@@ -128,6 +139,19 @@ std::unique_ptr<base::ListValue> GetDefaultProfileAvatarIconsAndLabels(
 // |used_icon_indices|. If there is no such index, a random index is returned.
 size_t GetRandomAvatarIconIndex(
     const std::unordered_set<size_t>& used_icon_indices);
+
+#if defined(OS_WIN)
+// Get the 1x and 2x avatar images for a ProfileAttributesEntry.
+void GetWinAvatarImages(ProfileAttributesEntry* entry,
+                        SkBitmap* avatar_image_1x,
+                        SkBitmap* avatar_image_2x);
+
+// Badges |app_icon_bitmap| with |avatar_bitmap| at the bottom right corner and
+// returns the resulting SkBitmap.
+SkBitmap GetBadgedWinIconBitmapForAvatar(const SkBitmap& app_icon_bitmap,
+                                         const SkBitmap& avatar_bitmap,
+                                         int scale_factor);
+#endif  // OS_WIN
 
 }  // namespace profiles
 

@@ -962,9 +962,7 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     return nullptr;
   }
 
-  if (!matched_manager->ProvisionallySave(
-          submitted_form, driver,
-          submitted_form.is_gaia_with_skip_save_password_form))
+  if (!matched_manager->ProvisionallySave(submitted_form, driver))
     return nullptr;
 
   // Set all other form managers to no submission state.

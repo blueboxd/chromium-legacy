@@ -1793,9 +1793,6 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 extern const char kAppServiceAshName[];
 extern const char kAppServiceAshDescription[];
 
-extern const char kArcAvailableForChildName[];
-extern const char kArcAvailableForChildDescription[];
-
 extern const char kArcBootCompleted[];
 extern const char kArcBootCompletedDescription[];
 
@@ -1949,9 +1946,6 @@ extern const char kEnableEncryptionMigrationDescription[];
 extern const char kEnableGesturePropertiesDBusServiceName[];
 extern const char kEnableGesturePropertiesDBusServiceDescription[];
 
-extern const char kEnableGoogleAssistantName[];
-extern const char kEnableGoogleAssistantDescription[];
-
 extern const char kEnableGoogleAssistantDspName[];
 extern const char kEnableGoogleAssistantDspDescription[];
 
@@ -2048,6 +2042,9 @@ extern const char kMediaSessionNotificationsDescription[];
 extern const char kNetworkPortalNotificationName[];
 extern const char kNetworkPortalNotificationDescription[];
 
+extern const char kNewOverviewTabletLayoutName[];
+extern const char kNewOverviewTabletLayoutDescription[];
+
 extern const char kNewZipUnpackerName[];
 extern const char kNewZipUnpackerDescription[];
 
@@ -2107,9 +2104,6 @@ extern const char kUiShowCompositedLayerBordersAll[];
 
 extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
-
-extern const char kUnfilteredBluetoothDevicesName[];
-extern const char kUnfilteredBluetoothDevicesDescription[];
 
 extern const char kUsbguardName[];
 extern const char kUsbguardDescription[];

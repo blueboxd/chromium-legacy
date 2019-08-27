@@ -145,7 +145,9 @@ class PlatformEventTest : public testing::Test {
 
  protected:
   // testing::Test:
-  void SetUp() override { source_.reset(new TestPlatformEventSource()); }
+  void SetUp() override {
+    source_ = std::make_unique<TestPlatformEventSource>();
+  }
 
  private:
   std::unique_ptr<TestPlatformEventSource> source_;

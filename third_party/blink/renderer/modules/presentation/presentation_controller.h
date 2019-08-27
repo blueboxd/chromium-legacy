@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -65,10 +66,10 @@ class MODULES_EXPORT PresentationController
       const blink::WebVector<blink::WebURL>& presentation_urls,
       const blink::WebString& presentation_id);
 
-  // Returns a reference to the PresentationService ptr, requesting the remote
-  // service if needed. May return an invalid ptr if the associated Document is
-  // detached.
-  mojom::blink::PresentationServicePtr& GetPresentationService();
+  // Returns a reference to the PresentationService remote, requesting the
+  // remote service if needed. May return an invalid remote if the associated
+  // Document is detached.
+  mojo::Remote<mojom::blink::PresentationService>& GetPresentationService();
 
   // Returns the PresentationAvailabilityState owned by |this|, creating it if
   // needed. Always non-null.
@@ -108,8 +109,8 @@ class MODULES_EXPORT PresentationController
   // The presentation connections associated with that frame.
   HeapHashSet<WeakMember<ControllerPresentationConnection>> connections_;
 
-  // Lazily-initialized pointer to PresentationService.
-  mojom::blink::PresentationServicePtr presentation_service_;
+  // Holder of the Mojo connection to the PresentationService remote.
+  mojo::Remote<mojom::blink::PresentationService> presentation_service_remote_;
 
   // Lazily-initialized binding for mojom::blink::PresentationController. Sent
   // to |presentation_service_|'s implementation.

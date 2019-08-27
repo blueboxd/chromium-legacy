@@ -67,8 +67,9 @@ void TimeZoneMonitor::NotifyClients() {
 }
 
 void TimeZoneMonitor::AddClient(
-    device::mojom::TimeZoneMonitorClientPtr client) {
-  clients_.AddPtr(std::move(client));
+    mojo::PendingRemote<device::mojom::TimeZoneMonitorClient> client) {
+  clients_.AddPtr(mojo::InterfacePtr<device::mojom::TimeZoneMonitorClient>(
+      std::move(client)));
 }
 
 }  // namespace device

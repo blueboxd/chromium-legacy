@@ -599,9 +599,11 @@ void SVGInlineTextBoxPainter::PaintTextMatchMarkerForeground(
     return;
 
   Color text_color = LayoutTheme::GetTheme().PlatformTextSearchColor(
-      marker.IsActiveMatch(), svg_inline_text_box_.GetLineLayoutItem()
-                                  .GetDocument()
-                                  .InForcedColorsMode());
+      marker.IsActiveMatch(),
+      svg_inline_text_box_.GetLineLayoutItem()
+          .GetDocument()
+          .InForcedColorsMode(),
+      style.UsedColorScheme());
 
   PaintFlags fill_flags;
   fill_flags.setColor(text_color.Rgb());
@@ -644,9 +646,11 @@ void SVGInlineTextBoxPainter::PaintTextMatchMarkerBackground(
     return;
 
   Color color = LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
-      marker.IsActiveMatch(), svg_inline_text_box_.GetLineLayoutItem()
-                                  .GetDocument()
-                                  .InForcedColorsMode());
+      marker.IsActiveMatch(),
+      svg_inline_text_box_.GetLineLayoutItem()
+          .GetDocument()
+          .InForcedColorsMode(),
+      style.UsedColorScheme());
   for (const SVGTextFragmentWithRange& text_match_info : text_match_info_list) {
     const SVGTextFragment& fragment = text_match_info.fragment;
 

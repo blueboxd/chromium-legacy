@@ -179,7 +179,7 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
 
   std::string key_;
   std::vector<char> data_[kNumStreams];  // User data.
-  int ref_count_;
+  uint32_t ref_count_;
 
   int64_t child_id_;     // The ID of a child entry.
   int child_first_pos_;  // The position of the first byte in a child

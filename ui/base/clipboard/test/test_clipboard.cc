@@ -21,9 +21,9 @@ TestClipboard::TestClipboard()
 TestClipboard::~TestClipboard() = default;
 
 Clipboard* TestClipboard::CreateForCurrentThread() {
-  base::AutoLock lock(Clipboard::clipboard_map_lock_.Get());
+  base::AutoLock lock(Clipboard::ClipboardMapLock());
   Clipboard* clipboard = new TestClipboard;
-  Clipboard::clipboard_map_.Get()[base::PlatformThread::CurrentId()] =
+  (*Clipboard::ClipboardMapPtr())[base::PlatformThread::CurrentId()] =
       base::WrapUnique(clipboard);
   return clipboard;
 }

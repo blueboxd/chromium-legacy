@@ -247,11 +247,6 @@ public class NewTabPageView extends HistoryNavigationLayout {
         return mNewTabPageLayout;
     }
 
-    @Override
-    public boolean wasLastSideSwipeGestureConsumed() {
-        return mRecyclerView.isCardBeingSwiped();
-    }
-
     /**
      * Sets the {@link FakeboxDelegate} associated with the new tab page.
      * @param fakeboxDelegate The {@link FakeboxDelegate} used to determine whether the URL bar

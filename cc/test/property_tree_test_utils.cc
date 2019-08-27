@@ -183,4 +183,83 @@ ScrollNode& CreateScrollNode(LayerImpl* layer, int parent_id) {
   return CreateScrollNodeInternal(layer, parent_id);
 }
 
+void SetupViewport(Layer* root,
+                   scoped_refptr<Layer> outer_scroll_layer,
+                   const gfx::Size& outer_bounds) {
+  DCHECK(root);
+  scoped_refptr<Layer> inner_viewport_container_layer = Layer::Create();
+  scoped_refptr<Layer> overscroll_elasticity_layer = Layer::Create();
+  scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
+  scoped_refptr<Layer> outer_viewport_container_layer = Layer::Create();
+  scoped_refptr<Layer> page_scale_layer = Layer::Create();
+
+  inner_viewport_scroll_layer->SetElementId(
+      LayerIdToElementIdForTesting(inner_viewport_scroll_layer->id()));
+  outer_scroll_layer->SetElementId(
+      LayerIdToElementIdForTesting(outer_scroll_layer->id()));
+  overscroll_elasticity_layer->SetElementId(
+      LayerIdToElementIdForTesting(overscroll_elasticity_layer->id()));
+
+  inner_viewport_container_layer->SetBounds(root->bounds());
+  inner_viewport_scroll_layer->SetScrollable(root->bounds());
+  inner_viewport_scroll_layer->SetHitTestable(true);
+  inner_viewport_scroll_layer->SetBounds(outer_bounds);
+  outer_viewport_container_layer->SetBounds(outer_bounds);
+  outer_scroll_layer->SetScrollable(outer_bounds);
+  outer_scroll_layer->SetHitTestable(true);
+
+  root->AddChild(inner_viewport_container_layer);
+  if (root->layer_tree_host()->IsUsingLayerLists()) {
+    root->AddChild(overscroll_elasticity_layer);
+    root->AddChild(page_scale_layer);
+    root->AddChild(inner_viewport_scroll_layer);
+    root->AddChild(outer_viewport_container_layer);
+    root->AddChild(outer_scroll_layer);
+
+    CopyProperties(root, inner_viewport_container_layer.get());
+    CopyProperties(inner_viewport_container_layer.get(),
+                   overscroll_elasticity_layer.get());
+    CreateTransformNode(overscroll_elasticity_layer.get());
+    CopyProperties(overscroll_elasticity_layer.get(), page_scale_layer.get());
+    CreateTransformNode(page_scale_layer.get());
+    CopyProperties(page_scale_layer.get(), inner_viewport_scroll_layer.get());
+    CopyProperties(inner_viewport_scroll_layer.get(),
+                   outer_viewport_container_layer.get());
+    CopyProperties(outer_viewport_container_layer.get(),
+                   outer_scroll_layer.get());
+    // TODO(wangxianzhu): Create other property nodes when they are needed by
+    // tests newly converted to layer list mode.
+  } else {
+    inner_viewport_container_layer->AddChild(overscroll_elasticity_layer);
+    overscroll_elasticity_layer->AddChild(page_scale_layer);
+    page_scale_layer->AddChild(inner_viewport_scroll_layer);
+    inner_viewport_scroll_layer->AddChild(outer_viewport_container_layer);
+    outer_viewport_container_layer->AddChild(outer_scroll_layer);
+
+    inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+    outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
+    root->layer_tree_host()->property_trees()->needs_rebuild = true;
+  }
+
+  ViewportLayers viewport_layers;
+  viewport_layers.overscroll_elasticity_element_id =
+      overscroll_elasticity_layer->element_id();
+  viewport_layers.page_scale = page_scale_layer;
+  viewport_layers.inner_viewport_container = inner_viewport_container_layer;
+  viewport_layers.outer_viewport_container = outer_viewport_container_layer;
+  viewport_layers.inner_viewport_scroll = inner_viewport_scroll_layer;
+  viewport_layers.outer_viewport_scroll = outer_scroll_layer;
+  root->layer_tree_host()->RegisterViewportLayers(viewport_layers);
+}
+
+void SetupViewport(Layer* root,
+                   const gfx::Size& outer_bounds,
+                   const gfx::Size& scroll_bounds) {
+  scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
+  outer_viewport_scroll_layer->SetBounds(scroll_bounds);
+  outer_viewport_scroll_layer->SetIsDrawable(true);
+  outer_viewport_scroll_layer->SetHitTestable(true);
+  SetupViewport(root, outer_viewport_scroll_layer, outer_bounds);
+}
+
 }  // namespace cc

@@ -750,6 +750,13 @@ EventPointerType GetTouchPointerTypeFromXEvent(const XEvent& xev) {
       event->sourceid);
 }
 
+PointerDetails GetTouchPointerDetailsFromXEvent(const XEvent& xev) {
+  return PointerDetails(
+      EventPointerType::POINTER_TYPE_TOUCH, GetTouchIdFromXEvent(xev),
+      GetTouchRadiusXFromXEvent(xev), GetTouchRadiusYFromXEvent(xev),
+      GetTouchForceFromXEvent(xev), GetTouchAngleFromXEvent(xev));
+}
+
 bool GetScrollOffsetsFromXEvent(const XEvent& xev,
                                 float* x_offset,
                                 float* y_offset,

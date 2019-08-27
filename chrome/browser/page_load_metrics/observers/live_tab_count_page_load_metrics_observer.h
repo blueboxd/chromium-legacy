@@ -25,14 +25,11 @@ class LiveTabCountPageLoadMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver:
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstMeaningfulPaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstInputInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  protected:
   // Returns the number of live tabs, including the one that we're observing.

@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_COLOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_COLOR_H_
 
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -57,7 +58,7 @@ class StyleColor {
 
   bool HasAlpha() const { return !current_color_ && color_.HasAlpha(); }
 
-  static Color ColorFromKeyword(CSSValueID);
+  static Color ColorFromKeyword(CSSValueID, WebColorScheme color_scheme);
   static bool IsColorKeyword(CSSValueID);
   static bool IsSystemColor(CSSValueID);
 

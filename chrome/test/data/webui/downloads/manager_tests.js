@@ -130,10 +130,10 @@ suite('manager tests', function() {
     assertFalse(manager.$.toolbar.hasClearableDownloads);
   });
 
-  test('loadTimeData contains isManaged and managedByOrg', function() {
+  test('loadTimeData contains isManaged and browserManagedByOrg', function() {
     // Check that loadTimeData contains these values.
     loadTimeData.getBoolean('isManaged');
-    loadTimeData.getString('managedByOrg');
+    loadTimeData.getString('browserManagedByOrg');
   });
 
   test('toast is shown when clear-all-command is fired', () => {

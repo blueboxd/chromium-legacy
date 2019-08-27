@@ -1,5 +1,4 @@
 include_rules = [
-  "+device/base/features.h",
   "+device/bluetooth",
   "+cc/debug",
   "+cc/output",

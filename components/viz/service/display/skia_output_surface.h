@@ -75,8 +75,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // Swaps the current backbuffer to the screen.
   virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
 
-  // Schedule overlay planes to be displayed
-  virtual void ScheduleOverlays(OverlayCandidateList overlays) = 0;
+  // TODO(weiliangc): This API should move to OverlayProcessor.
+  // Schedule |output_surface_plane| as an overlay plane to be displayed.
+  virtual void ScheduleOutputSurfaceAsOverlay(
+      OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane) = 0;
 
   // Begin painting a render pass. This method will create a
   // SkDeferredDisplayListRecorder and return a SkCanvas of it. The SkiaRenderer

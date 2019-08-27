@@ -162,6 +162,14 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
     mouse_wheel_phase_handler_.set_mouse_wheel_end_dispatch_timeout(timeout);
   }
 
+  // Used in testing for setting the max time to wait for momentum phase began
+  // after a scroll phase end.
+  void set_max_time_between_phase_ended_and_momentum_phase_began(
+      base::TimeDelta timeout) {
+    mouse_wheel_phase_handler_
+        .set_max_time_between_phase_ended_and_momentum_phase_began(timeout);
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(InputMethodResultAuraTest,
                            FinishImeCompositionSession);

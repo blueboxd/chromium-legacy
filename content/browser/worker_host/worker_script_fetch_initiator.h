@@ -32,7 +32,7 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
-class AppCacheNavigationHandleCore;
+class AppCacheHost;
 class BrowserContext;
 class RenderFrameHost;
 class ServiceWorkerContextWrapper;
@@ -69,7 +69,7 @@ class WorkerScriptFetchInitiator {
       ResourceType resource_type,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       ServiceWorkerNavigationHandle* service_worker_handle,
-      AppCacheNavigationHandleCore* appcache_handle_core,
+      base::WeakPtr<AppCacheHost> appcache_host,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       scoped_refptr<network::SharedURLLoaderFactory>
           url_loader_factory_override,
@@ -103,7 +103,7 @@ class WorkerScriptFetchInitiator {
           subresource_loader_factories,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       ServiceWorkerNavigationHandle* service_worker_handle,
-      AppCacheNavigationHandleCore* appcache_handle_core,
+      base::WeakPtr<AppCacheHost> appcache_host,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       scoped_refptr<network::SharedURLLoaderFactory>
           url_loader_factory_override,

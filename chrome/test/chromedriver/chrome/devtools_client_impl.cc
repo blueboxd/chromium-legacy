@@ -28,6 +28,12 @@ const char kInspectorDefaultContextError[] =
 const char kInspectorContextError[] =
     "Cannot find execution context with given id";
 const char kInspectorInvalidURL[] = "Cannot navigate to invalid URL";
+const char kInspectorInsecureContext[] =
+    "Permission can't be granted in current context.";
+const char kInspectorOpaqueOrigins[] =
+    "Permission can't be granted to opaque origins.";
+const char kInspectorPushPermissionError[] =
+    "Push Permission without userVisibleOnly:true isn't supported";
 static constexpr int kInvalidParamsInspectorCode = -32602;
 
 class ScopedIncrementer {
@@ -650,6 +656,12 @@ Status ParseInspectorError(const std::string& error_json) {
       return Status(kNoSuchExecutionContext);
     } else if (error_message == kInspectorInvalidURL) {
       return Status(kInvalidArgument);
+    } else if (error_message == kInspectorInsecureContext) {
+      return Status(kInvalidArgument,
+                    "feature cannot be used in insecure context");
+    } else if (error_message == kInspectorPushPermissionError ||
+               error_message == kInspectorOpaqueOrigins) {
+      return Status(kInvalidArgument, error_message);
     }
     base::Optional<int> error_code = error_dict->FindIntPath("code");
     if (error_code == kInvalidParamsInspectorCode)

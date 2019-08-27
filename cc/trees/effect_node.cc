@@ -20,7 +20,7 @@ EffectNode::EffectNode()
       cache_render_surface(false),
       has_copy_request(false),
       hidden_by_backface_visibility(false),
-      double_sided(false),
+      double_sided(true),
       trilinear_filtering(false),
       is_drawn(true),
       subtree_hidden(false),

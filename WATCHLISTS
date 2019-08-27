@@ -2518,7 +2518,7 @@
     'rlz_id': ['gab+watch@chromium.org',
                'robertshield+watch@chromium.org'],
     'runtime_enabled_features': ['jmedley+watch@chromium.org'],
-    'safe_browsing': ['drubery@chromium.org',
+    'safe_browsing': ['drubery+watch@chromium.org',
                       'timvolodine@chromium.org',
                       'vakh+watch@chromium.org',
                       'xinghuilu+watch@chromium.org'],

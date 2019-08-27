@@ -58,7 +58,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_isolation_key.h"
@@ -1512,9 +1512,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindAuthenticatorRequest(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
-
-  void BindPresentationServiceRequest(
-      blink::mojom::PresentationServiceRequest request);
 
   void BindSmsReceiverRequest(blink::mojom::SmsReceiverRequest request);
 

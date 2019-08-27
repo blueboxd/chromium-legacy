@@ -370,76 +370,64 @@ FromGWSPageLoadMetricsObserver::OnCommit(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 FromGWSPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.FlushMetricsOnAppEnterBackground(timing, GetDelegate());
   return STOP_OBSERVING;
 }
 
 void FromGWSPageLoadMetricsObserver::OnDomContentLoadedEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnDomContentLoadedEventStart(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnLoadEventStart(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFirstPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnFirstPaintInPage(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFirstImagePaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnFirstImagePaintInPage(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnFirstContentfulPaintInPage(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFirstInputInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnFirstInputInPage(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnParseStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnParseStart(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnParseStop(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnParseStop(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnComplete(timing, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnFailedProvisionalLoad(
-    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info) {
   logger_.OnFailedProvisionalLoad(failed_load_info, GetDelegate());
 }
 
 void FromGWSPageLoadMetricsObserver::OnUserInput(
     const blink::WebInputEvent& event,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   logger_.OnUserInput(event, timing, GetDelegate());
 }
 

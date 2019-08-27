@@ -144,7 +144,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     EXPECT_EQ(GestureDeviceType::DEVICE_TOUCHSCREEN,
               gesture.details.device_type());
     if (gesture.type() == ET_GESTURE_SCROLL_BEGIN)
-      active_scroll_begin_event_.reset(new GestureEventData(gesture));
+      active_scroll_begin_event_ = std::make_unique<GestureEventData>(gesture);
     gestures_.push_back(gesture);
   }
 
@@ -153,7 +153,7 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   }
 
   void SetUpWithConfig(const GestureProvider::Config& config) {
-    gesture_provider_.reset(new GestureProvider(config, this));
+    gesture_provider_ = std::make_unique<GestureProvider>(config, this);
     gesture_provider_->SetMultiTouchZoomSupportEnabled(false);
   }
 

@@ -13,6 +13,7 @@ OverlayCandidateValidatorWin::OverlayCandidateValidatorWin() = default;
 OverlayCandidateValidatorWin::~OverlayCandidateValidatorWin() = default;
 
 void OverlayCandidateValidatorWin::CheckOverlaySupport(
+    const PrimaryPlane* primary_plane,
     OverlayCandidateList* candidates) {
   NOTIMPLEMENTED();
 }

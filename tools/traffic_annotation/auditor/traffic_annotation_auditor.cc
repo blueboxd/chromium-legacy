@@ -129,7 +129,7 @@ std::string MakeRelativePath(const base::FilePath& base_directory,
                              file_str.length() - base_str.length() - 1);
     }
   }
-  return converted_file_path.MaybeAsASCII();
+  return file_path;
 }
 
 }  // namespace

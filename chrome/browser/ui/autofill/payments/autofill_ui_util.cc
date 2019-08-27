@@ -54,15 +54,7 @@ void UpdatePageActionIcon(PageActionIconType icon_type,
             ->GetOmniboxPageActionIconContainer()
             ->UpdatePageActionIcon(icon_type);
         break;
-      case PageActionIconType::kClickToCall:
-      case PageActionIconType::kFind:
-      case PageActionIconType::kIntentPicker:
-      case PageActionIconType::kNativeFileSystemAccess:
-      case PageActionIconType::kPwaInstall:
-      case PageActionIconType::kReaderMode:
-      case PageActionIconType::kSendTabToSelf:
-      case PageActionIconType::kTranslate:
-      case PageActionIconType::kZoom:
+      default:
         NOTREACHED();
     }
   }

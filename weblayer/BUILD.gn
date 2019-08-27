@@ -46,11 +46,14 @@ jumbo_static_library("weblayer_lib") {
     "browser/content_browser_client_impl.h",
     "browser/navigation_controller_impl.cc",
     "browser/navigation_controller_impl.h",
+    "browser/navigation_impl.cc",
+    "browser/navigation_impl.h",
     "browser/profile_impl.cc",
     "browser/profile_impl.h",
     "common/content_client_impl.cc",
     "common/content_client_impl.h",
     "public/browser_controller.h",
+    "public/browser_observer.h",
     "public/main.h",
     "public/navigation.h",
     "public/navigation_controller.h",
@@ -127,6 +130,7 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_android) {
     deps += [
+      ":weblayer_jni",
       "//components/embedder_support/android:view",
       "//ui/android",
     ]
@@ -145,5 +149,40 @@ jumbo_static_library("weblayer_lib") {
     ]
   }
 }
+
 # TODO(jam): move weblayer_shell_resources_grit and copy_shell_resources here in
 # a way that's shareable?
+
+if (is_android) {
+  shared_library("libweblayer") {
+    sources = [
+      "app/jni_onload.cc",
+    ]
+    deps = [
+      ":weblayer_lib",
+      "//base",
+      "//content/public/app:both",
+    ]
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    configs += [ "//build/config/android:hide_all_but_jni" ]
+  }
+
+  generate_jni("weblayer_jni") {
+    sources = [
+      "browser/java/org/chromium/weblayer/BrowserController.java",
+      "browser/java/org/chromium/weblayer/Profile.java",
+    ]
+  }
+
+  android_library("weblayer_java") {
+    java_files = [
+      "browser/java/org/chromium/weblayer/BrowserController.java",
+      "browser/java/org/chromium/weblayer/Profile.java",
+    ]
+    deps = [
+      "//base:base_java",
+      "//content/public/android:content_java",
+      "//ui/android:ui_java",
+    ]
+  }
+}

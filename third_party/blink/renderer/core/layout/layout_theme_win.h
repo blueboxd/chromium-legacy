@@ -13,7 +13,8 @@ class LayoutThemeWin final : public LayoutThemeDefault {
  public:
   static scoped_refptr<LayoutTheme> Create();
 
-  Color SystemColor(CSSValueID css_value_id) const override;
+  Color SystemColor(CSSValueID css_value_id,
+                    WebColorScheme color_scheme) const override;
 
  private:
   static Color SystemColorBySystemIndex(int system_index);

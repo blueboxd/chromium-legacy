@@ -204,7 +204,7 @@ class BasePreviewsLitePageServerBrowserTest
         net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestHandler(base::BindRepeating(
-        &BasePreviewsLitePageServerBrowserTest::HandleRedirectRequest,
+        &BasePreviewsLitePageServerBrowserTest::HandleOriginRequest,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
@@ -237,7 +237,7 @@ class BasePreviewsLitePageServerBrowserTest
         net::EmbeddedTestServer::TYPE_HTTP);
     http_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     http_server_->RegisterRequestHandler(base::BindRepeating(
-        &BasePreviewsLitePageServerBrowserTest::HandleRedirectRequest,
+        &BasePreviewsLitePageServerBrowserTest::HandleOriginRequest,
         base::Unretained(this)));
     ASSERT_TRUE(http_server_->Start());
 
@@ -307,8 +307,9 @@ class BasePreviewsLitePageServerBrowserTest
         {"control_group", is_control ? "true" : "false"},
         {"preconnect_on_slow_connections", "true"},
         {"preresolve_on_slow_connections", "false"},
+        {"should_probe_origin", "true"},
+        {"origin_probe_timeout_ms", "500"},
     };
-
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         "data-reduction-proxy-pingback-url",
         pingback_server_->GetURL("pingback.com", "/").spec());
@@ -653,6 +654,12 @@ class BasePreviewsLitePageServerBrowserTest
   }
   const GURL& client_redirect_url() const { return client_redirect_url_; }
   const GURL& subframe_url() const { return subframe_url_; }
+
+  int origin_probe_count() const { return origin_probe_count_; }
+  void set_origin_probe_success(bool success) {
+    origin_probe_success_ = success;
+  }
+
   uint64_t got_page_id() const { return got_page_id_; }
   int subresources_requested() const { return subresources_requested_; }
   int previews_server_connections() const {
@@ -679,8 +686,19 @@ class BasePreviewsLitePageServerBrowserTest
       test_hints_component_creator_;
 
  private:
-  std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
+  std::unique_ptr<net::test_server::HttpResponse> HandleOriginRequest(
       const net::test_server::HttpRequest& request) {
+    if (request.method == net::test_server::METHOD_HEAD) {
+      origin_probe_count_++;
+      if (origin_probe_success_) {
+        std::unique_ptr<net::test_server::BasicHttpResponse> response =
+            std::make_unique<net::test_server::BasicHttpResponse>();
+        response->set_code(net::HTTP_NO_CONTENT);
+        return std::move(response);
+      }
+      return std::make_unique<net::test_server::HungResponse>();
+    }
+
     if (request.GetURL().spec().find("to_https_redirect") !=
         std::string::npos) {
       std::unique_ptr<net::test_server::BasicHttpResponse> response =
@@ -961,6 +979,8 @@ class BasePreviewsLitePageServerBrowserTest
   GURL subframe_url_;
   GURL previews_server_url_;
   GURL slow_http_url_;
+  bool origin_probe_success_ = true;
+  int origin_probe_count_ = 0;
   uint64_t got_page_id_ = 0;
   int subresources_requested_ = 0;
   std::unordered_set<std::string> previews_server_connections_;
@@ -1191,6 +1211,34 @@ IN_PROC_BROWSER_TEST_P(
         &result));
     EXPECT_EQ(kSubframeTitle, base::ASCIIToUTF16(result));
   }
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Success)) {
+  // This behavior is not implemented for the nav throttle.
+  if (!GetParam())
+    return;
+
+  set_origin_probe_success(true);
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+  EXPECT_EQ(1, origin_probe_count());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Fail)) {
+  // This behavior is not implemented for the nav throttle.
+  if (!GetParam())
+    return;
+
+  set_origin_probe_success(false);
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewNotLoaded();
+  EXPECT_EQ(1, origin_probe_count());
 }
 
 IN_PROC_BROWSER_TEST_P(

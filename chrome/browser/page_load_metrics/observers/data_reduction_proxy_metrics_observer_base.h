@@ -42,13 +42,11 @@ class DataReductionProxyMetricsObserverBase
   ObservePolicy OnRedirect(
       content::NavigationHandle* navigation_handle) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadEventStart(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_compelte_info) override;
   void OnResourceDataUseObserved(
@@ -58,8 +56,7 @@ class DataReductionProxyMetricsObserverBase
   void OnEventOccurred(const void* const event_key) override;
   void OnUserInput(
       const blink::WebInputEvent& event,
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   // Exponentially bucket the number of bytes for privacy-implicated resources.
   // Input below 10KB returns 0.
@@ -105,11 +102,10 @@ class DataReductionProxyMetricsObserverBase
                          ukm::SourceId source_id) final;
 
   // Records UKM for the data_reduction_proxy event.
-  void RecordUKM(const page_load_metrics::PageLoadExtraInfo& info) const;
+  void RecordUKM() const;
 
   // Sends the page load information to the pingback client.
   void SendPingback(const page_load_metrics::mojom::PageLoadTiming& timing,
-                    const page_load_metrics::PageLoadExtraInfo& info,
                     bool app_background_occurred);
 
   // Gets the default DataReductionProxyPingbackClient. Overridden in testing.

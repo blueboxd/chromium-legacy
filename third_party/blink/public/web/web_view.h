@@ -427,6 +427,12 @@ class WebView {
   // Freezes or unfreezes the page and all the local frames.
   virtual void SetPageFrozen(bool frozen) = 0;
 
+  // Dispatches a pagehide event, freezes a page and hooks page eviction.
+  virtual void PutPageIntoBackForwardCache() = 0;
+
+  // Unhooks eviction, resumes a page and dispatches a pageshow event.
+  virtual void RestorePageFromBackForwardCache() = 0;
+
   // Testing functionality for TestRunner ---------------------------------
 
   // Force the webgl context to fail so that webglcontextcreationerror

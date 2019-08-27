@@ -69,7 +69,8 @@ def _customize_and_sign_chrome(paths, dist_config, dest_dir, signed_frameworks):
         if actual_framework_change_count != signed_framework_change_count:
             raise ValueError(
                 'While customizing and signing {} ({}), actual_framework_change_count {} != signed_framework_change_count {}'
-                .format(dist_config.base_bundle_id, dist_config.dmg_basename,
+                .format(dist_config.base_bundle_id,
+                        dist_config.packaging_basename,
                         actual_framework_change_count,
                         signed_framework_change_count))
 
@@ -135,10 +136,10 @@ def _package_and_sign_dmg(paths, dist_config):
     # brand code is in use, use the actual brand code instead of the
     # name fragment, to avoid leaking the association between brand
     # codes and their meanings.
-    dmg_identifier = dist_config.dmg_basename
+    dmg_identifier = dist_config.packaging_basename
     if dist.branding_code:
-        dmg_identifier = dist_config.dmg_basename.replace(
-            dist.dmg_name_fragment, dist.branding_code)
+        dmg_identifier = dist_config.packaging_basename.replace(
+            dist.packaging_name_fragment, dist.branding_code)
 
     product = model.CodeSignedProduct(
         dmg_path, dmg_identifier, sign_with_identifier=True)
@@ -168,7 +169,8 @@ def _package_dmg(paths, dist, config):
         dsstore_file = 'chrome_dmg_dsstore'
         icon_file = 'chrome_dmg_icon.icns'
 
-    dmg_path = os.path.join(paths.output, '{}.dmg'.format(config.dmg_basename))
+    dmg_path = os.path.join(paths.output,
+                            '{}.dmg'.format(config.packaging_basename))
     app_path = os.path.join(paths.work, config.app_dir)
 
     # A locally-created empty directory is more trustworthy than /var/empty.
@@ -245,7 +247,7 @@ def _package_installer_tools(paths, config):
                              cwd=paths.work)
 
 
-def sign_all(orig_paths, config, package_dmg=True, do_notarization=True):
+def sign_all(orig_paths, config, disable_packaging=False, do_notarization=True):
     """For each distribution in |config|, performs customization, signing, and
     DMG packaging and places the resulting signed DMG in |orig_paths.output|.
     The |paths.input| must contain the products to customize and sign.
@@ -270,23 +272,27 @@ def sign_all(orig_paths, config, package_dmg=True, do_notarization=True):
         for dist in config.distributions:
             with commands.WorkDirectory(orig_paths) as paths:
                 dist_config = dist.to_config(config)
+                do_packaging = (dist.package_as_dmg or
+                                dist.package_as_pkg) and not disable_packaging
 
-                # If not packaging into a DMG, simply move the signed bundle to
-                # the output directory.
-                if not package_dmg and not do_notarization:
+                # If not packaging and not notarizing, then simply drop the
+                # signed bundle in the output directory when done signing.
+                if not do_packaging and not do_notarization:
                     dest_dir = paths.output
                 else:
                     dest_dir = notary_paths.work
 
-                dest_dir = os.path.join(dest_dir, dist_config.dmg_basename)
+                dest_dir = os.path.join(dest_dir,
+                                        dist_config.packaging_basename)
                 _customize_and_sign_chrome(paths, dist_config, dest_dir,
                                            signed_frameworks)
 
                 # If the build products are to be notarized, ZIP the app bundle
                 # and submit it for notarization.
                 if do_notarization:
-                    zip_file = os.path.join(notary_paths.work,
-                                            dist_config.dmg_basename + '.zip')
+                    zip_file = os.path.join(
+                        notary_paths.work,
+                        dist_config.packaging_basename + '.zip')
                     commands.run_command([
                         'zip', '--recurse-paths', '--symlinks', '--quiet',
                         zip_file, dist_config.app_dir
@@ -301,29 +307,36 @@ def sign_all(orig_paths, config, package_dmg=True, do_notarization=True):
                                                     config):
                 dist_config = uuids_to_config[result]
                 dest_dir = os.path.join(notary_paths.work,
-                                        dist_config.dmg_basename)
+                                        dist_config.packaging_basename)
                 _staple_chrome(notary_paths.replace_work(dest_dir), dist_config)
 
-        # After all apps are optionally notarized, package the DMGs.
-        uuids_to_dmg_path = {}
-        if package_dmg:
+        # After all apps are optionally notarized, package as required.
+        if not disable_packaging:
+            uuids_to_package_path = {}
             for dist in config.distributions:
                 dist_config = dist.to_config(config)
-                paths = orig_paths.replace_work(
-                    os.path.join(notary_paths.work, dist_config.dmg_basename))
 
-                dmg_path = _package_and_sign_dmg(paths, dist_config)
+                if dist.package_as_dmg:
+                    paths = orig_paths.replace_work(
+                        os.path.join(notary_paths.work,
+                                     dist_config.packaging_basename))
 
-                if do_notarization:
-                    uuid = notarize.submit(dmg_path, dist_config)
-                    uuids_to_dmg_path[uuid] = dmg_path
+                    dmg_path = _package_and_sign_dmg(paths, dist_config)
 
-            # Wait for DMG notarization results to come back, stapling as they
-            # do.
+                    if do_notarization:
+                        uuid = notarize.submit(dmg_path, dist_config)
+                        uuids_to_package_path[uuid] = dmg_path
+
+                if dist.package_as_pkg:
+                    # TODO(avi): Do packaging as a pkg here.
+                    pass
+
+            # Wait for packaging notarization results to come back, stapling as
+            # they do.
             if do_notarization:
                 for result in notarize.wait_for_results(
-                        uuids_to_dmg_path.keys(), config):
-                    dmg_path = uuids_to_dmg_path[result]
-                    notarize.staple(dmg_path)
+                        uuids_to_package_path.keys(), config):
+                    package_path = uuids_to_package_path[result]
+                    notarize.staple(package_path)
 
     _package_installer_tools(orig_paths, config)

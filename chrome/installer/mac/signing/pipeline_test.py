@@ -128,7 +128,7 @@ class TestPipelineHelpers(unittest.TestCase):
                                             signed_frameworks)
 
         branded_dist = model.Distribution(
-            branding_code='c0de', dmg_name_fragment='Branded')
+            branding_code='c0de', packaging_name_fragment='Branded')
         branded_dist_config = branded_dist.to_config(config)
         paths = self.paths.replace_work('$W')
 
@@ -279,7 +279,7 @@ class TestPipelineHelpers(unittest.TestCase):
 
         config = test_config.TestConfig()
         dist = model.Distribution(
-            branding_code='MOO', dmg_name_fragment='ForCows')
+            branding_code='MOO', packaging_name_fragment='ForCows')
         dist_config = dist.to_config(config)
 
         paths = self.paths.replace_work('$W')
@@ -514,7 +514,7 @@ class TestSignAll(unittest.TestCase):
             mock.call._package_installer_tools(mock.ANY, mock.ANY),
         ])
 
-    def test_sign_no_dmg(self, **kwargs):
+    def test_sign_no_packaging(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
@@ -524,7 +524,7 @@ class TestSignAll(unittest.TestCase):
         kwargs['wait_for_results'].return_value = iter([app_uuid])
 
         config = test_config.TestConfig()
-        pipeline.sign_all(self.paths, config, package_dmg=False)
+        pipeline.sign_all(self.paths, config, disable_packaging=True)
 
         manager.assert_has_calls([
             # First customize the distribution and sign it.
@@ -578,14 +578,14 @@ class TestSignAll(unittest.TestCase):
             mock.call._package_installer_tools(mock.ANY, mock.ANY),
         ])
 
-    def test_sign_no_dmg_no_notarization(self, **kwargs):
+    def test_sign_no_packaging_no_notarization(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
 
         config = test_config.TestConfig()
         pipeline.sign_all(
-            self.paths, config, package_dmg=False, do_notarization=False)
+            self.paths, config, disable_packaging=True, do_notarization=False)
 
         manager.assert_has_calls([
             # First customize the distribution and sign it.
@@ -617,7 +617,7 @@ class TestSignAll(unittest.TestCase):
                 return [
                     model.Distribution(),
                     model.Distribution(
-                        branding_code='MOO', dmg_name_fragment='ForCows'),
+                        branding_code='MOO', packaging_name_fragment='ForCows'),
                 ]
 
         config = Config()

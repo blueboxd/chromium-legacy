@@ -143,6 +143,13 @@ struct UserActionData {
   base::Optional<ButtonClickInfo> button_click_info;
 };
 
+// Categorizes type of notification icons.
+enum class IconType {
+  kUnknownType = 0,
+  kSmallIcon = 1,
+  kLargeIcon = 2,
+};
+
 }  // namespace notifications
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_NOTIFICATION_SCHEDULER_TYPES_H_

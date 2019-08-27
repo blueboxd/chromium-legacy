@@ -327,6 +327,7 @@ class SigninScreenHandler
                                            const std::string& password);
   void HandleAttemptUnlock(const std::string& username);
   void HandleLaunchIncognito();
+  void HandleLaunchSAMLPublicSession(const std::string& email);
   void HandleLaunchPublicSession(const AccountId& account_id,
                                  const std::string& locale,
                                  const std::string& input_method);

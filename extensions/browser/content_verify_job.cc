@@ -114,16 +114,17 @@ void ContentVerifyJob::Done() {
     return;
   DCHECK(!done_reading_);
   done_reading_ = true;
-  if (has_ignorable_read_error_)
-    return;
+  if (!hashes_ready_)
+    return;  // Wait for OnHashesReady.
 
-  if (hashes_ready_) {
-    if (!FinishBlock()) {
-      DispatchFailureCallback(HASH_MISMATCH);
-    } else if (g_content_verify_job_test_observer) {
+  const bool can_proceed = has_ignorable_read_error_ || FinishBlock();
+  if (can_proceed) {
+    if (g_content_verify_job_test_observer) {
       g_content_verify_job_test_observer->JobFinished(extension_id_,
                                                       relative_path_, NONE);
     }
+  } else {
+    DispatchFailureCallback(HASH_MISMATCH);
   }
 }
 
@@ -137,6 +138,8 @@ void ContentVerifyJob::ReadImpl(const char* data,
     return;
   if (IsIgnorableReadError(read_result))
     has_ignorable_read_error_ = true;
+  if (has_ignorable_read_error_)
+    return;
 
   if (!hashes_ready_) {
     queue_.append(data, count);
@@ -245,7 +248,7 @@ void ContentVerifyJob::OnHashesReady(
   }
   if (done_reading_) {
     ScopedElapsedTimer timer(&time_spent_);
-    if (!FinishBlock()) {
+    if (!has_ignorable_read_error_ && !FinishBlock()) {
       DispatchFailureCallback(HASH_MISMATCH);
     } else if (g_content_verify_job_test_observer) {
       g_content_verify_job_test_observer->JobFinished(extension_id_,

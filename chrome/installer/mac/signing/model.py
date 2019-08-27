@@ -166,10 +166,12 @@ class Distribution(object):
                  channel=None,
                  branding_code=None,
                  app_name_fragment=None,
-                 dmg_name_fragment=None,
+                 packaging_name_fragment=None,
                  product_dirname=None,
                  creator_code=None,
-                 channel_customize=False):
+                 channel_customize=False,
+                 package_as_dmg=True,
+                 package_as_pkg=False):
         """Creates a new Distribution object. All arguments are optional.
 
         Args:
@@ -179,8 +181,8 @@ class Distribution(object):
             app_name_fragment: If present, this string fragment is appended to
                 the |config.CodeSignConfig.app_product|. This renames the binary
                 and outer app bundle.
-            dmg_name_fragment: If present, this is appended to the
-                |config.CodeSignConfig.dmg_basename| to help differentiate
+            packaging_name_fragment: If present, this is appended to the
+                |config.CodeSignConfig.packaging_basename| to help differentiate
                 different |branding_code|s.
             product_dirname: If present, this string value is set in the app's
                 Info.plist with the key "CrProductDirName". This key influences
@@ -195,14 +197,20 @@ class Distribution(object):
                   |config.CodeSignConfig.base_bundle_id|.
                 - The product will be renamed with |app_name_fragment|.
                 - Different assets will be used for icons in the app.
+            package_as_dmg: If True, then a .dmg file will be created containing
+                the product.
+            package_as_pkg: If True, then a .pkg file will be created containing
+                the product.
         """
         self.channel = channel
         self.branding_code = branding_code
         self.app_name_fragment = app_name_fragment
-        self.dmg_name_fragment = dmg_name_fragment
+        self.packaging_name_fragment = packaging_name_fragment
         self.product_dirname = product_dirname
         self.creator_code = creator_code
         self.channel_customize = channel_customize
+        self.package_as_dmg = package_as_dmg
+        self.package_as_pkg = package_as_pkg
 
     def to_config(self, base_config):
         """Produces a derived |config.CodeSignConfig| for the Distribution.
@@ -248,12 +256,13 @@ class Distribution(object):
                 return profile
 
             @property
-            def dmg_basename(self):
-                if this.dmg_name_fragment:
+            def packaging_basename(self):
+                if this.packaging_name_fragment:
                     return '{}-{}-{}'.format(
                         self.app_product.replace(' ', ''), self.version,
-                        this.dmg_name_fragment)
-                return super(DistributionCodeSignConfig, self).dmg_basename
+                        this.packaging_name_fragment)
+                return super(DistributionCodeSignConfig,
+                             self).packaging_basename
 
         return DistributionCodeSignConfig(
             base_config.identity, base_config.keychain, base_config.notary_user,

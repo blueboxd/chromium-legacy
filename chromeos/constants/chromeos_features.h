@@ -19,8 +19,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAccountManager;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAmbientModeFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kAssistantFeature;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAutoScreenBrightness;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothAggressiveAppearanceFilter;

@@ -114,6 +114,9 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
 DirectRenderer::~DirectRenderer() = default;
 
 void DirectRenderer::Initialize() {
+  // Create an overlay validator based on the platform and set it on the newly
+  // created processor. This would initialize the strategies on the validator as
+  // well.
   // Create overlay validator based on the platform and set it on the newly
   // created processor. This would initialize the strategies on the validator as
   // well.
@@ -373,19 +376,16 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // TODO(weiliangc): Remove once reflector code is removed.
   overlay_processor_->SetSoftwareMirrorMode(
       output_surface_->IsSoftwareMirrorMode());
-  // Create the overlay candidate for the output surface, and mark it as
-  // always handled.
+
+  // Before ProcessForOverlay calls into the hardware to ask about whether the
+  // overlay setup can be handled, we need to set up the primary plane.
+  OverlayProcessor::OutputSurfaceOverlayPlane* primary_plane = nullptr;
   if (output_surface_->IsDisplayedAsOverlayPlane()) {
-    OverlayCandidate output_surface_plane;
-    output_surface_plane.display_rect =
-        gfx::RectF(device_viewport_size.width(), device_viewport_size.height());
-    output_surface_plane.resource_size_in_pixels = device_viewport_size;
-    output_surface_plane.format = output_surface_->GetOverlayBufferFormat();
-    output_surface_plane.color_space = reshape_device_color_space_;
-    output_surface_plane.use_output_surface_for_resource = true;
-    output_surface_plane.overlay_handled = true;
-    output_surface_plane.is_opaque = true;
-    current_frame()->overlay_list.push_back(output_surface_plane);
+    current_frame()->output_surface_plane =
+        overlay_processor_->ProcessOutputSurfaceAsOverlay(
+            device_viewport_size, output_surface_->GetOverlayBufferFormat(),
+            reshape_device_color_space_);
+    primary_plane = &(current_frame()->output_surface_plane.value());
   }
 
   // Attempt to replace some or all of the quads of the root render pass with
@@ -393,11 +393,14 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   overlay_processor_->ProcessForOverlays(
       resource_provider_, render_passes_in_draw_order,
       output_surface_->color_matrix(), render_pass_filters_,
-      render_pass_backdrop_filters_, &current_frame()->overlay_list,
-      &current_frame()->ca_layer_overlay_list,
+      render_pass_backdrop_filters_, primary_plane,
+      &current_frame()->overlay_list, &current_frame()->ca_layer_overlay_list,
       &current_frame()->dc_layer_overlay_list,
       &current_frame()->root_damage_rect,
       &current_frame()->root_content_bounds);
+
+  overlay_processor_->AdjustOutputSurfaceOverlay(
+      &(current_frame()->output_surface_plane));
 
   bool was_using_dc_layers = using_dc_layers_;
   if (!current_frame()->dc_layer_overlay_list.empty()) {
@@ -445,12 +448,9 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // through other means on the service side.
   // TODO(afrantzis): Consider using per-overlay fences instead of the one
   // associated with the output surface when possible.
-  if (!current_frame()->overlay_list.empty()) {
-    for (auto& overlay : current_frame()->overlay_list) {
-      if (overlay.use_output_surface_for_resource)
-        overlay.gpu_fence_id = output_surface_->UpdateGpuFence();
-    }
-  }
+  if (current_frame()->output_surface_plane)
+    current_frame()->output_surface_plane->gpu_fence_id =
+        output_surface_->UpdateGpuFence();
 
   FinishDrawingFrame();
   render_passes_in_draw_order->clear();

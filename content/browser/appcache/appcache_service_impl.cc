@@ -22,7 +22,7 @@
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_host.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
+#include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -532,7 +532,7 @@ void AppCacheServiceImpl::RegisterHost(
   // The AppCacheHost could have been precreated in which case we want to
   // register it with the backend here.
   std::unique_ptr<AppCacheHost> host =
-      AppCacheNavigationHandleCore::GetPrecreatedHost(host_id);
+      AppCacheNavigationHandle::TakePrecreatedHost(host_id);
   if (host) {
     // Switch the frontend proxy so that the host can make IPC calls from
     // here on.

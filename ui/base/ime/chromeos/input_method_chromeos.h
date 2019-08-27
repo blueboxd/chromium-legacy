@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
-  void ConfirmCompositionText() override;
+  void ConfirmCompositionText(bool reset_engine) override;
 
  protected:
   // Converts |text| into CompositionText.
@@ -68,7 +68,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
       bool stopped_propagation) WARN_UNUSED_RESULT;
 
   // Resets context and abandon all pending results and key events.
-  void ResetContext();
+  // If |reset_engine| is true, a reset signal will be sent to the IME.
+  void ResetContext(bool reset_engine = true);
 
  private:
   class PendingKeyEvent;

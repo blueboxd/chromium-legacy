@@ -65,6 +65,8 @@ struct EnumTraits<ui::mojom::EventMomentumPhase, ui::EventMomentumPhase> {
         return ui::mojom::EventMomentumPhase::INERTIAL_UPDATE;
       case ui::EventMomentumPhase::END:
         return ui::mojom::EventMomentumPhase::END;
+      case ui::EventMomentumPhase::BLOCKED:
+        return ui::mojom::EventMomentumPhase::BLOCKED;
     }
     NOTREACHED();
     return ui::mojom::EventMomentumPhase::NONE;
@@ -87,6 +89,9 @@ struct EnumTraits<ui::mojom::EventMomentumPhase, ui::EventMomentumPhase> {
         return true;
       case ui::mojom::EventMomentumPhase::END:
         *out = ui::EventMomentumPhase::END;
+        return true;
+      case ui::mojom::EventMomentumPhase::BLOCKED:
+        *out = ui::EventMomentumPhase::BLOCKED;
         return true;
     }
     NOTREACHED();

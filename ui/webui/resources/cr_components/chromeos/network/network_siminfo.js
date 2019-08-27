@@ -172,7 +172,7 @@ Polymer({
     if (!simLockStatus) {
       return;
     }
-    this.pukRequired_ = simLockStatus.lockType == CrOnc.LockType.PUK;
+    this.pukRequired_ = simLockStatus.lockType == 'sim-puk';
     const lockEnabled = simLockStatus.lockEnabled;
     if (lockEnabled != this.lockEnabled_) {
       this.setLockEnabled_ = lockEnabled;

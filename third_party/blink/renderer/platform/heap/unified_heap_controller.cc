@@ -167,6 +167,19 @@ bool UnifiedHeapController::IsRootForNonTracingGCInternal(
   return false;
 }
 
+void UnifiedHeapController::ResetHandleInNonTracingGC(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  const uint16_t class_id = handle.WrapperClassId();
+  // Only consider handles that have not been treated as roots, see
+  // IsRootForNonTracingGCInternal.
+  if (class_id != WrapperTypeInfo::kNodeClassId &&
+      class_id != WrapperTypeInfo::kObjectClassId)
+    return;
+
+  const v8::TracedGlobal<v8::Object>& traced = handle.As<v8::Object>();
+  ToScriptWrappable(traced)->UnsetWrapperIfAny();
+}
+
 bool UnifiedHeapController::IsRootForNonTracingGC(
     const v8::TracedGlobal<v8::Value>& handle) {
   return IsRootForNonTracingGCInternal(handle);

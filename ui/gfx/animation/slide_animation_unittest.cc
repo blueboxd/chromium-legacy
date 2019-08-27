@@ -31,8 +31,8 @@ class SlideAnimationTest : public testing::Test {
  protected:
   SlideAnimationTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
-    slide_animation_.reset(new SlideAnimation(nullptr));
-    animation_api_.reset(new AnimationTestApi(slide_animation_.get()));
+    slide_animation_ = std::make_unique<SlideAnimation>(nullptr);
+    animation_api_ = std::make_unique<AnimationTestApi>(slide_animation_.get());
   }
 
  private:

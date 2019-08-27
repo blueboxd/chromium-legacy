@@ -202,13 +202,18 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  hosted_app_origin_text_ = AddChildView(
-      std::make_unique<HostedAppOriginText>(browser_view->browser()));
+  auto* app_controller = browser_view_->browser()->app_controller();
+  if (app_controller->HasTitlebarAppOriginText()) {
+    hosted_app_origin_text_ = AddChildView(
+        std::make_unique<HostedAppOriginText>(browser_view->browser()));
+  }
 
-  content_settings_container_ =
-      AddChildView(std::make_unique<ContentSettingsContainer>(this));
-  views::SetHitTestComponent(content_settings_container_,
-                             static_cast<int>(HTCLIENT));
+  if (app_controller->HasTitlebarContentSettings()) {
+    content_settings_container_ =
+        AddChildView(std::make_unique<ContentSettingsContainer>(this));
+    views::SetHitTestComponent(content_settings_container_,
+                               static_cast<int>(HTCLIENT));
+  }
 
   OmniboxPageActionIconContainerView::Params params;
   params.types_enabled.push_back(PageActionIconType::kFind);
@@ -259,7 +264,8 @@ HostedAppButtonContainer::~HostedAppButtonContainer() {
 }
 
 void HostedAppButtonContainer::UpdateStatusIconsVisibility() {
-  content_settings_container_->UpdateContentSettingViewsVisibility();
+  if (content_settings_container_)
+    content_settings_container_->UpdateContentSettingViewsVisibility();
   omnibox_page_action_icon_container_view_->UpdateAll();
 }
 
@@ -351,7 +357,8 @@ void HostedAppButtonContainer::OnContentSettingImageBubbleShown(
 void HostedAppButtonContainer::OnImmersiveRevealStarted() {
   // Don't wait for the fade in animation to make content setting icons visible
   // once in immersive mode.
-  content_settings_container_->EnsureVisible();
+  if (content_settings_container_)
+    content_settings_container_->EnsureVisible();
 }
 
 SkColor HostedAppButtonContainer::GetPageActionInkDropColor() const {
@@ -427,7 +434,8 @@ void HostedAppButtonContainer::OnWidgetVisibilityChanged(views::Widget* widget,
     return;
   pending_widget_visibility_ = false;
   if (ShouldAnimate()) {
-    content_settings_container_->SetUpForFadeIn();
+    if (content_settings_container_)
+      content_settings_container_->SetUpForFadeIn();
     animation_start_delay_.Start(
         FROM_HERE, kTitlebarAnimationDelay, this,
         &HostedAppButtonContainer::StartTitlebarAnimation);
@@ -462,7 +470,8 @@ void HostedAppButtonContainer::StartTitlebarAnimation() {
   if (!ShouldAnimate())
     return;
 
-  hosted_app_origin_text_->StartFadeAnimation();
+  if (hosted_app_origin_text_)
+    hosted_app_origin_text_->StartFadeAnimation();
   app_menu_button_->StartHighlightAnimation();
   icon_fade_in_delay_.Start(
       FROM_HERE, OriginTotalDuration(), this,
@@ -470,7 +479,8 @@ void HostedAppButtonContainer::StartTitlebarAnimation() {
 }
 
 void HostedAppButtonContainer::FadeInContentSettingIcons() {
-  content_settings_container_->FadeIn();
+  if (content_settings_container_)
+    content_settings_container_->FadeIn();
 }
 
 void HostedAppButtonContainer::DisableAnimationForTesting() {
@@ -492,8 +502,10 @@ SkColor HostedAppButtonContainer::GetCaptionColor() const {
 
 void HostedAppButtonContainer::UpdateChildrenColor() {
   SkColor icon_color = GetCaptionColor();
-  hosted_app_origin_text_->SetTextColor(icon_color);
-  content_settings_container_->SetIconColor(icon_color);
+  if (hosted_app_origin_text_)
+    hosted_app_origin_text_->SetTextColor(icon_color);
+  if (content_settings_container_)
+    content_settings_container_->SetIconColor(icon_color);
   omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
   app_menu_button_->SetColor(icon_color);
 }

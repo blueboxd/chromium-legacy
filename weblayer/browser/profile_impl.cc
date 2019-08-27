@@ -8,6 +8,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/resource_context.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "weblayer/weblayer_jni/Profile_jni.h"
+#endif
+
 namespace weblayer {
 
 namespace {
@@ -119,5 +124,14 @@ void ProfileImpl::ClearBrowsingData() {
 std::unique_ptr<Profile> Profile::Create(const base::FilePath& path) {
   return std::make_unique<ProfileImpl>(path);
 }
+
+#if defined(OS_ANDROID)
+static jlong JNI_Profile_Init(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& path) {
+  return reinterpret_cast<intptr_t>(new ProfileImpl(
+      base::FilePath(base::android::ConvertJavaStringToUTF8(env, path))));
+}
+#endif  // OS_ANDROID
 
 }  // namespace weblayer

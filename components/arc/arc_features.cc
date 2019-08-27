@@ -6,10 +6,6 @@
 
 namespace arc {
 
-// Controls whether ARC is available for CHILD accounts.
-const base::Feature kAvailableForChildAccountFeature{
-    "ArcAvailableForChildAccount", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether ARC++ app runtime performance statistics collection is
 // enabled.
 const base::Feature kAppRuntimePerormanceStatistics{

@@ -67,9 +67,6 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
 
   gpu::VulkanInstance vulkan_instance_;
 
-  PFN_vkCreateImagePipeSurfaceFUCHSIA vkCreateImagePipeSurfaceFUCHSIA_ =
-      nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementationScenic);
 };
 

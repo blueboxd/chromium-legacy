@@ -393,7 +393,8 @@ void DevToolsDataSource::StartFileRequestForDebugDevtools(
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      {base::MayBlock(), base::ThreadPool(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_VISIBLE},
       // The usage of BindRepeating below is only because the type of
       // task callback needs to match that of response callback, which

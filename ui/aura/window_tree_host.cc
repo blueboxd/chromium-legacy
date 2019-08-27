@@ -424,8 +424,8 @@ void WindowTreeHost::InitCompositor() {
 
 void WindowTreeHost::OnAcceleratedWidgetAvailable() {
   compositor_->SetAcceleratedWidget(GetAcceleratedWidget());
-  prop_.reset(new ui::ViewProp(GetAcceleratedWidget(),
-                               kWindowTreeHostForAcceleratedWidget, this));
+  prop_ = std::make_unique<ui::ViewProp>(
+      GetAcceleratedWidget(), kWindowTreeHostForAcceleratedWidget, this);
 }
 
 void WindowTreeHost::OnHostMovedInPixels(

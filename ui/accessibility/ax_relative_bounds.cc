@@ -23,14 +23,14 @@ AXRelativeBounds::AXRelativeBounds(const AXRelativeBounds& other) {
   offset_container_id = other.offset_container_id;
   bounds = other.bounds;
   if (other.transform)
-    transform.reset(new gfx::Transform(*other.transform));
+    transform = std::make_unique<gfx::Transform>(*other.transform);
 }
 
 AXRelativeBounds& AXRelativeBounds::operator=(AXRelativeBounds other) {
   offset_container_id = other.offset_container_id;
   bounds = other.bounds;
   if (other.transform)
-    transform.reset(new gfx::Transform(*other.transform));
+    transform = std::make_unique<gfx::Transform>(*other.transform);
   else
     transform.reset(nullptr);
   return *this;

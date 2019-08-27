@@ -223,7 +223,6 @@ void AppListMainView::SearchBoxFocusChanged(
 }
 
 void AppListMainView::AssistantButtonPressed() {
-  DCHECK(chromeos::features::IsAssistantEnabled());
   delegate_->StartAssistant();
 }
 

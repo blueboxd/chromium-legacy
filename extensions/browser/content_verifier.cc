@@ -560,6 +560,11 @@ void ContentVerifier::VerifyFailedForTest(
   VerifyFailed(extension_id, reason);
 }
 
+void ContentVerifier::ClearCacheForTesting() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  cache_.clear();
+}
+
 void ContentVerifier::OnExtensionUnloadedOnIO(
     const ExtensionId& extension_id,
     const base::Version& extension_version) {

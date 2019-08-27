@@ -23,6 +23,8 @@ component("common") {
   defines = [ "IS_LEARNING_COMMON_IMPL" ]
 
   sources = [
+    "feature_dictionary.cc",
+    "feature_dictionary.h",
     "feature_library.cc",
     "feature_library.h",
     "labelled_example.cc",
@@ -45,6 +47,7 @@ component("common") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "feature_dictionary_unittest.cc",
     "labelled_example_unittest.cc",
     "value_unittest.cc",
   ]

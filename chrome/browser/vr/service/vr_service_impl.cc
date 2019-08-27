@@ -152,13 +152,13 @@ void VRServiceImpl::InitializationComplete() {
 }
 
 void VRServiceImpl::SetClient(
-    device::mojom::VRServiceClientPtr service_client) {
+    mojo::PendingRemote<device::mojom::VRServiceClient> service_client) {
   if (service_client_) {
     mojo::ReportBadMessage("ServiceClient should only be set once.");
     return;
   }
 
-  service_client_ = std::move(service_client);
+  service_client_.Bind(std::move(service_client));
 }
 
 void VRServiceImpl::ResolvePendingRequests() {

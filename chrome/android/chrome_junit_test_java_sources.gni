@@ -149,6 +149,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omnibox/SearchEngineLogoUtilsTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/SpannableAutocompleteEditTextModelUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/UrlBarDataTest.java",
+  "junit/src/org/chromium/chrome/browser/omnibox/UrlBarUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/UrlBarMediatorUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeaderUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/PlatformNetworksManagerTest.java",

@@ -5,7 +5,7 @@ include_rules = [
   "+components/history/core/browser",
   "+components/keyed_service/core",
   "+components/prefs",
-  "+components/sessions",
+  "+components/sessions/core",
   "+components/sync",
   "+components/sync_device_info",
   "+components/sync_user_events",

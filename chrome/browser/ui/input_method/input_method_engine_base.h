@@ -230,7 +230,8 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   virtual bool SendKeyEvent(ui::KeyEvent* ui_event,
                             const std::string& code) = 0;
   // Notifies InputContextHandler to commit any composition text.
-  void ConfirmCompositionText();
+  // Set |reset_engine| to false if the event was from the extension.
+  void ConfirmCompositionText(bool reset_engine);
 
   ui::TextInputType current_input_type_;
 

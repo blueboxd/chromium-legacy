@@ -686,7 +686,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
+  if (IsIncognito() && !WebUIInfoSingleton::HasListener())
     return;
 
   syncer::UserEventService* user_event_service =
@@ -727,7 +727,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDialogInteraction(
     PasswordReuseDialogInteraction::InteractionResult interaction_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
+  if (IsIncognito() && !WebUIInfoSingleton::HasListener())
     return;
 
   syncer::UserEventService* user_event_service =
@@ -768,7 +768,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupResult(
     PasswordReuseLookup::LookupResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
+  if (IsIncognito() && !WebUIInfoSingleton::HasListener())
     return;
 
   syncer::UserEventService* user_event_service =
@@ -797,7 +797,7 @@ void ChromePasswordProtectionService::
         const std::string& verdict_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!IsEventLoggingEnabled() && !WebUIInfoSingleton::HasListener())
+  if (IsIncognito() && !WebUIInfoSingleton::HasListener())
     return;
 
   PasswordReuseLookup reuse_lookup;
@@ -906,10 +906,10 @@ void ChromePasswordProtectionService::SetLogPasswordCaptureTimer(
 
 void ChromePasswordProtectionService::MaybeLogPasswordCapture(bool did_log_in) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // If logging is disabled, we'll skip this event and not set a timer. When the
-  // user logs in in the future, MaybeLogPasswordCapture() will be called
+  // We skip this event and not set a timer if the profile is in incognito. When
+  // the user logs in in the future, MaybeLogPasswordCapture() will be called
   // immediately then and will restart the timer.
-  if (!IsEventLoggingEnabled() || sync_password_hash_.empty())
+  if (IsIncognito() || sync_password_hash_.empty())
     return;
 
   syncer::UserEventService* user_event_service =

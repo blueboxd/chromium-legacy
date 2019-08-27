@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/assistant/assistant_prefs_controller.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"

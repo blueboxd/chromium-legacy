@@ -722,6 +722,12 @@ void RenderWidget::PrepareForClose() {
 
 void RenderWidget::OnSynchronizeVisualProperties(
     const VisualProperties& original_params) {
+  // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
+  // RenderWidget should also be destroyed, and this conditional should not be
+  // necessary.
+  if (!GetWebWidget())
+    return;
+
   TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
 
   VisualProperties params = original_params;

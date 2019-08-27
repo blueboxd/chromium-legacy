@@ -12,6 +12,8 @@ source_set("public") {
     "display_agent.h",
     "features.cc",
     "features.h",
+    "icon_bundle.cc",
+    "icon_bundle.h",
     "impression_detail.cc",
     "impression_detail.h",
     "notification_background_task_scheduler.h",

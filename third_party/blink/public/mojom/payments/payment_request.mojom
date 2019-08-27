@@ -188,7 +188,7 @@ enum PaymentComplete {
 interface PaymentRequest {
   // Instantiates the renderer-browser connection with the information from the
   // JavaScript constructor of PaymentRequest.
-  Init(PaymentRequestClient client,
+  Init(pending_remote<PaymentRequestClient> client,
        array<PaymentMethodData> method_data,
        PaymentDetails details,
        PaymentOptions options);

@@ -574,6 +574,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
   std::string chars_utf8 = GetTextRunCharsAsUTF8(text_run, chars, char_index);
   inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                            chars_utf8);
+  inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
+                                        text_run.direction);
   inline_text_box_node->relative_bounds.bounds =
       ToGfxRectF(text_run.bounds) + page_bounds.OffsetFromOrigin();
   std::vector<int32_t> char_offsets =

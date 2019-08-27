@@ -12,7 +12,6 @@
 #include "ash/login/login_screen_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/network/vpn_list.h"

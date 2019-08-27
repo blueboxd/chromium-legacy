@@ -68,7 +68,7 @@ class EventConverterEvdevImplTest : public testing::Test {
     base::ScopedFD events_in(evdev_io[0]);
     events_out_.reset(evdev_io[1]);
 
-    cursor_.reset(new ui::FakeCursorDelegateEvdev());
+    cursor_ = std::make_unique<ui::FakeCursorDelegateEvdev>();
 
     device_manager_ = ui::CreateDeviceManagerForTest();
     event_factory_ = ui::CreateEventFactoryEvdevForTest(
@@ -78,10 +78,10 @@ class EventConverterEvdevImplTest : public testing::Test {
                             base::Unretained(this)));
     dispatcher_ =
         ui::CreateDeviceEventDispatcherEvdevForTest(event_factory_.get());
-    device_.reset(new ui::MockEventConverterEvdevImpl(
-        std::move(events_in), cursor_.get(), dispatcher_.get()));
+    device_ = std::make_unique<ui::MockEventConverterEvdevImpl>(
+        std::move(events_in), cursor_.get(), dispatcher_.get());
 
-    test_clock_.reset(new ui::test::ScopedEventTestTickClock());
+    test_clock_ = std::make_unique<ui::test::ScopedEventTestTickClock>();
   }
 
   void TearDown() override {

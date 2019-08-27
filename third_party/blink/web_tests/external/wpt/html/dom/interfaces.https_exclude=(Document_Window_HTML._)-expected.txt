@@ -1,7 +1,8 @@
 This is a testharness.js-based test.
-Found 1269 tests; 1221 PASS, 48 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1270 tests; 1223 PASS, 47 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
+PASS Partial interface mixin DocumentOrShadowRoot: original interface mixin defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
 PASS Partial interface HTMLAnchorElement: original interface defined
 PASS Partial interface HTMLAreaElement: original interface defined
@@ -1204,7 +1205,6 @@ PASS SVGElement interface: attribute onkeyup
 PASS SVGElement interface: attribute onload
 PASS SVGElement interface: attribute onloadeddata
 PASS SVGElement interface: attribute onloadedmetadata
-FAIL SVGElement interface: attribute onloadend assert_true: The prototype object must have a property "onloadend" expected true got false
 PASS SVGElement interface: attribute onloadstart
 PASS SVGElement interface: attribute onmousedown
 PASS SVGElement interface: attribute onmouseenter
@@ -1269,5 +1269,6 @@ FAIL SVGAElement interface: attribute port assert_true: The prototype object mus
 FAIL SVGAElement interface: attribute pathname assert_true: The prototype object must have a property "pathname" expected true got false
 FAIL SVGAElement interface: attribute search assert_true: The prototype object must have a property "search" expected true got false
 FAIL SVGAElement interface: attribute hash assert_true: The prototype object must have a property "hash" expected true got false
+PASS ShadowRoot interface: attribute activeElement
 Harness: the test ran to completion.
 

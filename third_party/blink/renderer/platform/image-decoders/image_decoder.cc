@@ -62,7 +62,7 @@ inline bool MatchesCURSignature(const char* contents) {
 }
 
 inline bool MatchesBMPSignature(const char* contents) {
-  return !memcmp(contents, "BM", 2);
+  return !memcmp(contents, "BM", 2) || !memcmp(contents, "BA", 2);
 }
 
 static constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;

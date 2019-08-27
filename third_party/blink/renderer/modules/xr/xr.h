@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -216,7 +216,7 @@ class XR final : public EventTargetWithInlineData,
   device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
   device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
       environment_provider_;
-  mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
+  mojo::Receiver<device::mojom::blink::VRServiceClient> receiver_{this};
 
   // Time at which navigation started. Used as the base for relative timestamps,
   // such as for Gamepad objects.

@@ -581,6 +581,9 @@ struct ManagedProperties {
   bool restricted_connectivity = false;
   ManagedIPConfigProperties? static_ip_config;
   IPConfigProperties? saved_ip_config;
+  // Tether has no managed properties. Provide TetherStateProperties for display
+  // purposes.
+  TetherStateProperties? tether;
   ManagedVPNProperties? vpn;
   ManagedWiFiProperties? wifi;
 };
@@ -620,6 +623,19 @@ struct CellularConfigProperties {
   ApnProperties? apn;
 };
 
+struct OpenVPNConfigProperties {
+  array<string>? extra_hosts;
+  string? username;
+};
+
+struct VPNConfigProperties {
+  string? host;
+  OpenVPNConfigProperties? open_vpn;
+  // For existing configurations, this must match the VPN type. Only
+  // configuration of internal VPN types (kOpenVPN and kL2TPIPsec) is supported.
+  VPNType type;
+};
+
 struct ConfigProperties {
   AutoConnectConfig? auto_connect;
   CellularConfigProperties? cellular;
@@ -628,6 +644,7 @@ struct ConfigProperties {
   PriorityConfig? priority;
   ProxySettings? proxy_settings;
   IPConfigProperties? static_ip_config;
+  VPNConfigProperties? vpn;
 };
 
 // Properties provided to SetCellularSimState.

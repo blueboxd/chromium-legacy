@@ -65,7 +65,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
   void PostEarlyInitialization(bool is_running_tests) override;
   bool ShouldCreateFeatureList() override;
-  void PostTaskSchedulerStart() override;
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
   void PostFieldTrialInitialization() override;
 

@@ -96,11 +96,6 @@ interface NetworkServiceTest {
   [Sync]
   GetEnvironmentVariableValue(string name) => (string value);
 
-  // Gets the max number of concurrent connections per proxy. This may have
-  // originally been set by policy.
-  [Sync]
-  GetMaxConnectionsPerProxy() => (int32 max_connections);
-
   // Logs the given string in the network service. This is used to test log
   // redirection.
   [Sync]

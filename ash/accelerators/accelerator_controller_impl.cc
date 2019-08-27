@@ -37,7 +37,6 @@
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/toast_data.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
@@ -807,10 +806,6 @@ void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
   Shell::Get()->ambient_controller()->Toggle();
 }
 
-bool CanHandleStartVoiceInteraction() {
-  return chromeos::features::IsAssistantEnabled();
-}
-
 void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
   if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_SPACE) {
     base::RecordAction(
@@ -827,7 +822,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  switch (VoiceInteractionController::Get()->allowed_state().value_or(
+  switch (AssistantState::Get()->allowed_state().value_or(
       mojom::AssistantAllowedState::ALLOWED)) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
@@ -862,11 +857,6 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
-      return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
-      ShowToast(kVoiceInteractionErrorToastId,
-                l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_DISABLED_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
       // supervised user is deprecated, wait for the code clean up.
@@ -1579,7 +1569,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case START_AMBIENT_MODE:
       return CanHandleStartAmbientMode();
     case START_VOICE_INTERACTION:
-      return CanHandleStartVoiceInteraction();
+      return true;
     case SWAP_PRIMARY_DISPLAY:
       return display::Screen::GetScreen()->GetNumDisplays() > 1;
     case SWITCH_IME:

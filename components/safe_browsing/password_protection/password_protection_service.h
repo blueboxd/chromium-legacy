@@ -173,9 +173,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Returns if the warning UI is enabled.
   bool IsWarningEnabled(ReusedPasswordAccountType password_type);
 
-  // Returns if the event logging is enabled.
-  bool IsEventLoggingEnabled();
-
   // Returns the pref value of password protection warning trigger.
   virtual PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref(
       ReusedPasswordAccountType password_type) const = 0;

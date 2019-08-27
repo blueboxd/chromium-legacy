@@ -899,8 +899,8 @@ void DataObjectImpl::OnDownloadCompleted(const base::FilePath& file_path) {
       // Replace stored data.
       STGMEDIUM* storage =
           GetStorageForFileNames({FileInfo(file_path, base::FilePath())});
-      content.reset(new StoredDataInfo(
-          ClipboardFormatType::GetCFHDropType().ToFormatEtc(), storage));
+      content = std::make_unique<StoredDataInfo>(
+          ClipboardFormatType::GetCFHDropType().ToFormatEtc(), storage);
 
       break;
     }

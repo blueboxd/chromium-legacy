@@ -213,7 +213,7 @@ void WaylandDataDevice::OnDataOffer(void* data,
   self->connection_->clipboard()->UpdateSequenceNumber();
 
   DCHECK(!self->new_offer_);
-  self->new_offer_.reset(new WaylandDataOffer(offer));
+  self->new_offer_ = std::make_unique<WaylandDataOffer>(offer);
 }
 
 void WaylandDataDevice::OnEnter(void* data,
@@ -253,7 +253,8 @@ void WaylandDataDevice::OnEnter(void* data,
   // same window and it's not needed to read data through Wayland.
   std::unique_ptr<OSExchangeData> pdata;
   if (!self->IsDraggingExternalData())
-    pdata.reset(new OSExchangeData(self->source_data_->provider().Clone()));
+    pdata = std::make_unique<OSExchangeData>(
+        self->source_data_->provider().Clone());
   self->window_->OnDragEnter(point, std::move(pdata), operation);
 }
 
@@ -290,8 +291,8 @@ void WaylandDataDevice::OnDrop(void* data, wl_data_device* data_device) {
     self->HandleReceivedData(nullptr);
   } else {
     // Creates buffer to receive data from Wayland.
-    self->received_data_.reset(
-        new OSExchangeData(std::make_unique<OSExchangeDataProviderAura>()));
+    self->received_data_ = std::make_unique<OSExchangeData>(
+        std::make_unique<OSExchangeDataProviderAura>());
     // In order to guarantee all data received, it sets
     // |is_handling_dropped_data_| and defers OnLeave event handling if it gets
     // OnLeave event before completing to read the data.
@@ -383,7 +384,7 @@ void WaylandDataDevice::DrawDragIcon(const SkBitmap* icon_bitmap) {
   gfx::Size size(icon_bitmap->width(), icon_bitmap->height());
 
   if (!shm_buffer_ || shm_buffer_->size() != size) {
-    shm_buffer_.reset(new WaylandShmBuffer(connection_->shm(), size));
+    shm_buffer_ = std::make_unique<WaylandShmBuffer>(connection_->shm(), size);
     if (!shm_buffer_->IsValid()) {
       LOG(ERROR) << "Failed to create drag icon buffer.";
       return;

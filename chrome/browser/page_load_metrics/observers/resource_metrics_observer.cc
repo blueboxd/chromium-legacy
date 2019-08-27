@@ -34,21 +34,19 @@ void ResourceMetricsObserver::OnResourceDataUseObserved(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ResourceMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // TODO(johnidel): This logic was maintained when resource metrics were moved
   // out of the AdsPageLoadMetricsObserver. These metrics don't need to stop
   // being reported when backgrounded.
-  if (extra_info.did_commit) {
-    OnComplete(timing, extra_info);
+  if (GetDelegate().DidCommit()) {
+    OnComplete(timing);
   }
 
   return STOP_OBSERVING;
 }
 
 void ResourceMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   for (auto const& kv :
        GetDelegate().GetResourceTracker().unfinished_resources())
     RecordResourceHistograms(kv.second);

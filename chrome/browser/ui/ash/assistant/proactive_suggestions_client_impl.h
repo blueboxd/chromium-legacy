@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -23,12 +22,11 @@ class Profile;
 // A browser client which observes changes to the singleton BrowserList on
 // behalf of Assistant to provide it with information necessary to retrieve
 // proactive content suggestions.
-class ProactiveSuggestionsClientImpl
-    : public ash::ProactiveSuggestionsClient,
-      public BrowserListObserver,
-      public TabStripModelObserver,
-      public content::WebContentsObserver,
-      public ash::DefaultVoiceInteractionObserver {
+class ProactiveSuggestionsClientImpl : public ash::ProactiveSuggestionsClient,
+                                       public BrowserListObserver,
+                                       public TabStripModelObserver,
+                                       public content::WebContentsObserver,
+                                       public ash::AssistantStateObserver {
  public:
   ProactiveSuggestionsClientImpl(AssistantClient* client, Profile* profile);
   ~ProactiveSuggestionsClientImpl() override;
@@ -51,9 +49,9 @@ class ProactiveSuggestionsClientImpl
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  // DefaultVoiceInteractionObserver:
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionContextEnabled(bool enabled) override;
+  // AssistantStateObserver:
+  void OnAssistantSettingsEnabled(bool enabled) override;
+  void OnAssistantContextEnabled(bool enabled) override;
 
  private:
   void SetActiveBrowser(Browser* browser);

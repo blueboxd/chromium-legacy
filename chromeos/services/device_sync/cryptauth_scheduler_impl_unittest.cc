@@ -502,9 +502,12 @@ TEST_F(DeviceSyncCryptAuthSchedulerImplTest, FailedRequests) {
                                   false /* device_registry_changed */,
                                   base::nullopt /* client_directive */));
 
+    // Verify the next scheduled Enrollment/DeviceSync. At this point, note that
+    // the number of failed attempts == |attempt| == retry count of the next
+    // request.
     expected_request.set_retry_count(attempt);
     base::TimeDelta expected_delay =
-        attempt <= cryptauthv2::GetClientDirectiveForTest().retry_attempts()
+        attempt < cryptauthv2::GetClientDirectiveForTest().retry_attempts()
             ? kImmediateRetryDelay
             : base::TimeDelta::FromMilliseconds(
                   cryptauthv2::GetClientDirectiveForTest()

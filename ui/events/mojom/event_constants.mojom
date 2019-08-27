@@ -93,6 +93,7 @@ enum EventMomentumPhase {
   MAY_BEGIN,
   INERTIAL_UPDATE,
   END,
+  BLOCKED,
 };
 
 // Device type for gesture events.

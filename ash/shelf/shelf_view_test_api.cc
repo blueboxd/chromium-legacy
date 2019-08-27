@@ -89,19 +89,25 @@ void ShelfViewTestAPI::SetAnimationDuration(int duration_ms) {
   shelf_view_->bounds_animator_->SetAnimationDuration(duration_ms);
 }
 
-void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone() {
-  if (!shelf_view_->bounds_animator_->IsAnimating())
-    return;
-
+void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone(
+    views::BoundsAnimator* bounds_animator) {
   std::unique_ptr<TestAPIAnimationObserver> observer(
       new TestAPIAnimationObserver());
-  shelf_view_->bounds_animator_->AddObserver(observer.get());
+
+  bounds_animator->AddObserver(observer.get());
 
   // This nested loop will quit when TestAPIAnimationObserver's
   // OnBoundsAnimatorDone is called.
   base::RunLoop().Run();
 
-  shelf_view_->bounds_animator_->RemoveObserver(observer.get());
+  bounds_animator->RemoveObserver(observer.get());
+}
+
+void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone() {
+  if (!shelf_view_->bounds_animator_->IsAnimating())
+    return;
+
+  RunMessageLoopUntilAnimationsDone(shelf_view_->bounds_animator_.get());
 }
 
 gfx::Rect ShelfViewTestAPI::GetMenuAnchorRect(const views::View& source,

@@ -62,7 +62,13 @@ class AppBrowserController : public TabStripModelObserver,
 
   // Whether the browser toolbar is present.
   // Note: web app windows have their browser toolbar inline in their titlebar.
-  virtual bool HasTitlebarToolbar() const = 0;
+  virtual bool HasTitlebarToolbar() const;
+
+  // Whether to show app origin text in the titlebar toolbar.
+  virtual bool HasTitlebarAppOriginText() const;
+
+  // Whether to show content settings in the titlebar toolbar.
+  virtual bool HasTitlebarContentSettings() const;
 
   // Returns the app icon for the window to use in the task list.
   virtual gfx::ImageSkia GetWindowAppIcon() const = 0;

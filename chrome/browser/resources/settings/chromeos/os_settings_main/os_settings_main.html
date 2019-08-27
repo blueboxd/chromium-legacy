@@ -58,7 +58,7 @@
     <template is="dom-if"
         if="[[showManagedHeader_(inSearchMode_, showingSubpage_,
         showPages_.about)]]">
-      <managed-footnote></managed-footnote>
+      <managed-footnote show-device-info></managed-footnote>
     </template>
     <template is="dom-if" if="[[showPages_.settings]]">
       <os-settings-page prefs="{{prefs}}"

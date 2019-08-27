@@ -73,7 +73,8 @@ void DirectManipulationEventHandler::TransitionToState(
       // kScroll -> kNone, kPinch, ScrollEnd.
       // kScroll -> kFling, we don't want to end the current scroll sequence.
       if (new_gesture_state != GestureState::kFling)
-        event_target_->ApplyPanGestureScrollEnd();
+        event_target_->ApplyPanGestureScrollEnd(new_gesture_state ==
+                                                GestureState::kPinch);
       break;
     }
     case GestureState::kFling: {

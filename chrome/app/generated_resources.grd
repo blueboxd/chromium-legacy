@@ -6666,21 +6666,19 @@ the Bookmarks menu.">
       <!-- Managed UI on pages like chrome://settings and chrome://downloads -->
       <if expr="not is_android">
         <if expr="chromeos">
-          <message name="IDS_MANAGED_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (ChromeOS)">
-            Your <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph><ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your organization
+          <message name="IDS_DEVICE_MANAGED_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (ChromeOS)">
+            Your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph><ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your organization
           </message>
-          <message name="IDS_MANAGED_BY_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (ChromeOS)">
-            Your <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph><ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> is managed<ph name="END_LINK">&lt;/a&gt;</ph> by <ph name="ENROLLMENT_DOMAIN">$3<ex>example.com</ex></ph>
-          </message>
-        </if>
-        <if expr="not chromeos">
-          <message name="IDS_MANAGED_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (non-ChromeOS)">
-            Your <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>browser is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your organization
-          </message>
-          <message name="IDS_MANAGED_BY_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (non-ChromeOS)">
-            Your <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>browser is managed<ph name="END_LINK">&lt;/a&gt;</ph> by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>
+          <message name="IDS_DEVICE_MANAGED_BY_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (ChromeOS)">
+            Your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph><ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> is managed<ph name="END_LINK">&lt;/a&gt;</ph> by <ph name="ENROLLMENT_DOMAIN">$3<ex>example.com</ex></ph>
           </message>
         </if>
+        <message name="IDS_MANAGED_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (non-ChromeOS)">
+          Your <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>browser is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your organization
+        </message>
+        <message name="IDS_MANAGED_BY_WITH_HYPERLINK" desc="Message to end users in Enterprise/EDU, with a link for more info (non-ChromeOS)">
+          Your <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>browser is managed<ph name="END_LINK">&lt;/a&gt;</ph> by <ph name="ENROLLMENT_DOMAIN">$2<ex>example.com</ex></ph>
+        </message>
       </if>
 
       <!-- Cookies Window -->

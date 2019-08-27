@@ -12,9 +12,8 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "dbus/object_path.h"
-#include "device/base/features.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
@@ -260,9 +259,8 @@ TEST_F(TrayBluetoothHelperLegacyTest, OnBluetoothSystemStateChanged) {
 // Tests the Bluetooth device list when UnfilteredBluetoothDevices feature is
 // enabled.
 TEST_F(TrayBluetoothHelperLegacyTest, UnfilteredBluetoothDevices) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine(device::kUnfilteredBluetoothDevices.name,
-                                   "");
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  cmd_line->AppendSwitch(chromeos::switches::kUnfilteredBluetoothDevices);
 
   // Set Bluetooth discovery simulation delay to 0 so the test doesn't have to
   // wait or use timers.

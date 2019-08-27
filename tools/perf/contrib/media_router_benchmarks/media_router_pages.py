@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import time
-
 from telemetry import story
 from telemetry.page import shared_page_state
 from telemetry.util import js_template
@@ -79,11 +77,12 @@ class CastFlingingPage(MediaRouterBasePage):
 
       # Start session
       action_runner.TapElement(selector='#start_session_button')
+      action_runner.Wait(WAIT_TIME_SEC)
       self._WaitForResult(
         action_runner,
         lambda: action_runner.EvaluateJavaScript('currentSession'),
          'Failed to start session',
-         timeout=10)
+         timeout=WAIT_TIME_SEC)
 
       # Load Media
       self.ExecuteAsyncJavaScript(
@@ -133,6 +132,7 @@ class CastMirroringPage(MediaRouterBasePage):
               sink_name, str(action_runner.tab.GetCastSinks())))
 
       # Start session
+      action_runner.Wait(WAIT_TIME_SEC)
       action_runner.tab.StartTabMirroring(sink_name)
 
       # Make sure the route is created.
@@ -150,9 +150,7 @@ class MediaRouterCPUMemoryPageSet(story.StorySet):
     super(MediaRouterCPUMemoryPageSet, self).__init__(
         cloud_storage_bucket=story.PARTNER_BUCKET)
     self.AddStory(CastIdlePage(self))
-    time.sleep(WAIT_TIME_SEC)
     self.AddStory(CastFlingingPage(self))
-    time.sleep(WAIT_TIME_SEC)
     self.AddStory(CastMirroringPage(self))
 
 

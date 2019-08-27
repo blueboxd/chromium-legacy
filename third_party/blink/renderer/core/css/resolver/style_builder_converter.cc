@@ -1319,7 +1319,8 @@ ShadowData StyleBuilderConverter::ConvertShadow(
           case CSSValueID::kCurrentcolor:
             break;
           default:
-            color = StyleColor::ColorFromKeyword(value_id);
+            color = StyleColor::ColorFromKeyword(
+                value_id, ComputedStyle::InitialStyle().UsedColorScheme());
         }
       }
     }

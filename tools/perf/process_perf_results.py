@@ -53,6 +53,7 @@ DATA_FORMAT_UNKNOWN = 'unknown'
 # problems. So, only perform the conversion on tests that are whitelisted and
 # are okay with potentially encountering issues.
 GTEST_CONVERSION_WHITELIST = [
+  'angle_perftests',
   'xr.vr.common_perftests',
 ]
 
@@ -80,7 +81,7 @@ def _GetMachineGroup(build_properties):
 
 
 def _upload_perf_results(json_to_upload, name, configuration_name,
-    build_properties, service_account_file, output_json_file):
+    build_properties, output_json_file):
   """Upload the contents of result JSON(s) to the perf dashboard."""
   args= [
       '--buildername', build_properties['buildername'],
@@ -95,16 +96,11 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--output-json-file', output_json_file,
       '--perf-dashboard-machine-group', _GetMachineGroup(build_properties)
   ]
-  is_luci = False
   buildbucket = build_properties.get('buildbucket', {})
   if isinstance(buildbucket, basestring):
     buildbucket = json.loads(buildbucket)
-  if ('build' in buildbucket and
-      buildbucket['build'].get('bucket') == 'luci.chrome.ci'):
-    is_luci = True
 
-  if is_luci and _is_gtest(json_to_upload) and (
-      name in GTEST_CONVERSION_WHITELIST):
+  if _is_gtest(json_to_upload) and name in GTEST_CONVERSION_WHITELIST:
     path_util.AddTracingToPath()
     from tracing.value import (  # pylint: disable=no-name-in-module
         gtest_json_converter)
@@ -116,9 +112,6 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--project', buildbucket['build'].get('project'),
       '--buildbucket', buildbucket['build'].get('bucket'),
     ]
-
-  if service_account_file and not is_luci:
-    args += ['--service-account-file', service_account_file]
 
   if build_properties.get('git_revision'):
     args.append('--git-revision')
@@ -272,7 +265,6 @@ def _get_benchmark_name(directory):
 
 
 def process_perf_results(output_json, configuration_name,
-                         service_account_file,
                          build_properties, task_output_dir,
                          smoke_test_mode, output_results_dir):
   """Process perf results.
@@ -348,8 +340,7 @@ def process_perf_results(output_json, configuration_name,
     try:
       return_code, benchmark_upload_result_map = _handle_perf_results(
           benchmark_enabled_map, benchmark_directory_map,
-          configuration_name, build_properties, service_account_file,
-          extra_links, output_results_dir)
+          configuration_name, build_properties, extra_links, output_results_dir)
     except Exception:
       logging.exception('Error handling perf results jsons')
       return_code = 1
@@ -412,8 +403,8 @@ def _merge_perf_results(benchmark_name, results_filename, directories):
 
 
 def _upload_individual(
-    benchmark_name, directories, configuration_name,
-    build_properties, output_json_file, service_account_file):
+    benchmark_name, directories, configuration_name, build_properties,
+    output_json_file):
   tmpfile_dir = tempfile.mkdtemp()
   try:
     upload_begin_time = time.time()
@@ -438,8 +429,7 @@ def _upload_individual(
     with open(output_json_file, 'w') as oj:
       upload_return_code = _upload_perf_results(
         results_filename,
-        benchmark_name, configuration_name, build_properties,
-        service_account_file, oj)
+        benchmark_name, configuration_name, build_properties, oj)
       upload_end_time = time.time()
       print_duration(('%s upload time' % (benchmark_name)),
                      upload_begin_time, upload_end_time)
@@ -474,8 +464,7 @@ def _GetCpuCount(log=True):
 
 def _handle_perf_results(
     benchmark_enabled_map, benchmark_directory_map, configuration_name,
-    build_properties, service_account_file, extra_links,
-    output_results_dir):
+    build_properties, extra_links, output_results_dir):
   """
     Upload perf results to the perf dashboard.
 
@@ -504,7 +493,7 @@ def _handle_perf_results(
     results_dict[benchmark_name] = output_json_file
     invocations.append((
         benchmark_name, directories, configuration_name,
-        build_properties, output_json_file, service_account_file))
+        build_properties, output_json_file))
 
   # Kick off the uploads in multiple processes
   pool = multiprocessing.Pool(_GetCpuCount())
@@ -613,8 +602,6 @@ def main():
   # configuration-name and results-url are set in the json file which is going
   # away tools/perf/core/chromium.perf.fyi.extras.json
   parser.add_argument('--configuration-name', help=argparse.SUPPRESS)
-  parser.add_argument('--service-account-file', help=argparse.SUPPRESS,
-                      default=None)
 
   parser.add_argument('--build-properties', help=argparse.SUPPRESS)
   parser.add_argument('--summary-json', help=argparse.SUPPRESS)
@@ -632,7 +619,6 @@ def main():
   try:
     return_code, _ = process_perf_results(
         args.output_json, args.configuration_name,
-        args.service_account_file,
         args.build_properties, args.task_output_dir,
         args.smoke_test_mode, output_results_dir)
     return return_code

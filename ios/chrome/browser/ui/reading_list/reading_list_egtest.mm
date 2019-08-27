@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/ios/ios_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -117,14 +118,21 @@ ReadingListModel* GetReadingListModel() {
 
 // Scroll to the top of the Reading List.
 void ScrollToTop() {
-  NSError* error = nil;
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID([
-                                          [ReadingListTableViewController class]
-                                          accessibilityIdentifier])]
-      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
-                                                           0.5, 0.5)
-              error:&error];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  // On iOS 13 the settings menu appears as a card that can be dismissed with a
+  // downward swipe, for this reason we need to swipe up programatically to
+  // avoid dismissing the VC.
+  GREYPerformBlock scrollToTopBlock =
+      ^BOOL(id element, __strong NSError** error) {
+        UIScrollView* view = base::mac::ObjCCastStrict<UIScrollView>(element);
+        view.contentOffset = CGPointZero;
+        return YES;
+      };
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [[ReadingListTableViewController
+                                              class] accessibilityIdentifier])]
+      performAction:[GREYActionBlock actionWithName:@"Scroll to top"
+                                       performBlock:scrollToTopBlock]];
 }
 
 // Asserts that the "mark" toolbar button is visible and has the a11y label of
@@ -976,6 +984,8 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on when feature flag is off.");
   }
 
+  GetReadingListModel()->AddEntry(GURL(kUnreadURL), std::string(kUnreadTitle),
+                                  reading_list::ADDED_VIA_CURRENT_APP);
   OpenReadingList();
 
   // Check that the TableView is presented.

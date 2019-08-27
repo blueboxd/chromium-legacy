@@ -68,7 +68,7 @@ import java.util.TreeSet;
         // SplitCompat#install should always be run for the application first before it is run for
         // any activities.
         init();
-        SplitCompat.install(activity);
+        SplitCompat.installActivity(activity);
     }
 
     @Override

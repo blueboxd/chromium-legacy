@@ -1117,17 +1117,7 @@ QuicStreamFactory::QuicStreamFactory(
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(quic::QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
-      migrate_sessions_on_network_change_v2_(
-          params.migrate_sessions_on_network_change_v2 &&
-          NetworkChangeNotifier::AreNetworkHandlesSupported()),
-      migrate_sessions_early_v2_(params.migrate_sessions_early_v2 &&
-                                 migrate_sessions_on_network_change_v2_),
-      retry_on_alternate_network_before_handshake_(
-          params.retry_on_alternate_network_before_handshake &&
-          migrate_sessions_on_network_change_v2_),
       default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
-      migrate_idle_sessions_(params.migrate_idle_sessions &&
-                             migrate_sessions_on_network_change_v2_),
       need_to_check_persisted_supports_quic_(true),
       num_push_streams_created_(0),
       tick_clock_(nullptr),
@@ -1143,33 +1133,74 @@ QuicStreamFactory::QuicStreamFactory(
   bool prefer_aes_gcm =
       !crypto_config_.aead.empty() && (crypto_config_.aead[0] == quic::kAESG);
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm", prefer_aes_gcm);
+  InitializeMigrationOptions();
+}
 
-  if (params.migrate_sessions_early_v2 ||
-      params.retry_on_alternate_network_before_handshake)
-    DCHECK(params.migrate_sessions_on_network_change_v2);
+void QuicStreamFactory::InitializeMigrationOptions() {
+  // The following list of options cannot be set immediately until
+  // prerequisites are met. Cache the initial setting in local variables and
+  // reset them in |params_|.
+  bool migrate_sessions_on_network_change =
+      params_.migrate_sessions_on_network_change_v2;
+  bool migrate_sessions_early = params_.migrate_sessions_early_v2;
+  bool retry_on_alternate_network_before_handshake =
+      params_.retry_on_alternate_network_before_handshake;
+  bool migrate_idle_sessions = params_.migrate_idle_sessions;
+  params_.migrate_sessions_on_network_change_v2 = false;
+  params_.migrate_sessions_early_v2 = false;
+  params_.retry_on_alternate_network_before_handshake = false;
+  params_.migrate_idle_sessions = false;
 
-  if (params.retransmittable_on_wire_timeout.is_zero() &&
-      params.migrate_sessions_early_v2) {
-    retransmittable_on_wire_timeout_ = quic::QuicTime::Delta::FromMicroseconds(
-        kDefaultRetransmittableOnWireTimeout.InMicroseconds());
-  }
-
+  // TODO(zhongyi): deprecate |goaway_sessions_on_ip_change| if the experiment
+  // is no longer needed.
   // goaway_sessions_on_ip_change and close_sessions_on_ip_change should never
   // be simultaneously set to true.
   DCHECK(!(params_.close_sessions_on_ip_change &&
            params_.goaway_sessions_on_ip_change));
 
-  // Connection migration should not be set if explicitly handle ip address
-  // change.
   bool handle_ip_change = params_.close_sessions_on_ip_change ||
                           params_.goaway_sessions_on_ip_change;
-  DCHECK(!(handle_ip_change && migrate_sessions_on_network_change_v2_));
+  // If IP address changes are handled explicitly, connection migration should
+  // not be set.
+  DCHECK(!(handle_ip_change && migrate_sessions_on_network_change));
 
   if (handle_ip_change)
     NetworkChangeNotifier::AddIPAddressObserver(this);
 
-  if (NetworkChangeNotifier::AreNetworkHandlesSupported())
-    NetworkChangeNotifier::AddNetworkObserver(this);
+  if (!NetworkChangeNotifier::AreNetworkHandlesSupported())
+    return;
+
+  NetworkChangeNotifier::AddNetworkObserver(this);
+  // Perform checks on the connection migration options.
+  if (!migrate_sessions_on_network_change) {
+    DCHECK(!migrate_sessions_early);
+    return;
+  }
+
+  // Enable migration on platform notifications.
+  params_.migrate_sessions_on_network_change_v2 = true;
+  if (!migrate_sessions_early) {
+    DCHECK(!retry_on_alternate_network_before_handshake &&
+           !migrate_idle_sessions);
+    return;
+  }
+
+  // Enable migration on path degrading.
+  params_.migrate_sessions_early_v2 = true;
+  // Set retransmittable on wire timeout for migration on path degrading if no
+  // value is specified.
+  if (retransmittable_on_wire_timeout_.IsZero()) {
+    retransmittable_on_wire_timeout_ = quic::QuicTime::Delta::FromMicroseconds(
+        kDefaultRetransmittableOnWireTimeout.InMicroseconds());
+  }
+
+  // Enable retry on alternate network before handshake.
+  if (retry_on_alternate_network_before_handshake)
+    params_.retry_on_alternate_network_before_handshake = true;
+
+  // Enable migration for idle sessions.
+  if (migrate_idle_sessions)
+    params_.migrate_idle_sessions = true;
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
@@ -1372,7 +1403,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   std::unique_ptr<Job> job =
       std::make_unique<Job>(this, quic_version, host_resolver_, key,
                             WasQuicRecentlyBroken(session_key.server_id()),
-                            retry_on_alternate_network_before_handshake_,
+                            params_.retry_on_alternate_network_before_handshake,
                             params_.race_stale_dns_on_connection, priority,
                             cert_verify_flags, net_log);
   int rv = job->Run(
@@ -1591,7 +1622,7 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig(
 void QuicStreamFactory::OnIPAddressChanged() {
   LogPlatformNotificationInHistogram(NETWORK_IP_ADDRESS_CHANGED);
   // Do nothing if connection migration is turned on.
-  if (migrate_sessions_on_network_change_v2_)
+  if (params_.migrate_sessions_on_network_change_v2)
     return;
 
   set_require_confirmation(true);
@@ -1605,7 +1636,7 @@ void QuicStreamFactory::OnIPAddressChanged() {
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_CONNECTED);
-  if (!migrate_sessions_on_network_change_v2_)
+  if (!params_.migrate_sessions_on_network_change_v2)
     return;
 
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
@@ -1621,12 +1652,12 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
 
 void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_MADE_DEFAULT);
-  if (!migrate_sessions_on_network_change_v2_)
+  if (!params_.migrate_sessions_on_network_change_v2)
     return;
 
   // Clear alternative services that were marked as broken until default network
   // changes.
-  if (retry_on_alternate_network_before_handshake_ &&
+  if (params_.retry_on_alternate_network_before_handshake &&
       default_network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
       network != default_network_) {
     http_server_properties_->OnDefaultNetworkChanged();
@@ -1649,7 +1680,7 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
 
 void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_DISCONNECTED);
-  if (!migrate_sessions_on_network_change_v2_)
+  if (!params_.migrate_sessions_on_network_change_v2)
     return;
 
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
@@ -1729,7 +1760,7 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   socket->UseNonBlockingIO();
 
   int rv;
-  if (migrate_sessions_on_network_change_v2_) {
+  if (params_.migrate_sessions_on_network_change_v2) {
     // If caller leaves network unspecified, use current default network.
     if (network == NetworkChangeNotifier::kInvalidNetworkHandle) {
       rv = socket->ConnectUsingDefaultNetwork(addr);
@@ -1808,7 +1839,7 @@ int QuicStreamFactory::CreateSession(
   if (rv != OK)
     return rv;
 
-  if (migrate_sessions_on_network_change_v2_ &&
+  if (params_.migrate_sessions_on_network_change_v2 &&
       *network == NetworkChangeNotifier::kInvalidNetworkHandle) {
     *network = socket->GetBoundNetwork();
     if (default_network_ == NetworkChangeNotifier::kInvalidNetworkHandle) {
@@ -1884,9 +1915,9 @@ int QuicStreamFactory::CreateSession(
       connection, std::move(socket), this, quic_crypto_client_stream_factory_,
       clock_, transport_security_state_, ssl_config_service_,
       std::move(server_info), key.session_key(), require_confirmation,
-      params_.max_allowed_push_id, migrate_sessions_early_v2_,
-      migrate_sessions_on_network_change_v2_, default_network_,
-      retransmittable_on_wire_timeout_, migrate_idle_sessions_,
+      params_.max_allowed_push_id, params_.migrate_sessions_early_v2,
+      params_.migrate_sessions_on_network_change_v2, default_network_,
+      retransmittable_on_wire_timeout_, params_.migrate_idle_sessions,
       params_.idle_session_migration_period,
       params_.max_time_on_non_default_network,
       params_.max_migrations_to_non_default_network_on_write_error,

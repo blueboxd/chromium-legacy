@@ -125,7 +125,6 @@ def _CreateParser():
   parser.add_option('--git-revision')
   parser.add_option('--output-json-dashboard-url')
   parser.add_option('--send-as-histograms', action='store_true')
-  parser.add_option('--service-account-file', default=None)
   return parser
 
 
@@ -138,8 +137,6 @@ def main(args):
     parser.error('Unexpected command line arguments')
   if not options.configuration_name or not options.results_url:
     parser.error('configuration_name and results_url are required.')
-
-  service_account_file = options.service_account_file
 
   if not options.perf_dashboard_machine_group:
     print 'Error: Invalid perf dashboard machine group'
@@ -178,8 +175,7 @@ def main(args):
           batch,
           options.name,
           options.results_url,
-          send_as_histograms=options.send_as_histograms,
-          service_account_file=service_account_file):
+          send_as_histograms=options.send_as_histograms):
         return 1
   else:
     # The upload didn't fail since there was no data to upload.

@@ -12,8 +12,43 @@
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
+
+namespace {
+
+// TODO(weiliangc): When difference between primary plane and non-primary plane
+// can be internalized, merge these two helper functions.
+void ConvertToOzoneOverlaySurface(
+    const OverlayCandidateValidatorOzone::PrimaryPlane& primary_plane,
+    ui::OverlaySurfaceCandidate* ozone_candidate) {
+  ozone_candidate->transform = primary_plane.transform;
+  ozone_candidate->format = primary_plane.format;
+  ozone_candidate->display_rect = primary_plane.display_rect;
+  ozone_candidate->crop_rect = gfx::RectF(0.f, 0.f, 1.f, 1.f);
+  ozone_candidate->clip_rect = gfx::ToEnclosingRect(primary_plane.display_rect);
+  ozone_candidate->is_clipped = false;
+  ozone_candidate->is_opaque = !primary_plane.enable_blending;
+  ozone_candidate->plane_z_order = 0;
+  ozone_candidate->buffer_size = primary_plane.resource_size;
+}
+
+void ConvertToOzoneOverlaySurface(
+    const OverlayCandidate& overlay_candidate,
+    ui::OverlaySurfaceCandidate* ozone_candidate) {
+  ozone_candidate->transform = overlay_candidate.transform;
+  ozone_candidate->format = overlay_candidate.format;
+  ozone_candidate->display_rect = overlay_candidate.display_rect;
+  ozone_candidate->crop_rect = overlay_candidate.uv_rect;
+  ozone_candidate->clip_rect = overlay_candidate.clip_rect;
+  ozone_candidate->is_clipped = overlay_candidate.is_clipped;
+  ozone_candidate->is_opaque = overlay_candidate.is_opaque;
+  ozone_candidate->plane_z_order = overlay_candidate.plane_z_order;
+  ozone_candidate->buffer_size = overlay_candidate.resource_size_in_pixels;
+}
+
+}  // namespace
 
 // |overlay_candidates| is an object used to answer questions about possible
 // overlays configurations.
@@ -64,6 +99,7 @@ bool OverlayCandidateValidatorOzone::NeedsSurfaceOccludingDamageRect() const {
 }
 
 void OverlayCandidateValidatorOzone::CheckOverlaySupport(
+    const PrimaryPlane* primary_plane,
     OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any
   // quads for overlaying, otherwise the output is incorrect.
@@ -74,29 +110,53 @@ void OverlayCandidateValidatorOzone::CheckOverlaySupport(
     return;
   }
 
-  DCHECK_GE(2U, surfaces->size());
-  ui::OverlayCandidatesOzone::OverlaySurfaceCandidateList ozone_surface_list;
-  ozone_surface_list.resize(surfaces->size());
+  // This number is depended on what type of strategies we have. Currently we
+  // only overlay one video.
+  DCHECK_EQ(1U, surfaces->size());
+  auto full_size = surfaces->size();
+  if (primary_plane)
+    full_size += 1;
 
-  for (size_t i = 0; i < surfaces->size(); i++) {
-    ozone_surface_list.at(i).transform = surfaces->at(i).transform;
-    ozone_surface_list.at(i).format = surfaces->at(i).format;
-    ozone_surface_list.at(i).display_rect = surfaces->at(i).display_rect;
-    ozone_surface_list.at(i).crop_rect = surfaces->at(i).uv_rect;
-    ozone_surface_list.at(i).clip_rect = surfaces->at(i).clip_rect;
-    ozone_surface_list.at(i).is_clipped = surfaces->at(i).is_clipped;
-    ozone_surface_list.at(i).is_opaque = surfaces->at(i).is_opaque;
-    ozone_surface_list.at(i).plane_z_order = surfaces->at(i).plane_z_order;
-    ozone_surface_list.at(i).buffer_size =
-        surfaces->at(i).resource_size_in_pixels;
+  ui::OverlayCandidatesOzone::OverlaySurfaceCandidateList ozone_surface_list(
+      full_size);
+
+  // Convert OverlayCandidateList to OzoneSurfaceCandidateList.
+  {
+    auto ozone_surface_iterator = ozone_surface_list.begin();
+
+    // For ozone-cast, there will not be a primary_plane.
+    if (primary_plane) {
+      ConvertToOzoneOverlaySurface(*primary_plane, &(*ozone_surface_iterator));
+      ozone_surface_iterator++;
+    }
+
+    auto surface_iterator = surfaces->cbegin();
+    for (; ozone_surface_iterator < ozone_surface_list.end() &&
+           surface_iterator < surfaces->cend();
+         ozone_surface_iterator++, surface_iterator++) {
+      ConvertToOzoneOverlaySurface(*surface_iterator,
+                                   &(*ozone_surface_iterator));
+    }
   }
-
   overlay_candidates_->CheckOverlaySupport(&ozone_surface_list);
-  DCHECK_EQ(surfaces->size(), ozone_surface_list.size());
 
-  for (size_t i = 0; i < surfaces->size(); i++) {
-    surfaces->at(i).overlay_handled = ozone_surface_list.at(i).overlay_handled;
-    surfaces->at(i).display_rect = ozone_surface_list.at(i).display_rect;
+  // Copy information from OzoneSurfaceCandidatelist back to
+  // OverlayCandidateList.
+  {
+    DCHECK_EQ(full_size, ozone_surface_list.size());
+    auto ozone_surface_iterator = ozone_surface_list.cbegin();
+    // The primary plane is always handled, and don't need to copy information.
+    if (primary_plane)
+      ozone_surface_iterator++;
+
+    auto surface_iterator = surfaces->begin();
+    for (; surface_iterator < surfaces->end() &&
+           ozone_surface_iterator < ozone_surface_list.cend();
+         surface_iterator++, ozone_surface_iterator++) {
+      surface_iterator->overlay_handled =
+          ozone_surface_iterator->overlay_handled;
+      surface_iterator->display_rect = ozone_surface_iterator->display_rect;
+    }
   }
 }
 

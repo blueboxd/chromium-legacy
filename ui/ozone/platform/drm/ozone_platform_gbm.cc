@@ -263,13 +263,6 @@ class OzonePlatformGbm : public OzonePlatform {
           std::make_unique<DrmOverlayManagerGpu>(drm_thread_proxy_.get());
     }
 
-    // If InitializeGPU and InitializeUI are invoked on the same thread, startup
-    // sequencing is complicated because tasks are queued on the unbound mojo
-    // pipe connecting the UI (the host) to the DRM thread before the DRM thread
-    // is launched above. Special case this sequence via the
-    // BlockingStartDrmDevice API.
-    // TODO(rjkroege): In a future when we have completed splitting Viz, it will
-    // be possible to simplify this logic.
     if (using_mojo_ && single_process_ &&
         host_thread_ == base::PlatformThread::CurrentRef()) {
       CHECK(host_drm_device_) << "Mojo single-thread mode requires "
@@ -284,7 +277,6 @@ class OzonePlatformGbm : public OzonePlatform {
       drm_thread_proxy_->AddBindingDrmDevice(
           mojo::MakeRequest(&drm_device_ptr));
       drm_device_connector_->ConnectSingleThreaded(std::move(drm_device_ptr));
-      host_drm_device_->BlockingStartDrmDevice();
     }
   }
 

@@ -12,7 +12,6 @@
 #include "chrome/android/chrome_jni_headers/CredentialLeakDialogBridge_jni.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/credential_leak_controller_android.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"

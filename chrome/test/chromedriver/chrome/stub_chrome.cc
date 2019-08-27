@@ -94,6 +94,14 @@ Status StubChrome::SetAcceptInsecureCerts() {
   return Status(kOk);
 }
 
+Status StubChrome::SetPermission(
+    std::unique_ptr<base::DictionaryValue> permission_descriptor,
+    Chrome::PermissionState desired_state,
+    bool one_realm,
+    WebView* current_view) {
+  return Status(kOk);
+}
+
 std::string StubChrome::GetOperatingSystemName() {
   return std::string();
 }

@@ -134,6 +134,8 @@ std::string MomentumPhaseToString(EventMomentumPhase phase) {
       return "INERTIAL_UPDATE";
     case EventMomentumPhase::END:
       return "END";
+    case EventMomentumPhase::BLOCKED:
+      return "BLOCKED";
   }
 }
 
@@ -462,57 +464,6 @@ std::string LocatedEvent::ToString() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PointerDetails
-
-PointerDetails::PointerDetails() {}
-
-PointerDetails::PointerDetails(EventPointerType pointer_type,
-                               PointerId pointer_id)
-    : PointerDetails(pointer_type,
-                     pointer_id,
-                     /* radius_x */ 0.0f,
-                     /* radius_y */ 0.0f,
-                     /* force */ std::numeric_limits<float>::quiet_NaN()) {}
-
-PointerDetails::PointerDetails(EventPointerType pointer_type,
-                               PointerId pointer_id,
-                               float radius_x,
-                               float radius_y,
-                               float force,
-                               float twist,
-                               float tilt_x,
-                               float tilt_y,
-                               float tangential_pressure)
-    : pointer_type(pointer_type),
-      // If we aren't provided with a radius on one axis, use the
-      // information from the other axis.
-      radius_x(radius_x > 0 ? radius_x : radius_y),
-      radius_y(radius_y > 0 ? radius_y : radius_x),
-      force(force),
-      tilt_x(tilt_x),
-      tilt_y(tilt_y),
-      tangential_pressure(tangential_pressure),
-      twist(twist),
-      id(pointer_id) {
-  if (pointer_id == PointerDetails::kUnknownPointerId) {
-    id = pointer_type == EventPointerType::POINTER_TYPE_MOUSE
-             ? MouseEvent::kMousePointerId
-             : 0;
-  }
-}
-
-PointerDetails::PointerDetails(EventPointerType pointer_type,
-                               const gfx::Vector2d& pointer_offset,
-                               PointerId pointer_id)
-    : PointerDetails(pointer_type, pointer_id) {
-  offset = pointer_offset;
-}
-
-PointerDetails::PointerDetails(const PointerDetails& other) = default;
-
-const PointerId PointerDetails::kUnknownPointerId = -1;
-
-////////////////////////////////////////////////////////////////////////////////
 // MouseEvent
 
 MouseEvent::MouseEvent(const PlatformEvent& native_event)
@@ -675,9 +626,6 @@ void MouseEvent::SetClickCount(int click_count) {
   }
   set_flags(f);
 }
-
-const PointerId MouseEvent::kMousePointerId =
-    std::numeric_limits<PointerId>::max();
 
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent

@@ -269,10 +269,11 @@ bool ExtensionHasLockedFullscreenPermission(const Extension* extension) {
 std::unique_ptr<api::tabs::Tab> CreateTabObjectHelper(
     WebContents* contents,
     const Extension* extension,
+    Feature::Context context,
     TabStripModel* tab_strip,
     int tab_index) {
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-      ExtensionTabUtil::GetScrubTabBehavior(extension, contents);
+      ExtensionTabUtil::GetScrubTabBehavior(extension, context, contents);
   return ExtensionTabUtil::CreateTabObject(contents, scrub_tab_behavior,
                                            extension, tab_strip, tab_index);
 }
@@ -322,8 +323,8 @@ ExtensionFunction::ResponseAction WindowsGetFunction::Run() {
       extractor.populate_tabs() ? ExtensionTabUtil::kPopulateTabs
                                 : ExtensionTabUtil::kDontPopulateTabs;
   std::unique_ptr<base::DictionaryValue> windows =
-      ExtensionTabUtil::CreateWindowValueForExtension(*browser, extension(),
-                                                      populate_tab_behavior);
+      ExtensionTabUtil::CreateWindowValueForExtension(
+          *browser, extension(), populate_tab_behavior, source_context_type());
   return RespondNow(OneArgument(std::move(windows)));
 }
 
@@ -345,8 +346,8 @@ ExtensionFunction::ResponseAction WindowsGetCurrentFunction::Run() {
       extractor.populate_tabs() ? ExtensionTabUtil::kPopulateTabs
                                 : ExtensionTabUtil::kDontPopulateTabs;
   std::unique_ptr<base::DictionaryValue> windows =
-      ExtensionTabUtil::CreateWindowValueForExtension(*browser, extension(),
-                                                      populate_tab_behavior);
+      ExtensionTabUtil::CreateWindowValueForExtension(
+          *browser, extension(), populate_tab_behavior, source_context_type());
   return RespondNow(OneArgument(std::move(windows)));
 }
 
@@ -379,8 +380,8 @@ ExtensionFunction::ResponseAction WindowsGetLastFocusedFunction::Run() {
       extractor.populate_tabs() ? ExtensionTabUtil::kPopulateTabs
                                 : ExtensionTabUtil::kDontPopulateTabs;
   std::unique_ptr<base::DictionaryValue> windows =
-      ExtensionTabUtil::CreateWindowValueForExtension(*browser, extension(),
-                                                      populate_tab_behavior);
+      ExtensionTabUtil::CreateWindowValueForExtension(
+          *browser, extension(), populate_tab_behavior, source_context_type());
   return RespondNow(OneArgument(std::move(windows)));
 }
 
@@ -401,7 +402,8 @@ ExtensionFunction::ResponseAction WindowsGetAllFunction::Run() {
       continue;
     }
     window_list->Append(ExtensionTabUtil::CreateWindowValueForExtension(
-        *controller->GetBrowser(), extension(), populate_tab_behavior));
+        *controller->GetBrowser(), extension(), populate_tab_behavior,
+        source_context_type()));
   }
 
   return RespondNow(OneArgument(std::move(window_list)));
@@ -658,7 +660,8 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     result = std::make_unique<base::Value>();
   } else {
     result = ExtensionTabUtil::CreateWindowValueForExtension(
-        *new_window, extension(), ExtensionTabUtil::kPopulateTabs);
+        *new_window, extension(), ExtensionTabUtil::kPopulateTabs,
+        source_context_type());
   }
 
   return RespondNow(OneArgument(std::move(result)));
@@ -788,7 +791,8 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
     browser->window()->FlashFrame(*params->update_info.draw_attention);
 
   return RespondNow(OneArgument(ExtensionTabUtil::CreateWindowValueForExtension(
-      *browser, extension(), ExtensionTabUtil::kDontPopulateTabs)));
+      *browser, extension(), ExtensionTabUtil::kDontPopulateTabs,
+      source_context_type())));
 }
 
 ExtensionFunction::ResponseAction WindowsRemoveFunction::Run() {
@@ -842,9 +846,9 @@ ExtensionFunction::ResponseAction TabsGetSelectedFunction::Run() {
   WebContents* contents = tab_strip->GetActiveWebContents();
   if (!contents)
     return RespondNow(Error(tabs_constants::kNoSelectedTabError));
-  return RespondNow(
-      ArgumentList(tabs::Get::Results::Create(*CreateTabObjectHelper(
-          contents, extension(), tab_strip, tab_strip->active_index()))));
+  return RespondNow(ArgumentList(tabs::Get::Results::Create(
+      *CreateTabObjectHelper(contents, extension(), source_context_type(),
+                             tab_strip, tab_strip->active_index()))));
 }
 
 ExtensionFunction::ResponseAction TabsGetAllInWindowFunction::Run() {
@@ -861,8 +865,8 @@ ExtensionFunction::ResponseAction TabsGetAllInWindowFunction::Run() {
   if (!GetBrowserFromWindowID(this, window_id, &browser, &error))
     return RespondNow(Error(error));
 
-  return RespondNow(
-      OneArgument(ExtensionTabUtil::CreateTabList(browser, extension())));
+  return RespondNow(OneArgument(ExtensionTabUtil::CreateTabList(
+      browser, extension(), source_context_type())));
 }
 
 ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
@@ -1031,9 +1035,9 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
       if (loading_status_set && loading != web_contents->IsLoading())
         continue;
 
-      result->Append(
-          CreateTabObjectHelper(web_contents, extension(), tab_strip, i)
-              ->ToValue());
+      result->Append(CreateTabObjectHelper(web_contents, extension(),
+                                           source_context_type(), tab_strip, i)
+                         ->ToValue());
     }
   }
 
@@ -1097,9 +1101,9 @@ ExtensionFunction::ResponseAction TabsDuplicateFunction::Run() {
     return RespondNow(Error(kUnknownErrorDoNotUse));
   }
 
-  return RespondNow(
-      ArgumentList(tabs::Get::Results::Create(*CreateTabObjectHelper(
-          new_contents, extension(), new_tab_strip, new_tab_index))));
+  return RespondNow(ArgumentList(tabs::Get::Results::Create(
+      *CreateTabObjectHelper(new_contents, extension(), source_context_type(),
+                             new_tab_strip, new_tab_index))));
 }
 
 ExtensionFunction::ResponseAction TabsGetFunction::Run() {
@@ -1117,7 +1121,8 @@ ExtensionFunction::ResponseAction TabsGetFunction::Run() {
   }
 
   return RespondNow(ArgumentList(tabs::Get::Results::Create(
-      *CreateTabObjectHelper(contents, extension(), tab_strip, tab_index))));
+      *CreateTabObjectHelper(contents, extension(), source_context_type(),
+                             tab_strip, tab_index))));
 }
 
 ExtensionFunction::ResponseAction TabsGetCurrentFunction::Run() {
@@ -1128,8 +1133,8 @@ ExtensionFunction::ResponseAction TabsGetCurrentFunction::Run() {
   WebContents* caller_contents = GetSenderWebContents();
   std::unique_ptr<base::ListValue> results;
   if (caller_contents && ExtensionTabUtil::GetTabId(caller_contents) >= 0) {
-    results = tabs::Get::Results::Create(
-        *CreateTabObjectHelper(caller_contents, extension(), nullptr, -1));
+    results = tabs::Get::Results::Create(*CreateTabObjectHelper(
+        caller_contents, extension(), source_context_type(), nullptr, -1));
   }
   return RespondNow(results ? ArgumentList(std::move(results)) : NoArguments());
 }
@@ -1177,7 +1182,8 @@ ExtensionFunction::ResponseAction TabsHighlightFunction::Run() {
   selection.set_active(active_index);
   browser->tab_strip_model()->SetSelectionFromModel(std::move(selection));
   return RespondNow(OneArgument(ExtensionTabUtil::CreateWindowValueForExtension(
-      *browser, extension(), ExtensionTabUtil::kPopulateTabs)));
+      *browser, extension(), ExtensionTabUtil::kPopulateTabs,
+      source_context_type())));
 }
 
 bool TabsHighlightFunction::HighlightTab(TabStripModel* tabstrip,
@@ -1371,8 +1377,8 @@ ExtensionFunction::ResponseValue TabsUpdateFunction::GetResult() {
   if (!has_callback())
     return NoArguments();
 
-  return ArgumentList(tabs::Get::Results::Create(
-      *CreateTabObjectHelper(web_contents_, extension(), nullptr, -1)));
+  return ArgumentList(tabs::Get::Results::Create(*CreateTabObjectHelper(
+      web_contents_, extension(), source_context_type(), nullptr, -1)));
 }
 
 void TabsUpdateFunction::OnExecuteCodeFinished(
@@ -1506,6 +1512,7 @@ bool TabsMoveFunction::MoveTab(int tab_id,
 
       if (has_callback()) {
         tab_values->Append(CreateTabObjectHelper(web_contents_raw, extension(),
+                                                 source_context_type(),
                                                  target_tab_strip, *new_index)
                                ->ToValue());
       }
@@ -1527,6 +1534,7 @@ bool TabsMoveFunction::MoveTab(int tab_id,
 
   if (has_callback()) {
     tab_values->Append(CreateTabObjectHelper(contents, extension(),
+                                             source_context_type(),
                                              source_tab_strip, *new_index)
                            ->ToValue());
   }
@@ -2122,8 +2130,9 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
 
   // Create the Tab object and return it in case of success.
   if (contents) {
-    return RespondNow(ArgumentList(tabs::Discard::Results::Create(
-        *CreateTabObjectHelper(contents, extension(), nullptr, -1))));
+    return RespondNow(
+        ArgumentList(tabs::Discard::Results::Create(*CreateTabObjectHelper(
+            contents, extension(), source_context_type(), nullptr, -1))));
   }
 
   // Return appropriate error message otherwise.

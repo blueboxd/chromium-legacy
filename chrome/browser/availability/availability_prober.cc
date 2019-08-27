@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
@@ -22,6 +23,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
@@ -57,6 +59,8 @@ std::string NameForClient(AvailabilityProber::ClientName name) {
   switch (name) {
     case AvailabilityProber::ClientName::kLitepages:
       return "Litepages";
+    case AvailabilityProber::ClientName::kLitepagesOriginCheck:
+      return "LitepagesOriginCheck";
   }
   NOTREACHED();
   return std::string();
@@ -276,7 +280,6 @@ AvailabilityProber::AvailabilityProber(
       url_loader_factory_(url_loader_factory),
       weak_factory_(this) {
   DCHECK(delegate_);
-  DCHECK(pref_service_);
 
   // The NetworkConnectionTracker can only be used directly on the UI thread.
   // Otherwise we use the cross-thread call.
@@ -288,8 +291,11 @@ AvailabilityProber::AvailabilityProber(
         base::BindOnce(&AvailabilityProber::AddSelfAsNetworkConnectionObserver,
                        weak_factory_.GetWeakPtr()));
   }
-  cached_probe_results_ =
-      pref_service_->GetDictionary(pref_key_)->CreateDeepCopy();
+
+  if (pref_service_) {
+    cached_probe_results_ =
+        pref_service_->GetDictionary(pref_key_)->CreateDeepCopy();
+  }
 }
 
 AvailabilityProber::~AvailabilityProber() {
@@ -582,10 +588,13 @@ base::Optional<bool> AvailabilityProber::LastProbeWasSuccessful() {
 
 void AvailabilityProber::SetOnCompleteCallback(
     AvailabilityProberOnCompleteCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   on_complete_callback_ = std::move(callback);
 }
 
 void AvailabilityProber::RecordProbeResult(bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   AvailabilityProberCacheEntry entry;
   entry.set_is_success(success);
   entry.set_last_modified(
@@ -597,21 +606,36 @@ void AvailabilityProber::RecordProbeResult(bool success) {
     return;
   }
 
-  DictionaryPrefUpdate update(pref_service_, pref_key_);
-  update->SetKey(GetCacheKeyForCurrentNetwork(), std::move(encoded.value()));
+  base::DictionaryValue* update_dict = cached_probe_results_.get();
+  if (pref_service_) {
+    DictionaryPrefUpdate update(pref_service_, pref_key_);
+    update_dict = update.Get();
+  }
 
-  if (update.Get()->DictSize() > max_cache_entries_)
-    RemoveOldestDictionaryEntry(update.Get());
+  update_dict->SetKey(GetCacheKeyForCurrentNetwork(),
+                      std::move(encoded.value()));
 
-  cached_probe_results_ = update.Get()->CreateDeepCopy();
+  if (update_dict->DictSize() > max_cache_entries_)
+    RemoveOldestDictionaryEntry(update_dict);
 
-  if (on_complete_callback_)
-    on_complete_callback_.Run(success);
+  cached_probe_results_ = update_dict->CreateDeepCopy();
 
   base::BooleanHistogram::FactoryGet(
       AppendNameToHistogram(kSuccessHistogram),
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(success);
+
+  // The callback may delete |this| so run it in a post task.
+  if (on_complete_callback_) {
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&AvailabilityProber::RunCallback,
+                                  weak_factory_.GetWeakPtr(), success));
+  }
+}
+
+void AvailabilityProber::RunCallback(bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::move(on_complete_callback_).Run(success);
 }
 
 std::string AvailabilityProber::GetCacheKeyForCurrentNetwork() const {

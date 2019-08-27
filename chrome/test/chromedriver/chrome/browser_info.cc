@@ -79,9 +79,6 @@ Status ParseBrowserString(bool has_android_package,
     return Status(kOk);
   }
 
-  const Status error =
-      Status(kUnknownError, "unrecognized Chrome version: " + browser_string);
-
   int build_no = 0;
   if (base::StartsWith(browser_string, kVersionPrefix,
                        base::CompareCase::SENSITIVE) ||
@@ -125,7 +122,8 @@ Status ParseBrowserString(bool has_android_package,
     return Status(kOk);
   }
 
-  return error;
+  return Status(kUnknownError,
+                "unrecognized Chrome version: " + browser_string);
 }
 
 Status ParseBrowserVersionString(const std::string& browser_version,

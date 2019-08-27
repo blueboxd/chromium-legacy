@@ -27,14 +27,11 @@ class AndroidPageLoadMetricsObserver
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstMeaningfulPaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadEventStart(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_complete_info) override;
 

@@ -31,17 +31,14 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   scoped_refptr<const NGBreakToken> LayoutRow(
       const NGBlockBreakToken* next_column_token);
 
-  LogicalSize CalculateColumnSize(const LogicalSize& content_box_size);
-  LayoutUnit CalculateBalancedColumnBlockSize(const LogicalSize& column_size,
-                                              int column_count);
+  LayoutUnit CalculateBalancedColumnBlockSize(
+      const LogicalSize& column_size,
+      const NGBlockBreakToken* child_break_token);
 
-  // Stretch the column length, if allowed. We do this during column balancing,
-  // when we discover that the current length isn't large enough to fit all
-  // content.
-  LayoutUnit StretchColumnBlockSize(
-      LayoutUnit minimal_space_shortage,
-      LayoutUnit current_column_size,
-      LayoutUnit container_content_box_block_size) const;
+  // Stretch the column length. We do this during column balancing, when we
+  // discover that the current length isn't large enough to fit all content.
+  LayoutUnit StretchColumnBlockSize(LayoutUnit minimal_space_shortage,
+                                    LayoutUnit current_column_size) const;
 
   LayoutUnit ConstrainColumnBlockSize(LayoutUnit size) const;
 

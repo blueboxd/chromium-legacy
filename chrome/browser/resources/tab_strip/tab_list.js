@@ -16,6 +16,11 @@ class TabListElement extends CustomElement {
   constructor() {
     super();
 
+    /** @private {!Element} */
+    this.pinnedTabsContainerElement_ =
+        /** @type {!Element} */ (
+            this.shadowRoot.querySelector('#pinnedTabsContainer'));
+
     /** @private {!TabsApiProxy} */
     this.tabsApi_ = TabsApiProxy.getInstance();
 
@@ -35,8 +40,6 @@ class TabListElement extends CustomElement {
     this.tabsApi_.getCurrentWindow().then((currentWindow) => {
       this.windowId_ = currentWindow.id;
 
-      const fragment = document.createDocumentFragment();
-
       // TODO(johntlee): currentWindow.tabs is guaranteed to be defined because
       // `populate: true` is passed in as part of the arguments to the API.
       // Once the closure compiler is able to type `assert` to return a truthy
@@ -45,11 +48,10 @@ class TabListElement extends CustomElement {
       if (currentWindow.tabs) {
         for (const tab of currentWindow.tabs) {
           if (tab) {
-            this.onTabCreated_(tab, fragment);
+            this.onTabCreated_(tab);
           }
         }
       }
-      this.tabsContainerElement_.appendChild(fragment);
 
       this.tabsApiHandler_.onActivated.addListener(
           this.onTabActivated_.bind(this));
@@ -76,19 +78,31 @@ class TabListElement extends CustomElement {
    * @private
    */
   findTabElement_(tabId) {
-    return /** @type {?TabElement} */ (this.tabsContainerElement_.querySelector(
-        `tabstrip-tab[data-tab-id="${tabId}"]`));
+    return /** @type {?TabElement} */ (
+        this.shadowRoot.querySelector(`tabstrip-tab[data-tab-id="${tabId}"]`));
   }
 
   /**
    * @param {!TabElement} tabElement
    * @param {number} index
-   * @param {!Node=} opt_parent
    * @private
    */
-  insertTabAt_(tabElement, index, opt_parent) {
-    (opt_parent || this.tabsContainerElement_)
-        .insertBefore(tabElement, this.tabsContainerElement_.children[index]);
+  insertTabOrMoveTo_(tabElement, index) {
+    // Remove the tabElement if it already exists in the DOM
+    tabElement.remove();
+
+    if (tabElement.tab && tabElement.tab.pinned) {
+      this.pinnedTabsContainerElement_.insertBefore(
+          tabElement, this.pinnedTabsContainerElement_.childNodes[index]);
+      return;
+    }
+
+    // Pinned tabs are in their own container, so the index of non-pinned
+    // tabs need to be offset by the number of pinned tabs
+    const offsetIndex =
+        index - this.pinnedTabsContainerElement_.childElementCount;
+    this.tabsContainerElement_.insertBefore(
+        tabElement, this.tabsContainerElement_.childNodes[offsetIndex]);
   }
 
   /**
@@ -101,7 +115,7 @@ class TabListElement extends CustomElement {
     }
 
     const previouslyActiveTab =
-        this.tabsContainerElement_.querySelector('tabstrip-tab[active]');
+        this.shadowRoot.querySelector('tabstrip-tab[active]');
     if (previouslyActiveTab) {
       previouslyActiveTab.tab = /** @type {!Tab} */ (
           Object.assign({}, previouslyActiveTab.tab, {active: false}));
@@ -114,15 +128,14 @@ class TabListElement extends CustomElement {
 
   /**
    * @param {!Tab} tab
-   * @param {!Node=} opt_parent
    * @private
    */
-  onTabCreated_(tab, opt_parent) {
+  onTabCreated_(tab) {
     if (tab.windowId !== this.windowId_) {
       return;
     }
 
-    this.insertTabAt_(this.createTabElement_(tab), tab.index, opt_parent);
+    this.insertTabOrMoveTo_(this.createTabElement_(tab), tab.index);
   }
 
   /**
@@ -155,6 +168,12 @@ class TabListElement extends CustomElement {
     const tabElement = this.findTabElement_(tabId);
     if (tabElement) {
       tabElement.tab = tab;
+
+      if (changeInfo.pinned !== undefined) {
+        // If the tab is being pinned or unpinned, we need to move it to its new
+        // location
+        this.insertTabOrMoveTo_(tabElement, tab.index);
+      }
     }
   }
 }

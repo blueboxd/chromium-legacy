@@ -31,10 +31,10 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size) {
 
   aura::client::SetWindowParentingClient(host_->window(), this);
 
-  focus_client_.reset(new aura::test::TestFocusClient);
+  focus_client_ = std::make_unique<aura::test::TestFocusClient>();
   aura::client::SetFocusClient(host_->window(), focus_client_.get());
 
-  root_window_event_filter_.reset(new wm::CompoundEventFilter);
+  root_window_event_filter_ = std::make_unique<wm::CompoundEventFilter>();
   host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
 
   new wm::DefaultActivationClient(host_->window());

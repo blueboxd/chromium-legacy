@@ -56,21 +56,14 @@ bool OverlayCandidateValidatorSurfaceControl::NeedsSurfaceOccludingDamageRect()
 }
 
 void OverlayCandidateValidatorSurfaceControl::CheckOverlaySupport(
+    const PrimaryPlane* primary_plane,
     OverlayCandidateList* surfaces) {
   DCHECK(!surfaces->empty());
 
   for (auto& candidate : *surfaces) {
     if (!gl::SurfaceControl::SupportsColorSpace(candidate.color_space)) {
-      DCHECK(!candidate.use_output_surface_for_resource)
-          << "The main overlay must only use color space supported by the "
-             "device";
       candidate.overlay_handled = false;
       return;
-    }
-
-    if (candidate.use_output_surface_for_resource) {
-      AdjustOutputSurfaceOverlay(&candidate);
-      continue;
     }
 
     if (candidate.transform != display_transform_) {
@@ -106,18 +99,23 @@ void OverlayCandidateValidatorSurfaceControl::CheckOverlaySupport(
 }
 
 void OverlayCandidateValidatorSurfaceControl::AdjustOutputSurfaceOverlay(
-    OverlayCandidate* candidate) {
-  DCHECK_EQ(candidate->transform, gfx::OVERLAY_TRANSFORM_NONE);
-  DCHECK(!candidate->is_clipped);
-  DCHECK(candidate->display_rect == ClipFromOrigin(candidate->display_rect));
+    PrimaryPlane* output_surface_plane) {
+  DCHECK(output_surface_plane);
+  DCHECK(
+      gl::SurfaceControl::SupportsColorSpace(output_surface_plane->color_space))
+      << "The main overlay must only use color space supported by the "
+         "device";
 
-  candidate->transform = display_transform_;
+  DCHECK_EQ(output_surface_plane->transform, gfx::OVERLAY_TRANSFORM_NONE);
+  DCHECK(output_surface_plane->display_rect ==
+         ClipFromOrigin(output_surface_plane->display_rect));
+
+  output_surface_plane->transform = display_transform_;
   const gfx::Transform display_inverse = gfx::OverlayTransformToTransform(
       gfx::InvertOverlayTransform(display_transform_), viewport_size_);
-  display_inverse.TransformRect(&candidate->display_rect);
-  candidate->display_rect =
-      gfx::RectF(gfx::ToEnclosingRect(candidate->display_rect));
-  candidate->overlay_handled = true;
+  display_inverse.TransformRect(&output_surface_plane->display_rect);
+  output_surface_plane->display_rect =
+      gfx::RectF(gfx::ToEnclosingRect(output_surface_plane->display_rect));
 }
 
 void OverlayCandidateValidatorSurfaceControl::SetDisplayTransform(
@@ -133,6 +131,8 @@ void OverlayCandidateValidatorSurfaceControl::SetViewportSize(
 gfx::Rect
 OverlayCandidateValidatorSurfaceControl::GetOverlayDamageRectForOutputSurface(
     const OverlayCandidate& candidate) const {
+  // Should only be called after ProcessForOverlays on handled candidates.
+  DCHECK(candidate.overlay_handled);
   // When the overlay is handled by the validator, we transform its display rect
   // to the logical screen space (used by the ui when preparing the frame) that
   // the SurfaceControl expects it to be in. So in order to provide a damage
@@ -140,11 +140,6 @@ OverlayCandidateValidatorSurfaceControl::GetOverlayDamageRectForOutputSurface(
   // transformation.
   // But only if the overlay is in handled state, since the modification above
   // is only applied when we mark the overlay as handled.
-  if (!candidate.overlay_handled) {
-    return OverlayCandidateValidator::GetOverlayDamageRectForOutputSurface(
-        candidate);
-  }
-
   gfx::Size viewport_size_pre_display_transform(viewport_size_.height(),
                                                 viewport_size_.width());
   auto transform = gfx::OverlayTransformToTransform(

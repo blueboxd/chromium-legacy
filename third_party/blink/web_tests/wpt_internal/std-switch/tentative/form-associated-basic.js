@@ -29,6 +29,11 @@ function formAssociatedTests(tag, reflectionDict) {
 
   test(() => {
     let control = document.createElement(tag);
+    assert_array_equals(Object.getOwnPropertySymbols(control), []);
+  }, `A ${tag} instance should not have Symbol properties`);
+
+  test(() => {
+    let control = document.createElement(tag);
     assert_equals(control.type, tag);
   }, `${tag} supports type property`);
 

@@ -61,8 +61,8 @@ class XRCompositorCommon : public base::Thread,
   void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
                     XRFrameDataProvider::GetFrameDataCallback callback) final;
   void SetInputSourceButtonListener(
-      mojom::XRInputSourceButtonListenerAssociatedPtrInfo input_listener_info)
-      override;
+      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo
+          input_listener_info) override;
   void GetControllerDataAndSendFrameData(
       XRFrameDataProvider::GetFrameDataCallback callback,
       mojom::XRFrameDataPtr frame_data);

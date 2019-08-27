@@ -103,8 +103,8 @@ MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
 void MemEntryImpl::Open() {
   // Only a parent entry can be opened.
   DCHECK_EQ(PARENT_ENTRY, type());
+  CHECK_NE(ref_count_, std::numeric_limits<uint32_t>::max());
   ++ref_count_;
-  DCHECK_GE(ref_count_, 1);
   DCHECK(!doomed_);
 }
 
@@ -144,6 +144,7 @@ void MemEntryImpl::Doom() {
 
 void MemEntryImpl::Close() {
   DCHECK_EQ(PARENT_ENTRY, type());
+  CHECK_GT(ref_count_, 0u);
   --ref_count_;
   if (ref_count_ == 0 && !doomed_) {
     // At this point the user is clearly done writing, so make sure there isn't
@@ -156,7 +157,6 @@ void MemEntryImpl::Close() {
       }
     }
   }
-  DCHECK_GE(ref_count_, 0);
   if (!ref_count_ && doomed_)
     delete this;
 }

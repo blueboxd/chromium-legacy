@@ -29,8 +29,9 @@ class ArcThrottleObserver {
   ArcThrottleObserver(PriorityLevel level, const std::string& name);
   virtual ~ArcThrottleObserver();
 
-  // Starts observing (overridden in derived classes to register self as
-  // observer for a particular condition)
+  // Starts observing. This is overridden in derived classes to register self as
+  // observer for a particular condition. However, the base method should be
+  // called in overridden methods, so that the callback_ member is initialized.
   virtual void StartObserving(ArcBridgeService* arc_bridge_service,
                               content::BrowserContext* content,
                               const ObserverStateChangedCallback& callback);

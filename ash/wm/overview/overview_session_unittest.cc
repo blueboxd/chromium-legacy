@@ -4434,6 +4434,34 @@ TEST_F(SplitViewOverviewSessionTest, ClosingSplitViewWindow) {
             window_util::GetFocusedWindow());
 }
 
+// Test that you cannot drag from overview during the split view divider
+// animation.
+TEST_F(SplitViewOverviewSessionTest,
+       CannotDragFromOverviewDuringSplitViewDividerAnimation) {
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> overview_window = CreateTestWindow();
+  ToggleOverview();
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+
+  gfx::Point divider_drag_point =
+      split_view_controller()
+          ->split_view_divider()
+          ->GetDividerBoundsInScreen(/*is_dragging=*/false)
+          .CenterPoint();
+  split_view_controller()->StartResize(divider_drag_point);
+  divider_drag_point.Offset(20, 0);
+  split_view_controller()->Resize(divider_drag_point);
+  split_view_controller()->EndResize(divider_drag_point);
+  ASSERT_TRUE(IsDividerAnimating());
+
+  OverviewItem* overview_item = GetOverviewItemForWindow(overview_window.get());
+  overview_session()->InitiateDrag(overview_item,
+                                   overview_item->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/true);
+  EXPECT_FALSE(overview_item->IsDragItem());
+}
+
 // Test the split view and overview functionalities in clamshell mode. Split
 // view is only active when overview is active in clamshell mode.
 class SplitViewOverviewSessionInClamshellTest

@@ -23,6 +23,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_class_properties.h"
 
@@ -113,7 +114,7 @@ const char* TabCloseButton::GetClassName() const {
 void TabCloseButton::Layout() {
   ImageButton::Layout();
   auto path = std::make_unique<SkPath>();
-  gfx::Point center = GetMirroredRect(GetContentsBounds()).CenterPoint();
+  gfx::Point center = GetContentsBounds().CenterPoint();
   path->addCircle(center.x(), center.y(), GetWidth() / 2);
   SetProperty(views::kHighlightPathKey, path.release());
 }
@@ -124,6 +125,12 @@ gfx::Size TabCloseButton::CalculatePreferredSize() const {
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;
+}
+
+std::unique_ptr<views::InkDropMask> TabCloseButton::CreateInkDropMask() const {
+  gfx::Rect bounds = GetContentsBounds();
+  return std::make_unique<views::CircleInkDropMask>(
+      size(), GetMirroredRect(bounds).CenterPoint(), bounds.width() / 2);
 }
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {

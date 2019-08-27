@@ -23,8 +23,8 @@ class TabRestorePageLoadMetricsObserver
   ~TabRestorePageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy OnStart(
       content::NavigationHandle* navigation_handle,
       const GURL& currently_committed_url,
@@ -35,8 +35,7 @@ class TabRestorePageLoadMetricsObserver
           resources) override;
   page_load_metrics::PageLoadMetricsObserver::ObservePolicy
   FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  protected:
   // Whether the navigation handle is a tab restore.

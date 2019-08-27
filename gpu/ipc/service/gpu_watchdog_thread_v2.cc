@@ -23,7 +23,6 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
       is_test_mode_(is_test_mode),
       watched_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
-  weak_ptr_ = weak_factory_.GetWeakPtr();
   Arm();
 }
 
@@ -90,8 +89,14 @@ void GpuWatchdogThreadImplV2::OnInitComplete() {
   Disarm();
 }
 
+// Running on the watchdog thread.
+// On Linux, Init() will be called twice for Sandbox Initialization. The
+// watchdog is stopped and then restarted in StartSandboxLinux(). Everything
+// should be the same and continue after the second init().
 void GpuWatchdogThreadImplV2::Init() {
   last_arm_disarm_counter_ = base::subtle::NoBarrier_Load(&arm_disarm_counter_);
+  // Get and Invalidate weak_ptr should be done on the watchdog thread only.
+  weak_ptr_ = weak_factory_.GetWeakPtr();
   task_runner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
@@ -102,6 +107,7 @@ void GpuWatchdogThreadImplV2::Init() {
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
 }
 
+// Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::CleanUp() {
   weak_factory_.InvalidateWeakPtrs();
 }
@@ -120,6 +126,7 @@ void GpuWatchdogThreadImplV2::DidProcessTask(
   Disarm();
 }
 
+// Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnSuspend() {
   in_power_suspension_ = true;
   // Revoke any pending watchdog timeout task
@@ -127,6 +134,7 @@ void GpuWatchdogThreadImplV2::OnSuspend() {
   suspend_timeticks_ = base::TimeTicks::Now();
 }
 
+// Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnResume() {
   in_power_suspension_ = false;
   RestartWatchdogTimeoutTask();
@@ -155,6 +163,7 @@ void GpuWatchdogThreadImplV2::OnWatchdogForegrounded() {
   foregrounded_timeticks_ = base::TimeTicks::Now();
 }
 
+// Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
   if (!is_backgrounded_ && !in_power_suspension_) {
     // Make the timeout twice long. The system/gpu might be very slow right
@@ -191,6 +200,7 @@ void GpuWatchdogThreadImplV2::InProgress() {
   DCHECK(base::subtle::NoBarrier_Load(&arm_disarm_counter_) & 1);
 }
 
+// Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   DCHECK(!is_backgrounded_);
   DCHECK(!in_power_suspension_);

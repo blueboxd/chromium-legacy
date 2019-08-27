@@ -228,12 +228,11 @@ class UnwindHelper {
     // Add a nullptr to differentiate addresses found by unwinding and scanning.
     out_trace_[depth_++] = nullptr;
     while (depth_ < max_depth_ &&
-           reinterpret_cast<uintptr_t>(stack) < stack_segment_base_) {
-      if (CFIBacktraceAndroid::is_chrome_address(
-              reinterpret_cast<uintptr_t>(*stack))) {
+           reinterpret_cast<uintptr_t>(stack) + sizeof(uintptr_t) <= stack_segment_base_) {
+      if (CFIBacktraceAndroid::is_chrome_address(*stack)) {
         out_trace_[depth_++] = reinterpret_cast<void*>(*stack);
       }
-      ++stack;
+      stack = reinterpret_cast<uintptr_t*>(reinterpret_cast<uintptr_t>(stack) + 2);
     }
   }
 

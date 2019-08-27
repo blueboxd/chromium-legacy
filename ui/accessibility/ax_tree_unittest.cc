@@ -1166,7 +1166,8 @@ TEST(AXTreeTest, GetBoundsWithTransform) {
   tree_update.nodes.resize(3);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 400, 300);
-  tree_update.nodes[0].relative_bounds.transform.reset(new gfx::Transform());
+  tree_update.nodes[0].relative_bounds.transform =
+      std::make_unique<gfx::Transform>();
   tree_update.nodes[0].relative_bounds.transform->Scale(2.0, 2.0);
   tree_update.nodes[0].child_ids.push_back(2);
   tree_update.nodes[0].child_ids.push_back(3);
@@ -1174,7 +1175,8 @@ TEST(AXTreeTest, GetBoundsWithTransform) {
   tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(20, 10, 50, 5);
   tree_update.nodes[2].id = 3;
   tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(20, 30, 50, 5);
-  tree_update.nodes[2].relative_bounds.transform.reset(new gfx::Transform());
+  tree_update.nodes[2].relative_bounds.transform =
+      std::make_unique<gfx::Transform>();
   tree_update.nodes[2].relative_bounds.transform->Scale(2.0, 2.0);
 
   AXTree tree(tree_update);

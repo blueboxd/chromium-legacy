@@ -59,7 +59,8 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
   ~TestOverlayCandidatesOzone() override {}
 
   void CheckOverlaySupport(OverlaySurfaceCandidateList* surfaces) override {
-    (*surfaces)[0].overlay_handled = true;
+    for (auto& surface : *surfaces)
+      surface.overlay_handled = true;
   }
 };
 #endif  // defined(USE_OZONE)
@@ -191,11 +192,14 @@ class ReflectorImplTest : public testing::Test {
   }
 
 #if defined(USE_OZONE)
-  void ProcessForOverlays(viz::OverlayCandidateList* surfaces) {
+  void ProcessForOverlays(
+      viz::OverlayProcessor::OutputSurfaceOverlayPlane* output_surface_plane,
+      viz::OverlayCandidateList* surfaces) {
     overlay_processor_->SetSoftwareMirrorMode(
         output_surface_->IsSoftwareMirrorMode());
     DCHECK(overlay_processor_->get_overlay_validator());
-    overlay_processor_->get_overlay_validator()->CheckOverlaySupport(surfaces);
+    overlay_processor_->get_overlay_validator()->CheckOverlaySupport(
+        output_surface_plane, surfaces);
   }
 #endif  // defined(USE_OZONE)
 
@@ -247,12 +251,11 @@ TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
   if (features::IsVizDisplayCompositorEnabled())
     return;
   viz::OverlayCandidateList list;
-  viz::OverlayCandidate plane_1, plane_2;
-  plane_1.plane_z_order = 0;
-  plane_2.plane_z_order = 1;
-  list.push_back(plane_1);
-  list.push_back(plane_2);
-  ProcessForOverlays(&list);
+  viz::OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane;
+  viz::OverlayCandidate overlay_plane;
+  overlay_plane.plane_z_order = 1;
+  list.push_back(overlay_plane);
+  ProcessForOverlays(&output_surface_plane, &list);
   EXPECT_TRUE(list[0].overlay_handled);
 }
 
@@ -263,12 +266,11 @@ TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
     return;
   SetUpReflector();
   viz::OverlayCandidateList list;
-  viz::OverlayCandidate plane_1, plane_2;
-  plane_1.plane_z_order = 0;
-  plane_2.plane_z_order = 1;
-  list.push_back(plane_1);
-  list.push_back(plane_2);
-  ProcessForOverlays(&list);
+  viz::OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane;
+  viz::OverlayCandidate overlay_plane;
+  overlay_plane.plane_z_order = 1;
+  list.push_back(overlay_plane);
+  ProcessForOverlays(&output_surface_plane, &list);
   EXPECT_FALSE(list[0].overlay_handled);
 }
 #endif  // defined(USE_OZONE)

@@ -99,7 +99,7 @@ XWindowEventManager::~XWindowEventManager() {
 void XWindowEventManager::SelectEvents(XID xid, uint32_t event_mask) {
   std::unique_ptr<MultiMask>& mask = mask_map_[xid];
   if (!mask)
-    mask.reset(new MultiMask());
+    mask = std::make_unique<MultiMask>();
   uint32_t old_mask = mask_map_[xid]->ToMask();
   mask->AddMask(event_mask);
   AfterMaskChanged(xid, old_mask);

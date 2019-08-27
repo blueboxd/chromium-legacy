@@ -38,10 +38,6 @@ bool WebAppBrowserController::ShouldShowCustomTabBar() const {
   return false;
 }
 
-bool WebAppBrowserController::HasTitlebarToolbar() const {
-  return true;
-}
-
 gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
   // TODO(https://crbug.com/966290): Complete implementation.
   return gfx::ImageSkia();

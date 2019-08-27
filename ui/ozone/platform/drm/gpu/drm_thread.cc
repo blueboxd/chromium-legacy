@@ -125,8 +125,9 @@ void DrmThread::RunTaskAfterWindowReady(gfx::AcceleratedWidget window,
 }
 
 void DrmThread::Init() {
-  device_manager_.reset(new DrmDeviceManager(std::move(device_generator_)));
-  screen_manager_.reset(new ScreenManager());
+  device_manager_ =
+      std::make_unique<DrmDeviceManager>(std::move(device_generator_));
+  screen_manager_ = std::make_unique<ScreenManager>();
   display_manager_.reset(
       new DrmGpuDisplayManager(screen_manager_.get(), device_manager_.get()));
 

@@ -103,8 +103,7 @@ class PageLoadMetricsTestWaiter
 
     void OnTimingUpdate(
         content::RenderFrameHost* subframe_rfh,
-        const page_load_metrics::mojom::PageLoadTiming& timing,
-        const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+        const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
     void OnCpuTimingUpdate(
         content::RenderFrameHost* subframe_rfh,
@@ -120,12 +119,10 @@ class PageLoadMetricsTestWaiter
 
     void OnFeaturesUsageObserved(
         content::RenderFrameHost* rfh,
-        const page_load_metrics::mojom::PageLoadFeatures&,
-        const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+        const page_load_metrics::mojom::PageLoadFeatures&) override;
 
     void OnDidFinishSubFrameNavigation(
-        content::NavigationHandle* navigation_handle,
-        const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+        content::NavigationHandle* navigation_handle) override;
     void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                           const gfx::Size& frame_size) override;
 
@@ -178,8 +175,7 @@ class PageLoadMetricsTestWaiter
   // MetricsWebContentsObserver. Stops waiting if expectations are satsfied
   // after update.
   void OnTimingUpdated(content::RenderFrameHost* subframe_rfh,
-                       const page_load_metrics::mojom::PageLoadTiming& timing,
-                       const page_load_metrics::PageLoadExtraInfo& extra_info);
+                       const page_load_metrics::mojom::PageLoadTiming& timing);
 
   // Updates observed page fields when a timing update is received by the
   // MetricsWebContentsObserver. Stops waiting if expectations are satsfied
@@ -203,15 +199,13 @@ class PageLoadMetricsTestWaiter
   // Updates |observed_web_features_| to record any new feature observed.
   // Stops waiting if expectations are satisfied after update.
   void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,
-                               const mojom::PageLoadFeatures& features,
-                               const PageLoadExtraInfo& extra_info);
+                               const mojom::PageLoadFeatures& features);
 
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size);
 
   void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
+      content::NavigationHandle* navigation_handle);
 
   void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override;
 

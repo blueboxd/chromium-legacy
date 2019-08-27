@@ -1,7 +1,8 @@
 This is a testharness.js-based test.
-Found 660 tests; 634 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 662 tests; 636 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
+PASS Partial interface mixin DocumentOrShadowRoot: original interface mixin defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
 PASS Partial interface HTMLAnchorElement: original interface defined
 PASS Partial interface HTMLAreaElement: original interface defined
@@ -656,6 +657,7 @@ PASS HTMLCollection interface: existence and properties of interface object
 PASS Node interface: existence and properties of interface object
 PASS Document interface: existence and properties of interface object
 PASS DocumentFragment interface: existence and properties of interface object
+PASS ShadowRoot interface: existence and properties of interface object
 PASS Element interface: existence and properties of interface object
 PASS DOMTokenList interface: existence and properties of interface object
 PASS UIEvent interface: existence and properties of interface object

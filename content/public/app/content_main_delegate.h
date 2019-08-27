@@ -121,7 +121,7 @@ class CONTENT_EXPORT ContentMainDelegate {
       const base::Closure& quit_closure,
       service_manager::BackgroundServiceManager* service_manager);
 
-  // Allows the embedder to perform platform-specific initializatioion before
+  // Allows the embedder to perform platform-specific initialization before
   // creating the main message loop.
   virtual void PreCreateMainMessageLoop() {}
 
@@ -131,21 +131,23 @@ class CONTENT_EXPORT ContentMainDelegate {
   // created should override and return false.
   virtual bool ShouldCreateFeatureList();
 
-  // Allows the embedder to perform its own initialization after content
-  // performed its own and already brought up MessageLoop, ThreadPool, field
-  // trials and FeatureList (by default).
-  // |is_running_tests| indicates whether it is running in tests.
-  virtual void PostEarlyInitialization(bool is_running_tests) {}
-
   // Allows the embedder to perform initialization once field trials/FeatureList
   // initialization has completed if ShouldCreateFeatureList() returns true.
   // Otherwise, the embedder is responsible for calling this method once feature
   // list initialization is complete.
   virtual void PostFieldTrialInitialization() {}
 
-  // Allows the embedder to perform its own initialization after the
-  // TaskScheduler is started.
-  virtual void PostTaskSchedulerStart() {}
+  // Allows the embedder to perform its own initialization after early content
+  // initialization. At this point, it is possible to post to base::ThreadPool
+  // or to the main thread loop via base::ThreadTaskRunnerHandle, but the tasks
+  // won't run immediately.
+  //
+  // If ShouldCreateFeatureList() returns true, the field trials and FeatureList
+  // have been initialized. Otherwise, the implementation must initialize the
+  // field trials and FeatureList and call PostFieldTrialInitialization().
+  //
+  // |is_running_tests| indicates whether it is running in tests.
+  virtual void PostEarlyInitialization(bool is_running_tests) {}
 
  protected:
   friend class ContentClientInitializer;

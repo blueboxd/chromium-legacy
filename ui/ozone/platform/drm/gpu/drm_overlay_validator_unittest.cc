@@ -120,12 +120,12 @@ void DrmOverlayValidatorTest::SetUp() {
   }};
   InitializeDrmState({crtc_state});
 
-  screen_manager_.reset(new ui::ScreenManager());
+  screen_manager_ = std::make_unique<ui::ScreenManager>();
   screen_manager_->AddDisplayController(drm_, kCrtcIdBase, kConnectorIdBase);
   screen_manager_->ConfigureDisplayController(
       drm_, kCrtcIdBase, kConnectorIdBase, gfx::Point(), kDefaultMode);
 
-  drm_device_manager_.reset(new ui::DrmDeviceManager(nullptr));
+  drm_device_manager_ = std::make_unique<ui::DrmDeviceManager>(nullptr);
 
   std::unique_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));
@@ -134,7 +134,7 @@ void DrmOverlayValidatorTest::SetUp() {
       gfx::Rect(gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
   screen_manager_->AddWindow(kDefaultWidgetHandle, std::move(window));
   window_ = screen_manager_->GetWindow(kDefaultWidgetHandle);
-  overlay_validator_.reset(new ui::DrmOverlayValidator(window_));
+  overlay_validator_ = std::make_unique<ui::DrmOverlayValidator>(window_);
 
   overlay_rect_ =
       gfx::Rect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2);

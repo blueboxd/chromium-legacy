@@ -13,11 +13,13 @@
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/declarative_net_request.h"
@@ -329,12 +331,29 @@ DeclarativeNetRequestSetActionCountAsBadgeTextFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(error.empty());
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
+  if (params->enable == prefs->GetDNRUseActionCountAsBadgeText(extension_id()))
+    return RespondNow(NoArguments());
+
   prefs->SetDNRUseActionCountAsBadgeText(extension_id(), params->enable);
 
-  // TODO(crbug.com/979068): If the preference is switched on, update the
-  // extension's badge text with the number of actions matched for this
-  // extension. Otherwise, clear the badge text for the extension's icon and
-  // show the default badge text.
+  // If the preference is switched on, update the extension's badge text with
+  // the number of actions matched for this extension. Otherwise, clear the
+  // action count for the extension's icon and show the default badge text if
+  // set.
+  if (params->enable) {
+    declarative_net_request::RulesMonitorService* rules_monitor_service =
+        declarative_net_request::RulesMonitorService::Get(browser_context());
+    DCHECK(rules_monitor_service);
+
+    const declarative_net_request::ActionTracker& action_tracker =
+        rules_monitor_service->ruleset_manager()->action_tracker();
+    action_tracker.OnPreferenceEnabled(extension_id());
+  } else {
+    DCHECK(ExtensionsAPIClient::Get());
+    ExtensionsAPIClient::Get()->ClearActionCount(browser_context(),
+                                                 *extension());
+  }
+
   return RespondNow(NoArguments());
 }
 

@@ -508,8 +508,9 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
     const GURL& origin) {
 #if defined(OS_ANDROID)
-  (new CredentialLeakControllerAndroid(leak_type, origin))
-      ->ShowDialog(web_contents()->GetTopLevelNativeWindow());
+  (new CredentialLeakControllerAndroid(
+       leak_type, origin, web_contents()->GetTopLevelNativeWindow()))
+      ->ShowDialog();
 #else   // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());

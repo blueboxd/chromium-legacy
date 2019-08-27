@@ -46,7 +46,8 @@ class NativeFileSystemManagerImplTest : public testing::Test {
         file_system_context_, chrome_blob_context_, &permission_context_,
         /*off_the_record=*/false);
 
-    manager_->BindRequest(kBindingContext, mojo::MakeRequest(&manager_ptr_));
+    manager_->BindReceiver(kBindingContext,
+                           manager_remote_.BindNewPipeAndPassReceiver());
   }
 
   template <typename HandleType>
@@ -80,7 +81,7 @@ class NativeFileSystemManagerImplTest : public testing::Test {
   testing::StrictMock<MockNativeFileSystemPermissionContext>
       permission_context_;
   scoped_refptr<NativeFileSystemManagerImpl> manager_;
-  blink::mojom::NativeFileSystemManagerPtr manager_ptr_;
+  mojo::Remote<blink::mojom::NativeFileSystemManager> manager_remote_;
 
   scoped_refptr<FixedNativeFileSystemPermissionGrant> ask_grant_ =
       base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
@@ -93,7 +94,7 @@ class NativeFileSystemManagerImplTest : public testing::Test {
 TEST_F(NativeFileSystemManagerImplTest, GetSandboxedFileSystem_Permissions) {
   blink::mojom::NativeFileSystemDirectoryHandlePtr root;
   base::RunLoop loop;
-  manager_ptr_->GetSandboxedFileSystem(base::BindLambdaForTesting(
+  manager_remote_->GetSandboxedFileSystem(base::BindLambdaForTesting(
       [&](blink::mojom::NativeFileSystemErrorPtr result,
           blink::mojom::NativeFileSystemDirectoryHandlePtr handle) {
         EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk, result->status);

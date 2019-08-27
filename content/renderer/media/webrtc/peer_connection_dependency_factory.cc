@@ -29,7 +29,6 @@
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/media/webrtc/audio_codec_factory.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/media/webrtc/video_codec_factory.h"
@@ -48,6 +47,7 @@
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -329,8 +329,8 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   cricket::MediaEngineDependencies media_deps;
   media_deps.task_queue_factory = pcf_deps.task_queue_factory.get();
   media_deps.adm = audio_device_.get();
-  media_deps.audio_encoder_factory = CreateWebrtcAudioEncoderFactory();
-  media_deps.audio_decoder_factory = CreateWebrtcAudioDecoderFactory();
+  media_deps.audio_encoder_factory = blink::CreateWebrtcAudioEncoderFactory();
+  media_deps.audio_decoder_factory = blink::CreateWebrtcAudioDecoderFactory();
   media_deps.video_encoder_factory = std::move(webrtc_encoder_factory);
   media_deps.video_decoder_factory = std::move(webrtc_decoder_factory);
   media_deps.audio_processing = webrtc::AudioProcessingBuilder().Create();

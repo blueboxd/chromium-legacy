@@ -177,7 +177,7 @@ bool SurfacelessSkiaGlRenderer::Initialize() {
     primary_plane_rect_ = gfx::Rect(size_);
 
   for (size_t i = 0; i < base::size(buffers_); ++i) {
-    buffers_[i].reset(new BufferWrapper());
+    buffers_[i] = std::make_unique<BufferWrapper>();
     if (!buffers_[i]->Initialize(gr_context_.get(), widget_,
                                  primary_plane_rect_.size()))
       return false;
@@ -186,7 +186,7 @@ bool SurfacelessSkiaGlRenderer::Initialize() {
   if (command_line->HasSwitch(kEnableOverlay)) {
     gfx::Size overlay_size = gfx::Size(size_.width() / 8, size_.height() / 8);
     for (size_t i = 0; i < base::size(overlay_buffer_); ++i) {
-      overlay_buffer_[i].reset(new BufferWrapper());
+      overlay_buffer_[i] = std::make_unique<BufferWrapper>();
       overlay_buffer_[i]->Initialize(gr_context_.get(),
                                      gfx::kNullAcceleratedWidget, overlay_size);
       SkCanvas* sk_canvas = overlay_buffer_[i]->sk_surface()->getCanvas();
@@ -275,7 +275,7 @@ void SurfacelessSkiaGlRenderer::PostRenderFrameTask(
   switch (result) {
     case gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS:
       for (size_t i = 0; i < base::size(buffers_); ++i) {
-        buffers_[i].reset(new BufferWrapper());
+        buffers_[i] = std::make_unique<BufferWrapper>();
         if (!buffers_[i]->Initialize(gr_context_.get(), widget_,
                                      primary_plane_rect_.size()))
           LOG(FATAL) << "Failed to recreate buffer";

@@ -152,6 +152,12 @@ base::TimeDelta LitePageRedirectPreviewPreresolvePreconnectInterval();
 // The duration in between probes to the lite page redirect server.
 base::TimeDelta LitePageRedirectPreviewProbeInterval();
 
+// Whether the origin should be successfully probed before showing a preview.
+bool LitePageRedirectShouldProbeOrigin();
+
+// The timeout for the origin probe on lite page redirect previews.
+base::TimeDelta LitePageRedirectPreviewOriginProbeTimeout();
+
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 

@@ -11,6 +11,7 @@
     android:layout_width="wrap_content"
     android:gravity="center_vertical"
     android:background="@drawable/navigation_bubble_shadow"
+    android:animateLayoutChanges="true"
     android:orientation="horizontal">
 
     <org.chromium.ui.widget.ChromeImageView

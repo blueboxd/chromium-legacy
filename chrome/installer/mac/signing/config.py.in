@@ -147,8 +147,8 @@ class CodeSignConfig(object):
         return None
 
     @property
-    def dmg_basename(self):
-        """Returns the file basename of the packaged DMG."""
+    def packaging_basename(self):
+        """Returns the file basename of the packaged output files."""
         return '{}-{}'.format(self.app_product.replace(' ', ''), self.version)
 
     @property

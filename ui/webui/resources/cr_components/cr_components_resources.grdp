@@ -187,14 +187,6 @@
                file="cr_components/chromeos/network/network_password_input.js"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_HTML"
-               file="cr_components/chromeos/network/network_property_list.html"
-               type="chrome_html"
-               compress="gzip" />
-    <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_JS"
-               file="cr_components/chromeos/network/network_property_list.js"
-               type="chrome_html"
-               compress="gzip" />
     <structure name="IDR_WEBUI_CHROMEOS_NETWORK_PROPERTY_LIST_MOJO_HTML"
                file="cr_components/chromeos/network/network_property_list_mojo.html"
                type="chrome_html"

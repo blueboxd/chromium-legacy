@@ -421,7 +421,15 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // Screen readers might not do the right thing if they're not aware of what
   // has focus, so always try that first. Nothing will be fired if the window
   // itself isn't focused or if focus hasn't changed.
-  FireFocusEventsIfNeeded();
+  //
+  // We need to fire focus events specifically from the root manager, since we
+  // need the top document's delegate to check if its view has focus.
+  //
+  // If this manager is disconnected from the top document, then root_manager
+  // will be a null pointer and FireFocusEventsIfNeeded won't be able to
+  // retrieve the global focus (not firing an event anyway).
+  if (root_manager)
+    root_manager->FireFocusEventsIfNeeded();
 
   bool received_load_complete_event = false;
   // Fire any events related to changes to the tree.

@@ -196,6 +196,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebPageImportanceSignals* PageImportanceSignals() override;
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
+  void PutPageIntoBackForwardCache() override;
+  void RestorePageFromBackForwardCache() override;
   WebWidget* MainFrameWidget() override;
   void SetBaseBackgroundColor(SkColor) override;
   void SetBackgroundColorOverride(SkColor) override;

@@ -485,6 +485,15 @@ void ChromotingSession::Core::Invalidate() {
 void ChromotingSession::Core::ConnectOnNetworkThread() {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
+  if (session_context_->info.host_ftl_id.empty()) {
+    // Simulate a CONNECTING state to make sure it doesn't skew telemetry.
+    OnConnectionState(protocol::ConnectionToHost::State::CONNECTING,
+                      protocol::OK);
+    OnConnectionState(protocol::ConnectionToHost::State::FAILED,
+                      protocol::INCOMPATIBLE_PROTOCOL);
+    return;
+  }
+
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   client_context_.reset(new ClientContext(network_task_runner()));
@@ -546,11 +555,9 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
   client_auth_config.fetch_secret_callback =
       base::BindRepeating(&Core::FetchSecret, GetWeakPtr());
 
-  std::string signaling_id = session_context_->info.host_ftl_id.empty()
-                                 ? session_context_->info.host_jid
-                                 : session_context_->info.host_ftl_id;
   client_->Start(signaling_.get(), client_auth_config, transport_context,
-                 signaling_id, session_context_->info.capabilities);
+                 session_context_->info.host_ftl_id,
+                 session_context_->info.capabilities);
 }
 
 void ChromotingSession::Core::LogPerfStats() {

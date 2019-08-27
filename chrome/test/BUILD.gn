@@ -1060,6 +1060,8 @@ if (!is_android) {
       "../browser/renderer_context_menu/spelling_menu_observer_browsertest.cc",
       "../browser/renderer_host/render_process_host_chrome_browsertest.cc",
       "../browser/repost_form_warning_browsertest.cc",
+      "../browser/resource_coordinator/discard_before_unload_helper.cc",
+      "../browser/resource_coordinator/discard_before_unload_helper.h",
       "../browser/resource_coordinator/discard_before_unload_helper_browsertest.cc",
       "../browser/resource_coordinator/local_site_characteristics_data_store_factory_browsertest.cc",
       "../browser/resource_coordinator/local_site_characteristics_data_unittest_utils.cc",

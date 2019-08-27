@@ -2450,9 +2450,7 @@ TEST_F(AppListViewTest, BackAction) {
 // Tests selecting search result to show embedded Assistant UI.
 TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
   scoped_feature_list_.InitWithFeatures(
-      {chromeos::features::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   Show();
 
   // Initially the search box is inactive, hitting Enter to activate it.
@@ -2484,9 +2482,7 @@ TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
 TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {chromeos::features::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2500,9 +2496,7 @@ TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
 TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {chromeos::features::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2524,9 +2518,7 @@ TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
 TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {chromeos::features::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);
@@ -2561,9 +2553,7 @@ TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
 TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {chromeos::features::kAssistantFeature,
-       app_list_features::kEnableEmbeddedAssistantUI},
-      {});
+      {app_list_features::kEnableEmbeddedAssistantUI}, {});
   ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
 
   Initialize(false /*is_tablet_mode*/);

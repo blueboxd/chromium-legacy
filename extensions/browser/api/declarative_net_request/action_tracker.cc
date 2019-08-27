@@ -34,8 +34,24 @@ void ActionTracker::OnRuleMatched(const std::vector<ExtensionId>& extension_ids,
     if (extension_prefs_->GetDNRUseActionCountAsBadgeText(extension_id)) {
       DCHECK(ExtensionsAPIClient::Get());
       ExtensionsAPIClient::Get()->UpdateActionCount(
-          browser_context_, extension_id, tab_id, action_count);
+          browser_context_, extension_id, tab_id, action_count,
+          false /* clear_badge_text */);
     }
+  }
+}
+
+void ActionTracker::OnPreferenceEnabled(const ExtensionId& extension_id) const {
+  DCHECK(extension_prefs_->GetDNRUseActionCountAsBadgeText(extension_id));
+
+  for (auto it = actions_matched_.begin(); it != actions_matched_.end(); ++it) {
+    if (it->first.first != extension_id)
+      continue;
+
+    int tab_id = it->first.second;
+    int action_count = it->second;
+    ExtensionsAPIClient::Get()->UpdateActionCount(
+        browser_context_, extension_id, tab_id, action_count,
+        true /* clear_badge_text */);
   }
 }
 
@@ -70,7 +86,8 @@ void ActionTracker::ResetActionCountForTab(int tab_id) {
     if (extension_prefs_->GetDNRUseActionCountAsBadgeText(extension_id)) {
       DCHECK(ExtensionsAPIClient::Get());
       ExtensionsAPIClient::Get()->UpdateActionCount(
-          browser_context_, extension_id, tab_id, 0 /* action_count */);
+          browser_context_, extension_id, tab_id, 0 /* action_count */,
+          false /* clear_badge_text */);
     }
   }
 }

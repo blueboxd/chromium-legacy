@@ -22,11 +22,12 @@ class CredentialLeakControllerAndroid {
  public:
   CredentialLeakControllerAndroid(
       password_manager::CredentialLeakType leak_type,
-      const GURL& origin);
+      const GURL& origin,
+      ui::WindowAndroid* window_android);
   ~CredentialLeakControllerAndroid();
 
   // Called when a leaked credential was detected.
-  void ShowDialog(ui::WindowAndroid* window_android);
+  void ShowDialog();
 
   // Called from the UI when the dialog dismissal was requested.
   // Will destroy the controller.
@@ -59,6 +60,8 @@ class CredentialLeakControllerAndroid {
   const password_manager::CredentialLeakType leak_type_;
 
   const GURL origin_;
+
+  ui::WindowAndroid* window_android_;
 
   std::unique_ptr<CredentialLeakDialogViewAndroid> dialog_view_;
 

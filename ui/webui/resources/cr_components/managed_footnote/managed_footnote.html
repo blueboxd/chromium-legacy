@@ -42,7 +42,9 @@
 
     <template is="dom-if" if="[[isManaged_]]">
       <iron-icon icon="cr:domain"></iron-icon>
-      <div id="content" inner-h-t-m-l="[[i18nAdvanced('managedByOrg')]]"></div>
+      <div id="content"
+          inner-h-t-m-l="[[getManagementString_(showDeviceInfo)]]">
+      </div>
     </template>
   </template>
   <script src="managed_footnote.js"></script>

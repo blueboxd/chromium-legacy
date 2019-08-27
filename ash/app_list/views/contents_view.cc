@@ -299,9 +299,10 @@ void ContentsView::ShowEmbeddedAssistantUI(bool show) {
   DCHECK_GE(assistant_page, 0);
 
   // Hide or Show results.
-  GetPageView(assistant_page)->SetVisible(show);
+  auto* page_view = GetPageView(assistant_page);
+  page_view->SetVisible(show);
   if (show)
-    GetPageView(assistant_page)->RequestFocus();
+    page_view->RequestFocus();
 
   const int search_results_page =
       GetPageIndexForState(ash::AppListState::kStateSearchResults);
@@ -311,8 +312,15 @@ void ContentsView::ShowEmbeddedAssistantUI(bool show) {
   // No animation when transiting from/to |search_results_page| and in test.
   const bool animate = !AppListView::ShortAnimationsForTesting() &&
                        page_before_assistant_ != search_results_page;
+  const int current_page = pagination_model_.selected_page();
   SetActiveStateInternal(show ? assistant_page : page_before_assistant_,
                          animate);
+  // Sometimes the page stays in |assistant_page|, but the preferred bounds
+  // might change meanwhile.
+  if (show && current_page == assistant_page) {
+    page_view->SetBoundsRect(page_view->GetPageBoundsForState(
+        ash::AppListState::kStateEmbeddedAssistant));
+  }
   // If |page_before_assistant_| is kStateApps, we need to set app_list_view to
   // kPeeking and layout the suggestion chips.
   if (!show && page_before_assistant_ ==

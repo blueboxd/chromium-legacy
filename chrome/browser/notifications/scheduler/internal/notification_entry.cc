@@ -21,8 +21,7 @@ bool NotificationEntry::operator==(const NotificationEntry& other) const {
   return type == other.type && guid == other.guid &&
          create_time == other.create_time &&
          notification_data == other.notification_data &&
-         small_icon_uuid == other.small_icon_uuid &&
-         large_icon_uuid == other.large_icon_uuid &&
+         icons_uuid == other.icons_uuid &&
          schedule_params == other.schedule_params;
 }
 

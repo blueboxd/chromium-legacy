@@ -8,7 +8,6 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
@@ -734,7 +733,7 @@ void AssistantInteractionController::OnUiVisible(
             assistant_controller_->ui_controller()->model()->visibility());
 
   const bool launch_with_mic_open =
-      assistant_controller_->state()->launch_with_mic_open().value_or(false);
+      AssistantState::Get()->launch_with_mic_open().value_or(false);
   const bool prefer_voice = launch_with_mic_open || IsTabletMode();
 
   // We don't explicitly start a new voice interaction if the entry point

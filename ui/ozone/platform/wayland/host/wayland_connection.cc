@@ -354,8 +354,9 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind to wl_data_device_manager global";
       return;
     }
-    connection->data_device_manager_.reset(new WaylandDataDeviceManager(
-        data_device_manager.release(), connection));
+    connection->data_device_manager_ =
+        std::make_unique<WaylandDataDeviceManager>(
+            data_device_manager.release(), connection);
     connection->EnsureDataDevice();
   } else if (!connection->zwp_dmabuf_ &&
              (strcmp(interface, "zwp_linux_dmabuf_v1") == 0)) {

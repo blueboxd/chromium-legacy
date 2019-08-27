@@ -10,7 +10,6 @@
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/public/mojom/ime_controller.mojom.h"
 #include "ash/public/mojom/tray_action.mojom.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/public/mojom/vpn_list.mojom.h"
 #include "base/no_destructor.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"

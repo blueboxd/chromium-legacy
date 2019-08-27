@@ -1236,8 +1236,9 @@ UDPSOCKET_FAILURE_TEST(
     UDPSocket_DropListenerPipeOnConstruction,
     UDPSocket_ReadFails,
     WrappedUDPSocket::FailureType::kDropListenerPipeOnConstruction)
+// Flaky on all platforms. http://crbug.com/997785.
 UDPSOCKET_FAILURE_TEST(
-    UDPSocket_DropListenerPipeOnReceiveMore,
+    DISABLED_UDPSocket_DropListenerPipeOnReceiveMore,
     UDPSocket_ReadFails,
     WrappedUDPSocket::FailureType::kDropListenerPipeOnReceiveMore)
 

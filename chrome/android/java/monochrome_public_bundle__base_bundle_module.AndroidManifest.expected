@@ -888,6 +888,13 @@
         android:process=":playcore_missing_splits_activity"
         android:stateNotNeeded="true"/>
     <activity
+        android:enabled="false"
+        android:exported="false"
+        android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
+        android:process=":playcore_dialog_wrapper_activity"
+        android:stateNotNeeded="true"
+        android:theme="@style/Theme.PlayCore.Transparent"/>
+    <activity
         android:excludeFromRecents="true"
         android:exported="false"
         android:launchMode="singleInstance"

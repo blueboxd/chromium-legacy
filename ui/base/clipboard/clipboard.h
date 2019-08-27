@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
@@ -251,17 +250,15 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   // A list of allowed threads. By default, this is empty and no thread checking
   // is done (in the unit test case), but a user (like content) can set which
   // threads are allowed to call this method.
-  using AllowedThreadsVector = std::vector<base::PlatformThreadId>;
-  static base::LazyInstance<AllowedThreadsVector>::DestructorAtExit
-      allowed_threads_;
+  static std::vector<base::PlatformThreadId>& AllowedThreads();
 
   // Mapping from threads to clipboard objects.
   using ClipboardMap =
       base::flat_map<base::PlatformThreadId, std::unique_ptr<Clipboard>>;
-  static base::LazyInstance<ClipboardMap>::DestructorAtExit clipboard_map_;
+  static ClipboardMap* ClipboardMapPtr();
 
   // Mutex that controls access to |g_clipboard_map|.
-  static base::LazyInstance<base::Lock>::Leaky clipboard_map_lock_;
+  static base::Lock& ClipboardMapLock();
 
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };

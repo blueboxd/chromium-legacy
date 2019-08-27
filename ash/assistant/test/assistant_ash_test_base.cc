@@ -12,7 +12,6 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
@@ -29,7 +28,7 @@ void AssistantAshTestBase::SetUp() {
   AshTestBase::SetUp();
 
   // Enable Assistant in settings.
-  VoiceInteractionController::Get()->NotifySettingsEnabled(true);
+  AssistantState::Get()->NotifySettingsEnabled(true);
 
   // Cache controller.
   controller_ = Shell::Get()->assistant_controller();
@@ -37,7 +36,7 @@ void AssistantAshTestBase::SetUp() {
 
   // At this point our Assistant service is ready for use.
   // Indicate this by changing status from NOT_READY to STOPPED.
-  VoiceInteractionController::Get()->NotifyStatusChanged(
+  AssistantState::Get()->NotifyStatusChanged(
       mojom::VoiceInteractionState::STOPPED);
 
   DisableAnimations();

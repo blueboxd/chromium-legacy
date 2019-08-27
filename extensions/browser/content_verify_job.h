@@ -76,6 +76,8 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   void Read(const char* data, int count, MojoResult read_result);
 
   // Call once when finished adding bytes via OnDone.
+  // TODO(lazyboy): A more descriptive name of this method is warranted, "Done"
+  // is not so appropriate.
   void Done();
 
   class TestObserver {

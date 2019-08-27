@@ -231,18 +231,6 @@ TEST_F(ArcUtilTest, IsArcAllowedForUser) {
   EXPECT_TRUE(IsArcAllowedForUser(ephemeral_user));
 }
 
-TEST_F(ArcUtilTest, IsArcAllowedForChildUserWithExperiment) {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->InitFromArgv(
-      {"", "--enable-features=ArcAvailableForChildAccount"});
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine(
-      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
-  const FakeUser user(user_manager::USER_TYPE_CHILD);
-  EXPECT_TRUE(IsArcAllowedForUser(&user));
-}
-
 TEST_F(ArcUtilTest, ArcStartModeDefault) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->InitFromArgv({"", "--arc-availability=installed"});

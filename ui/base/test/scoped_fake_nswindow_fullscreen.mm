@@ -193,7 +193,7 @@ class ScopedFakeNSWindowFullscreen::Impl {
 
 ScopedFakeNSWindowFullscreen::ScopedFakeNSWindowFullscreen() {
   DCHECK(!g_fake_fullscreen_impl);
-  impl_.reset(new Impl);
+  impl_ = std::make_unique<Impl>();
   g_fake_fullscreen_impl = impl_.get();
 }
 

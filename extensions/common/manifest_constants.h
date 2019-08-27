@@ -159,7 +159,6 @@ extern const char kSpellcheckDictionaryLocale[];
 extern const char kSpellcheckDictionaryPath[];
 extern const char kStorageManagedSchema[];
 extern const char kSuggestedKey[];
-extern const char kSynthesizeExtensionAction[];
 extern const char kSystemIndicator[];
 extern const char kTheme[];
 extern const char kThemeColors[];

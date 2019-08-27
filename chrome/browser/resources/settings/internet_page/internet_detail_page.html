@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_choose_mobile.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_ip_config.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_nameservers.html">
-<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list_mojo.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
@@ -120,7 +120,7 @@
           hidden$="[[!showConnect_(managedProperties_, globalPolicy,
               managedNetworkAvailable)]]"
           disabled="[[!enableConnect_(managedProperties_, defaultNetwork,
-              networkPropertiesReceived_, outOfRange_, globalPolicy,
+              propertiesReceived_, outOfRange_, globalPolicy,
               managedNetworkAvailable)]]"
           label="$i18n{networkButtonConnect}"
           pref="[[getFakeVpnConfigPrefForEnforcement_(managedProperties_,
@@ -163,8 +163,8 @@
     <template is="dom-if" if="[[!isSecondaryUser_]]">
       <!-- Prefer this network. -->
       <template is="dom-if"
-          if="[[showPreferNetwork_(networkProperties_, managedProperties_,
-              globalPolicy, managedNetworkAvailable)]]">
+          if="[[showPreferNetwork_(managedProperties_, globalPolicy,
+              managedNetworkAvailable)]]">
         <div class="settings-box"  on-click="onPreferNetworkRowClicked_"
             actionable$="[[!isNetworkPolicyEnforced(
                 managedProperties_.priority)]]">
@@ -232,19 +232,18 @@
         <div class="secondary">[[ipAddress_]]</div>
       </div>
       <!-- Properties to always show if present. -->
-      <template is="dom-if" if="[[hasInfoFields_(networkProperties_)]]">
+      <template is="dom-if" if="[[hasInfoFields_(managedProperties_)]]">
         <div class="settings-box single-column stretch">
-          <network-property-list
-              fields="[[getInfoFields_(networkProperties_)]]"
-              edit-field-types="[[getInfoEditFieldTypes_(networkProperties_)]]"
-              property-dict="[[networkProperties_]]"
+          <network-property-list-mojo
+              fields="[[getInfoFields_(managedProperties_)]]"
+              edit-field-types="[[getInfoEditFieldTypes_(managedProperties_)]]"
+              property-dict="[[managedProperties_]]"
               on-property-change="onNetworkPropertyChange_">
-          </network-property-list>
+          </network-property-list-mojo>
         </div>
       </template>
 
-      <template is="dom-if"
-          if="[[showAdvanced_(networkProperties_, managedProperties_)]]">
+      <template is="dom-if" if="[[showAdvanced_(managedProperties_)]]">
         <!-- Advanced toggle. -->
         <cr-expand-button
             alt="$i18n{networkSectionAdvancedA11yLabel}"
@@ -256,25 +255,25 @@
         <!-- Advanced section -->
         <iron-collapse opened="[[advancedExpanded_]]">
           <div class="settings-box single-column stretch indented first"
-              hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties_)]]">
+              hidden$="[[!hasAdvancedOrDeviceFields_(managedProperties_)]]">
             <!-- Advanced properties -->
-            <network-property-list
-                hidden$="[[!hasAdvancedFields_(networkProperties_)]]"
-                fields="[[getAdvancedFields_(networkProperties_)]]"
-                property-dict="[[networkProperties_]]">
-            </network-property-list>
+            <network-property-list-mojo
+                hidden$="[[!hasAdvancedFields_(managedProperties_)]]"
+                fields="[[getAdvancedFields_(managedProperties_)]]"
+                property-dict="[[managedProperties_]]">
+            </network-property-list-mojo>
             <!-- Device properties -->
-            <network-property-list
-                hidden$="[[!hasDeviceFields_(networkProperties_)]]"
-                fields="[[getDeviceFields_(networkProperties_)]]"
-                property-dict="[[networkProperties_]]">
-            </network-property-list>
+            <network-property-list-mojo
+                hidden$="[[!hasDeviceFields_(managedProperties_)]]"
+                fields="[[getDeviceFields_(managedProperties_)]]"
+                property-dict="[[managedProperties_]]">
+            </network-property-list-mojo>
           </div>
         </iron-collapse>
       </template>
 
-      <template is="dom-if" if="[[hasNetworkSection_(networkProperties_,
-          managedProperties_, globalPolicy, managedNetworkAvailable)]]">
+      <template is="dom-if" if="[[hasNetworkSection_(managedProperties_,
+          globalPolicy, managedNetworkAvailable)]]">
         <!-- Network toggle -->
         <cr-expand-button
             alt="$i18n{networkSectionNetworkExpandA11yLabel}"
@@ -322,8 +321,8 @@
         </iron-collapse>
       </template>
 
-      <template is="dom-if" if="[[hasProxySection_(networkProperties_,
-          managedProperties_, globalPolicy, managedNetworkAvailable)]]">
+      <template is="dom-if" if="[[hasProxySection_(managedProperties_,
+          globalPolicy, managedNetworkAvailable)]]">
         <!-- Proxy toggle -->
         <cr-expand-button
             alt="$i18n{networkSectionProxyExpandA11yLabel}"
@@ -341,11 +340,13 @@
       </template>
     </template>
 
-    <tether-connection-dialog id="tetherDialog"
-        network-properties="[[networkProperties_]]"
-        on-tether-connect="onTetherConnect_"
-        out-of-range="[[outOfRange_]]">
-    </tether-connection-dialog>
+    <template is="dom-if" if="[[isTether_(managedProperties_)]]" restamp>
+      <tether-connection-dialog id="tetherDialog"
+          managed-properties="[[managedProperties_]]"
+          on-tether-connect="onTetherConnect_"
+          out-of-range="[[outOfRange_]]">
+      </tether-connection-dialog>
+    </template>
   </template>
   <script src="internet_detail_page.js"></script>
 </dom-module>

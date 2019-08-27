@@ -194,10 +194,6 @@ const char kStylusStatusSeen[] = "seen";
 // Key which corresponds to the assistantStatus property in JS.
 const char kPropertyAssistantStatus[] = "assistantStatus";
 
-// Value to which assistantStatus property is set when the device does not
-// support Assistant.
-const char kAssistantStatusUnsupported[] = "unsupported";
-
 // Value to which assistantStatus property is set when the device supports
 // Assistant.
 const char kAssistantStatusSupported[] = "supported";
@@ -389,9 +385,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
   }
 
   if (property_name == kPropertyAssistantStatus) {
-    return std::make_unique<base::Value>(
-        chromeos::features::IsAssistantEnabled() ? kAssistantStatusSupported
-                                                 : kAssistantStatusUnsupported);
+    return std::make_unique<base::Value>(kAssistantStatusSupported);
   }
 
   if (property_name == kPropertyClientId) {

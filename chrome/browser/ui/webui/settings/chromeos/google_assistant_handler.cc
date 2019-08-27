@@ -76,8 +76,7 @@ void GoogleAssistantHandler::RegisterMessages() {
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
-  if (chromeos::features::IsAssistantEnabled())
-    ash::OpenAssistantSettings();
+  ash::OpenAssistantSettings();
 }
 
 void GoogleAssistantHandler::HandleRetrainVoiceModel(

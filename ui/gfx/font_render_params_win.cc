@@ -57,7 +57,7 @@ class CachedFontRenderParams {
     if (params_)
       return *params_;
 
-    params_.reset(new FontRenderParams());
+    params_ = std::make_unique<FontRenderParams>();
     params_->antialiasing = false;
     params_->subpixel_positioning = false;
     params_->autohinter = false;
@@ -76,9 +76,8 @@ class CachedFontRenderParams {
         params_->subpixel_rendering = GetSubpixelRenderingGeometry();
       }
     }
-    singleton_hwnd_observer_.reset(new SingletonHwndObserver(
-        base::Bind(&CachedFontRenderParams::OnWndProc,
-                   base::Unretained(this))));
+    singleton_hwnd_observer_ = std::make_unique<SingletonHwndObserver>(
+        base::Bind(&CachedFontRenderParams::OnWndProc, base::Unretained(this)));
     return *params_;
   }
 

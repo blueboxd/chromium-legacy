@@ -288,14 +288,20 @@ void ServiceWorkerTaskQueue::DidUnregisterServiceWorker(
 
 base::Version ServiceWorkerTaskQueue::RetrieveRegisteredServiceWorkerVersion(
     const ExtensionId& extension_id) {
-  const base::DictionaryValue* info = nullptr;
-  if (!ExtensionPrefs::Get(browser_context_)
-           ->ReadPrefAsDictionary(extension_id,
-                                  kPrefServiceWorkerRegistrationInfo, &info)) {
-    return base::Version();
-  }
   std::string version_string;
-  info->GetString(kServiceWorkerVersion, &version_string);
+  if (browser_context_->IsOffTheRecord()) {
+    auto it = off_the_record_registrations_.find(extension_id);
+    return it != off_the_record_registrations_.end() ? it->second
+                                                     : base::Version();
+  }
+  const base::DictionaryValue* info = nullptr;
+  ExtensionPrefs::Get(browser_context_)
+      ->ReadPrefAsDictionary(extension_id, kPrefServiceWorkerRegistrationInfo,
+                             &info);
+  if (info != nullptr) {
+    info->GetString(kServiceWorkerVersion, &version_string);
+  }
+
   return base::Version(version_string);
 }
 
@@ -303,18 +309,26 @@ void ServiceWorkerTaskQueue::SetRegisteredServiceWorkerInfo(
     const ExtensionId& extension_id,
     const base::Version& version) {
   DCHECK(version.IsValid());
-  auto info = std::make_unique<base::DictionaryValue>();
-  info->SetString(kServiceWorkerVersion, version.GetString());
-  ExtensionPrefs::Get(browser_context_)
-      ->UpdateExtensionPref(extension_id, kPrefServiceWorkerRegistrationInfo,
-                            std::move(info));
+  if (browser_context_->IsOffTheRecord()) {
+    off_the_record_registrations_[extension_id] = version;
+  } else {
+    auto info = std::make_unique<base::DictionaryValue>();
+    info->SetString(kServiceWorkerVersion, version.GetString());
+    ExtensionPrefs::Get(browser_context_)
+        ->UpdateExtensionPref(extension_id, kPrefServiceWorkerRegistrationInfo,
+                              std::move(info));
+  }
 }
 
 void ServiceWorkerTaskQueue::RemoveRegisteredServiceWorkerInfo(
     const ExtensionId& extension_id) {
-  ExtensionPrefs::Get(browser_context_)
-      ->UpdateExtensionPref(extension_id, kPrefServiceWorkerRegistrationInfo,
-                            nullptr);
+  if (browser_context_->IsOffTheRecord()) {
+    off_the_record_registrations_.erase(extension_id);
+  } else {
+    ExtensionPrefs::Get(browser_context_)
+        ->UpdateExtensionPref(extension_id, kPrefServiceWorkerRegistrationInfo,
+                              nullptr);
+  }
 }
 
 void ServiceWorkerTaskQueue::RunPendingTasksIfWorkerReady(

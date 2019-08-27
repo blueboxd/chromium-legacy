@@ -97,8 +97,7 @@ bool IsAppReinstallZeroStateEnabled() {
 }
 
 bool IsEmbeddedAssistantUIEnabled() {
-  return chromeos::features::IsAssistantEnabled() &&
-         base::FeatureList::IsEnabled(kEnableEmbeddedAssistantUI);
+  return base::FeatureList::IsEnabled(kEnableEmbeddedAssistantUI);
 }
 
 bool IsAppGridGhostEnabled() {

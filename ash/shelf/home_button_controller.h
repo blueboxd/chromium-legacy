@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/app_list/app_list_controller_observer.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
@@ -33,7 +33,7 @@ class HomeButton;
 class HomeButtonController : public AppListControllerObserver,
                              public SessionObserver,
                              public TabletModeObserver,
-                             public DefaultVoiceInteractionObserver {
+                             public AssistantStateObserver {
  public:
   explicit HomeButtonController(HomeButton* button);
   ~HomeButtonController() override;
@@ -61,10 +61,9 @@ class HomeButtonController : public AppListControllerObserver,
   // TabletModeObserver:
   void OnTabletModeStarted() override;
 
-  // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override;
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
+  // AssistantStateObserver:
+  void OnAssistantStatusChanged(mojom::VoiceInteractionState state) override;
+  void OnAssistantSettingsEnabled(bool enabled) override;
 
   void OnAppListShown();
   void OnAppListDismissed();

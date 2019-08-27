@@ -82,11 +82,6 @@ class ASH_EXPORT SplitViewDragIndicators {
   void SetIndicatorState(IndicatorState indicator_state,
                          const gfx::Point& event_location);
 
-  // Called by owner of this class when split view mode ends, so that this class
-  // can show the drag indicators which are usually hidden in split view mode.
-  // https://crbug.com/946601
-  void OnSplitViewModeEnded();
-
   // Called by owner of this class when display bounds changes are observed, so
   // that this class can relayout accordingly.
   void OnDisplayBoundsChanged();

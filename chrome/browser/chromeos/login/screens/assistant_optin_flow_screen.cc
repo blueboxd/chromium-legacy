@@ -45,10 +45,10 @@ void AssistantOptInFlowScreen::Show() {
   }
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  if (chromeos::features::IsAssistantEnabled() &&
-      ::assistant::IsAssistantAllowedForProfile(
+  if (::assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) ==
-          ash::mojom::AssistantAllowedState::ALLOWED) {
+          ash::mojom::AssistantAllowedState::ALLOWED &&
+      !skip_for_testing_) {
     view_->Show();
     return;
   }

@@ -16,6 +16,7 @@
 
 namespace arc {
 
+// TODO(b/138679823): Remove the class and use AssistantState instead.
 // The client of VoiceInteractionController. It monitors various user session
 // states and notifies Ash side.  It can also be used to notify some specific
 // state changes that does not have an observer interface.

@@ -205,11 +205,6 @@ bool HostedAppBrowserController::ShouldShowCustomTabBar() const {
   return false;
 }
 
-bool HostedAppBrowserController::HasTitlebarToolbar() const {
-  // System Web Apps don't have a toolbar.
-  return IsForWebAppBrowser(browser()) && !IsForSystemWebApp();
-}
-
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
   // TODO(calamity): Use the app name to retrieve the app icon without using the
   // extensions tab helper to make icon load more immediate.

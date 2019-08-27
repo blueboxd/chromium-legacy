@@ -782,33 +782,27 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 }
 
-void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(
-    const OverlayCandidateList& overlays) {
-  if (overlays.empty())
-    return;
-
+void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
+    const OverlayProcessor::OutputSurfaceOverlayPlane& output_surface_plane) {
   DCHECK(!is_using_vulkan());
 
   if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
     return;
 
-  for (const auto& overlay_candidate : overlays) {
-    gl::GLImage* image = nullptr;
-    std::unique_ptr<gfx::GpuFence> gpu_fence;
-    if (overlay_candidate.use_output_surface_for_resource) {
-      image = output_device_->GetOverlayImage();
-      gpu_fence = output_device_->SubmitOverlayGpuFence();
-    } else {
-      NOTIMPLEMENTED_LOG_ONCE();
-    }
+  gl::GLImage* image = output_device_->GetOverlayImage();
+  std::unique_ptr<gfx::GpuFence> gpu_fence =
+      output_device_->SubmitOverlayGpuFence();
 
-    if (image) {
-      gl_surface_->ScheduleOverlayPlane(
-          overlay_candidate.plane_z_order, overlay_candidate.transform, image,
-          ToNearestRect(overlay_candidate.display_rect),
-          overlay_candidate.uv_rect, !overlay_candidate.is_opaque,
-          std::move(gpu_fence));
-    }
+  if (image) {
+    // Output surface is also z-order 0.
+    int plane_z_order = 0;
+    // Output surface always uses the full texture.
+    gfx::RectF uv_rect(0.f, 0.f, 1.f, 1.f);
+
+    gl_surface_->ScheduleOverlayPlane(
+        plane_z_order, output_surface_plane.transform, image,
+        ToNearestRect(output_surface_plane.display_rect), uv_rect,
+        output_surface_plane.enable_blending, std::move(gpu_fence));
   }
 }
 

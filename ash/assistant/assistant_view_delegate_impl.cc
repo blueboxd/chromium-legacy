@@ -8,8 +8,8 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
-#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/assistant_suggestions_controller.h"
+#include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
@@ -48,16 +48,6 @@ void AssistantViewDelegateImpl::AddObserver(
 void AssistantViewDelegateImpl::RemoveObserver(
     AssistantViewDelegateObserver* observer) {
   view_delegate_observers_.RemoveObserver(observer);
-}
-
-void AssistantViewDelegateImpl::AddStateObserver(
-    AssistantStateObserver* observer) {
-  assistant_controller_->state()->AddObserver(observer);
-}
-
-void AssistantViewDelegateImpl::RemoveStateObserver(
-    AssistantStateObserver* observer) {
-  assistant_controller_->state()->RemoveObserver(observer);
 }
 
 void AssistantViewDelegateImpl::AddInteractionModelObserver(
@@ -111,10 +101,6 @@ void AssistantViewDelegateImpl::DownloadImage(
     const GURL& url,
     AssistantImageDownloader::DownloadCallback callback) {
   assistant_controller_->DownloadImage(url, std::move(callback));
-}
-
-AssistantStateBase* AssistantViewDelegateImpl::GetState() const {
-  return assistant_controller_->state();
 }
 
 ::wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {

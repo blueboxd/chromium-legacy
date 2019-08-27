@@ -8,7 +8,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -144,7 +143,6 @@ class ChromeAssistantUtilTest : public testing::Test {
 
   void SetUp() override {
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
-    feature_list_.InitAndEnableFeature(chromeos::features::kAssistantFeature);
 
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     profile_manager_ = std::make_unique<TestingProfileManager>(
@@ -184,7 +182,6 @@ class ChromeAssistantUtilTest : public testing::Test {
 
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-  base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>

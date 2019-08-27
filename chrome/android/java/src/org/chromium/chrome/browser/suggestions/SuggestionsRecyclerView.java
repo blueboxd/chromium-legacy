@@ -81,8 +81,6 @@ public class SuggestionsRecyclerView extends RecyclerView {
 
     private Runnable mCloseContextMenuCallback;
 
-    private boolean mIsCardBeingSwiped;
-
     public SuggestionsRecyclerView(Context context) {
         this(context, null);
     }
@@ -406,8 +404,6 @@ public class SuggestionsRecyclerView extends RecyclerView {
         @Override
         public void onChildDraw(Canvas c, RecyclerView recyclerView, ViewHolder viewHolder,
                 float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            mIsCardBeingSwiped = isCurrentlyActive && dX != 0.f;
-
             // In some cases a removed child may call this method when unrelated items are
             // interacted with (https://crbug.com/664466, b/32900699), but in that case
             // getSiblingDismissalViewHolders() below will return an empty list.
@@ -418,14 +414,6 @@ public class SuggestionsRecyclerView extends RecyclerView {
                 updateViewStateForDismiss(dX, siblingViewHolder);
             }
         }
-    }
-
-    /**
-     * Tells if one of card views is being swiped now.
-     * @return {@code true} if a card view is being swiped.
-     */
-    public boolean isCardBeingSwiped() {
-        return mIsCardBeingSwiped;
     }
 
     private List<ViewHolder> getDismissalGroupViewHolders(ViewHolder viewHolder) {

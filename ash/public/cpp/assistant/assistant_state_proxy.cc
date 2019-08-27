@@ -12,68 +12,43 @@
 namespace ash {
 
 AssistantStateProxy::AssistantStateProxy()
-    : voice_interaction_observer_binding_(this) {}
+    : assistant_state_observer_binding_(this) {}
 
 AssistantStateProxy::~AssistantStateProxy() = default;
 
 void AssistantStateProxy::Init(
-    mojo::PendingRemote<mojom::VoiceInteractionController>
-        voice_interaction_controller) {
-  voice_interaction_controller_.Bind(std::move(voice_interaction_controller));
+    mojo::PendingRemote<mojom::AssistantStateController>
+        assistant_state_controller) {
+  assistant_state_controller_.Bind(std::move(assistant_state_controller));
 
-  ash::mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_observer_binding_.Bind(mojo::MakeRequest(&ptr));
-  voice_interaction_controller_->AddObserver(std::move(ptr));
+  mojom::AssistantStateObserverPtr ptr;
+  assistant_state_observer_binding_.Bind(mojo::MakeRequest(&ptr));
+  assistant_state_controller_->AddMojomObserver(std::move(ptr));
 }
 
-void AssistantStateProxy::AddObserver(
-    DefaultVoiceInteractionObserver* observer) {
-  if (voice_interaction_state_.has_value())
-    observer->OnVoiceInteractionStatusChanged(voice_interaction_state_.value());
-  if (settings_enabled_.has_value())
-    observer->OnVoiceInteractionSettingsEnabled(settings_enabled_.value());
-  if (context_enabled_.has_value())
-    observer->OnVoiceInteractionContextEnabled(context_enabled_.value());
-  if (hotword_enabled_.has_value())
-    observer->OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
-  if (allowed_state_.has_value())
-    observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
-  if (locale_.has_value())
-    observer->OnLocaleChanged(locale_.value());
-  if (arc_play_store_enabled_.has_value())
-    observer->OnArcPlayStoreEnabledChanged(arc_play_store_enabled_.value());
-
-  observers_.AddObserver(observer);
-}
-
-void AssistantStateProxy::RemoveObserver(
-    DefaultVoiceInteractionObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void AssistantStateProxy::OnVoiceInteractionStatusChanged(
+void AssistantStateProxy::OnAssistantStatusChanged(
     ash::mojom::VoiceInteractionState state) {
   voice_interaction_state_ = state;
   for (auto& observer : observers_)
-    observer.OnVoiceInteractionStatusChanged(voice_interaction_state_.value());
+    observer.OnAssistantStatusChanged(voice_interaction_state_);
 }
 
-void AssistantStateProxy::OnVoiceInteractionSettingsEnabled(bool enabled) {
+void AssistantStateProxy::OnAssistantSettingsEnabled(bool enabled) {
   settings_enabled_ = enabled;
   for (auto& observer : observers_)
-    observer.OnVoiceInteractionSettingsEnabled(settings_enabled_.value());
+    observer.OnAssistantSettingsEnabled(settings_enabled_.value());
 }
 
-void AssistantStateProxy::OnVoiceInteractionContextEnabled(bool enabled) {
+void AssistantStateProxy::OnAssistantContextEnabled(bool enabled) {
   context_enabled_ = enabled;
   for (auto& observer : observers_)
-    observer.OnVoiceInteractionContextEnabled(context_enabled_.value());
+    observer.OnAssistantContextEnabled(context_enabled_.value());
 }
 
-void AssistantStateProxy::OnVoiceInteractionHotwordEnabled(bool enabled) {
+void AssistantStateProxy::OnAssistantHotwordEnabled(bool enabled) {
   hotword_enabled_ = enabled;
   for (auto& observer : observers_)
-    observer.OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
+    observer.OnAssistantHotwordEnabled(hotword_enabled_.value());
 }
 
 void AssistantStateProxy::OnAssistantFeatureAllowedChanged(

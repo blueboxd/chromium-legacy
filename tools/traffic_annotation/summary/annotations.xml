@@ -201,6 +201,7 @@ Refer to README.md for content description and update process.
  <item id="prefetch_download" hash_code="44583172" type="0" content_hash_code="21424542" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_downloader_impl.cc"/>
  <item id="prefetch_visuals" hash_code="91068704" type="0" content_hash_code="90439946" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/visuals_fetch_by_url.cc"/>
  <item id="previews_litepage_prober" hash_code="33813109" type="0" content_hash_code="52572789" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_decider.cc"/>
+ <item id="previews_litepage_origin_prober" hash_code="33703614" type="0" content_hash_code="116235355" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_redirect_url_loader.cc"/>
  <item id="previews_prober" hash_code="41010697" type="0" deprecated="2019-07-24" content_hash_code="51581107" file_path=""/>
  <item id="printer_job_handler" hash_code="67638271" type="1" second_id="111712433" content_hash_code="75712693" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/printer_job_handler.cc"/>
  <item id="privet_http_impl" hash_code="71251498" type="0" content_hash_code="107348604" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/privet_http_impl.cc"/>
@@ -227,7 +228,7 @@ Refer to README.md for content description and update process.
  <item id="resource_prefetch" hash_code="110815970" type="0" deprecated="2018-02-28" content_hash_code="39251261" file_path=""/>
  <item id="rlz_ping" hash_code="99279418" type="0" content_hash_code="102108802" os_list="windows" file_path="rlz/lib/financial_ping.cc"/>
  <item id="safe_browsing_backup_request" hash_code="106980485" type="0" deprecated="2018-08-14" content_hash_code="101760679" file_path=""/>
- <item id="safe_browsing_binary_upload" hash_code="71663319" type="0" content_hash_code="88524040" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/binary_upload_service.cc"/>
+ <item id="safe_browsing_binary_upload" hash_code="71663319" type="0" content_hash_code="105913171" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/binary_upload_service.cc"/>
  <item id="safe_browsing_cache_collector" hash_code="115907811" type="0" content_hash_code="36392362" os_list="linux,windows" file_path="components/safe_browsing/browser/threat_details_cache.cc"/>
  <item id="safe_browsing_certificate_error_reporting" hash_code="66590631" type="0" content_hash_code="50197576" os_list="linux,windows" file_path="chrome/browser/ssl/certificate_error_reporter.cc"/>
  <item id="safe_browsing_chunk_backup_request" hash_code="79957943" type="0" deprecated="2018-08-14" content_hash_code="133850277" file_path=""/>

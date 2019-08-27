@@ -5,6 +5,8 @@
 #ifndef WEBLAYER_PUBLIC_NAVIGATION_H_
 #define WEBLAYER_PUBLIC_NAVIGATION_H_
 
+#include <vector>
+
 class GURL;
 
 namespace weblayer {

@@ -102,24 +102,9 @@ public class HistoryNavigationLayout extends FrameLayout {
             // invoke |wasLastSideSwipeGestureConsumed| which may be expensive less often.
             if (mNavigationHandler.isStopped()) return true;
 
-            if (wasLastSideSwipeGestureConsumed()) {
-                mNavigationHandler.reset();
-                return true;
-            }
             return mNavigationHandler.onScroll(
                     e1.getX(), distanceX, distanceY, e2.getX(), e2.getY());
         }
-    }
-
-    /**
-     * Checks if the gesture event was consumed by one of children views, in which case
-     * history navigation should not proceed. Whatever the child view does with the gesture
-     * events should take precedence and not be disturbed by the navigation.
-     *
-     * @return {@code true} if gesture event is consumed by one of the children.
-     */
-    public boolean wasLastSideSwipeGestureConsumed() {
-        return false;
     }
 
     /**

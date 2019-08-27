@@ -4188,7 +4188,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, ElementNotAvailable) {
       text_provider->get_DocumentRange(&text_range_provider));
   ASSERT_NE(nullptr, text_range_provider.Get());
 
-  tree_.reset(new AXTree());
+  tree_ = std::make_unique<AXTree>();
 
   BOOL bool_arg = FALSE;
   ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),

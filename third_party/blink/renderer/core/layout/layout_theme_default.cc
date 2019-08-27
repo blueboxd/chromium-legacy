@@ -73,7 +73,8 @@ bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
   return false;
 }
 
-Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id) const {
+Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
+                                      WebColorScheme color_scheme) const {
   constexpr Color kDefaultButtonGrayColor(0xffdddddd);
   constexpr Color kDefaultMenuColor(0xfff7f7f7);
 
@@ -84,7 +85,7 @@ Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id) const {
   }
   if (css_value_id == CSSValueID::kMenu)
     return kDefaultMenuColor;
-  return LayoutTheme::SystemColor(css_value_id);
+  return LayoutTheme::SystemColor(css_value_id, color_scheme);
 }
 
 // Use the Windows style sheets to match their metrics.

@@ -221,7 +221,8 @@ void ChromeExtensionsAPIClient::UpdateActionCount(
     content::BrowserContext* context,
     const ExtensionId& extension_id,
     int tab_id,
-    int action_count) {
+    int action_count,
+    bool clear_badge_text) {
   const Extension* extension =
       ExtensionRegistry::Get(context)->enabled_extensions().GetByID(
           extension_id);
@@ -232,11 +233,37 @@ void ChromeExtensionsAPIClient::UpdateActionCount(
   DCHECK(action);
 
   action->SetDNRActionCount(tab_id, action_count);
+
+  // The badge text should be cleared if |action| contains explicitly set badge
+  // text for the |tab_id| when the preference is then toggled on. In this case,
+  // the matched action count should take precedence over the badge text.
+  if (clear_badge_text)
+    action->ClearBadgeText(tab_id);
+
   content::WebContents* tab_contents = nullptr;
   if (ExtensionTabUtil::GetTabById(
           tab_id, context, true /* include_incognito */, &tab_contents) &&
       tab_contents) {
     ExtensionActionAPI::Get(context)->NotifyChange(action, tab_contents,
+                                                   context);
+  }
+}
+
+void ChromeExtensionsAPIClient::ClearActionCount(
+    content::BrowserContext* context,
+    const Extension& extension) {
+  ExtensionAction* action =
+      ExtensionActionManager::Get(context)->GetExtensionAction(extension);
+  DCHECK(action);
+
+  action->ClearDNRActionCountForAllTabs();
+
+  std::vector<content::WebContents*> contents_to_notify =
+      ExtensionTabUtil::GetAllActiveWebContentsForContext(
+          context, true /* include_incognito */);
+
+  for (auto* active_contents : contents_to_notify) {
+    ExtensionActionAPI::Get(context)->NotifyChange(action, active_contents,
                                                    context);
   }
 }

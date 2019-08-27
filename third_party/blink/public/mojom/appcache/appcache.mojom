@@ -64,11 +64,6 @@ interface AppCacheBackend {
   // Informs the browser of a new appcache host.
   //
   // Unregistering the host is accomplished by closing the AppCacheHost pipe.
-  //
-  // Frames go through DocumentInterfaceBroker and this is now only used for
-  // workers.
-  // TODO(mek): Once it has 'WebContextInterfaceBroker' for workers, move this
-  // to the implementation of 'WebContextInterfaceBroker'. crbug.com/718652
   RegisterHost(pending_receiver<AppCacheHost> host_receiver,
                pending_remote<AppCacheFrontend> frontend,
                mojo_base.mojom.UnguessableToken host_id);

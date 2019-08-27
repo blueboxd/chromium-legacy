@@ -148,7 +148,7 @@ TEST_F(AXFragmentRootTest, TestUIAErrorHandling) {
   ComPtr<IRawElementProviderFragmentRoot> fragment_root_provider =
       GetFragmentRoot();
 
-  tree_.reset(new AXTree());
+  tree_ = std::make_unique<AXTree>();
   ax_fragment_root_.reset(nullptr);
 
   ComPtr<IRawElementProviderSimple> returned_simple_provider;

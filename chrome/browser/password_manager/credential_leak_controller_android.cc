@@ -4,21 +4,25 @@
 
 #include "chrome/browser/password_manager/credential_leak_controller_android.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "chrome/android/chrome_jni_headers/PasswordCheckupLauncher_jni.h"
 #include "chrome/browser/ui/android/passwords/credential_leak_dialog_view_android.h"
 #include "chrome/browser/ui/passwords/credential_leak_dialog_utils.h"
+#include "chrome/common/url_constants.h"
 #include "ui/android/window_android.h"
 
 CredentialLeakControllerAndroid::CredentialLeakControllerAndroid(
     password_manager::CredentialLeakType leak_type,
-    const GURL& origin)
-    : leak_type_(leak_type), origin_(origin) {}
+    const GURL& origin,
+    ui::WindowAndroid* window_android)
+    : leak_type_(leak_type), origin_(origin), window_android_(window_android) {}
 
 CredentialLeakControllerAndroid::~CredentialLeakControllerAndroid() = default;
 
-void CredentialLeakControllerAndroid::ShowDialog(
-    ui::WindowAndroid* window_android) {
+void CredentialLeakControllerAndroid::ShowDialog() {
   dialog_view_.reset(new CredentialLeakDialogViewAndroid(this));
-  dialog_view_->Show(window_android);
+  dialog_view_->Show(window_android_);
 }
 
 void CredentialLeakControllerAndroid::OnDialogDismissRequested() {
@@ -26,7 +30,14 @@ void CredentialLeakControllerAndroid::OnDialogDismissRequested() {
 }
 
 void CredentialLeakControllerAndroid::OnPasswordCheckTriggered() {
-  // TODO(crbug.com/986317): Navigate to the password check site.
+  if (ShouldCheckPasswords()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_PasswordCheckupLauncher_launchCheckup(
+        env,
+        base::android::ConvertUTF8ToJavaString(
+            env, leak_dialog_utils::GetPasswordCheckupURL().spec()),
+        window_android_->GetJavaObject());
+  }
   delete this;
 }
 

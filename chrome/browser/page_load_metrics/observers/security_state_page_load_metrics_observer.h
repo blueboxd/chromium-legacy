@@ -54,8 +54,7 @@ class SecurityStatePageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   void OnComplete(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   // content::WebContentsObserver:
   void DidChangeVisibleSecurityState() override;

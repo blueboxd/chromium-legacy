@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -86,12 +85,6 @@ bool ExtensionActionHandler::Parse(Extension* extension,
       return true;  // Don't synthesize actions for component extensions.
     if (extension->was_installed_by_default())
       return true;  // Don't synthesize actions for default extensions.
-    if (extension->manifest()->HasKey(
-            manifest_keys::kSynthesizeExtensionAction)) {
-      *error = base::ASCIIToUTF16(base::StringPrintf(
-          "Key %s is reserved.", manifest_keys::kSynthesizeExtensionAction));
-      return false;  // No one should use this key.
-    }
 
     // Set an empty page action. We use a page action (instead of a browser
     // action) because the action should not be seen as enabled on every page.
@@ -133,8 +126,9 @@ bool ExtensionActionHandler::AlwaysParseForType(Manifest::Type type) const {
 
 base::span<const char* const> ExtensionActionHandler::Keys() const {
   static constexpr const char* kKeys[] = {
-      manifest_keys::kPageAction, manifest_keys::kBrowserAction,
-      manifest_keys::kSynthesizeExtensionAction};
+      manifest_keys::kPageAction,
+      manifest_keys::kBrowserAction,
+  };
   return kKeys;
 }
 

@@ -98,7 +98,7 @@ class LargestContentfulPaintHandler {
   const ContentfulPaintTimingInfo& MergeMainFrameAndSubframes();
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
+      const PageLoadMetricsObserverDelegate& delegate);
 
  private:
   void RecordSubframeTiming(const mojom::PaintTimingPtr& timing,

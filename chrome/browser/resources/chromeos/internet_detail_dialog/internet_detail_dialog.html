@@ -12,7 +12,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_choose_mobile.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_ip_config.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_nameservers.html">
-<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list_mojo.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_proxy.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_shared_css.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
@@ -159,12 +159,12 @@
     </template>
 
     <!-- Other properties to show if present. -->
-    <template is="dom-if" if="[[hasInfoFields_(networkProperties)]]">
+    <template is="dom-if" if="[[hasInfoFields_(managedProperties_)]]">
       <div class="section single-column indented">
-        <network-property-list
-            fields="[[getInfoFields_(networkProperties)]]"
-            property-dict="[[networkProperties]]">
-        </network-property-list>
+        <network-property-list-mojo
+            fields="[[getInfoFields_(managedProperties_)]]"
+            property-dict="[[managedProperties_]]">
+        </network-property-list-mojo>
       </div>
     </template>
   </template>

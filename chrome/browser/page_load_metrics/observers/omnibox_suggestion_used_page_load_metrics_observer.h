@@ -18,16 +18,13 @@ class OmniboxSuggestionUsedMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnHidden(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstMeaningfulPaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
   // Indicates whether this page load comes from prerender.

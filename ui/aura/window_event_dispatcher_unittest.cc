@@ -212,38 +212,38 @@ TEST_F(WindowEventDispatcherTest, MouseButtonState) {
   std::unique_ptr<ui::MouseEvent> event;
 
   // Press the left button.
-  event.reset(new ui::MouseEvent(
+  event = std::make_unique<ui::MouseEvent>(
       ui::ET_MOUSE_PRESSED, location, location, ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   DispatchEventUsingWindowDispatcher(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Additionally press the right.
-  event.reset(new ui::MouseEvent(
+  event = std::make_unique<ui::MouseEvent>(
       ui::ET_MOUSE_PRESSED, location, location, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
-      ui::EF_RIGHT_MOUSE_BUTTON));
+      ui::EF_RIGHT_MOUSE_BUTTON);
   DispatchEventUsingWindowDispatcher(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Release the left button.
-  event.reset(new ui::MouseEvent(
+  event = std::make_unique<ui::MouseEvent>(
       ui::ET_MOUSE_RELEASED, location, location, ui::EventTimeForNow(),
-      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   DispatchEventUsingWindowDispatcher(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Release the right button.  We should ignore the Shift-is-down flag.
-  event.reset(new ui::MouseEvent(ui::ET_MOUSE_RELEASED, location, location,
-                                 ui::EventTimeForNow(), ui::EF_SHIFT_DOWN,
-                                 ui::EF_RIGHT_MOUSE_BUTTON));
+  event = std::make_unique<ui::MouseEvent>(
+      ui::ET_MOUSE_RELEASED, location, location, ui::EventTimeForNow(),
+      ui::EF_SHIFT_DOWN, ui::EF_RIGHT_MOUSE_BUTTON);
   DispatchEventUsingWindowDispatcher(event.get());
   EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
 
   // Press the middle button.
-  event.reset(new ui::MouseEvent(
+  event = std::make_unique<ui::MouseEvent>(
       ui::ET_MOUSE_PRESSED, location, location, ui::EventTimeForNow(),
-      ui::EF_MIDDLE_MOUSE_BUTTON, ui::EF_MIDDLE_MOUSE_BUTTON));
+      ui::EF_MIDDLE_MOUSE_BUTTON, ui::EF_MIDDLE_MOUSE_BUTTON);
   DispatchEventUsingWindowDispatcher(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 }
@@ -512,7 +512,7 @@ class EventFilterRecorder : public ui::EventHandler {
 
   void WaitUntilReceivedEvent(ui::EventType type) {
     wait_until_event_ = type;
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 

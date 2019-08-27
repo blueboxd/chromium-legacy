@@ -37,8 +37,55 @@
 #include "ui/gfx/skia_util.h"
 #include "url/url_canon.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
+#include "ui/gfx/icon_util.h"  // For Iconutil::kLargeIconSize.
+#endif
+
 // Helper methods for transforming and drawing avatar icons.
 namespace {
+
+#if defined(OS_WIN)
+// 2x sized versions of the old profile avatar icons.
+// TODO(crbug.com/937834): Clean this up.
+const int kProfileAvatarIconResources2x[] = {
+    IDR_PROFILE_AVATAR_2X_0,  IDR_PROFILE_AVATAR_2X_1,
+    IDR_PROFILE_AVATAR_2X_2,  IDR_PROFILE_AVATAR_2X_3,
+    IDR_PROFILE_AVATAR_2X_4,  IDR_PROFILE_AVATAR_2X_5,
+    IDR_PROFILE_AVATAR_2X_6,  IDR_PROFILE_AVATAR_2X_7,
+    IDR_PROFILE_AVATAR_2X_8,  IDR_PROFILE_AVATAR_2X_9,
+    IDR_PROFILE_AVATAR_2X_10, IDR_PROFILE_AVATAR_2X_11,
+    IDR_PROFILE_AVATAR_2X_12, IDR_PROFILE_AVATAR_2X_13,
+    IDR_PROFILE_AVATAR_2X_14, IDR_PROFILE_AVATAR_2X_15,
+    IDR_PROFILE_AVATAR_2X_16, IDR_PROFILE_AVATAR_2X_17,
+    IDR_PROFILE_AVATAR_2X_18, IDR_PROFILE_AVATAR_2X_19,
+    IDR_PROFILE_AVATAR_2X_20, IDR_PROFILE_AVATAR_2X_21,
+    IDR_PROFILE_AVATAR_2X_22, IDR_PROFILE_AVATAR_2X_23,
+    IDR_PROFILE_AVATAR_2X_24, IDR_PROFILE_AVATAR_2X_25,
+    IDR_PROFILE_AVATAR_2X_26,
+};
+
+// Returns a copied SkBitmap for the given image that can be safely passed to
+// another thread.
+SkBitmap GetSkBitmapCopy(const gfx::Image& image) {
+  DCHECK(!image.IsEmpty());
+  const SkBitmap* image_bitmap = image.ToSkBitmap();
+  SkBitmap bitmap_copy;
+  if (bitmap_copy.tryAllocPixels(image_bitmap->info()))
+    image_bitmap->readPixels(bitmap_copy.info(), bitmap_copy.getPixels(),
+                             bitmap_copy.rowBytes(), 0, 0);
+  return bitmap_copy;
+}
+
+// Returns a copied SkBitmap for the given resource id that can be safely passed
+// to another thread.
+SkBitmap GetImageResourceSkBitmapCopy(int resource_id) {
+  const gfx::Image image =
+      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+  return GetSkBitmapCopy(image);
+}
+#endif  // OS_WIN
 
 const int kOldAvatarIconWidth = 38;
 const int kOldAvatarIconHeight = 31;
@@ -596,5 +643,92 @@ size_t GetRandomAvatarIconIndex(
   // All indices are used, so return a random one.
   return interval_begin + random_offset;
 }
+
+#if defined(OS_WIN)
+void GetWinAvatarImages(ProfileAttributesEntry* entry,
+                        SkBitmap* avatar_image_1x,
+                        SkBitmap* avatar_image_2x) {
+  // The profile might be using the Gaia avatar, which is not in the
+  // resources array.
+  if (entry->IsUsingGAIAPicture()) {
+    const gfx::Image* image = entry->GetGAIAPicture();
+    if (image) {
+      *avatar_image_1x = GetSkBitmapCopy(*image);
+      // Gaia images are 256px, which makes them big enough to use in the
+      // large icon case as well.
+      DCHECK_GE(image->Width(), IconUtil::kLargeIconSize);
+      *avatar_image_2x = *avatar_image_1x;
+      return;
+    }
+  }
+
+  // If the profile isn't using a Gaia image, or if the Gaia image did not
+  // exist, revert to the previously used avatar icon.
+  const size_t icon_index = entry->GetAvatarIconIndex();
+  *avatar_image_1x = GetImageResourceSkBitmapCopy(
+      profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index));
+
+  if (profiles::IsModernAvatarIconIndex(icon_index)) {
+    // Modern avatars are large(192px) by default, which makes them big
+    // enough for 2x.
+    *avatar_image_2x = *avatar_image_1x;
+  } else {
+    *avatar_image_2x =
+        GetImageResourceSkBitmapCopy(kProfileAvatarIconResources2x[icon_index]);
+  }
+}
+
+SkBitmap GetBadgedWinIconBitmapForAvatar(const SkBitmap& app_icon_bitmap,
+                                         const SkBitmap& avatar_bitmap,
+                                         int scale_factor) {
+  // TODO(dfried): This function often doesn't actually do the thing it claims
+  // to. We should probably fix it.
+  SkBitmap source_bitmap =
+      profiles::GetAvatarIconAsSquare(avatar_bitmap, scale_factor);
+
+  int avatar_badge_width = kProfileAvatarBadgeSizeWin;
+  if (app_icon_bitmap.width() != kShortcutIconSizeWin) {
+    avatar_badge_width = std::ceilf(
+        app_icon_bitmap.width() *
+        (float{kProfileAvatarBadgeSizeWin} / float{kShortcutIconSizeWin}));
+  }
+
+  // Resize the avatar image down to the desired badge size, maintaining aspect
+  // ratio (but prefer more square than rectangular when rounding).
+  const int avatar_badge_height =
+      std::ceilf(avatar_badge_width * (float{source_bitmap.height()} /
+                                       float{source_bitmap.width()}));
+  SkBitmap sk_icon = skia::ImageOperations::Resize(
+      source_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+      avatar_badge_height, avatar_badge_width);
+
+  // Sanity check - avatars shouldn't be taller than they are wide.
+  DCHECK_GE(avatar_badge_width, avatar_badge_height);
+
+  // Overlay the avatar on the icon, anchoring it to the bottom-right of the
+  // icon.
+  SkBitmap badged_bitmap;
+  badged_bitmap.allocN32Pixels(app_icon_bitmap.width(),
+                               app_icon_bitmap.height());
+  SkCanvas offscreen_canvas(badged_bitmap);
+  offscreen_canvas.clear(SK_ColorTRANSPARENT);
+  offscreen_canvas.drawBitmap(app_icon_bitmap, 0, 0);
+
+  // Render the avatar in a cutout circle. If the avatar is not square, center
+  // it in the circle but favor pushing it further down.
+  const int cutout_size = avatar_badge_width;
+  const int cutout_left = app_icon_bitmap.width() - cutout_size;
+  const int cutout_top = app_icon_bitmap.height() - cutout_size;
+  const int icon_left = cutout_left;
+  const int icon_top =
+      cutout_top + int{std::ceilf((cutout_size - avatar_badge_height) / 2.0f)};
+  const SkRRect clip_circle = SkRRect::MakeOval(
+      SkRect::MakeXYWH(cutout_left, cutout_top, cutout_size, cutout_size));
+
+  offscreen_canvas.clipRRect(clip_circle, true);
+  offscreen_canvas.drawBitmap(sk_icon, icon_left, icon_top);
+  return badged_bitmap;
+}
+#endif  // OS_WIN
 
 }  // namespace profiles

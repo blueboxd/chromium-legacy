@@ -276,26 +276,23 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
 
   ~SplitViewDragIndicatorsView() override {}
 
-  // Called by parent widget when the state machine changes.
+  // Called by parent widget when the state machine changes. Handles setting the
+  // opacity and bounds of the highlights and labels.
   void OnIndicatorTypeChanged(IndicatorState indicator_state) {
     DCHECK_NE(indicator_state_, indicator_state);
     previous_indicator_state_ = indicator_state_;
     indicator_state_ = indicator_state;
-    Update();
-  }
 
-  // Handles setting the opacity and bounds of the highlights and labels.
-  void Update() {
-    left_rotated_view_->OnIndicatorTypeChanged(indicator_state_,
+    left_rotated_view_->OnIndicatorTypeChanged(indicator_state,
                                                previous_indicator_state_);
-    right_rotated_view_->OnIndicatorTypeChanged(indicator_state_,
+    right_rotated_view_->OnIndicatorTypeChanged(indicator_state,
                                                 previous_indicator_state_);
-    left_highlight_view_->OnIndicatorTypeChanged(indicator_state_,
+    left_highlight_view_->OnIndicatorTypeChanged(indicator_state,
                                                  previous_indicator_state_);
-    right_highlight_view_->OnIndicatorTypeChanged(indicator_state_,
+    right_highlight_view_->OnIndicatorTypeChanged(indicator_state,
                                                   previous_indicator_state_);
 
-    if (indicator_state_ != IndicatorState::kNone ||
+    if (indicator_state != IndicatorState::kNone ||
         IsPreviewAreaState(previous_indicator_state_))
       Layout(previous_indicator_state_ != IndicatorState::kNone);
   }
@@ -631,14 +628,6 @@ void SplitViewDragIndicators::SetIndicatorState(
 
   current_indicator_state_ = indicator_state;
   indicators_view_->OnIndicatorTypeChanged(current_indicator_state_);
-}
-
-void SplitViewDragIndicators::OnSplitViewModeEnded() {
-  if (current_indicator_state_ == IndicatorState::kNone ||
-      IsPreviewAreaState(current_indicator_state_)) {
-    return;
-  }
-  indicators_view_->Update();
 }
 
 void SplitViewDragIndicators::OnDisplayBoundsChanged() {

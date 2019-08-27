@@ -43,11 +43,11 @@ class FakeClient : public mojom::Client {
   void RequestAssistantVolumeControl(
       mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver)
       override {}
-  void RequestVoiceInteractionController(
-      mojo::PendingReceiver<ash::mojom::VoiceInteractionController> receiver)
+  void RequestAssistantStateController(
+      mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver)
       override {}
   void RequestPrefStoreConnector(
-      mojo::PendingReceiver<prefs::mojom::PrefStoreConnector> receiver)
+      mojo::PendingReceiver<::prefs::mojom::PrefStoreConnector> receiver)
       override {}
   void RequestBatteryMonitor(
       mojo::PendingReceiver<device::mojom::BatteryMonitor> receiver) override {}

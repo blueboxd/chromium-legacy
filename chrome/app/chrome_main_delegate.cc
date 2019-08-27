@@ -541,21 +541,20 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   // Initialize D-Bus clients that depend on feature list.
   chromeos::InitializeFeatureListDependentDBus();
 #endif
+
+#if defined(OS_ANDROID)
+  startup_data_->CreateProfilePrefService();
+#endif
+
+  if (base::FeatureList::IsEnabled(
+          features::kWriteBasicSystemProfileToPersistentHistogramsFile)) {
+    startup_data_->RecordCoreSystemProfile();
+  }
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {
   // Chrome creates the FeatureList, so content should not.
   return false;
-}
-
-void ChromeMainDelegate::PostTaskSchedulerStart() {
-#if defined(OS_ANDROID)
-  startup_data_->CreateProfilePrefService();
-#endif
-  if (base::FeatureList::IsEnabled(
-          features::kWriteBasicSystemProfileToPersistentHistogramsFile)) {
-    startup_data_->RecordCoreSystemProfile();
-  }
 }
 
 #endif

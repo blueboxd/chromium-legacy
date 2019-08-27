@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <atomic>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/bind.h"
@@ -636,6 +638,10 @@ class NetworkContextConfigurationBrowserTest
            content::IsInProcessNetworkService();
   }
 
+  void UpdateChromePolicy(const policy::PolicyMap& policy_map) {
+    provider_.UpdateChromePolicy(policy_map);
+  }
+
   enum class WayToEnableSSLConfig { kViaPrefs, kViaPolicy };
 
   // This helper function enables the kSSLVersionMin pref and tests that this
@@ -676,13 +682,11 @@ class NetworkContextConfigurationBrowserTest
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>(switches::kSSLVersionTLSv11),
                  nullptr);
-
       base::RunLoop run_loop;
       PrefChangeRegistrar pref_change_registrar;
       pref_change_registrar.Init(g_browser_process->local_state());
       pref_change_registrar.Add(prefs::kSSLVersionMin, run_loop.QuitClosure());
-      provider_.UpdateChromePolicy(values);
-
+      UpdateChromePolicy(values);
       run_loop.Run();
     }
 
@@ -1797,6 +1801,153 @@ class NetworkContextConfigurationHttpsStrippingPacBrowserTest
   }
 };
 
+class NetworkContextConfigurationProxySettingsBrowserTest
+    : public NetworkContextConfigurationHttpPacBrowserTest {
+ public:
+  const size_t kDefaultMaxConnectionsPerProxy = 32;
+
+  NetworkContextConfigurationProxySettingsBrowserTest() = default;
+  ~NetworkContextConfigurationProxySettingsBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &NetworkContextConfigurationProxySettingsBrowserTest::TrackConnections,
+        base::Unretained(this)));
+
+    expected_connections_loop_ptr_.store(nullptr);
+
+    NetworkContextConfigurationHttpPacBrowserTest::SetUpOnMainThread();
+  }
+
+  virtual size_t GetExpectedMaxConnectionsPerProxy() const {
+    return kDefaultMaxConnectionsPerProxy;
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> TrackConnections(
+      const net::test_server::HttpRequest& request) {
+    if (!base::StartsWith(request.relative_url, "/hung",
+                          base::CompareCase::INSENSITIVE_ASCII))
+      return nullptr;
+
+    // Record the number of connections we're seeing.
+    CHECK(observed_request_urls_.find(request.GetURL().spec()) ==
+          observed_request_urls_.end());
+    observed_request_urls_.emplace(request.GetURL().spec());
+    CHECK_GE(GetExpectedMaxConnectionsPerProxy(),
+             observed_request_urls_.size());
+
+    // Once we've seen at least as many connections as we expect, we can quit
+    // the loop on the main test thread. The test may choose to wait for
+    // longer to see if there are any additional unexpected connections.
+    if (GetExpectedMaxConnectionsPerProxy() == observed_request_urls_.size() &&
+        expected_connections_loop_ptr_.load() != nullptr) {
+      expected_connections_loop_ptr_.load()->Quit();
+    }
+
+    // To test the number of connections per proxy, we'll hang all responses.
+    return std::make_unique<net::test_server::HungResponse>();
+  }
+
+  void RunMaxConnectionsPerProxyTest() {
+    // At this point in the test, we've set up a proxy that points to our
+    // embedded test server. We've also set things up to hang all incoming
+    // requests and record how many concurrent connections we have running. To
+    // detect the maximum number of requests per proxy, we now just have to
+    // attempt to make as many requests as possible to ensure we don't see an
+    // incorrect number of concurrent requests.
+
+    // First of all, we're going to want to wait for at least as many
+    // connections as we expect.
+    base::RunLoop expected_connections_run_loop;
+    expected_connections_loop_ptr_.store(&expected_connections_run_loop);
+
+    std::vector<std::unique_ptr<network::SimpleURLLoader>> loaders(
+        GetExpectedMaxConnectionsPerProxy());
+    for (unsigned int i = 0; i < GetExpectedMaxConnectionsPerProxy() + 1; ++i) {
+      std::unique_ptr<network::ResourceRequest> request =
+          std::make_unique<network::ResourceRequest>();
+      request->url =
+          embedded_test_server()->GetURL(base::StringPrintf("foo%u.test", i),
+                                         base::StringPrintf("/hung_%u", i));
+
+      content::SimpleURLLoaderTestHelper simple_loader_helper;
+      std::unique_ptr<network::SimpleURLLoader> simple_loader =
+          network::SimpleURLLoader::Create(std::move(request),
+                                           TRAFFIC_ANNOTATION_FOR_TESTS);
+
+      simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+          loader_factory(), simple_loader_helper.GetCallback());
+      loaders.emplace_back(std::move(simple_loader));
+    }
+    expected_connections_run_loop.Run();
+
+    // Then wait for any remaining connections that we should NOT get.
+    base::RunLoop unexpected_connections_run_loop;
+    base::RunLoop::ScopedRunTimeoutForTest run_timeout(
+        base::TimeDelta::FromMilliseconds(100),
+        base::BindLambdaForTesting(
+            [&]() { unexpected_connections_run_loop.Quit(); }));
+    unexpected_connections_run_loop.Run();
+
+    // Stop the server.
+    ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  }
+
+ private:
+  std::atomic<base::RunLoop*> expected_connections_loop_ptr_{nullptr};
+
+  // In RunMaxConnectionsPerProxyTest(), we'll make several network requests
+  // that hang. These hung requests are assumed to last for the duration of the
+  // test. This member, which is only accessed from the server's IO thread,
+  // records each observed request to ensure we see only as many connections as
+  // we expect.
+  std::unordered_set<std::string> observed_request_urls_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationProxySettingsBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxySettingsBrowserTest,
+                       MaxConnectionsPerProxy) {
+  RunMaxConnectionsPerProxyTest();
+}
+
+class NetworkContextConfigurationManagedProxySettingsBrowserTest
+    : public NetworkContextConfigurationProxySettingsBrowserTest {
+ public:
+  const size_t kTestMaxConnectionsPerProxy = 37;
+
+  NetworkContextConfigurationManagedProxySettingsBrowserTest() = default;
+  ~NetworkContextConfigurationManagedProxySettingsBrowserTest() override =
+      default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    NetworkContextConfigurationProxySettingsBrowserTest::
+        SetUpInProcessBrowserTestFixture();
+    policy::PolicyMap policies;
+    policies.Set(policy::key::kMaxConnectionsPerProxy,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+                 policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(
+                     static_cast<int>(kTestMaxConnectionsPerProxy)),
+                 /*external_data_fetcher=*/nullptr);
+    UpdateChromePolicy(policies);
+  }
+
+  size_t GetExpectedMaxConnectionsPerProxy() const override {
+    return kTestMaxConnectionsPerProxy;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      NetworkContextConfigurationManagedProxySettingsBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_P(
+    NetworkContextConfigurationManagedProxySettingsBrowserTest,
+    MaxConnectionsPerProxy) {
+  RunMaxConnectionsPerProxyTest();
+}
+
 // Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
@@ -1855,5 +2006,9 @@ INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationFtpPacBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationHttpsStrippingPacBrowserTest);
+INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
+    NetworkContextConfigurationProxySettingsBrowserTest);
+INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
+    NetworkContextConfigurationManagedProxySettingsBrowserTest);
 
 }  // namespace

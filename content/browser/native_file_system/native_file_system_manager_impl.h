@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_file_system_entry_factory.h"
 #include "content/public/browser/native_file_system_permission_context.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -77,9 +78,19 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       NativeFileSystemPermissionContext* permission_context,
       bool off_the_record);
 
-  void BindRequest(const BindingContext& binding_context,
-                   blink::mojom::NativeFileSystemManagerRequest request);
+  void BindReceiver(
+      const BindingContext& binding_context,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
 
+  static void BindReceiverFromUIThread(
+      StoragePartitionImpl* storage_partition,
+      const BindingContext& binding_context,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
+
+  // TODO(https://crbug.com/955171): Remove this method and use
+  // BindReceiverFromUIThread once RendererInterfaceBinders and
+  // RenderFrameHostImpl use service_manager::BinderMap instead of
+  // service_manager::BinderRegistry.
   static void BindRequestFromUIThread(
       StoragePartitionImpl* storage_partition,
       const BindingContext& binding_context,
@@ -220,12 +231,12 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   std::unique_ptr<storage::FileSystemOperationRunner> operation_runner_;
   NativeFileSystemPermissionContext* permission_context_;
 
-  // All the mojo bindings for this NativeFileSystemManager itself. Keeps track
+  // All the mojo receivers for this NativeFileSystemManager itself. Keeps track
   // of associated origin and other state as well to not have to rely on the
   // renderer passing that in, and to be able to do security checks around
   // transferability etc.
-  mojo::BindingSet<blink::mojom::NativeFileSystemManager, BindingContext>
-      bindings_;
+  mojo::ReceiverSet<blink::mojom::NativeFileSystemManager, BindingContext>
+      receivers_;
 
   // All the bindings for file and directory handles that have references to
   // them.

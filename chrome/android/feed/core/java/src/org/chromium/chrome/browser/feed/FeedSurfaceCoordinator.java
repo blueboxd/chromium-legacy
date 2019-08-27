@@ -244,11 +244,6 @@ public class FeedSurfaceCoordinator {
 
             return mDelegate.onInterceptTouchEvent(ev);
         }
-
-        @Override
-        public boolean wasLastSideSwipeGestureConsumed() {
-            return mStream.willHandleHorizontalSwipe();
-        }
     }
 
     /**

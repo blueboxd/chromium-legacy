@@ -43,6 +43,8 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   // TODO(mstensho): Handle auto block size.
   LogicalOffset page_progression(LayoutUnit(), page_size.block_size);
 
+  container_builder_.SetIsBlockFragmentationContextRoot();
+
   do {
     // Lay out one page. Each page will become a fragment.
     NGFragmentGeometry fragment_geometry =

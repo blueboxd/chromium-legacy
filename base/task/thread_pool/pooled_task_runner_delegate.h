@@ -27,6 +27,11 @@ class BASE_EXPORT PooledTaskRunnerDelegate {
   // outlives the ThreadPoolInstance that created it.
   static bool Exists();
 
+  // Returns true if |task_source| currently running must return ASAP.
+  // Thread-safe but may return an outdated result (if a task unnecessarily
+  // yields due to this, it will simply be re-scheduled).
+  virtual bool ShouldYield(TaskSource* task_source) const = 0;
+
   // Invoked when a |task| is posted to the PooledParallelTaskRunner or
   // PooledSequencedTaskRunner. The implementation must post |task| to
   // |sequence| within the appropriate priority queue, depending on |sequence|
@@ -36,7 +41,8 @@ class BASE_EXPORT PooledTaskRunnerDelegate {
 
   // Invoked when a task is posted as a Job. The implementation must add
   // |task_source| to the appropriate priority queue, depending on |task_source|
-  // traits. Returns true if task source was successfully enqueued.
+  // traits, if it's not there already. Returns true if task source was
+  // successfully enqueued or was already enqueued.
   virtual bool EnqueueJobTaskSource(
       scoped_refptr<JobTaskSource> task_source) = 0;
 

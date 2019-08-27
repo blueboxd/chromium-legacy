@@ -251,6 +251,18 @@ base::TimeDelta LitePageRedirectPreviewProbeInterval() {
       features::kLitePageServerPreviews, "probe_interval_in_seconds", 30));
 }
 
+bool LitePageRedirectShouldProbeOrigin() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "should_probe_origin", false);
+}
+
+base::TimeDelta LitePageRedirectPreviewOriginProbeTimeout() {
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(features::kLitePageServerPreviews,
+                                             "origin_probe_timeout_ms",
+                                             30 * 1000));
+}
+
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {

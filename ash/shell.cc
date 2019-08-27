@@ -72,7 +72,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/session/session_controller_impl.h"
@@ -354,7 +353,6 @@ bool Shell::IsSystemModalWindowOpen() {
 }
 
 AssistantController* Shell::assistant_controller() {
-  DCHECK(chromeos::features::IsAssistantEnabled());
   return assistant_controller_.get();
 }
 
@@ -663,8 +661,7 @@ Shell::~Shell() {
   // Destroy |assistant_controller_| earlier than |tablet_mode_controller_| so
   // that the former will destroy the Assistant view hierarchy which has a
   // dependency on the latter.
-  if (chromeos::features::IsAssistantEnabled())
-    assistant_controller_.reset();
+  assistant_controller_.reset();
 
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
@@ -753,7 +750,6 @@ Shell::~Shell() {
   laser_pointer_controller_.reset();
   partial_magnification_controller_.reset();
   highlighter_controller_.reset();
-  voice_interaction_controller_.reset();
   key_accessibility_enabler_.reset();
 
   display_speaker_controller_.reset();
@@ -980,8 +976,6 @@ void Shell::Init(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
-  voice_interaction_controller_ =
-      std::make_unique<VoiceInteractionController>();
 
   shelf_controller_ = std::make_unique<ShelfController>();
 
@@ -1056,9 +1050,7 @@ void Shell::Init(
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
-  assistant_controller_ = chromeos::features::IsAssistantEnabled()
-                              ? std::make_unique<AssistantController>()
-                              : nullptr;
+  assistant_controller_ = std::make_unique<AssistantController>();
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be
   // used by the latter.

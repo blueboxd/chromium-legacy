@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_active_window_throttle_observer.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -71,6 +72,9 @@ class ArcInstanceThrottle : public KeyedService {
   std::unique_ptr<Delegate> delegate_;
   ArcThrottleObserver::PriorityLevel level_{
       ArcThrottleObserver::PriorityLevel::UNKNOWN};
+
+  // Throttle Observers
+  ArcActiveWindowThrottleObserver active_window_throttle_observer_;
 
   base::WeakPtrFactory<ArcInstanceThrottle> weak_ptr_factory_;
 

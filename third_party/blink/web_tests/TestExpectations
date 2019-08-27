@@ -3370,7 +3370,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/idl.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/cross-origin/http-http/xhr-request/swap-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/cross-origin/http-http/xhr-request/swap-origin-redirect/cross-origin.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/basic/scheme-data.any.worker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/policies/referrer-unsafe-url.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/fetch-request/swap-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
@@ -4731,6 +4730,7 @@ crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-in
 crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
+crbug.com/997149 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Pass Failure ]
 
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
 crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
@@ -5752,9 +5752,6 @@ crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Time
 # Sheriff 2018-09-25
 crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 
-# Sheriff 2018-10-03
-crbug.com/891530 [ Linux ] virtual/android/rootscroller/remove-rootscroller-crash.html [ Pass Timeout ]
-
 # Sheriff 2018-10-09
 crbug.com/893869 [ Mac ] css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
 
@@ -5870,6 +5867,7 @@ crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html
 crbug.com/923244 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 # WebRTC Plan B
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
+crbug.com/997201 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-iceConnectionState.https.html [ Pass Failure ]
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 # WebRTC codec tests - software H.264 not present on webkit bot family
 crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
@@ -6521,8 +6519,6 @@ crbug.com/996597 [ Win ] css2.1/t0905-c5525-flthw-00-c-g.html [ Failure ]
 crbug.com/994008 [ Linux Win ] http/tests/devtools/elements/styles-3/styles-computed-trace.js [ Pass Failure ]
 crbug.com/994034 [ Linux Win ] http/tests/devtools/elements/styles-3/styles-add-new-rule-colon.js [ Pass Failure ]
 crbug.com/994027 [ Linux Win ] http/tests/devtools/elements/styles-2/force-pseudo-state.js [ Pass Failure ]
-crbug.com/995142 crbug.com/900706 [ Mac ] fast/canvas/canvas-large-pattern.html [ Pass Failure ]
-crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/canvas-large-pattern.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canvas.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]

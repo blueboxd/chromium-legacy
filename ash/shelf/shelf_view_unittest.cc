@@ -78,6 +78,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -2128,7 +2129,12 @@ TEST_F(ShelfViewTest, NoContextMenuOnBackButton) {
   // to finish in order for the BackButton to move out from under the
   // HomeButton.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  test_api_->RunMessageLoopUntilAnimationsDone();
+
+  // We need to wait for the navigation widget's animation to be done.
+  test_api_->RunMessageLoopUntilAnimationsDone(
+      shelf_view_->shelf_widget()
+          ->navigation_widget()
+          ->get_bounds_animator_for_testing());
 
   views::View* back_button = shelf_view_->shelf_widget()->GetBackButton();
   generator->MoveMouseTo(back_button->GetBoundsInScreen().CenterPoint());

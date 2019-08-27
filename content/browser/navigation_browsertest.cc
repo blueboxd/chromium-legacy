@@ -151,47 +151,6 @@ class InterceptAndCancelDidCommitProvisionalLoad
   std::unique_ptr<base::RunLoop> loop_;
 };
 
-// Record every WebContentsObserver's event related to navigation. The goal is
-// to check these events happen and happen in the expected right order.
-class NavigationRecorder : public WebContentsObserver {
- public:
-  explicit NavigationRecorder(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-
-  // WebContentsObserver implementation.
-  void DidStartNavigation(NavigationHandle* navigation_handle) override {
-    records_.push_back("start " + navigation_handle->GetURL().path());
-    WakeUp();
-  }
-  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
-    records_.push_back("ready-to-commit " + navigation_handle->GetURL().path());
-    WakeUp();
-  }
-  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
-    records_.push_back("did-commit " + navigation_handle->GetURL().path());
-    WakeUp();
-  }
-
-  void WaitForEvents(size_t numbers_of_events) {
-    while (records_.size() < numbers_of_events) {
-      loop_.reset(new base::RunLoop);
-      loop_->Run();
-      loop_.reset();
-    }
-  }
-
-  const std::vector<std::string> records() { return records_; }
-
- private:
-  void WakeUp() {
-    if (loop_)
-      loop_->Quit();
-  }
-
-  std::unique_ptr<base::RunLoop> loop_;
-  std::vector<std::string> records_;
-};
-
 // Used to wait for an observed IPC to be received.
 class BrowserMessageObserver : public content::BrowserMessageFilter {
  public:

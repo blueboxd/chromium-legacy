@@ -188,7 +188,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
   if (keyboard_bounds_in_screen.height() <= 0)
     return false;
 
-  ui::PointerId pointer_id = ui::MouseEvent::kMousePointerId;
+  ui::PointerId pointer_id = ui::kPointerIdMouse;
   if (event.IsTouchEvent()) {
     const ui::TouchEvent* te = event.AsTouchEvent();
     pointer_id = te->pointer_details().id;

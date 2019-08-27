@@ -48,7 +48,7 @@ void MockIMEEngineHandler::Reset() {
 void MockIMEEngineHandler::ProcessKeyEvent(const ui::KeyEvent& key_event,
                                            KeyEventDoneCallback callback) {
   ++process_key_event_call_count_;
-  last_processed_key_event_.reset(new ui::KeyEvent(key_event));
+  last_processed_key_event_ = std::make_unique<ui::KeyEvent>(key_event);
   last_passed_callback_ = std::move(callback);
 }
 

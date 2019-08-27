@@ -428,7 +428,7 @@ base::Optional<base::TimeDelta> CryptAuthSchedulerImpl::GetTimeToNextRequest(
 
   // Recover from failure using immediate retry.
   DCHECK(retry_count > 0);
-  if (retry_count <= client_directive_.retry_attempts()) {
+  if (retry_count < client_directive_.retry_attempts()) {
     return std::max(kZeroTimeDelta,
                     kImmediateRetryDelay - time_since_last_attempt);
   }

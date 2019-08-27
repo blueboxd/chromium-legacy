@@ -128,7 +128,7 @@ DrmDisplayHostManager::DrmDisplayHostManager(
     base::FilePath primary_graphics_card_path_sysfs =
         MapDevPathToSysPath(primary_graphics_card_path_);
 
-    primary_drm_device_handle_.reset(new DrmDeviceHandle());
+    primary_drm_device_handle_ = std::make_unique<DrmDeviceHandle>();
     if (!primary_drm_device_handle_->Initialize(
             primary_graphics_card_path_, primary_graphics_card_path_sysfs)) {
       LOG(FATAL) << "Failed to open primary graphics card";

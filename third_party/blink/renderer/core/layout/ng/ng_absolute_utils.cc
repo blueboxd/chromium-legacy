@@ -113,7 +113,9 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
   if (!inset_end_length.IsAuto()) {
     inset_end = MinimumValueForLength(inset_end_length, available_size);
   }
-
+#if DCHECK_IS_ON()
+  bool values_might_be_saturated = false;
+#endif
   // Solving the equation:
   // |inset_start| + |margin_start| + |size| + |margin_end| + |inset_end| =
   // |available_size|
@@ -145,6 +147,10 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
     // Compute margins.
     LayoutUnit margin_space =
         available_size - *inset_start - *inset_end - *size;
+#if DCHECK_IS_ON()
+    values_might_be_saturated |= margin_space.MightBeSaturated();
+#endif
+
     if (!margin_start && !margin_end) {
       // When both margins are auto.
       if (margin_space > 0 || is_block_direction) {
@@ -167,6 +173,9 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
     } else {
       // Are the values over-constrained?
       LayoutUnit margin_extra = margin_space - *margin_start - *margin_end;
+#if DCHECK_IS_ON()
+      values_might_be_saturated |= margin_extra.MightBeSaturated();
+#endif
       if (margin_extra) {
         // Relax the end.
         if (is_start_dominant)
@@ -226,10 +235,12 @@ void ComputeAbsoluteSize(const LayoutUnit border_padding_size,
   }
 
 #if DCHECK_IS_ON()
+  values_might_be_saturated |=
+      inset_start->MightBeSaturated() || inset_end->MightBeSaturated() ||
+      size->MightBeSaturated() || margin_start->MightBeSaturated() ||
+      margin_end->MightBeSaturated() || available_size.MightBeSaturated();
   // The DCHECK is useful, but only holds true if the values aren't saturated.
-  if (!inset_start->MightBeSaturated() && !inset_end->MightBeSaturated() &&
-      !size->MightBeSaturated() && !margin_start->MightBeSaturated() &&
-      !margin_end->MightBeSaturated() && !available_size.MightBeSaturated()) {
+  if (!values_might_be_saturated) {
     DCHECK_EQ(available_size,
               *inset_start + *inset_end + *margin_start + *margin_end + *size);
   }

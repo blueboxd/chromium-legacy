@@ -171,6 +171,30 @@ SchedulerTaskTime FromSchedulerTaskTime(
   NOTREACHED();
 }
 
+proto::IconType ToIconType(IconType type) {
+  switch (type) {
+    case IconType::kUnknownType:
+      return proto::IconType::UNKNOWN_ICON_TYPE;
+    case IconType::kSmallIcon:
+      return proto::IconType::SMALL_ICON;
+    case IconType::kLargeIcon:
+      return proto::IconType::LARGE_ICON;
+  }
+  NOTREACHED();
+}
+
+IconType FromIconType(proto::IconType proto_type) {
+  switch (proto_type) {
+    case proto::IconType::UNKNOWN_ICON_TYPE:
+      return IconType::kUnknownType;
+    case proto::IconType::SMALL_ICON:
+      return IconType::kSmallIcon;
+    case proto::IconType::LARGE_ICON:
+      return IconType::kLargeIcon;
+  }
+  NOTREACHED();
+}
+
 proto::ActionButtonType ToActionButtonType(ActionButtonType type) {
   switch (type) {
     case ActionButtonType::kUnknownAction:
@@ -411,9 +435,13 @@ void NotificationEntryToProto(NotificationEntry* entry,
   proto->set_guid(entry->guid);
   proto->set_create_time(TimeToMilliseconds(entry->create_time));
   auto* proto_notification_data = proto->mutable_notification_data();
+  for (const auto& icon_type_uuid_pair : entry->icons_uuid) {
+    auto* proto_icons = proto_notification_data->add_icons_uuid();
+    proto_icons->set_type(ToIconType(icon_type_uuid_pair.first));
+    proto_icons->set_uuid(icon_type_uuid_pair.second);
+  }
   NotificationDataToProto(&entry->notification_data, proto_notification_data);
-  proto_notification_data->set_small_icon_uuid(entry->small_icon_uuid);
-  proto_notification_data->set_large_icon_uuid(entry->large_icon_uuid);
+
   auto* proto_schedule_params = proto->mutable_schedule_params();
   ScheduleParamsToProto(&entry->schedule_params, proto_schedule_params);
 }
@@ -425,10 +453,14 @@ void NotificationEntryFromProto(proto::NotificationEntry* proto,
   entry->create_time = MillisecondsToTime(proto->create_time());
   NotificationDataFromProto(proto->mutable_notification_data(),
                             &entry->notification_data);
-  entry->small_icon_uuid = proto->notification_data().small_icon_uuid();
-  entry->large_icon_uuid = proto->notification_data().large_icon_uuid();
   ScheduleParamsFromProto(proto->mutable_schedule_params(),
                           &entry->schedule_params);
+
+  for (int i = 0; i < proto->notification_data().icons_uuid_size(); i++) {
+    const auto& icon_uuid_pair = proto->notification_data().icons_uuid(i);
+    entry->icons_uuid.emplace(FromIconType(icon_uuid_pair.type()),
+                              icon_uuid_pair.uuid());
+  }
 }
 
 }  // namespace notifications

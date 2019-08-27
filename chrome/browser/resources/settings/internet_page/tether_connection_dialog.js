@@ -2,15 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @typedef {{
- *   tetherHostDeviceName: string,
- *   batteryPercentage: number,
- *   connectionStrength: number,
- *   isTetherHostCurrentlyOnWifi: boolean
- * }}
- */
-let TetherConnectionData;
+(function() {
+'use strict';
+
+const mojom = chromeos.networkConfig.mojom;
 
 Polymer({
   is: 'tether-connection-dialog',
@@ -18,13 +13,8 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    /**
-     * The current properties for the network matching |guid|.
-     * @type {!CrOnc.NetworkProperties|undefined}
-     */
-    networkProperties: {
-      type: Object,
-    },
+    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
+    managedProperties: Object,
 
     /**
      * Whether the network has been lost (e.g., has gone out of range).
@@ -71,12 +61,11 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties The network
-   *     properties.
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  shouldShowDisconnectFromWifi_: function(networkProperties) {
+  shouldShowDisconnectFromWifi_: function(managedProperties) {
     // TODO(khorimoto): Pipe through a new network property which describes
     // whether the tether host is currently connected to a Wi-Fi network. Return
     // whether it is here.
@@ -84,13 +73,13 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string} The battery percentage integer value converted to a
    *     string. Note that this will not return a string with a "%" suffix.
    * @private
    */
-  getBatteryPercentageAsString_: function(networkProperties) {
-    const percentage = this.get('Tether.BatteryPercentage', networkProperties);
+  getBatteryPercentageAsString_: function(managedProperties) {
+    const percentage = this.get('tether.batteryPercentage', managedProperties);
     if (percentage === undefined) {
       return '';
     }
@@ -102,12 +91,12 @@ Polymer({
    * Custom icons are used here instead of a <cr-network-icon> because this
    * dialog uses a special color scheme.
    *
-   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string} The name of the icon to be used to represent the network's
    * signal strength.
    */
-  getSignalStrengthIconName_: function(networkProperties) {
-    let signalStrength = this.get('Tether.SignalStrength', networkProperties);
+  getSignalStrengthIconName_: function(managedProperties) {
+    let signalStrength = this.get('tether.signalStrength', managedProperties);
     if (signalStrength === undefined) {
       signalStrength = 4;
     }
@@ -116,55 +105,56 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getDeviceName_: function(networkProperties) {
-    return CrOnc.getNetworkName(networkProperties);
+  getDeviceName_: function(managedProperties) {
+    return managedProperties ? OncMojo.getNetworkName(managedProperties) : '';
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getBatteryPercentageString_: function(networkProperties) {
+  getBatteryPercentageString_: function(managedProperties) {
     return this.i18n(
         'tetherConnectionBatteryPercentage',
-        this.getBatteryPercentageAsString_(networkProperties));
+        this.getBatteryPercentageAsString_(managedProperties));
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getExplanation_: function(networkProperties) {
+  getExplanation_: function(managedProperties) {
     return this.i18n(
         'tetherConnectionExplanation',
-        CrOnc.getEscapedNetworkName(networkProperties));
+        HTMLEscape(OncMojo.getNetworkName(managedProperties)));
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getDescriptionTitle_: function(networkProperties) {
+  getDescriptionTitle_: function(managedProperties) {
     return this.i18n(
         'tetherConnectionDescriptionTitle',
-        CrOnc.getEscapedNetworkName(networkProperties));
+        HTMLEscape(OncMojo.getNetworkName(managedProperties)));
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties The network properties.
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getBatteryDescription_: function(networkProperties) {
+  getBatteryDescription_: function(managedProperties) {
     return this.i18n(
         'tetherConnectionDescriptionBattery',
-        this.getBatteryPercentageAsString_(networkProperties));
+        this.getBatteryPercentageAsString_(managedProperties));
   },
 });
+})();

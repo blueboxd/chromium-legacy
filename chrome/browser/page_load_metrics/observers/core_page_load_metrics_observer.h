@@ -177,50 +177,37 @@ class CorePageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   void OnDomContentLoadedEventStart(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadEventStart(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstLayout(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstPaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstImagePaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstMeaningfulPaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnPageInteractive(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstInputInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnParseStart(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnParseStop(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFailedProvisionalLoad(
-      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info)
+      override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnUserInput(
       const blink::WebInputEvent& event,
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnResourceDataUseObserved(
       content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
@@ -228,23 +215,18 @@ class CorePageLoadMetricsObserver
 
   void OnTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   void RecordTimingHistograms(
-      const page_load_metrics::mojom::PageLoadTiming& main_frame_timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
+      const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
   void RecordByteAndResourceHistograms(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
+      const page_load_metrics::mojom::PageLoadTiming& timing);
   void RecordForegroundDurationHistograms(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info,
       base::TimeTicks app_background_time);
 
   ui::PageTransition transition_;

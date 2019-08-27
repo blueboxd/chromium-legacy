@@ -65,7 +65,6 @@ PresentationServiceImpl::PresentationServiceImpl(
       controller_delegate_(controller_delegate),
       receiver_delegate_(receiver_delegate),
       start_presentation_request_id_(kInvalidRequestId),
-      binding_(this),
       // TODO(imcheng): Consider using RenderFrameHost* directly instead of IDs.
       render_process_id_(render_frame_host->GetProcess()->GetID()),
       render_frame_id_(render_frame_host->GetRoutingID()),
@@ -117,9 +116,9 @@ std::unique_ptr<PresentationServiceImpl> PresentationServiceImpl::Create(
 }
 
 void PresentationServiceImpl::Bind(
-    blink::mojom::PresentationServiceRequest request) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindOnce(
+    mojo::PendingReceiver<blink::mojom::PresentationService> receiver) {
+  presentation_service_receiver_.Bind(std::move(receiver));
+  presentation_service_receiver_.set_disconnect_handler(base::BindOnce(
       &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
@@ -484,7 +483,7 @@ void PresentationServiceImpl::Reset() {
 
   pending_reconnect_presentation_cbs_.clear();
 
-  binding_.Close();
+  presentation_service_receiver_.reset();
   presentation_controller_remote_.reset();
   presentation_receiver_remote_.reset();
 }

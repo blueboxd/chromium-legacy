@@ -5,17 +5,29 @@
 #include "weblayer/browser/navigation_controller_impl.h"
 
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
 #include "weblayer/browser/browser_controller_impl.h"
+#include "weblayer/public/navigation_observer.h"
 
 namespace weblayer {
 
 NavigationControllerImpl::NavigationControllerImpl(
     BrowserControllerImpl* browser_controller)
-    : browser_controller_(browser_controller) {}
+    : WebContentsObserver(browser_controller->web_contents()),
+      browser_controller_(browser_controller) {}
 
 NavigationControllerImpl::~NavigationControllerImpl() = default;
+
+void NavigationControllerImpl::AddObserver(NavigationObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void NavigationControllerImpl::RemoveObserver(NavigationObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 void NavigationControllerImpl::Navigate(const GURL& url) {
   content::NavigationController::LoadURLParams params(url);
@@ -43,6 +55,78 @@ void NavigationControllerImpl::Reload() {
 
 void NavigationControllerImpl::Stop() {
   browser_controller_->web_contents()->Stop();
+}
+
+int NavigationControllerImpl::GetNavigationListSize() {
+  return browser_controller_->web_contents()->GetController().GetEntryCount();
+}
+
+int NavigationControllerImpl::GetNavigationListCurrentIndex() {
+  return browser_controller_->web_contents()
+      ->GetController()
+      .GetCurrentEntryIndex();
+}
+
+GURL NavigationControllerImpl::GetNavigationEntryDisplayURL(int index) {
+  auto* entry =
+      browser_controller_->web_contents()->GetController().GetEntryAtIndex(
+          index);
+  if (!entry)
+    return GURL();
+  return entry->GetVirtualURL();
+}
+
+void NavigationControllerImpl::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  navigation_map_[navigation_handle] =
+      std::make_unique<NavigationImpl>(navigation_handle);
+  auto* navigation = navigation_map_[navigation_handle].get();
+  for (auto& observer : observers_)
+    observer.NavigationStarted(*navigation);
+}
+
+void NavigationControllerImpl::DidRedirectNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
+  auto* navigation = navigation_map_[navigation_handle].get();
+  for (auto& observer : observers_)
+    observer.NavigationRedirected(*navigation);
+}
+
+void NavigationControllerImpl::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
+  auto* navigation = navigation_map_[navigation_handle].get();
+  for (auto& observer : observers_)
+    observer.NavigationCommitted(*navigation);
+}
+
+void NavigationControllerImpl::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
+  auto* navigation = navigation_map_[navigation_handle].get();
+  if (navigation_handle->GetNetErrorCode() == net::OK &&
+      !navigation_handle->IsErrorPage()) {
+    for (auto& observer : observers_)
+      observer.NavigationCompleted(*navigation);
+  } else {
+    for (auto& observer : observers_)
+      observer.NavigationFailed(*navigation);
+  }
+
+  navigation_map_.erase(navigation_map_.find(navigation_handle));
 }
 
 }  // namespace weblayer

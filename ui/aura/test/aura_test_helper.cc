@@ -45,8 +45,8 @@ AuraTestHelper::AuraTestHelper() : AuraTestHelper(nullptr) {}
 AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
     : env_(std::move(env)) {
   // Disable animations during tests.
-  zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+  zero_duration_mode_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   ui::test::EnableTestConfigForPlatformWindows();
 }
 
@@ -112,7 +112,8 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
 
   client::SetFocusClient(root_window(), focus_client_.get());
   client::SetCaptureClient(root_window(), capture_client());
-  parenting_client_.reset(new TestWindowParentingClient(root_window()));
+  parenting_client_ =
+      std::make_unique<TestWindowParentingClient>(root_window());
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.

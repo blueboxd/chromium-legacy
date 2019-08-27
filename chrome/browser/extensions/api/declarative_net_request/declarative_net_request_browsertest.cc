@@ -29,6 +29,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
@@ -492,6 +493,18 @@ class DeclarativeNetRequestBrowserTest
     const std::string script = content::JsReplace(
         kScript, static_cast<const base::Value&>(*builder.Build()));
     ASSERT_EQ("success", ExecuteScriptInBackgroundPage(extension_id, script));
+  }
+
+  void SetActionsAsBadgeText(const ExtensionId& extension_id, bool pref) {
+    const char* pref_string = pref ? "true" : "false";
+    static constexpr char kSetActionCountAsBadgeTextScript[] = R"(
+      chrome.declarativeNetRequest.setActionCountAsBadgeText(%s);
+      window.domAutomationController.send("done");
+    )";
+
+    ExecuteScriptInBackgroundPage(
+        extension_id,
+        base::StringPrintf(kSetActionCountAsBadgeTextScript, pref_string));
   }
 
   std::set<GURL> GetAndResetRequestsToServer() {
@@ -2834,13 +2847,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       query_badge_text_from_ext(extension_id, first_tab_id);
   EXPECT_EQ(default_badge_text, queried_badge_text);
 
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
-                                                                  true);
-  // TODO(crbug.com/979068): Remove the navigation once we update extension
-  // action immediately upon toggling preference.
-  ui_test_utils::NavigateToURL(browser(), page_url);
-  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-
+  SetActionsAsBadgeText(extension_id, true);
   // Since the preference is on for the current tab, attempting to query the
   // badge text from the extension should return the placeholder text instead of
   // the matched action count.
@@ -2851,13 +2858,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // The displayed badge text should show "0" as no actions have been matched.
   EXPECT_EQ("0", action->GetDisplayBadgeText(first_tab_id));
 
-  ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
-                                                                  false);
-  // TODO(crbug.com/979068): Remove the navigation once we update extension
-  // action immediately upon toggling preference.
-  ui_test_utils::NavigateToURL(browser(), page_url);
-  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-
+  SetActionsAsBadgeText(extension_id, false);
   // Switching the preference off should cause the extension queried badge text
   // to be the explicitly set badge text for this tab if it exists. In this
   // case, the queried badge text should be the default badge text.
@@ -2867,6 +2868,68 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // The displayed badge text should be the default badge text now that the
   // preference is off.
   EXPECT_EQ(default_badge_text, action->GetDisplayBadgeText(first_tab_id));
+
+  // Verify that turning off the preference deletes the DNR action count within
+  // the extension action.
+  EXPECT_FALSE(action->HasDNRActionCount(first_tab_id));
+}
+
+// Test that enabling the setActionCountAsBadgeText preference will update
+// all browsers sharing the same browser context.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       ActionCountPreferenceMultipleWindows) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  const ExtensionId& extension_id = last_loaded_extension_id();
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+
+  ExtensionAction* extension_action =
+      ExtensionActionManager::Get(web_contents()->GetBrowserContext())
+          ->GetExtensionAction(*dnr_extension);
+
+  const GURL page_url = embedded_test_server()->GetURL(
+      "norulesmatched.com", "/pages_with_script/index.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+  int first_browser_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+  EXPECT_EQ("", extension_action->GetDisplayBadgeText(first_browser_tab_id));
+
+  // Now create a new browser with the same profile as |browser()| and navigate
+  // to |page_url|.
+  Browser* second_browser = CreateBrowser(profile());
+  ui_test_utils::NavigateToURL(second_browser, page_url);
+  ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame(second_browser)));
+  content::WebContents* second_browser_contents =
+      second_browser->tab_strip_model()->GetActiveWebContents();
+
+  int second_browser_tab_id =
+      ExtensionTabUtil::GetTabId(second_browser_contents);
+  EXPECT_EQ("", extension_action->GetDisplayBadgeText(second_browser_tab_id));
+
+  // Set up an observer to listen for ExtensionAction updates for the active web
+  // contents of both browser windows.
+  TestExtensionActionAPIObserver test_api_observer(
+      profile(), extension_id, {web_contents(), second_browser_contents});
+
+  SetActionsAsBadgeText(extension_id, true);
+
+  // Wait until ExtensionActionAPI::NotifyChange is called, then perform a
+  // sanity check on the browser action's badge text.
+  test_api_observer.Wait();
+
+  EXPECT_EQ("0", extension_action->GetDisplayBadgeText(first_browser_tab_id));
+
+  // The badge text for the second browser window should also update to the
+  // matched action count because the second browser shares the same browser
+  // context as the first.
+  EXPECT_EQ("0", extension_action->GetDisplayBadgeText(second_browser_tab_id));
 }
 
 // Test that the action matched badge text for an extension is visible in an

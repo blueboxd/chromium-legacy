@@ -72,9 +72,9 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
   platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
       this, std::move(properties));
 #elif defined(OS_WIN)
-  platform_window_.reset(new ui::WinWindow(this, properties.bounds));
+  platform_window_ = std::make_unique<ui::WinWindow>(this, properties.bounds);
 #elif defined(USE_X11)
-  platform_window_.reset(new ui::X11Window(this, properties.bounds));
+  platform_window_ = std::make_unique<ui::X11Window>(this, properties.bounds);
 #else
   NOTIMPLEMENTED();
 #endif

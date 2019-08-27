@@ -26,6 +26,11 @@ void CustomCountHistogram::Count(base::HistogramBase::Sample sample) {
   histogram_->Add(sample);
 }
 
+void CustomCountHistogram::CountMany(base::HistogramBase::Sample sample,
+                                     int count) {
+  histogram_->AddCount(sample, count);
+}
+
 void CustomCountHistogram::CountMicroseconds(base::TimeDelta delta) {
   Count(base::saturated_cast<base::HistogramBase::Sample>(
       delta.InMicroseconds()));

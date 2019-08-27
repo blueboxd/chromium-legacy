@@ -52,6 +52,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/sessions/content/content_live_tab.h"
+#include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -81,6 +82,7 @@
 #include "ui/aura/window.h"
 #endif
 
+using sessions::ContentTestHelper;
 using sessions::SerializedNavigationEntry;
 using sessions::SerializedNavigationEntryTestHelper;
 
@@ -717,11 +719,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   tab.current_navigation_index = 1;
   tab.pinned = false;
   tab.navigations.push_back(
-      SerializedNavigationEntryTestHelper::CreateNavigation(url1.spec(),
-                                                            "one"));
+      ContentTestHelper::CreateNavigation(url1.spec(), "one"));
   tab.navigations.push_back(
-      SerializedNavigationEntryTestHelper::CreateNavigation(url2.spec(),
-                                                            "two"));
+      ContentTestHelper::CreateNavigation(url2.spec(), "two"));
 
   for (size_t i = 0; i < tab.navigations.size(); ++i) {
     ASSERT_FALSE(tab.navigations[i].timestamp().is_null());
@@ -798,9 +798,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(url1.spec(), "one");
+      ContentTestHelper::CreateNavigation(url1.spec(), "one");
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(url2.spec(), "two");
+      ContentTestHelper::CreateNavigation(url2.spec(), "two");
   SerializedNavigationEntryTestHelper::SetIsOverridingUserAgent(true, &nav2);
 
   // Set up the restore data -- one window with two tabs.
@@ -812,8 +812,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
     tab1->current_navigation_index = 0;
     tab1->pinned = true;
     tab1->navigations.push_back(
-        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-            url1.spec(), "one"));
+        ContentTestHelper::CreateNavigation(url1.spec(), "one"));
     window.tabs.push_back(std::move(tab1));
   }
 
@@ -823,8 +822,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
     tab2->current_navigation_index = 0;
     tab2->pinned = false;
     tab2->navigations.push_back(
-        sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-            url2.spec(), "two"));
+        ContentTestHelper::CreateNavigation(url2.spec(), "two"));
     window.tabs.push_back(std::move(tab2));
   }
 

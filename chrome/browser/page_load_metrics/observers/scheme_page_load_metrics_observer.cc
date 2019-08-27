@@ -55,19 +55,17 @@ SchemePageLoadMetricsObserver::OnCommit(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 SchemePageLoadMetricsObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   return STOP_OBSERVING;
 }
 
 void SchemePageLoadMetricsObserver::OnParseStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (extra_info.url.scheme() == url::kHttpScheme) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (GetDelegate().GetUrl().scheme() == url::kHttpScheme) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTP.ParseTiming.NavigationToParseStart",
         timing.parse_timing->parse_start.value());
-  } else if (extra_info.url.scheme() == url::kHttpsScheme) {
+  } else if (GetDelegate().GetUrl().scheme() == url::kHttpsScheme) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTPS.ParseTiming.NavigationToParseStart",
         timing.parse_timing->parse_start.value());
@@ -75,16 +73,15 @@ void SchemePageLoadMetricsObserver::OnParseStart(
 }
 
 void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  DCHECK(extra_info.url.scheme() == url::kHttpScheme ||
-         extra_info.url.scheme() == url::kHttpsScheme);
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  DCHECK(GetDelegate().GetUrl().scheme() == url::kHttpScheme ||
+         GetDelegate().GetUrl().scheme() == url::kHttpsScheme);
 
   base::TimeDelta fcp = timing.paint_timing->first_contentful_paint.value();
   base::TimeDelta parse_start_to_fcp =
       fcp - timing.parse_timing->parse_start.value();
 
-  if (extra_info.url.scheme() == url::kHttpScheme) {
+  if (GetDelegate().GetUrl().scheme() == url::kHttpScheme) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTP.PaintTiming."
         "NavigationToFirstContentfulPaint",
@@ -115,8 +112,9 @@ void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
       "PageLoad.Clients.Scheme.HTTPS.PaintTiming.UnderStat.UserInitiated."
       "NewNavigation";
 
-  bool is_user_initiated = extra_info.user_initiated_info.browser_initiated ||
-                           extra_info.user_initiated_info.user_gesture;
+  bool is_user_initiated =
+      GetDelegate().GetUserInitiatedInfo().browser_initiated ||
+      GetDelegate().GetUserInitiatedInfo().user_gesture;
   bool is_user_initiated_new_navigation =
       is_user_initiated && ui::PageTransitionIsNewNavigation(transition_);
 
@@ -128,15 +126,17 @@ void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
                 " mismatch in  array length and enum size");
 
   // Record the total count bucket first.
-  base::UmaHistogramEnumeration(extra_info.url.scheme() == url::kHttpScheme
-                                    ? kUnderStatHistogramHttp
-                                    : kUnderStatHistogramHttps,
-                                PageLoadTimingUnderStat::kTotal);
+  base::UmaHistogramEnumeration(
+      GetDelegate().GetUrl().scheme() == url::kHttpScheme
+          ? kUnderStatHistogramHttp
+          : kUnderStatHistogramHttps,
+      PageLoadTimingUnderStat::kTotal);
   if (is_user_initiated_new_navigation) {
-    base::UmaHistogramEnumeration(extra_info.url.scheme() == url::kHttpScheme
-                                      ? kUnderStatHistogramHttpUserNewNav
-                                      : kUnderStatHistogramHttpsUserNewNav,
-                                  PageLoadTimingUnderStat::kTotal);
+    base::UmaHistogramEnumeration(
+        GetDelegate().GetUrl().scheme() == url::kHttpScheme
+            ? kUnderStatHistogramHttpUserNewNav
+            : kUnderStatHistogramHttpsUserNewNav,
+        PageLoadTimingUnderStat::kTotal);
   }
 
   for (size_t index = 0;
@@ -145,13 +145,13 @@ void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         kUnderStatRecordingIntervalsSeconds[index]));
     if (fcp <= threshold) {
       base::UmaHistogramEnumeration(
-          extra_info.url.scheme() == url::kHttpScheme
+          GetDelegate().GetUrl().scheme() == url::kHttpScheme
               ? kUnderStatHistogramHttp
               : kUnderStatHistogramHttps,
           static_cast<PageLoadTimingUnderStat>(index + 1));
       if (is_user_initiated_new_navigation) {
         base::UmaHistogramEnumeration(
-            extra_info.url.scheme() == url::kHttpScheme
+            GetDelegate().GetUrl().scheme() == url::kHttpScheme
                 ? kUnderStatHistogramHttpUserNewNav
                 : kUnderStatHistogramHttpsUserNewNav,
             static_cast<PageLoadTimingUnderStat>(index + 1));
@@ -161,14 +161,13 @@ void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 }
 
 void SchemePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (extra_info.url.scheme() == url::kHttpScheme) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (GetDelegate().GetUrl().scheme() == url::kHttpScheme) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTP.Experimental.PaintTiming."
         "NavigationToFirstMeaningfulPaint",
         timing.paint_timing->first_meaningful_paint.value());
-  } else if (extra_info.url.scheme() == url::kHttpsScheme) {
+  } else if (GetDelegate().GetUrl().scheme() == url::kHttpsScheme) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTPS.Experimental.PaintTiming."
         "NavigationToFirstMeaningfulPaint",
@@ -177,13 +176,12 @@ void SchemePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
 }
 
 void SchemePageLoadMetricsObserver::OnPageInteractive(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (extra_info.url.scheme() == url::kHttpScheme) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (GetDelegate().GetUrl().scheme() == url::kHttpScheme) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTP.Experimental.NavigationToInteractive",
         timing.interactive_timing->interactive.value());
-  } else if (extra_info.url.scheme() == url::kHttpsScheme) {
+  } else if (GetDelegate().GetUrl().scheme() == url::kHttpsScheme) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTPS.Experimental.NavigationToInteractive",
         timing.interactive_timing->interactive.value());

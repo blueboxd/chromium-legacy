@@ -436,7 +436,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   EXPECT_EQ(S_OK, root_obj->get_accName(SELF, name.Receive()));
   EXPECT_STREQ(L"Name", name);
 
-  tree_.reset(new AXTree());
+  tree_ = std::make_unique<AXTree>();
   ScopedBstr name2;
   EXPECT_EQ(E_FAIL, root_obj->get_accName(SELF, name2.Receive()));
 }
@@ -4800,7 +4800,7 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
   ComPtr<IWindowProvider> window_provider =
       QueryInterfaceFromNode<IWindowProvider>(GetRootNode());
 
-  tree_.reset(new AXTree());
+  tree_ = std::make_unique<AXTree>();
 
   // IGridItemProvider
   int int_result = 0;

@@ -1,7 +1,8 @@
 This is a testharness.js-based test.
-Found 808 tests; 778 PASS, 30 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 803 tests; 779 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
+PASS Partial interface mixin DocumentOrShadowRoot: original interface mixin defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
 PASS Partial interface HTMLAnchorElement: original interface defined
 PASS Partial interface HTMLAreaElement: original interface defined
@@ -117,7 +118,6 @@ PASS Window interface: attribute onkeyup
 PASS Window interface: attribute onload
 PASS Window interface: attribute onloadeddata
 PASS Window interface: attribute onloadedmetadata
-FAIL Window interface: attribute onloadend assert_own_property: The global object must have a property "onloadend" expected property "onloadend" missing
 PASS Window interface: attribute onloadstart
 PASS Window interface: attribute onmousedown
 PASS Window interface: attribute onmouseenter
@@ -262,7 +262,6 @@ PASS Window interface: window must inherit property "onkeyup" with the proper ty
 PASS Window interface: window must inherit property "onload" with the proper type
 PASS Window interface: window must inherit property "onloadeddata" with the proper type
 PASS Window interface: window must inherit property "onloadedmetadata" with the proper type
-FAIL Window interface: window must inherit property "onloadend" with the proper type assert_own_property: expected property "onloadend" missing
 PASS Window interface: window must inherit property "onloadstart" with the proper type
 PASS Window interface: window must inherit property "onmousedown" with the proper type
 PASS Window interface: window must inherit property "onmouseenter" with the proper type
@@ -355,7 +354,6 @@ PASS Document interface: operation close()
 PASS Document interface: operation write(DOMString)
 PASS Document interface: operation writeln(DOMString)
 PASS Document interface: attribute defaultView
-PASS Document interface: attribute activeElement
 PASS Document interface: operation hasFocus()
 PASS Document interface: attribute designMode
 PASS Document interface: operation execCommand(DOMString, boolean, DOMString)
@@ -410,7 +408,6 @@ PASS Document interface: attribute onkeyup
 PASS Document interface: attribute onload
 PASS Document interface: attribute onloadeddata
 PASS Document interface: attribute onloadedmetadata
-FAIL Document interface: attribute onloadend assert_true: The prototype object must have a property "onloadend" expected true got false
 PASS Document interface: attribute onloadstart
 PASS Document interface: attribute onmousedown
 PASS Document interface: attribute onmouseenter
@@ -442,6 +439,7 @@ PASS Document interface: attribute onwaiting
 PASS Document interface: attribute oncopy
 PASS Document interface: attribute oncut
 PASS Document interface: attribute onpaste
+PASS Document interface: attribute activeElement
 PASS Document interface: iframe.contentDocument must have own property "location"
 PASS Document interface: iframe.contentDocument must inherit property "domain" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "referrer" with the proper type
@@ -471,7 +469,6 @@ PASS Document interface: calling write(DOMString) on iframe.contentDocument with
 PASS Document interface: iframe.contentDocument must inherit property "writeln(DOMString)" with the proper type
 PASS Document interface: calling writeln(DOMString) on iframe.contentDocument with too few arguments must throw TypeError
 FAIL Document interface: iframe.contentDocument must inherit property "defaultView" with the proper type Unrecognized type WindowProxy
-PASS Document interface: iframe.contentDocument must inherit property "activeElement" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "hasFocus()" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "designMode" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "execCommand(DOMString, boolean, DOMString)" with the proper type
@@ -532,7 +529,6 @@ PASS Document interface: iframe.contentDocument must inherit property "onkeyup" 
 PASS Document interface: iframe.contentDocument must inherit property "onload" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onloadeddata" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onloadedmetadata" with the proper type
-FAIL Document interface: iframe.contentDocument must inherit property "onloadend" with the proper type assert_inherits: property "onloadend" not found in prototype chain
 PASS Document interface: iframe.contentDocument must inherit property "onloadstart" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onmousedown" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onmouseenter" with the proper type
@@ -564,6 +560,7 @@ PASS Document interface: iframe.contentDocument must inherit property "onwaiting
 PASS Document interface: iframe.contentDocument must inherit property "oncopy" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "oncut" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onpaste" with the proper type
+PASS Document interface: iframe.contentDocument must inherit property "activeElement" with the proper type
 PASS Document interface: new Document() must have own property "location"
 PASS Document interface: new Document() must inherit property "domain" with the proper type
 PASS Document interface: new Document() must inherit property "referrer" with the proper type
@@ -593,7 +590,6 @@ PASS Document interface: calling write(DOMString) on new Document() with too few
 PASS Document interface: new Document() must inherit property "writeln(DOMString)" with the proper type
 PASS Document interface: calling writeln(DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "defaultView" with the proper type
-PASS Document interface: new Document() must inherit property "activeElement" with the proper type
 PASS Document interface: new Document() must inherit property "hasFocus()" with the proper type
 PASS Document interface: new Document() must inherit property "designMode" with the proper type
 PASS Document interface: new Document() must inherit property "execCommand(DOMString, boolean, DOMString)" with the proper type
@@ -654,7 +650,6 @@ PASS Document interface: new Document() must inherit property "onkeyup" with the
 PASS Document interface: new Document() must inherit property "onload" with the proper type
 PASS Document interface: new Document() must inherit property "onloadeddata" with the proper type
 PASS Document interface: new Document() must inherit property "onloadedmetadata" with the proper type
-FAIL Document interface: new Document() must inherit property "onloadend" with the proper type assert_inherits: property "onloadend" not found in prototype chain
 PASS Document interface: new Document() must inherit property "onloadstart" with the proper type
 PASS Document interface: new Document() must inherit property "onmousedown" with the proper type
 PASS Document interface: new Document() must inherit property "onmouseenter" with the proper type
@@ -686,6 +681,7 @@ PASS Document interface: new Document() must inherit property "onwaiting" with t
 PASS Document interface: new Document() must inherit property "oncopy" with the proper type
 PASS Document interface: new Document() must inherit property "oncut" with the proper type
 PASS Document interface: new Document() must inherit property "onpaste" with the proper type
+PASS Document interface: new Document() must inherit property "activeElement" with the proper type
 PASS Document interface: documentWithHandlers must have own property "location"
 PASS Document interface: documentWithHandlers must inherit property "domain" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "referrer" with the proper type
@@ -715,7 +711,6 @@ PASS Document interface: calling write(DOMString) on documentWithHandlers with t
 PASS Document interface: documentWithHandlers must inherit property "writeln(DOMString)" with the proper type
 PASS Document interface: calling writeln(DOMString) on documentWithHandlers with too few arguments must throw TypeError
 PASS Document interface: documentWithHandlers must inherit property "defaultView" with the proper type
-PASS Document interface: documentWithHandlers must inherit property "activeElement" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "hasFocus()" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "designMode" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "execCommand(DOMString, boolean, DOMString)" with the proper type
@@ -776,7 +771,6 @@ PASS Document interface: documentWithHandlers must inherit property "onkeyup" wi
 PASS Document interface: documentWithHandlers must inherit property "onload" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onloadeddata" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onloadedmetadata" with the proper type
-FAIL Document interface: documentWithHandlers must inherit property "onloadend" with the proper type assert_inherits: property "onloadend" found on object expected in prototype chain
 PASS Document interface: documentWithHandlers must inherit property "onloadstart" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onmousedown" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onmouseenter" with the proper type
@@ -808,5 +802,6 @@ PASS Document interface: documentWithHandlers must inherit property "onwaiting" 
 PASS Document interface: documentWithHandlers must inherit property "oncopy" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "oncut" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onpaste" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "activeElement" with the proper type
 Harness: the test ran to completion.
 

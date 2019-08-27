@@ -38,11 +38,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
  public:
   explicit HostDrmDevice(DrmCursor* cursor);
 
-  // Blocks until the DRM service has come up. Use this entry point only when
-  // supporting launch of the service where the ozone UI and GPU
-  // reponsibilities are performed by the same underlying thread.
-  void BlockingStartDrmDevice();
-
   void ProvideManagers(DrmDisplayHostManager* display_manager,
                        DrmOverlayManagerHost* overlay_manager);
 

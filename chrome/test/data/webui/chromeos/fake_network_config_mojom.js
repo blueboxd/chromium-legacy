@@ -56,7 +56,8 @@ class FakeNetworkConfig {
   getNetworkState(guid) {
     return new Promise(resolve => {
       this.extensionApi_.getState(guid, network => {
-        resolve({result: this.networkStateToMojo_(network)});
+        const result = network ? this.networkStateToMojo_(network) : null;
+        resolve({result: result});
       });
     });
   }
@@ -72,7 +73,8 @@ class FakeNetworkConfig {
         networkType: OncMojo.getNetworkTypeString(filter.networkType)
       };
       this.extensionApi_.getNetworks(extensionFilter, networks => {
-        let result = networks.map(network => this.networkStateToMojo_(network));
+        const result =
+            networks.map(network => this.networkStateToMojo_(network));
         resolve({result: result});
       });
     });
@@ -85,7 +87,7 @@ class FakeNetworkConfig {
   getDeviceStateList() {
     return new Promise(resolve => {
       this.extensionApi_.getDeviceStates(devices => {
-        let result = devices.map(device => this.deviceToMojo(device));
+        const result = devices.map(device => this.deviceToMojo(device));
         resolve({result: result});
       });
     });
@@ -99,7 +101,8 @@ class FakeNetworkConfig {
   getManagedProperties(guid) {
     return new Promise(resolve => {
       this.extensionApi_.getManagedProperties(guid, network => {
-        resolve({result: this.managedPropertiesToMojo_(network)});
+        const result = network ? this.managedPropertiesToMojo_(network) : null;
+        resolve({result: result});
       });
     });
   }

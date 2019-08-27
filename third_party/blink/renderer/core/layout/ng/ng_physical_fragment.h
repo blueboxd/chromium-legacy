@@ -171,9 +171,7 @@ class CORE_EXPORT NGPhysicalFragment
   // incorrect, use |BaseDirection()| instead, and 2) margin/border/padding,
   // background etc. do not apply to the line box.
   const ComputedStyle& Style() const {
-    return StyleVariant() == NGStyleVariant::kStandard
-               ? layout_object_.StyleRef()
-               : SlowEffectiveStyle();
+    return layout_object_.EffectiveStyle(StyleVariant());
   }
   Node* GetNode() const;
 

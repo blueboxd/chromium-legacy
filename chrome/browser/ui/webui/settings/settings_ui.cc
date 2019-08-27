@@ -394,10 +394,8 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
       chromeos::settings::DateTimeHandler::Create(html_source)));
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::FingerprintHandler>(profile));
-  if (chromeos::features::IsAssistantEnabled()) {
-    web_ui->AddMessageHandler(
-        std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
-  }
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
   if (g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled)) {
     // Note that UI is also dependent on this pref.
     web_ui->AddMessageHandler(
@@ -509,9 +507,6 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
 
   html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());
-
-  html_source->AddBoolean("assistantEnabled",
-                          chromeos::features::IsAssistantEnabled());
 
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to

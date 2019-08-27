@@ -488,6 +488,68 @@ public class TabGroupUiMediatorUnitTest {
     }
 
     @Test
+    public void tabClosureUndone_UiVisible_NotShowingOverviewMode() {
+        // Assume mTab2 is selected, and it has related tabs mTab2 and mTab3.
+        initAndAssertProperties(mTab2);
+        // OverviewMode is hiding by default.
+        assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(false));
+
+        // Simulate that another member of this group, newTab, is being undone from closure.
+        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        doReturn(new ArrayList<>(Arrays.asList(mTab2, mTab3, newTab)))
+                .when(mTabGroupModelFilter)
+                .getRelatedTabList(TAB4_ID);
+
+        mTabModelObserverArgumentCaptor.getValue().tabClosureUndone(newTab);
+
+        // Since the strip is already visible, no resetting.
+        mVisibilityControllerInOrder.verify(mVisibilityController, never())
+                .setBottomControlsVisible(anyBoolean());
+    }
+
+    @Test
+    public void tabClosureUndone_UiNotVisible_NotShowingOverviewMode() {
+        // Assume mTab1 is selected. Since mTab1 is now a single tab, the strip is invisible.
+        initAndAssertProperties(mTab1);
+        // OverviewMode is hiding by default.
+        assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(false));
+
+        // Simulate that newTab which was a tab in the same group as mTab1 is being undone from
+        // closure.
+        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        doReturn(new ArrayList<>(Arrays.asList(mTab1, newTab)))
+                .when(mTabGroupModelFilter)
+                .getRelatedTabList(TAB4_ID);
+
+        mTabModelObserverArgumentCaptor.getValue().tabClosureUndone(newTab);
+
+        // Strip should reset to be visible.
+        mVisibilityControllerInOrder.verify(mVisibilityController)
+                .setBottomControlsVisible(eq(true));
+    }
+
+    @Test
+    public void tabClosureUndone_UiNotVisible_ShowingOverviewMode() {
+        // Assume mTab1 is selected.
+        initAndAssertProperties(mTab1);
+        // OverviewMode is hiding by default.
+        assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(false));
+
+        // Simulate the overview mode is showing, which hides the strip.
+        mOverviewModeObserverArgumentCaptor.getValue().onOverviewModeStartedShowing(true);
+        assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(true));
+        mVisibilityControllerInOrder.verify(mVisibilityController).setBottomControlsVisible(false);
+
+        // Simulate that we undo a group closure of {mTab2, mTab3}.
+        mTabModelObserverArgumentCaptor.getValue().tabClosureUndone(mTab3);
+        mTabModelObserverArgumentCaptor.getValue().tabClosureUndone(mTab2);
+
+        // Since overview mode is showing, we should not show strip.
+        mVisibilityControllerInOrder.verify(mVisibilityController, never())
+                .setBottomControlsVisible(anyBoolean());
+    }
+
+    @Test
     public void overViewStartedShowing() {
         initAndAssertProperties(mTab1);
 

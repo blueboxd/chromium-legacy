@@ -295,6 +295,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
     mouse_wheel_phase_handler_.set_mouse_wheel_end_dispatch_timeout(timeout);
   }
 
+  // Used to get the max amount of time to wait after a phase end event for a
+  // momentum phase began event.
+  const base::TimeDelta
+  max_time_between_phase_ended_and_momentum_phase_began_for_test() {
+    return mouse_wheel_phase_handler_
+        .max_time_between_phase_ended_and_momentum_phase_began();
+  }
+
   // Update the size, scale factor, color profile, vsync parameters, and any
   // other properties of the NSView or its NSScreen. Propagate these to the
   // RenderWidgetHostImpl as well.

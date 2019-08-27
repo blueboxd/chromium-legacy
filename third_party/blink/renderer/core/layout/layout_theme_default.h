@@ -42,7 +42,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   String ExtraDefaultStyleSheet() override;
   String ExtraQuirksStyleSheet() override;
 
-  Color SystemColor(CSSValueID) const override;
+  Color SystemColor(CSSValueID, WebColorScheme color_scheme) const override;
 
   bool ThemeDrawsFocusRing(const ComputedStyle&) const override;
 

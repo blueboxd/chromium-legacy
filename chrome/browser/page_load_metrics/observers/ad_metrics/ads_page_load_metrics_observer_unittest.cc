@@ -303,13 +303,10 @@ class AdsPageLoadMetricsObserverTest
   void OnMainFrameInteractive(base::TimeDelta frame_interactive_offset) {
     auto timing = page_load_metrics::mojom::PageLoadTimingPtr(base::in_place);
     page_load_metrics::InitPageLoadTimingForTest(timing.get());
-    auto extra_info = page_load_metrics::PageLoadExtraInfo::CreateForTesting(
-        web_contents()->GetLastCommittedURL(), true);
-
     timing->interactive_timing->interactive =
         base::Optional<base::TimeDelta>(frame_interactive_offset);
     // Call directly since main frame timing updates may be delayed.
-    ads_observer_->OnPageInteractive(*timing, extra_info);
+    ads_observer_->OnPageInteractive(*timing);
   }
 
   void OnCpuTimingUpdate(RenderFrameHost* render_frame_host,

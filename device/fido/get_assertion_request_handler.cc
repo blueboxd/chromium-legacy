@@ -191,6 +191,8 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
       FidoRequestHandlerBase::RequestType::kGetAssertion;
   transport_availability_info().has_empty_allow_list =
       request_.allow_list.empty();
+  transport_availability_info().cable_pairing_data_supplied =
+      static_cast<bool>(request_.cable_extension);
 
   if (base::Contains(transport_availability_info().available_transports,
                      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {

@@ -6,9 +6,9 @@
 
 #include <shlobj.h>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -66,101 +66,95 @@ ClipboardFormatType ClipboardFormatType::GetType(
 }
 
 // The following formats can be referenced by ClipboardUtilWin::GetPlainText.
-// For reasons (COM), they must be initialized in a thread-safe manner.
+// Clipboard formats are initialized in a thread-safe manner, using static
+// initialization. COM requires this thread-safe initialization.
 // TODO(dcheng): We probably need to make static initialization of "known"
 // ClipboardFormatTypes thread-safe on all platforms.
-#define CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(name, ...)                        \
-  struct ClipboardFormatTypeArgumentForwarder : public ClipboardFormatType { \
-    ClipboardFormatTypeArgumentForwarder()                                   \
-        : ClipboardFormatType(__VA_ARGS__) {}                                \
-  };                                                                         \
-  static base::LazyInstance<ClipboardFormatTypeArgumentForwarder>::Leaky     \
-      name = LAZY_INSTANCE_INITIALIZER
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type,
-                                     ::RegisterClipboardFormat(CFSTR_INETURLA));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_INETURLA));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetUrlWType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type,
-                                     ::RegisterClipboardFormat(CFSTR_INETURLW));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_INETURLW));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetMozUrlType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"text/x-moz-url"));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"text/x-moz-url"));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetPlainTextType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type, CF_TEXT);
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(CF_TEXT);
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetPlainTextWType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type, CF_UNICODETEXT);
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(CF_UNICODETEXT);
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFilenameType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILENAMEA));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_FILENAMEA));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFilenameWType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILENAMEW));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_FILENAMEW));
+  return *format;
 }
 
 // MS HTML Format
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetHtmlType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type,
-                                     ::RegisterClipboardFormat(L"HTML Format"));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"HTML Format"));
+  return *format;
 }
 
 // MS RTF Format
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetRtfType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"Rich Text Format"));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"Rich Text Format"));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetBitmapType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type, CF_BITMAP);
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(CF_BITMAP);
+  return *format;
 }
 
 // Firefox text/html
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetTextHtmlType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type,
-                                     ::RegisterClipboardFormat(L"text/html"));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"text/html"));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetCFHDropType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(type, CF_HDROP);
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(CF_HDROP);
+  return *format;
 }
 
 // Nothing prevents the drag source app from using the CFSTR_FILEDESCRIPTORA
@@ -168,16 +162,16 @@ const ClipboardFormatType& ClipboardFormatType::GetCFHDropType() {
 // register both the ANSI and Unicode file group descriptors.
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorWType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW));
+  return *format;
 }
 
 // static
@@ -189,9 +183,9 @@ const ClipboardFormatType& ClipboardFormatType::GetFileContentZeroType() {
   // TODO(https://crbug.com/950756): Should TYMED_ISTREAM / TYMED_ISTORAGE be
   // used instead of TYMED_HGLOBAL in
   // OSExchangeDataProviderWin::SetFileContents.
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_FILECONTENTS), 0);
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_FILECONTENTS));
+  return *format;
 }
 
 // static
@@ -216,32 +210,31 @@ const ClipboardFormatType& ClipboardFormatType::GetFileContentAtIndexType(
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetIDListType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(CFSTR_SHELLIDLIST));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_SHELLIDLIST));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetWebKitSmartPasteType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"WebKit Smart Paste Format"));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"WebKit Smart Paste Format"));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetWebCustomDataType() {
-  // TODO(dcheng): This name is temporary. See http://crbug.com/106449.
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"Chromium Web Custom MIME Data Format"));
-  return type.Get();
+  // TODO(http://crbug.com/106449): Standardize this name.
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"Chromium Web Custom MIME Data Format"));
+  return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetPepperCustomDataType() {
-  CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE(
-      type, ::RegisterClipboardFormat(L"Chromium Pepper MIME Data Format"));
-  return type.Get();
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"Chromium Pepper MIME Data Format"));
+  return *format;
 }
-#undef CR_STATIC_UI_CLIPBOARD_FORMAT_TYPE
 
 }  // namespace ui

@@ -3128,8 +3128,11 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
       navigation_handle()->GetSocketAddress().address(),
       response_head_ ? response_head_->head.headers.get() : nullptr);
 
-  if (appcache_handle_)
-    appcache_handle_->SetProcessId(render_frame_host_->GetProcess()->GetID());
+  if (appcache_handle_) {
+    DCHECK(appcache_handle_->host());
+    appcache_handle_->host()->SetProcessId(
+        render_frame_host_->GetProcess()->GetID());
+  }
 
   // Record metrics for the time it takes to get to this state from the
   // beginning of the navigation.

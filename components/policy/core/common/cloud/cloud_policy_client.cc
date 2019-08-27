@@ -623,8 +623,6 @@ void CloudPolicyClient::FetchRemoteCommands(
   for (const auto& command_result : command_results)
     *request->add_command_results() = command_result;
 
-  request->set_send_secure_commands(true);
-
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 

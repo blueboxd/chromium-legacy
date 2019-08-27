@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/time_zone_monitor.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -49,7 +49,7 @@ class CORE_EXPORT TimeZoneController final
   // device::mojom::blink::TimeZoneMonitorClient:
   void OnTimeZoneChange(const String& timezone_id) override;
 
-  mojo::Binding<device::mojom::blink::TimeZoneMonitorClient> binding_;
+  mojo::Receiver<device::mojom::blink::TimeZoneMonitorClient> receiver_{this};
 
   String host_timezone_id_;
   bool has_timezone_id_override_ = false;

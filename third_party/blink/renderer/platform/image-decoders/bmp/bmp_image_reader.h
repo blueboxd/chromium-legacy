@@ -96,6 +96,7 @@ class PLATFORM_EXPORT BMPImageReader final {
     BITFIELDS = 3,
     JPEG = 4,
     PNG = 5,
+    ALPHABITFIELDS = 6,  // Windows CE only
     // OS/2 2.x-only
     HUFFMAN1D,  // Stored in file as 3
     RLE24,      // Stored in file as 4
@@ -106,16 +107,16 @@ class PLATFORM_EXPORT BMPImageReader final {
     kInsufficientData,
   };
 
-  // These are based on the Windows BITMAPINFOHEADER and RGBTRIPLE
-  // structs, but with unnecessary entries removed.
+  // These are based on the Windows BITMAPINFOHEADER and RGBTRIPLE structs, but
+  // with unnecessary entries removed.
   struct BitmapInfoHeader {
     DISALLOW_NEW();
-    uint32_t bi_size;
-    int32_t bi_width;
-    int32_t bi_height;
-    uint16_t bi_bit_count;
-    CompressionType bi_compression;
-    uint32_t bi_clr_used;
+    uint32_t size;
+    int32_t width;
+    int32_t height;
+    uint16_t bit_count;
+    CompressionType compression;
+    uint32_t clr_used;
   };
   struct RGBTriple {
     DISALLOW_NEW();
@@ -154,16 +155,29 @@ class PLATFORM_EXPORT BMPImageReader final {
   // of header values from the byte stream.  Returns false on error.
   bool ReadInfoHeader();
 
-  // Returns true if this is a Windows V4+ BMP.
-  inline bool IsWindowsV4Plus() const {
-    // Windows V4 info header is 108 bytes.  V5 is 124 bytes.
-    return (info_header_.bi_size == 108) || (info_header_.bi_size == 124);
+  // Returns true if this BMP has an alpha mask in the info header
+  // (BITMAPV3HEADER+).  See comments in ReadInfoHeader() for more.
+  inline bool HasAlphaMaskInHeader() const {
+    // BITMAPV3HEADER is 56 bytes; this is also a valid OS/2 2.x header size, so
+    // exclude that case.
+    return (info_header_.size == 56 && !is_os22x_) ||  // BITMAPV3HEADER
+           (info_header_.size == 108) ||               // BITMAPV4HEADER
+           (info_header_.size == 124);                 // BITMAPV5HEADER
+  }
+
+  // Returns true if this BMP has RGB masks in the info header
+  // (BITMAPV2HEADER+).  See comments in ReadInfoHeader() for more.
+  inline bool HasRGBMasksInHeader() const {
+    // BITMAPV2HEADER is 52 bytes; this is also a valid OS/2 2.x header size, so
+    // exclude that case.
+    return (info_header_.size == 52 && !is_os22x_) ||  // BITMAPV2HEADER
+           HasAlphaMaskInHeader();                     // BITMAPV3HEADER+
   }
 
   // Returns false if consistency errors are found in the info header.
   bool IsInfoHeaderValid() const;
 
-  // For BI_BITFIELDS images, initializes the bit_masks_[] and
+  // For BI_[ALPHA]BITFIELDS images, initializes the bit_masks_[] and
   // bit_offsets_[] arrays.  ProcessInfoHeader() will initialize these for
   // other compression types where needed.
   bool ProcessBitmasks();

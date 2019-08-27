@@ -160,6 +160,12 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   void SetHasBlockFragmentation() { has_block_fragmentation_ = true; }
 
+  // Set for any node that establishes a fragmentation context, such as multicol
+  // containers.
+  void SetIsBlockFragmentationContextRoot() {
+    is_fragmentation_context_root_ = true;
+  }
+
   const NGConstraintSpace* ConstraintSpace() const { return space_; }
 
 #if DCHECK_IS_ON()
@@ -215,6 +221,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   bool has_orthogonal_flow_roots_ = false;
   bool has_descendant_that_depends_on_percentage_block_size_ = false;
   bool has_block_fragmentation_ = false;
+  bool is_fragmentation_context_root_ = false;
   bool may_have_descendant_above_block_start_ = false;
 };
 

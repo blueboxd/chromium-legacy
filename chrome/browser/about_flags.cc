@@ -1628,10 +1628,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"newblue", flag_descriptions::kNewblueName,
      flag_descriptions::kNewblueDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(device::kNewblueDaemon)},
-    {"unfiltered-bluetooth-devices",
-     flag_descriptions::kUnfilteredBluetoothDevicesName,
-     flag_descriptions::kUnfilteredBluetoothDevicesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(device::kUnfilteredBluetoothDevices)},
     {"shelf-dense-clamshell", flag_descriptions::kShelfDenseClamshellName,
      flag_descriptions::kShelfDenseClamshellDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfDenseClamshell)},
@@ -2499,9 +2495,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
-    {"arc-available-for-child", flag_descriptions::kArcAvailableForChildName,
-     flag_descriptions::kArcAvailableForChildDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kAvailableForChildAccountFeature)},
     {"arc-boot-completed-broadcast", flag_descriptions::kArcBootCompleted,
      flag_descriptions::kArcBootCompletedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},
@@ -3637,11 +3630,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-    {"enable-native-google-assistant",
-     flag_descriptions::kEnableGoogleAssistantName,
-     flag_descriptions::kEnableGoogleAssistantDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAssistantFeature)},
-
     {"enable-assistant-dsp", flag_descriptions::kEnableGoogleAssistantDspName,
      flag_descriptions::kEnableGoogleAssistantDspDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kEnableDspHotword)},
@@ -4417,6 +4405,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"zero-state-files", flag_descriptions::kZeroStateFilesName,
      flag_descriptions::kZeroStateFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableZeroStateMixedTypesRanker)},
+
+    {"new-overview-tablet-layout",
+     flag_descriptions::kNewOverviewTabletLayoutName,
+     flag_descriptions::kNewOverviewTabletLayoutDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kNewOverviewLayout)},
 #endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

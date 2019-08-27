@@ -66,17 +66,7 @@ bool VulkanImplementationScenic::InitializeVulkanInstance(bool using_surface) {
   std::vector<const char*> required_layers = {
       "VK_LAYER_FUCHSIA_imagepipe_swapchain",
   };
-  if (!vulkan_instance_.Initialize(required_extensions, required_layers))
-    return false;
-
-  vkCreateImagePipeSurfaceFUCHSIA_ =
-      reinterpret_cast<PFN_vkCreateImagePipeSurfaceFUCHSIA>(
-          vkGetInstanceProcAddr(vulkan_instance_.vk_instance(),
-                                "vkCreateImagePipeSurfaceFUCHSIA"));
-  if (!vkCreateImagePipeSurfaceFUCHSIA_)
-    return false;
-
-  return true;
+  return vulkan_instance_.Initialize(required_extensions, required_layers);
 }
 
 gpu::VulkanInstance* VulkanImplementationScenic::GetVulkanInstance() {
@@ -97,7 +87,7 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
   surface_create_info.imagePipeHandle =
       image_pipe.Unbind().TakeChannel().release();
 
-  VkResult result = vkCreateImagePipeSurfaceFUCHSIA_(
+  VkResult result = vkCreateImagePipeSurfaceFUCHSIA(
       vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);
   if (result != VK_SUCCESS) {
     // This shouldn't fail, and we don't know whether imagePipeHandle was closed

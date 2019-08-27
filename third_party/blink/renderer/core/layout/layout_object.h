@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_state.h"
@@ -1770,6 +1771,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   inline const ComputedStyle* Style(bool first_line) const;
   inline const ComputedStyle& StyleRef(bool first_line) const;
 
+  const ComputedStyle& EffectiveStyle(NGStyleVariant style_variant) const {
+    return style_variant == NGStyleVariant::kStandard
+               ? StyleRef()
+               : SlowEffectiveStyle(style_variant);
+  }
+
   static inline Color ResolveColor(const ComputedStyle& style_to_use,
                                    const CSSProperty& color_property) {
     return style_to_use.VisitedDependentColor(color_property);
@@ -2553,6 +2560,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectSVGResourceFilterPrimitive,
   };
   virtual bool IsOfType(LayoutObjectType type) const { return false; }
+
+  const ComputedStyle& SlowEffectiveStyle(NGStyleVariant style_variant) const;
 
   // Updates only the local style ptr of the object.  Does not update the state
   // of the object, and so only should be called when the style is known not to

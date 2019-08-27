@@ -688,8 +688,14 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
 
 // If the server sends the same cards and addresses with changed data, they
 // should change on the client.
+// Flaky on Mac/Linux/ChromeOS only. http://crbug.com/997825
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define MAYBE_ChangedEntityGetsUpdated DISABLED_ChangedEntityGetsUpdated
+#else
+#define MAYBE_ChangedEntityGetsUpdated ChangedEntityGetsUpdated
+#endif
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
-                       ChangedEntityGetsUpdated) {
+                       MAYBE_ChangedEntityGetsUpdated) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0002",
                             kDefaultBillingAddressID),
@@ -941,8 +947,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
 
 // Wallet data should get cleared from the database when the wallet sync type
 // flag is disabled.
+// Test is flaky: https://crbug.com/997786
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestWithDefaultFeatures,
-                       ClearOnDisableWalletSync) {
+                       DISABLED_ClearOnDisableWalletSync) {
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletAddress(),
                                   CreateDefaultSyncWalletCard(),
                                   CreateDefaultSyncPaymentsCustomerData()});

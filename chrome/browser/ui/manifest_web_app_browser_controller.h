@@ -32,7 +32,6 @@ class ManifestWebAppBrowserController : public web_app::AppBrowserController {
   // web_app::AppBrowserController:
   base::Optional<std::string> GetAppId() const override;
   bool ShouldShowCustomTabBar() const override;
-  bool HasTitlebarToolbar() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
   gfx::ImageSkia GetWindowIcon() const override;
   std::string GetAppShortName() const override;

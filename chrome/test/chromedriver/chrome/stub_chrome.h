@@ -46,6 +46,11 @@ class StubChrome : public Chrome {
   Status CloseWebView(const std::string& id) override;
   Status ActivateWebView(const std::string& id) override;
   Status SetAcceptInsecureCerts() override;
+  Status SetPermission(
+      std::unique_ptr<base::DictionaryValue> permission_descriptor,
+      Chrome::PermissionState desired_state,
+      bool one_realm,
+      WebView* current_view) override;
   std::string GetOperatingSystemName() override;
   bool IsMobileEmulationEnabled() const override;
   bool HasTouchScreen() const override;

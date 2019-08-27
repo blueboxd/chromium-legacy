@@ -121,6 +121,10 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     next_create_os_shortcuts_results_[app_id] = shortcut_created;
   }
 
+  void SetCanCreateOsShortcuts(bool can_create_os_shortcuts) {
+    can_create_os_shortcuts_ = can_create_os_shortcuts;
+  }
+
   const std::vector<WebApplicationInfo>& web_app_info_list() {
     return web_app_info_list_;
   }
@@ -191,7 +195,9 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
             }));
   }
 
-  bool CanCreateOsShortcuts() const override { return true; }
+  bool CanCreateOsShortcuts() const override {
+    return can_create_os_shortcuts_;
+  }
 
   void CreateOsShortcuts(const AppId& app_id,
                          bool add_to_desktop,
@@ -239,6 +245,8 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
 
  private:
   TestAppRegistrar* registrar_ = nullptr;
+
+  bool can_create_os_shortcuts_ = true;
 
   std::vector<WebApplicationInfo> web_app_info_list_;
   std::vector<FinalizeOptions> finalize_options_list_;
@@ -609,6 +617,41 @@ TEST_F(PendingAppInstallTaskTest, InstallPlaceholder) {
         EXPECT_TRUE(IsPlaceholderApp(profile(), kWebAppUrl));
 
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
+        EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
+        EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
+                  finalize_options().install_source);
+        const WebApplicationInfo& web_app_info =
+            finalizer()->web_app_info_list().at(0);
+
+        EXPECT_EQ(base::UTF8ToUTF16(kWebAppUrl.spec()), web_app_info.title);
+        EXPECT_EQ(kWebAppUrl, web_app_info.app_url);
+        EXPECT_TRUE(web_app_info.open_as_window);
+        EXPECT_TRUE(web_app_info.icons.empty());
+
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+// Tests that palceholders are correctly installed when the platform doesn't
+// support os shortcuts.
+TEST_F(PendingAppInstallTaskTest, InstallPlaceholderNoCreateOsShorcuts) {
+  ExternalInstallOptions options(kWebAppUrl, LaunchContainer::kWindow,
+                                 ExternalInstallSource::kExternalPolicy);
+  options.install_placeholder = true;
+  auto task = GetInstallationTaskWithTestMocks(std::move(options));
+  finalizer()->SetCanCreateOsShortcuts(false);
+
+  base::RunLoop run_loop;
+  task->Install(
+      web_contents(), WebAppUrlLoader::Result::kRedirectedUrlLoaded,
+      base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
+        EXPECT_EQ(InstallResultCode::kSuccess, result.code);
+        EXPECT_TRUE(result.app_id.has_value());
+
+        EXPECT_TRUE(IsPlaceholderApp(profile(), kWebAppUrl));
+
+        EXPECT_EQ(0u, finalizer()->num_create_os_shortcuts_calls());
         EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
         EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
                   finalize_options().install_source);

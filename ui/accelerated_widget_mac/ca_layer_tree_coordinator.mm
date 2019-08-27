@@ -36,8 +36,8 @@ void CALayerTreeCoordinator::Resize(const gfx::Size& pixel_size,
 
 CARendererLayerTree* CALayerTreeCoordinator::GetPendingCARendererLayerTree() {
   if (!pending_ca_renderer_layer_tree_)
-    pending_ca_renderer_layer_tree_.reset(new CARendererLayerTree(
-        allow_av_sample_buffer_display_layer_, false));
+    pending_ca_renderer_layer_tree_ = std::make_unique<CARendererLayerTree>(
+        allow_av_sample_buffer_display_layer_, false);
   return pending_ca_renderer_layer_tree_.get();
 }
 

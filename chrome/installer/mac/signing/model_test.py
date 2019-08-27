@@ -76,7 +76,8 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual(base_config.base_bundle_id, config.base_bundle_id)
         self.assertEqual(base_config.provisioning_profile_basename,
                          config.provisioning_profile_basename)
-        self.assertEqual(base_config.dmg_basename, config.dmg_basename)
+        self.assertEqual(base_config.packaging_basename,
+                         config.packaging_basename)
 
     def test_channel_no_customize(self):
         base_config = TestConfig()
@@ -87,7 +88,8 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual(base_config.base_bundle_id, config.base_bundle_id)
         self.assertEqual(base_config.provisioning_profile_basename,
                          config.provisioning_profile_basename)
-        self.assertEqual(base_config.dmg_basename, config.dmg_basename)
+        self.assertEqual(base_config.packaging_basename,
+                         config.packaging_basename)
 
     def test_channel_customize(self):
         base_config = TestConfig()
@@ -99,24 +101,26 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual('test.signing.bundle_id.beta', config.base_bundle_id)
         self.assertEqual('provisiontest_Beta',
                          config.provisioning_profile_basename)
-        self.assertEqual('AppProductBeta-99.0.9999.99', config.dmg_basename)
+        self.assertEqual('AppProductBeta-99.0.9999.99',
+                         config.packaging_basename)
 
-    def test_dmg_basename_no_channel(self):
+    def test_packaging_basename_no_channel(self):
         base_config = TestConfig()
         config = model.Distribution(
-            dmg_name_fragment='Canary').to_config(base_config)
+            packaging_name_fragment='Canary').to_config(base_config)
         self.assertEqual(base_config, config.base_config)
         self.assertEqual(base_config.app_product, config.app_product)
         self.assertEqual(base_config.base_bundle_id, config.base_bundle_id)
         self.assertEqual(base_config.provisioning_profile_basename,
                          config.provisioning_profile_basename)
-        self.assertEqual('AppProduct-99.0.9999.99-Canary', config.dmg_basename)
+        self.assertEqual('AppProduct-99.0.9999.99-Canary',
+                         config.packaging_basename)
 
-    def test_dmg_basename_channel(self):
+    def test_packaging_basename_channel(self):
         dist = model.Distribution(
             channel='dev',
             app_name_fragment='Dev',
-            dmg_name_fragment='Dev',
+            packaging_name_fragment='Dev',
             channel_customize=True)
         config = dist.to_config(TestConfig())
         self.assertEqual('App Product Dev', config.app_product)
@@ -124,7 +128,8 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual('test.signing.bundle_id.dev', config.base_bundle_id)
         self.assertEqual('provisiontest_Dev',
                          config.provisioning_profile_basename)
-        self.assertEqual('AppProductDev-99.0.9999.99-Dev', config.dmg_basename)
+        self.assertEqual('AppProductDev-99.0.9999.99-Dev',
+                         config.packaging_basename)
 
 
 class TestPaths(unittest.TestCase):

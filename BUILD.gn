@@ -325,6 +325,7 @@ group("gn_all") {
       "//content/public/android:content_junit_tests",
       "//content/shell/android:content_shell_apk",
       "//device:device_junit_tests",
+      "//weblayer/shell/android:weblayer_shell_apk",
 
       # TODO(https://crbug.com/879065): remove once tests have been migrated to
       # the video_decode_accelerator_tests target.

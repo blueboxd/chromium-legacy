@@ -20,6 +20,7 @@ MainParams::MainParams() = default;
 MainParams::MainParams(const MainParams& other) = default;
 MainParams::~MainParams() = default;
 
+#if !defined(OS_ANDROID)
 int Main(MainParams params
 #if defined(OS_WIN)
 #if !defined(WIN_CONSOLE_APP)
@@ -50,5 +51,6 @@ int Main(MainParams params
 
   return content::ContentMain(content_params);
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace weblayer

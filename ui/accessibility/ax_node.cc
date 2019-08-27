@@ -219,7 +219,8 @@ void AXNode::SetLocation(int32_t offset_container_id,
   data_.relative_bounds.offset_container_id = offset_container_id;
   data_.relative_bounds.bounds = location;
   if (transform)
-    data_.relative_bounds.transform.reset(new gfx::Transform(*transform));
+    data_.relative_bounds.transform =
+        std::make_unique<gfx::Transform>(*transform);
   else
     data_.relative_bounds.transform.reset(nullptr);
 }

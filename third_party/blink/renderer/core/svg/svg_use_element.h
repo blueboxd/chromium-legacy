@@ -106,7 +106,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   void AttachShadowTree(SVGElement& target);
   void DetachShadowTree();
   void ClearInstanceRoot();
-  Element* CreateInstanceTree(SVGElement& target_root) const;
+  SVGElement* CreateInstanceTree(SVGElement& target_root) const;
   void ClearResourceReference();
   bool HasCycleUseReferencing(const ContainerNode& target_instance,
                               const SVGElement& new_target) const;

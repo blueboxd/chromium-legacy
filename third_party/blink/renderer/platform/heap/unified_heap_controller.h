@@ -46,6 +46,7 @@ class PLATFORM_EXPORT UnifiedHeapController final
   bool AdvanceTracing(double) final;
   bool IsTracingDone() final;
   bool IsRootForNonTracingGC(const v8::TracedGlobal<v8::Value>&) final;
+  void ResetHandleInNonTracingGC(const v8::TracedGlobal<v8::Value>&) final;
 
   ThreadState* thread_state() const { return thread_state_; }
 

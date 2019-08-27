@@ -17,8 +17,8 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/journey_logger.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "url/gurl.h"
 
@@ -63,12 +63,12 @@ class PaymentRequest : public mojom::PaymentRequest,
                  std::unique_ptr<ContentPaymentRequestDelegate> delegate,
                  PaymentRequestWebContentsManager* manager,
                  PaymentRequestDisplayManager* display_manager,
-                 mojo::InterfaceRequest<mojom::PaymentRequest> request,
+                 mojo::PendingReceiver<mojom::PaymentRequest> receiver,
                  ObserverForTest* observer_for_testing);
   ~PaymentRequest() override;
 
   // mojom::PaymentRequest
-  void Init(mojom::PaymentRequestClientPtr client,
+  void Init(mojo::PendingRemote<mojom::PaymentRequestClient> client,
             std::vector<mojom::PaymentMethodDataPtr> method_data,
             mojom::PaymentDetailsPtr details,
             mojom::PaymentOptionsPtr options) override;
@@ -180,8 +180,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   PaymentRequestWebContentsManager* manager_;
   PaymentRequestDisplayManager* display_manager_;
   std::unique_ptr<PaymentRequestDisplayManager::DisplayHandle> display_handle_;
-  mojo::Binding<mojom::PaymentRequest> binding_;
-  mojom::PaymentRequestClientPtr client_;
+  mojo::Receiver<mojom::PaymentRequest> receiver_{this};
+  mojo::Remote<mojom::PaymentRequestClient> client_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<PaymentRequestState> state_;

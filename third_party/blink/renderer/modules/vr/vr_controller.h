@@ -9,7 +9,8 @@
 
 #include "base/macros.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
@@ -41,7 +42,7 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
 
   void Trace(blink::Visitor*) override;
 
-  device::mojom::blink::VRServicePtr& Service() { return service_; }
+  mojo::Remote<device::mojom::blink::VRService>& Service() { return service_; }
 
  private:
   bool ShouldResolveGetDisplays();
@@ -78,8 +79,8 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   bool listening_for_activate_ = false;
 
   HeapDeque<Member<ScriptPromiseResolver>> pending_promise_resolvers_;
-  device::mojom::blink::VRServicePtr service_;
-  mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
+  mojo::Remote<device::mojom::blink::VRService> service_;
+  mojo::Receiver<device::mojom::blink::VRServiceClient> receiver_{this};
 
   FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;

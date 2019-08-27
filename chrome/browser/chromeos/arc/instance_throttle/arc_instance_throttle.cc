@@ -119,7 +119,7 @@ void ArcInstanceThrottle::ThrottleInstance(
 std::vector<ArcThrottleObserver*> ArcInstanceThrottle::GetAllObservers() {
   if (!observers_for_testing_.empty())
     return observers_for_testing_;
-  return {};  // Pointers to member observers will go here
+  return {&active_window_throttle_observer_};
 }
 
 void ArcInstanceThrottle::NotifyObserverStateChangedForTesting() {

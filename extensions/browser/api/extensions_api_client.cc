@@ -57,7 +57,11 @@ void ExtensionsAPIClient::NotifyWebRequestWithheld(
 void ExtensionsAPIClient::UpdateActionCount(content::BrowserContext* context,
                                             const ExtensionId& extension_id,
                                             int tab_id,
-                                            int action_count) {}
+                                            int action_count,
+                                            bool clear_badge_text) {}
+
+void ExtensionsAPIClient::ClearActionCount(content::BrowserContext* context,
+                                           const Extension& extension) {}
 
 AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
   return NULL;

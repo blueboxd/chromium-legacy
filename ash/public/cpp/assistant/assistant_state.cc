@@ -1,0 +1,141 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/public/cpp/assistant/assistant_state.h"
+
+#include <ostream>
+#include <sstream>
+
+namespace ash {
+namespace {
+
+AssistantState* g_assistant_state = nullptr;
+
+}  // namespace
+
+// static
+AssistantState* AssistantState::Get() {
+  return g_assistant_state;
+}
+
+AssistantState::AssistantState() {
+  DCHECK(!g_assistant_state);
+  g_assistant_state = this;
+}
+
+AssistantState::~AssistantState() {
+  DCHECK_EQ(g_assistant_state, this);
+  g_assistant_state = nullptr;
+}
+
+void AssistantState::BindRequest(
+    mojom::AssistantStateControllerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void AssistantState::NotifyStatusChanged(mojom::VoiceInteractionState state) {
+  if (voice_interaction_state_ == state)
+    return;
+
+  voice_interaction_state_ = state;
+
+  for (auto& observer : observers_)
+    observer.OnAssistantStatusChanged(state);
+  remote_observers_.ForAllPtrs(
+      [state](auto* observer) { observer->OnAssistantStatusChanged(state); });
+}
+
+void AssistantState::NotifySettingsEnabled(bool enabled) {
+  if (settings_enabled_.has_value() && settings_enabled_.value() == enabled)
+    return;
+
+  settings_enabled_ = enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantSettingsEnabled(enabled);
+  remote_observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnAssistantSettingsEnabled(enabled);
+  });
+}
+
+void AssistantState::NotifyContextEnabled(bool enabled) {
+  if (context_enabled_.has_value() && context_enabled_.value() == enabled)
+    return;
+
+  context_enabled_ = enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantContextEnabled(enabled);
+  remote_observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnAssistantContextEnabled(enabled);
+  });
+}
+
+void AssistantState::NotifyHotwordEnabled(bool enabled) {
+  if (hotword_enabled_.has_value() && hotword_enabled_.value() == enabled)
+    return;
+
+  hotword_enabled_ = enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantHotwordEnabled(enabled);
+  remote_observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnAssistantHotwordEnabled(enabled);
+  });
+}
+
+void AssistantState::NotifyFeatureAllowed(mojom::AssistantAllowedState state) {
+  if (allowed_state_ == state)
+    return;
+
+  allowed_state_ = state;
+  for (auto& observer : observers_)
+    observer.OnAssistantFeatureAllowedChanged(state);
+  remote_observers_.ForAllPtrs([state](auto* observer) {
+    observer->OnAssistantFeatureAllowedChanged(state);
+  });
+}
+
+void AssistantState::NotifyLocaleChanged(const std::string& locale) {
+  if (locale_ == locale)
+    return;
+
+  locale_ = locale;
+  for (auto& observer : observers_)
+    observer.OnLocaleChanged(locale);
+  remote_observers_.ForAllPtrs(
+      [locale](auto* observer) { observer->OnLocaleChanged(locale); });
+}
+
+void AssistantState::NotifyArcPlayStoreEnabledChanged(bool enabled) {
+  if (arc_play_store_enabled_ == enabled)
+    return;
+
+  arc_play_store_enabled_ = enabled;
+
+  for (auto& observer : observers_)
+    observer.OnArcPlayStoreEnabledChanged(enabled);
+  remote_observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnArcPlayStoreEnabledChanged(enabled);
+  });
+}
+
+void AssistantState::NotifyLockedFullScreenStateChanged(bool enabled) {
+  if (locked_full_screen_enabled_ == enabled)
+    return;
+
+  locked_full_screen_enabled_ = enabled;
+
+  for (auto& observer : observers_)
+    observer.OnLockedFullScreenStateChanged(enabled);
+  remote_observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnLockedFullScreenStateChanged(enabled);
+  });
+}
+
+void AssistantState::AddMojomObserver(
+    mojom::AssistantStateObserverPtr observer) {
+  auto* observer_ptr = observer.get();
+  remote_observers_.AddPtr(std::move(observer));
+  InitializeObserverMojom(observer_ptr);
+}
+
+}  // namespace ash

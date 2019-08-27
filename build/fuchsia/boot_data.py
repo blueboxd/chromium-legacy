@@ -39,7 +39,6 @@ TARGET_TYPE_QEMU = 'qemu'
 # Specifies boot files intended for use by anything (incl. physical devices).
 TARGET_TYPE_GENERIC = 'generic'
 
-
 def _GetPubKeyPath(output_dir):
   """Returns a path to the generated SSH public key."""
 
@@ -72,18 +71,6 @@ def ProvisionSSH(output_dir):
 
   if os.path.exists(known_hosts_path):
     os.remove(known_hosts_path)
-
-
-def _MakeQcowDisk(output_dir, disk_path):
-  """Creates a QEMU copy-on-write version of |disk_path| in the output
-  directory."""
-
-  qimg_path = os.path.join(common.GetQemuRootForPlatform(), 'bin', 'qemu-img')
-  output_path = os.path.join(output_dir,
-                             os.path.basename(disk_path) + '.qcow2')
-  subprocess.check_call([qimg_path, 'create', '-q', '-f', 'qcow2',
-                         '-b', disk_path, output_path])
-  return output_path
 
 
 def GetTargetFile(filename, target_arch, target_type):
@@ -124,7 +111,7 @@ def AssertBootImagesExist(arch, platform):
   assert os.path.exists(GetTargetFile('zircon-a.zbi', arch, platform)), \
       'This checkout is missing the files necessary for\n' \
       'booting this configuration of Fuchsia.\n' \
-      'To check out the files, add an entry to the\n' \
-      'entry in your .gclient file like this:\n\n' \
+      'To check out the files, add this entry to the "custom_vars"\n' \
+      'section of your .gclient file:\n\n' \
       '    "checkout_fuchsia_boot_images": "%s.%s"\n\n' % \
            (platform, arch)

@@ -726,9 +726,6 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, TargetURLs) {
 #endif
 
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, MAYBE_IncognitoSplit) {
-  // TODO(crbug.com/939664): Not yet implemented.
-  if (GetParam() == ContextType::kServiceWorker)
-    return;
   ExtensionTestMessageListener created("created item regular", false);
   ExtensionTestMessageListener created_incognito("created item incognito",
                                                  false);

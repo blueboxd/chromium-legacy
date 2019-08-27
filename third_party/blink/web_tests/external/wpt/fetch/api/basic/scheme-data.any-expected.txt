@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Fetching data:,response%27s%20body is OK
+PASS Fetching data:,response%27s%20body is OK (same-origin)
+PASS Fetching data:,response%27s%20body is OK (cors)
+PASS Fetching data:text/plain;base64,cmVzcG9uc2UncyBib[...] is OK
+PASS Fetching data:image/png;base64,cmVzcG9uc2UncyBib2[...] is OK
+PASS Fetching [POST] data:,response%27s%20body is OK
+FAIL Fetching [HEAD] data:,response%27s%20body is OK assert_equals: Response's body is correct expected "" but got "response's body"
+PASS Fetching [GET] data:notAdataUrl.com is KO
+Harness: the test ran to completion.
+

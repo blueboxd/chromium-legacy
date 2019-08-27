@@ -5,6 +5,14 @@
     width: fit-content;
   }
 
+  #pinnedTabsContainer {
+    display: grid;
+    grid-auto-columns: 50px;
+    grid-auto-flow: column;
+    grid-gap: 10px;
+    grid-template-rows: repeat(4, 50px);
+  }
+
   #tabsContainer {
     display: grid;
     grid-auto-columns: 280px;
@@ -12,6 +20,11 @@
     grid-gap: 16px;
     grid-template-rows: 230px;
   }
+
+  #pinnedTabsContainer:not(:empty) + #tabsContainer {
+    margin-inline-start: 16px;
+  }
 </style>
 
+<div id="pinnedTabsContainer"></div>
 <div id="tabsContainer"></div>

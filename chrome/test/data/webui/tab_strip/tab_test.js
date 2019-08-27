@@ -36,6 +36,13 @@ suite('Tab', function() {
     assertFalse(tabElement.hasAttribute('active'));
   });
 
+  test('toggles a [pinned] attribute when pinned', () => {
+    tabElement.tab = Object.assign({}, tab, {pinned: true});
+    assertTrue(tabElement.hasAttribute('pinned'));
+    tabElement.tab = Object.assign({}, tab, {pinned: false});
+    assertFalse(tabElement.hasAttribute('pinned'));
+  });
+
   test('clicking on the element activates the tab', () => {
     tabElement.click();
     return testTabsApiProxy.whenCalled('activateTab', tabId => {

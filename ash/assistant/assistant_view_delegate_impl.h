@@ -29,8 +29,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   const AssistantUiModel* GetUiModel() const override;
   void AddObserver(AssistantViewDelegateObserver* observer) override;
   void RemoveObserver(AssistantViewDelegateObserver* observer) override;
-  void AddStateObserver(AssistantStateObserver* observer) override;
-  void RemoveStateObserver(AssistantStateObserver* observer) override;
   void AddInteractionModelObserver(
       AssistantInteractionModelObserver* observer) override;
   void RemoveInteractionModelObserver(
@@ -49,7 +47,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void DownloadImage(
       const GURL& url,
       AssistantImageDownloader::DownloadCallback callback) override;
-  AssistantStateBase* GetState() const override;
   ::wm::CursorManager* GetCursorManager() override;
   void GetNavigableContentsFactoryForView(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)

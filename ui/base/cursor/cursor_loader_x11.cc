@@ -95,7 +95,8 @@ void CursorLoaderX11::LoadImageCursor(CursorType id,
 
   GetImageCursorBitmap(resource_id, scale(), rotation(), &hotspot, &bitmap);
   XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotspot);
-  image_cursors_[id].reset(new ImageCursor(x_image, scale(), rotation()));
+  image_cursors_[id] =
+      std::make_unique<ImageCursor>(x_image, scale(), rotation());
 }
 
 void CursorLoaderX11::LoadAnimatedCursor(CursorType id,

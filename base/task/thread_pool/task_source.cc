@@ -40,6 +40,8 @@ void TaskSource::Transaction::UpdatePriority(TaskPriority priority) {
   if (FeatureList::IsEnabled(kAllTasksUserBlocking))
     return;
   task_source_->traits_.UpdatePriority(priority);
+  task_source_->priority_racy_.store(task_source_->traits_.priority(),
+                                     std::memory_order_relaxed);
 }
 
 void TaskSource::SetHeapHandle(const HeapHandle& handle) {
@@ -54,6 +56,7 @@ TaskSource::TaskSource(const TaskTraits& traits,
                        TaskRunner* task_runner,
                        TaskSourceExecutionMode execution_mode)
     : traits_(traits),
+      priority_racy_(traits.priority()),
       task_runner_(task_runner),
       execution_mode_(execution_mode) {
   DCHECK(task_runner_ ||

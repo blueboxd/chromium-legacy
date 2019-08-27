@@ -4,6 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -196,7 +197,7 @@ void LargestContentfulPaintHandler::RecordMainFrameTiming(
 
 void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const PageLoadMetricsObserverDelegate& delegate) {
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -205,10 +206,10 @@ void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
   subframe_navigation_start_offset_.erase(
       navigation_handle->GetFrameTreeNodeId());
 
-  if (extra_info.navigation_start > navigation_handle->NavigationStart())
+  if (delegate.GetNavigationStart() > navigation_handle->NavigationStart())
     return;
   base::TimeDelta navigation_delta =
-      navigation_handle->NavigationStart() - extra_info.navigation_start;
+      navigation_handle->NavigationStart() - delegate.GetNavigationStart();
   subframe_navigation_start_offset_.insert(std::make_pair(
       navigation_handle->GetFrameTreeNodeId(), navigation_delta));
 }

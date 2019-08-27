@@ -38,7 +38,7 @@ class DEVICE_VR_EXPORT VROrientationSession
       mojom::XREnvironmentIntegrationProviderAssociatedRequest
           environment_provider) override;
   void SetInputSourceButtonListener(
-      mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
+      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
 
   // Accessible to tests.
  protected:

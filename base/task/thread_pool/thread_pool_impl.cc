@@ -18,6 +18,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_features.h"
 #include "base/task/thread_pool/pooled_parallel_task_runner.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
@@ -394,6 +395,19 @@ bool ThreadPoolImpl::PostTaskWithSequence(Task task,
   }
 
   return true;
+}
+
+bool ThreadPoolImpl::ShouldYield(TaskSource* task_source) const {
+  const TaskPriority priority = task_source->priority_racy();
+  auto* const thread_group = GetThreadGroupForTraits(
+      {ThreadPool(), priority, task_source->thread_policy()});
+  // A task whose priority changed and is now running in the wrong thread group
+  // should yield so it's rescheduled in the right one.
+  if (!thread_group->IsBoundToCurrentThread())
+    return true;
+  return GetThreadGroupForTraits(
+             {ThreadPool(), priority, task_source->thread_policy()})
+      ->ShouldYield(priority);
 }
 
 bool ThreadPoolImpl::EnqueueJobTaskSource(

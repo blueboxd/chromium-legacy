@@ -95,107 +95,6 @@ struct PageRenderData {
   float layout_shift_score_before_input_or_scroll;
 };
 
-// TODO(crbug/939403): Migrate usage of this struct in favor of observer
-// delegate. New user's of this data should use
-// PageLoadMetricsObserverDelegate's API instead.
-struct PageLoadExtraInfo {
-  PageLoadExtraInfo(
-      base::TimeTicks navigation_start,
-      const base::Optional<base::TimeDelta>& first_background_time,
-      const base::Optional<base::TimeDelta>& first_foreground_time,
-      bool started_in_foreground,
-      UserInitiatedInfo user_initiated_info,
-      const GURL& url,
-      const GURL& start_url,
-      bool did_commit,
-      PageEndReason page_end_reason,
-      UserInitiatedInfo page_end_user_initiated_info,
-      const base::Optional<base::TimeDelta>& page_end_time,
-      const mojom::PageLoadMetadata& main_frame_metadata,
-      const mojom::PageLoadMetadata& subframe_metadata,
-      const PageRenderData& page_render_data,
-      const PageRenderData& main_frame_render_data,
-      ukm::SourceId source_id);
-
-  // Simplified version of the constructor, intended for use in tests.
-  static PageLoadExtraInfo CreateForTesting(const GURL& url,
-                                            bool started_in_foreground);
-
-  PageLoadExtraInfo(const PageLoadExtraInfo& other);
-
-  ~PageLoadExtraInfo();
-
-  // The time the navigation was initiated.
-  const base::TimeTicks navigation_start;
-
-  // The first time that the page was backgrounded since the navigation started.
-  const base::Optional<base::TimeDelta> first_background_time;
-
-  // The first time that the page was foregrounded since the navigation started.
-  const base::Optional<base::TimeDelta> first_foreground_time;
-
-  // True if the page load started in the foreground.
-  const bool started_in_foreground;
-
-  // Whether the page load was initiated by a user.
-  const UserInitiatedInfo user_initiated_info;
-
-  // Most recent URL for this page. Can be updated at navigation start, upon
-  // redirection, and at commit time.
-  const GURL url;
-
-  // The URL that started the navigation, before redirects.
-  const GURL start_url;
-
-  // Whether the navigation for this page load committed.
-  const bool did_commit;
-
-  // The reason the page load ended. If the page is still active,
-  // |page_end_reason| will be |END_NONE|. |page_end_time| contains the duration
-  // of time until the cause of the page end reason was encountered.
-  const PageEndReason page_end_reason;
-
-  // Whether the end reason for this page load was user initiated. For example,
-  // if
-  // this page load was ended due to a new navigation, this field tracks whether
-  // that new navigation was user-initiated. This field is only useful if this
-  // page load's end reason is a value other than END_NONE. Note that this
-  // value is currently experimental, and is subject to change. In particular,
-  // this field is not currently set for some end reasons, such as stop and
-  // close, since we don't yet have sufficient instrumentation to know if a stop
-  // or close was caused by a user action.
-  //
-  // TODO(csharrison): If more metadata for end reasons is needed we should
-  // provide a
-  // better abstraction. Note that this is an approximation.
-  UserInitiatedInfo page_end_user_initiated_info;
-
-  // Total lifetime of the page from the user's standpoint, starting at
-  // navigation start. The page lifetime ends when the first of the following
-  // events happen:
-  // * the load of the main resource fails
-  // * the page load is stopped
-  // * the tab hosting the page is closed
-  // * the render process hosting the page goes away
-  // * a new navigation which later commits is initiated in the same tab
-  // This field will not be set if the page is still active and hasn't yet
-  // finished.
-  const base::Optional<base::TimeDelta> page_end_time;
-
-  // Extra information supplied to the page load metrics system from the
-  // renderer for the main frame.
-  const mojom::PageLoadMetadata main_frame_metadata;
-
-  // PageLoadMetadata for subframes of the current page load.
-  const mojom::PageLoadMetadata subframe_metadata;
-
-  const PageRenderData page_render_data;
-  const PageRenderData main_frame_render_data;
-
-  // UKM SourceId for the current page load.
-  const ukm::SourceId source_id;
-};
-
 // Container for various information about a completed request within a page
 // load.
 struct ExtraRequestCompleteInfo {
@@ -342,8 +241,7 @@ class PageLoadMetricsObserver {
   // that |navigation_handle| will be destroyed soon after this call. Don't
   // hold a reference to it.
   virtual void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle,
-      const PageLoadExtraInfo& extra_info) {}
+      content::NavigationHandle* navigation_handle) {}
 
   // OnCommitSameDocumentNavigation is triggered when a same-document navigation
   // commits within the main frame of the current page. Note that
@@ -355,8 +253,7 @@ class PageLoadMetricsObserver {
   // OnHidden is triggered when a page leaves the foreground. It does not fire
   // when a foreground page is permanently closed; for that, listen to
   // OnComplete instead.
-  virtual ObservePolicy OnHidden(const mojom::PageLoadTiming& timing,
-                                 const PageLoadExtraInfo& extra_info);
+  virtual ObservePolicy OnHidden(const mojom::PageLoadTiming& timing);
 
   // OnShown is triggered when a page is brought to the foreground. It does not
   // fire when the page first loads; for that, listen for OnStart instead.
@@ -385,16 +282,14 @@ class PageLoadMetricsObserver {
   //
   // If |subframe_rfh| is nullptr, the update took place in the main frame.
   virtual void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
-                              const mojom::PageLoadTiming& timing,
-                              const PageLoadExtraInfo& extra_info) {}
+                              const mojom::PageLoadTiming& timing) {}
 
   // OnRenderDataUpdate is triggered when an updated PageRenderData is available
   // at the subframe level. This method may be called multiple times over the
   // course of the page load.
   virtual void OnSubFrameRenderDataUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const mojom::FrameRenderDataUpdate& render_data,
-      const PageLoadExtraInfo& extra_info) {}
+      const mojom::FrameRenderDataUpdate& render_data) {}
 
   // Triggered when an updated CpuTiming is available at the page or subframe
   // level. This method is intended for monitoring cpu usage and load across
@@ -405,55 +300,42 @@ class PageLoadMetricsObserver {
   // OnUserInput is triggered when a new user input is passed in to
   // web_contents.
   virtual void OnUserInput(const blink::WebInputEvent& event,
-                           const mojom::PageLoadTiming& timing,
-                           const PageLoadExtraInfo& extra_info) {}
+                           const mojom::PageLoadTiming& timing) {}
 
   // The following methods are invoked at most once, when the timing for the
   // associated event first becomes available.
   virtual void OnDomContentLoadedEventStart(
-      const mojom::PageLoadTiming& timing,
-      const PageLoadExtraInfo& extra_info) {}
-  virtual void OnLoadEventStart(const mojom::PageLoadTiming& timing,
-                                const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstLayout(const mojom::PageLoadTiming& timing,
-                             const PageLoadExtraInfo& extra_info) {}
-  virtual void OnParseStart(const mojom::PageLoadTiming& timing,
-                            const PageLoadExtraInfo& extra_info) {}
-  virtual void OnParseStop(const mojom::PageLoadTiming& timing,
-                           const PageLoadExtraInfo& extra_info) {}
+      const mojom::PageLoadTiming& timing) {}
+  virtual void OnLoadEventStart(const mojom::PageLoadTiming& timing) {}
+  virtual void OnFirstLayout(const mojom::PageLoadTiming& timing) {}
+  virtual void OnParseStart(const mojom::PageLoadTiming& timing) {}
+  virtual void OnParseStop(const mojom::PageLoadTiming& timing) {}
 
   // On*PaintInPage(...) are invoked when the first relevant paint in the page,
   // across all frames, is observed.
-  virtual void OnFirstPaintInPage(const mojom::PageLoadTiming& timing,
-                                  const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstImagePaintInPage(const mojom::PageLoadTiming& timing,
-                                       const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstPaintInPage(const mojom::PageLoadTiming& timing) {}
+  virtual void OnFirstImagePaintInPage(const mojom::PageLoadTiming& timing) {}
   virtual void OnFirstContentfulPaintInPage(
-      const mojom::PageLoadTiming& timing,
-      const PageLoadExtraInfo& extra_info) {}
+      const mojom::PageLoadTiming& timing) {}
 
   // Unlike other paint callbacks, OnFirstMeaningfulPaintInMainFrameDocument is
   // tracked per document, and is reported for the main frame document only.
   virtual void OnFirstMeaningfulPaintInMainFrameDocument(
-      const mojom::PageLoadTiming& timing,
-      const PageLoadExtraInfo& extra_info) {}
+      const mojom::PageLoadTiming& timing) {}
 
-  virtual void OnPageInteractive(const mojom::PageLoadTiming& timing,
-                                 const PageLoadExtraInfo& extra_info) {}
+  virtual void OnPageInteractive(const mojom::PageLoadTiming& timing) {}
 
-  virtual void OnFirstInputInPage(const mojom::PageLoadTiming& timing,
-                                  const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstInputInPage(const mojom::PageLoadTiming& timing) {}
 
   // Invoked when there is an update to the loading behavior_flags in the given
   // frame.
   virtual void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
-                                         int behavior_flags,
-                                         const PageLoadExtraInfo& extra_info) {}
+                                         int behavior_flags) {}
 
   // Invoked when new use counter features are observed across all frames.
-  virtual void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,
-                                       const mojom::PageLoadFeatures& features,
-                                       const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFeaturesUsageObserved(
+      content::RenderFrameHost* rfh,
+      const mojom::PageLoadFeatures& features) {}
 
   // Invoked when there is data use for loading a resource on the page
   // for a given render frame host. This only contains resources that have had
@@ -482,22 +364,21 @@ class PageLoadMetricsObserver {
   // the application may be killed at any time after this method is invoked
   // without further notification. Note that this may be called both for
   // provisional loads as well as committed loads. Implementations that only
-  // want to track committed loads should check whether extra_info.committed_url
-  // is empty to determine if the load had committed. If the implementation
-  // returns CONTINUE_OBSERVING, this method may be called multiple times per
-  // observer, once for each time that the application enters the backround.
+  // want to track committed loads should check GetDelegate().DidCommit()
+  // to determine if the load had committed. If the implementation returns
+  // CONTINUE_OBSERVING, this method may be called multiple times per observer,
+  // once for each time that the application enters the background.
   //
   // The default implementation does nothing, and returns CONTINUE_OBSERVING.
   virtual ObservePolicy FlushMetricsOnAppEnterBackground(
-      const mojom::PageLoadTiming& timing,
-      const PageLoadExtraInfo& extra_info);
+      const mojom::PageLoadTiming& timing);
 
   // One of OnComplete or OnFailedProvisionalLoad is invoked for tracked page
   // loads, immediately before the observer is deleted. These callbacks will not
   // be invoked for page loads that did not meet the criteria for being tracked
   // at the time the navigation completed. The PageLoadTiming struct contains
-  // timing data and the PageLoadExtraInfo struct contains other useful data
-  // collected over the course of the page load. Most observers should not need
+  // timing data. Other useful data collected over the course of the page load
+  // is exposed by the observer delegate API. Most observers should not need
   // to implement these callbacks, and should implement the On* timing callbacks
   // instead.
 
@@ -506,14 +387,12 @@ class PageLoadMetricsObserver {
   // also want to implement FlushMetricsOnAppEnterBackground, to avoid loss of
   // data if the application is killed while in the background (this happens
   // frequently on Android).
-  virtual void OnComplete(const mojom::PageLoadTiming& timing,
-                          const PageLoadExtraInfo& extra_info) {}
+  virtual void OnComplete(const mojom::PageLoadTiming& timing) {}
 
   // OnFailedProvisionalLoad is invoked for tracked page loads that did not
   // commit, immediately before the observer is deleted.
   virtual void OnFailedProvisionalLoad(
-      const FailedProvisionalLoadInfo& failed_provisional_load_info,
-      const PageLoadExtraInfo& extra_info) {}
+      const FailedProvisionalLoadInfo& failed_provisional_load_info) {}
 
   // Called whenever a request is loaded for this page load. This is restricted
   // to requests with HTTP or HTTPS only schemes.

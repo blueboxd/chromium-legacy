@@ -17,7 +17,6 @@
 #include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/split_view_test_api.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
@@ -1561,16 +1560,12 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
 
 AutotestPrivateSetAssistantEnabledFunction::
     AutotestPrivateSetAssistantEnabledFunction() {
-  mojo::PendingRemote<ash::mojom::VoiceInteractionController> remote;
-  ash::VoiceInteractionController::Get()->BindRequest(
-      remote.InitWithNewPipeAndPassReceiver());
-  assistant_state_.Init(std::move(remote));
-  assistant_state_.AddObserver(this);
+  ash::AssistantState::Get()->AddObserver(this);
 }
 
 AutotestPrivateSetAssistantEnabledFunction::
     ~AutotestPrivateSetAssistantEnabledFunction() {
-  assistant_state_.RemoveObserver(this);
+  ash::AssistantState::Get()->RemoveObserver(this);
 }
 
 ExtensionFunction::ResponseAction
@@ -1594,7 +1589,7 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
                        ? ash::mojom::VoiceInteractionState::STOPPED
                        : ash::mojom::VoiceInteractionState::NOT_READY;
 
-  if (assistant_state_.voice_interaction_state() == new_state)
+  if (ash::AssistantState::Get()->voice_interaction_state() == new_state)
     return RespondNow(NoArguments());
 
   // Assistant service has not responded yet, set up a delayed timer to wait for
@@ -1608,9 +1603,10 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   return RespondLater();
 }
 
-void AutotestPrivateSetAssistantEnabledFunction::
-    OnVoiceInteractionStatusChanged(ash::mojom::VoiceInteractionState state) {
-  DCHECK(expected_state_);
+void AutotestPrivateSetAssistantEnabledFunction::OnAssistantStatusChanged(
+    ash::mojom::VoiceInteractionState state) {
+  if (!expected_state_)
+    return;
 
   // The service could go through |NOT_READY| then to |STOPPED| during enable
   // flow if this API is called before the initial state is reported.

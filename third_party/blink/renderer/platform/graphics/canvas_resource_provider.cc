@@ -1171,6 +1171,9 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
       case CanvasResourceType::kSharedImage: {
         DCHECK_NE(usage, ResourceUsage::kSoftwareResourceUsage);
 
+        if (!context_provider_wrapper)
+          continue;
+
         const bool usage_wants_single_buffered =
             usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
             usage == ResourceUsage::kAcceleratedDirect3DResourceUsage ||
@@ -1187,9 +1190,14 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             context_provider_wrapper->ContextProvider()
                 ->GetCapabilities()
                 .texture_storage_image;
+
+        const int max_texture_size = context_provider_wrapper->ContextProvider()
+                                         ->GetCapabilities()
+                                         .max_texture_size;
         const bool can_use_gmbs =
             is_gpu_memory_buffer_image_allowed &&
-            Platform::Current()->GetGpuMemoryBufferManager();
+            Platform::Current()->GetGpuMemoryBufferManager() &&
+            size.Width() < max_texture_size && size.Height() < max_texture_size;
 
         const bool is_overlay_candidate =
             usage_wants_overlays && can_use_overlays;

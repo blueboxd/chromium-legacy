@@ -2712,6 +2712,10 @@ void GLRenderer::FinishDrawingFrame() {
   gl_->Disable(GL_BLEND);
   blend_shadow_ = false;
 
+  // Schedule output surface as overlay first to preserve existing ordering
+  // semantics during overlay refactoring.
+  ScheduleOutputSurfaceAsOverlay();
+
   ScheduleCALayers();
   ScheduleDCLayers();
   ScheduleOverlays();
@@ -3464,16 +3468,10 @@ void GLRenderer::ScheduleOverlays() {
 
   OverlayCandidateList& overlays = current_frame()->overlay_list;
   for (const auto& overlay_candidate : overlays) {
-    unsigned texture_id = 0;
-    if (overlay_candidate.use_output_surface_for_resource) {
-      texture_id = output_surface_->GetOverlayTextureId();
-      DCHECK(texture_id || IsContextLost());
-    } else {
-      pending_overlay_resources_.push_back(
-          std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
-              resource_provider_, overlay_candidate.resource_id));
-      texture_id = pending_overlay_resources_.back()->texture_id();
-    }
+    pending_overlay_resources_.push_back(
+        std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+            resource_provider_, overlay_candidate.resource_id));
+    unsigned texture_id = pending_overlay_resources_.back()->texture_id();
 
     context_support_->ScheduleOverlayPlane(
         overlay_candidate.plane_z_order, overlay_candidate.transform,
@@ -3481,6 +3479,25 @@ void GLRenderer::ScheduleOverlays() {
         overlay_candidate.uv_rect, !overlay_candidate.is_opaque,
         overlay_candidate.gpu_fence_id);
   }
+}
+
+void GLRenderer::ScheduleOutputSurfaceAsOverlay() {
+  if (!current_frame()->output_surface_plane)
+    return;
+
+  // Initialize correct values to use an output surface as overlay candidate.
+  auto& overlay_candidate = *(current_frame()->output_surface_plane);
+  unsigned texture_id = output_surface_->GetOverlayTextureId();
+  DCHECK(texture_id || IsContextLost());
+  // Output surface is also z-order 0.
+  int plane_z_order = 0;
+  // Output surface always uses the full texture.
+  gfx::RectF uv_rect(0.f, 0.f, 1.f, 1.f);
+
+  context_support_->ScheduleOverlayPlane(
+      plane_z_order, overlay_candidate.transform, texture_id,
+      ToNearestRect(overlay_candidate.display_rect), uv_rect,
+      overlay_candidate.enable_blending, overlay_candidate.gpu_fence_id);
 }
 
 // This function draws the RenderPassDrawQuad into a temporary

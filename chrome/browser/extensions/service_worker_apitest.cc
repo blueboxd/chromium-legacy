@@ -1632,6 +1632,193 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   EXPECT_TRUE(finished_listener.WaitUntilSatisfied());
 }
 
+namespace {
+
+constexpr char kIncognitoManifest[] =
+    R"({
+          "name": "Incognito Test Extension",
+          "version": "0.1",
+          "manifest_version": 2,
+          "permissions": ["tabs"],
+          "background": {"service_worker": "worker.js"},
+          "incognito": "%s"
+        })";
+
+constexpr char kQueryWorkerScript[] =
+    R"(var inIncognitoContext = chrome.extension.inIncognitoContext;
+       var incognitoStr =
+           inIncognitoContext ? 'incognito' : 'regular';
+       chrome.test.sendMessage('Script started ' + incognitoStr, function() {
+         chrome.tabs.query({}, function(tabs) {
+           let urls = tabs.map(tab => tab.url);
+           chrome.test.sendMessage(JSON.stringify(urls));
+         });
+       });)";
+
+constexpr char kTabsOnUpdatedScript[] =
+    R"(var inIncognitoContext = chrome.extension.inIncognitoContext;
+       var incognitoStr =
+           inIncognitoContext ? 'incognito' : 'regular';
+       var urls = [];
+
+       chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+         if (changeInfo.status === 'complete') {
+           urls.push(tab.url);
+         }
+       });
+
+       chrome.test.sendMessage('Script started ' + incognitoStr, function() {
+           chrome.test.sendMessage(JSON.stringify(urls));
+       });)";
+
+}  // anonymous namespace
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsQuerySplit) {
+  ExtensionTestMessageListener ready_regular("Script started regular", true);
+  ExtensionTestMessageListener ready_incognito("Script started incognito",
+                                               true);
+  // Open an incognito window.
+  Browser* browser_incognito =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  ASSERT_TRUE(browser_incognito);
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(kIncognitoManifest, "split"));
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kQueryWorkerScript);
+
+  const Extension* extension = LoadExtensionIncognito(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // Wait for the extension's service workers to be ready.
+  ASSERT_TRUE(ready_regular.WaitUntilSatisfied());
+  ASSERT_TRUE(ready_incognito.WaitUntilSatisfied());
+
+  // Load a new tab in both browsers.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome:version"));
+  ui_test_utils::NavigateToURL(browser_incognito, GURL("chrome:about"));
+
+  {
+    ExtensionTestMessageListener tabs_listener(false);
+    // The extension waits for the reply to the "ready" sendMessage call
+    // and replies with the URLs of the tabs.
+    ready_regular.Reply("");
+    EXPECT_TRUE(tabs_listener.WaitUntilSatisfied());
+    EXPECT_EQ(R"(["chrome://version/"])", tabs_listener.message());
+  }
+  {
+    ExtensionTestMessageListener tabs_listener(false);
+    // Reply to the original message and wait for the return message.
+    ready_incognito.Reply("");
+    EXPECT_TRUE(tabs_listener.WaitUntilSatisfied());
+    EXPECT_EQ(R"(["chrome://about/"])", tabs_listener.message());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsQuerySpanning) {
+  ExtensionTestMessageListener ready_listener("Script started regular", true);
+
+  // Open an incognito window.
+  Browser* browser_incognito =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  ASSERT_TRUE(browser_incognito);
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(kIncognitoManifest, "spanning"));
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kQueryWorkerScript);
+
+  const Extension* extension = LoadExtensionIncognito(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // Wait for the extension's service worker to be ready.
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  // Load a new tab in both browsers.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome:version"));
+  ui_test_utils::NavigateToURL(browser_incognito, GURL("chrome:about"));
+
+  ExtensionTestMessageListener tabs_listener(false);
+  // The extension waits for the reply to the "ready" sendMessage call
+  // and replies with the URLs of the tabs.
+  ready_listener.Reply("");
+  EXPECT_TRUE(tabs_listener.WaitUntilSatisfied());
+  EXPECT_EQ(R"(["chrome://version/","chrome://about/"])",
+            tabs_listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnUpdatedSplit) {
+  ExtensionTestMessageListener ready_regular("Script started regular", true);
+  ExtensionTestMessageListener ready_incognito("Script started incognito",
+                                               true);
+  // Open an incognito window.
+  Browser* browser_incognito =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  ASSERT_TRUE(browser_incognito);
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(kIncognitoManifest, "split"));
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kTabsOnUpdatedScript);
+
+  const Extension* extension = LoadExtensionIncognito(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // Wait for the extension's service workers to be ready.
+  ASSERT_TRUE(ready_regular.WaitUntilSatisfied());
+  ASSERT_TRUE(ready_incognito.WaitUntilSatisfied());
+
+  // Load a new tab in both browsers.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome:version"));
+  ui_test_utils::NavigateToURL(browser_incognito, GURL("chrome:about"));
+
+  {
+    ExtensionTestMessageListener tabs_listener(false);
+    // The extension waits for the reply to the "ready" sendMessage call
+    // and replies with the URLs of the tabs.
+    ready_regular.Reply("");
+    EXPECT_TRUE(tabs_listener.WaitUntilSatisfied());
+    EXPECT_EQ(R"(["chrome://version/"])", tabs_listener.message());
+  }
+  {
+    ExtensionTestMessageListener tabs_listener(false);
+    // The extension waits for the reply to the "ready" sendMessage call
+    // and replies with the URLs of the tabs.
+    ready_incognito.Reply("");
+    EXPECT_TRUE(tabs_listener.WaitUntilSatisfied());
+    EXPECT_EQ(R"(["chrome://about/"])", tabs_listener.message());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       TabsOnUpdatedSpanning) {
+  ExtensionTestMessageListener ready_listener("Script started regular", true);
+
+  // Open an incognito window.
+  Browser* browser_incognito =
+      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+  ASSERT_TRUE(browser_incognito);
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(kIncognitoManifest, "spanning"));
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kTabsOnUpdatedScript);
+
+  const Extension* extension = LoadExtensionIncognito(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // Wait for the extension's service worker to be ready.
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  // Load a new tab in both browsers.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome:version"));
+  ui_test_utils::NavigateToURL(browser_incognito, GURL("chrome:about"));
+
+  ExtensionTestMessageListener tabs_listener(false);
+  // The extension waits for the reply to the "ready" sendMessage call
+  // and replies with the URLs of the tabs.
+  ready_listener.Reply("");
+  EXPECT_TRUE(tabs_listener.WaitUntilSatisfied());
+  EXPECT_EQ(R"(["chrome://version/","chrome://about/"])",
+            tabs_listener.message());
+}
+
 // Tests the restriction on registering service worker scripts at root scope.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        ServiceWorkerScriptRootScope) {

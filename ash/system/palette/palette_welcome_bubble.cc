@@ -58,10 +58,9 @@ class PaletteWelcomeBubble::WelcomeBubbleView
 
   void Init() override {
     SetLayoutManager(std::make_unique<views::FillLayout>());
+    // TODO(crbug.com/996312): Check if the board type is eligibile here.
     auto* label = new views::Label(l10n_util::GetStringUTF16(
-        chromeos::features::IsAssistantEnabled()
-            ? IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_WITH_ASSISTANT_DESCRIPTION
-            : IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_DESCRIPTION));
+        IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_WITH_ASSISTANT_DESCRIPTION));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetMultiLine(true);
     label->SizeToFit(kBubbleContentLabelPreferredWidthDp);

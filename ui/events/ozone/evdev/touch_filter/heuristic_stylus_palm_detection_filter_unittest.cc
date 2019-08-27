@@ -16,9 +16,11 @@ class HeuristicStylusPalmDetectionFilterTest : public testing::Test {
  public:
   HeuristicStylusPalmDetectionFilterTest() = default;
   void SetUp() override {
-    shared_palm_state.reset(new SharedPalmDetectionFilterState);
-    palm_detection_filter_.reset(new HeuristicStylusPalmDetectionFilter(
-        shared_palm_state.get(), hold_sample_count, hold_time, suppress_time));
+    shared_palm_state = std::make_unique<SharedPalmDetectionFilterState>();
+    palm_detection_filter_ =
+        std::make_unique<HeuristicStylusPalmDetectionFilter>(
+            shared_palm_state.get(), hold_sample_count, hold_time,
+            suppress_time);
     touches_.resize(kNumTouchEvdevSlots);
     test_start_time_ = base::TimeTicks::Now();
   }
@@ -43,9 +45,10 @@ class HeuristicStylusPalmDetectionFilterDeathTest
 TEST_F(HeuristicStylusPalmDetectionFilterDeathTest, TestDCheck) {
   // We run with a time where hold_time < suppress_time, which should DCHECK.
   EXPECT_DCHECK_DEATH(
-      palm_detection_filter_.reset(new HeuristicStylusPalmDetectionFilter(
-          shared_palm_state.get(), hold_sample_count, hold_time,
-          hold_time + base::TimeDelta::FromMillisecondsD(0.1))));
+      palm_detection_filter_ =
+          std::make_unique<HeuristicStylusPalmDetectionFilter>(
+              shared_palm_state.get(), hold_sample_count, hold_time,
+              hold_time + base::TimeDelta::FromMillisecondsD(0.1)));
 }
 
 TEST_F(HeuristicStylusPalmDetectionFilterTest, TestSetsToZero) {

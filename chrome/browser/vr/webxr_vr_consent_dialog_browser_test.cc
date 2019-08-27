@@ -31,13 +31,16 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentCancelFailsSessionCreation) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kClickCancelButton);
 
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(
-      "webxr_test_presentation_promise_rejected_if_consent_not_granted"));
-  t->ExecuteStepAndWait("onImmersiveRequestWithConsent()");
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+  t->EnterSessionWithUserGesture();
+  t->PollJavaScriptBooleanOrFail(
+      "sessionInfos[sessionTypes.IMMERSIVE].error != null");
+  t->RunJavaScriptOrFail("verifySessionConsentError(sessionTypes.IMMERSIVE)");
+  t->AssertNoJavaScriptErrors();
 
   ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 1u)
       << "Consent Dialog should have been shown once";
-  t->EndTest();
 }
 
 // Tests that a session is not created if the user explicitly closes the
@@ -46,13 +49,16 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestConsentCloseFailsSessionCreation) {
   t->SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse::kCloseDialog);
 
-  t->LoadUrlAndAwaitInitialization(t->GetFileUrlForHtmlTestFile(
-      "webxr_test_presentation_promise_rejected_if_consent_not_granted"));
-  t->ExecuteStepAndWait("onImmersiveRequestWithConsent()");
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("test_webxr_consent"));
+  t->EnterSessionWithUserGesture();
+  t->PollJavaScriptBooleanOrFail(
+      "sessionInfos[sessionTypes.IMMERSIVE].error != null");
+  t->RunJavaScriptOrFail("verifySessionConsentError(sessionTypes.IMMERSIVE)");
+  t->AssertNoJavaScriptErrors();
 
   ASSERT_EQ(t->fake_consent_manager_->ShownCount(), 1u)
       << "Consent Dialog should have been shown once";
-  t->EndTest();
 }
 
 // Tests that requesting a session with the same required level of consent

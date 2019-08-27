@@ -223,7 +223,8 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
       decoder_->FilenameExtension() == "jpg") {
     BitmapImageMetrics::CountImageJpegDensity(
         std::min(Size().Width(), Size().Height()),
-        ImageDensityInCentiBpp(Size(), decoder_->ByteSize()));
+        ImageDensityInCentiBpp(Size(), decoder_->ByteSize()),
+        decoder_->ByteSize());
   }
 
   // Feed all the data we've seen so far to the image decoder.

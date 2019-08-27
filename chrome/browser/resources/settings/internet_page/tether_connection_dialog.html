@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -75,14 +74,14 @@
         </span>
         <div id="host-device-container">
           <!-- TODO(hsuregan): Add an a11y label. -->
-          <iron-icon icon="[[getSignalStrengthIconName_(networkProperties)]]">
+          <iron-icon icon="[[getSignalStrengthIconName_(managedProperties)]]">
           </iron-icon>
           <div id="host-device-text-container">
             <span id="host-device-text-name">
-              [[getDeviceName_(networkProperties)]]
+              [[getDeviceName_(managedProperties)]]
             </span>
             <span id="host-device-text-battery" class="secondary">
-              [[getBatteryPercentageString_(networkProperties)]]
+              [[getBatteryPercentageString_(managedProperties)]]
             </span>
           </div>
           <div class="flex"></div>
@@ -93,18 +92,18 @@
           </div>
         </div>
         <div id="tether-explanation">
-          [[getExplanation_(networkProperties)]]
+          [[getExplanation_(managedProperties)]]
         </div>
         <div id="tether-carrier-warning">
           $i18n{tetherConnectionCarrierWarning}
         </div>
         <div id="tether-description-title">
-          [[getDescriptionTitle_(networkProperties)]]
+          [[getDescriptionTitle_(managedProperties)]]
         </div>
         <ul id="tether-description-list">
           <li>$i18n{tetherConnectionDescriptionMobileData}</li>
-          <li>[[getBatteryDescription_(networkProperties)]]</li>
-          <li hidden$="[[!shouldShowDisconnectFromWifi_(networkProperties)]]">
+          <li>[[getBatteryDescription_(managedProperties)]]</li>
+          <li hidden$="[[!shouldShowDisconnectFromWifi_(managedProperties)]]">
             $i18n{tetherConnectionDescriptionWiFi}
           </li>
         </ul>

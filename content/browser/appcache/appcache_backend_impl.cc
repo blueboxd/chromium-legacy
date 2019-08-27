@@ -11,7 +11,6 @@
 
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"

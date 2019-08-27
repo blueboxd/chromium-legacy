@@ -311,7 +311,7 @@ class MockWindowEventTarget : public ui::WindowEventTarget {
     events_.push_back(Event(EventGesture::kFlingEnd));
   }
 
-  void ApplyPanGestureScrollEnd() override {
+  void ApplyPanGestureScrollEnd(bool tranisitioning_to_pinch) override {
     events_.push_back(Event(EventGesture::kScrollEnd));
   }
 

@@ -25,10 +25,6 @@ const base::Feature kAccountManager{"ChromeOSAccountManager",
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable Google Assistant feature.
-const base::Feature kAssistantFeature{"ChromeOSAssistant",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
@@ -217,10 +213,6 @@ bool IsAccountManagerEnabled() {
 
 bool IsAmbientModeEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeFeature);
-}
-
-bool IsAssistantEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantFeature);
 }
 
 bool IsImeDecoderWithSandboxEnabled() {

@@ -5563,6 +5563,81 @@ TEST_P(TouchpadRenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
 }
 
+TEST_F(RenderWidgetHostViewAuraTest,
+       TouchpadScrollThenPinchFiresImmediateScrollEnd) {
+  // Set the max_time_between_phase_ended_and_momentum_phase_began timer
+  // timeout to a large value to make sure that the timer is still running
+  // when the wheel event with phase == end is sent.
+  view_->event_handler()
+      ->set_max_time_between_phase_ended_and_momentum_phase_began(
+          TestTimeouts::action_max_timeout());
+
+  view_->InitAsChild(nullptr);
+  view_->Show();
+  sink_->ClearMessages();
+
+  ui::ScrollEvent begin_scroll(
+      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 2, 2, 2, 2, 2,
+      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kBegan);
+  view_->OnScrollEvent(&begin_scroll);
+  base::RunLoop().RunUntilIdle();
+
+  // If a pinch is coming next, then a ScrollEvent is created with
+  // momentum_phase == BLOCKED so that the end phase event can be dispatched
+  // immediately, rather than scheduling for later dispatch.
+  ui::ScrollEvent end_scroll_with_pinch_next(
+      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2,
+      ui::EventMomentumPhase::BLOCKED, ui::ScrollEventPhase::kEnd);
+  view_->OnScrollEvent(&end_scroll_with_pinch_next);
+  base::RunLoop().RunUntilIdle();
+
+  MockWidgetInputHandler::MessageVector events =
+      GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ(5U, events.size());
+  EXPECT_EQ(
+      "GestureScrollBegin GestureScrollUpdate MouseWheel GestureScrollEnd "
+      "MouseWheel",
+      GetMessageNames(events));
+  EXPECT_FALSE(GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
+
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(
+          events[4]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBlocked,
+            wheel_event->momentum_phase);
+
+  // Now, try the same thing as above, but without knowing if pinch is next.
+  ui::ScrollEvent begin_scroll2(
+      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 2, 2, 2, 2, 2,
+      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kBegan);
+  view_->OnScrollEvent(&begin_scroll2);
+  base::RunLoop().RunUntilIdle();
+
+  // If its unknown what is coming next, set the event momentum_phase to NONE.
+  // This results in the phase end event being scheduled for dispatch, but not
+  // ultimately dispatched in this test.
+  ui::ScrollEvent end_scroll_with_momentum_next_maybe(
+      ui::ET_SCROLL, gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2,
+      ui::EventMomentumPhase::NONE, ui::ScrollEventPhase::kEnd);
+  view_->OnScrollEvent(&end_scroll_with_momentum_next_maybe);
+  base::RunLoop().RunUntilIdle();
+
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ(4U, events.size());
+  EXPECT_EQ(
+      "GestureScrollBegin GestureScrollUpdate MouseWheel GestureScrollEnd",
+      GetMessageNames(events));
+  EXPECT_TRUE(GetMouseWheelPhaseHandler()->HasPendingWheelEndEvent());
+}
+
 TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
   view_->InitAsFullscreen(parent_view_);
   view_->Show();

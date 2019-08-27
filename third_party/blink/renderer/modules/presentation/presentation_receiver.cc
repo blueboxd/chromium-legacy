@@ -28,11 +28,16 @@ PresentationReceiver::PresentationReceiver(LocalFrame* frame)
       connection_list_(MakeGarbageCollected<PresentationConnectionList>(
           frame->GetDocument())) {
   auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
-  interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
+  interface_provider->GetInterface(
+      presentation_service_remote_.BindNewPipeAndPassReceiver());
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame->GetTaskRunner(TaskType::kPresentation);
-  presentation_service_->SetReceiver(
+
+  // Set the mojo::Remote<T> that remote implementation of PresentationService
+  // will use to interact with the associated PresentationReceiver, in order to
+  // receive updates on new connections becoming available.
+  presentation_service_remote_->SetReceiver(
       presentation_receiver_receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
@@ -126,7 +131,7 @@ void PresentationReceiver::RecordOriginTypeAccess(
 
 void PresentationReceiver::ContextDestroyed(ExecutionContext*) {
   presentation_receiver_receiver_.reset();
-  presentation_service_.reset();
+  presentation_service_remote_.reset();
 }
 
 void PresentationReceiver::Trace(blink::Visitor* visitor) {

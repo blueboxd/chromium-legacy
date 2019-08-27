@@ -102,7 +102,7 @@ class ManagePasswordsUIController
 
   // True iff the bubble is to be opened automatically.
   bool IsAutomaticallyOpeningBubble() const {
-    return bubble_status_ == SHOULD_POP_UP;
+    return bubble_status_ == BubbleStatus::SHOULD_POP_UP;
   }
 
   base::WeakPtr<PasswordsModelDelegate> GetModelDelegateProxy();
@@ -181,13 +181,11 @@ class ManagePasswordsUIController
   // True if the bubble is to be opened automatically or after re-auth.
   bool ShouldBubblePopUp() const {
     return IsAutomaticallyOpeningBubble() ||
-           bubble_status_ == SHOULD_POP_UP_AFTER_REAUTH;
+           bubble_status_ == BubbleStatus::SHOULD_POP_UP_AFTER_REAUTH;
   }
 
   // Returns whether the bubble is currently open.
-  bool IsShowingBubbleForTest() const {
-    return bubble_status_ != BubbleStatus::NOT_SHOWN;
-  }
+  bool IsShowingBubbleForTest() const { return IsShowingBubble(); }
 
   // content::WebContentsObserver:
   void DidFinishNavigation(
@@ -201,7 +199,7 @@ class ManagePasswordsUIController
   void NavigateToPasswordCheckup() override;
   void OnLeakDialogHidden() override;
 
-  enum BubbleStatus {
+  enum class BubbleStatus {
     NOT_SHOWN,
     // The bubble is to be popped up in the next call to
     // UpdateBubbleAndIconVisibility().
@@ -212,6 +210,11 @@ class ManagePasswordsUIController
     // Same as SHOWN but the icon is to be updated when the bubble is closed.
     SHOWN_PENDING_ICON_UPDATE,
   };
+
+  bool IsShowingBubble() const {
+    return bubble_status_ == BubbleStatus::SHOWN ||
+           bubble_status_ == BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
+  }
 
   // Returns the timeout for the manual save fallback.
   static base::TimeDelta GetTimeoutForSaveFallback();
@@ -250,7 +253,7 @@ class ManagePasswordsUIController
   // The controller for the blocking dialogs.
   std::unique_ptr<PasswordBaseDialogController> dialog_controller_;
 
-  BubbleStatus bubble_status_;
+  BubbleStatus bubble_status_ = BubbleStatus::NOT_SHOWN;
 
   // The timer that controls whether the fallback for saving should be
   // available. Should be reset once the fallback is not needed (an automatic

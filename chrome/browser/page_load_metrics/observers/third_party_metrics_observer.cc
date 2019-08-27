@@ -36,8 +36,7 @@ ThirdPartyMetricsObserver::~ThirdPartyMetricsObserver() = default;
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ThirdPartyMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // The browser may come back, but there is no guarantee. To be safe, record
   // what we have now and ignore future changes to this navigation.
   RecordMetrics();
@@ -45,8 +44,7 @@ ThirdPartyMetricsObserver::FlushMetricsOnAppEnterBackground(
 }
 
 void ThirdPartyMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordMetrics();
 }
 

@@ -433,7 +433,7 @@ class RenderTextTest : public testing::Test {
 
   void ResetRenderTextInstance() {
     render_text_ = std::make_unique<RenderTextHarfBuzz>();
-    test_api_.reset(new test::RenderTextTestApi(GetRenderText()));
+    test_api_ = std::make_unique<test::RenderTextTestApi>(GetRenderText());
   }
 
   void ResetCursorX() { test_api()->reset_cached_cursor_x(); }

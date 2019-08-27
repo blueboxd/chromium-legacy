@@ -44,11 +44,11 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
     return device::FidoTransportProtocol::kInternal;
   }
 
-  // If caBLE is listed as one of the allowed transports, it indicates that the
-  // RP has bothered to supply the |cable_extension|. Respect that and always
-  // select caBLE in that case for GetAssertion operations.
+  // If the RP supplied the caBLE extension then respect that and always
+  // select caBLE for GetAssertion operations.
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
+      transport_availability.cable_pairing_data_supplied &&
       base::Contains(
           candidate_transports,
           AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {
@@ -199,7 +199,10 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       break;
     }
     case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
-      EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step::kCableActivate);
+      EnsureBleAdapterIsPoweredBeforeContinuingWithStep(
+          transport_availability_.cable_pairing_data_supplied
+              ? Step::kCableActivate
+              : Step::kQRCode);
       break;
     default:
       break;

@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/passwords/credential_leak_dialog_utils.h"
 
+#include "base/metrics/field_trial_params.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using password_manager::CredentialLeakFlags;
@@ -59,4 +63,11 @@ bool ShouldShowCancelButton(CredentialLeakType leak_type) {
   return ShouldCheckPasswords(leak_type);
 }
 
+GURL GetPasswordCheckupURL() {
+  std::string value = base::GetFieldTrialParamValueByFeature(
+      password_manager::features::kLeakDetection, "leak-check-url");
+  if (value.empty())
+    return GURL(chrome::kPasswordCheckupURL);
+  return GURL(value);
+}
 }  // namespace leak_dialog_utils

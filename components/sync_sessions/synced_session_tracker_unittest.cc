@@ -38,7 +38,6 @@ const sync_pb::SyncEnums::DeviceType kDeviceType =
 const char kTag[] = "tag";
 const char kTag2[] = "tag2";
 const char kTag3[] = "tag3";
-const char kTitle[] = "title";
 const int kTabNode1 = 0;
 const int kTabNode2 = 1;
 const int kTabNode3 = 2;
@@ -203,8 +202,7 @@ TEST_F(SyncedSessionTrackerTest, LookupAllSessions) {
   sessions::SessionTab* tab = tracker_.GetTab(kTag, kTab1);
   ASSERT_TRUE(tab);
   tab->navigations.push_back(
-      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(kValidUrl,
-                                                                      kTitle));
+      sessions::SerializedNavigationEntryTestHelper::CreateNavigationForTest());
   EXPECT_THAT(tracker_.LookupAllSessions(SyncedSessionTracker::PRESENTABLE),
               ElementsAre(HasSessionTag(kTag)));
 
@@ -215,8 +213,7 @@ TEST_F(SyncedSessionTrackerTest, LookupAllSessions) {
   sessions::SessionTab* tab2 = tracker_.GetTab(kTag2, kTab2);
   ASSERT_TRUE(tab2);
   tab2->navigations.push_back(
-      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(kValidUrl,
-                                                                      kTitle));
+      sessions::SerializedNavigationEntryTestHelper::CreateNavigationForTest());
   EXPECT_THAT(tracker_.LookupAllSessions(SyncedSessionTracker::PRESENTABLE),
               ElementsAre(HasSessionTag(kTag), HasSessionTag(kTag2)));
 }
@@ -235,8 +232,8 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   sessions::SessionTab* tab = tracker_.GetTab(kTag, kTab1);
   ASSERT_TRUE(tab);
   tab->navigations.push_back(
-      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(kValidUrl,
-                                                                      kTitle));
+      sessions::SerializedNavigationEntryTestHelper::CreateNavigationForTest());
+  tab->navigations.back().set_virtual_url(GURL(kValidUrl));
   tracker_.GetSession(kTag2);
   tracker_.GetSession(kTag3);
   tracker_.PutWindowInSession(kTag3, kWindow1);
@@ -244,8 +241,8 @@ TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   tab = tracker_.GetTab(kTag3, kTab1);
   ASSERT_TRUE(tab);
   tab->navigations.push_back(
-      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-          kInvalidUrl, kTitle));
+      sessions::SerializedNavigationEntryTestHelper::CreateNavigationForTest());
+  tab->navigations.back().set_virtual_url(GURL(kInvalidUrl));
   // Only the session with a valid window and tab gets returned.
   EXPECT_THAT(
       tracker_.LookupAllForeignSessions(SyncedSessionTracker::PRESENTABLE),

@@ -1359,6 +1359,11 @@ TEST_F(RenderWidgetHostViewMacTest,
   ASSERT_EQ(0U, events.size());
   DCHECK(view->HasPendingWheelEndEventForTesting());
 
+  // Get the max time here before |view| is destroyed in the
+  // ShutdownAndDestroyWidget call below.
+  const base::TimeDelta max_time_between_phase_ended_and_momentum_phase_began =
+      view->max_time_between_phase_ended_and_momentum_phase_began_for_test();
+
   host->ShutdownAndDestroyWidget(true);
 
   // Wait for the mouse_wheel_end_dispatch_timer_ to expire after host is
@@ -1369,7 +1374,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),
-      kMaximumTimeBetweenPhaseEndedAndMomentumPhaseBegan);
+      max_time_between_phase_ended_and_momentum_phase_began);
   run_loop.Run();
 }
 

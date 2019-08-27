@@ -42,7 +42,7 @@ InputMethodChromeOS::InputMethodChromeOS(
 }
 
 InputMethodChromeOS::~InputMethodChromeOS() {
-  ConfirmCompositionText();
+  ConfirmCompositionText(/* reset_engine */ true);
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
 
@@ -284,7 +284,7 @@ InputMethodChromeOS::GetInputMethodKeyboardController() {
 void InputMethodChromeOS::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
-  ConfirmCompositionText();
+  ConfirmCompositionText(/* reset_engine */ true);
 
   if (GetEngine())
     GetEngine()->FocusOut();
@@ -344,13 +344,14 @@ bool InputMethodChromeOS::SetCompositionRange(
   }
 }
 
-void InputMethodChromeOS::ConfirmCompositionText() {
-  InputMethodBase::ConfirmCompositionText();
+void InputMethodChromeOS::ConfirmCompositionText(bool reset_engine) {
+  InputMethodBase::ConfirmCompositionText(reset_engine);
 
-  ResetContext();
+  // See https://crbug.com/984472.
+  ResetContext(reset_engine);
 }
 
-void InputMethodChromeOS::ResetContext() {
+void InputMethodChromeOS::ResetContext(bool reset_engine) {
   if (!IsNonPasswordInputFieldFocused() || !GetTextInputClient())
     return;
 
@@ -359,7 +360,7 @@ void InputMethodChromeOS::ResetContext() {
   composing_text_ = false;
   composition_changed_ = false;
 
-  if (GetEngine())
+  if (reset_engine && GetEngine())
     GetEngine()->Reset();
 
   character_composer_.Reset();

@@ -182,7 +182,9 @@ TEST_F(QuicCommandLineFlagTest, PrintHelp) {
   EXPECT_THAT(captured_stdout, testing::ContainsRegex("--baz +Silence again."));
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_bool) {
+class QuicFlagsTest : public QuicTest {};
+
+TEST_F(QuicFlagsTest, SetQuicFlagByName_bool) {
   FLAGS_quic_enforce_single_packet_chlo = true;
   SetQuicFlagByName("FLAGS_quic_enforce_single_packet_chlo", "false");
   EXPECT_FALSE(FLAGS_quic_enforce_single_packet_chlo);
@@ -194,61 +196,61 @@ TEST(QuicFlagsTest, SetQuicFlagByName_bool) {
   EXPECT_TRUE(FLAGS_quic_enforce_single_packet_chlo);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_double) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_double) {
   FLAGS_quic_bbr_cwnd_gain = 3.0;
   SetQuicFlagByName("FLAGS_quic_bbr_cwnd_gain", "1.5");
   EXPECT_EQ(1.5, FLAGS_quic_bbr_cwnd_gain);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_double_invalid) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_double_invalid) {
   FLAGS_quic_bbr_cwnd_gain = 3.0;
   SetQuicFlagByName("FLAGS_quic_bbr_cwnd_gain", "true");
   EXPECT_EQ(3.0, FLAGS_quic_bbr_cwnd_gain);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_int64_t) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_int64_t) {
   FLAGS_quic_max_tracked_packet_count = 100;
   SetQuicFlagByName("FLAGS_quic_max_tracked_packet_count", "5");
   EXPECT_EQ(5, FLAGS_quic_max_tracked_packet_count);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_int64_t_invalid) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_int64_t_invalid) {
   FLAGS_quic_max_tracked_packet_count = 100;
   SetQuicFlagByName("FLAGS_quic_max_tracked_packet_count", "false");
   EXPECT_EQ(100, FLAGS_quic_max_tracked_packet_count);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_uint32_t) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_uint32_t) {
   FLAGS_quic_send_buffer_max_data_slice_size = 4096;
   SetQuicFlagByName("FLAGS_quic_send_buffer_max_data_slice_size", "1024");
   EXPECT_EQ(1024u, FLAGS_quic_send_buffer_max_data_slice_size);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_uint32_t_invalid) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_uint32_t_invalid) {
   FLAGS_quic_send_buffer_max_data_slice_size = 4096;
   SetQuicFlagByName("FLAGS_quic_send_buffer_max_data_slice_size", "false");
   EXPECT_EQ(4096u, FLAGS_quic_send_buffer_max_data_slice_size);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_uint32_t_negative) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_uint32_t_negative) {
   FLAGS_quic_send_buffer_max_data_slice_size = 4096;
   SetQuicFlagByName("FLAGS_quic_send_buffer_max_data_slice_size", "-1");
   EXPECT_EQ(4096u, FLAGS_quic_send_buffer_max_data_slice_size);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_uint32_t_too_large) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_uint32_t_too_large) {
   FLAGS_quic_send_buffer_max_data_slice_size = 4096;
   SetQuicFlagByName("FLAGS_quic_send_buffer_max_data_slice_size", "4294967297");
   EXPECT_EQ(4096u, FLAGS_quic_send_buffer_max_data_slice_size);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_int32_t) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_int32_t) {
   FLAGS_quic_lumpy_pacing_size = 1;
   SetQuicFlagByName("FLAGS_quic_lumpy_pacing_size", "10");
   EXPECT_EQ(10, FLAGS_quic_lumpy_pacing_size);
 }
 
-TEST(QuicFlagsTest, SetQuicFlagByName_int32_t_invalid) {
+TEST_F(QuicFlagsTest, SetQuicFlagByName_int32_t_invalid) {
   FLAGS_quic_lumpy_pacing_size = 1;
   SetQuicFlagByName("FLAGS_quic_lumpy_pacing_size", "false");
   EXPECT_EQ(1, FLAGS_quic_lumpy_pacing_size);

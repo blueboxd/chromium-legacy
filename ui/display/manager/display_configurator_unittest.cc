@@ -207,7 +207,7 @@ class DisplayConfiguratorTest : public testing::Test {
   ~DisplayConfiguratorTest() override = default;
 
   void SetUp() override {
-    log_.reset(new ActionLogger());
+    log_ = std::make_unique<ActionLogger>();
 
     // Force system compositor mode to simulate on-device configurator behavior.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(

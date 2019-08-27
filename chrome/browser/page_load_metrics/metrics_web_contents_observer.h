@@ -64,6 +64,10 @@ class MetricsWebContentsObserver
     // fine.
     virtual void OnCommit(PageLoadTracker* tracker) {}
 
+    // Returns the observer delegate for the committed load associated with
+    // the MetricsWebContentsObserver.
+    const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad();
+
    private:
     page_load_metrics::MetricsWebContentsObserver* observer_;
 

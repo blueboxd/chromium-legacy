@@ -189,9 +189,24 @@ Tests.testIsInNetEx = function(t) {
   t.expectTrue(isInNetEx("3ffe:8311:ffff:abcd:1234:dead:beef:101",
                          "3ffe:8311:ffff::/48"));
 
-  // IPv4 and IPv6 mix.
-  t.expectFalse(isInNetEx("127.0.0.1", "0:0:0:0:0:0:7f00:1/16"));
+  // Test an IPv4 literal against an IPv6 range. This passes since 127.0.0.1 is
+  // ::ffff:127.0.0.1 in IPv4 mapped notation.
+  t.expectTrue(isInNetEx("127.0.0.1", "0:0:0:0:0:0:7f00:1/16"));
+
+  // Test an IPv4 literal against an IPv6 range. Doesn't match when
+  // 192.168.24.3 is mapped to IPv6.
   t.expectFalse(isInNetEx("192.168.24.3", "fe80:0:0:0:0:0:c0a8:1803/32"));
+
+  // Test that IPv4 ranges work interchangeably with IPv4 mapped IPv6 literals
+  // - both for the range prefix and the test address.
+  t.expectTrue(isInNetEx("::ffff:192.168.100.5", "192.168.1.1/16"));
+  t.expectFalse(isInNetEx("::ffff:10.168.100.5", "192.168.1.1/16"));
+  t.expectFalse(isInNetEx("::fffe:192.168.100.5", "192.168.1.1/16"));
+  t.expectTrue(isInNetEx("::ffff:192.168.100.5", "::ffff:192.168.1.1/112"));
+  t.expectFalse(isInNetEx("::ffff:10.168.100.5", "::ffff:192.168.1.1/112"));
+  t.expectTrue(isInNetEx("192.168.1.1", "::ffff:192.168.1.1/112"));
+  t.expectFalse(isInNetEx("192.168.1.1", "::fffe:192.168.1.1/112"));
+  t.expectFalse(isInNetEx("10.168.1.1", "::ffff:192.168.1.1/112"));
 
   t.expectFalse(isInNetEx("198.95.249.78", "198.95.249.79/32"));
   t.expectFalse(isInNetEx("198.96.115.10", "198.95.0.0/16"));

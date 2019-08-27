@@ -37,6 +37,31 @@ public final class FeedConfiguration {
     /** Default value for whether to consumer synthetic tokens on restore. */
     public static final boolean CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT = false;
 
+    private static final String FEED_ACTION_SERVER_ENDPOINT = "feed_action_server_endpoint";
+    /** Default value for the endpoint used for recording uploaded actions to the server. */
+    public static final String FEED_ACTION_SERVER_ENDPOINT_DEFAULT =
+            "https://www.google.com/httpservice/retry/ClankActionUploadService/ClankActionUpload";
+
+    private static final String FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST =
+            "feed_action_server_max_actions_per_request";
+    /**
+     * Default value for maximum number of actions to be uploaded to the enpoint in a single
+     * request.
+     */
+    public static final long FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST_DEFAULT = 20;
+
+    private static final String FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST =
+            "feed_action_server_max_size_per_request";
+    /**
+     * Default value for maximum size in bytes of the request to be uploaded to the enpoint in a
+     * single request.
+     */
+    public static final long FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST_DEFAULT = 1000;
+
+    private static final String FEED_ACTION_SERVER_METHOD = "feed_action_server_method";
+    /** Default value for the HTTP method call to the feed action server (put/post/etc). */
+    public static final String FEED_ACTION_SERVER_METHOD_DEFAULT = "POST";
+
     private static final String FEED_SERVER_ENDPOINT = "feed_server_endpoint";
     /** Default value for server endpoint. */
     public static final String FEED_SERVER_ENDPOINT_DEFAULT =
@@ -158,6 +183,45 @@ public final class FeedConfiguration {
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING,
                 CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT);
+    }
+
+    /** @return The endpoint used for recording uploaded actions to the server. */
+    @VisibleForTesting
+    static String getFeedActionServerEndpoint() {
+        String paramValue = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, FEED_ACTION_SERVER_ENDPOINT);
+        return TextUtils.isEmpty(paramValue) ? FEED_ACTION_SERVER_ENDPOINT_DEFAULT : paramValue;
+    }
+
+    /**
+     * @return Maximum number of actions to be uploaded to the endpoint in a single request.
+     */
+    @VisibleForTesting
+    static long getFeedActionServerMaxActionsPerRequest() {
+        return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+                FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST,
+                (int) FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST_DEFAULT);
+    }
+
+    /**
+     * @return Maximum size in bytes of the request to be uploaded to the endpoint in a single
+     *         request.
+     */
+    @VisibleForTesting
+    static long getFeedActionServerMaxSizePerRequest() {
+        return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+                FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST,
+                (int) FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST_DEFAULT);
+    }
+
+    /** @return The HTTP method call to the feed action server (put/post/etc). */
+    @VisibleForTesting
+    static String getFeedActionServerMethod() {
+        String paramValue = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, FEED_ACTION_SERVER_METHOD);
+        return TextUtils.isEmpty(paramValue) ? FEED_ACTION_SERVER_METHOD_DEFAULT : paramValue;
     }
 
     /** @return Feed server endpoint to use to fetch content suggestions. */
@@ -354,6 +418,14 @@ public final class FeedConfiguration {
                         FeedConfiguration.getConsumeSyntheticTokens())
                 .put(ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING,
                         FeedConfiguration.getConsumeSyntheticTokensWhileRestoring())
+                .put(ConfigKey.FEED_ACTION_SERVER_ENDPOINT,
+                        FeedConfiguration.getFeedActionServerEndpoint())
+                .put(ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST,
+                        FeedConfiguration.getFeedActionServerMaxActionsPerRequest())
+                .put(ConfigKey.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST,
+                        FeedConfiguration.getFeedActionServerMaxSizePerRequest())
+                .put(ConfigKey.FEED_ACTION_SERVER_METHOD,
+                        FeedConfiguration.getFeedActionServerMethod())
                 .put(ConfigKey.FEED_SERVER_ENDPOINT, FeedConfiguration.getFeedServerEndpoint())
                 .put(ConfigKey.FEED_SERVER_METHOD, FeedConfiguration.getFeedServerMethod())
                 .put(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED,

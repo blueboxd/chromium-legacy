@@ -120,14 +120,13 @@ SecurityStatePageLoadMetricsObserver::OnCommit(
 }
 
 void SecurityStatePageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (!extra_info.did_commit)
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (!GetDelegate().DidCommit())
     return;
 
   if (engagement_service_) {
     double final_engagement_score =
-        engagement_service_->GetScore(extra_info.url);
+        engagement_service_->GetScore(GetDelegate().GetUrl());
     // Round the engagement score down to the closest multiple of 10 to decrease
     // the granularity of the UKM collection.
     int64_t coarse_engagement_score =
@@ -156,9 +155,10 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
   }
 
   base::UmaHistogramEnumeration(
-      security_state::GetSecurityLevelHistogramName(
-          kPageEndReasonPrefix, current_security_level_),
-      extra_info.page_end_reason, page_load_metrics::PAGE_END_REASON_COUNT);
+      security_state::GetSecurityLevelHistogramName(kPageEndReasonPrefix,
+                                                    current_security_level_),
+      GetDelegate().GetPageEndReason(),
+      page_load_metrics::PAGE_END_REASON_COUNT);
   base::UmaHistogramCustomTimes(
       security_state::GetSecurityLevelHistogramName(kTimeOnPagePrefix,
                                                     current_security_level_),

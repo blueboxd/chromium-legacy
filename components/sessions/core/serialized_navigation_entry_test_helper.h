@@ -62,12 +62,6 @@ class SerializedNavigationEntryTestHelper {
   static void ExpectNavigationEquals(const SerializedNavigationEntry& expected,
                                      const SerializedNavigationEntry& actual);
 
-  // Creates a SerializedNavigationEntry with the given URL and title and some
-  // common values for the other fields.
-  static SerializedNavigationEntry CreateNavigation(
-      const std::string& virtual_url,
-      const std::string& title);
-
   // Creates a SerializedNavigationEntry using the |test_data| constants above.
   static SerializedNavigationEntry CreateNavigationForTest();
 

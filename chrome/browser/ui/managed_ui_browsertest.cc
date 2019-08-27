@@ -76,7 +76,6 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiWebUILabel) {
   builder_with_domain.SetProfileName("foobar@example.com");
   auto profile_with_domain = builder_with_domain.Build();
 
-#if !defined(OS_CHROMEOS)
   EXPECT_EQ(
       base::UTF8ToUTF16(
           "Your <a href=\"chrome://management\">browser is managed</a> by your "
@@ -87,14 +86,14 @@ IN_PROC_BROWSER_TEST_F(ManagedUiTest, GetManagedUiWebUILabel) {
           "Your <a href=\"chrome://management\">browser is managed</a> by "
           "example.com"),
       chrome::GetManagedUiWebUILabel(profile_with_domain.get()));
-#else
-  EXPECT_EQ(
-      base::UTF8ToUTF16("Your <a href=\"chrome://management\">Chrome device is "
-                        "managed</a> by your organization"),
-      chrome::GetManagedUiWebUILabel(profile.get()));
-  EXPECT_EQ(
-      base::UTF8ToUTF16("Your <a href=\"chrome://management\">Chrome device is "
-                        "managed</a> by example.com"),
-      chrome::GetManagedUiWebUILabel(profile_with_domain.get()));
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(base::UTF8ToUTF16("Your <a target=\"_blank\" "
+                              "href=\"chrome://management\">Chrome device is "
+                              "managed</a> by your organization"),
+            chrome::GetDeviceManagedUiWebUILabel(profile.get()));
+  EXPECT_EQ(base::UTF8ToUTF16("Your <a target=\"_blank\" "
+                              "href=\"chrome://management\">Chrome device is "
+                              "managed</a> by example.com"),
+            chrome::GetDeviceManagedUiWebUILabel(profile_with_domain.get()));
 #endif
 }

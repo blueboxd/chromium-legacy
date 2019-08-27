@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "base/base_switches.h"
+#include "base/cpu.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -63,7 +64,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
     exit_code = &dummy;
 
 #if defined(OS_ANDROID)
-  Compositor::Initialize();
+  content::Compositor::Initialize();
 #endif
 
   InitLogging(&params_);

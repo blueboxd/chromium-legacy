@@ -30,7 +30,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorOzone
   bool AllowCALayerOverlays() const override;
   bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;
-  void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
+  void CheckOverlaySupport(const PrimaryPlane* primary_plane,
+                           OverlayCandidateList* surfaces) override;
   void SetSoftwareMirrorMode(bool enabled) override;
 
  private:

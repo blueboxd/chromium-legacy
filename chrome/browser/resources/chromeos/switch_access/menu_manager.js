@@ -94,6 +94,14 @@ class MenuManager {
      */
     this.onMenuPanelChildrenChanged_ = this.highlightFirstAction_.bind(this);
 
+    /**
+     * A stack to keep track of all menus that have been opened before
+     * the current menu (so the top of the stack will be the parent
+     * menu of the current menu).
+     * @private {!Array<SAConstants.MenuId>}
+     */
+    this.menuStack_ = [];
+
     this.init_();
   }
 
@@ -159,10 +167,12 @@ class MenuManager {
    * @param {!chrome.automation.AutomationNode} navNode The currently
    *     highlighted node, for which the menu is being opened.
    * @param {!SAConstants.MenuId} menuId Indicates the menu being opened.
+   * @param {boolean=} isSubmenu Whether or not the menu being opened is a
+   *     submenu of the current menu.
    * @return {boolean} Whether or not the menu was successfully opened.
    * @private
    */
-  openMenu_(navNode, menuId) {
+  openMenu_(navNode, menuId, isSubmenu = false) {
     // Action currently highlighted in the menu (null if the menu was closed
     // before this function was called).
     const actionNode = this.node_;
@@ -173,6 +183,11 @@ class MenuManager {
     if (!shouldReloadMenu) {
       // Close the current menu before opening a new one.
       this.closeCurrentMenu_();
+
+      if (currentMenuId && isSubmenu) {
+        // Opening a submenu, so push the parent menu onto the stack.
+        this.menuStack_.push(currentMenuId);
+      }
     }
 
     const actions = this.getMenuActions_(navNode, menuId);
@@ -356,8 +371,11 @@ class MenuManager {
 
   /**
    * Perform the action indicated by the current button (or no action if the
-   * entire menu is selected). Then exit the menu and return to traditional
-   * navigation.
+   * entire menu is selected). If the back button is selected and the current
+   * menu is a submenu (i.e. not the main menu), then the current menu will be
+   * closed and the parent menu that opened the current menu will be re-opened.
+   * If the current menu is the main menu, then exit the menu panel entirely
+   * and return to traditional navigation.
    * @return {boolean} Whether this function had any effect.
    */
   selectCurrentNode() {
@@ -372,7 +390,16 @@ class MenuManager {
       this.node_.doDefault();
     } else {
       // The back button was selected.
-      this.exit();
+
+      // Id of the menu that opened the current menu (null if the current
+      // menu is the main menu and not a submenu).
+      const parentMenuId = this.menuStack_.pop();
+      if (parentMenuId && this.menuOriginNode_) {
+        // Re-open the parent menu.
+        this.openMenu_(this.menuOriginNode_, parentMenuId);
+      } else {
+        this.exit();
+      }
     }
     return true;
   }

@@ -81,6 +81,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     bool has_recognized_mac_touch_id_credential = false;
     bool is_ble_powered = false;
     bool can_power_on_ble_adapter = false;
+    // Whether the RP supplied caBLE pairing data in the request by sending a
+    // caBLE extension.
+    bool cable_pairing_data_supplied = false;
 
     // A random AES-256 key used that can be used to encrypt a coarse timestamp.
     // The UI may display a QR code with the resulting ciphertext which, if

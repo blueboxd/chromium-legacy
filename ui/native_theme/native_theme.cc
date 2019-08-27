@@ -102,7 +102,9 @@ void NativeTheme::UpdateSystemColorInfo(
   set_use_dark_colors(is_dark_mode);
   set_high_contrast(is_high_contrast);
   set_preferred_color_scheme(preferred_color_scheme);
-  system_colors_.insert(colors.begin(), colors.end());
+  for (const auto& color : colors) {
+    system_colors_[color.first] = color.second;
+  }
 }
 
 NativeTheme::ColorSchemeNativeThemeObserver::ColorSchemeNativeThemeObserver(

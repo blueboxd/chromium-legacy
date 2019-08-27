@@ -24,9 +24,7 @@ void PaletteTool::RegisterToolInstances(PaletteToolManager* tool_manager) {
   tool_manager->AddTool(std::make_unique<CaptureRegionMode>(tool_manager));
   tool_manager->AddTool(std::make_unique<CaptureScreenAction>(tool_manager));
   tool_manager->AddTool(std::make_unique<CreateNoteAction>(tool_manager));
-  if (chromeos::features::IsAssistantEnabled()) {
-    tool_manager->AddTool(std::make_unique<MetalayerMode>(tool_manager));
-  }
+  tool_manager->AddTool(std::make_unique<MetalayerMode>(tool_manager));
   tool_manager->AddTool(std::make_unique<LaserPointerMode>(tool_manager));
   tool_manager->AddTool(std::make_unique<MagnifierMode>(tool_manager));
 }

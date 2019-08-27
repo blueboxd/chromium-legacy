@@ -135,22 +135,20 @@ PreviewsPageLoadMetricsObserver::OnCommit(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PreviewsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
   // notification.
-  if (info.did_commit) {
+  if (GetDelegate().DidCommit()) {
     RecordPageSizeUMA();
-    RecordTimingMetrics(timing, info);
+    RecordTimingMetrics(timing);
   }
   return STOP_OBSERVING;
 }
 
 void PreviewsPageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // TODO(dougarnett): Determine if a different event makes more sense.
   // https://crbug.com/864720
   int64_t inflation_bytes = 0;
@@ -164,16 +162,15 @@ void PreviewsPageLoadMetricsObserver::OnLoadEventStart(
       (total_network_bytes_ * data_savings_inflation_percent_) / 100 +
       inflation_bytes;
 
-  DCHECK(info.url.SchemeIsHTTPOrHTTPS());
+  DCHECK(GetDelegate().GetUrl().SchemeIsHTTPOrHTTPS());
 
-  WriteToSavings(info.url, total_saved_bytes);
+  WriteToSavings(GetDelegate().GetUrl(), total_saved_bytes);
 }
 
 void PreviewsPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordPageSizeUMA();
-  RecordTimingMetrics(timing, info);
+  RecordTimingMetrics(timing);
 }
 
 void PreviewsPageLoadMetricsObserver::RecordPageSizeUMA() const {
@@ -182,8 +179,7 @@ void PreviewsPageLoadMetricsObserver::RecordPageSizeUMA() const {
 }
 
 void PreviewsPageLoadMetricsObserver::RecordTimingMetrics(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->load_event_start, GetDelegate())) {
     RecordPageLoadHistogram(previews_type_,

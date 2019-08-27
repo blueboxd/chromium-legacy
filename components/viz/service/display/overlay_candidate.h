@@ -86,9 +86,6 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   bool is_clipped;
   // If the quad doesn't require blending.
   bool is_opaque;
-  // True if the texture for this overlay should be the same one used by the
-  // output surface's main overlay.
-  bool use_output_surface_for_resource;
   // The quad's occluding damage rect is empty.
   bool no_occluding_damage;
   // Texture resource to present in an overlay.

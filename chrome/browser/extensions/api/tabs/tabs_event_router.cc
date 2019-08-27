@@ -48,7 +48,8 @@ bool WillDispatchTabUpdatedEvent(
     Event* event,
     const base::DictionaryValue* listener_filter) {
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-      ExtensionTabUtil::GetScrubTabBehavior(extension, contents);
+      ExtensionTabUtil::GetScrubTabBehavior(extension, target_context,
+                                            contents);
   std::unique_ptr<api::tabs::Tab> tab_object =
       ExtensionTabUtil::CreateTabObject(contents, scrub_tab_behavior,
                                         extension);
@@ -77,7 +78,8 @@ bool WillDispatchTabCreatedEvent(WebContents* contents,
                                  const base::DictionaryValue* listener_filter) {
   event->event_args->Clear();
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
-      ExtensionTabUtil::GetScrubTabBehavior(extension, contents);
+      ExtensionTabUtil::GetScrubTabBehavior(extension, target_context,
+                                            contents);
   std::unique_ptr<base::DictionaryValue> tab_value =
       ExtensionTabUtil::CreateTabObject(contents, scrub_tab_behavior, extension)
           ->ToValue();

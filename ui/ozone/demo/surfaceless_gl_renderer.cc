@@ -162,7 +162,7 @@ bool SurfacelessGlRenderer::Initialize() {
     primary_plane_rect_ = gfx::Rect(size_);
 
   for (size_t i = 0; i < base::size(buffers_); ++i) {
-    buffers_[i].reset(new BufferWrapper());
+    buffers_[i] = std::make_unique<BufferWrapper>();
     if (!buffers_[i]->Initialize(widget_, primary_plane_rect_.size()))
       return false;
   }
@@ -170,7 +170,7 @@ bool SurfacelessGlRenderer::Initialize() {
   if (command_line->HasSwitch("enable-overlay")) {
     gfx::Size overlay_size = gfx::Size(size_.width() / 8, size_.height() / 8);
     for (size_t i = 0; i < base::size(overlay_buffers_); ++i) {
-      overlay_buffers_[i].reset(new BufferWrapper());
+      overlay_buffers_[i] = std::make_unique<BufferWrapper>();
       overlay_buffers_[i]->Initialize(gfx::kNullAcceleratedWidget,
                                       overlay_size);
 
@@ -279,7 +279,7 @@ void SurfacelessGlRenderer::PostRenderFrameTask(
   switch (result) {
     case gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS:
       for (size_t i = 0; i < base::size(buffers_); ++i) {
-        buffers_[i].reset(new BufferWrapper());
+        buffers_[i] = std::make_unique<BufferWrapper>();
         if (!buffers_[i]->Initialize(widget_, primary_plane_rect_.size()))
           LOG(FATAL) << "Failed to recreate buffer";
       }

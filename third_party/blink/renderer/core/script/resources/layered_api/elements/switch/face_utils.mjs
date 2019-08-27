@@ -17,10 +17,11 @@ function installGetter(proto, propName, getter) {
 }
 
 /**
- * Add the following properties to |proto|.
+ * Add the following properties to |proto|
  *   - disabled
  *   - name
  *   - type
+ * and make the following properties and functions enumerable
  *   - form
  *   - willValidate
  *   - validity
@@ -31,10 +32,8 @@ function installGetter(proto, propName, getter) {
  *   - setCustomValidity(error)
  *
  * @param {!Object} proto An Element prototype which will have properties
- * @param {!Symbol} internals A Symbol of the ElementInternals property of the
- *     element
  */
-export function installPropertiesAndFunctions(proto, internals) {
+export function installProperties(proto) {
   reflection.installBool(proto, 'disabled');
   reflection.installString(proto, 'name');
   installGetter(proto, 'type', function() {
@@ -45,31 +44,13 @@ export function installPropertiesAndFunctions(proto, internals) {
     return this.localName;
   });
 
-  installGetter(proto, 'form', function() {
-    return this[internals].form;
-  });
-  installGetter(proto, 'willValidate', function() {
-    return this[internals].willValidate;
-  });
-  installGetter(proto, 'validity', function() {
-    return this[internals].validity;
-  });
-  installGetter(proto, 'validationMessage', function() {
-    return this[internals].validationMessage;
-  });
-  installGetter(proto, 'labels', function() {
-    return this[internals].labels;
-  });
-  proto.checkValidity = function() {
-    return this[internals].checkValidity();
-  };
-  proto.reportValidity = function() {
-    return this[internals].reportValidity();
-  };
-  proto.setCustomValidity = function(error) {
-    if (error === undefined) {
-      throw new TypeError('Too few arguments');
-    }
-    this[internals].setValidity({customError: true}, error);
-  };
+  Object.defineProperty(proto, 'form', {enumerable: true});
+  Object.defineProperty(proto, 'willValidate', {enumerable: true});
+  Object.defineProperty(proto, 'validity', {enumerable: true});
+  Object.defineProperty(proto, 'validationMessage', {enumerable: true});
+  Object.defineProperty(proto, 'labels', {enumerable: true});
+
+  Object.defineProperty(proto, 'checkValidity', {enumerable: true});
+  Object.defineProperty(proto, 'reportValidity', {enumerable: true});
+  Object.defineProperty(proto, 'setCustomValidity', {enumerable: true});
 }

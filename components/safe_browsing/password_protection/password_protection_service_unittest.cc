@@ -12,6 +12,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
@@ -79,7 +81,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
 class TestPhishingDetector : public mojom::PhishingDetector {
  public:
-  TestPhishingDetector() : binding_(this) {}
+  TestPhishingDetector() : should_timeout_(false), binding_(this) {}
   ~TestPhishingDetector() override {}
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
@@ -89,13 +91,25 @@ class TestPhishingDetector : public mojom::PhishingDetector {
   void StartPhishingDetection(
       const GURL& url,
       StartPhishingDetectionCallback callback) override {
+    if (should_timeout_) {
+      deferred_callbacks_.push_back(std::move(callback));
+    } else {
+      ReturnFeatures(url, std::move(callback));
+    }
+  }
+  void ReturnFeatures(const GURL& url,
+                      StartPhishingDetectionCallback callback) {
     ClientPhishingRequest verdict;
     verdict.set_is_phishing(false);
     verdict.set_client_score(0.1);
     std::move(callback).Run(verdict.SerializeAsString());
   }
 
+  void set_should_timeout(bool timeout) { should_timeout_ = timeout; }
+
  private:
+  bool should_timeout_;
+  std::vector<StartPhishingDetectionCallback> deferred_callbacks_;
   mojo::Binding<mojom::PhishingDetector> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPhishingDetector);
@@ -178,6 +192,10 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
     return cache_manager_->GetStoredPhishGuardVerdictCount(trigger_type);
   }
 
+  void SetDomFeatureCollectionTimeout(bool should_timeout) {
+    test_phishing_detector_.set_should_timeout(should_timeout);
+  }
+
  private:
   PasswordProtectionRequest* latest_request_;
   base::RunLoop run_loop_;
@@ -208,7 +226,8 @@ class MockPasswordProtectionNavigationThrottle
 
 class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
  public:
-  PasswordProtectionServiceTest() {}
+  PasswordProtectionServiceTest()
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   LoginReputationClientResponse CreateVerdictProto(
       LoginReputationClientResponse::VerdictType verdict,
@@ -1152,13 +1171,6 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
       reused_password_account_type, LoginReputationClientResponse::PHISHING));
 }
 
-TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
-  EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
-  EXPECT_CALL(*password_protection_service_, IsIncognito())
-      .WillRepeatedly(Return(true));
-  EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
-}
-
 TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
   LoginReputationClientResponse response =
       CreateVerdictProto(LoginReputationClientResponse::SAFE, 10 * kMinute,
@@ -1281,6 +1293,28 @@ TEST_P(PasswordProtectionServiceTest, TestDomFeaturesPopulated) {
   ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
   EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
                   ->has_dom_features());
+}
+
+TEST_P(PasswordProtectionServiceTest, TestDomFeaturesTimeout) {
+  password_protection_service_->SetDomFeatureCollectionTimeout(true);
+  LoginReputationClientResponse expected_response =
+      CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
+                         GURL("about:blank").host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
+  EXPECT_CALL(*password_protection_service_, GetCurrentContentAreaSize())
+      .Times(AnyNumber())
+      .WillOnce(Return(gfx::Size(1000, 1000)));
+  password_protection_service_->StartRequest(
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(), kUserName,
+      PasswordType::SAVED_PASSWORD, {"example.com"},
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
+  task_environment_.FastForwardUntilNoTasksRemain();
+
+  password_protection_service_->WaitForResponse();
+  ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
+  EXPECT_FALSE(password_protection_service_->GetLatestRequestProto()
+                   ->has_dom_features());
 }
 
 TEST_P(PasswordProtectionServiceTest, TestRequestCancelOnTimeout) {

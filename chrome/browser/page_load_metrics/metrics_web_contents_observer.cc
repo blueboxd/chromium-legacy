@@ -816,6 +816,11 @@ void MetricsWebContentsObserver::TestingObserver::OnGoingAway() {
   observer_ = nullptr;
 }
 
+const PageLoadMetricsObserverDelegate&
+MetricsWebContentsObserver::TestingObserver::GetDelegateForCommittedLoad() {
+  return observer_->GetDelegateForCommittedLoad();
+}
+
 void MetricsWebContentsObserver::BroadcastEventToObservers(
     const void* const event_key) {
   if (committed_load_)

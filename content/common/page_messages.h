@@ -49,6 +49,14 @@ IPC_MESSAGE_ROUTED1(PageMsg_UpdatePageVisualProperties,
 // belongs to this page.
 IPC_MESSAGE_ROUTED1(PageMsg_SetPageFrozen, bool /* frozen */)
 
+// Sent to all renderers to freeze all frames and dispatch page visibility
+// events for bfcache.
+IPC_MESSAGE_ROUTED0(PageMsg_PutPageIntoBackForwardCache)
+
+// Sent to all renderers to resume all frames and dispatch page visibility
+// events for bfcache.
+IPC_MESSAGE_ROUTED0(PageMsg_RestorePageFromBackForwardCache)
+
 // Sent to all renderers when the mainframe state required by
 // blink::TextAutosizer changes in the main frame's renderer.
 IPC_MESSAGE_ROUTED1(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,

@@ -23,7 +23,6 @@
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -59,7 +58,7 @@ class ASH_EXPORT AppListControllerImpl
       public TabletModeObserver,
       public KeyboardControllerObserver,
       public WallpaperControllerObserver,
-      public DefaultVoiceInteractionObserver,
+      public AssistantStateObserver,
       public WindowTreeHostManager::Observer,
       public ash::MruWindowTracker::Observer,
       public AssistantControllerObserver,
@@ -239,10 +238,9 @@ class ASH_EXPORT AppListControllerImpl
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
 
-  // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override;
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
+  // AssistantStateObserver:
+  void OnAssistantStatusChanged(mojom::VoiceInteractionState state) override;
+  void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
 

@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_notification_model.h"
@@ -22,7 +21,7 @@
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"
 #include "ash/public/cpp/assistant/assistant_image_downloader.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -96,10 +95,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void AddObserver(AssistantViewDelegateObserver* observer) = 0;
   virtual void RemoveObserver(AssistantViewDelegateObserver* observer) = 0;
 
-  // Adds/removes the state observer associated with the view delegate.
-  virtual void AddStateObserver(AssistantStateObserver* observer) = 0;
-  virtual void RemoveStateObserver(AssistantStateObserver* observer) = 0;
-
   // Adds/removes the interaction model observer associated with the view
   // delegate.
   virtual void AddInteractionModelObserver(
@@ -134,8 +129,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void DownloadImage(
       const GURL& url,
       AssistantImageDownloader::DownloadCallback callback) = 0;
-
-  virtual AssistantStateBase* GetState() const = 0;
 
   // Returns the cursor_manager.
   virtual ::wm::CursorManager* GetCursorManager() = 0;

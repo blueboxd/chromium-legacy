@@ -9,6 +9,8 @@
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
+#include "components/password_manager/core/browser/leak_detection_delegate_helper.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -56,15 +58,35 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     logger.LogBoolean(Logger::STRING_LEAK_DETECTION_FINISHED, is_leaked);
   }
   if (is_leaked) {
-    DCHECK(is_leaked_timer_);
-    base::UmaHistogramTimes(
-        "PasswordManager.LeakDetection.NotifyIsLeakedTime",
-        std::exchange(is_leaked_timer_, nullptr)->Elapsed());
-    client_->NotifyUserCredentialsWereLeaked(
-        password_manager::CreateLeakTypeFromBools(
-            /*is_saved=*/false, /*is_reused=*/false, /*is_syncing=*/false),
-        url);
+    if (client_->GetPasswordSyncState() != SYNCING_NORMAL_ENCRYPTION) {
+      // If the credentials are not synced, the |CredentialLeakType| needed to
+      // show the correct notification is already determined.
+      OnShowLeakDetectionNotifiction(
+          CreateLeakTypeFromBools(/*is_saved=*/false, /*is_reused=*/false,
+                                  /*is_synced=*/false),
+          std::move(url), std::move(username));
+    } else {
+      // Otherwise query the helper to asynchronously determine the
+      // |CredentialLeakType|.
+      helper_ = std::make_unique<LeakDetectionDelegateHelper>(std::move(
+          base::BindOnce(&LeakDetectionDelegate::OnShowLeakDetectionNotifiction,
+                         base::Unretained(this))));
+      helper_->GetCredentialLeakType(client_->GetPasswordStore(),
+                                     std::move(url), std::move(username),
+                                     std::move(password));
+    }
   }
+}
+
+void LeakDetectionDelegate::OnShowLeakDetectionNotifiction(
+    CredentialLeakType leak_type,
+    GURL url,
+    base::string16 username) {
+  DCHECK(is_leaked_timer_);
+  base::UmaHistogramTimes("PasswordManager.LeakDetection.NotifyIsLeakedTime",
+                          std::exchange(is_leaked_timer_, nullptr)->Elapsed());
+  helper_.reset();
+  client_->NotifyUserCredentialsWereLeaked(leak_type, url);
 }
 
 void LeakDetectionDelegate::OnError(LeakDetectionError error) {

@@ -410,8 +410,8 @@ const ImageSkia* Image::ToImageSkia() const {
       case kImageRepPNG: {
         const internal::ImageRepPNG* png_rep =
             GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
-        scoped_rep.reset(new internal::ImageRepSkia(
-            internal::ImageSkiaFromPNG(png_rep->image_reps())));
+        scoped_rep = std::make_unique<internal::ImageRepSkia>(
+            internal::ImageSkiaFromPNG(png_rep->image_reps()));
         break;
       }
 #if defined(OS_IOS)
@@ -419,16 +419,16 @@ const ImageSkia* Image::ToImageSkia() const {
         const internal::ImageRepCocoaTouch* native_rep =
             GetRepresentation(kImageRepCocoaTouch, true)
                 ->AsImageRepCocoaTouch();
-        scoped_rep.reset(new internal::ImageRepSkia(
-            ImageSkia(ImageSkiaFromUIImage(native_rep->image()))));
+        scoped_rep = std::make_unique<internal::ImageRepSkia>(
+            ImageSkia(ImageSkiaFromUIImage(native_rep->image())));
         break;
       }
 #elif defined(OS_MACOSX)
       case kImageRepCocoa: {
         const internal::ImageRepCocoa* native_rep =
             GetRepresentation(kImageRepCocoa, true)->AsImageRepCocoa();
-        scoped_rep.reset(new internal::ImageRepSkia(
-            ImageSkia(ImageSkiaFromNSImage(native_rep->image()))));
+        scoped_rep = std::make_unique<internal::ImageRepSkia>(
+            ImageSkia(ImageSkiaFromNSImage(native_rep->image())));
         break;
       }
 #endif
@@ -450,15 +450,15 @@ UIImage* Image::ToUIImage() const {
       case kImageRepPNG: {
         const internal::ImageRepPNG* png_rep =
             GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
-        scoped_rep.reset(new internal::ImageRepCocoaTouch(
-            internal::UIImageFromPNG(png_rep->image_reps())));
+        scoped_rep = std::make_unique<internal::ImageRepCocoaTouch>(
+            internal::UIImageFromPNG(png_rep->image_reps()));
         break;
       }
       case kImageRepSkia: {
         const internal::ImageRepSkia* skia_rep =
             GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
         UIImage* image = UIImageFromImageSkia(*skia_rep->image());
-        scoped_rep.reset(new internal::ImageRepCocoaTouch(image));
+        scoped_rep = std::make_unique<internal::ImageRepCocoaTouch>(image);
         break;
       }
       default:
@@ -481,8 +481,9 @@ NSImage* Image::ToNSImage() const {
       case kImageRepPNG: {
         const internal::ImageRepPNG* png_rep =
             GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
-        scoped_rep.reset(new internal::ImageRepCocoa(internal::NSImageFromPNG(
-            png_rep->image_reps(), default_representation_color_space)));
+        scoped_rep =
+            std::make_unique<internal::ImageRepCocoa>(internal::NSImageFromPNG(
+                png_rep->image_reps(), default_representation_color_space));
         break;
       }
       case kImageRepSkia: {
@@ -490,7 +491,7 @@ NSImage* Image::ToNSImage() const {
             GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
         NSImage* image = NSImageFromImageSkiaWithColorSpace(*skia_rep->image(),
             default_representation_color_space);
-        scoped_rep.reset(new internal::ImageRepCocoa(image));
+        scoped_rep = std::make_unique<internal::ImageRepCocoa>(image);
         break;
       }
       default:

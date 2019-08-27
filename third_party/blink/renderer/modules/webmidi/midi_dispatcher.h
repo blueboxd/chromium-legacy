@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_DISPATCHER_H_
 
 #include "media/midi/midi_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -75,10 +76,10 @@ class MIDIDispatcher : public midi::mojom::blink::MidiSessionClient {
   // TODO(toyoshim): Consider to have a per-process limit.
   size_t unacknowledged_bytes_sent_ = 0u;
 
-  midi::mojom::blink::MidiSessionPtr midi_session_;
+  mojo::Remote<midi::mojom::blink::MidiSession> midi_session_;
 
-  mojo::Binding<midi::mojom::blink::MidiSessionClient> binding_;
-  midi::mojom::blink::MidiSessionProviderPtr midi_session_provider_;
+  mojo::Receiver<midi::mojom::blink::MidiSessionClient> receiver_{this};
+  mojo::Remote<midi::mojom::blink::MidiSessionProvider> midi_session_provider_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };

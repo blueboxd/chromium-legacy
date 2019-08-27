@@ -25,7 +25,7 @@ TransformNode::TransformNode()
       has_potential_animation(false),
       is_currently_animating(false),
       to_screen_is_potentially_animated(false),
-      flattens_inherited_transform(false),
+      flattens_inherited_transform(true),
       node_and_ancestors_are_flat(true),
       node_and_ancestors_have_only_integer_translation(true),
       scrolls(false),

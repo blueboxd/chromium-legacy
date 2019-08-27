@@ -105,26 +105,29 @@ void NGContainerFragmentBuilder::AddChild(
     }
   }
 
-  // Collect any (block) break tokens.
-  const NGBreakToken* child_break_token = child.BreakToken();
-  if (child_break_token && has_block_fragmentation_) {
-    switch (child.Type()) {
-      case NGPhysicalFragment::kFragmentBox:
-      case NGPhysicalFragment::kFragmentRenderedLegend:
-        if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
-          has_last_resort_break_ = true;
-        child_break_tokens_.push_back(child_break_token);
-        break;
-      case NGPhysicalFragment::kFragmentLineBox:
-        // NGInlineNode produces multiple line boxes in an anonymous box. We
-        // won't know up front which line box to insert a fragment break before
-        // (due to widows), so keep them all until we know.
-        inline_break_tokens_.push_back(child_break_token);
-        break;
-      case NGPhysicalFragment::kFragmentText:
-      default:
-        NOTREACHED();
-        break;
+  // Collect any (block) break tokens, unless this is a fragmentation context
+  // root. Break tokens should only escape a fragmentation context at the
+  // discretion of the fragmentation context.
+  if (has_block_fragmentation_ && !is_fragmentation_context_root_) {
+    if (const NGBreakToken* child_break_token = child.BreakToken()) {
+      switch (child.Type()) {
+        case NGPhysicalFragment::kFragmentBox:
+        case NGPhysicalFragment::kFragmentRenderedLegend:
+          if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
+            has_last_resort_break_ = true;
+          child_break_tokens_.push_back(child_break_token);
+          break;
+        case NGPhysicalFragment::kFragmentLineBox:
+          // NGInlineNode produces multiple line boxes in an anonymous box. We
+          // won't know up front which line box to insert a fragment break
+          // before (due to widows), so keep them all until we know.
+          inline_break_tokens_.push_back(child_break_token);
+          break;
+        case NGPhysicalFragment::kFragmentText:
+        default:
+          NOTREACHED();
+          break;
+      }
     }
   }
 

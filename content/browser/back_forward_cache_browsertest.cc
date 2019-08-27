@@ -1133,10 +1133,15 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
       'freeze',
       'resume',
     ];
-    for (event of event_list) {
-      let event2 = event;
-      document.addEventListener(event,
-                                () => window.testObservedEvents.push(event2));
+    for (event_name of event_list) {
+      let result = event_name;
+      window.addEventListener(event_name, event => {
+        if (event.persisted)
+          result +='.persisted';
+        window.testObservedEvents.push(result);
+      });
+      document.addEventListener(event_name,
+          () => window.testObservedEvents.push(result));
     }
   )"));
 
@@ -1149,6 +1154,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
   EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+  // TODO(yuzus): Post message to the frozen page, and make sure that the
+  // messages arrive after the page visibility events, not before them.
 
   // 3) Go back to A. Confirm that expected events are fired.
   web_contents()->GetController().GoBack();
@@ -1156,8 +1163,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
   EXPECT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
+  // visibilitychange events are added twice per each because it is fired for
+  // both window and document.
   EXPECT_EQ(
-      ListValueOf("visibilitychange", "freeze", "resume", "visibilitychange"),
+      ListValueOf("visibilitychange", "visibilitychange", "pagehide.persisted",
+                  "freeze", "resume", "pageshow.persisted", "visibilitychange",
+                  "visibilitychange"),
       EvalJs(shell(), "window.testObservedEvents"));
 }
 

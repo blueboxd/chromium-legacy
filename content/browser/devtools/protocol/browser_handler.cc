@@ -24,6 +24,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
+#include "url/gurl.h"
 #include "v8/include/v8-version-string.h"
 
 namespace content {
@@ -316,10 +317,13 @@ Response BrowserHandler::SetPermission(
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
-  GURL url = GURL(origin).GetOrigin();
+  url::Origin overridden_origin = url::Origin::Create(GURL(origin));
+  if (overridden_origin.opaque())
+    return Response::InvalidParams(
+        "Permission can't be granted to opaque origins.");
 
   PermissionControllerImpl::OverrideStatus status =
-      permission_controller->SetOverrideForDevTools(url, type,
+      permission_controller->SetOverrideForDevTools(overridden_origin, type,
                                                     permission_status);
   if (status != PermissionControllerImpl::OverrideStatus::kOverrideSet) {
     return Response::InvalidParams(
@@ -352,9 +356,13 @@ Response BrowserHandler::GrantPermissions(
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
-  GURL url = GURL(origin).GetOrigin();
+  url::Origin overridden_origin = url::Origin::Create(GURL(origin));
+  if (overridden_origin.opaque())
+    return Response::InvalidParams(
+        "Permission can't be granted to opaque origins.");
+
   PermissionControllerImpl::OverrideStatus status =
-      permission_controller->GrantOverridesForDevTools(url,
+      permission_controller->GrantOverridesForDevTools(overridden_origin,
                                                        internal_permissions);
   if (status != PermissionControllerImpl::OverrideStatus::kOverrideSet) {
     return Response::InvalidParams(

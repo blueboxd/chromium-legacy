@@ -97,6 +97,9 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   // call |OnExtensionLoaded|.
   void ResetIODataForTesting(const Extension* extension);
 
+  // Test helper to clear all cached ContentHash entries from |cache_|.
+  void ClearCacheForTesting();
+
   // Test helper to normalize relative path of file.
   static base::FilePath NormalizeRelativePathForTesting(
       const base::FilePath& path);

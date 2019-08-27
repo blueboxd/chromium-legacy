@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -322,13 +321,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   AssistantOptInFlowTest() = default;
   ~AssistantOptInFlowTest() override = default;
 
-  virtual void InitializeFeatureList() {
-    feature_list_.InitAndEnableFeature(features::kAssistantFeature);
-  }
-
   void SetUp() override {
-    InitializeFeatureList();
-
     base::FilePath test_data_dir;
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     https_server_.ServeFilesFromDirectory(test_data_dir);
@@ -451,8 +444,6 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   // request..
   bool fail_next_value_prop_url_request_ = false;
 
-  base::test::ScopedFeatureList feature_list_;
-
  private:
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     auto response = std::make_unique<BasicHttpResponse>();
@@ -484,31 +475,6 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
       AccountId::FromUserEmailGaiaId(kTestUser, kTestUser)};
   LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
 };
-
-class AssistantOptInFlowTestWithDisabledAssistant
-    : public AssistantOptInFlowTest {
- public:
-  AssistantOptInFlowTestWithDisabledAssistant() = default;
-  ~AssistantOptInFlowTestWithDisabledAssistant() override = default;
-
-  void InitializeFeatureList() override {
-    feature_list_.InitAndDisableFeature(features::kAssistantFeature);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTestWithDisabledAssistant,
-                       ExitImmediately) {
-  assistant_optin_flow_screen_->Show();
-  WaitForScreenExit();
-
-  ExpectCollectedOptIns({});
-  PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(
-      chromeos::assistant::prefs::ConsentStatus::kUnknown,
-      prefs->GetInteger(chromeos::assistant::prefs::kAssistantConsentStatus));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
-}
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
   arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(

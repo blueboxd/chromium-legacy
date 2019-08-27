@@ -62,6 +62,7 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
   bool EnqueueJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
+  bool ShouldYield(TaskSource* task_source) const override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
   void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;
@@ -81,8 +82,6 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
 class MockJobTask : public base::RefCountedThreadSafe<MockJobTask> {
  public:
   // Gives |worker_task| to requesting workers |num_tasks_to_run| times.
-  // ShouldYield() is automatically called on JobDelegate before running
-  // |worker_task| so that DoNothing() may be passed.
   MockJobTask(
       base::RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
       size_t num_tasks_to_run);
@@ -99,8 +98,10 @@ class MockJobTask : public base::RefCountedThreadSafe<MockJobTask> {
   size_t GetMaxConcurrency() const;
   void Run(experimental::JobDelegate* delegate);
 
-  scoped_refptr<JobTaskSource> GetJobTaskSource(const Location& from_here,
-                                                const TaskTraits& traits);
+  scoped_refptr<JobTaskSource> GetJobTaskSource(
+      const Location& from_here,
+      const TaskTraits& traits,
+      PooledTaskRunnerDelegate* delegate);
 
  private:
   friend class base::RefCountedThreadSafe<MockJobTask>;

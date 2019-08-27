@@ -93,6 +93,8 @@ struct CC_EXPORT EffectNode {
   bool cache_render_surface : 1;
   bool has_copy_request : 1;
   bool hidden_by_backface_visibility : 1;
+  // Whether the contents should continue to be visible when rotated such that
+  // its back face is facing toward the camera. It's true by default.
   bool double_sided : 1;
   bool trilinear_filtering : 1;
   bool is_drawn : 1;

@@ -413,66 +413,6 @@ TestRunner.Session = class {
   }
 };
 
-// TODO(johannes): Delete this (can't do it right now since I have
-// 2 PRs going in that remove the last usages).
-class WorkerProtocol {
-  constructor(dp, sessionId) {
-    this._sessionId = sessionId;
-    this._callbacks = new Map();
-    this._dp = dp;
-    this._dp.Target.onReceivedMessageFromTarget(
-        (message) => this._onMessage(message));
-    this.dp = this._setupProtocol();
-  }
-
-  _setupProtocol() {
-    let lastId = 0;
-    return new Proxy({}, {
-      get: (target, agentName, receiver) => new Proxy({}, {
-        get: (target, methodName, receiver) => {
-          const eventPattern = /^(once)?([A-Z][A-Za-z0-9]*)/;
-          var match = eventPattern.exec(methodName);
-          if (!match || match[1] !== 'once') {
-            return args => new Promise(resolve => {
-                     let id = ++lastId;
-                     this._callbacks.set(id, resolve);
-                     this._dp.Target.sendMessageToTarget({
-                       sessionId: this._sessionId,
-                       message: JSON.stringify({
-                         method: `${agentName}.${methodName}`,
-                         params: args || {},
-                         id: id
-                       })
-                     });
-                   });
-          }
-          var eventName = match[2];
-          eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
-          return () => new Promise(resolve => {
-                   this._callbacks.set(`${agentName}.${eventName}`, resolve);
-                 });
-        }
-      })
-    });
-  }
-
-  _onMessage(message) {
-    if (message.params.sessionId !== this._sessionId)
-      return;
-    const {id, result, method, params} = JSON.parse(message.params.message);
-    if (id && this._callbacks.has(id)) {
-      let callback = this._callbacks.get(id);
-      this._callbacks.delete(id);
-      callback(result);
-    }
-    if (method && this._callbacks.has(method)) {
-      let callback = this._callbacks.get(method);
-      this._callbacks.delete(method);
-      callback(params);
-    }
-  }
-};
-
 var DevToolsAPI = {};
 DevToolsAPI._requestId = 0;
 DevToolsAPI._embedderMessageId = 0;

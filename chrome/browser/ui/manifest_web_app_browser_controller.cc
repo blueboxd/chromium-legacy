@@ -52,10 +52,6 @@ bool ManifestWebAppBrowserController::ShouldShowCustomTabBar() const {
   return false;
 }
 
-bool ManifestWebAppBrowserController::HasTitlebarToolbar() const {
-  return true;
-}
-
 gfx::ImageSkia ManifestWebAppBrowserController::GetWindowAppIcon() const {
   gfx::ImageSkia page_icon = browser()->GetCurrentPageIcon().AsImageSkia();
   if (!page_icon.isNull())

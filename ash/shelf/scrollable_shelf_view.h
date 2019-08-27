@@ -56,6 +56,21 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
  private:
   class GradientLayerDelegate;
 
+  enum ScrollStatus {
+    // Indicates whether the gesture scrolling is across the main axis.
+    // That is, whether it is scrolling vertically for bottom shelf, or
+    // whether it is scrolling horizontally for left/right shelf.
+    kAcrossMainAxisScroll,
+
+    // Indicates whether the gesture scrolling is along the main axis.
+    // That is, whether it is scrolling horizontally for bottom shelf, or
+    // whether it is scrolling vertically for left/right shelf.
+    kAlongMainAxisScroll,
+
+    // Not in scrolling.
+    kNotInScroll
+  };
+
   // Returns the maximum scroll distance.
   int CalculateScrollUpperBound() const;
 
@@ -137,10 +152,7 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
 
   gfx::Vector2dF scroll_offset_;
 
-  // Indicates whether the gesture scrolling is across the main axis.
-  // That is, whether it is scrolling vertically for bottom shelf, or
-  // whether it is scrolling horizontally for left/right shelf.
-  bool cross_main_axis_scrolling_ = false;
+  ScrollStatus scroll_status_ = kNotInScroll;
 
   // Gesture states are preserved when the gesture scrolling along the main axis
   // (that is, whether it is scrolling horizontally for bottom shelf, or whether

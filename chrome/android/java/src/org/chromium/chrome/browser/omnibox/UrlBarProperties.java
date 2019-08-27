@@ -31,6 +31,9 @@ class UrlBarProperties {
         /** Text to be shown. */
         public final CharSequence text;
 
+        /** Text for Autofill services. */
+        public final CharSequence textForAutofillServices;
+
         /** Specifies how the text should be scrolled in the unfocused state. */
         public final @ScrollType int scrollType;
 
@@ -40,9 +43,10 @@ class UrlBarProperties {
         /** Specifies how the text should be selected in the focused state. */
         public final @SelectionState int selectionState;
 
-        public UrlBarTextState(CharSequence text, @ScrollType int scrollType, int scrollToIndex,
-                @SelectionState int selectionState) {
+        public UrlBarTextState(CharSequence text, CharSequence textForAutofillServices,
+                @ScrollType int scrollType, int scrollToIndex, @SelectionState int selectionState) {
             this.text = text;
+            this.textForAutofillServices = textForAutofillServices;
             this.scrollType = scrollType;
             this.scrollToIndex = scrollToIndex;
             this.selectionState = selectionState;

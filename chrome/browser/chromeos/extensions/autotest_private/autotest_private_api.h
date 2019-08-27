@@ -9,8 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/assistant/assistant_state_proxy.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
@@ -20,6 +19,7 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/snapshot/screenshot_grabber.h"
 
 namespace crostini {
@@ -462,7 +462,7 @@ class AutotestPrivateBootstrapMachineLearningServiceFunction
 // pref which will indirectly bring up or shut down the Assistant service.
 class AutotestPrivateSetAssistantEnabledFunction
     : public ExtensionFunction,
-      public ash::DefaultVoiceInteractionObserver {
+      public ash::AssistantStateObserver {
  public:
   AutotestPrivateSetAssistantEnabledFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setAssistantEnabled",
@@ -472,15 +472,14 @@ class AutotestPrivateSetAssistantEnabledFunction
   ~AutotestPrivateSetAssistantEnabledFunction() override;
   ResponseAction Run() override;
 
-  // ash::DefaultVoiceInteractionObserver overrides:
-  void OnVoiceInteractionStatusChanged(
+  // ash::AssistantStateObserver overrides:
+  void OnAssistantStatusChanged(
       ash::mojom::VoiceInteractionState state) override;
 
   // Called when the Assistant service does not respond in a timely fashion. We
   // will respond with an error.
   void Timeout();
 
-  ash::AssistantStateProxy assistant_state_;
   base::Optional<ash::mojom::VoiceInteractionState> expected_state_;
   base::OneShotTimer timeout_timer_;
 };

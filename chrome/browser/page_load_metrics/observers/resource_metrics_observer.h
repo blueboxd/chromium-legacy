@@ -27,10 +27,9 @@ class ResourceMetricsObserver
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
   // Records per-resource histograms.

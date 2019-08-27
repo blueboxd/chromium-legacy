@@ -695,9 +695,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_PUBLIC_SESSION_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a public session, which does not support voice interaction.">
         The Google Assistant is not available in a public session.
       </message>
-      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed while the feature is disabled.">
-        The Google Assistant is disabled on this device.
-      </message>
       <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_GUEST_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a guest session, which does not support voice interaction.">
         The Google Assistant is not available in a guest session.
       </message>

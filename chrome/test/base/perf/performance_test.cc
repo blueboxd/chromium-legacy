@@ -129,6 +129,7 @@ void PerformanceTest::TearDownOnMainThread() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(kTraceDir);
     base::FilePath trace_file;
     CHECK(base::CreateTemporaryFileInDir(dir, &trace_file));
+    LOG(INFO) << "Created the trace file: " << trace_file;
 
     auto trace_data_endpoint = content::TracingController::CreateFileEndpoint(
         trace_file, runloop.QuitClosure());

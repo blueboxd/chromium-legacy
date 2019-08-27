@@ -45,6 +45,7 @@ export class TabElement extends CustomElement {
   /** @param {!Tab} tab */
   set tab(tab) {
     this.toggleAttribute('active', tab.active);
+    this.toggleAttribute('pinned', tab.pinned);
 
     if (!this.tab_ || this.tab_.title !== tab.title) {
       this.titleTextEl_.textContent = tab.title;

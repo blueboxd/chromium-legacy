@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -203,11 +204,10 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
   externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
                                                    is_placeholder);
 
-  auto success_closure = base::BindOnce(
-      std::move(result_callback), Result(InstallResultCode::kSuccess, app_id));
+  base::ScopedClosureRunner scoped_closure(base::BindOnce(
+      std::move(result_callback), Result(InstallResultCode::kSuccess, app_id)));
 
   if (!is_placeholder) {
-    std::move(success_closure).Run();
     return;
   }
 
@@ -225,16 +225,15 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
     install_finalizer_->CreateOsShortcuts(
         app_id, install_options_.add_to_desktop,
         base::BindOnce(
-            [](base::OnceClosure success_closure, bool shortcuts_created) {
+            [](base::ScopedClosureRunner scoped_closure,
+               bool shortcuts_created) {
               // Even if the shortcuts failed to be created, we consider the
               // installation successful since an app was created.
-              std::move(success_closure).Run();
+              scoped_closure.RunAndReset();
             },
-            std::move(success_closure)));
+            std::move(scoped_closure)));
     return;
   }
-
-  std::move(success_closure).Run();
 }
 
 }  // namespace web_app

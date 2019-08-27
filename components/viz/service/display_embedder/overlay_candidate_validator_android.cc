@@ -30,6 +30,7 @@ void OverlayCandidateValidatorAndroid::InitializeStrategies() {
 }
 
 void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
+    const PrimaryPlane* primary_plane,
     OverlayCandidateList* candidates) {
   // There should only be at most a single overlay candidate: the video quad.
   // There's no check that the presented candidate is really a video frame for

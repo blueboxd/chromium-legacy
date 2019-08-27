@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/time_zone_monitor.mojom.h"
 
 template <class T>
@@ -61,7 +62,8 @@ class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
   base::ThreadChecker thread_checker_;
 
   // device::mojom::device::mojom::TimeZoneMonitor:
-  void AddClient(device::mojom::TimeZoneMonitorClientPtr client) override;
+  void AddClient(mojo::PendingRemote<device::mojom::TimeZoneMonitorClient>
+                     client) override;
 
   mojo::BindingSet<device::mojom::TimeZoneMonitor> bindings_;
   mojo::InterfacePtrSet<device::mojom::TimeZoneMonitorClient> clients_;

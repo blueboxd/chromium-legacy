@@ -24,6 +24,7 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
+#include "ui/events/pointer_details.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/latency/latency_info.h"
@@ -44,8 +45,6 @@ class ScrollEvent;
 class TouchEvent;
 
 enum class DomCode;
-
-using PointerId = int32_t;
 
 class EVENTS_EXPORT Event {
  public:
@@ -432,85 +431,8 @@ class EVENTS_EXPORT LocatedEvent : public Event {
   gfx::PointF root_location_;
 };
 
-// Structure for handling common fields between touch and mouse to support
-// PointerEvents API.
-struct EVENTS_EXPORT PointerDetails {
- public:
-  PointerDetails();
-  explicit PointerDetails(EventPointerType pointer_type,
-                          PointerId pointer_id = kUnknownPointerId);
-  PointerDetails(EventPointerType pointer_type,
-                 PointerId pointer_id,
-                 float radius_x,
-                 float radius_y,
-                 float force,
-                 float twist = 0.0f,
-                 float tilt_x = 0.0f,
-                 float tilt_y = 0.0f,
-                 float tangential_pressure = 0.0f);
-  PointerDetails(EventPointerType pointer_type,
-                 const gfx::Vector2d& pointer_offset,
-                 PointerId pointer_id = kUnknownPointerId);
-  PointerDetails(const PointerDetails& other);
-
-  bool operator==(const PointerDetails& other) const {
-    return pointer_type == other.pointer_type && radius_x == other.radius_x &&
-           radius_y == other.radius_y &&
-           (force == other.force ||
-            (std::isnan(force) && std::isnan(other.force))) &&
-           tilt_x == other.tilt_x && tilt_y == other.tilt_y &&
-           tangential_pressure == other.tangential_pressure &&
-           twist == other.twist && id == other.id && offset == other.offset;
-  }
-
-  // A value for pointer id which means it needs to be initialized for all
-  // pointer types.
-  static const PointerId kUnknownPointerId;
-
-  // The type of pointer device.
-  EventPointerType pointer_type = EventPointerType::POINTER_TYPE_UNKNOWN;
-
-  // Radius of the X (major) axis of the touch ellipse. 0.0 if unknown.
-  float radius_x = 0.0;
-
-  // Radius of the Y (minor) axis of the touch ellipse. 0.0 if unknown.
-  float radius_y = 0.0;
-
-  // Force (pressure) of the touch. Normalized to be [0, 1] except NaN means
-  // pressure is not supported by the input device.
-  float force = 0.0;
-
-  // Tilt of a pen/stylus from surface normal as plane angle in degrees, values
-  // lie in [-90,90]. A positive tilt_x is to the right and a positive tilt_y
-  // is towards the user. 0.0 if unknown.
-  float tilt_x = 0.0;
-  float tilt_y = 0.0;
-
-  // The normalized tangential pressure (or barrel pressure), typically set by
-  // an additional control of the stylus, which has a range of [-1,1], where 0
-  // is the neutral position of the control. Always 0 if the device does not
-  // support it.
-  float tangential_pressure = 0.0;
-
-  // The clockwise rotation of a pen stylus around its own major axis, in
-  // degrees in the range [0,359]. Always 0 if the device does not support it.
-  float twist = 0;
-
-  // An identifier that uniquely identifies a pointer during its lifetime.
-  PointerId id = 0;
-
-  // Only used by mouse wheel events. The amount to scroll. This is in multiples
-  // of kWheelDelta.
-  // Note: offset_.x() > 0/offset_.y() > 0 means scroll left/up.
-  gfx::Vector2d offset;
-
-  // If you add fields please update ui/events/mojom/event.mojom.
-};
-
 class EVENTS_EXPORT MouseEvent : public LocatedEvent {
  public:
-  static const PointerId kMousePointerId;
-
   // NOTE: On some platforms this will allow an event to be constructed from a
   // void*, see PlatformEvent.
   explicit MouseEvent(const PlatformEvent& native_event);
@@ -547,7 +469,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
              int changed_button_flags,
              const PointerDetails& pointer_details =
                  PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                                kMousePointerId));
+                                kPointerIdMouse));
 
   // DEPRECATED: Prefer constructor that takes gfx::PointF.
   MouseEvent(EventType type,
@@ -558,7 +480,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
              int changed_button_flags,
              const PointerDetails& pointer_details =
                  PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                                kMousePointerId));
+                                kPointerIdMouse));
 
   MouseEvent(const MouseEvent& copy);
   ~MouseEvent() override;

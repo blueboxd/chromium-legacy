@@ -469,6 +469,8 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
 void OverviewSession::InitiateDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen,
                                    bool is_touch_dragging) {
+  if (Shell::Get()->split_view_controller()->IsDividerAnimating())
+    return;
   highlight_controller_->SetFocusHighlightVisibility(false);
   window_drag_controller_ = std::make_unique<OverviewWindowDragController>(
       this, item, is_touch_dragging);
@@ -931,10 +933,6 @@ void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
   OnDisplayBoundsChanged();
   for (auto& grid : grid_list_)
     grid->UpdateCannotSnapWarningVisibility();
-
-  // Notify |split_view_drag_indicators_| if split view mode ended.
-  if (split_view_drag_indicators_ && state == SplitViewState::kNoSnap)
-    split_view_drag_indicators_->OnSplitViewModeEnded();
 
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.

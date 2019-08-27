@@ -170,42 +170,37 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
 
 UkmPageLoadMetricsObserver::ObservePolicy
 UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!was_hidden_) {
-    RecordPageLoadExtraInfoMetrics(info, base::TimeTicks::Now());
-    RecordTimingMetrics(timing, info);
+    RecordPageLoadMetrics(base::TimeTicks::Now());
+    RecordTimingMetrics(timing);
   }
-  ReportLayoutStability(info);
+  ReportLayoutStability();
   return STOP_OBSERVING;
 }
 
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!was_hidden_) {
-    RecordPageLoadExtraInfoMetrics(
-        info, base::TimeTicks() /* no app_background_time */);
-    RecordTimingMetrics(timing, info);
+    RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
+    RecordTimingMetrics(timing);
     was_hidden_ = true;
   }
   return CONTINUE_OBSERVING;
 }
 
 void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
-    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info) {
   if (was_hidden_)
     return;
-  RecordPageLoadExtraInfoMetrics(
-      extra_info, base::TimeTicks() /* no app_background_time */);
+  RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
 
   // Error codes have negative values, however we log net error code enum values
   // for UMA histograms using the equivalent positive value. For consistency in
   // UKM, we convert to a positive value here.
   int64_t net_error_code = static_cast<int64_t>(failed_load_info.error) * -1;
   DCHECK_GE(net_error_code, 0);
-  ukm::builders::PageLoad(extra_info.source_id)
+  ukm::builders::PageLoad(GetDelegate().GetSourceId())
       .SetNet_ErrorCode_OnFailedProvisionalLoad(net_error_code)
       .SetPageTiming_NavigationToFailedProvisionalLoad(
           failed_load_info.time_to_failed_provisional_load.InMilliseconds())
@@ -213,14 +208,12 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
 }
 
 void UkmPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!was_hidden_) {
-    RecordPageLoadExtraInfoMetrics(
-        info, base::TimeTicks() /* no app_background_time */);
-    RecordTimingMetrics(timing, info);
+    RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
+    RecordTimingMetrics(timing);
   }
-  ReportLayoutStability(info);
+  ReportLayoutStability();
 }
 
 void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
@@ -252,18 +245,17 @@ void UkmPageLoadMetricsObserver::OnLoadedResource(
 }
 
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  ukm::builders::PageLoad builder(info.source_id);
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  ukm::builders::PageLoad builder(GetDelegate().GetSourceId());
 
   base::Optional<int64_t> rounded_site_engagement_score =
-      GetRoundedSiteEngagementScore(info);
+      GetRoundedSiteEngagementScore();
   if (rounded_site_engagement_score) {
     builder.SetSiteEngagementScore(rounded_site_engagement_score.value());
   }
 
   base::Optional<bool> third_party_cookie_blocking_enabled =
-      GetThirdPartyCookieBlockingEnabled(info);
+      GetThirdPartyCookieBlockingEnabled();
   if (third_party_cookie_blocking_enabled) {
     builder.SetThirdPartyCookieBlockingEnabledForSite(
         third_party_cookie_blocking_enabled.value());
@@ -409,10 +401,9 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   builder.Record(ukm::UkmRecorder::Get());
 }
 
-void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
-    const page_load_metrics::PageLoadExtraInfo& info,
+void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
     base::TimeTicks app_background_time) {
-  ukm::builders::PageLoad builder(info.source_id);
+  ukm::builders::PageLoad builder(GetDelegate().GetSourceId());
   base::Optional<base::TimeDelta> foreground_duration =
       page_load_metrics::GetInitialForegroundDuration(GetDelegate(),
                                                       app_background_time);
@@ -423,11 +414,11 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
 
   bool is_user_initiated_navigation =
       // All browser initiated page loads are user-initiated.
-      info.user_initiated_info.browser_initiated ||
+      GetDelegate().GetUserInitiatedInfo().browser_initiated ||
 
       // Renderer-initiated navigations are user-initiated if there is an
       // associated input event.
-      info.user_initiated_info.user_input_event;
+      GetDelegate().GetUserInitiatedInfo().user_input_event;
 
   builder.SetExperimental_Navigation_UserInitiated(
       is_user_initiated_navigation);
@@ -461,19 +452,20 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
   }
   // page_transition_ fits in a uint32_t, so we can safely cast to int64_t.
   builder.SetNavigation_PageTransition(static_cast<int64_t>(page_transition_));
-  // info.page_end_reason fits in a uint32_t, so we can safely cast to int64_t.
+  // GetDelegate().GetPageEndReason() fits in a uint32_t, so we can safely cast
+  // to int64_t.
   builder.SetNavigation_PageEndReason(
-      static_cast<int64_t>(info.page_end_reason));
-  if (info.did_commit && was_cached_) {
+      static_cast<int64_t>(GetDelegate().GetPageEndReason()));
+  if (GetDelegate().DidCommit() && was_cached_) {
     builder.SetWasCached(1);
   }
-  if (info.did_commit && is_signed_exchange_inner_response_) {
+  if (GetDelegate().DidCommit() && is_signed_exchange_inner_response_) {
     builder.SetIsSignedExchangeInnerResponse(1);
   }
-  if (info.did_commit && navigation_is_cross_process_) {
+  if (GetDelegate().DidCommit() && navigation_is_cross_process_) {
     builder.SetIsCrossProcessNavigation(navigation_is_cross_process_);
   }
-  if (info.did_commit) {
+  if (GetDelegate().DidCommit()) {
     builder.SetNavigationEntryOffset(navigation_entry_offset_);
     builder.SetMainDocumentSequenceNumber(main_document_sequence_number_);
   }
@@ -564,30 +556,31 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
   }
 }
 
-void UkmPageLoadMetricsObserver::ReportLayoutStability(
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  ukm::builders::PageLoad(info.source_id)
-      .SetLayoutInstability_CumulativeShiftScore(
-          LayoutShiftUkmValue(info.page_render_data.layout_shift_score))
-      .SetLayoutInstability_CumulativeShiftScore_MainFrame(
-          LayoutShiftUkmValue(info.main_frame_render_data.layout_shift_score))
+void UkmPageLoadMetricsObserver::ReportLayoutStability() {
+  ukm::builders::PageLoad(GetDelegate().GetSourceId())
+      .SetLayoutInstability_CumulativeShiftScore(LayoutShiftUkmValue(
+          GetDelegate().GetPageRenderData().layout_shift_score))
+      .SetLayoutInstability_CumulativeShiftScore_MainFrame(LayoutShiftUkmValue(
+          GetDelegate().GetMainFrameRenderData().layout_shift_score))
       .SetLayoutInstability_CumulativeShiftScore_MainFrame_BeforeInputOrScroll(
-          LayoutShiftUkmValue(info.main_frame_render_data
+          LayoutShiftUkmValue(GetDelegate()
+                                  .GetMainFrameRenderData()
                                   .layout_shift_score_before_input_or_scroll))
       .Record(ukm::UkmRecorder::Get());
 
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.LayoutInstability.CumulativeShiftScore",
-      LayoutShiftUmaValue(info.page_render_data.layout_shift_score));
+      LayoutShiftUmaValue(
+          GetDelegate().GetPageRenderData().layout_shift_score));
 
   UMA_HISTOGRAM_COUNTS_100(
       "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",
-      LayoutShiftUmaValue(info.main_frame_render_data.layout_shift_score));
+      LayoutShiftUmaValue(
+          GetDelegate().GetMainFrameRenderData().layout_shift_score));
 }
 
 base::Optional<int64_t>
-UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore(
-    const page_load_metrics::PageLoadExtraInfo& info) const {
+UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore() const {
   if (!browser_context_)
     return base::nullopt;
 
@@ -598,8 +591,8 @@ UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore(
   // UKM privacy requires the engagement score be rounded to nearest
   // value of 10.
   int64_t rounded_document_engagement_score =
-      static_cast<int>(
-          std::roundf(engagement_service->GetScore(info.url) / 10.0)) *
+      static_cast<int>(std::roundf(
+          engagement_service->GetScore(GetDelegate().GetUrl()) / 10.0)) *
       10;
 
   DCHECK(rounded_document_engagement_score >= 0 &&
@@ -610,8 +603,7 @@ UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore(
 }
 
 base::Optional<bool>
-UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled(
-    const page_load_metrics::PageLoadExtraInfo& info) const {
+UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled() const {
   if (!browser_context_)
     return base::nullopt;
 
@@ -623,13 +615,12 @@ UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled(
   if (!cookie_settings->IsCookieControlsEnabled())
     return base::nullopt;
 
-  return !cookie_settings->IsThirdPartyAccessAllowed(info.url);
+  return !cookie_settings->IsThirdPartyAccessAllowed(GetDelegate().GetUrl());
 }
 
 void UkmPageLoadMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
                                                  subframe_rfh);
   bool loading_enabled;

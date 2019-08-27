@@ -18,7 +18,6 @@ js_type_check("closure_compile") {
     ":network_ip_config",
     ":network_nameservers",
     ":network_password_input",
-    ":network_property_list",
     ":network_property_list_mojo",
     ":network_proxy",
     ":network_proxy_exclusions",
@@ -119,15 +118,6 @@ js_library("network_password_input") {
   ]
   externs_list = [ "$externs_path/networking_private.js" ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
-}
-
-js_library("network_property_list") {
-  deps = [
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:i18n_behavior",
-  ]
 }
 
 js_library("network_property_list_mojo") {

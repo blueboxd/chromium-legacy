@@ -32,17 +32,7 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * The current properties for the network matching |guid|. Note: This may
-     * become set to |undefined| after it is initially set if the network is no
-     * longer visible, so always test that it is set before accessing it.
-     * @private {!CrOnc.NetworkProperties|undefined}
-     */
-    networkProperties_: {
-      type: Object,
-    },
-
-    /** @private {!OncMojo.ManagedProperties|undefined} */
+    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
     managedProperties_: {
       type: Object,
       observer: 'managedPropertiesChanged_',
@@ -205,12 +195,12 @@ Polymer({
    * prevents setProperties from being called when setting default properties.
    * @private {boolean}
    */
-  networkPropertiesReceived_: false,
+  propertiesReceived_: false,
 
   /**
    * Set in currentRouteChanged() if the showConfigure URL query
    * parameter is set to true. The dialog cannot be shown until the
-   * network properties have been fetched in networkPropertiesChanged_().
+   * network properties have been fetched in managedPropertiesChanged_().
    * @private {boolean}
    */
   shouldShowConfigureWhenNetworkLoaded_: false,
@@ -253,27 +243,20 @@ Polymer({
 
     this.shouldShowConfigureWhenNetworkLoaded_ =
         queryParams.get('showConfigure') == 'true';
-    const type = /** @type {!chrome.networkingPrivate.NetworkType} */ (
-                     queryParams.get('type')) ||
-        CrOnc.Type.WI_FI;
+    const type = queryParams.get('type') || 'WiFi';
     const name = queryParams.get('name') || type;
     this.init(guid, type, name);
   },
 
   /**
    * @param {string} guid
-   * @param {!chrome.networkingPrivate.NetworkType} type
+   * @param {string} type
    * @param {string} name
    */
   init: function(guid, type, name) {
     this.guid = guid;
-    // Set basic networkProperties until they are loaded.
-    this.networkPropertiesReceived_ = false;
-    this.networkProperties_ = {
-      GUID: this.guid,
-      Type: type,
-      Name: {Active: name},
-    };
+    // Set default properties until they are loaded.
+    this.propertiesReceived_ = false;
     this.managedProperties_ = OncMojo.getDefaultManagedProperties(
         OncMojo.getNetworkTypeFromString(type), this.guid, name);
     this.didSetFocus_ = false;
@@ -294,9 +277,8 @@ Polymer({
       // Clear network properties before navigating away to ensure that a future
       // navigation back to the details page does not show a flicker of
       // incorrect text. See https://crbug.com/905986.
-      this.networkProperties_ = undefined;
       this.managedProperties_ = undefined;
-      this.networkPropertiesReceived_ = false;
+      this.propertiesReceived_ = false;
 
       settings.navigateToPreviousRoute();
     });
@@ -323,7 +305,7 @@ Polymer({
    * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
    */
   onNetworkStateChanged: function(network) {
-    if (!this.guid || !this.networkProperties_) {
+    if (!this.guid || !this.managedProperties_) {
       return;
     }
     if (network.guid == this.guid) {
@@ -360,8 +342,7 @@ Polymer({
     }
 
     // Set the IPAddress property to the IPv4 Address.
-    const ipv4 =
-        OncMojo.getIPConfigForType(this.managedProperties_, CrOnc.IPType.IPV4);
+    const ipv4 = OncMojo.getIPConfigForType(this.managedProperties_, 'IPv4');
     this.ipAddress_ = (ipv4 && ipv4.ipAddress) || '';
 
     // Update the detail page title.
@@ -384,7 +365,8 @@ Polymer({
       // Set |this.shouldShowConfigureWhenNetworkLoaded_| back to false to
       // ensure that the Tether dialog is only shown once.
       this.shouldShowConfigureWhenNetworkLoaded_ = false;
-      this.showTetherDialog_();
+      // Async call to ensure dialog is stamped.
+      setTimeout(() => this.showTetherDialog_());
     }
   },
 
@@ -403,7 +385,7 @@ Polymer({
 
   /** @private */
   autoConnectPrefChanged_: function() {
-    if (!this.networkProperties_ || !this.guid) {
+    if (!this.propertiesReceived_) {
       return;
     }
     const config = {};
@@ -455,7 +437,7 @@ Polymer({
 
   /** @private */
   preferNetworkChanged_: function() {
-    if (!this.networkProperties_ || !this.guid) {
+    if (!this.propertiesReceived_) {
       return;
     }
     const config = {};
@@ -466,12 +448,13 @@ Polymer({
   /** @private */
   checkNetworkExists_: function() {
     const filter = {
-      networkType: CrOnc.Type.ALL,
-      visible: true,
-      configured: false
+      filter: mojom.FilterType.kVisible,
+      networkType: mojom.NetworkType.kAll,
+      limit: mojom.kNoLimit,
     };
-    this.networkingPrivate.getNetworks(filter, networks => {
-      if (networks.find(network => network.GUID == this.guid)) {
+    this.networkConfig_.getNetworkState(this.guid).then(response => {
+      if (response.result) {
+        // Don't update the state, a change event will trigger the update.
         return;
       }
       this.outOfRange_ = true;
@@ -484,10 +467,7 @@ Polymer({
     });
   },
 
-  /**
-   * Calls networkingPrivate.getProperties for this.guid.
-   * @private
-   */
+  /** @private */
   getNetworkDetails_: function() {
     assert(this.guid);
     if (this.isSecondaryUser_) {
@@ -495,62 +475,40 @@ Polymer({
         this.getStateCallback_(response.result);
       });
     } else {
-      this.networkingPrivate.getManagedProperties(
-          this.guid, this.getPropertiesCallback_.bind(this));
+      this.networkConfig_.getManagedProperties(this.guid).then(response => {
+        this.getPropertiesCallback_(response.result);
+      });
     }
   },
 
   /**
-   * networkingPrivate.getProperties callback.
-   * @param {!CrOnc.NetworkProperties} properties The network properties.
+   * @param {?mojom.ManagedProperties} properties
    * @private
    */
   getPropertiesCallback_: function(properties) {
-    if (chrome.runtime.lastError) {
-      const message = chrome.runtime.lastError.message;
-      if (message == 'Error.InvalidNetworkGuid') {
-        console.error('Details page: GUID no longer exists: ' + this.guid);
-      } else {
-        console.error(
-            'Unexpected networkingPrivate.getManagedProperties error: ' +
-            message + ' For: ' + this.guid);
-      }
-      this.close();
-      return;
-    }
-
     // Details page was closed while request was in progress, ignore the result.
     if (!this.guid) {
       return;
     }
 
     if (!properties) {
-      // Edge case, may occur when disabling. Close this.
+      console.error('Details page: GUID no longer exists: ' + this.guid);
       this.close();
       return;
     }
 
-    // Get the managed properties and then update networkProperties_, etc.
-    this.networkConfig_.getManagedProperties(this.guid).then(response => {
-      if (!response.result) {
-        // Edge case, may occur when disabling. Close this.
-        this.close();
-        return;
-      }
-      this.managedProperties_ = response.result;
-      // Detail page should not be shown when Arc VPN is not connected.
-      if (this.isArcVpn_(this.managedProperties_) &&
-          !this.isConnectedState_(this.managedProperties_)) {
-        this.guid = '';
-        this.close();
-      }
-      this.networkProperties_ = properties;
-      this.networkPropertiesReceived_ = true;
-      this.outOfRange_ = false;
-      if (!this.deviceState_) {
-        this.getDeviceState_();
-      }
-    });
+    this.managedProperties_ = properties;
+    // Detail page should not be shown when Arc VPN is not connected.
+    if (this.isArcVpn_(this.managedProperties_) &&
+        !this.isConnectedState_(this.managedProperties_)) {
+      this.guid = '';
+      this.close();
+    }
+    this.propertiesReceived_ = true;
+    this.outOfRange_ = false;
+    if (!this.deviceState_) {
+      this.getDeviceState_();
+    }
   },
 
   /**
@@ -563,38 +521,12 @@ Polymer({
       this.close();
       return;
     }
-    const type = /** @type {CrOnc.Type} */ (
-        OncMojo.getNetworkTypeString(networkState.type));
-
-    let connectionState;
-    switch (networkState.connectionState) {
-      case mojom.ConnectionStateType.kOnline:
-      case mojom.ConnectionStateType.kConnected:
-      case mojom.ConnectionStateType.kPortal:
-        connectionState = CrOnc.ConnectionState.CONNECTED;
-        break;
-      case mojom.ConnectionStateType.kConnecting:
-        connectionState = CrOnc.ConnectionState.CONNECTING;
-        break;
-      case mojom.ConnectionStateType.kNotConnected:
-        connectionState = CrOnc.ConnectionState.NOT_CONNECTED;
-        break;
-    }
-
-    this.networkProperties_ = {
-      GUID: networkState.guid,
-      Name: {Active: networkState.name},
-      Type: type,
-      Connectable: networkState.connectable,
-      ConnectionState: connectionState,
-    };
     this.managedProperties_ = OncMojo.getDefaultManagedProperties(
-        OncMojo.getNetworkTypeFromString(type), networkState.guid,
-        networkState.name);
+        networkState.type, networkState.guid, networkState.name);
     this.managedProperties_.connectable = networkState.connectable;
     this.managedProperties_.connectionState = networkState.connectionState;
 
-    this.networkPropertiesReceived_ = true;
+    this.propertiesReceived_ = true;
     this.outOfRange_ = false;
   },
 
@@ -610,29 +542,11 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkConfigProperties} onc The ONC
-   *     network properties.
-   * @private
-   */
-  setNetworkProperties_: function(onc) {
-    if (!this.networkPropertiesReceived_ || !this.guid) {
-      return;
-    }
-    this.networkingPrivate.setProperties(this.guid, onc, () => {
-      if (chrome.runtime.lastError) {
-        // An error typically indicates invalid input; request the properties
-        // to update any invalid fields.
-        this.getNetworkDetails_();
-      }
-    });
-  },
-
-  /**
    * @param {!mojom.ConfigProperties} config
    * @private
    */
   setMojoNetworkProperties_: function(config) {
-    if (!this.networkPropertiesReceived_ || !this.guid) {
+    if (!this.propertiesReceived_ || !this.guid) {
       return;
     }
     this.networkConfig_.setProperties(this.guid, config).then(response => {
@@ -643,18 +557,6 @@ Polymer({
         this.getNetworkDetails_();
       }
     });
-  },
-
-  /**
-   * @return {!chrome.networkingPrivate.NetworkConfigProperties} An ONC
-   *     dictionary with just the Type property set. Used for passing properties
-   *     to setNetworkProperties_.
-   * @private
-   */
-  getEmptyNetworkProperties_: function() {
-    const type = this.networkProperties_ ? this.networkProperties_.Type :
-                                           CrOnc.Type.WI_FI;
-    return {Type: type};
   },
 
   /**
@@ -702,14 +604,13 @@ Polymer({
       return this.i18n('networkAllowDataRoamingDisabled');
     }
 
-    return managedProperties.cellular.roamingState ==
-            CrOnc.RoamingState.ROAMING ?
+    return managedProperties.cellular.roamingState == 'Roaming' ?
         this.i18n('networkAllowDataRoamingEnabledRoaming') :
         this.i18n('networkAllowDataRoamingEnabledHome');
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties|undefined} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean} True if the network is connected.
    * @private
    */
@@ -719,7 +620,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -729,7 +630,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -739,7 +640,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -749,7 +650,17 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @return {boolean}
+   * @private
+   */
+  isTether_: function(managedProperties) {
+    return !!managedProperties &&
+        managedProperties.type == mojom.NetworkType.kTether;
+  },
+
+  /**
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
@@ -771,7 +682,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
@@ -802,7 +713,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -816,7 +727,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -836,7 +747,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -853,7 +764,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
@@ -890,7 +801,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.settingsPrivate.PrefObject} vpnConfigAllowed
    * @return {boolean}
    * @private
@@ -904,7 +815,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.settingsPrivate.PrefObject} vpnConfigAllowed
    * @return {boolean}
    * @private
@@ -923,7 +834,7 @@ Polymer({
 
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    */
   hasRecommendedFields_: function(managedProperties) {
@@ -947,7 +858,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -970,8 +881,7 @@ Polymer({
     // Only show for connected networks or LTE networks with a valid MDN.
     if (!this.isConnectedState_(managedProperties)) {
       const technology = managedProperties.cellular.networkTechnology;
-      if (technology != CrOnc.NetworkTechnology.LTE &&
-          technology != CrOnc.NetworkTechnology.LTE_ADVANCED) {
+      if (technology != 'LTE' && technology != 'LTEAdvanced') {
         return false;
       }
       if (!managedProperties.cellular.mdn) {
@@ -983,9 +893,9 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {?OncMojo.NetworkStateProperties} defaultNetwork
-   * @param {boolean} networkPropertiesReceived
+   * @param {boolean} propertiesReceived
    * @param {boolean} outOfRange
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
@@ -993,13 +903,13 @@ Polymer({
    * @private
    */
   enableConnect_: function(
-      managedProperties, defaultNetwork, networkPropertiesReceived, outOfRange,
+      managedProperties, defaultNetwork, propertiesReceived, outOfRange,
       globalPolicy, managedNetworkAvailable) {
     if (!this.showConnect_(
             managedProperties, globalPolicy, managedNetworkAvailable)) {
       return false;
     }
-    if (!networkPropertiesReceived || outOfRange) {
+    if (!propertiesReceived || outOfRange) {
       return false;
     }
     if (managedProperties.type == mojom.NetworkType.kVPN && !defaultNetwork) {
@@ -1056,11 +966,8 @@ Polymer({
 
   /** @private */
   onConnectTap_: function() {
-    // TODO(stevenjb): Add ManagedTetherProperties for hasConnectedToHost.
-    // For Tether networks that have not connected to a host, show a dialog.
-    if (this.networkProperties_.Type == CrOnc.Type.TETHER &&
-        (!this.networkProperties_.Tether ||
-         !this.networkProperties_.Tether.HasConnectedToHost)) {
+    if (this.managedProperties_.type == mojom.NetworkType.kTether &&
+        (!this.managedProperties_.tether.hasConnectedToHost)) {
       this.showTetherDialog_();
       return;
     }
@@ -1149,17 +1056,17 @@ Polymer({
    * Event triggered for elements associated with network properties.
    * @param {!CustomEvent<!{
    *     field: string,
-   *     value: !CrOnc.NetworkPropertyType
+   *     value: (string|number|boolean|!Array<string>)
    * }>} e
    * @private
    */
   onNetworkPropertyChange_: function(e) {
-    if (!this.networkProperties_) {
+    if (!this.propertiesReceived_) {
       return;
     }
     const field = e.detail.field;
     const value = e.detail.value;
-    const onc = this.getEmptyNetworkProperties_();
+    const config = {};
     const valueType = typeof value;
     if (valueType != 'string' && valueType != 'number' &&
         valueType != 'boolean' && !Array.isArray(value)) {
@@ -1168,14 +1075,13 @@ Polymer({
           ' Value: ' + JSON.stringify(value));
       return;
     }
-    CrOnc.setProperty(onc, field, value);
+    OncMojo.setConfigProperty(config, field, value);
     // Ensure any required configuration properties are also set.
-    if (field.match(/^VPN/)) {
-      const vpnType = CrOnc.getActiveValue(this.networkProperties_.VPN.Type);
-      assert(vpnType);
-      CrOnc.setProperty(onc, 'VPN.Type', vpnType);
+    if (this.managedProperties_.vpn && config.vpn &&
+        config.vpn.type === undefined) {
+      config.vpn.type = this.managedProperties_.vpn.type;
     }
-    this.setNetworkProperties_(onc);
+    this.setMojoNetworkProperties_(config);
   },
 
   /**
@@ -1183,7 +1089,7 @@ Polymer({
    * @private
    */
   onApnChange_: function(event) {
-    if (!this.networkPropertiesReceived_) {
+    if (!this.propertiesReceived_) {
       return;
     }
     const apn = event.detail;
@@ -1217,11 +1123,14 @@ Polymer({
    * @private
    */
   onProxyChange_: function(event) {
+    if (!this.propertiesReceived_) {
+      return;
+    }
     this.setMojoNetworkProperties_({proxySettings: event.detail});
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the shared message should be shown.
@@ -1237,7 +1146,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the AutoConnect checkbox should be shown.
@@ -1254,7 +1163,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean} Whether the toggle for the Always-on VPN feature is
    * displayed.
    * @private
@@ -1278,17 +1187,15 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the prefer network checkbox should be shown.
    * @private
    */
   showPreferNetwork_: function(
-      networkProperties, managedProperties, globalPolicy,
-      managedNetworkAvailable) {
-    if (!networkProperties || !managedProperties) {
+      managedProperties, globalPolicy, managedNetworkAvailable) {
+    if (!managedProperties) {
       return false;
     }
 
@@ -1328,7 +1235,7 @@ Polymer({
    */
   hasVisibleFields_: function(fields) {
     for (let i = 0; i < fields.length; ++i) {
-      const value = this.get(fields[i], this.networkProperties_);
+      const value = this.get(fields[i], this.managedProperties_);
       if (value !== undefined && value !== '') {
         return true;
       }
@@ -1350,63 +1257,66 @@ Polymer({
    * @private
    */
   getInfoFields_: function() {
-    if (!this.networkProperties_) {
+    if (!this.managedProperties_) {
       return [];
     }
 
     /** @type {!Array<string>} */ const fields = [];
-    const type = this.networkProperties_.Type;
-    if (type == CrOnc.Type.CELLULAR && !!this.networkProperties_.Cellular) {
+    const type = this.managedProperties_.type;
+    if (type == mojom.NetworkType.kCellular) {
       fields.push(
-          'Cellular.ActivationState', 'RestrictedConnectivity',
-          'Cellular.ServingOperator.Name');
-    } else if (type == CrOnc.Type.TETHER && !!this.networkProperties_.Tether) {
+          'cellular.activationState', 'restrictedConnectivity',
+          'cellular.servingOperator.name');
+    } else if (type == mojom.NetworkType.kTether) {
       fields.push(
-          'Tether.BatteryPercentage', 'Tether.SignalStrength',
-          'Tether.Carrier');
-    } else if (type == CrOnc.Type.VPN && !!this.networkProperties_.VPN) {
-      const vpnType = CrOnc.getActiveValue(this.networkProperties_.VPN.Type);
+          'tether.batteryPercentage', 'tether.signalStrength',
+          'tether.carrier');
+    } else if (type == mojom.NetworkType.kVPN) {
+      const vpnType = this.managedProperties_.vpn.type;
       switch (vpnType) {
-        case CrOnc.VPNType.THIRD_PARTY_VPN:
-          fields.push('VPN.ThirdPartyVPN.ProviderName');
+        case mojom.VPNType.kThirdPartyVPN:
+          fields.push('vpn.providerName');
           break;
-        case CrOnc.VPNType.ARCVPN:
-          fields.push('VPN.Type');
+        case mojom.VPNType.kArcVPN:
+          fields.push('vpn.type');
           break;
-        case CrOnc.VPNType.OPEN_VPN:
+        case mojom.VPNType.kOpenVPN:
           fields.push(
-              'VPN.Type', 'VPN.Host', 'VPN.OpenVPN.Username',
-              'VPN.OpenVPN.ExtraHosts');
+              'vpn.type', 'vpn.host', 'vpn.openVpn.username',
+              'vpn.openVpn.extraHosts');
           break;
-        case CrOnc.VPNType.L2TP_IPSEC:
-          fields.push('VPN.Type', 'VPN.Host', 'VPN.L2TP.Username');
+        case mojom.VPNType.kL2TPIPsec:
+          fields.push('vpn.type', 'vpn.host', 'vpn.l2tp.username');
           break;
       }
-    } else if (type == CrOnc.Type.WI_FI) {
-      fields.push('RestrictedConnectivity');
+    } else if (type == mojom.NetworkType.kWiFi) {
+      fields.push('restrictedConnectivity');
     }
     return fields;
   },
 
   /**
+   * Provides the list of editable fields to <network-property-list>.
+   * NOTE: Entries added to this list must be reflected in ConfigProperties in
+   * chromeos.network_config.mojom and handled in the service implementation.
    * @return {!Object} A dictionary of editable fields in the info section.
    * @private
    */
   getInfoEditFieldTypes_: function() {
-    if (!this.networkProperties_) {
+    if (!this.managedProperties_) {
       return [];
     }
 
     /** @dict */ const editFields = {};
-    const type = this.networkProperties_.Type;
-    if (type == CrOnc.Type.VPN && !!this.networkProperties_.VPN) {
-      const vpnType = CrOnc.getActiveValue(this.networkProperties_.VPN.Type);
-      if (vpnType != CrOnc.VPNType.THIRD_PARTY_VPN) {
-        editFields['VPN.Host'] = 'String';
+    const type = this.managedProperties_.type;
+    if (type == mojom.NetworkType.kVPN) {
+      const vpnType = this.managedProperties_.vpn.type;
+      if (vpnType != mojom.VPNType.kThirdPartyVPN) {
+        editFields['vpn.host'] = 'String';
       }
-      if (vpnType == CrOnc.VPNType.OPEN_VPN) {
-        editFields['VPN.OpenVPN.Username'] = 'String';
-        editFields['VPN.OpenVPN.ExtraHosts'] = 'StringArray';
+      if (vpnType == mojom.VPNType.kOpenVPN) {
+        editFields['vpn.openVpn.username'] = 'String';
+        editFields['vpn.openVpn.extraHosts'] = 'StringArray';
       }
     }
     return editFields;
@@ -1417,24 +1327,24 @@ Polymer({
    * @private
    */
   getAdvancedFields_: function() {
-    if (!this.networkProperties_) {
+    if (!this.managedProperties_) {
       return [];
     }
 
     /** @type {!Array<string>} */ const fields = [];
-    const type = this.networkProperties_.Type;
-    if (type != CrOnc.Type.TETHER) {
-      fields.push('MacAddress');
+    const type = this.managedProperties_.type;
+    if (type != mojom.NetworkType.kTether) {
+      fields.push('macAddress');
     }
-    if (type == CrOnc.Type.CELLULAR && !!this.networkProperties_.Cellular) {
+    if (type == mojom.NetworkType.kCellular) {
       fields.push(
-          'Cellular.Family', 'Cellular.NetworkTechnology',
-          'Cellular.ServingOperator.Code');
-    } else if (type == CrOnc.Type.WI_FI) {
+          'cellular.family', 'cellular.networkTechnology',
+          'cellular.servingOperator.code');
+    } else if (type == mojom.NetworkType.kWiFi) {
       fields.push(
-          'WiFi.SSID', 'WiFi.BSSID', 'WiFi.SignalStrength', 'WiFi.Security',
-          'WiFi.EAP.Outer', 'WiFi.EAP.Inner', 'WiFi.EAP.SubjectMatch',
-          'WiFi.EAP.Identity', 'WiFi.EAP.AnonymousIdentity', 'WiFi.Frequency');
+          'wifi.ssid', 'wifi.bssid', 'wifi.signalStrength', 'wifi.security',
+          'wifi.eap.outer', 'wifi.eap.inner', 'wifi.eap.subjectMatch',
+          'wifi.eap.identity', 'wifi.eap.anonymousIdentity', 'wifi.frequency');
     }
     return fields;
   },
@@ -1444,36 +1354,33 @@ Polymer({
    * @private
    */
   getDeviceFields_: function() {
-    if (!this.networkProperties_ ||
-        this.networkProperties_.Type !== CrOnc.Type.CELLULAR) {
+    if (!this.managedProperties_ ||
+        this.managedProperties_.type !== mojom.NetworkType.kCellular) {
       return [];
     }
 
     return [
-      'Cellular.HomeProvider.Name', 'Cellular.HomeProvider.Country',
-      'Cellular.HomeProvider.Code', 'Cellular.Manufacturer', 'Cellular.ModelID',
-      'Cellular.FirmwareRevision', 'Cellular.HardwareRevision', 'Cellular.ESN',
-      'Cellular.ICCID', 'Cellular.IMEI', 'Cellular.IMSI', 'Cellular.MDN',
-      'Cellular.MEID', 'Cellular.MIN'
+      'cellular.homeProvider.name', 'cellular.homeProvider.country',
+      'cellular.homeProvider.code', 'cellular.manufacturer', 'cellular.modelId',
+      'cellular.firmwareRevision', 'cellular.hardwareRevision', 'cellular.esn',
+      'cellular.iccid', 'cellular.imei', 'cellular.imsi', 'cellular.mdn',
+      'cellular.meid', 'cellular.min'
     ];
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showAdvanced_: function(networkProperties, managedProperties) {
+  showAdvanced_: function(managedProperties) {
     if (!managedProperties ||
         managedProperties.type == mojom.NetworkType.kTether) {
       // These settings apply to the underlying WiFi network, not the Tether
       // network.
       return false;
     }
-    return this.hasAdvancedFields_() || this.hasDeviceFields_() ||
-        (managedProperties.type != mojom.NetworkType.kVPN &&
-         this.isRememberedOrConnected_(managedProperties));
+    return this.hasAdvancedFields_() || this.hasDeviceFields_();
   },
 
   /**
@@ -1501,17 +1408,15 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
   hasNetworkSection_: function(
-      networkProperties, managedProperties, globalPolicy,
-      managedNetworkAvailable) {
-    if (!networkProperties || !managedProperties ||
+      managedProperties, globalPolicy, managedNetworkAvailable) {
+    if (!managedProperties ||
         managedProperties.type == mojom.NetworkType.kTether) {
       // These settings apply to the underlying WiFi network, not the Tether
       // network.
@@ -1528,17 +1433,15 @@ Polymer({
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
    */
   hasProxySection_: function(
-      networkProperties, managedProperties, globalPolicy,
-      managedNetworkAvailable) {
-    if (!networkProperties || !managedProperties ||
+      managedProperties, globalPolicy, managedNetworkAvailable) {
+    if (!managedProperties ||
         managedProperties.type == mojom.NetworkType.kTether) {
       // Proxy settings apply to the underlying WiFi network, not the Tether
       // network.
@@ -1552,7 +1455,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1563,7 +1466,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1574,7 +1477,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1585,7 +1488,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties|undefined} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1596,7 +1499,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties|undefined} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean}
    * @private
    */
@@ -1608,7 +1511,7 @@ Polymer({
 
   /**
    * @param {string} ipAddress
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */

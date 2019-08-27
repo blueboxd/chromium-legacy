@@ -1,7 +1,6 @@
 noparent = True
 
 include_rules = [
-  "+ash/assistant/assistant_prefs_controller.h",
   "+ash/assistant/model",
   "+ash/assistant/ui",
   "+ash/assistant/util",

@@ -258,6 +258,8 @@ jumbo_static_library("browser") {
       "http_credentials_cleaner.h",
       "leak_detection_delegate.cc",
       "leak_detection_delegate.h",
+      "leak_detection_delegate_helper.cc",
+      "leak_detection_delegate_helper.h",
       "leak_detection_dialog_utils.cc",
       "leak_detection_dialog_utils.h",
     ]
@@ -535,6 +537,7 @@ source_set("unit_tests") {
     sources += [
       "hsts_query_unittest.cc",
       "http_credentials_cleaner_unittest.cc",
+      "leak_detection_delegate_helper_unittest.cc",
       "leak_detection_delegate_unittest.cc",
     ]
   }

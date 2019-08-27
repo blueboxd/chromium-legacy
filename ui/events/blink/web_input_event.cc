@@ -174,6 +174,9 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
     case ui::EventMomentumPhase::END:
       webkit_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseEnded;
       break;
+    case ui::EventMomentumPhase::BLOCKED:
+      webkit_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseBlocked;
+      break;
     default:
       NOTREACHED();
   }

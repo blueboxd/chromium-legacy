@@ -6,7 +6,7 @@ module chromeos.assistant.mojom;
 
 import "ash/public/mojom/assistant_controller.mojom";
 import "ash/public/mojom/assistant_volume_control.mojom";
-import "ash/public/mojom/voice_interaction_controller.mojom";
+import "ash/public/mojom/assistant_state_controller.mojom";
 import "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom";
 import "chromeos/services/assistant/public/mojom/assistant_notification.mojom";
 import "chromeos/services/assistant/public/mojom/settings.mojom";
@@ -227,9 +227,9 @@ interface Client {
   RequestAssistantVolumeControl(
       pending_receiver<ash.mojom.AssistantVolumeControl> receiver);
 
-  // Requests a VoiceInteractionController from the browser.
-  RequestVoiceInteractionController(
-      pending_receiver<ash.mojom.VoiceInteractionController> receiver);
+  // Requests Ash's AssistantStateController interface from the browser.
+  RequestAssistantStateController(
+      pending_receiver<ash.mojom.AssistantStateController> receiver);
 
   // Requests a PrefStoreConnector from the browser.
   RequestPrefStoreConnector(

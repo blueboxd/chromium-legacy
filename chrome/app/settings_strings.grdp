@@ -2432,7 +2432,7 @@
   </if>
 
   <!-- Strings translating ONC (Open Network Configuration) properties -->
-  <!-- and translatable values. See onc_spec.html for more information. -->
+  <!-- and translatable values. See onc_spec.md for more information. -->
   <if expr="chromeos">
     <message name="IDS_ONC_IPV4_ADDRESS" desc="ONC Property label for ipv4-IPAddress">
       IP address
@@ -2460,6 +2460,9 @@
     </message>
     <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_PARTIALLY_ACTIVATED" desc="ONC Property value when Cellular.ActivationState = PartiallyActivated">
       Partially activated
+    </message>
+    <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE_NO_SERVICE" desc="ONC Property value when Cellular.ActivationState = NoService">
+      No service
     </message>
     <message name="IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME" desc="ONC Property label for APN-AccessPointName">
       Access point name
@@ -2628,6 +2631,9 @@
     </message>
     <message name="IDS_ONC_VPN_IPSEC_PSK" desc="ONC Property label for VPN.IPSec.PSK">
       Pre-shared key
+    </message>
+    <message name="IDS_ONC_VPN_OPENVPN_EXTRA_HOSTS" desc="ONC Property label for VPN.OpenVPN.ExtraHosts">
+      Extra hosts
     </message>
     <message name="IDS_ONC_VPN_OPENVPN_OTP" desc="ONC Property label for VPN.OpenVPN.OTP">
       OTP

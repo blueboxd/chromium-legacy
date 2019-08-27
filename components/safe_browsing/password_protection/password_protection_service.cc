@@ -404,12 +404,6 @@ bool PasswordProtectionService::IsWarningEnabled(
          PHISHING_REUSE;
 }
 
-bool PasswordProtectionService::IsEventLoggingEnabled() {
-  // TODO(bdea): Refactor all places that call this method to directly call
-  // IsIncognito.
-  return !IsIncognito();
-}
-
 // static
 ReusedPasswordType
 PasswordProtectionService::GetPasswordProtectionReusedPasswordType(

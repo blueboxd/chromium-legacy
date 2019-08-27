@@ -2547,6 +2547,7 @@
       "apks/SystemWebView.apk",
       "--replace-system-package",
       "org.chromium.webview_shell,apks/SystemWebViewShell.apk",
+      "--use-apk-under-test-flags-file",
     ],
     "label": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
     "type": "console_test_launcher",
@@ -2967,6 +2968,7 @@
     "args": [
       "--use-webview-provider",
       "apks/SystemWebView.apk",
+      "--use-apk-under-test-flags-file",
     ],
     "label": "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk",
     "type": "console_test_launcher",

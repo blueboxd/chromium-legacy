@@ -26,10 +26,7 @@ std::unique_ptr<TouchEvent> CreateTouchEvent(EventType event_type,
                                              const XEvent& xev) {
   std::unique_ptr<TouchEvent> event = std::make_unique<TouchEvent>(
       event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
-      ui::PointerDetails(
-          GetTouchPointerTypeFromXEvent(xev), GetTouchIdFromXEvent(xev),
-          GetTouchRadiusXFromXEvent(xev), GetTouchRadiusYFromXEvent(xev),
-          GetTouchForceFromXEvent(xev)));
+      GetTouchPointerDetailsFromXEvent(xev));
 
   // Touch events don't usually have |root_location| set differently than
   // |location|, since there is a touch device to display association, but this

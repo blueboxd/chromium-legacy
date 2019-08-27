@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/passwords/credential_leak_dialog_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -256,8 +257,7 @@ void NavigateToManagePasswordsPage(Browser* browser,
 }
 
 void NavigateToPasswordCheckupPage(Profile* profile) {
-  NavigateParams params(profile,
-                        GURL(password_manager::kPasswordManagerCheckupURL),
+  NavigateParams params(profile, leak_dialog_utils::GetPasswordCheckupURL(),
                         ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);

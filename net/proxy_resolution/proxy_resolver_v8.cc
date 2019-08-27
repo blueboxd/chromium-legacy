@@ -322,8 +322,9 @@ bool SortIpAddressList(const std::string& ip_address_list,
 // slash-delimited IP prefix with the top 'n' bits specified in the bit
 // field. This returns 'true' if the address is in the same subnet, and
 // 'false' otherwise. Also returns 'false' if the prefix is in an incorrect
-// format, or if an address and prefix of different types are used (e.g. IPv6
-// address and IPv4 prefix).
+// format. If the address types of |ip_address| and |ip_prefix| don't match,
+// will promote the IPv4 literal to an IPv4 mapped IPv6 literal and
+// proceed with the comparison.
 bool IsInNetEx(const std::string& ip_address, const std::string& ip_prefix) {
   IPAddress address;
   if (!address.AssignFromIPLiteral(ip_address))
@@ -333,13 +334,6 @@ bool IsInNetEx(const std::string& ip_address, const std::string& ip_prefix) {
   size_t prefix_length_in_bits;
   if (!ParseCIDRBlock(ip_prefix, &prefix, &prefix_length_in_bits))
     return false;
-
-  // Both |address| and |prefix| must be of the same type (IPv4 or IPv6).
-  if (address.size() != prefix.size())
-    return false;
-
-  DCHECK((address.IsIPv4() && prefix.IsIPv4()) ||
-         (address.IsIPv6() && prefix.IsIPv6()));
 
   return IPAddressMatchesPrefix(address, prefix, prefix_length_in_bits);
 }

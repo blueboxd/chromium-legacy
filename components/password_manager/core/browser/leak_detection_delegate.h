@@ -6,10 +6,12 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_DELEGATE_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -18,9 +20,10 @@ struct PasswordForm;
 namespace password_manager {
 
 class LeakDetectionCheck;
+class LeakDetectionDelegateHelper;
 class PasswordManagerClient;
 
-// The helper class that incapsulates the requests and their processing.
+// The helper class that encapsulates the requests and their processing.
 class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
  public:
   explicit LeakDetectionDelegate(PasswordManagerClient* client);
@@ -48,6 +51,14 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
                            GURL url,
                            base::string16 username,
                            base::string16 password) override;
+
+  // Initiates the showing of the leak detection notification. If the account is
+  // synced, it is called by |helper_| after the |leak_type| was asynchronously
+  // determined.
+  void OnShowLeakDetectionNotifiction(CredentialLeakType leak_type,
+                                      GURL url,
+                                      base::string16 username);
+
   void OnError(LeakDetectionError error) override;
 
   PasswordManagerClient* client_;
@@ -60,6 +71,10 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   // Timer measuring the time it takes from StartLeakCheck() until a call to
   // OnLeakDetectionDone() with is_leaked = true.
   std::unique_ptr<base::ElapsedTimer> is_leaked_timer_;
+
+  // Helper class to asynchronously determine |CredentialLeakType| for leaked
+  // credentials.
+  std::unique_ptr<LeakDetectionDelegateHelper> helper_;
 };
 
 }  // namespace password_manager

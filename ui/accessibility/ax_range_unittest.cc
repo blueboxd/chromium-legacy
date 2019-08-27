@@ -273,7 +273,7 @@ void AXRangeTest::SetUp() {
   initial_state.tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
   initial_state.tree_data.title = "Dialog title";
 
-  tree_.reset(new AXTree(initial_state));
+  tree_ = std::make_unique<AXTree>(initial_state);
   AXNodePosition::SetTree(tree_.get());
   AXTreeManagerMap::GetInstance().AddTreeManager(
       initial_state.tree_data.tree_id, this);

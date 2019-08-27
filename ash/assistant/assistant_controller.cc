@@ -12,7 +12,6 @@
 #include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -40,13 +39,12 @@ AssistantController::AssistantController()
       assistant_alarm_timer_controller_(this),
       assistant_interaction_controller_(this),
       assistant_notification_controller_(this),
-      assistant_prefs_controller_(),
       assistant_screen_context_controller_(this),
       assistant_setup_controller_(this),
       assistant_suggestions_controller_(this),
       assistant_ui_controller_(this),
       view_delegate_(this) {
-  VoiceInteractionController::Get()->AddLocalObserver(this);
+  assistant_state_controller_.AddObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);
 
@@ -58,7 +56,7 @@ AssistantController::~AssistantController() {
 
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
-  VoiceInteractionController::Get()->RemoveLocalObserver(this);
+  assistant_state_controller_.RemoveObserver(this);
   RemoveObserver(this);
 }
 
@@ -121,7 +119,7 @@ void AssistantController::SendAssistantFeedback(
 }
 
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
-  if (state()->consent_status().value_or(
+  if (assistant_state_controller_.consent_status().value_or(
           chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted) {
     // If activity control has been accepted, launch the enrollment flow.
@@ -325,7 +323,7 @@ void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
     observer.OnUrlOpened(url, from_server);
 }
 
-void AssistantController::OnVoiceInteractionStatusChanged(
+void AssistantController::OnAssistantStatusChanged(
     mojom::VoiceInteractionState state) {
   if (state == mojom::VoiceInteractionState::NOT_READY)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
@@ -360,6 +358,11 @@ void AssistantController::BindScreenContextController(
       ->assistant_controller()
       ->screen_context_controller()
       ->BindRequest(std::move(receiver));
+}
+
+void AssistantController::BindStateController(
+    mojo::PendingReceiver<mojom::AssistantStateController> receiver) {
+  assistant_state_controller_.BindRequest(std::move(receiver));
 }
 
 void AssistantController::BindVolumeControl(

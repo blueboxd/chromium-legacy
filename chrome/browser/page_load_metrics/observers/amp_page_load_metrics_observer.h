@@ -53,23 +53,19 @@ class AMPPageLoadMetricsObserver
   void OnCommitSameDocumentNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle,
-      const page_load_metrics::PageLoadExtraInfo&) override;
+      content::NavigationHandle* navigation_handle) override;
   void OnFrameDeleted(content::RenderFrameHost* rfh) override;
   void OnTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnSubFrameRenderDataUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::FrameRenderDataUpdate& render_data,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLoadingBehaviorObserved(
-      content::RenderFrameHost* subframe_rfh,
-      int behavior_flags,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::FrameRenderDataUpdate& render_data)
+      override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnLoadingBehaviorObserved(content::RenderFrameHost* subframe_rfh,
+                                 int behavior_flags) override;
 
  private:
   // Information about an AMP navigation in the main frame. Both regular and
@@ -113,8 +109,7 @@ class AMPPageLoadMetricsObserver
     bool amp_document_loaded = false;
   };
 
-  void RecordLoadingBehaviorObserved(
-      const page_load_metrics::PageLoadExtraInfo& info);
+  void RecordLoadingBehaviorObserved();
 
   void ProcessMainFrameNavigation(content::NavigationHandle* navigation_handle);
   void MaybeRecordAmpDocumentMetrics();

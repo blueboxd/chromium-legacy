@@ -592,8 +592,10 @@ TEST_F(PermissionManagerTest, InsecureOrigin) {
 }
 
 TEST_F(PermissionManagerTest, InsecureOriginIsNotOverridable) {
-  const GURL kInsecureOrigin("http://example.com/geolocation");
-  const GURL kSecureOrigin("https://example.com/geolocation");
+  const url::Origin kInsecureOrigin =
+      url::Origin::Create(GURL("http://example.com/geolocation"));
+  const url::Origin kSecureOrigin =
+      url::Origin::Create(GURL("https://example.com/geolocation"));
   EXPECT_FALSE(
       GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
           PermissionType::GEOLOCATION, kInsecureOrigin));
@@ -608,17 +610,19 @@ TEST_F(PermissionManagerTest, MissingContextIsNotOverridable) {
   EXPECT_FALSE(
       GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
           PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-          GURL("http://localhost")));
+          url::Origin::Create(GURL("http://localhost"))));
 #endif
   EXPECT_TRUE(
       GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
-          PermissionType::MIDI_SYSEX, GURL("http://localhost")));
+          PermissionType::MIDI_SYSEX,
+          url::Origin::Create(GURL("http://localhost"))));
 }
 
 TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
+  const url::Origin kLocalHost = url::Origin::Create(GURL("http://localhost"));
   EXPECT_TRUE(
       GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
-          PermissionType::GEOLOCATION, GURL("http://localhost")));
+          PermissionType::GEOLOCATION, kLocalHost));
 
   // Turn on kill switch for GEOLOCATION.
   base::FieldTrialList field_trial_list(
@@ -636,7 +640,7 @@ TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
 
   EXPECT_FALSE(
       GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
-          PermissionType::GEOLOCATION, GURL("http://localhost")));
+          PermissionType::GEOLOCATION, kLocalHost));
 
   // Clean-up.
   variations::testing::ClearAllVariationParams();

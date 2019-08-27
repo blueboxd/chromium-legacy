@@ -913,8 +913,6 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     tracing::InitTracingPostThreadPoolStartAndFeatureList();
 
-    delegate_->PostTaskSchedulerStart();
-
     if (should_start_service_manager_only)
       ForceInProcessNetworkService(true);
 

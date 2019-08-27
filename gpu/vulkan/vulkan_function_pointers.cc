@@ -231,6 +231,21 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
   }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_FUCHSIA)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME)) {
+    vkCreateImagePipeSurfaceFUCHSIAFn =
+        reinterpret_cast<PFN_vkCreateImagePipeSurfaceFUCHSIA>(
+            vkGetInstanceProcAddrFn(vk_instance,
+                                    "vkCreateImagePipeSurfaceFUCHSIA"));
+    if (!vkCreateImagePipeSurfaceFUCHSIAFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkCreateImagePipeSurfaceFUCHSIA";
+      return false;
+    }
+  }
+#endif  // defined(OS_FUCHSIA)
+
   if (api_version >= VK_VERSION_1_1) {
     vkGetPhysicalDeviceFeatures2Fn =
         reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(

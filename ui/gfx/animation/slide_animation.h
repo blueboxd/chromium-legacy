@@ -20,7 +20,7 @@ namespace gfx {
 // class MyClass : public AnimationDelegate {
 //  public:
 //   MyClass() {
-//     animation_.reset(new SlideAnimation(this));
+//     animation_ = std::make_unique<SlideAnimation>(this);
 //     animation_->SetSlideDuration(500);
 //   }
 //   void OnMouseOver() {

@@ -420,7 +420,6 @@ void BrowserTestBase::SetUp() {
     StartBrowserThreadPool();
     BrowserTaskExecutor::PostFeatureListSetup();
     tracing::InitTracingPostThreadPoolStartAndFeatureList();
-    delegate->PostTaskSchedulerStart();
   }
 
   auto discardable_shared_memory_manager =

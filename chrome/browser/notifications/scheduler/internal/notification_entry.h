@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOTIFICATION_ENTRY_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOTIFICATION_ENTRY_H_
 
+#include <map>
 #include <string>
 
 #include "base/time/time.h"
@@ -37,13 +38,9 @@ struct NotificationEntry {
   // shown.
   NotificationData notification_data;
 
-  // The unique identifier of the small icon on notification, which must be
+  // The map of icons uuid on notification, which must be
   // loaded asynchronously into memory.
-  std::string small_icon_uuid;
-
-  // The unique identifier of the large icon on notification, which must be
-  // loaded asynchronously into memory.
-  std::string large_icon_uuid;
+  std::map<IconType, std::string> icons_uuid;
 
   // Scheduling details.
   ScheduleParams schedule_params;

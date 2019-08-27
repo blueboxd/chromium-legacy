@@ -8,7 +8,6 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/i18n_util.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -58,7 +57,7 @@ void AssistantSetupController::OnDeepLinkReceived(
 }
 
 void AssistantSetupController::OnOptInButtonPressed() {
-  if (assistant_controller_->state()->consent_status().value_or(
+  if (AssistantState::Get()->consent_status().value_or(
           chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kUnauthorized) {
     assistant_controller_->OpenUrl(assistant::util::CreateLocalizedGURL(

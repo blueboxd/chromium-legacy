@@ -2181,3 +2181,41 @@ Status ExecuteGetIssueMessage(Session* session,
   *value = web_view->GetCastIssueMessage();
   return Status(kOk);
 }
+
+Status ExecuteSetPermission(Session* session,
+                            WebView* web_view,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout) {
+  const base::DictionaryValue* descriptor;
+  if (!params.GetDictionary("descriptor", &descriptor))
+    return Status(kInvalidArgument, "no descriptor dictionary");
+
+  std::string name;
+  if (!descriptor->GetString("name", &name))
+    return Status(kInvalidArgument, "no name in descriptor");
+
+  std::string permission_state;
+  if (!params.GetString("state", &permission_state))
+    return Status(kInvalidArgument, "no permission state");
+
+  bool one_realm = false;
+  if (!GetOptionalBool(&params, "oneRealm", &one_realm, nullptr))
+    return Status(kInvalidArgument, "oneRealm defined but not a boolean");
+
+  Chrome::PermissionState valid_state;
+  if (permission_state == "granted")
+    valid_state = Chrome::PermissionState::kGranted;
+  else if (permission_state == "denied")
+    valid_state = Chrome::PermissionState::kDenied;
+  else if (permission_state == "prompt")
+    valid_state = Chrome::PermissionState::kPrompt;
+  else
+    return Status(kInvalidArgument, "unrecognized permission state");
+
+  auto val = base::Value::ToUniquePtrValue(descriptor->Clone());
+  auto dict = base::DictionaryValue::From(std::move(val));
+
+  return session->chrome->SetPermission(std::move(dict), valid_state, one_realm,
+                                        web_view);
+}

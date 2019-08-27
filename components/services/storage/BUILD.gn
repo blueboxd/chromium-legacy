@@ -4,6 +4,8 @@
 
 source_set("storage") {
   sources = [
+    "dom_storage/dom_storage_database.cc",
+    "dom_storage/dom_storage_database.h",
     "origin_context_impl.cc",
     "origin_context_impl.h",
     "partition_impl.cc",
@@ -16,6 +18,7 @@ source_set("storage") {
     "//base",
     "//components/services/storage/public/mojom",
     "//mojo/public/cpp/bindings",
+    "//third_party/leveldatabase",
     "//url",
   ]
 }
@@ -24,6 +27,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "dom_storage/dom_storage_database_unittest.cc",
     "partition_impl_unittest.cc",
     "storage_service_impl_unittest.cc",
   ]
@@ -32,6 +36,7 @@ source_set("tests") {
     ":storage",
     "//base",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

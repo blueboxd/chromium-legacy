@@ -115,20 +115,23 @@ void BinaryUploadService::OnGetFileContents(Request* request,
         policy {
           cookies_allowed: YES
           cookies_store: "Safe Browsing Cookie Store"
-          setting: "No user setting."
+          setting: "This is disabled by default an can only be enabled by "
+            "policy."
           chrome_policy {
             SendFilesForMalwareCheck {
-              policy_options {mode: MANDATORY}
               SendFilesForMalwareCheck: 0
             }
           }
           chrome_policy {
             SendFilesForMalwareCheck {
-              policy_options {mode: MANDATORY}
               SendFilesForMalwareCheck: 1
             }
           }
-        })");
+        }
+        comments: "Setting SendFilesForMalwareCheck to 0 (Do not scan "
+          "downloads) or 1 (Forbid the scanning of downloads) will disable "
+          "this feature"
+        )");
 
   std::string metadata;
   request->deep_scanning_request().SerializeToString(&metadata);

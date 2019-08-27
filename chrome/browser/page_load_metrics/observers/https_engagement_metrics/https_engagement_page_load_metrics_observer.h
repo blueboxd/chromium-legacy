@@ -27,8 +27,7 @@ class HttpsEngagementPageLoadMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver:
   void OnComplete(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
  private:
   HttpsEngagementService* engagement_service_;

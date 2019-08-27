@@ -12,7 +12,6 @@
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_host.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"

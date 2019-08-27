@@ -122,46 +122,44 @@ void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
                         completed_after_background);
 }
 
-void DispatchObserverTimingCallbacks(
-    PageLoadMetricsObserver* observer,
-    const mojom::PageLoadTiming& last_timing,
-    const mojom::PageLoadTiming& new_timing,
-    const PageLoadExtraInfo& extra_info) {
+void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
+                                     const mojom::PageLoadTiming& last_timing,
+                                     const mojom::PageLoadTiming& new_timing) {
   if (!last_timing.Equals(new_timing))
-    observer->OnTimingUpdate(nullptr, new_timing, extra_info);
+    observer->OnTimingUpdate(nullptr, new_timing);
   if (new_timing.document_timing->dom_content_loaded_event_start &&
       !last_timing.document_timing->dom_content_loaded_event_start)
-    observer->OnDomContentLoadedEventStart(new_timing, extra_info);
+    observer->OnDomContentLoadedEventStart(new_timing);
   if (new_timing.document_timing->load_event_start &&
       !last_timing.document_timing->load_event_start)
-    observer->OnLoadEventStart(new_timing, extra_info);
+    observer->OnLoadEventStart(new_timing);
   if (new_timing.document_timing->first_layout &&
       !last_timing.document_timing->first_layout)
-    observer->OnFirstLayout(new_timing, extra_info);
+    observer->OnFirstLayout(new_timing);
   if (new_timing.interactive_timing->first_input_delay &&
       !last_timing.interactive_timing->first_input_delay)
-    observer->OnFirstInputInPage(new_timing, extra_info);
+    observer->OnFirstInputInPage(new_timing);
   if (new_timing.paint_timing->first_paint &&
       !last_timing.paint_timing->first_paint)
-    observer->OnFirstPaintInPage(new_timing, extra_info);
+    observer->OnFirstPaintInPage(new_timing);
   if (new_timing.paint_timing->first_image_paint &&
       !last_timing.paint_timing->first_image_paint)
-    observer->OnFirstImagePaintInPage(new_timing, extra_info);
+    observer->OnFirstImagePaintInPage(new_timing);
   if (new_timing.paint_timing->first_contentful_paint &&
       !last_timing.paint_timing->first_contentful_paint)
-    observer->OnFirstContentfulPaintInPage(new_timing, extra_info);
+    observer->OnFirstContentfulPaintInPage(new_timing);
   if (new_timing.paint_timing->first_meaningful_paint &&
       !last_timing.paint_timing->first_meaningful_paint)
-    observer->OnFirstMeaningfulPaintInMainFrameDocument(new_timing, extra_info);
+    observer->OnFirstMeaningfulPaintInMainFrameDocument(new_timing);
   if (new_timing.interactive_timing->interactive &&
       !last_timing.interactive_timing->interactive)
-    observer->OnPageInteractive(new_timing, extra_info);
+    observer->OnPageInteractive(new_timing);
   if (new_timing.parse_timing->parse_start &&
       !last_timing.parse_timing->parse_start)
-    observer->OnParseStart(new_timing, extra_info);
+    observer->OnParseStart(new_timing);
   if (new_timing.parse_timing->parse_stop &&
       !last_timing.parse_timing->parse_stop)
-    observer->OnParseStop(new_timing, extra_info);
+    observer->OnParseStop(new_timing);
 }
 
 }  // namespace
@@ -242,12 +240,11 @@ PageLoadTracker::~PageLoadTracker() {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
   }
 
-  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   for (const auto& observer : observers_) {
     if (failed_provisional_load_info_) {
-      observer->OnFailedProvisionalLoad(*failed_provisional_load_info_, info);
+      observer->OnFailedProvisionalLoad(*failed_provisional_load_info_);
     } else if (did_commit_) {
-      observer->OnComplete(metrics_update_dispatcher_.timing(), info);
+      observer->OnComplete(metrics_update_dispatcher_.timing());
     }
   }
 }
@@ -317,9 +314,8 @@ void PageLoadTracker::WebContentsHidden() {
     first_background_time_ = background_time - navigation_start_;
   }
   visibility_tracker_.OnHidden();
-  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden,
-                             metrics_update_dispatcher_.timing(), info);
+                             metrics_update_dispatcher_.timing());
 }
 
 void PageLoadTracker::WebContentsShown() {
@@ -390,9 +386,8 @@ void PageLoadTracker::ReadyToCommitNavigation(
 
 void PageLoadTracker::DidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
-  PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnDidFinishSubFrameNavigation(navigation_handle, extra_info);
+    observer->OnDidFinishSubFrameNavigation(navigation_handle);
   }
 }
 
@@ -411,9 +406,8 @@ void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
 }
 
 void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
-  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   for (const auto& observer : observers_) {
-    observer->OnUserInput(event, metrics_update_dispatcher_.timing(), info);
+    observer->OnUserInput(event, metrics_update_dispatcher_.timing());
   }
 }
 
@@ -423,9 +417,8 @@ void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
     app_entered_background_ = true;
   }
 
-  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, FlushMetricsOnAppEnterBackground,
-                             metrics_update_dispatcher_.timing(), info);
+                             metrics_update_dispatcher_.timing());
 }
 
 void PageLoadTracker::NotifyClientRedirectTo(
@@ -542,31 +535,6 @@ void PageLoadTracker::ClampBrowserTimestampIfInterProcessTimeTickSkew(
   }
 }
 
-PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() const {
-  base::Optional<base::TimeDelta> page_end_time;
-
-  if (page_end_reason_ != END_NONE) {
-    DCHECK_GE(page_end_time_, navigation_start_);
-    page_end_time = page_end_time_ - navigation_start_;
-  } else {
-    DCHECK(page_end_time_.is_null());
-  }
-
-  // page_end_reason_ == END_NONE implies page_end_user_initiated_info_ is not
-  // user initiated.
-  DCHECK(page_end_reason_ != END_NONE ||
-         (!page_end_user_initiated_info_.browser_initiated &&
-          !page_end_user_initiated_info_.user_gesture));
-  return PageLoadExtraInfo(
-      navigation_start_, first_background_time_, first_foreground_time_,
-      started_in_foreground_, user_initiated_info_, url(), start_url_,
-      did_commit_, page_end_reason_, page_end_user_initiated_info_,
-      page_end_time, metrics_update_dispatcher_.main_frame_metadata(),
-      metrics_update_dispatcher_.subframe_metadata(),
-      metrics_update_dispatcher_.page_render_data(),
-      metrics_update_dispatcher_.main_frame_render_data(), source_id_);
-}
-
 bool PageLoadTracker::HasMatchingNavigationRequestID(
     const content::GlobalRequestID& request_id) const {
   DCHECK(request_id != content::GlobalRequestID());
@@ -670,11 +638,10 @@ void PageLoadTracker::OnTimingChanged() {
   DCHECK(!last_dispatched_merged_page_timing_->Equals(
       metrics_update_dispatcher_.timing()));
 
-  PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    DispatchObserverTimingCallbacks(
-        observer.get(), *last_dispatched_merged_page_timing_,
-        metrics_update_dispatcher_.timing(), extra_info);
+    DispatchObserverTimingCallbacks(observer.get(),
+                                    *last_dispatched_merged_page_timing_,
+                                    metrics_update_dispatcher_.timing());
   }
   last_dispatched_merged_page_timing_ =
       metrics_update_dispatcher_.timing().Clone();
@@ -683,38 +650,33 @@ void PageLoadTracker::OnTimingChanged() {
 void PageLoadTracker::OnSubFrameTimingChanged(
     content::RenderFrameHost* rfh,
     const mojom::PageLoadTiming& timing) {
-  PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   DCHECK(rfh->GetParent());
   for (const auto& observer : observers_) {
-    observer->OnTimingUpdate(rfh, timing, extra_info);
+    observer->OnTimingUpdate(rfh, timing);
   }
 }
 
 void PageLoadTracker::OnSubFrameRenderDataChanged(
     content::RenderFrameHost* rfh,
     const mojom::FrameRenderDataUpdate& render_data) {
-  PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   DCHECK(rfh->GetParent());
   for (const auto& observer : observers_) {
-    observer->OnSubFrameRenderDataUpdate(rfh, render_data, extra_info);
+    observer->OnSubFrameRenderDataUpdate(rfh, render_data);
   }
 }
 
 void PageLoadTracker::OnMainFrameMetadataChanged() {
-  PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnLoadingBehaviorObserved(
-        nullptr, extra_info.main_frame_metadata.behavior_flags, extra_info);
+    observer->OnLoadingBehaviorObserved(nullptr,
+                                        GetMainFrameMetadata().behavior_flags);
   }
 }
 
 void PageLoadTracker::OnSubframeMetadataChanged(
     content::RenderFrameHost* rfh,
     const mojom::PageLoadMetadata& metadata) {
-  PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnLoadingBehaviorObserved(rfh, metadata.behavior_flags,
-                                        extra_info);
+    observer->OnLoadingBehaviorObserved(rfh, metadata.behavior_flags);
   }
 }
 
@@ -727,9 +689,8 @@ void PageLoadTracker::BroadcastEventToObservers(const void* const event_key) {
 void PageLoadTracker::UpdateFeaturesUsage(
     content::RenderFrameHost* rfh,
     const mojom::PageLoadFeatures& new_features) {
-  PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnFeaturesUsageObserved(rfh, new_features, extra_info);
+    observer->OnFeaturesUsageObserved(rfh, new_features);
   }
 }
 

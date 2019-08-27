@@ -83,7 +83,7 @@ class LayerTreeHostScrollTest : public LayerTreeTest {
     gfx::Size scroll_layer_bounds(root_layer->bounds().width() + 100,
                                   root_layer->bounds().height() + 100);
 
-    SetupViewport(root_layer->bounds(), scroll_layer_bounds);
+    SetupViewport(root_layer, root_layer->bounds(), scroll_layer_bounds);
   }
 };
 
@@ -571,7 +571,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     root_scroll_layer_->SetPosition(gfx::PointF());
     root_scroll_layer_->SetIsDrawable(true);
 
-    SetupViewport(root_scroll_layer_, root_layer->bounds());
+    SetupViewport(root_layer, root_scroll_layer_, root_layer->bounds());
 
     child_layer_ = FakePictureLayer::Create(&fake_content_layer_client_);
     child_layer_->set_did_scroll_callback(
@@ -1321,7 +1321,7 @@ class LayerTreeHostScrollTestLayerStructureChange
     Layer* root_layer = layer_tree_host()->root_layer();
     root_layer->SetBounds(gfx::Size(10, 10));
 
-    SetupViewport(root_layer->bounds(), root_layer->bounds());
+    SetupViewport(root_layer, root_layer->bounds(), root_layer->bounds());
 
     Layer* outer_scroll_layer =
         layer_tree_host()->outer_viewport_scroll_layer();

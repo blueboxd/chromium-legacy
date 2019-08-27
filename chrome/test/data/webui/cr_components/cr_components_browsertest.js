@@ -49,13 +49,32 @@ CrComponentsManagedFootnoteTest.prototype = {
   extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
     'managed_footnote_test.js',
   ]),
+
+  /** @override */
+  get suiteName() {
+    return managed_footnote_test.suiteName;
+  }
 };
 
-TEST_F('CrComponentsManagedFootnoteTest', 'All', function() {
-  mocha.run();
+TEST_F('CrComponentsManagedFootnoteTest', 'Hidden', function() {
+  runMochaTest(this.suiteName, managed_footnote_test.TestNames.Hidden);
+});
+
+TEST_F('CrComponentsManagedFootnoteTest', 'LoadTimeDataBrowser', function() {
+  runMochaTest(
+      this.suiteName, managed_footnote_test.TestNames.LoadTimeDataBrowser);
+});
+
+TEST_F('CrComponentsManagedFootnoteTest', 'Events', function() {
+  runMochaTest(this.suiteName, managed_footnote_test.TestNames.Events);
 });
 
 GEN('#if defined(OS_CHROMEOS)');
+
+TEST_F('CrComponentsManagedFootnoteTest', 'LoadTimeDataDevice', function() {
+  runMochaTest(
+      this.suiteName, managed_footnote_test.TestNames.LoadTimeDataDevice);
+});
 
 /**
  * @constructor

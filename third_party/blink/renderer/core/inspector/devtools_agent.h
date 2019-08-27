@@ -79,8 +79,7 @@ class CORE_EXPORT DevToolsAgent
           main_session,
       mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
-      bool client_expects_binary_responses,
-      const WTF::String& session_id) override;
+      bool client_expects_binary_responses) override;
   void InspectElement(const WebPoint& point) override;
   void ReportChildWorkers(bool report,
                           bool wait_for_debugger,

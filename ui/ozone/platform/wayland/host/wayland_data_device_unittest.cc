@@ -81,7 +81,8 @@ class WaylandDataDeviceManagerTest : public WaylandTest {
     data_device_manager_ = server_.data_device_manager();
     DCHECK(data_device_manager_);
 
-    clipboard_client_.reset(new MockClipboardClient(connection_.get()));
+    clipboard_client_ =
+        std::make_unique<MockClipboardClient>(connection_.get());
   }
 
  protected:

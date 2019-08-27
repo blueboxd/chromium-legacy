@@ -94,17 +94,14 @@ def main():
     parser.add_argument(
         '--output',
         required=True,
-        help='Path to the output directory. The signed DMG products and '
-        'installer tools will be placed here.')
-
-    group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument(
-        '--dmg',
-        dest='dmg',
+        help='Path to the output directory. The signed (possibly packaged) '
+        'products and installer tools will be placed here.')
+    parser.add_argument(
+        '--disable-packaging',
+        dest='disable_packaging',
         action='store_true',
-        help='Defaults to True. Package the signed application into a DMG, '
-        'and sign the result.')
-    group.add_argument('--no-dmg', dest='dmg', action='store_false')
+        help='Disable creating any packaging (.dmg/.pkg) specified by the '
+        'configuration.')
 
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument(
@@ -115,7 +112,7 @@ def main():
         'Apple for notarization.')
     group.add_argument('--no-notarize', dest='notarize', action='store_false')
 
-    parser.set_defaults(dmg=True, notarize=False)
+    parser.set_defaults(notarize=False)
     args = parser.parse_args()
 
     if args.notarize:
@@ -132,7 +129,10 @@ def main():
         os.mkdir(paths.output)
 
     pipeline.sign_all(
-        paths, config, package_dmg=args.dmg, do_notarization=args.notarize)
+        paths,
+        config,
+        disable_packaging=args.disable_packaging,
+        do_notarization=args.notarize)
 
 
 if __name__ == '__main__':

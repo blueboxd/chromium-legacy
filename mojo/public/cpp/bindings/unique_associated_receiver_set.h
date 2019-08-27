@@ -6,17 +6,11 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_UNIQUE_ASSOCIATED_RECEIVER_SET_H_
 
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/unique_ptr_impl_ref_traits.h"
 
 namespace mojo {
-
-template <typename Interface, typename ImplRefTraits>
-struct ReceiverSetTraits<AssociatedReceiver<Interface, ImplRefTraits>> {
-  using InterfaceType = Interface;
-  using PendingType = PendingAssociatedReceiver<Interface>;
-  using ImplPointerType = typename ImplRefTraits::PointerType;
-};
 
 // This class manages a set of associated receiving endpoints where each
 // endpoint is bound to a unique implementation of the interface owned by this

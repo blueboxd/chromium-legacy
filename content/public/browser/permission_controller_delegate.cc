@@ -8,7 +8,7 @@ namespace content {
 
 bool PermissionControllerDelegate::IsPermissionOverridableByDevTools(
     PermissionType permission,
-    const GURL& origin) {
+    const url::Origin& origin) {
   return true;
 }
 

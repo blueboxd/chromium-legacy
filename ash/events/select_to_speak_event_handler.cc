@@ -42,7 +42,7 @@ void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
     // up event by not resetting the state to INACTIVE.
     if (state_ != MOUSE_RELEASED)
       state_ = INACTIVE;
-    touch_id_ = ui::PointerDetails::kUnknownPointerId;
+    touch_id_ = ui::kPointerIdUnknown;
     touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
   }
 }
@@ -158,7 +158,7 @@ void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   // On a touch-down event, if selection was requested, we begin capturing
   // touch events.
   if (event->type() == ui::ET_TOUCH_PRESSED && state_ == SELECTION_REQUESTED &&
-      touch_id_ == ui::PointerDetails::kUnknownPointerId) {
+      touch_id_ == ui::kPointerIdUnknown) {
     state_ = CAPTURING_TOUCH_ONLY;
     touch_id_ = event->pointer_details().id;
     touch_type_ = event->pointer_details().pointer_type;
@@ -177,7 +177,7 @@ void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_RELEASED &&
       state_ == CAPTURING_TOUCH_ONLY) {
     state_ = INACTIVE;
-    touch_id_ = ui::PointerDetails::kUnknownPointerId;
+    touch_id_ = ui::kPointerIdUnknown;
     touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
   }
 

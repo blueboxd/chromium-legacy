@@ -19,7 +19,7 @@ class AverageLagTrackerTest : public testing::Test {
   AverageLagTrackerTest() { ResetHistograms(); }
 
   void ResetHistograms() {
-    histogram_tester_.reset(new base::HistogramTester());
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   const base::HistogramTester& histogram_tester() { return *histogram_tester_; }

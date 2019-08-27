@@ -65,8 +65,6 @@ class AssistantNotificationControllerTest : public AshTestBase {
   ~AssistantNotificationControllerTest() override = default;
 
   void SetUp() override {
-    ASSERT_TRUE(chromeos::features::IsAssistantEnabled());
-
     AshTestBase::SetUp();
 
     controller_ =

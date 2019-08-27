@@ -20,6 +20,8 @@ extern const base::Feature kNtpCustomizationMenuV2;
 
 extern const base::Feature kFirstRunDefaultSearchShortcut;
 
+extern const base::Feature kNtpRealbox;
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_SEARCH_NTP_FEATURES_H_

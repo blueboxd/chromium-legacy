@@ -7,9 +7,9 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
@@ -141,6 +142,12 @@ class SyncConsentTest : public OobeBaseTest {
                                   FakeGaiaMixin::kEmptyUserServices);
 
     test::CreateOobeScreenWaiter("sync-consent")->Wait();
+
+    // Skip the Assistant opt-in flow screen to avoid it blocking the test.
+    auto* screen = static_cast<AssistantOptInFlowScreen*>(
+        WizardController::default_controller()->GetScreen(
+            AssistantOptInFlowScreenView::kScreenId));
+    screen->SetSkipForTesting();
   }
 
  protected:
@@ -263,17 +270,6 @@ INSTANTIATE_TEST_SUITE_P(SyncConsentTestWithParamsImpl,
 // we use WithParamInterface<bool> here.
 class SyncConsentPolicyDisabledTest : public SyncConsentTest,
                                       public testing::WithParamInterface<bool> {
- public:
-  SyncConsentPolicyDisabledTest() {
-    // Assistant feature contains an OOBE page which is irrelevant for this
-    // test.
-    feature_list_.InitAndDisableFeature(features::kAssistantFeature);
-  }
-  ~SyncConsentPolicyDisabledTest() = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(SyncConsentPolicyDisabledTest);
 };
 
 IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,

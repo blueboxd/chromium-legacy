@@ -78,7 +78,7 @@ PaymentRequest::PaymentRequest(
     std::unique_ptr<ContentPaymentRequestDelegate> delegate,
     PaymentRequestWebContentsManager* manager,
     PaymentRequestDisplayManager* display_manager,
-    mojo::InterfaceRequest<mojom::PaymentRequest> request,
+    mojo::PendingReceiver<mojom::PaymentRequest> receiver,
     ObserverForTest* observer_for_testing)
     : web_contents_(web_contents),
       log_(web_contents_),
@@ -86,7 +86,6 @@ PaymentRequest::PaymentRequest(
       manager_(manager),
       display_manager_(display_manager),
       display_handle_(nullptr),
-      binding_(this, std::move(request)),
       payment_handler_host_(web_contents_, this),
       top_level_origin_(url_formatter::FormatUrlForSecurityDisplay(
           web_contents_->GetLastCommittedURL())),
@@ -95,21 +94,23 @@ PaymentRequest::PaymentRequest(
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
                       ukm::GetSourceIdForWebContentsDocument(web_contents)) {
+  receiver_.Bind(std::move(receiver));
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
   // TODO(crbug.com/683636): Investigate using
   // set_connection_error_with_reason_handler with Binding::CloseWithReason.
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &PaymentRequest::OnConnectionTerminated, weak_ptr_factory_.GetWeakPtr()));
 }
 
 PaymentRequest::~PaymentRequest() {}
 
-void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
-                          std::vector<mojom::PaymentMethodDataPtr> method_data,
-                          mojom::PaymentDetailsPtr details,
-                          mojom::PaymentOptionsPtr options) {
+void PaymentRequest::Init(
+    mojo::PendingRemote<mojom::PaymentRequestClient> client,
+    std::vector<mojom::PaymentMethodDataPtr> method_data,
+    mojom::PaymentDetailsPtr details,
+    mojom::PaymentOptionsPtr options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (is_initialized_) {
@@ -119,7 +120,7 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   }
 
   is_initialized_ = true;
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
 
   const GURL last_committed_url = delegate_->GetLastCommittedURL();
   if (!content::IsOriginSecure(last_committed_url)) {
@@ -516,7 +517,7 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
 
 bool PaymentRequest::IsInitialized() const {
   return is_initialized_ && client_ && client_.is_bound() &&
-         binding_.is_bound();
+         receiver_.is_bound();
 }
 
 bool PaymentRequest::IsThisPaymentRequestShowing() const {
@@ -641,7 +642,7 @@ void PaymentRequest::UserCancelled() {
 
   // We close all bindings and ask to be destroyed.
   client_.reset();
-  binding_.Close();
+  receiver_.reset();
   payment_handler_host_.Disconnect();
   if (observer_for_testing_)
     observer_for_testing_->OnConnectionTerminated();
@@ -657,12 +658,12 @@ void PaymentRequest::DidStartMainFrameNavigationToDifferentDocument(
 
 void PaymentRequest::OnConnectionTerminated() {
   // We are here because of a browser-side error, or likely as a result of the
-  // connection_error_handler on |binding_|, which can mean that the renderer
+  // disconnect_handler on |receiver_|, which can mean that the renderer
   // has decided to close the pipe for various reasons (see all uses of
   // PaymentRequest::clearResolversAndCloseMojoConnection() in Blink). We close
   // the binding and the dialog, and ask to be deleted.
   client_.reset();
-  binding_.Close();
+  receiver_.reset();
   payment_handler_host_.Disconnect();
   delegate_->CloseDialog();
   if (observer_for_testing_)

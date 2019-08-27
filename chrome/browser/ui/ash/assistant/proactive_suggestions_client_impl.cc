@@ -17,8 +17,8 @@ ProactiveSuggestionsClientImpl::ProactiveSuggestionsClientImpl(
     Profile* profile)
     : profile_(profile) {
   // Initialize the Assistant state proxy.
-  mojo::PendingRemote<ash::mojom::VoiceInteractionController> controller;
-  client->RequestVoiceInteractionController(
+  mojo::PendingRemote<ash::mojom::AssistantStateController> controller;
+  client->RequestAssistantStateController(
       controller.InitWithNewPipeAndPassReceiver());
   assistant_state_.Init(std::move(controller));
 
@@ -86,15 +86,13 @@ void ProactiveSuggestionsClientImpl::DidStartNavigation(
   SetActiveUrl(active_contents_->GetURL());
 }
 
-void ProactiveSuggestionsClientImpl::OnVoiceInteractionSettingsEnabled(
-    bool enabled) {
+void ProactiveSuggestionsClientImpl::OnAssistantSettingsEnabled(bool enabled) {
   // When Assistant is enabled/disabled in settings we may need to resume/pause
   // observation of the browser. We accomplish this by updating active state.
   UpdateActiveState();
 }
 
-void ProactiveSuggestionsClientImpl::OnVoiceInteractionContextEnabled(
-    bool enabled) {
+void ProactiveSuggestionsClientImpl::OnAssistantContextEnabled(bool enabled) {
   // When Assistant screen context is enabled/disabled in settings we may need
   // to resume/pause observation of the browser. We accomplish this by updating
   // active state.

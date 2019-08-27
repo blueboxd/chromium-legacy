@@ -81,7 +81,7 @@ struct CC_EXPORT TransformNode {
   bool to_screen_is_potentially_animated : 1;
 
   // Flattening, when needed, is only applied to a node's inherited transform,
-  // never to its local transform.
+  // never to its local transform. It's true by default.
   bool flattens_inherited_transform : 1;
 
   // This is true if the to_parent transform at every node on the path to the

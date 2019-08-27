@@ -42,6 +42,14 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getConsumeSyntheticTokens());
         Assert.assertEquals(FeedConfiguration.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT,
                 FeedConfiguration.getConsumeSyntheticTokensWhileRestoring());
+        Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_ENDPOINT_DEFAULT,
+                FeedConfiguration.getFeedActionServerEndpoint());
+        Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST_DEFAULT,
+                FeedConfiguration.getFeedActionServerMaxActionsPerRequest());
+        Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST_DEFAULT,
+                FeedConfiguration.getFeedActionServerMaxSizePerRequest());
+        Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_METHOD_DEFAULT,
+                FeedConfiguration.getFeedActionServerMethod());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_ENDPOINT_DEFAULT,
                 FeedConfiguration.getFeedServerEndpoint());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,
@@ -125,6 +133,48 @@ public class FeedConfigurationTest {
     public void
     testConsumeSyntheticTokensWhileRestoring() {
         Assert.assertTrue(FeedConfiguration.getConsumeSyntheticTokensWhileRestoring());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:feed_action_server_endpoint/"
+                    + "https%3A%2F%2Ffeed%2Egoogle%2Ecom%2Fpath"})
+    public void
+    testFeedActionServerEndpoint() {
+        Assert.assertEquals(
+                "https://feed.google.com/path", FeedConfiguration.getFeedActionServerEndpoint());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:feed_action_server_max_actions_per_request/1234"})
+    public void
+    testFeedActionServerMaxActionsPerRequest() {
+        Assert.assertEquals(1234, FeedConfiguration.getFeedActionServerMaxActionsPerRequest());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:feed_action_server_max_size_per_request/1234"})
+    public void
+    testFeedActionServerMaxSizePerRequest() {
+        Assert.assertEquals(1234, FeedConfiguration.getFeedActionServerMaxSizePerRequest());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:feed_action_server_method/PUT"})
+    public void
+    testFeedActionServerMethod() {
+        Assert.assertEquals("PUT", FeedConfiguration.getFeedActionServerMethod());
     }
 
     @Test
@@ -351,6 +401,18 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.CONSUME_SYNTHETIC_TOKENS, true));
         Assert.assertFalse(configuration.getValueOrDefault(
                 ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING, true));
+        Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_ENDPOINT_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.FEED_ACTION_SERVER_ENDPOINT, ""));
+        Assert.assertEquals(
+                (long) FeedConfiguration.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST_DEFAULT,
+                configuration.getValueOrDefault(
+                        ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST, 0));
+        Assert.assertEquals(
+                (long) FeedConfiguration.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST_DEFAULT,
+                configuration.getValueOrDefault(
+                        ConfigKey.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST, 0));
+        Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_METHOD_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.FEED_ACTION_SERVER_METHOD, ""));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_ENDPOINT_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_ENDPOINT, ""));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,

@@ -68,21 +68,6 @@ void SerializedNavigationEntryTestHelper::ExpectNavigationEquals(
 }
 
 // static
-SerializedNavigationEntry SerializedNavigationEntryTestHelper::CreateNavigation(
-    const std::string& virtual_url,
-    const std::string& title) {
-  SerializedNavigationEntry navigation;
-  navigation.index_ = 0;
-  navigation.referrer_url_ = GURL("http://www.referrer.com");
-  navigation.virtual_url_ = GURL(virtual_url);
-  navigation.title_ = base::UTF8ToUTF16(title);
-  navigation.encoded_page_state_ = "fake state";
-  navigation.timestamp_ = base::Time::Now();
-  navigation.http_status_code_ = 200;
-  return navigation;
-}
-
-// static
 SerializedNavigationEntry
 SerializedNavigationEntryTestHelper::CreateNavigationForTest() {
   SerializedNavigationEntry navigation;

@@ -152,10 +152,12 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
     PresentationCallback callback;
   };
 
-  bool NeedsVSync() const;
   void EnqueuePendingFrame(PresentationCallback callback);
   void CheckPendingFrames();
 
+  bool VSyncCallbackEnabled() const;
+
+  void StartOrStopVSyncThread();
   void HandleVSyncOnMainThread(base::TimeTicks vsync_time,
                                base::TimeDelta interval);
 
@@ -168,9 +170,12 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
 
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
+
   const VSyncCallback vsync_callback_;
-  bool vsync_callback_enabled_ = false;
+  mutable base::Lock vsync_callback_lock_;
+  bool GUARDED_BY(vsync_callback_lock_) vsync_callback_enabled_ = false;
   VSyncThreadWin* vsync_thread_ = nullptr;
+
   base::TimeTicks last_vsync_time_;
   base::TimeDelta last_vsync_interval_;
 

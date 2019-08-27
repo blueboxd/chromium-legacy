@@ -50,6 +50,16 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
     }
 
     /**
+     * Convenience method for both ending an immersive session and waiting until that session has
+     * actually ended.
+     */
+    public void endSessionOrFail() {
+        endSession();
+        pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession == null",
+                POLL_TIMEOUT_LONG_MS);
+    }
+
+    /**
      * VR-specific implementation of enterSessionWithUserGesture that includes a workaround for
      * receiving broadcasts late.
      *

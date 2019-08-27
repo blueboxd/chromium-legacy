@@ -145,12 +145,7 @@ int GetTouchId(const PlatformEvent& native_event) {
 
 PointerDetails GetTouchPointerDetailsFromNative(
     const PlatformEvent& native_event) {
-  return PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
-                        GetTouchIdFromXEvent(*native_event),
-                        GetTouchRadiusXFromXEvent(*native_event),
-                        GetTouchRadiusYFromXEvent(*native_event),
-                        GetTouchForceFromXEvent(*native_event),
-                        GetTouchAngleFromXEvent(*native_event));
+  return GetTouchPointerDetailsFromXEvent(*native_event);
 }
 
 bool GetScrollOffsets(const PlatformEvent& native_event,

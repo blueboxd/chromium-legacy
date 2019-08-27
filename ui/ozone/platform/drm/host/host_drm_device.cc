@@ -32,22 +32,9 @@ HostDrmDevice::~HostDrmDevice() {
     observer.OnGpuThreadRetired();
 }
 
-// TODO(rjkroege): Remove the need for this entry point.
-void HostDrmDevice::BlockingStartDrmDevice() {
-  // Wait until startup related tasks posted to this thread that must precede
-  // blocking.
-  base::RunLoop().RunUntilIdle();
-
-  OnDrmServiceStarted();
-}
-
 void HostDrmDevice::OnDrmServiceStarted() {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-
-  // This can be called multiple times in the course of single-threaded startup.
-  // Ignore invocations after we've started.
-  if (connected_)
-    return;
+  DCHECK(!connected_);
 
   connected_ = true;
 

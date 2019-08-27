@@ -64,6 +64,13 @@ VULKAN_INSTANCE_FUNCTIONS = [
     ]
   },
   {
+    'ifdef': 'defined(OS_FUCHSIA)',
+    'extension': 'VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME',
+    'functions': [
+      'vkCreateImagePipeSurfaceFUCHSIA',
+    ]
+  },
+  {
     # vkGetPhysicalDeviceFeatures2() is defined in Vulkan 1.1 or suffixed in the
     # VK_KHR_get_physical_device_properties2 extension.
     'min_api_version': 'VK_VERSION_1_1',
@@ -278,6 +285,10 @@ def GenerateHeaderFile(file):
 #endif
 
 #if defined(OS_FUCHSIA)
+#include <zircon/types.h>
+// <vulkan/vulkan_fuchsia.h> must be included after <zircon/types.h>
+#include <vulkan/vulkan_fuchsia.h>
+
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 

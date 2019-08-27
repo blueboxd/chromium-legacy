@@ -143,9 +143,9 @@ js_library("network_summary_item") {
 
 js_library("tether_connection_dialog") {
   deps = [
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
 }

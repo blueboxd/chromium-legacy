@@ -1091,7 +1091,7 @@ class MetaBuildWrapper(object):
       # Skip a few configs that need extra cleanup for now.
       # TODO(https://crbug.com/912946): Fix everything on all platforms and
       # enable check everywhere.
-      if is_android or is_cros or is_mac or is_msan:
+      if is_android or is_cros or is_mac:
         break
 
       # Skip a few existing violations that need to be cleaned up. Each of
@@ -1099,8 +1099,7 @@ class MetaBuildWrapper(object):
       # contents change. Do not add to this list.
       # TODO(https://crbug.com/912946): Remove this if statement.
       if (f == 'angledata/gl_cts/' or  # http://anglebug.com/3827
-          f == 'gen/chrome/browser/resources/media_router/extension/' or
-          f == 'gen/components/subresource_filter/tools/' or
+          (is_msan and f == 'instrumented_libraries_prebuilt/') or
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
           f.startswith('ppapi_nacl_tests_libs/') or

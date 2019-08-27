@@ -388,8 +388,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   // For mousewheel event listeners that have the target as the window and
   // a bound function name of "ssc_wheel" treat and no passive value default
   // passive to true. See crbug.com/501568.
-  if (RuntimeEnabledFeatures::SmoothScrollJSInterventionEnabled() &&
-      event_type == event_type_names::kMousewheel && ToLocalDOMWindow() &&
+  if (event_type == event_type_names::kMousewheel && ToLocalDOMWindow() &&
       event_listener && !options->hasPassive()) {
     JSBasedEventListener* v8_listener =
         DynamicTo<JSBasedEventListener>(event_listener);

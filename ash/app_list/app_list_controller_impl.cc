@@ -32,7 +32,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -142,7 +141,7 @@ AppListControllerImpl::AppListControllerImpl()
   shell->AddShellObserver(this);
   shell->overview_controller()->AddObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
-  VoiceInteractionController::Get()->AddLocalObserver(this);
+  AssistantState::Get()->AddObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
   if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
@@ -643,12 +642,12 @@ void AppListControllerImpl::OnKeyboardVisibilityChanged(const bool is_visible) {
     app_list_view->OnScreenKeyboardShown(is_visible);
 }
 
-void AppListControllerImpl::OnVoiceInteractionStatusChanged(
+void AppListControllerImpl::OnAssistantStatusChanged(
     mojom::VoiceInteractionState state) {
   UpdateAssistantVisibility();
 }
 
-void AppListControllerImpl::OnVoiceInteractionSettingsEnabled(bool enabled) {
+void AppListControllerImpl::OnAssistantSettingsEnabled(bool enabled) {
   UpdateAssistantVisibility();
 }
 
@@ -1175,17 +1174,13 @@ void AppListControllerImpl::NotifySearchResultsForLogging(
 }
 
 bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
-  if (!chromeos::features::IsAssistantEnabled())
-    return false;
-
   if (!Shell::Get()->assistant_controller()->IsAssistantReady())
     return false;
 
-  auto* controller = VoiceInteractionController::Get();
-  return controller->settings_enabled().value_or(false) &&
-         controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
-         controller->voice_interaction_state().value_or(
-             mojom::VoiceInteractionState::NOT_READY) !=
+  auto* state = AssistantState::Get();
+  return state->settings_enabled().value_or(false) &&
+         state->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
+         state->voice_interaction_state() !=
              mojom::VoiceInteractionState::NOT_READY;
 }
 
@@ -1447,7 +1442,7 @@ void AppListControllerImpl::Shutdown() {
   }
   shell->mru_window_tracker()->RemoveObserver(this);
   shell->window_tree_host_manager()->RemoveObserver(this);
-  VoiceInteractionController::Get()->RemoveLocalObserver(this);
+  AssistantState::Get()->RemoveObserver(this);
   keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   shell->overview_controller()->RemoveObserver(this);
   shell->RemoveShellObserver(this);

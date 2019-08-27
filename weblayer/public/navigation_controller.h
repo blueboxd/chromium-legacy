@@ -10,10 +10,15 @@
 class GURL;
 
 namespace weblayer {
+class NavigationObserver;
 
 class NavigationController {
  public:
   virtual ~NavigationController() {}
+
+  virtual void AddObserver(NavigationObserver* observer) = 0;
+
+  virtual void RemoveObserver(NavigationObserver* observer) = 0;
 
   virtual void Navigate(const GURL& url) = 0;
 
@@ -24,6 +29,17 @@ class NavigationController {
   virtual void Reload() = 0;
 
   virtual void Stop() = 0;
+
+  // Gets the number of entries in the back/forward list.
+  virtual int GetNavigationListSize() = 0;
+
+  // Gets the index of the current entry in the back/forward list, or -1 if
+  // there are no entries.
+  virtual int GetNavigationListCurrentIndex() = 0;
+
+  // Gets the URL of the given entry in the back/forward list, or an empty GURL
+  // if there is no navigation entry at that index.
+  virtual GURL GetNavigationEntryDisplayURL(int index) = 0;
 };
 
 }  // namespace weblayer

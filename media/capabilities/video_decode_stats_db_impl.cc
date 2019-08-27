@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -234,9 +235,20 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
     stats_proto.reset(new DecodeStatsProto());
   }
 
+  // Debug alias the various counts so we can get them in dumps to catch
+  // lingering crashes in http://crbug.com/982009
   uint64_t old_frames_decoded = stats_proto->frames_decoded();
   uint64_t old_frames_dropped = stats_proto->frames_dropped();
   uint64_t old_frames_power_efficient = stats_proto->frames_power_efficient();
+  uint64_t new_frames_decoded = new_entry.frames_decoded;
+  uint64_t new_frames_dropped = new_entry.frames_dropped;
+  uint64_t new_frames_power_efficient = new_entry.frames_power_efficient;
+  base::debug::Alias(&old_frames_decoded);
+  base::debug::Alias(&old_frames_dropped);
+  base::debug::Alias(&old_frames_power_efficient);
+  base::debug::Alias(&new_frames_decoded);
+  base::debug::Alias(&new_frames_dropped);
+  base::debug::Alias(&new_frames_power_efficient);
 
   const uint64_t kMaxFramesPerBuffer = GetMaxFramesPerBuffer();
   DCHECK_GT(kMaxFramesPerBuffer, 0UL);
@@ -268,6 +280,14 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
                                (1 - fill_ratio) * old_dropped_ratio;
     double agg_efficient_ratio = fill_ratio * new_entry_efficient_ratio +
                                  (1 - fill_ratio) * old_efficient_ratio;
+
+    // Debug alias the various counts so we can get them in dumps to catch
+    // lingering crashes in http://crbug.com/982009
+    base::debug::Alias(&fill_ratio);
+    base::debug::Alias(&old_dropped_ratio);
+    base::debug::Alias(&old_efficient_ratio);
+    base::debug::Alias(&agg_dropped_ratio);
+    base::debug::Alias(&agg_efficient_ratio);
 
     stats_proto->set_frames_decoded(kMaxFramesPerBuffer);
     stats_proto->set_frames_dropped(

@@ -269,28 +269,6 @@ void NGPhysicalFragment::Destroy() const {
   }
 }
 
-const ComputedStyle& NGPhysicalFragment::SlowEffectiveStyle() const {
-  switch (StyleVariant()) {
-    case NGStyleVariant::kStandard:
-      return layout_object_.StyleRef();
-    case NGStyleVariant::kFirstLine:
-      return layout_object_.FirstLineStyleRef();
-    case NGStyleVariant::kEllipsis:
-      DCHECK_EQ(Type(), kFragmentText);
-      DCHECK_EQ(StyleVariant(), NGStyleVariant::kEllipsis);
-      // The ellipsis is styled according to the line style.
-      // https://drafts.csswg.org/css-ui/#ellipsing-details
-      // Use first-line style if exists since most cases it is the first line.
-      // TODO(kojii): Should determine if it's really in the first line.
-      DCHECK(layout_object_.IsInline());
-      if (LayoutObject* block = layout_object_.ContainingBlock())
-        return block->FirstLineStyleRef();
-      return layout_object_.FirstLineStyleRef();
-  }
-  NOTREACHED();
-  return layout_object_.StyleRef();
-}
-
 Node* NGPhysicalFragment::GetNode() const {
   return !IsLineBox() ? layout_object_.GetNode() : nullptr;
 }

@@ -849,28 +849,10 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   EXPECT_TRUE(auth_instance().account_info()->is_managed);
 }
 
-class ArcAuthServiceChildAccountTest : public ArcAuthServiceTest {
- protected:
-  ArcAuthServiceChildAccountTest() = default;
-  ~ArcAuthServiceChildAccountTest() override = default;
-
-  void SetUpOnMainThread() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        arc::kAvailableForChildAccountFeature);
-    ArcAuthServiceTest::SetUpOnMainThread();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceChildAccountTest);
-};
-
 // Tests that when ARC requests account info for a child account, via
 // |RequestAccountInfoDeprecated| and Chrome supplies the info configured in
 // SetAccountAndProfile() above.
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest,
-                       ChildAccountFetchViaDeprecatedApi) {
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildAccountFetchViaDeprecatedApi) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
@@ -892,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest,
 
 // Tests that when ARC requests account info for a child account and
 // Chrome supplies the info configured in SetAccountAndProfile() above.
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildAccountFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
   EXPECT_TRUE(profile()->IsChild());
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
@@ -912,7 +894,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
 }
 
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildTransition) {
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildTransition) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
 
   ArcSessionManager* session = ArcSessionManager::Get();

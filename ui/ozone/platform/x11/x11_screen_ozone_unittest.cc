@@ -60,7 +60,7 @@ class X11ScreenOzoneTest : public testing::Test {
     window_manager_ = std::make_unique<X11WindowManagerOzone>();
     primary_display_ = std::make_unique<display::Display>(
         NextDisplayId(), kPrimaryDisplayBounds);
-    screen_.reset(new X11ScreenOzone(window_manager_.get()));
+    screen_ = std::make_unique<X11ScreenOzone>(window_manager_.get());
     UpdateDisplayListForTest({*primary_display_});
     screen_->AddObserver(&display_observer_);
   }

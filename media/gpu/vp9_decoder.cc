@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/vp9_decoder.h"
@@ -18,6 +19,7 @@ namespace media {
 namespace {
 std::vector<uint32_t> GetSpatialLayerFrameSize(
     const DecoderBuffer& decoder_buffer) {
+#if defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
   const uint32_t* cue_data =
       reinterpret_cast<const uint32_t*>(decoder_buffer.side_data());
   if (!cue_data)
@@ -33,6 +35,8 @@ std::vector<uint32_t> GetSpatialLayerFrameSize(
     return {};
   }
   return std::vector<uint32_t>(cue_data, cue_data + num_of_layers);
+#endif  // defined(ARCH_CPU_X86_FAMILY) && defined(OS_CHROMEOS)
+  return {};
 }
 }  // namespace
 

@@ -33,7 +33,7 @@ void OnboardingDialogView::Show() {
   ui::WindowAndroid* window_android =
       client_->web_contents()->GetTopLevelNativeWindow();
   java_object_.Reset(Java_OnboardingDialogBridge_create(
-      env, window_android->GetJavaObject(), reinterpret_cast<long>(this)));
+      env, window_android->GetJavaObject(), reinterpret_cast<intptr_t>(this)));
 
   base::string16 onboarding_title =
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE);

@@ -27,7 +27,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinImm32
 
   // Overridden from InputMethodBase:
   void OnFocus() override;
-  void ConfirmCompositionText() override;
+  void ConfirmCompositionText(bool reset_engine) override;
 
   // Overridden from InputMethod:
   bool OnUntranslatedIMEMessage(const MSG event,

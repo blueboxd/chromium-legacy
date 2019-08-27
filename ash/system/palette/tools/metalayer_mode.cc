@@ -4,8 +4,8 @@
 
 #include "ash/system/palette/tools/metalayer_mode.h"
 
+#include "ash/assistant/assistant_controller.h"
 #include "ash/public/cpp/toast_data.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -37,13 +37,14 @@ const int kMaxStrokeGapWhenWritingMs = 1000;
 
 MetalayerMode::MetalayerMode(Delegate* delegate) : CommonPaletteTool(delegate) {
   Shell::Get()->AddPreTargetHandler(this);
-  VoiceInteractionController::Get()->AddLocalObserver(this);
+  AssistantState::Get()->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 MetalayerMode::~MetalayerMode() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
-  VoiceInteractionController::Get()->RemoveLocalObserver(this);
+  if (AssistantState::Get())
+    AssistantState::Get()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
@@ -149,18 +150,18 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
   event->StopPropagation();
 }
 
-void MetalayerMode::OnVoiceInteractionStatusChanged(
+void MetalayerMode::OnAssistantStatusChanged(
     mojom::VoiceInteractionState state) {
   voice_interaction_state_ = state;
   UpdateState();
 }
 
-void MetalayerMode::OnVoiceInteractionSettingsEnabled(bool enabled) {
+void MetalayerMode::OnAssistantSettingsEnabled(bool enabled) {
   voice_interaction_enabled_ = enabled;
   UpdateState();
 }
 
-void MetalayerMode::OnVoiceInteractionContextEnabled(bool enabled) {
+void MetalayerMode::OnAssistantContextEnabled(bool enabled) {
   voice_interaction_context_enabled_ = enabled;
   UpdateState();
 }

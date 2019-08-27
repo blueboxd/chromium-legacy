@@ -7,35 +7,57 @@
 
 #include <string>
 
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+
+class PrefChangeRegistrar;
+class PrefService;
 
 namespace ash {
 
 // A checked observer which receives Assistant state change.
-class ASH_PUBLIC_EXPORT AssistantStateObserver : public base::CheckedObserver {
+class ASH_PUBLIC_EXPORT AssistantStateObserver
+    : public mojom::AssistantStateObserver,
+      public base::CheckedObserver {
  public:
   AssistantStateObserver() = default;
   ~AssistantStateObserver() override = default;
 
   virtual void OnAssistantConsentStatusChanged(int consent_status) {}
+  virtual void OnAssistantHotwordAlwaysOn(bool hotword_always_on) {}
+  virtual void OnAssistantLaunchWithMicOpen(bool launch_with_mic_open) {}
+  virtual void OnAssistantNotificationEnabled(bool notification_enabled) {}
+
+  // mojom::AssistantStateObserver:
+  void OnAssistantStatusChanged(
+      ash::mojom::VoiceInteractionState state) override {}
+  void OnAssistantSettingsEnabled(bool enabled) override {}
+  void OnAssistantContextEnabled(bool enabled) override {}
+  void OnAssistantHotwordEnabled(bool enabled) override {}
+  void OnAssistantFeatureAllowedChanged(
+      ash::mojom::AssistantAllowedState state) override {}
+  void OnArcPlayStoreEnabledChanged(bool enabled) override {}
+  void OnLocaleChanged(const std::string& locale) override {}
+  void OnLockedFullScreenStateChanged(bool enabled) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantStateObserver);
 };
 
 // Plain data class that holds Assistant related prefs and states. This is
-// shared by both the controller that controlls these values and client proxy
-// that caches these values locally. Please do not use this object directly,
-// most likely you want to use |AssistantStateProxy|.
+// shared by both the controller that controls these values and client proxy
+// that caches these values locally. Please do not use this object directly.
+// For ash/browser use |AssistantState| and for other threads use
+// |AssistantStateProxy|.
 class ASH_PUBLIC_EXPORT AssistantStateBase {
  public:
   AssistantStateBase();
   virtual ~AssistantStateBase();
 
-  const base::Optional<mojom::VoiceInteractionState>& voice_interaction_state()
-      const {
+  const mojom::VoiceInteractionState& voice_interaction_state() const {
     return voice_interaction_state_;
   }
 
@@ -83,13 +105,24 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
 
   void AddObserver(AssistantStateObserver* observer);
   void RemoveObserver(AssistantStateObserver* observer);
-  virtual void InitializeObserver(AssistantStateObserver* observer) {}
+
+  void RegisterPrefChanges(PrefService* pref_service);
 
  protected:
-  base::Optional<mojom::VoiceInteractionState> voice_interaction_state_;
+  void InitializeObserver(AssistantStateObserver* observer);
+  void InitializeObserverMojom(mojom::AssistantStateObserver* observer);
+
+  // Called when the related preferences are obtained from the pref service.
+  void UpdateConsentStatus();
+  void UpdateHotwordAlwaysOn();
+  void UpdateLaunchWithMicOpen();
+  void UpdateNotificationEnabled();
+
+  mojom::VoiceInteractionState voice_interaction_state_ =
+      mojom::VoiceInteractionState::NOT_READY;
 
   // TODO(b/138679823): Maybe remove Optional for preference values.
-  // Whether voice interaction is enabled in system settings. nullopt if the
+  // Whether the Assistant is enabled in system settings. nullopt if the
   // data is not available yet.
   base::Optional<bool> settings_enabled_;
 
@@ -113,7 +146,7 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   // Whether notification is enabled.
   base::Optional<bool> notification_enabled_;
 
-  // Whether voice interaction feature is allowed or disallowed for what reason.
+  // Whether the Assistant feature is allowed or disallowed for what reason.
   // nullopt if the data is not available yet.
   base::Optional<mojom::AssistantAllowedState> allowed_state_;
 
@@ -125,6 +158,9 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   // Whether locked full screen state is enabled. nullopt if the data is not
   // available yet.
   base::Optional<bool> locked_full_screen_enabled_;
+
+  // Observes user profile prefs for the Assistant.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::ObserverList<AssistantStateObserver> observers_;
 

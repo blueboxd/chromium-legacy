@@ -1269,6 +1269,44 @@ TEST_P(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
+TEST_P(GLCopyTextureCHROMIUMES3Test, SamplerStatePreserved) {
+  if (ShouldSkipTest())
+    return;
+
+  CopyType copy_type = GetParam();
+  // Setup the texture used for the extension invocation.
+  uint8_t pixels[1 * 4] = {255u, 0u, 0u, 255u};
+  CreateAndBindDestinationTextureAndFBO(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               pixels);
+
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);
+  if (copy_type == TexSubImage) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+  }
+
+  GLuint sampler_id;
+  glGenSamplers(1, &sampler_id);
+  glBindSampler(0, sampler_id);
+
+  if (copy_type == TexImage) {
+    glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
+                          GL_RGBA, GL_UNSIGNED_BYTE, false, false, true);
+  } else {
+    glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0, 0,
+                             0, 0, 0, 1, 1, false, false, true);
+  }
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  GLint bound_sampler = 0;
+  glGetIntegerv(GL_SAMPLER_BINDING, &bound_sampler);
+  EXPECT_EQ(sampler_id, static_cast<GLuint>(bound_sampler));
+
+  glDeleteSamplers(1, &sampler_id);
+}
+
 // Verify that invocation of the extension does not modify the bound
 // texture state.
 TEST_P(GLCopyTextureCHROMIUMTest, TextureStatePreserved) {

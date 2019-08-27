@@ -140,7 +140,7 @@ void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
   RecordInterceptAttempt(true);
 
   redirect_url_loader_ = std::make_unique<PreviewsLitePageRedirectURLLoader>(
-      tentative_resource_request,
+      browser_context, tentative_resource_request,
       base::BindOnce(
           &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
           base::Unretained(this), std::move(callback)));
@@ -156,7 +156,7 @@ void PreviewsLitePageURLLoaderInterceptor::CreateOriginalURLLoader(
     const GURL& original_url,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   redirect_url_loader_ = std::make_unique<PreviewsLitePageRedirectURLLoader>(
-      tentative_resource_request,
+      nullptr, tentative_resource_request,
       base::BindOnce(
           &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
           base::Unretained(this), std::move(callback)));

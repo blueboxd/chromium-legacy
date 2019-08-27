@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/printing/cups_proxy_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "content/public/browser/browser_context.h"
 #include "services/service_manager/public/cpp/connector.h"

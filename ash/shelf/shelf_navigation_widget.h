@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/shell_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
@@ -30,6 +31,7 @@ class ShelfView;
 // the back button.
 class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
                                          public TabletModeObserver,
+                                         public ShellObserver,
                                          public ui::ImplicitAnimationObserver {
  public:
   ShelfNavigationWidget(Shelf* shelf, ShelfView* shelf_view);
@@ -42,7 +44,7 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   // tablet mode is on.
   gfx::Size GetIdealSize() const;
 
-  // views::Widget
+  // views::Widget:
   bool OnNativeWidgetActivationChanged(bool active) override;
 
   // Getters for the back and home buttons.
@@ -57,15 +59,26 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   // focused when activating this widget.
   void SetDefaultLastFocusableChild(bool default_last_focusable_child);
 
-  // TabletModeObserver
+  // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
-  // ui::ImplicitAnimationObserver
+  // ShellObserver:
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+
+  // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
+
+  views::BoundsAnimator* get_bounds_animator_for_testing() {
+    return bounds_animator_.get();
+  }
 
  private:
   class Delegate;
+
+  // Updates this widget's layout according to current constraints: tablet
+  // mode and shelf orientation.
+  void UpdateLayout();
 
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;

@@ -533,13 +533,13 @@ AXTree::AXTree() {
   // TODO(chrishall): do we want to initialize all the time, on demand, or only
   //                  when feature flag is set?
   DCHECK(!language_detection_manager);
-  language_detection_manager.reset(new AXLanguageDetectionManager());
+  language_detection_manager = std::make_unique<AXLanguageDetectionManager>();
 }
 
 AXTree::AXTree(const AXTreeUpdate& initial_state) {
   CHECK(Unserialize(initial_state)) << error();
   DCHECK(!language_detection_manager);
-  language_detection_manager.reset(new AXLanguageDetectionManager());
+  language_detection_manager = std::make_unique<AXLanguageDetectionManager>();
 }
 
 AXTree::~AXTree() {

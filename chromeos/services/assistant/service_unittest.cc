@@ -8,7 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/voice_interaction_controller.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -26,6 +27,7 @@
 #include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/prefs/testing_pref_service.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -126,9 +128,8 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
 
 class FakeAssistantClient : public FakeClient {
  public:
-  explicit FakeAssistantClient(
-      ash::VoiceInteractionController* voice_interaction_controller)
-      : voice_interaction_controller_(voice_interaction_controller) {}
+  explicit FakeAssistantClient(ash::AssistantState* assistant_state)
+      : assistant_state_(assistant_state) {}
 
   mojom::ClientPtr CreateInterfacePtrAndBind() {
     mojom::ClientPtr ptr;
@@ -138,13 +139,13 @@ class FakeAssistantClient : public FakeClient {
 
  private:
   // FakeClient:
-  void RequestVoiceInteractionController(
-      mojo::PendingReceiver<ash::mojom::VoiceInteractionController> receiver)
+  void RequestAssistantStateController(
+      mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver)
       override {
-    voice_interaction_controller_->BindRequest(std::move(receiver));
+    assistant_state_->BindRequest(std::move(receiver));
   }
 
-  ash::VoiceInteractionController* const voice_interaction_controller_;
+  ash::AssistantState* const assistant_state_;
   mojo::Binding<mojom::Client> binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
@@ -202,13 +203,13 @@ class AssistantServiceTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
 
-    voice_interaction_controller()->NotifyArcPlayStoreEnabledChanged(true);
-    voice_interaction_controller()->NotifyContextEnabled(true);
-    voice_interaction_controller()->NotifyFeatureAllowed(
+    assistant_state()->NotifyArcPlayStoreEnabledChanged(true);
+    assistant_state()->NotifyContextEnabled(true);
+    assistant_state()->NotifyFeatureAllowed(
         ash::mojom::AssistantAllowedState::ALLOWED);
-    voice_interaction_controller()->NotifyHotwordEnabled(true);
-    voice_interaction_controller()->NotifyLocaleChanged("en_US");
-    voice_interaction_controller()->NotifySettingsEnabled(true);
+    assistant_state()->NotifyHotwordEnabled(true);
+    assistant_state()->NotifyLocaleChanged("en_US");
+    assistant_state()->NotifySettingsEnabled(true);
 
     auto fake_pref_connection = std::make_unique<FakePrefConnectionDelegate>();
     fake_pref_connection_ = fake_pref_connection.get();
@@ -251,9 +252,7 @@ class AssistantServiceTest : public testing::Test {
 
   FakeIdentityAccessor* identity_accessor() { return &fake_identity_accessor_; }
 
-  ash::VoiceInteractionController* voice_interaction_controller() {
-    return &voice_interaction_controller_;
-  }
+  ash::AssistantState* assistant_state() { return &assistant_state_; }
 
   base::TestMockTimeTaskRunner* mock_task_runner() {
     return mock_task_runner_.get();
@@ -265,10 +264,10 @@ class AssistantServiceTest : public testing::Test {
   std::unique_ptr<Service> service_;
   mojo::Remote<mojom::AssistantService> remote_service_;
 
-  ash::VoiceInteractionController voice_interaction_controller_;
+  ash::AssistantState assistant_state_;
 
   FakeIdentityAccessor fake_identity_accessor_;
-  FakeAssistantClient fake_assistant_client_{&voice_interaction_controller_};
+  FakeAssistantClient fake_assistant_client_{&assistant_state_};
   FakeDeviceActions fake_device_actions_;
 
   FakePrefConnectionDelegate* fake_pref_connection_;
@@ -333,7 +332,7 @@ TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::RUNNING);
 
-  voice_interaction_controller()->NotifySettingsEnabled(false);
+  assistant_state()->NotifySettingsEnabled(false);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(assistant_manager()->GetState(),
@@ -343,7 +342,7 @@ TEST_F(AssistantServiceTest, StopImmediatelyIfAssistantIsRunning) {
 TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
   // Test is set up as |State::STARTED|, turning settings off will trigger
   // logic to try to stop it.
-  voice_interaction_controller()->NotifySettingsEnabled(false);
+  assistant_state()->NotifySettingsEnabled(false);
 
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::STARTED);

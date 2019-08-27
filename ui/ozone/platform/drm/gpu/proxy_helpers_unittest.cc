@@ -19,7 +19,7 @@ namespace ui {
 class ProxyHelpersTest : public testing::Test {
  public:
   void SetUp() override {
-    drm_thread_.reset(new base::Thread("drm_thread"));
+    drm_thread_ = std::make_unique<base::Thread>("drm_thread");
     drm_thread_->Start();
   }
 
@@ -123,8 +123,7 @@ TEST_F(ProxyHelpersTest, PostTask) {
                      std::move(safe_value_callback)));
 
   // Test passing a move-only type.
-  move_type_.reset(new int);
-  *move_type_ = 50;
+  move_type_ = std::make_unique<int>(50);
 
   auto move_callback = base::BindOnce(&ProxyHelpersTest::MoveTypeCallback,
                                       base::Unretained(this));

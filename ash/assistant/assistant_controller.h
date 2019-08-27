@@ -16,16 +16,15 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
-#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
+#include "ash/assistant/assistant_state_controller.h"
 #include "ash/assistant/assistant_suggestions_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/assistant_view_delegate_impl.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -46,16 +45,16 @@ namespace ash {
 class AssistantAlarmTimerController;
 class AssistantInteractionController;
 class AssistantNotificationController;
-class AssistantPrefsController;
 class AssistantScreenContextController;
 class AssistantSetupController;
+class AssistantStateController;
 class AssistantSuggestionsController;
 class AssistantUiController;
 
 class ASH_EXPORT AssistantController
     : public chromeos::assistant::mojom::AssistantController,
       public AssistantControllerObserver,
-      public DefaultVoiceInteractionObserver,
+      public AssistantStateObserver,
       public mojom::AssistantVolumeControl,
       public chromeos::CrasAudioHandler::AudioObserver,
       public AccessibilityObserver,
@@ -117,8 +116,6 @@ class ASH_EXPORT AssistantController
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver);
 
-  AssistantStateBase* state() { return &assistant_prefs_controller_; }
-
   AssistantAlarmTimerController* alarm_timer_controller() {
     return &assistant_alarm_timer_controller_;
   }
@@ -158,9 +155,8 @@ class ASH_EXPORT AssistantController
   void NotifyOpeningUrl(const GURL& url, bool in_background, bool from_server);
   void NotifyUrlOpened(const GURL& url, bool from_server);
 
-  // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override;
+  // AssistantStateObserver:
+  void OnAssistantStatusChanged(mojom::VoiceInteractionState state) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // AssistantInterfaceBinder implementation:
@@ -176,6 +172,8 @@ class ASH_EXPORT AssistantController
   void BindScreenContextController(
       mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver)
       override;
+  void BindStateController(
+      mojo::PendingReceiver<mojom::AssistantStateController> receiver) override;
   void BindVolumeControl(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) override;
 
@@ -196,7 +194,7 @@ class ASH_EXPORT AssistantController
   AssistantAlarmTimerController assistant_alarm_timer_controller_;
   AssistantInteractionController assistant_interaction_controller_;
   AssistantNotificationController assistant_notification_controller_;
-  AssistantPrefsController assistant_prefs_controller_;
+  AssistantStateController assistant_state_controller_;
   AssistantScreenContextController assistant_screen_context_controller_;
   AssistantSetupController assistant_setup_controller_;
   AssistantSuggestionsController assistant_suggestions_controller_;

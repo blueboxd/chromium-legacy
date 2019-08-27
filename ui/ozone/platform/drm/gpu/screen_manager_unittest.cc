@@ -60,8 +60,8 @@ class ScreenManagerTest : public testing::Test {
   void SetUp() override {
     auto gbm = std::make_unique<ui::MockGbmDevice>();
     drm_ = new ui::MockDrmDevice(std::move(gbm));
-    device_manager_.reset(new ui::DrmDeviceManager(nullptr));
-    screen_manager_.reset(new ui::ScreenManager());
+    device_manager_ = std::make_unique<ui::DrmDeviceManager>(nullptr);
+    screen_manager_ = std::make_unique<ui::ScreenManager>();
   }
   void TearDown() override {
     screen_manager_.reset();

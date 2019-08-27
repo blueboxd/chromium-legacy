@@ -440,6 +440,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("launchPublicSession",
               &SigninScreenHandler::HandleLaunchPublicSession);
+  AddCallback("launchSAMLPublicSession",
+              &SigninScreenHandler::HandleLaunchSAMLPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
   AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
@@ -1109,6 +1111,14 @@ void SigninScreenHandler::HandleLaunchIncognito() {
   UserContext context(user_manager::USER_TYPE_GUEST, EmptyAccountId());
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());
+}
+
+void SigninScreenHandler::HandleLaunchSAMLPublicSession(
+    const std::string& email) {
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      email, std::string() /* id */, AccountType::UNKNOWN);
+  SigninScreenHandler::HandleLaunchPublicSession(account_id, std::string(),
+                                                 std::string());
 }
 
 void SigninScreenHandler::HandleLaunchPublicSession(

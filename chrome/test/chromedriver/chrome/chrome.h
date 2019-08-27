@@ -21,6 +21,12 @@ class Chrome {
     kTab,
   };
 
+  enum class PermissionState {
+    kGranted,
+    kDenied,
+    kPrompt,
+  };
+
   virtual ~Chrome() {}
 
   virtual Status GetAsDesktop(ChromeDesktopImpl** desktop) = 0;
@@ -88,6 +94,13 @@ class Chrome {
 
   // Enables acceptInsecureCerts mode for the browser.
   virtual Status SetAcceptInsecureCerts() = 0;
+
+  // Requests altering permission setting for given permission.
+  virtual Status SetPermission(
+      std::unique_ptr<base::DictionaryValue> permission_descriptor,
+      PermissionState desired_state,
+      bool one_realm,
+      WebView* current_view) = 0;
 
   // Get the operation system where Chrome is running.
   virtual std::string GetOperatingSystemName() = 0;

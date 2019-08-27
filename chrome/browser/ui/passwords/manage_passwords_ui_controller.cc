@@ -85,7 +85,6 @@ const password_manager::InteractionsStats* FindStatsByUsername(
 ManagePasswordsUIController::ManagePasswordsUIController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      bubble_status_(NOT_SHOWN),
       are_passwords_revealed_when_next_bubble_is_opened_(false) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
@@ -101,7 +100,7 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
     std::unique_ptr<PasswordFormManagerForUI> form_manager) {
   // If the save bubble is already shown (possibly manual fallback for saving)
   // then ignore the changes because the user may interact with it right now.
-  if (bubble_status_ == SHOWN &&
+  if (bubble_status_ == BubbleStatus::SHOWN &&
       GetState() == password_manager::ui::PENDING_PASSWORD_STATE)
     return;
   bool show_bubble = !form_manager->IsBlacklisted();
@@ -117,7 +116,7 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
       show_bubble = false;
   }
   if (show_bubble)
-    bubble_status_ = SHOULD_POP_UP;
+    bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -126,7 +125,7 @@ void ManagePasswordsUIController::OnUpdatePasswordSubmitted(
   DestroyAccountChooser();
   save_fallback_timer_.Stop();
   passwords_data_.OnUpdatePassword(std::move(form_manager));
-  bubble_status_ = SHOULD_POP_UP;
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -155,7 +154,7 @@ void ManagePasswordsUIController::OnHideManualFallbackForSaving() {
     return;
   }
   // Don't hide the fallback if the bubble is open.
-  if (bubble_status_ == SHOWN || bubble_status_ == SHOWN_PENDING_ICON_UPDATE)
+  if (IsShowingBubble())
     return;
 
   save_fallback_timer_.Stop();
@@ -200,7 +199,7 @@ void ManagePasswordsUIController::OnAutoSignin(
   DCHECK(!local_forms.empty());
   DestroyAccountChooser();
   passwords_data_.OnAutoSignin(std::move(local_forms), origin);
-  bubble_status_ = SHOULD_POP_UP;
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -219,7 +218,7 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
   DestroyAccountChooser();
   save_fallback_timer_.Stop();
   passwords_data_.OnAutomaticPasswordSave(std::move(form_manager));
-  bubble_status_ = SHOULD_POP_UP;
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -236,9 +235,9 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
     passwords_data_.OnPasswordAutofilled(password_form_map, origin,
                                          federated_matches);
     // Don't close the existing bubble. Update the icon later.
-    if (bubble_status_ == SHOWN)
-      bubble_status_ = SHOWN_PENDING_ICON_UPDATE;
-    if (bubble_status_ != SHOWN_PENDING_ICON_UPDATE)
+    if (bubble_status_ == BubbleStatus::SHOWN)
+      bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
+    if (bubble_status_ != BubbleStatus::SHOWN_PENDING_ICON_UPDATE)
       UpdateBubbleAndIconVisibility();
   }
 }
@@ -247,9 +246,15 @@ void ManagePasswordsUIController::OnCredentialLeak(
     const password_manager::CredentialLeakType leak_type,
     const GURL& origin) {
   // Existing dialog shouldn't be closed.
-  if (dialog_controller_) {
+  if (dialog_controller_)
     return;
-  }
+
+  // Hide the manage passwords bubble if currently shown.
+  if (IsShowingBubble())
+    TabDialogs::FromWebContents(web_contents())->HideManagePasswordsBubble();
+  else
+    ClearPopUpFlagForBubble();
+
   auto* raw_controller =
       new CredentialLeakDialogControllerImpl(this, leak_type, origin);
   dialog_controller_.reset(raw_controller);
@@ -359,12 +364,13 @@ bool ManagePasswordsUIController::BubbleIsManualFallbackForSaving() const {
 
 void ManagePasswordsUIController::OnBubbleShown() {
   are_passwords_revealed_when_next_bubble_is_opened_ = false;
-  bubble_status_ = SHOWN;
+  bubble_status_ = BubbleStatus::SHOWN;
 }
 
 void ManagePasswordsUIController::OnBubbleHidden() {
-  bool update_icon = (bubble_status_ == SHOWN_PENDING_ICON_UPDATE);
-  bubble_status_ = NOT_SHOWN;
+  bool update_icon =
+      (bubble_status_ == BubbleStatus::SHOWN_PENDING_ICON_UPDATE);
+  bubble_status_ = BubbleStatus::NOT_SHOWN;
   if (GetState() == password_manager::ui::CONFIRMATION_STATE ||
       GetState() == password_manager::ui::AUTO_SIGNIN_STATE) {
     passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
@@ -430,7 +436,7 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   // The icon is to be updated after the bubble (either "Save password" or "Sign
   // in to Chrome") is closed.
-  bubble_status_ = SHOWN_PENDING_ICON_UPDATE;
+  bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
 }
 
 void ManagePasswordsUIController::ChooseCredential(
@@ -565,8 +571,7 @@ void ManagePasswordsUIController::DidFinishNavigation(
 
   // Keep the state if the bubble is currently open or the fallback for saving
   // should be still available.
-  if (bubble_status_ == SHOWN || bubble_status_ == SHOWN_PENDING_ICON_UPDATE ||
-      save_fallback_timer_.IsRunning()) {
+  if (IsShowingBubble() || save_fallback_timer_.IsRunning()) {
     return;
   }
 
@@ -601,7 +606,7 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
 
 void ManagePasswordsUIController::ClearPopUpFlagForBubble() {
   if (ShouldBubblePopUp())
-    bubble_status_ = NOT_SHOWN;
+    bubble_status_ = BubbleStatus::NOT_SHOWN;
 }
 
 void ManagePasswordsUIController::DestroyAccountChooser() {
@@ -638,7 +643,7 @@ void ManagePasswordsUIController::ReopenBubbleAfterAuth(
     return;
   if (auth_is_successful)
     are_passwords_revealed_when_next_bubble_is_opened_ = true;
-  bubble_status_ = SHOULD_POP_UP_AFTER_REAUTH;
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP_AFTER_REAUTH;
   UpdateBubbleAndIconVisibility();
 }
 

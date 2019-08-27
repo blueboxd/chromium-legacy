@@ -53,8 +53,9 @@ TEST_F(LocalFrameBackForwardCacheTest, EvictionOnV8ExecutionAtMicrotask) {
 
   LocalFrame* frame = &page_holder->GetFrame();
 
-  // Freeze the frame.
+  // Freeze the frame and hook eviction.
   frame->SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
+  frame->HookBackForwardCacheEviction();
 
   auto* script_state = ToScriptStateForMainWorld(frame);
   ScriptState::Scope scope(script_state);

@@ -133,6 +133,9 @@ def DownloadAndUnpackFromCloudStorage(url, output_dir):
 
 
 def DownloadSdkBootImages(sdk_hash, boot_image_names):
+  if not boot_image_names:
+    return
+
   all_device_types = ['generic', 'qemu']
   all_archs = ['x64', 'arm64']
 
@@ -168,14 +171,11 @@ def main():
     action='store_true',
     help='Enable debug-level logging.')
   parser.add_argument('--boot-images',
-    type=str,
-    required=True,
+    type=str, nargs='?',
     help='List of boot images to download, represented as a comma separated '
-         'list. Wildcards are allowed.')
+         'list. Wildcards are allowed. '
+         'If omitted, no boot images will be downloaded.')
   args = parser.parse_args()
-
-  if not args.boot_images:
-    raise Exception('--boot-images must be non-empty.')
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
 

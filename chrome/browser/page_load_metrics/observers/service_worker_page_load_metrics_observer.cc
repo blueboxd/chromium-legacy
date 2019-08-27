@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -124,13 +125,6 @@ const char kHistogramNoServiceWorkerLoadSearch[] =
 
 namespace {
 
-bool IsServiceWorkerControlled(
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  return (info.main_frame_metadata.behavior_flags &
-          blink::WebLoadingBehaviorFlag::
-              kWebLoadingBehaviorServiceWorkerControlled) != 0;
-}
-
 bool IsInboxSite(const GURL& url) {
   return url.host_piece() == "inbox.google.com";
 }
@@ -158,9 +152,8 @@ ServiceWorkerPageLoadMetricsObserver::OnCommit(
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnFirstPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (!IsServiceWorkerControlled(extra_info) ||
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (!IsServiceWorkerControlled() ||
       !page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_paint, GetDelegate())) {
     return;
@@ -170,12 +163,11 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstPaintInPage(
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!IsServiceWorkerControlled(info)) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (!IsServiceWorkerControlled()) {
     if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
             timing.paint_timing->first_contentful_paint, GetDelegate()) ||
-        !page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
+        !page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
       return;
     }
     PAGE_LOAD_HISTOGRAM(
@@ -214,7 +206,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     }
   }
 
-  if (IsInboxSite(info.url)) {
+  if (IsInboxSite(GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstContentfulPaintInbox,
         timing.paint_timing->first_contentful_paint.value());
@@ -222,7 +214,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
         timing.paint_timing->first_contentful_paint.value() -
             timing.parse_timing->parse_start.value());
-  } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
+  } else if (page_load_metrics::IsGoogleSearchResultUrl(
+                 GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstContentfulPaintSearch,
         timing.paint_timing->first_contentful_paint.value());
@@ -235,14 +228,13 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 
 void ServiceWorkerPageLoadMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
-        const page_load_metrics::mojom::PageLoadTiming& timing,
-        const page_load_metrics::PageLoadExtraInfo& info) {
+        const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     return;
   }
-  if (!IsServiceWorkerControlled(info)) {
-    if (!page_load_metrics::IsGoogleSearchResultUrl(info.url))
+  if (!IsServiceWorkerControlled()) {
+    if (!page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl()))
       return;
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramNoServiceWorkerFirstMeaningfulPaintSearch,
@@ -261,7 +253,7 @@ void ServiceWorkerPageLoadMetricsObserver::
       timing.paint_timing->first_meaningful_paint.value() -
           timing.parse_timing->parse_start.value());
 
-  if (IsInboxSite(info.url)) {
+  if (IsInboxSite(GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstMeaningfulPaintInbox,
         timing.paint_timing->first_meaningful_paint.value());
@@ -269,7 +261,8 @@ void ServiceWorkerPageLoadMetricsObserver::
         internal::kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox,
         timing.paint_timing->first_meaningful_paint.value() -
             timing.parse_timing->parse_start.value());
-  } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
+  } else if (page_load_metrics::IsGoogleSearchResultUrl(
+                 GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstMeaningfulPaintSearch,
         timing.paint_timing->first_meaningful_paint.value());
@@ -281,15 +274,14 @@ void ServiceWorkerPageLoadMetricsObserver::
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->dom_content_loaded_event_start,
           GetDelegate())) {
     return;
   }
-  if (!IsServiceWorkerControlled(info)) {
-    if (!page_load_metrics::IsGoogleSearchResultUrl(info.url))
+  if (!IsServiceWorkerControlled()) {
+    if (!page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl()))
       return;
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramNoServiceWorkerDomContentLoadedSearch,
@@ -299,11 +291,12 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramServiceWorkerDomContentLoaded,
       timing.document_timing->dom_content_loaded_event_start.value());
-  if (IsInboxSite(info.url)) {
+  if (IsInboxSite(GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerDomContentLoadedInbox,
         timing.document_timing->dom_content_loaded_event_start.value());
-  } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
+  } else if (page_load_metrics::IsGoogleSearchResultUrl(
+                 GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerDomContentLoadedSearch,
         timing.document_timing->dom_content_loaded_event_start.value());
@@ -311,13 +304,12 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->load_event_start, GetDelegate()))
     return;
-  if (!IsServiceWorkerControlled(info)) {
-    if (!page_load_metrics::IsGoogleSearchResultUrl(info.url))
+  if (!IsServiceWorkerControlled()) {
+    if (!page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl()))
       return;
     PAGE_LOAD_HISTOGRAM(internal::kHistogramNoServiceWorkerLoadSearch,
                         timing.document_timing->load_event_start.value());
@@ -325,19 +317,19 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoad,
                       timing.document_timing->load_event_start.value());
-  if (IsInboxSite(info.url)) {
+  if (IsInboxSite(GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
                         timing.document_timing->load_event_start.value());
-  } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
+  } else if (page_load_metrics::IsGoogleSearchResultUrl(
+                 GetDelegate().GetUrl())) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadSearch,
                         timing.document_timing->load_event_start.value());
   }
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnFirstInputInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!IsServiceWorkerControlled(info))
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (!IsServiceWorkerControlled())
     return;
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.interactive_timing->first_input_timestamp, GetDelegate())) {
@@ -353,9 +345,8 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstInputInPage(
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!IsServiceWorkerControlled(info))
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (!IsServiceWorkerControlled())
     return;
 
   // TODO(falken): It may be cleaner to record page transition in OnCommit() but
@@ -373,10 +364,11 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStart,
                         timing.parse_timing->parse_start.value());
 
-    if (IsInboxSite(info.url)) {
+    if (IsInboxSite(GetDelegate().GetUrl())) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStartInbox,
                           timing.parse_timing->parse_start.value());
-    } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
+    } else if (page_load_metrics::IsGoogleSearchResultUrl(
+                   GetDelegate().GetUrl())) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerParseStartSearch,
                           timing.parse_timing->parse_start.value());
     }
@@ -398,11 +390,16 @@ void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
 
 void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     content::RenderFrameHost* rfh,
-    int behavior_flags,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!IsServiceWorkerControlled(info) || logged_ukm_event_)
+    int behavior_flags) {
+  if (!IsServiceWorkerControlled() || logged_ukm_event_)
     return;
-  ukm::builders::PageLoad_ServiceWorkerControlled(info.source_id)
+  ukm::builders::PageLoad_ServiceWorkerControlled(GetDelegate().GetSourceId())
       .Record(ukm::UkmRecorder::Get());
   logged_ukm_event_ = true;
+}
+
+bool ServiceWorkerPageLoadMetricsObserver::IsServiceWorkerControlled() {
+  return (GetDelegate().GetMainFrameMetadata().behavior_flags &
+          blink::WebLoadingBehaviorFlag::
+              kWebLoadingBehaviorServiceWorkerControlled) != 0;
 }

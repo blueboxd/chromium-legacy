@@ -19,17 +19,6 @@
 
 namespace previews {
 
-namespace {
-
-void RecordPageLoadExtraInfoMetrics(
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  UMA_HISTOGRAM_ENUMERATION(
-      internal::kHistogramOfflinePreviewsPageEndReason, info.page_end_reason,
-      page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
-}
-
-}  // namespace
-
 namespace internal {
 
 const char kHistogramOfflinePreviewsDOMContentLoadedEventFired[] =
@@ -80,21 +69,18 @@ OfflinePagePreviewsPageLoadMetricsObserver::ShouldObserveMimeType(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 OfflinePagePreviewsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordPageLoadExtraInfoMetrics(info);
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  RecordPageLoadMetrics();
   return STOP_OBSERVING;
 }
 
 void OfflinePagePreviewsPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordPageLoadExtraInfoMetrics(info);
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  RecordPageLoadMetrics();
 }
 
 void OfflinePagePreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->dom_content_loaded_event_start,
           GetDelegate())) {
@@ -106,8 +92,7 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnDomContentLoadedEventStart(
 }
 
 void OfflinePagePreviewsPageLoadMetricsObserver::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->load_event_start, GetDelegate())) {
     return;
@@ -117,8 +102,7 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnLoadEventStart(
 }
 
 void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstLayout(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.document_timing->first_layout, GetDelegate())) {
     return;
@@ -128,8 +112,7 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstLayout(
 }
 
 void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->first_contentful_paint, GetDelegate())) {
     return;
@@ -139,8 +122,7 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
 }
 
 void OfflinePagePreviewsPageLoadMetricsObserver::OnParseStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_start, GetDelegate())) {
     return;
@@ -158,6 +140,13 @@ bool OfflinePagePreviewsPageLoadMetricsObserver::IsOfflinePreview(
 #else
   return false;
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
+}
+
+void OfflinePagePreviewsPageLoadMetricsObserver::RecordPageLoadMetrics() {
+  UMA_HISTOGRAM_ENUMERATION(
+      internal::kHistogramOfflinePreviewsPageEndReason,
+      GetDelegate().GetPageEndReason(),
+      page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
 }
 
 }  // namespace previews

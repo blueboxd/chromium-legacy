@@ -230,7 +230,7 @@ Clipboard* Clipboard::Create() {
 // ClipboardWin implementation.
 ClipboardWin::ClipboardWin() {
   if (base::MessageLoopCurrentForUI::IsSet())
-    clipboard_owner_.reset(new base::win::MessageWindow());
+    clipboard_owner_ = std::make_unique<base::win::MessageWindow>();
 }
 
 ClipboardWin::~ClipboardWin() {

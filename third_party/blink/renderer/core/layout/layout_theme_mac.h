@@ -90,7 +90,7 @@ class LayoutThemeMac final : public LayoutTheme {
   // Returns the duration of the animation for the progress bar.
   base::TimeDelta AnimationDurationForProgressBar() const override;
 
-  Color SystemColor(CSSValueID) const override;
+  Color SystemColor(CSSValueID, WebColorScheme color_scheme) const override;
 
   bool SupportsSelectionForegroundColors() const override { return false; }
 

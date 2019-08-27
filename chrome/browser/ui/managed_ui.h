@@ -26,9 +26,15 @@ bool ShouldDisplayManagedUi(Profile* profile);
 // The label for the App Menu item for Managed UI.
 base::string16 GetManagedUiMenuItemLabel(Profile* profile);
 
-// The label for the WebUI footnote for Managed UI. These strings contain HTML
-// for an <a> element.
+// The label for the WebUI footnote for Managed UI indicating that the browser
+// is managed. These strings contain HTML for an <a> element.
 base::string16 GetManagedUiWebUILabel(Profile* profile);
+
+#if defined(OS_CHROMEOS)
+// The label for the WebUI footnote for Managed UI indicating that the device
+// is mananged. These strings contain HTML for an <a> element.
+base::string16 GetDeviceManagedUiWebUILabel(Profile* profile);
+#endif
 
 }  // namespace chrome
 

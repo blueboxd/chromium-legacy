@@ -118,6 +118,10 @@ class ExtensionAction {
   void SetBadgeText(int tab_id, const std::string& text) {
     SetValue(&badge_text_, tab_id, text);
   }
+
+  // Clear this action's badge text on a specific tab.
+  void ClearBadgeText(int tab_id) { badge_text_.erase(tab_id); }
+
   // Get the badge text that has been set using SetBadgeText for a tab, or the
   // default if no badge text was set.
   std::string GetExplicitlySetBadgeText(int tab_id) const {
@@ -153,6 +157,8 @@ class ExtensionAction {
   int GetDNRActionCount(int tab_id) const {
     return GetValue(&dnr_action_count_, tab_id);
   }
+  // Clear this ExtensionAction's DNR matched action count for all tabs.
+  void ClearDNRActionCountForAllTabs() { dnr_action_count_.clear(); }
 
   // Get the badge text displayed for a tab, calculated based on both
   // |badge_text_| and |dnr_action_count_|. Returns in order of priority:

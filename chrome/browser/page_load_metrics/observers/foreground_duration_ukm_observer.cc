@@ -39,16 +39,14 @@ ForegroundDurationUKMObserver::OnCommit(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ForegroundDurationUKMObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordUkmIfInForeground(base::TimeTicks::Now());
   return CONTINUE_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ForegroundDurationUKMObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordUkmIfInForeground(base::TimeTicks::Now());
   return CONTINUE_OBSERVING;
 }
@@ -62,16 +60,15 @@ ForegroundDurationUKMObserver::OnShown() {
 }
 
 void ForegroundDurationUKMObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // If we have a page_end_time, use it as our end time, else fall back to the
   // current time. Note that we expect page_end_time.has_value() to always be
   // true in OnComplete (the PageLoadTracker destructor is supposed to guarantee
   // it), but we use Now() as a graceful fallback just in case.
-  base::TimeTicks end_time =
-      info.page_end_time.has_value()
-          ? info.navigation_start + info.page_end_time.value()
-          : base::TimeTicks::Now();
+  base::TimeTicks end_time = GetDelegate().GetPageEndTime().has_value()
+                                 ? GetDelegate().GetNavigationStart() +
+                                       GetDelegate().GetPageEndTime().value()
+                                 : base::TimeTicks::Now();
   RecordUkmIfInForeground(end_time);
 }
 

@@ -356,7 +356,8 @@ void XRCompositorCommon::GetFrameData(
 }
 
 void XRCompositorCommon::SetInputSourceButtonListener(
-    mojom::XRInputSourceButtonListenerAssociatedPtrInfo input_listener_info) {
+    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo
+        input_listener_info) {
   DCHECK(UsesInputEventing());
   input_event_listener_.Bind(std::move(input_listener_info));
 }

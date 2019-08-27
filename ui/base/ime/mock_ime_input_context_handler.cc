@@ -72,7 +72,7 @@ InputMethod* MockIMEInputContextHandler::GetInputMethod() {
   return nullptr;
 }
 
-void MockIMEInputContextHandler::ConfirmCompositionText() {
+void MockIMEInputContextHandler::ConfirmCompositionText(bool reset_engine) {
   if (!HasCompositionText())
     return;
 

@@ -99,6 +99,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                  const LogicalOffset,
                  const LayoutInline* = nullptr);
 
+  void AddBreakToken(scoped_refptr<const NGBreakToken>);
+
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
                                    const NGLogicalStaticPosition&,
                                    const LayoutInline* inline_container);

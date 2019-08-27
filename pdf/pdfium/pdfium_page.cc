@@ -251,29 +251,30 @@ FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
   return text_page();
 }
 
-void PDFiumPage::GetTextRunInfo(int start_char_index,
-                                uint32_t* out_len,
-                                double* out_font_size,
-                                pp::FloatRect* out_bounds) {
+void PDFiumPage::GetTextRunInfo(
+    int start_char_index,
+    PP_PrivateAccessibilityTextRunInfo* text_run_info) {
   if (start_char_index < 0) {
-    *out_len = 0;
-    *out_font_size = 0;
-    *out_bounds = pp::FloatRect();
+    text_run_info->len = 0;
+    text_run_info->font_size = 0;
+    text_run_info->bounds = pp::FloatRect();
+    text_run_info->direction = PP_PRIVATEDIRECTION_NONE;
     return;
   }
-
   FPDF_PAGE page = GetPage();
   FPDF_TEXTPAGE text_page = GetTextPage();
   int chars_count = FPDFText_CountChars(text_page);
 
-  int char_index = GetFirstNonUnicodeWhiteSpaceCharIndex(
+  int actual_start_char_index = GetFirstNonUnicodeWhiteSpaceCharIndex(
       text_page, start_char_index, chars_count);
-  if (char_index >= chars_count) {
-    *out_len = 0;
-    *out_font_size = 0;
-    *out_bounds = pp::FloatRect();
+  if (actual_start_char_index >= chars_count) {
+    text_run_info->len = 0;
+    text_run_info->font_size = 0;
+    text_run_info->bounds = pp::FloatRect();
+    text_run_info->direction = PP_PRIVATEDIRECTION_NONE;
     return;
   }
+  int char_index = actual_start_char_index;
 
   pp::FloatRect start_char_rect =
       GetFloatCharRectInPixels(page, text_page, char_index);
@@ -376,9 +377,16 @@ void PDFiumPage::GetTextRunInfo(int start_char_index,
     text_run_font_size = estimated_font_size;
   }
 
-  *out_len = char_index - start_char_index;
-  *out_font_size = text_run_font_size;
-  *out_bounds = text_run_bounds;
+  // Infer text direction from first and last character of the text run. We
+  // can't base our decision on the character direction, since a character of a
+  // RTL language will have an angle of 0 when not rotated, just like a
+  // character in a LTR language.
+  text_run_info->direction = char_index - actual_start_char_index > 1
+                                 ? GetDirectionFromAngle(text_run_angle)
+                                 : PP_PRIVATEDIRECTION_NONE;
+  text_run_info->len = char_index - start_char_index;
+  text_run_info->font_size = text_run_font_size;
+  text_run_info->bounds = text_run_bounds;
 }
 
 uint32_t PDFiumPage::GetCharUnicode(int char_index) {

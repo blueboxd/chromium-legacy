@@ -154,10 +154,6 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'HeadlessInvalidCertificateTest.*',
     # Similar issues with HeadlessChromeDriverTest.
     'HeadlessChromeDriverTest.*',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2277
-    # RemoteBrowserTest requires extra setup. TODO(johnchen@chromium.org):
-    # Modify the test so it runs correctly as isolated test.
-    'RemoteBrowserTest.*',
     # Flaky: https://crbug.com/899919
     'SessionHandlingTest.testGetSessions',
     # Flaky due to occasional timeout in starting Chrome
@@ -190,6 +186,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testWindowMaximize',
         'ChromeDriverTest.testWindowMinimize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
+        # Connecting to running browser is not supported on Android.
         'RemoteBrowserTest.*',
         # Don't enable perf testing on Android yet.
         'PerfTest.*',
@@ -2046,6 +2043,263 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals('test', report['type']);
     self.assertEquals('test report message', report['body']['message']);
 
+  def GetPermissionWithQuery(self, query):
+    script = """
+        let query = arguments[0];
+        let done = arguments[1];
+        console.log(done);
+        navigator.permissions.query(query)
+          .then(function(value) {
+              done({ status: 'success', value: value && value.state });
+            }, function(error) {
+              done({ status: 'error', value: error && error.message });
+            });
+    """
+    return self._driver.ExecuteAsyncScript(script, query)
+
+  def GetPermission(self, name):
+    return self.GetPermissionWithQuery({ 'name': name })
+
+  def CheckPermission(self, response, expected_state):
+    self.assertEquals(response['status'], 'success')
+    self.assertEquals(response['value'], expected_state)
+
+  def testPermissionsOpaqueOriginsThrowError(self):
+    """ Confirms that opaque origins cannot have overrides. """
+    self._driver.Load("about:blank")
+    self.assertRaises(chromedriver.InvalidArgument,
+      self._driver.SetPermission, {'descriptor': { 'name': 'geolocation' },
+        'state': 'denied'})
+
+  def testPermissionStates(self):
+    """ Confirms that denied, granted, and prompt can be set. """
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'geolocation' },
+      'state': 'denied'
+    })
+    self.CheckPermission(self.GetPermission('geolocation'), 'denied')
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'geolocation' },
+      'state': 'granted'
+    })
+    self.CheckPermission(self.GetPermission('geolocation'), 'granted')
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'geolocation' },
+      'state': 'prompt'
+    })
+    self.CheckPermission(self.GetPermission('geolocation'), 'prompt')
+
+  def testSettingPermissionDoesNotAffectOthers(self):
+    """ Confirm permissions do not affect unset permissions. """
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    response = self.GetPermission('geolocation')
+    self.assertEquals(response['status'], 'success')
+    status = response['value']
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'background-sync' },
+      'state': 'denied'
+    })
+    self.CheckPermission(self.GetPermission('background-sync'), 'denied')
+    self.CheckPermission(self.GetPermission('geolocation'), status)
+
+  def testMultiplePermissions(self):
+    """ Confirms multiple custom permissions can be set simultaneously. """
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'geolocation' },
+      'state': 'denied'
+    })
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'background-fetch' },
+      'state': 'prompt'
+    })
+    self._driver.SetPermission({
+      'descriptor': { 'name': 'background-sync' },
+      'state': 'granted'
+    })
+    self.CheckPermission(self.GetPermission('geolocation'), 'denied')
+    self.CheckPermission(self.GetPermission('background-fetch'), 'prompt')
+    self.CheckPermission(self.GetPermission('background-sync'), 'granted')
+
+  def testSensorPermissions(self):
+    """ Tests sensor permissions.
+
+    Currently, Chrome controls all sensor permissions (accelerometer,
+    magnetometer, gyroscope, ambient-light-sensor) with the 'sensors'
+    permission. This test demonstrates this internal implementation detail so
+    developers are aware of this behavior.
+    """
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    parameters = {
+      'descriptor': { 'name': 'magnetometer' },
+      'state': 'granted'
+    }
+    self._driver.SetPermission(parameters)
+    # Light sensor is not enabled by default, so it cannot be queried or set.
+    #self.CheckPermission(self.GetPermission('ambient-light-sensor'), 'granted')
+    self.CheckPermission(self.GetPermission('magnetometer'), 'granted')
+    self.CheckPermission(self.GetPermission('accelerometer'), 'granted')
+    self.CheckPermission(self.GetPermission('gyroscope'), 'granted')
+    parameters = {
+      'descriptor': { 'name': 'gyroscope' },
+      'state': 'denied'
+    }
+    self._driver.SetPermission(parameters)
+    #self.CheckPermission(self.GetPermission('ambient-light-sensor'), 'denied')
+    self.CheckPermission(self.GetPermission('magnetometer'), 'denied')
+    self.CheckPermission(self.GetPermission('accelerometer'), 'denied')
+    self.CheckPermission(self.GetPermission('gyroscope'), 'denied')
+
+  def testMidiPermissions(self):
+    """ Tests midi permission requirements.
+
+    MIDI, sysex: true, when granted, should automatically grant regular MIDI
+    permissions.
+    When regular MIDI is denied, this should also imply MIDI with sysex is
+    denied.
+    """
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    parameters = {
+      'descriptor': { 'name': 'midi', 'sysex': True },
+      'state': 'granted'
+    }
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermissionWithQuery(parameters['descriptor']),
+                         'granted')
+    parameters['descriptor']['sysex'] = False
+    self.CheckPermission(self.GetPermissionWithQuery(parameters['descriptor']),
+                         'granted')
+
+    parameters = {
+      'descriptor': { 'name': 'midi', 'sysex': False },
+      'state': 'denied'
+    }
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermissionWithQuery(parameters['descriptor']),
+                         'denied')
+    # While this should be denied, Chrome does not do this.
+    # parameters['descriptor']['sysex'] = True should be denied.
+
+  def testClipboardPermissions(self):
+    """ Assures both clipboard permissions are set simultaneously. """
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    parameters = {
+      'descriptor': { 'name': 'clipboard-read' },
+      'state': 'granted'
+    }
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermission('clipboard-read'), 'granted')
+    parameters = {
+      'descriptor': { 'name': 'clipboard-write' },
+      'state': 'prompt'
+    }
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermission('clipboard-read'), 'granted')
+    self.CheckPermission(self.GetPermission('clipboard-write'), 'prompt')
+
+  def testPersistentStoragePermissions(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    parameters = {
+      'descriptor': { 'name': 'persistent-storage' },
+      'state': 'granted'
+    }
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermission('persistent-storage'), 'granted')
+    parameters['state'] = 'denied'
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermission('persistent-storage'), 'denied')
+
+  def testPushAndNotificationsPermissions(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    parameters = {
+      'descriptor': { 'name': 'notifications' },
+      'state': 'granted'
+    }
+    push_descriptor = {
+      'name': 'push',
+      'userVisibleOnly': True
+    }
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermission('notifications'), 'granted')
+    self.CheckPermission(self.GetPermissionWithQuery(push_descriptor),
+                         'granted')
+    parameters['state'] = 'denied'
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermission('notifications'), 'denied')
+    self.CheckPermission(self.GetPermissionWithQuery(push_descriptor), 'denied')
+    push_descriptor['userVisibleOnly'] = False
+    parameters = {
+      'descriptor': push_descriptor,
+      'state': 'prompt'
+    }
+    self.assertRaises(chromedriver.InvalidArgument,
+                      self._driver.SetPermission, parameters)
+
+  def testPermissionsSameOrigin(self):
+    """ Assures permissions are shared between same-domain windows. """
+    window_handle = self._driver.NewWindow()['handle']
+    self._driver.SwitchToWindow(window_handle)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/link_nav.html'))
+    another_window_handle = self._driver.NewWindow()['handle']
+    self._driver.SwitchToWindow(another_window_handle)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+
+    # Set permission.
+    parameters = { 'descriptor': { 'name': 'geolocation' }, 'state': 'granted' }
+
+    # Test that they are present across the same domain.
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermission('geolocation'), 'granted')
+    self._driver.SwitchToWindow(window_handle)
+    self.CheckPermission(self.GetPermission('geolocation'), 'granted')
+
+  def testNewWindowSameDomainHasSamePermissions(self):
+    """ Assures permissions are shared between same-domain windows, even when
+    window is created after permissions are set. """
+    window_handle = self._driver.NewWindow()['handle']
+    self._driver.SwitchToWindow(window_handle)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.SetPermission({ 'descriptor': { 'name': 'geolocation' },
+                                  'state': 'denied' })
+    self.CheckPermission(self.GetPermission('geolocation'), 'denied')
+    same_domain = self._driver.NewWindow()['handle']
+    self._driver.SwitchToWindow(same_domain)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/link_nav.html'))
+    self.CheckPermission(self.GetPermission('geolocation'), 'denied')
+
+
+  def testPermissionsSameOriginDoesNotAffectOthers(self):
+    """ Tests whether permissions set between two domains affect others. """
+    window_handle = self._driver.NewWindow()['handle']
+    self._driver.SwitchToWindow(window_handle)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/link_nav.html'))
+    another_window_handle = self._driver.NewWindow()['handle']
+    self._driver.SwitchToWindow(another_window_handle)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    different_domain = self._driver.NewWindow()['handle']
+    self._driver.SwitchToWindow(different_domain)
+    self._driver.Load('https://google.com')
+    self._driver.SetPermission({ 'descriptor': {'name': 'geolocation'},
+                                  'state': 'denied' })
+
+    # Switch for permissions.
+    self._driver.SwitchToWindow(another_window_handle)
+
+    # Set permission.
+    parameters = { 'descriptor': { 'name': 'geolocation' }, 'state': 'prompt' }
+
+    # Test that they are present across the same domain.
+    self._driver.SetPermission(parameters)
+    self.CheckPermission(self.GetPermission('geolocation'), 'prompt')
+
+    self._driver.SwitchToWindow(window_handle)
+    self.CheckPermission(self.GetPermission('geolocation'), 'prompt')
+
+    # Assert different domain is not the same.
+    self._driver.SwitchToWindow(different_domain)
+    self.CheckPermission(self.GetPermission('geolocation'), 'denied')
+
 # Tests that require a secure context.
 class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
   # The example attestation private key from the U2F spec at
@@ -3847,7 +4101,7 @@ if __name__ == '__main__':
     parser.error('Need path specified when replayable log set to true.')
 
   global _CHROMEDRIVER_BINARY
-  _CHROMEDRIVER_BINARY = options.chromedriver
+  _CHROMEDRIVER_BINARY = util.GetAbsolutePathOfUserPath(options.chromedriver)
 
   if (options.android_package and
       options.android_package not in _ANDROID_NEGATIVE_FILTER):
@@ -3864,7 +4118,28 @@ if __name__ == '__main__':
   if options.chrome:
     _CHROME_BINARY = util.GetAbsolutePathOfUserPath(options.chrome)
   else:
-    _CHROME_BINARY = None
+    # In some test environments (such as commit queue), it's not convenient to
+    # specify Chrome binary location on the command line. Try to use heuristics
+    # to locate the Chrome binary next to the ChromeDriver binary.
+    driver_path = os.path.dirname(_CHROMEDRIVER_BINARY)
+    chrome_path = None
+    platform = util.GetPlatformName()
+    if platform == 'linux':
+      chrome_path = os.path.join(driver_path, 'chrome')
+    elif platform == 'mac':
+      if os.path.exists(os.path.join(driver_path, 'Google Chrome.app')):
+        chrome_path = os.path.join(driver_path, 'Google Chrome.app',
+                                   'Contents', 'MacOS', 'Google Chrome')
+      else:
+        chrome_path = os.path.join(driver_path, 'Chromium.app',
+                                   'Contents', 'MacOS', 'Chromium')
+    elif platform == 'win':
+      chrome_path = os.path.join(driver_path, 'chrome.exe')
+
+    if chrome_path is not None and os.path.exists(chrome_path):
+      _CHROME_BINARY = chrome_path
+    else:
+      _CHROME_BINARY = None
 
   global _ANDROID_PACKAGE_KEY
   _ANDROID_PACKAGE_KEY = options.android_package

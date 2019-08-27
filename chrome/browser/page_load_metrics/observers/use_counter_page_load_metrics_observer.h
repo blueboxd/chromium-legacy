@@ -35,18 +35,14 @@ class UseCounterPageLoadMetricsObserver
                          ukm::SourceId source_id) override;
   void OnFeaturesUsageObserved(
       content::RenderFrameHost* rfh,
-      const page_load_metrics::mojom::PageLoadFeatures&,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadFeatures&) override;
   void OnComplete(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFailedProvisionalLoad(
       const page_load_metrics::FailedProvisionalLoadInfo&
-          failed_provisional_load_info,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+          failed_provisional_load_info) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy ShouldObserveMimeType(
       const std::string& mime_type) const override;
 

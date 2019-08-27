@@ -90,6 +90,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual bool ShouldClose() = 0;
   virtual void DidFreeze() = 0;
   virtual void DidResume() = 0;
+  virtual void HookBackForwardCacheEviction() = 0;
+  virtual void RemoveBackForwardCacheEviction() = 0;
 
   FrameClient* Client() const;
 

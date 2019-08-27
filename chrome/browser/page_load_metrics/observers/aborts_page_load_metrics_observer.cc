@@ -261,8 +261,7 @@ bool ShouldTrackMetrics(
 AbortsPageLoadMetricsObserver::AbortsPageLoadMetricsObserver() {}
 
 void AbortsPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   page_load_metrics::PageAbortInfo abort_info = GetPageAbortInfo(GetDelegate());
   if (!ShouldTrackMetrics(GetDelegate(), abort_info))
     return;
@@ -290,8 +289,7 @@ void AbortsPageLoadMetricsObserver::OnComplete(
 }
 
 void AbortsPageLoadMetricsObserver::OnFailedProvisionalLoad(
-    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info) {
   page_load_metrics::PageAbortInfo abort_info = GetPageAbortInfo(GetDelegate());
   if (!ShouldTrackMetrics(GetDelegate(), abort_info))
     return;

@@ -486,15 +486,15 @@ mojo::Binding<foo::mojom::Bar> binding(
 // Process B
 auto invitation = mojo::IncomingInvitation::Accept(...);
 auto pipe = invitation->ExtractMessagePipe("x");
-foo::mojom::BarPtr bar(foo::mojom::BarPtrInfo(std::move(pipe), 0));
+mojo::Remote<foo::mojom::Bar> bar(mojo::PendingRemote<foo::mojom::Bar>(std::move(pipe), 0));
 
 // Will asynchronously invoke bar_impl.DoSomething() in process A.
 bar->DoSomething();
 ```
 
 And just to be sure, the usage here could be reversed: the invitation sender
-could just as well treat its pipe endpoint as a `BarPtr` while the receiver
-treats theirs as a `BarRequest` to be bound.
+could just as well treat its pipe endpoint as a `Remote<Bar>` while the receiver
+treats theirs as a `PendingReceiver<Bar>` to be bound.
 
 ### Process Networks
 Accepting an invitation admits the accepting process into the sender's connected

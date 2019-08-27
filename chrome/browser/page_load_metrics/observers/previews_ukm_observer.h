@@ -35,13 +35,11 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy OnHidden(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnEventOccurred(const void* const event_key) override;
   ObservePolicy ShouldObserveMimeType(
       const std::string& mime_type) const override;
@@ -57,10 +55,9 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
 
  private:
-  void RecordMetrics(const page_load_metrics::PageLoadExtraInfo& info);
-  void RecordPreviewsTypes(const page_load_metrics::PageLoadExtraInfo& info);
-  void RecordOptimizationGuideInfo(
-      const page_load_metrics::PageLoadExtraInfo& info);
+  void RecordMetrics();
+  void RecordPreviewsTypes();
+  void RecordOptimizationGuideInfo();
 
   // The preview type that was actually committed and seen by the user.
   PreviewsType committed_preview_;

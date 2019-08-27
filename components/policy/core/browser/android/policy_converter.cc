@@ -31,8 +31,9 @@ namespace android {
 PolicyConverter::PolicyConverter(const Schema* policy_schema)
     : policy_schema_(policy_schema), policy_bundle_(new PolicyBundle) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_obj_.Reset(env, Java_PolicyConverter_create(
-                           env, reinterpret_cast<long>(this)).obj());
+  java_obj_.Reset(
+      env,
+      Java_PolicyConverter_create(env, reinterpret_cast<intptr_t>(this)).obj());
   DCHECK(!java_obj_.is_null());
 }
 

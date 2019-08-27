@@ -203,7 +203,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectDetachedObject) {
   EXPECT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_DEFUNCT));
   g_object_unref(state_set);
 
-  tree_.reset(new AXTree());
+  tree_ = std::make_unique<AXTree>();
   EXPECT_EQ(nullptr, atk_object_get_name(root_obj));
 
   state_set = atk_object_ref_state_set(root_obj);

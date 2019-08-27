@@ -1,5 +1,5 @@
 document
 ++group Name='Fig.1 - A green Box'
 ++++img Name='This is a green box.'
-++++group
-++++++description Name='Fig.1 - A green Box'
+++++description ControlType='UIA_TextControlTypeId'
+++++++description ControlType='UIA_TextControlTypeId' Name='Fig.1 - A green Box'

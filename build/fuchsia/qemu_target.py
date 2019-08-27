@@ -7,12 +7,14 @@
 import boot_data
 import common
 import logging
-import target
+import md5
 import os
 import platform
+import shutil
 import socket
 import subprocess
 import sys
+import target
 import tempfile
 import time
 
@@ -24,6 +26,9 @@ GUEST_NET = '192.168.3.0/24'
 GUEST_IP_ADDRESS = '192.168.3.9'
 HOST_IP_ADDRESS = '192.168.3.2'
 GUEST_MAC_ADDRESS = '52:54:00:63:5e:7b'
+
+# Capacity of the system's blobstore volume.
+EXTENDED_BLOBSTORE_SIZE = 1073741824  # 1GB
 
 
 class QemuTarget(target.Target):
@@ -79,8 +84,8 @@ class QemuTarget(target.Target):
         # any changes.
         '-snapshot',
         '-drive', 'file=%s,format=qcow2,if=none,id=blobstore,snapshot=on' %
-                    EnsurePathExists(
-                        os.path.join(self._output_dir, 'fvm.blk.qcow2')),
+                    _EnsureBlobstoreQcowAndReturnPath(self._output_dir,
+                                                      self._GetTargetSdkArch()),
         '-device', 'virtio-blk-pci,drive=blobstore',
 
         # Use stdio for the guest OS only; don't attach the QEMU interactive
@@ -180,3 +185,60 @@ class QemuTarget(target.Target):
 
   def _GetSshConfigPath(self):
     return boot_data.GetSSHConfigPath(self._output_dir)
+
+
+def _ComputeFileHash(filename):
+  hasher = md5.new()
+  with open(filename, 'rb') as f:
+    buf = f.read(4096)
+    while buf:
+      hasher.update(buf)
+      buf = f.read(4096)
+
+  return hasher.hexdigest()
+
+
+def _EnsureBlobstoreQcowAndReturnPath(output_dir, target_arch):
+  """Returns a file containing the Fuchsia blobstore in a QCOW format,
+  with extra buffer space added for growth."""
+
+  qimg_tool = os.path.join(common.GetQemuRootForPlatform(), 'bin', 'qemu-img')
+  fvm_tool = os.path.join(common.SDK_ROOT, 'tools', 'fvm')
+  blobstore_path = boot_data.GetTargetFile('storage-full.blk', target_arch,
+                                           'qemu')
+  qcow_path = os.path.join(output_dir, 'gen', 'blobstore.qcow')
+
+  # Check a hash of the blobstore to determine if we can re-use an existing
+  # extended version of it.
+  blobstore_hash_path = os.path.join(output_dir, 'gen', 'blobstore.hash')
+  current_blobstore_hash = _ComputeFileHash(blobstore_path)
+
+  if os.path.exists(blobstore_hash_path) and os.path.exists(qcow_path):
+    if current_blobstore_hash == open(blobstore_hash_path, 'r').read():
+      return qcow_path
+
+  # Add some extra room for growth to the Blobstore volume.
+  # Fuchsia is unable to automatically extend FVM volumes at runtime so the
+  # volume enlargement must be performed prior to QEMU startup.
+
+  # The 'fvm' tool only supports extending volumes in-place, so make a
+  # temporary copy of 'blobstore.bin' before it's mutated.
+  extended_blobstore = tempfile.NamedTemporaryFile()
+  shutil.copyfile(blobstore_path, extended_blobstore.name)
+  subprocess.check_call([fvm_tool, extended_blobstore.name, 'extend',
+                         '--length', str(EXTENDED_BLOBSTORE_SIZE),
+                         blobstore_path])
+
+  # Construct a QCOW image from the extended, temporary FVM volume.
+  # The result will be retained in the build output directory for re-use.
+  subprocess.check_call([qimg_tool, 'convert', '-f', 'raw', '-O', 'qcow2',
+                         '-c', extended_blobstore.name, qcow_path])
+
+  # Write out a hash of the original blobstore file, so that subsequent runs
+  # can trivially check if a cached extended FVM volume is available for reuse.
+  with open(blobstore_hash_path, 'w') as blobstore_hash_file:
+    blobstore_hash_file.write(current_blobstore_hash)
+
+  return qcow_path
+
+

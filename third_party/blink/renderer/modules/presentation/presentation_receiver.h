@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
@@ -73,7 +74,7 @@ class MODULES_EXPORT PresentationReceiver final
 
   mojo::Receiver<mojom::blink::PresentationReceiver>
       presentation_receiver_receiver_{this};
-  mojom::blink::PresentationServicePtr presentation_service_;
+  mojo::Remote<mojom::blink::PresentationService> presentation_service_remote_;
 };
 
 }  // namespace blink

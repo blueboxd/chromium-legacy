@@ -3110,7 +3110,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
                                        2 * root_layer->bounds().height()));
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset());
 
-    SetupViewport(scroll_layer_, root_layer->bounds());
+    SetupViewport(root_layer, scroll_layer_, root_layer->bounds());
 
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.5f, 2.f);
     client_.set_bounds(root_layer->bounds());

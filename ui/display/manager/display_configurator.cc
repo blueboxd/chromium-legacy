@@ -749,12 +749,12 @@ void DisplayConfigurator::ForceInitialConfigure() {
   // be anything scheduled.
   DCHECK(!configuration_task_);
 
-  configuration_task_.reset(new UpdateDisplayConfigurationTask(
+  configuration_task_ = std::make_unique<UpdateDisplayConfigurationTask>(
       native_display_delegate_.get(), layout_manager_.get(),
       requested_display_state_, GetRequestedPowerState(),
       kSetDisplayPowerForceProbe, /*force_configure=*/true,
       base::Bind(&DisplayConfigurator::OnConfigured,
-                 weak_ptr_factory_.GetWeakPtr())));
+                 weak_ptr_factory_.GetWeakPtr()));
   configuration_task_->Run();
 }
 
@@ -964,12 +964,12 @@ void DisplayConfigurator::RunPendingConfiguration() {
     return;
   }
 
-  configuration_task_.reset(new UpdateDisplayConfigurationTask(
+  configuration_task_ = std::make_unique<UpdateDisplayConfigurationTask>(
       native_display_delegate_.get(), layout_manager_.get(),
       requested_display_state_, pending_power_state_, pending_power_flags_,
       force_configure_,
       base::Bind(&DisplayConfigurator::OnConfigured,
-                 weak_ptr_factory_.GetWeakPtr())));
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // Reset the flags before running the task; otherwise it may end up scheduling
   // another configuration.

@@ -398,8 +398,6 @@ jumbo_source_set("browser") {
     "appcache/appcache_namespace.h",
     "appcache/appcache_navigation_handle.cc",
     "appcache/appcache_navigation_handle.h",
-    "appcache/appcache_navigation_handle_core.cc",
-    "appcache/appcache_navigation_handle_core.h",
     "appcache/appcache_policy.h",
     "appcache/appcache_quota_client.cc",
     "appcache/appcache_quota_client.h",

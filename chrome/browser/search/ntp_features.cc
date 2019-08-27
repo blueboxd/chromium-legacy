@@ -35,4 +35,10 @@ const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",
 const base::Feature kFirstRunDefaultSearchShortcut{
     "FirstRunDefaultSearchShortcut", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the search box in the middle of the NTP will accept input
+// directly (i.e. not be a "fake" box) and search results will show directly
+// below the non-fake input ("realbox").
+const base::Feature kNtpRealbox{"NtpRealbox",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

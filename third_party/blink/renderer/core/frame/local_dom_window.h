@@ -28,7 +28,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -74,9 +76,9 @@ class V8FrameRequestCallback;
 class V8IdleRequestCallback;
 class V8VoidFunction;
 
-enum PageshowEventPersistence {
-  kPageshowEventNotPersisted = 0,
-  kPageshowEventPersisted = 1
+enum PageTransitionEventPersistence {
+  kPageTransitionEventNotPersisted = 0,
+  kPageTransitionEventPersisted = 1
 };
 
 // Note: if you're thinking of returning something DOM-related by reference,
@@ -301,7 +303,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void EnqueueWindowEvent(Event&, TaskType);
   void EnqueueDocumentEvent(Event&, TaskType);
-  void EnqueuePageshowEvent(PageshowEventPersistence);
+  void EnqueuePageshowEvent(PageTransitionEventPersistence);
   void EnqueueHashchangeEvent(const String& old_url, const String& new_url);
   void EnqueuePopstateEvent(scoped_refptr<SerializedScriptValue>);
   void DispatchWindowLoadEvent();
@@ -311,6 +313,18 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void AcceptLanguagesChanged();
 
   TrustedTypePolicyFactory* trustedTypes() const;
+
+  void DispatchPageshowEvent(PageTransitionEventPersistence persistence) {
+    DispatchEvent(
+        *PageTransitionEvent::Create(event_type_names::kPageshow, persistence),
+        document_.Get());
+  }
+
+  void DispatchPagehideEvent(PageTransitionEventPersistence persistence) {
+    DispatchEvent(
+        *PageTransitionEvent::Create(event_type_names::kPagehide, persistence),
+        document_.Get());
+  }
 
  protected:
   // EventTarget overrides.

@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -228,8 +229,8 @@ void SharedWorkerHost::Start(
   // request endpoint was sent, it can be used, so add it to
   // ServiceWorkerObjectHost.
   if (service_worker_remote_object.is_valid()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    RunOrPostTaskOnThread(
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(
             &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
             controller_service_worker_object_host,

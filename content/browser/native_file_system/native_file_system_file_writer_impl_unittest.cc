@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -32,6 +33,10 @@ using blink::mojom::NativeFileSystemStatus;
 using storage::FileSystemURL;
 
 namespace content {
+
+std::string GetHexEncodedString(const std::string& input) {
+  return base::HexEncode(base::as_bytes(base::make_span(input)));
+}
 
 class NativeFileSystemFileWriterImplTest : public testing::Test {
  public:
@@ -254,6 +259,76 @@ TEST_F(NativeFileSystemFileWriterImplTest, WriteInvalidBlob) {
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
   EXPECT_EQ("", ReadFile(test_file_url_));
+}
+
+TEST_F(NativeFileSystemFileWriterImplTest, HashSimpleOK) {
+  uint64_t bytes_written;
+  NativeFileSystemStatus result = WriteSync(0, "abc", &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_EQ(bytes_written, 3u);
+
+  base::FilePath real_path = dir_.GetPath().Append(test_swap_url_.path());
+
+  base::RunLoop loop;
+  handle_->compute_file_hash_for_testing(
+      real_path, base::BindLambdaForTesting([&](base::File::Error result,
+                                                const std::string& hash_value) {
+        EXPECT_EQ(base::File::FILE_OK, result);
+        EXPECT_EQ(
+            "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD",
+            GetHexEncodedString(hash_value));
+        loop.Quit();
+      }));
+  loop.Run();
+}
+
+TEST_F(NativeFileSystemFileWriterImplTest, HashEmptyOK) {
+  base::FilePath real_path = dir_.GetPath().Append(test_swap_url_.path());
+  base::RunLoop loop;
+  handle_->compute_file_hash_for_testing(
+      real_path, base::BindLambdaForTesting([&](base::File::Error result,
+                                                const std::string& hash_value) {
+        EXPECT_EQ(base::File::FILE_OK, result);
+        EXPECT_EQ(
+            "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+            GetHexEncodedString(hash_value));
+        loop.Quit();
+      }));
+  loop.Run();
+}
+
+TEST_F(NativeFileSystemFileWriterImplTest, HashNonExistingFileFails) {
+  base::FilePath real_path = dir_.GetPath().AppendASCII("i_do_not_exist.txt");
+  base::RunLoop loop;
+  handle_->compute_file_hash_for_testing(
+      real_path, base::BindLambdaForTesting([&](base::File::Error result,
+                                                const std::string& hash_value) {
+        EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, result);
+        loop.Quit();
+      }));
+  loop.Run();
+}
+
+TEST_F(NativeFileSystemFileWriterImplTest, HashLargerFileOK) {
+  size_t target_size = 9 * 1024u;
+  std::string file_data(target_size, '0');
+  uint64_t bytes_written;
+  NativeFileSystemStatus result = WriteSync(0, file_data, &bytes_written);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_EQ(bytes_written, target_size);
+
+  base::FilePath real_path = dir_.GetPath().Append(test_swap_url_.path());
+  base::RunLoop loop;
+  handle_->compute_file_hash_for_testing(
+      real_path, base::BindLambdaForTesting([&](base::File::Error result,
+                                                const std::string& hash_value) {
+        EXPECT_EQ(base::File::FILE_OK, result);
+        EXPECT_EQ(
+            "34A82D28CB1E0BA92CADC4BE8497DC9EEA9AC4F63B9C445A9E52D298990AC491",
+            GetHexEncodedString(hash_value));
+        loop.Quit();
+      }));
+  loop.Run();
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidEmptyString) {

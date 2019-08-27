@@ -816,7 +816,7 @@ GestureProvider::GestureProvider(const Config& config,
          !config.max_gesture_bounds_length ||
          config.min_gesture_bounds_length <= config.max_gesture_bounds_length);
   TRACE_EVENT0("input", "GestureProvider::InitGestureDetectors");
-  gesture_listener_.reset(new GestureListenerImpl(config, client));
+  gesture_listener_ = std::make_unique<GestureListenerImpl>(config, client);
   UpdateDoubleTapDetectionSupport();
 }
 

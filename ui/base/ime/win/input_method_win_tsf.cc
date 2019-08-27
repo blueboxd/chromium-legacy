@@ -145,7 +145,7 @@ void InputMethodWinTSF::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   if (IsWindowFocused(focused_before)) {
-    ConfirmCompositionText();
+    ConfirmCompositionText(/* reset_engine */ true);
     ui::TSFBridge::GetInstance()->RemoveFocusedClient(focused_before);
   }
 }
@@ -170,13 +170,14 @@ void InputMethodWinTSF::OnDidChangeFocusedClient(
   InputMethodWinBase::OnDidChangeFocusedClient(focused_before, focused);
 }
 
-void InputMethodWinTSF::ConfirmCompositionText() {
-  if (!IsTextInputTypeNone()) {
-    if (GetTextInputClient()->HasCompositionText())
-      InputMethodWinBase::ResetEngine();
-    if (ui::TSFBridge::GetInstance())
-      ui::TSFBridge::GetInstance()->ConfirmComposition();
-  }
+void InputMethodWinTSF::ConfirmCompositionText(bool reset_engine) {
+  if (IsTextInputTypeNone())
+    return;
+
+  if (reset_engine && GetTextInputClient()->HasCompositionText())
+    InputMethodWinBase::ResetEngine();
+  if (ui::TSFBridge::GetInstance())
+    ui::TSFBridge::GetInstance()->ConfirmComposition();
 }
 
 }  // namespace ui

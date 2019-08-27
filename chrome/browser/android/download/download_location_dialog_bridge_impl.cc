@@ -15,7 +15,7 @@ DownloadLocationDialogBridgeImpl::DownloadLocationDialogBridgeImpl()
     : is_dialog_showing_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(env, Java_DownloadLocationDialogBridge_create(
-                           env, reinterpret_cast<long>(this))
+                           env, reinterpret_cast<intptr_t>(this))
                            .obj());
   DCHECK(!java_obj_.is_null());
 }

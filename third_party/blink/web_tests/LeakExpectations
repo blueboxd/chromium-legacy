@@ -15,12 +15,6 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Leak ]
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Leak ]
 
-# FIXME: rootscroller/set-root-scroller.html on WebKit Linux Trusty
-crbug.com/891575 rootscroller/set-root-scroller.html [ Leak ]
-crbug.com/891575 virtual/android/rootscroller/remove-rootscroller-crash.html [ Leak Pass ]
-crbug.com/891575 virtual/android/rootscroller/set-root-scroller.html [ Leak ]
-crbug.com/891575 virtual/android/fullscreen/video-overlay-scroll.html [ Leak Pass ]
-
 crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Leak Pass ]
 crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js  [ Leak Pass ]
 

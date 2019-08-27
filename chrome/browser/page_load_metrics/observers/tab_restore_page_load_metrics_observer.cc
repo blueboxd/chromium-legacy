@@ -56,21 +56,19 @@ void TabRestorePageLoadMetricsObserver::OnResourceDataUseObserved(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 TabRestorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we record final metrics collected up to this point.
-  if (info.did_commit) {
+  if (GetDelegate().DidCommit()) {
     RecordByteHistograms();
   }
   return STOP_OBSERVING;
 }
 
 void TabRestorePageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   RecordByteHistograms();
 }
 

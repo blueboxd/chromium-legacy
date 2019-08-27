@@ -327,7 +327,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
 // Verifies that pressing right arrow button with search button should move
 // focus to the next ShelfItem instead of the last one
 // (see https://crbug.com/947683).
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
+// This test is flaky, see http://crbug.com/997628
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ShelfIconFocusForward) {
   const std::string title("MockApp");
   ChromeLauncherController* controller = ChromeLauncherController::instance();
 

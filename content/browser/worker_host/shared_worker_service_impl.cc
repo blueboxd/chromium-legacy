@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/storage_partition_impl.h"
@@ -221,8 +220,8 @@ void SharedWorkerServiceImpl::CreateWorker(
 
   auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
       appcache_service_.get(), weak_host->worker_process_id());
-  AppCacheNavigationHandleCore* appcache_handle_core = appcache_handle_core =
-      appcache_handle->core();
+  base::WeakPtr<AppCacheHost> appcache_host =
+      appcache_handle->host()->GetWeakPtr();
   weak_host->SetAppCacheHandle(std::move(appcache_handle));
 
   auto service_worker_handle = std::make_unique<ServiceWorkerNavigationHandle>(
@@ -247,7 +246,7 @@ void SharedWorkerServiceImpl::CreateWorker(
       net::NetworkIsolationKey(origin, origin), credentials_mode,
       std::move(outside_fetch_client_settings_object),
       ResourceType::kSharedWorker, service_worker_context_,
-      service_worker_handle_raw, appcache_handle_core,
+      service_worker_handle_raw, std::move(appcache_host),
       std::move(blob_url_loader_factory), url_loader_factory_override_,
       storage_partition_, storage_domain,
       base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,

@@ -29,9 +29,14 @@ class AssistantOptInFlowScreen : public BaseScreen {
   void Hide() override;
   void OnUserAction(const std::string& action_id) override;
 
+  void SetSkipForTesting() { skip_for_testing_ = true; }
+
  private:
   AssistantOptInFlowScreenView* view_;
   base::RepeatingClosure exit_callback_;
+
+  // Skip the screen for testing if set to true.
+  bool skip_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreen);
 };

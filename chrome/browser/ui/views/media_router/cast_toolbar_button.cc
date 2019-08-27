@@ -134,14 +134,29 @@ void CastToolbarButton::OnRoutesUpdated(
 
 bool CastToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsRightMouseButton() && GetActionController())
-    GetActionController()->KeepIconOnRightMousePressed();
+    GetActionController()->KeepIconShownOnPressed();
   return ToolbarButton::OnMousePressed(event);
 }
 
 void CastToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
   ToolbarButton::OnMouseReleased(event);
   if (event.IsRightMouseButton() && GetActionController())
-    GetActionController()->MaybeHideIconOnRightMouseReleased();
+    GetActionController()->MaybeHideIconOnReleased();
+}
+
+void CastToolbarButton::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      GetActionController()->KeepIconShownOnPressed();
+      break;
+    case ui::ET_GESTURE_END:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      GetActionController()->MaybeHideIconOnReleased();
+      break;
+    default:
+      break;
+  }
+  ToolbarButton::OnGestureEvent(event);
 }
 
 void CastToolbarButton::ButtonPressed(views::Button* sender,

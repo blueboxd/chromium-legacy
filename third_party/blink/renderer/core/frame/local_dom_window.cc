@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/hash_change_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
-#include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/events/pop_state_event.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/bar_prop.h"
@@ -312,12 +311,13 @@ void LocalDOMWindow::DispatchWindowLoadEvent() {
 
 void LocalDOMWindow::DocumentWasClosed() {
   DispatchWindowLoadEvent();
-  EnqueuePageshowEvent(kPageshowEventNotPersisted);
+  EnqueuePageshowEvent(kPageTransitionEventNotPersisted);
   if (pending_state_object_)
     EnqueuePopstateEvent(std::move(pending_state_object_));
 }
 
-void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
+void LocalDOMWindow::EnqueuePageshowEvent(
+    PageTransitionEventPersistence persisted) {
   // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs
   // to fire asynchronously.  As per spec pageshow must be triggered
   // asynchronously.  However to be compatible with other browsers blink fires

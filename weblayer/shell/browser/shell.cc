@@ -24,17 +24,19 @@ namespace weblayer {
 // Null until/unless the default main message loop is running.
 base::NoDestructor<base::OnceClosure> g_quit_main_message_loop;
 
-const int kDefaultTestWindowWidthDip = 800;
-const int kDefaultTestWindowHeightDip = 600;
+const int kDefaultTestWindowWidthDip = 1000;
+const int kDefaultTestWindowHeightDip = 700;
 
 std::vector<Shell*> Shell::windows_;
 
 Shell::Shell(std::unique_ptr<BrowserController> browser_controller)
     : browser_controller_(std::move(browser_controller)), window_(nullptr) {
   windows_.push_back(this);
+  browser_controller_->AddObserver(this);
 }
 
 Shell::~Shell() {
+  browser_controller_->RemoveObserver(this);
   PlatformCleanUp();
 
   for (size_t i = 0; i < windows_.size(); ++i) {
@@ -91,6 +93,22 @@ void Shell::Initialize() {
   PlatformInitialize(GetShellDefaultSize());
 }
 
+void Shell::LoadingStateChanged(bool is_loading, bool to_different_document) {
+  int current_index = browser_controller_->GetNavigationController()
+                          ->GetNavigationListCurrentIndex();
+  int max_index =
+      browser_controller_->GetNavigationController()->GetNavigationListSize() -
+      1;
+
+  PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
+  PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);
+  PlatformEnableUIControl(STOP_BUTTON, to_different_document && is_loading);
+}
+
+void Shell::DisplayedURLChanged(const GURL& url) {
+  PlatformSetAddressBarURL(url);
+}
+
 gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
   if (!initial_size.IsEmpty())
     return initial_size;
@@ -130,18 +148,6 @@ void Shell::ReloadBypassingCache() {}
 void Shell::Stop() {
   browser_controller_->GetNavigationController()->Stop();
 }
-
-/* TODO: this depends on getting notifications from BrowserController.
-void Shell::UpdateNavigationControls(bool to_different_document) {
-  int current_index = web_contents_->GetController().GetCurrentEntryIndex();
-  int max_index = web_contents_->GetController().GetEntryCount() - 1;
-
-  PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
-  PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);
-  PlatformEnableUIControl(STOP_BUTTON,
-      to_different_document && web_contents_->IsLoading());
-}
-*/
 
 gfx::Size Shell::GetShellDefaultSize() {
   static gfx::Size default_shell_size;

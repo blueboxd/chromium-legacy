@@ -177,48 +177,43 @@ PreviewsUKMObserver::OnStart(content::NavigationHandle* navigation_handle,
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PreviewsUKMObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics(info);
+  RecordMetrics();
   return STOP_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PreviewsUKMObserver::OnHidden(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics(info);
+  RecordMetrics();
   return STOP_OBSERVING;
 }
 
 void PreviewsUKMObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics(info);
+  RecordMetrics();
 }
 
-void PreviewsUKMObserver::RecordMetrics(
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordPreviewsTypes(info);
-  RecordOptimizationGuideInfo(info);
+void PreviewsUKMObserver::RecordMetrics() {
+  RecordPreviewsTypes();
+  RecordOptimizationGuideInfo();
 }
 
-void PreviewsUKMObserver::RecordPreviewsTypes(
-    const page_load_metrics::PageLoadExtraInfo& info) {
+void PreviewsUKMObserver::RecordPreviewsTypes() {
   // Record the page end reason in UMA.
   if (committed_preview_ != PreviewsType::NONE) {
     UMA_HISTOGRAM_ENUMERATION(
-        "Previews.PageEndReason", info.page_end_reason,
+        "Previews.PageEndReason", GetDelegate().GetPageEndReason(),
         page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
   }
   base::UmaHistogramExactLinear(
       base::StringPrintf(
           "Previews.PageEndReason.%s",
           previews::GetStringNameForType(committed_preview_).c_str()),
-      info.page_end_reason,
+      GetDelegate().GetPageEndReason(),
       page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
 
   // Only record previews types when they are active.
@@ -232,7 +227,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     return;
   }
 
-  ukm::builders::Previews builder(info.source_id);
+  ukm::builders::Previews builder(GetDelegate().GetSourceId());
   builder.Setcoin_flip_result(static_cast<int>(coin_flip_result_));
   if (lite_page_seen_)
     builder.Setlite_page(1);
@@ -292,8 +287,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   builder.Record(ukm::UkmRecorder::Get());
 }
 
-void PreviewsUKMObserver::RecordOptimizationGuideInfo(
-    const page_load_metrics::PageLoadExtraInfo& info) {
+void PreviewsUKMObserver::RecordOptimizationGuideInfo() {
   if (!serialized_hint_version_string_.has_value()) {
     return;
   }
@@ -308,7 +302,7 @@ void PreviewsUKMObserver::RecordOptimizationGuideInfo(
   if (!hint_version.ParseFromString(binary_version_pb))
     return;
 
-  ukm::builders::OptimizationGuide builder(info.source_id);
+  ukm::builders::OptimizationGuide builder(GetDelegate().GetSourceId());
   if (hint_version.has_generation_timestamp() &&
       hint_version.generation_timestamp().seconds() > 0) {
     builder.SetHintGenerationTimestamp(

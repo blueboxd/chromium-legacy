@@ -1247,11 +1247,13 @@ void HWNDMessageHandler::ApplyPanGestureScrollBegin(int scroll_x,
                        ui::ScrollEventPhase::kBegan);
 }
 
-void HWNDMessageHandler::ApplyPanGestureScrollEnd() {
+void HWNDMessageHandler::ApplyPanGestureScrollEnd(bool transitioning_to_pinch) {
   if (!precision_touchpad_scroll_phase_enabled_)
     return;
 
-  ApplyPanGestureEvent(0, 0, ui::EventMomentumPhase::NONE,
+  ApplyPanGestureEvent(0, 0,
+                       transitioning_to_pinch ? ui::EventMomentumPhase::BLOCKED
+                                              : ui::EventMomentumPhase::NONE,
                        ui::ScrollEventPhase::kEnd);
 }
 

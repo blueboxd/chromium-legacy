@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, EventConvert) {
   }
 
   {
-    target->ApplyPanGestureScrollEnd();
+    target->ApplyPanGestureScrollEnd(true);
     std::unique_ptr<ui::Event> event = event_logger.ReleaseLastEvent();
 
     if (GetParam()) {
@@ -229,7 +229,8 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, EventConvert) {
       ui::ScrollEvent* scroll_event = event->AsScrollEvent();
       EXPECT_EQ(0, scroll_event->x_offset());
       EXPECT_EQ(0, scroll_event->y_offset());
-      EXPECT_EQ(ui::EventMomentumPhase::NONE, scroll_event->momentum_phase());
+      EXPECT_EQ(ui::EventMomentumPhase::BLOCKED,
+                scroll_event->momentum_phase());
       EXPECT_EQ(ui::ScrollEventPhase::kEnd, scroll_event->scroll_event_phase());
     } else {
       ASSERT_FALSE(event);

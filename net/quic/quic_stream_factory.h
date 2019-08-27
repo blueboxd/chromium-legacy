@@ -559,6 +559,15 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                                            int cert_verify_flags,
                                            const NetLogWithSource& net_log);
 
+  // Helper method to initialize the following migration options and check
+  // pre-requisites:
+  // - |params_.migrate_sessions_on_network_change_v2|
+  // - |params_.migrate_sessions_early_v2|
+  // - |params_.migrate_idle_sessions|
+  // - |params_.retry_on_alternate_network_before_handshake|
+  // If pre-requisites are not met, turn off the corresponding options.
+  void InitializeMigrationOptions();
+
   // Initializes the cached state associated with |server_id| in
   // |crypto_config_| with the information in |server_info|. Populates
   // |connection_id| with the next server designated connection id,
@@ -633,26 +642,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int yield_after_packets_;
   quic::QuicTime::Delta yield_after_duration_;
 
-  // Set if migration should be attempted after probing.
-  const bool migrate_sessions_on_network_change_v2_;
-
-  // Set if early migration should be attempted after probing when the
-  // connection experiences poor connectivity.
-  const bool migrate_sessions_early_v2_;
-
-  // Set if a new connection may be kicked off on an alternate network when a
-  // connection fails on the default network before handshake is confirmed.
-  const bool retry_on_alternate_network_before_handshake_;
-
   // If |migrate_sessions_early_v2_| is true, tracks the current default
   // network, and is updated OnNetworkMadeDefault.
   // Otherwise, always set to NetworkChangeNotifier::kInvalidNetwork.
   NetworkChangeNotifier::NetworkHandle default_network_;
-
-  // Set if idle sessions can be migrated within
-  // |params_.idle_session_migration_period| when connection migration is
-  // triggered.
-  const bool migrate_idle_sessions_;
 
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;

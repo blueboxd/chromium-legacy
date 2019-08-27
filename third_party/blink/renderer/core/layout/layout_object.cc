@@ -1844,6 +1844,26 @@ bool LayoutObject::IsSelectable() const {
                          StyleRef().UserModify() == EUserModify::kReadOnly);
 }
 
+const ComputedStyle& LayoutObject::SlowEffectiveStyle(
+    NGStyleVariant style_variant) const {
+  switch (style_variant) {
+    case NGStyleVariant::kStandard:
+      return StyleRef();
+    case NGStyleVariant::kFirstLine:
+      return FirstLineStyleRef();
+    case NGStyleVariant::kEllipsis:
+      // The ellipsis is styled according to the line style.
+      // https://www.w3.org/TR/css-overflow-3/#ellipsing-details
+      // Use first-line style if exists since most cases it is the first line.
+      DCHECK(IsInline());
+      if (LayoutObject* block = ContainingBlock())
+        return block->FirstLineStyleRef();
+      return FirstLineStyleRef();
+  }
+  NOTREACHED();
+  return StyleRef();
+}
+
 // Called when an object that was floating or positioned becomes a normal flow
 // object again. We have to make sure the layout tree updates as needed to
 // accommodate the new normal flow object.

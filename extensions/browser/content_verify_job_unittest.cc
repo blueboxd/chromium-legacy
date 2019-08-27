@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extensions_test.h"
@@ -41,6 +42,14 @@ enum ContentVerifyJobAsyncRunMode {
   // The contents become available before the hashes are ready.
   kHashesReadyBeforeContentRead,
 };
+
+std::string GetVerifiedContents(const Extension& extension) {
+  std::string verified_contents;
+  EXPECT_TRUE(base::ReadFileToString(
+      file_util::GetVerifiedContentsPath(extension.path()),
+      &verified_contents));
+  return verified_contents;
+}
 
 }  // namespace
 
@@ -73,7 +82,9 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
     ExtensionsTest::TearDown();
   }
 
-  ContentVerifier* content_verifier() { return content_verifier_.get(); }
+  scoped_refptr<ContentVerifier> content_verifier() {
+    return content_verifier_;
+  }
 
  protected:
   ContentVerifyJob::FailureReason RunContentVerifyJob(
@@ -374,6 +385,122 @@ TEST_P(ContentMismatchUnittest, ContentMismatchWithLargeFile) {
   std::string content_larger_than_block_size(
       extension_misc::kContentVerificationDefaultBlockSize + 1, ';');
   RunContentMismatchTest(content_larger_than_block_size, GetParam());
+}
+
+// ContentVerifyJobUnittest with hash fetch interception support.
+class ContentVerifyJobWithHashFetchUnittest : public ContentVerifyJobUnittest {
+ public:
+  ContentVerifyJobWithHashFetchUnittest()
+      : hash_fetch_interceptor_(base::BindRepeating(
+            &ContentVerifyJobWithHashFetchUnittest::InterceptHashFetch,
+            base::Unretained(this))) {}
+
+ protected:
+  // Responds to hash fetch request.
+  void RespondToClientIfReady() {
+    DCHECK(verified_contents_);
+    if (!client_ || !ready_to_respond_)
+      return;
+    network::mojom::URLLoaderClientPtr client = std::move(*client_);
+    content::URLLoaderInterceptor::WriteResponse(
+        std::string(), *verified_contents_, client.get());
+  }
+
+  void ForceHashFetchOnNextResourceLoad(const Extension& extension) {
+    // We need to store verified_contents.json's contents so that
+    // hash_fetch_interceptor_ can serve its request.
+    verified_contents_ = GetVerifiedContents(extension);
+
+    // Delete verified_contents.json.
+    EXPECT_TRUE(base::DeleteFile(
+        file_util::GetVerifiedContentsPath(extension.path()), true));
+
+    // Clear cache so that next extension resource load will fetch hashes as
+    // we've already deleted verified_contents.json.
+    // Use this opportunity to
+    base::RunLoop run_loop;
+    base::PostTaskAndReply(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(
+            [](scoped_refptr<ContentVerifier> content_verifier) {
+              content_verifier->ClearCacheForTesting();
+            },
+            content_verifier()),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void set_ready_to_respond() { ready_to_respond_ = true; }
+
+ private:
+  bool InterceptHashFetch(
+      content::URLLoaderInterceptor::RequestParams* params) {
+    if (params->url_request.url.path_piece() != "/getsignature")
+      return false;
+
+    client_ = std::move(params->client);
+    RespondToClientIfReady();
+
+    return true;
+  }
+
+  // Used to serve potentially delayed response to verified_contents.json.
+  content::URLLoaderInterceptor hash_fetch_interceptor_;
+  base::Optional<network::mojom::URLLoaderClientPtr> client_;
+
+  // Whether or not |client_| can respond to hash fetch request.
+  bool ready_to_respond_ = false;
+
+  // Copy of the contents of verified_contents.json.
+  base::Optional<std::string> verified_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentVerifyJobWithHashFetchUnittest);
+};
+
+// Regression test for https://crbug.com/995436.
+TEST_F(ContentVerifyJobWithHashFetchUnittest, ReadErrorBeforeHashReady) {
+  base::ScopedTempDir temp_dir;
+  scoped_refptr<Extension> extension = LoadTestExtensionFromZipPathToTempDir(
+      &temp_dir, "with_verified_contents", "source_all.zip");
+  ASSERT_TRUE(extension.get());
+
+  const base::FilePath::CharType kBackgroundJS[] =
+      FILE_PATH_LITERAL("background.js");
+  base::FilePath resource_path(kBackgroundJS);
+
+  // First, make sure that next ContentVerifyJob run requires a hash fetch, so
+  // that we can delay its request's response using |hash_fetch_interceptor_|.
+  ForceHashFetchOnNextResourceLoad(*extension);
+
+  TestContentVerifySingleJobObserver observer(extension->id(), resource_path);
+  {
+    // Then ContentVerifyJob sees a benign read error (MOJO_RESULT_ABORTED).
+    scoped_refptr<ContentVerifyJob> verify_job =
+        base::MakeRefCounted<ContentVerifyJob>(
+            extension->id(), extension->version(), extension->path(),
+            resource_path, base::DoNothing());
+    auto do_read_abort_and_done =
+        [](scoped_refptr<ContentVerifyJob> job,
+           scoped_refptr<ContentVerifier> content_verifier,
+           base::OnceClosure done_callback) {
+          DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+          job->Start(content_verifier.get());
+          job->Read(nullptr, 0u, MOJO_RESULT_ABORTED);
+          job->Done();
+          std::move(done_callback).Run();
+        };
+
+    base::RunLoop run_loop;
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(do_read_abort_and_done, verify_job,
+                                  content_verifier(), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    // After read error is seen, finally serve hash to |verify_job|.
+    set_ready_to_respond();
+    RespondToClientIfReady();
+  }
+  EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitForJobFinished());
 }
 
 }  // namespace extensions

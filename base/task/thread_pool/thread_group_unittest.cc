@@ -596,8 +596,8 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
         test::WaitWithoutBlockingObserver(&threads_continue);
       }),
       /* num_tasks_to_run */ kMaxTasks);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, {ThreadPool()});
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, ThreadPool(), &mock_pooled_task_runner_delegate_);
 
   auto registered_task_source =
       task_tracker_.RegisterTaskSource(std::move(task_source));
@@ -614,6 +614,95 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
   task_tracker_.FlushForTesting();
 }
 
+// Verify that tasks from a JobTaskSource run at the intended concurrency.
+TEST_P(ThreadGroupTest, ScheduleJobTaskSourceMultipleTime) {
+  StartThreadGroup();
+
+  WaitableEvent thread_running;
+  WaitableEvent thread_continue;
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting(
+          [&thread_running, &thread_continue](experimental::JobDelegate*) {
+            DCHECK(!thread_running.IsSignaled());
+            thread_running.Signal();
+            test::WaitWithoutBlockingObserver(&thread_continue);
+          }),
+      /* num_tasks_to_run */ 1);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, ThreadPool(), &mock_pooled_task_runner_delegate_);
+
+  thread_group_->PushTaskSourceAndWakeUpWorkers(
+      TransactionWithRegisteredTaskSource::FromTaskSource(
+          task_tracker_.RegisterTaskSource(task_source)));
+
+  // Enqueuing the task source again shouldn't affect the number of time it's
+  // run.
+  thread_group_->PushTaskSourceAndWakeUpWorkers(
+      TransactionWithRegisteredTaskSource::FromTaskSource(
+          task_tracker_.RegisterTaskSource(task_source)));
+
+  thread_running.Wait();
+  thread_continue.Signal();
+
+  // Once the worker task ran, enqueuing the task source has no effect.
+  thread_group_->PushTaskSourceAndWakeUpWorkers(
+      TransactionWithRegisteredTaskSource::FromTaskSource(
+          task_tracker_.RegisterTaskSource(task_source)));
+
+  // Flush the task tracker to be sure that no local variables are accessed by
+  // tasks after the end of the scope.
+  task_tracker_.FlushForTesting();
+}
+
+// Verify that calling JobTaskSource::NotifyConcurrencyIncrease() (re-)schedule
+// tasks with the intended concurrency.
+TEST_P(ThreadGroupTest, JobTaskSourceConcurrencyIncrease) {
+  StartThreadGroup();
+
+  WaitableEvent threads_running_a;
+  WaitableEvent threads_continue;
+
+  // Initially schedule half the tasks.
+  RepeatingClosure threads_running_barrier = BarrierClosure(
+      kMaxTasks / 2,
+      BindOnce(&WaitableEvent::Signal, Unretained(&threads_running_a)));
+
+  auto job_state = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&threads_running_barrier,
+                            &threads_continue](experimental::JobDelegate*) {
+        threads_running_barrier.Run();
+        test::WaitWithoutBlockingObserver(&threads_continue);
+      }),
+      /* num_tasks_to_run */ kMaxTasks / 2);
+  auto task_source = job_state->GetJobTaskSource(
+      FROM_HERE, ThreadPool(), &mock_pooled_task_runner_delegate_);
+
+  auto registered_task_source = task_tracker_.RegisterTaskSource(task_source);
+  EXPECT_TRUE(registered_task_source);
+  thread_group_->PushTaskSourceAndWakeUpWorkers(
+      TransactionWithRegisteredTaskSource::FromTaskSource(
+          std::move(registered_task_source)));
+
+  threads_running_a.Wait();
+  // Reset |threads_running_barrier| for the remaining tasks.
+  WaitableEvent threads_running_b;
+  threads_running_barrier = BarrierClosure(
+      kMaxTasks / 2,
+      BindOnce(&WaitableEvent::Signal, Unretained(&threads_running_b)));
+  job_state->SetNumTasksToRun(kMaxTasks);
+
+  // Unblocks tasks to let them racily wait for NotifyConcurrencyIncrease() to
+  // be called.
+  threads_continue.Signal();
+  task_source->NotifyConcurrencyIncrease();
+  // Wait for the remaining tasks. This should not block forever.
+  threads_running_b.Wait();
+
+  // Flush the task tracker to be sure that no local variables are accessed by
+  // tasks after the end of the scope.
+  task_tracker_.FlushForTesting();
+}
+
 // Verify that a JobTaskSource that becomes empty while in the queue eventually
 // gets discarded.
 TEST_P(ThreadGroupTest, ScheduleEmptyJobTaskSource) {
@@ -624,8 +713,8 @@ TEST_P(ThreadGroupTest, ScheduleEmptyJobTaskSource) {
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
       BindRepeating([](experimental::JobDelegate*) { ShouldNotRun(); }),
       /* num_tasks_to_run */ 1);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, {ThreadPool()});
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, ThreadPool(), &mock_pooled_task_runner_delegate_);
 
   auto registered_task_source =
       task_tracker_.RegisterTaskSource(std::move(task_source));
@@ -674,7 +763,8 @@ TEST_P(ThreadGroupTest, JobTaskSourceUpdatePriority) {
       }),
       /* num_tasks_to_run */ kMaxTasks);
   scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
-      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
+      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT},
+      &mock_pooled_task_runner_delegate_);
 
   auto registered_task_source = task_tracker_.RegisterTaskSource(task_source);
   EXPECT_TRUE(registered_task_source);

@@ -9,7 +9,7 @@
 #endif
 
 const base::Feature kCollectionsCardPresentationStyle{
-    "CollectionsCardPresentationStyle", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CollectionsCardPresentationStyle", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsCollectionsCardPresentationStyleEnabled() {
   return base::FeatureList::IsEnabled(kCollectionsCardPresentationStyle);

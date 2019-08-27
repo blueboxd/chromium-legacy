@@ -19,6 +19,10 @@
         --menu-link-color: var(--google-blue-600);
         --menu-text-color: var(--google-grey-refresh-700);
         --menu-icon-color: var(--google-grey-refresh-700);
+        /* The tap target extends slightly above each visible menu item. */
+        --tap-target-padding: 3px;
+        /* Width of the keyboard focus border. */
+        --focus-border-width: 1px;
         box-sizing: border-box;
         display: block;
         padding-bottom: 2px;
@@ -36,21 +40,25 @@
       }
 
       /* The <a> is the entire tap target, including the padding around the
-         visible icon and text. */
+       * visible icon and text. */
       a {
         background: transparent;
         display: block;
-        padding: 3px 0;
+        padding: var(--tap-target-padding) 0;
       }
 
       /* The "item" draws the icon, text, and rounded background. */
       a > .item {
         align-items: center;
+        border-block-end-width: var(--focus-border-width);
+        border-block-start-width: var(--focus-border-width);
         /* Always apply border so item doesn't shift when focused. */
         border-color: transparent;
+        border-inline-end-width: var(--focus-border-width);
+        /* No border on window edge (left in LTR, right in RTL). */
+        border-inline-start-width: 0;
         border-radius: 0 20px 20px 0;
         border-style: solid;
-        border-width: 1px 1px 1px 0;
         color: var(--menu-text-color);
         display: flex;
         font-weight: 500;
@@ -58,6 +66,11 @@
         min-height: 32px;
         padding-inline-start: 20px;
         pointer-events: none;
+      }
+
+      :host-context([dir=rtl]) a > .item {
+        /* Chrome doesn't support border-start-end-radius, so override. */
+        border-radius: 20px 0 0 20px;
       }
 
       a.iron-selected > .item {
@@ -130,6 +143,13 @@
         #menuSeparator {
           border-bottom: var(--cr-separator-line);  /* override */
         }
+      }
+
+      #aboutItem {
+        /* Reserve space so the last menu item isn't too close to the window
+         * bottom edge, 48px under the text baseline. */
+        margin-bottom: calc(
+            48px - calc(var(--tap-target-padding) + var(--focus-border-width)));
       }
     </style>
     <iron-selector id="topMenu"
@@ -259,7 +279,7 @@
         </iron-selector>
       </iron-collapse>
       <div id="menuSeparator"></div>
-      <a id="about-menu" href="/help">
+      <a id="aboutItem" href="/help">
         <div class="item">
           $i18n{aboutOsPageTitle}
         </div>

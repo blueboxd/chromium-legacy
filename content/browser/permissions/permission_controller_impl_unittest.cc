@@ -41,10 +41,11 @@ class MockManagerWithRequests : public MockPermissionManager {
           const base::OnceCallback<void(
               const std::vector<blink::mojom::PermissionStatus>&)> callback));
   MOCK_METHOD2(SetPermissionOverridesForDevTools,
-               void(const GURL& origin, const PermissionOverrides& overrides));
+               void(const url::Origin& origin,
+                    const PermissionOverrides& overrides));
   MOCK_METHOD0(ResetPermissionOverridesForDevTools, void());
   MOCK_METHOD2(IsPermissionOverridableByDevTools,
-               bool(PermissionType, const GURL&));
+               bool(PermissionType, const url::Origin&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockManagerWithRequests);
@@ -90,7 +91,7 @@ TEST_F(PermissionControllerImplTest, ResettingOverridesForwardsReset) {
 }
 
 TEST_F(PermissionControllerImplTest, SettingOverridesForwardsUpdates) {
-  GURL kTestOrigin(kTestUrl);
+  url::Origin kTestOrigin = url::Origin::Create(GURL(kTestUrl));
   EXPECT_CALL(*mock_manager(),
               SetPermissionOverridesForDevTools(
                   kTestOrigin, testing::ElementsAre(testing::Pair(
@@ -103,7 +104,7 @@ TEST_F(PermissionControllerImplTest, SettingOverridesForwardsUpdates) {
 
 TEST_F(PermissionControllerImplTest,
        RequestPermissionsDelegatesIffMissingOverrides) {
-  GURL kTestOrigin(kTestUrl);
+  url::Origin kTestOrigin = url::Origin::Create(GURL(kTestUrl));
   RenderViewHostTestEnabler enabler;
 
   const std::vector<PermissionType> kTypesToQuery = {
@@ -211,10 +212,11 @@ TEST_F(PermissionControllerImplTest,
           });
       // Regular tests can set expectations.
       if (!test_case.expect_death) {
-        EXPECT_CALL(*mock_manager(),
-                    RequestPermissions(testing::ElementsAreArray(
-                                           test_case.delegated_permissions),
-                                       rfh, kTestOrigin, true, testing::_))
+        EXPECT_CALL(
+            *mock_manager(),
+            RequestPermissions(
+                testing::ElementsAreArray(test_case.delegated_permissions), rfh,
+                kTestOrigin.GetURL(), true, testing::_))
             .WillOnce(testing::Invoke(forward_callbacks));
       } else {
         // Death tests cannot track these expectations but arguments should be
@@ -222,7 +224,7 @@ TEST_F(PermissionControllerImplTest,
         ON_CALL(*mock_manager(),
                 RequestPermissions(
                     testing::ElementsAreArray(test_case.delegated_permissions),
-                    rfh, kTestOrigin, true, testing::_))
+                    rfh, kTestOrigin.GetURL(), true, testing::_))
             .WillByDefault(testing::Invoke(forward_callbacks));
       }
     } else {
@@ -234,13 +236,13 @@ TEST_F(PermissionControllerImplTest,
       EXPECT_CALL(callback,
                   Run(testing::ElementsAreArray(test_case.expected_results)));
       permission_controller()->RequestPermissions(
-          kTypesToQuery, rfh, kTestOrigin,
+          kTypesToQuery, rfh, kTestOrigin.GetURL(),
           /*user_gesture=*/true, callback.Get());
     } else {
       ::testing::FLAGS_gtest_death_test_style = "threadsafe";
       base::MockCallback<RequestsCallback> callback;
       EXPECT_DEATH_IF_SUPPORTED(permission_controller()->RequestPermissions(
-                                    kTypesToQuery, rfh, kTestOrigin,
+                                    kTypesToQuery, rfh, kTestOrigin.GetURL(),
                                     /*user_gesture=*/true, callback.Get()),
                                 "");
     }
@@ -249,49 +251,49 @@ TEST_F(PermissionControllerImplTest,
 
 TEST_F(PermissionControllerImplTest,
        GetPermissionStatusDelegatesIffNoOverrides) {
-  GURL kTestOrigin(kTestUrl);
-  EXPECT_CALL(*mock_manager(), GetPermissionStatus(PermissionType::GEOLOCATION,
-                                                   kTestOrigin, kTestOrigin))
+  GURL kUrl = GURL(kTestUrl);
+  url::Origin kTestOrigin = url::Origin::Create(kUrl);
+  EXPECT_CALL(*mock_manager(),
+              GetPermissionStatus(PermissionType::GEOLOCATION, kUrl, kUrl))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::DENIED));
 
   blink::mojom::PermissionStatus status =
       permission_controller()->GetPermissionStatus(PermissionType::GEOLOCATION,
-                                                   kTestOrigin, kTestOrigin);
+                                                   kUrl, kUrl);
   EXPECT_EQ(status, blink::mojom::PermissionStatus::DENIED);
 
   permission_controller()->SetOverrideForDevTools(
       kTestOrigin, PermissionType::GEOLOCATION,
       blink::mojom::PermissionStatus::GRANTED);
-  EXPECT_CALL(*mock_manager(), GetPermissionStatus(PermissionType::GEOLOCATION,
-                                                   kTestOrigin, kTestOrigin))
+  EXPECT_CALL(*mock_manager(),
+              GetPermissionStatus(PermissionType::GEOLOCATION, kUrl, kUrl))
       .Times(0);
   status = permission_controller()->GetPermissionStatus(
-      PermissionType::GEOLOCATION, kTestOrigin, kTestOrigin);
+      PermissionType::GEOLOCATION, kUrl, kUrl);
   EXPECT_EQ(status, blink::mojom::PermissionStatus::GRANTED);
 }
 
 TEST_F(PermissionControllerImplTest,
        GetPermissionStatusForFrameDelegatesIffNoOverrides) {
-  GURL kTestOrigin(kTestUrl);
-  EXPECT_CALL(*mock_manager(),
-              GetPermissionStatusForFrame(PermissionType::GEOLOCATION, nullptr,
-                                          kTestOrigin))
+  GURL kUrl = GURL(kTestUrl);
+  url::Origin kTestOrigin = url::Origin::Create(kUrl);
+  EXPECT_CALL(*mock_manager(), GetPermissionStatusForFrame(
+                                   PermissionType::GEOLOCATION, nullptr, kUrl))
       .WillOnce(testing::Return(blink::mojom::PermissionStatus::DENIED));
 
   blink::mojom::PermissionStatus status =
       permission_controller()->GetPermissionStatusForFrame(
-          PermissionType::GEOLOCATION, nullptr, kTestOrigin);
+          PermissionType::GEOLOCATION, nullptr, kUrl);
   EXPECT_EQ(status, blink::mojom::PermissionStatus::DENIED);
 
   permission_controller()->SetOverrideForDevTools(
       kTestOrigin, PermissionType::GEOLOCATION,
       blink::mojom::PermissionStatus::GRANTED);
-  EXPECT_CALL(*mock_manager(),
-              GetPermissionStatusForFrame(PermissionType::GEOLOCATION, nullptr,
-                                          kTestOrigin))
+  EXPECT_CALL(*mock_manager(), GetPermissionStatusForFrame(
+                                   PermissionType::GEOLOCATION, nullptr, kUrl))
       .Times(0);
   status = permission_controller()->GetPermissionStatusForFrame(
-      PermissionType::GEOLOCATION, nullptr, kTestOrigin);
+      PermissionType::GEOLOCATION, nullptr, kUrl);
   EXPECT_EQ(status, blink::mojom::PermissionStatus::GRANTED);
 }
 
@@ -299,24 +301,24 @@ TEST_F(PermissionControllerImplTest,
        NotifyChangedSubscriptionsCallsOnChangeOnly) {
   using PermissionStatusCallback =
       base::Callback<void(blink::mojom::PermissionStatus)>;
-  GURL kTestOrigin(kTestUrl);
+  GURL kUrl = GURL(kTestUrl);
+  url::Origin kTestOrigin = url::Origin::Create(kUrl);
 
   // Setup.
   blink::mojom::PermissionStatus sync_status =
       permission_controller()->GetPermissionStatus(
-          PermissionType::BACKGROUND_SYNC, kTestOrigin, kTestOrigin);
+          PermissionType::BACKGROUND_SYNC, kUrl, kUrl);
   permission_controller()->SetOverrideForDevTools(
       kTestOrigin, PermissionType::GEOLOCATION,
       blink::mojom::PermissionStatus::DENIED);
 
   base::MockCallback<PermissionStatusCallback> geo_callback;
   permission_controller()->SubscribePermissionStatusChange(
-      PermissionType::GEOLOCATION, nullptr, kTestOrigin, geo_callback.Get());
+      PermissionType::GEOLOCATION, nullptr, kUrl, geo_callback.Get());
 
   base::MockCallback<PermissionStatusCallback> sync_callback;
   permission_controller()->SubscribePermissionStatusChange(
-      PermissionType::BACKGROUND_SYNC, nullptr, kTestOrigin,
-      sync_callback.Get());
+      PermissionType::BACKGROUND_SYNC, nullptr, kUrl, sync_callback.Get());
 
   // Geolocation should change status, so subscriber is updated.
   EXPECT_CALL(geo_callback, Run(blink::mojom::PermissionStatus::ASK));
@@ -336,30 +338,32 @@ TEST_F(PermissionControllerImplTest,
 
 TEST_F(PermissionControllerImplTest,
        PermissionsCannotBeOverriddenIfNotOverridable) {
-  GURL kTestOrigin(kTestUrl);
-  EXPECT_EQ(permission_controller()->SetOverrideForDevTools(
+  url::Origin kTestOrigin = url::Origin::Create(GURL(kTestUrl));
+  EXPECT_EQ(OverrideStatus::kOverrideSet,
+            permission_controller()->SetOverrideForDevTools(
                 kTestOrigin, PermissionType::GEOLOCATION,
-                blink::mojom::PermissionStatus::DENIED),
-            OverrideStatus::kOverrideSet);
+                blink::mojom::PermissionStatus::DENIED));
 
   // Delegate will be called, but prevents override from being set.
   EXPECT_CALL(*mock_manager(), IsPermissionOverridableByDevTools(
                                    PermissionType::GEOLOCATION, testing::_))
       .WillOnce(testing::Return(false));
-  EXPECT_EQ(permission_controller()->SetOverrideForDevTools(
+  EXPECT_EQ(OverrideStatus::kOverrideNotSet,
+            permission_controller()->SetOverrideForDevTools(
                 kTestOrigin, PermissionType::GEOLOCATION,
-                blink::mojom::PermissionStatus::ASK),
-            OverrideStatus::kOverrideNotSet);
+                blink::mojom::PermissionStatus::ASK));
 
   blink::mojom::PermissionStatus status =
       permission_controller()->GetPermissionStatus(PermissionType::GEOLOCATION,
-                                                   kTestOrigin, kTestOrigin);
-  EXPECT_EQ(status, blink::mojom::PermissionStatus::DENIED);
+                                                   kTestOrigin.GetURL(),
+                                                   kTestOrigin.GetURL());
+  EXPECT_EQ(blink::mojom::PermissionStatus::DENIED, status);
 }
 
 TEST_F(PermissionControllerImplTest,
        GrantPermissionsReturnsStatusesBeingSetIfOverridable) {
-  GURL kTestOrigin(kTestUrl);
+  GURL kUrl(kTestUrl);
+  url::Origin kTestOrigin = url::Origin::Create(kUrl);
   permission_controller()->SetOverrideForDevTools(
       kTestOrigin, PermissionType::GEOLOCATION,
       blink::mojom::PermissionStatus::DENIED);
@@ -385,13 +389,13 @@ TEST_F(PermissionControllerImplTest,
   // Keep original settings as before.
   EXPECT_EQ(blink::mojom::PermissionStatus::DENIED,
             permission_controller()->GetPermissionStatus(
-                PermissionType::GEOLOCATION, kTestOrigin, kTestOrigin));
+                PermissionType::GEOLOCATION, kUrl, kUrl));
+  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
+            permission_controller()->GetPermissionStatus(PermissionType::MIDI,
+                                                         kUrl, kUrl));
   EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
             permission_controller()->GetPermissionStatus(
-                PermissionType::MIDI, kTestOrigin, kTestOrigin));
-  EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
-            permission_controller()->GetPermissionStatus(
-                PermissionType::BACKGROUND_SYNC, kTestOrigin, kTestOrigin));
+                PermissionType::BACKGROUND_SYNC, kUrl, kUrl));
 
   EXPECT_CALL(*mock_manager(), IsPermissionOverridableByDevTools(
                                    PermissionType::GEOLOCATION, testing::_))
@@ -409,13 +413,13 @@ TEST_F(PermissionControllerImplTest,
   EXPECT_EQ(OverrideStatus::kOverrideSet, result);
   EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
             permission_controller()->GetPermissionStatus(
-                PermissionType::GEOLOCATION, kTestOrigin, kTestOrigin));
+                PermissionType::GEOLOCATION, kUrl, kUrl));
+  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
+            permission_controller()->GetPermissionStatus(PermissionType::MIDI,
+                                                         kUrl, kUrl));
   EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
             permission_controller()->GetPermissionStatus(
-                PermissionType::MIDI, kTestOrigin, kTestOrigin));
-  EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            permission_controller()->GetPermissionStatus(
-                PermissionType::BACKGROUND_SYNC, kTestOrigin, kTestOrigin));
+                PermissionType::BACKGROUND_SYNC, kUrl, kUrl));
 }
 
 }  // namespace

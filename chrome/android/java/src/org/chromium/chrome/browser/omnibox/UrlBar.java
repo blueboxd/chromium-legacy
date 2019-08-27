@@ -20,6 +20,7 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.Layout;
 import android.text.Selection;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ReplacementSpan;
 import android.util.AttributeSet;
@@ -27,6 +28,7 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -152,6 +154,14 @@ public class UrlBar extends AutocompleteEditText {
         int SCROLL_TO_TLD = 1;
         int SCROLL_TO_BEGINNING = 2;
     }
+
+    /**
+     * An optional string to use with AccessibilityNodeInfo to report text content.
+     * This is particularly important for auto-fill applications, such as password managers, that
+     * rely on AccessibilityNodeInfo data to apply related form-fill data.
+     */
+    private CharSequence mTextForAutofillServices;
+    private boolean mRequestingAutofillStructure;
 
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
@@ -589,6 +599,13 @@ public class UrlBar extends AutocompleteEditText {
         mTextChangeListener = listener;
     }
 
+    /**
+     * Set the text to report to Autofill services upon call to onProvideAutofillStructure.
+     */
+    public void setTextForAutofillServices(CharSequence text) {
+        mTextForAutofillServices = text;
+    }
+
     @Override
     public boolean onTextContextMenuItem(int id) {
         if (mTextContextMenuDelegate == null) return super.onTextContextMenuItem(id);
@@ -909,6 +926,21 @@ public class UrlBar extends AutocompleteEditText {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+    }
+
+    @Override
+    public void onProvideAutofillStructure(ViewStructure structure, int autofillFlags) {
+        // https://crbug.com/996402: Prevent breaking autofill services on newer versions of
+        // Android.
+        mRequestingAutofillStructure = true;
+        super.onProvideAutofillStructure(structure, autofillFlags);
+        mRequestingAutofillStructure = false;
+    }
+
+    @Override
+    public Editable getText() {
+        return mRequestingAutofillStructure ? new SpannableStringBuilder(mTextForAutofillServices)
+                                            : super.getText();
     }
 
     @Override

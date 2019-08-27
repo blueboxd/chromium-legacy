@@ -130,22 +130,22 @@ NativeFileSystemManagerImpl::~NativeFileSystemManagerImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void NativeFileSystemManagerImpl::BindRequest(
+void NativeFileSystemManagerImpl::BindReceiver(
     const BindingContext& binding_context,
-    blink::mojom::NativeFileSystemManagerRequest request) {
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI));
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(network::IsOriginPotentiallyTrustworthy(binding_context.origin));
-  bindings_.AddBinding(this, std::move(request), binding_context);
+  receivers_.Add(this, std::move(receiver), binding_context);
 }
 
 // static
-void NativeFileSystemManagerImpl::BindRequestFromUIThread(
+void NativeFileSystemManagerImpl::BindReceiverFromUIThread(
     StoragePartitionImpl* storage_partition,
     const BindingContext& binding_context,
-    blink::mojom::NativeFileSystemManagerRequest request) {
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!network::IsOriginPotentiallyTrustworthy(binding_context.origin)) {
     mojo::ReportBadMessage("Native File System access from Unsecure Origin");
@@ -154,21 +154,32 @@ void NativeFileSystemManagerImpl::BindRequestFromUIThread(
 
   auto* manager = storage_partition->GetNativeFileSystemManager();
   base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
+                 base::BindOnce(&NativeFileSystemManagerImpl::BindReceiver,
                                 base::Unretained(manager), binding_context,
-                                std::move(request)));
+                                std::move(receiver)));
+}
+
+// static
+void NativeFileSystemManagerImpl::BindRequestFromUIThread(
+    StoragePartitionImpl* storage_partition,
+    const BindingContext& binding_context,
+    blink::mojom::NativeFileSystemManagerRequest request) {
+  // Implicit conversion |request| to
+  // mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>.
+  BindReceiverFromUIThread(storage_partition, binding_context,
+                           std::move(request));
 }
 
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
     GetSandboxedFileSystemCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  url::Origin origin = bindings_.dispatch_context().origin;
+  url::Origin origin = receivers_.current_context().origin;
 
   context()->OpenFileSystem(
       origin.GetURL(), storage::kFileSystemTypeTemporary,
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem,
-                     weak_factory_.GetWeakPtr(), bindings_.dispatch_context(),
+                     weak_factory_.GetWeakPtr(), receivers_.current_context(),
                      std::move(callback)));
 }
 
@@ -178,12 +189,12 @@ void NativeFileSystemManagerImpl::ChooseEntries(
     bool include_accepts_all,
     ChooseEntriesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const BindingContext& context = bindings_.dispatch_context();
+  const BindingContext& context = receivers_.current_context();
 
   // ChooseEntries API is only available to windows, as we need a frame to
   // anchor the picker to.
   if (context.is_worker()) {
-    bindings_.ReportBadMessage("ChooseEntries called from a worker");
+    receivers_.ReportBadMessage("ChooseEntries called from a worker");
     return;
   }
 

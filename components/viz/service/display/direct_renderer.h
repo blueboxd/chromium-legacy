@@ -93,6 +93,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     OverlayCandidateList overlay_list;
     CALayerOverlayList ca_layer_overlay_list;
     DCLayerOverlayList dc_layer_overlay_list;
+    // When we have a buffer queue, the output surface could be treated as an
+    // overlay plane, and the struct to store that information is in
+    // |output_surface_plane|.
+    base::Optional<OverlayProcessor::OutputSurfaceOverlayPlane>
+        output_surface_plane;
   };
 
   void SetCurrentFrameForTesting(const DrawingFrame& frame);

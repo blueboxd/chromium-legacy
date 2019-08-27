@@ -5,7 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_OPT_IN_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_OPT_IN_VIEW_H_
 
-#include "ash/assistant/assistant_prefs_controller.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"

@@ -3012,10 +3012,6 @@ const char kAppServiceAshDescription[] =
     "Use the App Service to provide data to the Ash UI, such as the shelf and "
     "app list.";
 
-const char kArcAvailableForChildName[] = "Allow ARC for child accounts";
-const char kArcAvailableForChildDescription[] =
-    "Allow child accounts to start Android apps.";
-
 const char kArcBootCompleted[] = "Load Android apps automatically";
 const char kArcBootCompletedDescription[] =
     "Allow Android apps to start automatically after signing in.";
@@ -3180,9 +3176,9 @@ const char kDoubleTapToZoomInTabletModeDescription[] =
     "page.";
 
 const char kEnableAdvancedPpdAttributesName[] =
-    "Enables advanced PPD attributes";
+    "Enable advanced PPD attributes";
 const char kEnableAdvancedPpdAttributesDescription[] =
-    "Enables advanced settings on CUPS printers";
+    "Enable advanced settings on CUPS printers";
 
 const char kEnableAppDataSearchName[] = "Enable app data search in launcher";
 const char kEnableAppDataSearchDescription[] =
@@ -3257,11 +3253,6 @@ const char kEnableGesturePropertiesDBusServiceName[] =
 const char kEnableGesturePropertiesDBusServiceDescription[] =
     "Enable a D-Bus service for accessing gesture properties, which are used "
     "to configure input devices.";
-
-const char kEnableGoogleAssistantName[] = "Enable Google Assistant";
-const char kEnableGoogleAssistantDescription[] =
-    "Enable an experimental Assistant implementation that will work on all "
-    "Chromebooks.";
 
 const char kEnableGoogleAssistantDspName[] =
     "Enable Google Assistant with hardware-based hotword";
@@ -3419,6 +3410,12 @@ const char kNetworkPortalNotificationDescription[] =
     "If enabled, notification is displayed when device is connected to a "
     "network behind captive portal.";
 
+const char kNewOverviewTabletLayoutName[] = "New overview tablet mode layout";
+const char kNewOverviewTabletLayoutDescription[] =
+    "If enabled, in tablet mode, overview items will be laid out in two rows "
+    "with six items showing at a time. Users can scroll through to see hidden "
+    "items.";
+
 const char kNewZipUnpackerName[] = "ZIP Archiver (unpacking)";
 const char kNewZipUnpackerDescription[] =
     "Use the ZIP Archiver for mounting/unpacking ZIP files";
@@ -3516,10 +3513,6 @@ const char kUiShowCompositedLayerBordersAll[] = "All";
 
 const char kUiSlowAnimationsName[] = "Slow UI animations";
 const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
-
-const char kUnfilteredBluetoothDevicesName[] = "Unfiltered Bluetooth devices";
-const char kUnfilteredBluetoothDevicesDescription[] =
-    "Shows all Bluetooth devices in UI (System Tray/Settings Page.)";
 
 const char kUsbguardName[] = "Block new USB devices at the lock screen.";
 const char kUsbguardDescription[] =

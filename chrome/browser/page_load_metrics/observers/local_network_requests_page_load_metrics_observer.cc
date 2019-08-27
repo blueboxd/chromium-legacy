@@ -350,13 +350,12 @@ LocalNetworkRequestsPageLoadMetricsObserver::OnCommit(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 LocalNetworkRequestsPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   // The browser may come back, but there is no guarantee. To be safe, we record
   // what we have now and treat changes to this navigation as new page loads.
-  if (extra_info.did_commit) {
+  if (GetDelegate().DidCommit()) {
     RecordHistograms();
-    RecordUkmMetrics(extra_info.source_id);
+    RecordUkmMetrics(GetDelegate().GetSourceId());
     ClearLocalState();
   }
 
@@ -395,11 +394,10 @@ void LocalNetworkRequestsPageLoadMetricsObserver::OnLoadedResource(
 }
 
 void LocalNetworkRequestsPageLoadMetricsObserver::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.did_commit) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (GetDelegate().DidCommit()) {
     RecordHistograms();
-    RecordUkmMetrics(info.source_id);
+    RecordUkmMetrics(GetDelegate().GetSourceId());
   }
 }
 

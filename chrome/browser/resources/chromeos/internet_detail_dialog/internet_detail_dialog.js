@@ -25,13 +25,7 @@ Polymer({
     /** The network GUID to display details for. */
     guid: String,
 
-    /**
-     * The current properties for the network matching |guid|.
-     * @type {!CrOnc.NetworkProperties|undefined}
-     */
-    networkProperties: Object,
-
-    /** @private {!OncMojo.ManagedProperties|undefined} */
+    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
     managedProperties_: Object,
 
     /** @private {?OncMojo.DeviceStateProperties} */
@@ -67,7 +61,7 @@ Polymer({
    * prevents setProperties from being called when setting default properties.
    * @private {boolean}
    */
-  networkPropertiesReceived_: false,
+  propertiesReceived_: false,
 
   /**
    * This UI will use both the networkingPrivate extension API and the
@@ -105,14 +99,8 @@ Polymer({
       this.close_();
     }
 
-    // Set basic networkProperties until they are loaded.
-    this.networkPropertiesReceived_ = false;
-    this.networkProperties = {
-      GUID: this.guid,
-      Type: type,
-      ConnectionState: CrOnc.ConnectionState.NOT_CONNECTED,
-      Name: {Active: name},
-    };
+    // Set default managedProperties_ until they are loaded.
+    this.propertiesReceived_ = false;
     this.managedProperties_ = OncMojo.getDefaultManagedProperties(
         OncMojo.getNetworkTypeFromString(type), this.guid, name);
     this.getNetworkDetails_();
@@ -172,7 +160,7 @@ Polymer({
    * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
    */
   onNetworkStateChanged: function(network) {
-    if (!this.guid || !this.networkProperties) {
+    if (!this.guid || !this.managedProperties_) {
       return;
     }
     if (network.guid == this.guid) {
@@ -188,41 +176,9 @@ Polymer({
     }
   },
 
-  /**
-   * Calls networkingPrivate.getProperties for this.guid.
-   * @private
-   */
+  /** @private */
   getNetworkDetails_: function() {
     assert(this.guid);
-    this.networkingPrivate.getManagedProperties(
-        this.guid, this.getPropertiesCallback_.bind(this));
-  },
-
-  /**
-   * networkingPrivate.getProperties callback.
-   * @param {!CrOnc.NetworkProperties} properties The network properties.
-   * @private
-   */
-  getPropertiesCallback_: function(properties) {
-    if (chrome.runtime.lastError) {
-      const message = chrome.runtime.lastError.message;
-      if (message == 'Error.InvalidNetworkGuid') {
-        console.error('Details page: GUID no longer exists: ' + this.guid);
-      } else {
-        console.error(
-            'Unexpected networkingPrivate.getManagedProperties error: ' +
-            message + ' For: ' + this.guid);
-      }
-      this.close_();
-      return;
-    }
-    if (!properties) {
-      console.error('No properties for: ' + this.guid);
-      this.close_();
-      return;
-    }
-
-    // Get the managed properties and then update networkProperties_, etc.
     this.networkConfig_.getManagedProperties(this.guid).then(response => {
       if (!response.result) {
         // Edge case, may occur when disabling. Close this.
@@ -230,8 +186,7 @@ Polymer({
         return;
       }
       this.managedProperties_ = response.result;
-      this.networkProperties_ = properties;
-      this.networkPropertiesReceived_ = true;
+      this.propertiesReceived_ = true;
     });
   },
 
@@ -258,7 +213,7 @@ Polymer({
    * @private
    */
   setMojoNetworkProperties_: function(config) {
-    if (!this.networkPropertiesReceived_ || !this.guid) {
+    if (!this.propertiesReceived_ || !this.guid) {
       return;
     }
     this.networkConfig_.setProperties(this.guid, config).then(response => {
@@ -304,7 +259,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -313,7 +268,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -323,7 +278,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -332,7 +287,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -342,7 +297,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -352,7 +307,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
@@ -364,7 +319,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -374,7 +329,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -386,7 +341,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
@@ -436,14 +391,16 @@ Polymer({
 
   /** @private */
   onConnectDisconnectClick_: function() {
-    assert(this.networkProperties && this.managedProperties_);
+    if (!this.managedProperties_) {
+      return;
+    }
     if (!this.showConnect_(this.managedProperties_)) {
       this.networkingPrivate.startDisconnect(this.guid);
       return;
     }
 
-    const properties = this.networkProperties;
-    this.networkingPrivate.startConnect(properties.GUID, function() {
+    const guid = this.managedProperties_.guid;
+    this.networkingPrivate.startConnect(guid, function() {
       if (chrome.runtime.lastError) {
         const message = chrome.runtime.lastError.message;
         if (message == 'connecting' || message == 'connect-canceled' ||
@@ -452,7 +409,7 @@ Polymer({
         }
         console.error(
             'Unexpected networkingPrivate.startConnect error: ' + message +
-            ' For: ' + properties.GUID);
+            ' For: ' + guid);
       }
     });
   },
@@ -462,7 +419,7 @@ Polymer({
    * @private
    */
   onApnChange_: function(event) {
-    if (!this.networkPropertiesReceived_) {
+    if (!this.propertiesReceived_) {
       return;
     }
     const apn = event.detail;
@@ -495,6 +452,9 @@ Polymer({
    * @private
    */
   onProxyChange_: function(event) {
+    if (!this.propertiesReceived_) {
+      return;
+    }
     this.setMojoNetworkProperties_({proxySettings: event.detail});
   },
 
@@ -505,7 +465,7 @@ Polymer({
    */
   hasVisibleFields_: function(fields) {
     return fields.some((field) => {
-      const value = this.get(field, this.networkProperties);
+      const value = this.get(field, this.managedProperties_);
       return value !== undefined && value !== '';
     });
   },
@@ -524,18 +484,18 @@ Polymer({
    */
   getInfoFields_: function() {
     /** @type {!Array<string>} */ const fields = [];
-    const type = this.networkProperties.Type;
-    if (type == CrOnc.Type.CELLULAR && this.networkProperties.Cellular) {
+    const type = this.managedProperties_.type;
+    if (type == mojom.NetworkType.kCellular) {
       fields.push(
-          'Cellular.HomeProvider.Name', 'Cellular.ServingOperator.Name',
-          'Cellular.ActivationState', 'Cellular.RoamingState',
-          'RestrictedConnectivity', 'Cellular.MEID', 'Cellular.ESN',
-          'Cellular.ICCID', 'Cellular.IMEI', 'Cellular.IMSI', 'Cellular.MDN',
-          'Cellular.MIN');
-    } else if (type == CrOnc.Type.WI_FI) {
-      fields.push('RestrictedConnectivity');
+          'cellular.homeProvider.name', 'cellular.servingOperator.name',
+          'cellular.activationState', 'cellular.roamingState',
+          'restrictedConnectivity', 'cellular.meid', 'cellular.esn',
+          'cellular.iccid', 'cellular.imei', 'cellular.imsi', 'cellular.mdn',
+          'cellular.min');
+    } else if (type == mojom.NetworkType.kWiFi) {
+      fields.push('restrictedConnectivity');
     }
-    fields.push('MacAddress');
+    fields.push('macAddress');
     return fields;
   },
 });

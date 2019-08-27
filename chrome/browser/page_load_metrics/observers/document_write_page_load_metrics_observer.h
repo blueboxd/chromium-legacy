@@ -25,21 +25,16 @@ class DocumentWritePageLoadMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
   void OnFirstContentfulPaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   void OnFirstMeaningfulPaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
   void OnParseStop(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
-  void OnLoadingBehaviorObserved(
-      content::RenderFrameHost* rfh,
-      int behavior_flags,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
+                                 int behavior_flags) override;
 
   enum DocumentWriteLoadingBehavior {
     LOADING_BEHAVIOR_BLOCK,

@@ -25,6 +25,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
       const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
       DisplayResourceProvider* resource_provider,
       RenderPassList* render_pass,
+      const PrimaryPlane* primary_plane,
       OverlayCandidateList* candidate_list,
       std::vector<gfx::Rect>* content_bounds) override;
 
@@ -34,6 +35,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
   static constexpr size_t kMaxFrameCandidateWithSameResourceId = 3;
 
   bool TryOverlay(QuadList* quad_list,
+                  const PrimaryPlane* primary_plane,
                   OverlayCandidateList* candidate_list,
                   const OverlayCandidate& candidate,
                   QuadList::Iterator candidate_iterator);

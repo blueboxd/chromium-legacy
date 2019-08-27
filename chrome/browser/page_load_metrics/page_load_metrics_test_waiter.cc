@@ -95,13 +95,12 @@ void PageLoadMetricsTestWaiter::Wait() {
 
 void PageLoadMetricsTestWaiter::OnTimingUpdated(
     content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (ExpectationsSatisfied())
     return;
   const page_load_metrics::mojom::PageLoadMetadata& metadata =
-      subframe_rfh ? extra_info.subframe_metadata
-                   : extra_info.main_frame_metadata;
+      subframe_rfh ? GetDelegateForCommittedLoad().GetSubframeMetadata()
+                   : GetDelegateForCommittedLoad().GetMainFrameMetadata();
   TimingFieldBitSet matched_bits = GetMatchedBits(timing, metadata);
   if (subframe_rfh) {
     subframe_expected_fields_.ClearMatching(matched_bits);
@@ -165,8 +164,7 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
 
 void PageLoadMetricsTestWaiter::OnFeaturesUsageObserved(
     content::RenderFrameHost* rfh,
-    const mojom::PageLoadFeatures& features,
-    const PageLoadExtraInfo& extra_info) {
+    const mojom::PageLoadFeatures& features) {
   if (WebFeaturesExpectationsSatisfied())
     return;
 
@@ -182,8 +180,7 @@ void PageLoadMetricsTestWaiter::OnFeaturesUsageObserved(
 }
 
 void PageLoadMetricsTestWaiter::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    content::NavigationHandle* navigation_handle) {
   if (SubframeNavigationExpectationsSatisfied())
     return;
 
@@ -301,10 +298,9 @@ PageLoadMetricsTestWaiter::WaiterMetricsObserver::WaiterMetricsObserver(
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (waiter_)
-    waiter_->OnTimingUpdated(subframe_rfh, timing, extra_info);
+    waiter_->OnTimingUpdated(subframe_rfh, timing);
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnCpuTimingUpdate(
@@ -332,18 +328,16 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(
     content::RenderFrameHost* rfh,
-    const mojom::PageLoadFeatures& features,
-    const PageLoadExtraInfo& extra_info) {
+    const mojom::PageLoadFeatures& features) {
   if (waiter_)
-    waiter_->OnFeaturesUsageObserved(nullptr, features, extra_info);
+    waiter_->OnFeaturesUsageObserved(nullptr, features);
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
     OnDidFinishSubFrameNavigation(
-        content::NavigationHandle* navigation_handle,
-        const page_load_metrics::PageLoadExtraInfo& extra_info) {
+        content::NavigationHandle* navigation_handle) {
   if (waiter_)
-    waiter_->OnDidFinishSubFrameNavigation(navigation_handle, extra_info);
+    waiter_->OnDidFinishSubFrameNavigation(navigation_handle);
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::FrameSizeChanged(

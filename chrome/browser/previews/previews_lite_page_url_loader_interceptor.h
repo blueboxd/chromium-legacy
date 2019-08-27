@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_URL_LOADER_INTERCEPTOR_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <set>
 

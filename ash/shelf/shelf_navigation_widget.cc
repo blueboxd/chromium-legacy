@@ -12,7 +12,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -20,7 +19,6 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -34,29 +32,41 @@ bool IsTabletMode() {
          Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
+// Returns the bounds for the first button shown in this view (the back
+// button in tablet mode, the home button otherwise).
+gfx::Rect GetFirstButtonBounds() {
+  return gfx::Rect(0, 0, ShelfConstants::control_size(),
+                   ShelfConstants::control_size());
+}
+
+// Returns the bounds for the second button shown in this view (which is
+// always the home button and only in tablet mode, which implies a horizontal
+// shelf).
+gfx::Rect GetSecondButtonBounds() {
+  return gfx::Rect(
+      ShelfConstants::control_size() + ShelfConstants::button_spacing(), 0,
+      ShelfConstants::control_size(), ShelfConstants::control_size());
+}
+
 }  // namespace
 
 class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
-                                        public views::WidgetDelegate,
-                                        public ShellObserver {
+                                        public views::WidgetDelegate {
  public:
   Delegate(Shelf* shelf, ShelfView* shelf_view);
   ~Delegate() override;
 
-  // views::View
+  // views::View:
   FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // views::AccessiblePaneView
+  // views::AccessiblePaneView:
   View* GetDefaultFocusableChild() override;
 
-  // views::WidgetDelegate
+  // views::WidgetDelegate:
   bool CanActivate() const override;
   views::Widget* GetWidget() override { return View::GetWidget(); }
   const views::Widget* GetWidget() const override { return View::GetWidget(); }
-
-  // ShellObserver
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   BackButton* back_button() const { return back_button_; }
   HomeButton* home_button() const { return home_button_; }
@@ -66,11 +76,8 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   }
 
  private:
-  void UpdateLayoutManager();
-
   BackButton* back_button_ = nullptr;
   HomeButton* home_button_ = nullptr;
-  Shelf* shelf_ = nullptr;
   // When true, the default focus of the navigation widget is the last
   // focusable child.
   bool default_last_focusable_child_ = false;
@@ -78,8 +85,7 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
-    : shelf_(shelf) {
+ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view) {
   set_allow_deactivate_on_esc(true);
 
   const int control_size = ShelfConstants::control_size();
@@ -101,14 +107,9 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
   SetBackground(views::CreateRoundedRectBackground(
       kShelfControlPermanentHighlightBackground,
       ShelfConstants::control_border_radius()));
-  UpdateLayoutManager();
-
-  Shell::Get()->AddShellObserver(this);
 }
 
-ShelfNavigationWidget::Delegate::~Delegate() {
-  Shell::Get()->RemoveShellObserver(this);
-}
+ShelfNavigationWidget::Delegate::~Delegate() = default;
 
 bool ShelfNavigationWidget::Delegate::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
@@ -132,33 +133,22 @@ views::View* ShelfNavigationWidget::Delegate::GetDefaultFocusableChild() {
                                        : GetFirstFocusableChild();
 }
 
-void ShelfNavigationWidget::Delegate::OnShelfAlignmentChanged(
-    aura::Window* root_window) {
-  UpdateLayoutManager();
-}
-
-void ShelfNavigationWidget::Delegate::UpdateLayoutManager() {
-  const views::BoxLayout::Orientation orientation =
-      shelf_->IsHorizontalAlignment()
-          ? views::BoxLayout::Orientation::kHorizontal
-          : views::BoxLayout::Orientation::kVertical;
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      orientation, gfx::Insets(), ShelfConstants::button_spacing()));
-}
-
 ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
                                              ShelfView* shelf_view)
     : shelf_(shelf),
       delegate_(new ShelfNavigationWidget::Delegate(shelf, shelf_view)),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(delegate_)) {
   DCHECK(shelf_);
+  bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDurationMs);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 ShelfNavigationWidget::~ShelfNavigationWidget() {
   // Shell destroys the TabletModeController before destroying all root windows.
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 void ShelfNavigationWidget::Initialize(aura::Window* container) {
@@ -174,9 +164,9 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
   set_focus_on_creation(false);
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
   SetContentsView(delegate_);
-  GetBackButton()->SetVisible(IsTabletMode());
-  GetBackButton()->layer()->SetOpacity(IsTabletMode() ? 1 : 0);
+  GetBackButton()->SetBoundsRect(GetFirstButtonBounds());
   SetSize(GetIdealSize());
+  UpdateLayout();
 }
 
 gfx::Size ShelfNavigationWidget::GetIdealSize() const {
@@ -218,46 +208,41 @@ void ShelfNavigationWidget::SetDefaultLastFocusableChild(
 }
 
 void ShelfNavigationWidget::OnTabletModeStarted() {
-  // Show the back button right away so that the animation is visible.
-  GetBackButton()->SetVisible(true);
-  GetBackButton()->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-
-  ui::ScopedLayerAnimationSettings settings(
-      GetBackButton()->layer()->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kBackButtonOpacityAnimationDurationMs));
-  settings.AddObserver(this);
-  GetBackButton()->layer()->SetOpacity(1);
-
-  bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDurationMs);
-  bounds_animator_->AnimateViewTo(
-      GetHomeButton(),
-      gfx::Rect(
-          ShelfConstants::control_size() + ShelfConstants::button_spacing(), 0,
-          ShelfConstants::control_size(), ShelfConstants::control_size()));
+  UpdateLayout();
 }
 
 void ShelfNavigationWidget::OnTabletModeEnded() {
-  ui::ScopedLayerAnimationSettings settings(
-      GetBackButton()->layer()->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kBackButtonOpacityAnimationDurationMs));
-  settings.AddObserver(this);
-  GetBackButton()->layer()->SetOpacity(0);
+  UpdateLayout();
+}
 
-  GetBackButton()->SetFocusBehavior(views::View::FocusBehavior::NEVER);
-  bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDurationMs);
-  bounds_animator_->AnimateViewTo(
-      GetHomeButton(), gfx::Rect(0, 0, ShelfConstants::control_size(),
-                                 ShelfConstants::control_size()));
+void ShelfNavigationWidget::OnShelfAlignmentChanged(aura::Window* root_window) {
+  UpdateLayout();
 }
 
 void ShelfNavigationWidget::OnImplicitAnimationsCompleted() {
   // Hide the back button once it has become fully transparent.
-  if (!IsTabletMode()) {
+  if (!IsTabletMode())
     GetBackButton()->SetVisible(false);
-    delegate_->InvalidateLayout();
-  }
+}
+
+void ShelfNavigationWidget::UpdateLayout() {
+  const bool tablet_mode = IsTabletMode();
+  // Show the back button right away so that the animation is visible.
+  if (tablet_mode)
+    GetBackButton()->SetVisible(true);
+  GetBackButton()->SetFocusBehavior(tablet_mode
+                                        ? views::View::FocusBehavior::ALWAYS
+                                        : views::View::FocusBehavior::NEVER);
+  ui::ScopedLayerAnimationSettings settings(
+      GetBackButton()->layer()->GetAnimator());
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kBackButtonOpacityAnimationDurationMs));
+  settings.AddObserver(this);
+  GetBackButton()->layer()->SetOpacity(tablet_mode ? 1 : 0);
+
+  bounds_animator_->AnimateViewTo(
+      GetHomeButton(),
+      tablet_mode ? GetSecondButtonBounds() : GetFirstButtonBounds());
 }
 
 }  // namespace ash

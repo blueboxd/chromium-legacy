@@ -137,10 +137,6 @@ class DevToolsSession : public protocol::FrontendChannel,
   blink::mojom::DevToolsSessionStatePtr session_state_cookie_;
 
   DevToolsSession* root_session_ = nullptr;
-  // If this session is a child session (root_session_ != nullptr), and we're in
-  // flatten_protocol mode (see protocol/target_handler.cc), then and only then,
-  // |child_session_id_| will contain a non-empty session id.
-  std::string child_session_id_;
   base::flat_map<std::string, DevToolsSession*> child_sessions_;
   base::OnceClosure runtime_resume_;
   DevToolsExternalAgentProxyDelegate* proxy_delegate_ = nullptr;

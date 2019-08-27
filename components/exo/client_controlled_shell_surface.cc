@@ -92,18 +92,9 @@ class ClientControlledStateDelegate
                            ash::WindowStateType requested_state,
                            const gfx::Rect& bounds_in_display,
                            int64_t display_id) override {
-    const display::Screen* screen = display::Screen::GetScreen();
-    display::Display target_display;
-    if (!screen->GetDisplayWithDisplayId(display_id, &target_display))
-      return;
-
-    // TODO(oshima): Remove the conversion here and one in zcr_remote_shell.
-    gfx::Rect bounds_in_screen(bounds_in_display);
-    bounds_in_screen.Offset(target_display.bounds().OffsetFromOrigin());
-
     shell_surface_->OnBoundsChangeEvent(
         window_state->GetStateType(), requested_state, display_id,
-        bounds_in_screen,
+        bounds_in_display,
         window_state->drag_details() && shell_surface_->IsDragging()
             ? window_state->drag_details()->bounds_change
             : 0);
@@ -811,8 +802,6 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   display::Display display;
   if (screen->GetDisplayWithDisplayId(display_id_, &display)) {
     bool is_display_stale = display_id_ != current_display.id();
-    LOG(ERROR) << "DisplayId:" << display_id_
-               << ", current:" << current_display.id();
 
     // Preserve widget bounds until client acknowledges display move.
     if (preserve_widget_bounds_ && is_display_stale)
@@ -846,7 +835,6 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 
   bool set_bounds_locally =
       GetWindowState()->is_dragged() && !is_display_move_pending;
-  LOG(ERROR) << "Updating Locally";
 
   if (set_bounds_locally || client_controlled_state_->set_bounds_locally()) {
     // Convert from screen to display coordinates.
@@ -861,7 +849,6 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     UpdateSurfaceBounds();
     return;
   }
-  LOG(ERROR) << "Updating Remotely";
 
   {
     ScopedSetBoundsLocally scoped_set_bounds(this);
@@ -869,12 +856,15 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   }
 
   if (bounds != adjusted_bounds || is_display_move_pending) {
-    LOG(ERROR) << "Sending Bounds:" << bounds.ToString()
-               << ", adjusted=" << adjusted_bounds.ToString();
     // Notify client that bounds were adjusted or window moved across displays.
     auto state_type = GetWindowState()->GetStateType();
+    gfx::Rect adjusted_bounds_in_display(adjusted_bounds);
+
+    adjusted_bounds_in_display.Offset(
+        -target_display.bounds().OffsetFromOrigin());
+
     OnBoundsChangeEvent(state_type, state_type, target_display.id(),
-                        adjusted_bounds, 0);
+                        adjusted_bounds_in_display, 0);
   }
 
   UpdateSurfaceBounds();

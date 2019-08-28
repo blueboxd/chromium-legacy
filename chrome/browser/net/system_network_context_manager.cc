@@ -78,6 +78,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
 namespace {
 
 // The global instance of the SystemNetworkContextmanager.
@@ -561,6 +565,11 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
          "application/vnd.wordprocessing-openxml",
          "text/csv"});
   }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  network_service->ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      extensions::kExtensionScheme, base::DoNothing::Once());
+#endif
 
   int max_connections_per_proxy =
       local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);

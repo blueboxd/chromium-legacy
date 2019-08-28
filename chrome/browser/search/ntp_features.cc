@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search/ntp_features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_features.h"
 
@@ -40,5 +41,15 @@ const base::Feature kFirstRunDefaultSearchShortcut{
 // below the non-fake input ("realbox").
 const base::Feature kNtpRealbox{"NtpRealbox",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, forces IsNtpRealboxEnabled() to return true and shows suggestions
+// in the NTP "realbox" without any input (i.e. on focus).
+extern const base::Feature kNtpZeroSuggest{"NtpZeroSuggest",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsNtpRealboxEnabled() {
+  return base::FeatureList::IsEnabled(kNtpRealbox) ||
+         base::FeatureList::IsEnabled(kNtpZeroSuggest);
+}
 
 }  // namespace features

@@ -13,6 +13,7 @@
 #include "net/base/load_flags.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
+#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/initiator_lock_compatibility.h"
 #include "services/network/loader_util.h"
 #include "services/network/network_context.h"
@@ -191,22 +192,45 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     }
   }
 
+  // Compare |request_initiator| and |request_initiator_site_lock_|.
   InitiatorLockCompatibility initiator_lock_compatibility =
-      process_id_ == mojom::kBrowserProcessId
-          ? InitiatorLockCompatibility::kBrowserProcess
-          : VerifyRequestInitiatorLock(request_initiator_site_lock_,
-                                       request.request_initiator);
+      VerifyRequestInitiatorLock(process_id_, request_initiator_site_lock_,
+                                 request.request_initiator);
   UMA_HISTOGRAM_ENUMERATION(
       "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
       initiator_lock_compatibility);
-  // TODO(lukasza): Enforce the origin lock.
-  // - https://crbug.com/766694: In the long-term kIncorrectLock should trigger
-  //   a renderer kill, but this can't be done until HTML Imports are gone.
-  // - https://crbug.com/515309: The lock should apply to Origin header (and
-  //   SameSite cookies) in addition to CORB (which was taken care of in
-  //   https://crbug.com/871827).  Here enforcement most likely would mean
-  //   setting |url_request_|'s initiator to something other than
-  //   |request.request_initiator| (opaque origin?  lock origin?).
+  switch (initiator_lock_compatibility) {
+    case InitiatorLockCompatibility::kCompatibleLock:
+    case InitiatorLockCompatibility::kBrowserProcess:
+    case InitiatorLockCompatibility::kExcludedScheme:
+    case InitiatorLockCompatibility::kExcludedUniversalAccessPlugin:
+      break;
+
+    case InitiatorLockCompatibility::kNoLock:
+      // TODO(lukasza): https://crbug.com/891872: Browser process should always
+      // specify the request_initiator_site_lock in URLLoaderFactories given to
+      // a renderer process.  Once https://crbug.com/891872 is fixed, the case
+      // below should return |false| (i.e. = bad message).
+      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
+      break;
+
+    case InitiatorLockCompatibility::kNoInitiator:
+      // Requests from the renderer need to always specify an initiator.
+      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
+      // TODO(lukasza): Report this as a bad message.
+      break;
+
+    case InitiatorLockCompatibility::kIncorrectLock:
+      // Requests from the renderer need to always specify a correct initiator.
+      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
+      // TODO(lukasza): Report this as a bad message (or use the lock instead
+      // of the renderer-reported value).  Before we can do this, we need to
+      // ensure via UMA that this rarely happens or has low impact.  One known
+      // case are probably non-universal-access plugins (like PNaCl) which
+      // wouldn't be covered by the kExcludedUniversalAccessPlugin exception
+      // above.
+      break;
+  }
 
   if (context) {
     net::HttpRequestHeaders::Iterator header_iterator(

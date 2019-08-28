@@ -34,6 +34,17 @@
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
+// TODO(crbug.com/997685): Flaky on linux.
+#if defined(OS_LINUX)
+#define MAYBE_TestSelectConnectedNetwork DISABLED_TestSelectConnectedNetwork
+#define MAYBE_TestSelectNetwork DISABLED_TestSelectNetwork
+#define MAYBE_TestDeviceRequisition DISABLED_TestDeviceRequisition
+#else
+#define MAYBE_TestSelectConnectedNetwork TestSelectConnectedNetwork
+#define MAYBE_TestSelectNetwork TestSelectNetwork
+#define MAYBE_TestDeviceRequisition TestDeviceRequisition
+#endif
+
 namespace chromeos {
 
 // This test case will use
@@ -243,13 +254,14 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDemoModeAcceptArcTos) {
 }
 
 // Check that configuration lets correctly select a network by GUID.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSelectNetwork) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestSelectNetwork) {
   LoadConfiguration();
   OobeScreenWaiter(EulaView::kScreenId).Wait();
 }
 
 // Check that configuration would proceed if there is a connected network.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSelectConnectedNetwork) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest,
+                       MAYBE_TestSelectConnectedNetwork) {
   LoadConfiguration();
   OobeScreenWaiter(EulaView::kScreenId).Wait();
 }
@@ -274,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestAcceptEula) {
 
 // Check that when configuration has requisition, it gets applied at the
 // beginning.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDeviceRequisition) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, MAYBE_TestDeviceRequisition) {
   LoadConfiguration();
   OobeScreenWaiter(EulaView::kScreenId).Wait();
   auto* policy_manager = g_browser_process->platform_part()

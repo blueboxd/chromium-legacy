@@ -366,7 +366,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
 
   EXPECT_TRUE(callback_called);
 
-  WebApp* web_app = registrar_->GetAppById(app_id);
+  const WebApp* web_app = registrar_->GetAppById(app_id);
   EXPECT_NE(nullptr, web_app);
 
   EXPECT_EQ(app_id, web_app->app_id());
@@ -504,7 +504,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
 
   EXPECT_TRUE(callback_called);
 
-  WebApp* web_app = registrar_->GetAppById(app_id);
+  const WebApp* web_app = registrar_->GetAppById(app_id);
   EXPECT_NE(nullptr, web_app);
 
   // Manifest data overrides Renderer data, except |description|.
@@ -714,7 +714,7 @@ TEST_F(WebAppInstallTaskTest, UserInstallDeclined) {
 
   EXPECT_TRUE(callback_called);
 
-  WebApp* web_app = registrar_->GetAppById(app_id);
+  const WebApp* web_app = registrar_->GetAppById(app_id);
   EXPECT_EQ(nullptr, web_app);
 }
 

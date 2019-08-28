@@ -1925,7 +1925,8 @@ class RemoteDebuggingTest : public extensions::ExtensionApiTest {
 #if defined(OS_CHROMEOS)
 #define MAYBE_RemoteDebugger DISABLED_RemoteDebugger
 #else
-#define MAYBE_RemoteDebugger RemoteDebugger
+// TODO(crbug.com/997911): Flaky on all platforms.
+#define MAYBE_RemoteDebugger DISABLED_RemoteDebugger
 #endif
 IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, MAYBE_RemoteDebugger) {
   ASSERT_TRUE(RunExtensionTest("target_list")) << message_;

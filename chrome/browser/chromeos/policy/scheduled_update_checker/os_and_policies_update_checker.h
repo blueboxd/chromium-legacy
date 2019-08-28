@@ -32,9 +32,10 @@ constexpr base::TimeDelta kOsAndPoliciesUpdateCheckerRetryTime =
 
 // Time for which |OsAndPoliciesUpdateChecker| will wait for a valid network
 // before querying the update server for updates. After this time it will return
-// a failure.
+// a failure. During testing it was noted that on average 1 minute seemed to be
+// the delay after which a network would be detected by Chrome.
 constexpr base::TimeDelta kWaitForNetworkTimeout =
-    base::TimeDelta::FromMinutes(1);
+    base::TimeDelta::FromMinutes(5);
 
 }  // namespace update_checker_internal
 

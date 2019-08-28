@@ -674,6 +674,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   bool should_dispatch_first_layout_after_finished_loading_ = false;
   WebDisplayMode display_mode_ = kWebDisplayModeBrowser;
 
+  // TODO(bokan): Temporary debugging added to diagnose
+  // https://crbug.com/992315. Somehow we're synchronously calling
+  // WebViewImpl::Close while handling an input event.
+  bool debug_inside_input_handling_ = false;
+
   FloatSize elastic_overscroll_;
 
   Persistent<EventListener> popup_mouse_wheel_event_listener_;

@@ -53,7 +53,7 @@ struct CC_EXPORT ScrollNode {
   bool user_scrollable_vertical : 1;
 
   // This offset is used when |scrollable| is false and there isn't a transform
-  // node already present that covers this offset.
+  // node already present that covers this offset. For layer tree mode only.
   gfx::Vector2dF offset_to_transform_parent;
 
   ElementId element_id;

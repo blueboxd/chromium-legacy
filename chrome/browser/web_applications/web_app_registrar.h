@@ -27,7 +27,7 @@ class WebAppRegistrar : public AppRegistrar {
   void RegisterApp(std::unique_ptr<WebApp> web_app);
   std::unique_ptr<WebApp> UnregisterApp(const AppId& app_id);
 
-  WebApp* GetAppById(const AppId& app_id) const;
+  const WebApp* GetAppById(const AppId& app_id) const;
 
   bool is_empty() const { return registry_.empty(); }
 

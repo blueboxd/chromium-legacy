@@ -50,8 +50,7 @@ PropertyTree<T>& PropertyTree<T>::operator=(const PropertyTree<T>&) = default;
                                    needs_rebuild))
 
 TransformTree::TransformTree()
-    : source_to_parent_updates_allowed_(true),
-      page_scale_factor_(1.f),
+    : page_scale_factor_(1.f),
       device_scale_factor_(1.f),
       device_transform_scale_factor_(1.f) {
   cached_data_.push_back(TransformCachedNodeData());
@@ -124,13 +123,7 @@ void TransformTree::clear() {
   cached_data_.push_back(TransformCachedNodeData());
   sticky_position_data_.clear();
 
-#if DCHECK_IS_ON()
-  TransformTree tree;
-  // TODO(jaydasika) : Move tests that expect source_to_parent_updates_allowed
-  // to be true on impl thread to main thread and set it to is_main_thread here.
-  tree.source_to_parent_updates_allowed_ = source_to_parent_updates_allowed_;
-  DCHECK(tree == *this);
-#endif
+  DCHECK(TransformTree() == *this);
 }
 
 void TransformTree::set_needs_update(bool needs_update) {
@@ -202,11 +195,6 @@ bool TransformTree::OnTransformAnimated(ElementId element_id,
   return true;
 }
 
-bool TransformTree::NeedsSourceToParentUpdate(TransformNode* node) {
-  return (source_to_parent_updates_allowed() &&
-          node->parent_id != node->source_node_id);
-}
-
 void TransformTree::ResetChangeTracking() {
   for (int id = TransformTree::kContentsRootNodeId;
        id < static_cast<int>(size()); ++id) {
@@ -219,10 +207,9 @@ void TransformTree::UpdateTransforms(int id) {
   TransformNode* node = Node(id);
   TransformNode* parent_node = parent(node);
   DCHECK(parent_node);
-  TransformNode* source_node = Node(node->source_node_id);
   // TODO(flackr): Only dirty when scroll offset changes.
   if (node->sticky_position_constraint_id >= 0 ||
-      node->needs_local_transform_update || NeedsSourceToParentUpdate(node)) {
+      node->needs_local_transform_update) {
     UpdateLocalTransform(node);
   } else {
     UndoSnapping(node);
@@ -231,7 +218,7 @@ void TransformTree::UpdateTransforms(int id) {
   UpdateAnimationProperties(node, parent_node);
   UpdateSnapping(node);
   UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
-  UpdateTransformChanged(node, parent_node, source_node);
+  UpdateTransformChanged(node, parent_node);
   UpdateNodeAndAncestorsAreAnimatedOrInvertible(node, parent_node);
 
   DCHECK(!node->needs_local_transform_update);
@@ -483,39 +470,6 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
   transform.Translate3d(node->post_translation.x() + node->origin.x(),
                         node->post_translation.y() + node->origin.y(),
                         node->origin.z());
-  if (NeedsSourceToParentUpdate(node)) {
-    gfx::Transform to_parent;
-    ComputeTranslation(node->source_node_id, node->parent_id, &to_parent);
-    gfx::Vector2dF unsnapping;
-    TransformNode* current;
-    TransformNode* parent_node;
-    // Since we are calculating the adjustment for fixed position node or a
-    // scroll child, we need to unsnap only if the snap was caused by a scroll.
-    for (current = Node(node->source_node_id); current->id > node->parent_id;
-         current = parent(current)) {
-      DCHECK(current->scrolls || current->snap_amount.IsZero());
-      if (current->scrolls)
-        unsnapping.Subtract(current->snap_amount);
-    }
-    for (parent_node = Node(node->parent_id);
-         parent_node->id > node->source_node_id;
-         parent_node = parent(parent_node)) {
-      DCHECK(parent_node->scrolls || parent_node->snap_amount.IsZero());
-      if (parent_node->scrolls)
-        unsnapping.Add(parent_node->snap_amount);
-    }
-    // If a node NeedsSourceToParentUpdate, the node is either a fixed position
-    // node or a scroll child.
-    // If the node has a fixed position, the parent of the node is an ancestor
-    // of source node, current->id should be equal to node->parent_id.
-    // Otherwise, the node's source node is always an ancestor of the node owned
-    // by the scroll parent, so parent_node->id should be equal to
-    // node->source_node_id.
-    DCHECK(current->id == node->parent_id ||
-           parent_node->id == node->source_node_id);
-    to_parent.Translate(unsnapping.x(), unsnapping.y());
-    node->source_to_parent = to_parent.To2dTranslation();
-  }
 
   float fixed_position_adjustment = 0;
   if (node->moved_by_outer_viewport_bounds_delta_y) {
@@ -523,9 +477,8 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
         property_trees()->outer_viewport_container_bounds_delta().y();
   }
 
-  transform.Translate(node->source_to_parent.x() - node->scroll_offset.x(),
-                      node->source_to_parent.y() - node->scroll_offset.y() +
-                          fixed_position_adjustment);
+  transform.Translate(-node->scroll_offset.x(),
+                      -node->scroll_offset.y() + fixed_position_adjustment);
   transform.Translate(StickyPositionOffset(node));
   transform.PreconcatTransform(node->local);
   transform.Translate3d(gfx::Point3F() - node->origin);
@@ -604,16 +557,9 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
 }
 
 void TransformTree::UpdateTransformChanged(TransformNode* node,
-                                           TransformNode* parent_node,
-                                           TransformNode* source_node) {
+                                           TransformNode* parent_node) {
   DCHECK(parent_node);
-  if (parent_node->transform_changed) {
-    node->transform_changed = true;
-    return;
-  }
-
-  if (source_node && source_node->id != parent_node->id &&
-      source_to_parent_updates_allowed_ && source_node->transform_changed)
+  if (parent_node->transform_changed)
     node->transform_changed = true;
 }
 
@@ -720,8 +666,6 @@ void TransformTree::SetToScreen(int node_id, const gfx::Transform& transform) {
 
 bool TransformTree::operator==(const TransformTree& other) const {
   return PropertyTree::operator==(other) &&
-         source_to_parent_updates_allowed_ ==
-             other.source_to_parent_updates_allowed() &&
          page_scale_factor_ == other.page_scale_factor() &&
          device_scale_factor_ == other.device_scale_factor() &&
          device_transform_scale_factor_ ==
@@ -1981,8 +1925,7 @@ void PropertyTrees::UpdateChangeTracking() {
        i < static_cast<int>(transform_tree.size()); ++i) {
     TransformNode* node = transform_tree.Node(i);
     TransformNode* parent_node = transform_tree.parent(node);
-    TransformNode* source_node = transform_tree.Node(node->source_node_id);
-    transform_tree.UpdateTransformChanged(node, parent_node, source_node);
+    transform_tree.UpdateTransformChanged(node, parent_node);
   }
 }
 

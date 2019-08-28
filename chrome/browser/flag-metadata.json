@@ -2442,6 +2442,16 @@
     "expiry_milestone": 80
   },
   {
+    "name": "ntp-realbox",
+    "owners": ["dbeam", "mahmadi"],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "ntp-zero-suggest",
+    "owners": ["dbeam", "mahmadi"],
+    "expiry_milestone": 85
+  },
+  {
     "name": "oculus-vr",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79

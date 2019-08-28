@@ -532,7 +532,6 @@ void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
   property_trees->effect_tree.PushCopyRequestsTo(&property_trees_.effect_tree);
   property_trees_.is_main_thread = false;
   property_trees_.is_active = IsActiveTree();
-  property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
   // The value of some effect node properties (like is_drawn) depends on
   // whether we are on the active tree or not. So, we need to update the
   // effect tree.
@@ -1523,7 +1522,6 @@ void LayerTreeImpl::BuildLayerListAndPropertyTreesForTesting() {
 void LayerTreeImpl::BuildPropertyTreesForTesting() {
   SetElementIdsForTesting();
   property_trees_.needs_rebuild = true;
-  property_trees_.transform_tree.set_source_to_parent_updates_allowed(true);
   PropertyTreeBuilder::BuildPropertyTrees(
       layer_list_[0], PageScaleLayer(), InnerViewportScrollLayer(),
       OuterViewportScrollLayer(), OverscrollElasticityElementId(),
@@ -1531,7 +1529,6 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
       current_page_scale_factor(), device_scale_factor(),
       gfx::Rect(GetDeviceViewport().size()), host_impl_->DrawTransform(),
       &property_trees_);
-  property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
   host_impl_->UpdateElements(GetElementTypeForAnimation());
 }
 

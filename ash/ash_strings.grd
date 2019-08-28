@@ -737,6 +737,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_OVERVIEW_NO_RECENT_ITEMS" desc="The message that is displayed on overview mode when the user enters it with no open windows.">
         No recent items
       </message>
+      <message name="IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a close-able overview item.">
+        Press Ctrl + W to close.
+      </message>
+      <message name="IDS_ASH_OVERVIEW_WINDOW_CLOSING_A11Y_ALERT" desc="The accessibility alert read by screen readers to alert the user that a window in overview mode is closing.">
+        Window <ph name="WINDOW_TITILE">$1<ex>1</ex></ph> closed.
+      </message>
 
       <!-- Virtual Desks -->
       <message name="IDS_ASH_DESKS_NEW_DESK_BUTTON" desc="The label of the new virtual desk (a.k.a. workspaces) button.">
@@ -759,6 +765,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_DESKS_MIN_NUM_REACHED" desc="Message shown to users when they attempt to remove the last virtual.">
         Last desk can't be removed.
+      </message>
+      <message name="IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a highlighted active desk mini_view.">
+        Active desk.
       </message>
 
       <!-- Status tray charging strings. -->

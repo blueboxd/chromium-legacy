@@ -242,6 +242,51 @@ TEST_F(NGLayoutResultCachingTest, HitOOFDescendantAboveBlockStart) {
   EXPECT_NE(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, HitLineBoxDescendantAboveBlockStart) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  // Different BFC offset, same exclusion space, line-box descendant above
+  // block start.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+      .float { float: left; width: 50px; }
+    </style>
+    <div class="bfc">
+      <div style="height: 50px;">
+        <div class="float" style="height: 20px;"></div>
+      </div>
+      <div id="test" style="font-size: 12px;">
+        text
+        <span style="margin: 0 1px;">
+          <span style="display: inline-block; vertical-align: text-bottom; width: 16px; height: 16px;"></span>
+        </span>
+      </div>
+    </div>
+    <div class="bfc">
+      <div style="height: 40px;">
+        <div class="float" style="height: 20px;"></div>
+      </div>
+      <div id="src" style="font-size: 12px;">
+        text
+      </div>
+    </div>
+  )HTML");
+
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+  const NGConstraintSpace& space =
+      src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+}
+
 TEST_F(NGLayoutResultCachingTest, MissFloatInitiallyIntruding1) {
   ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
 

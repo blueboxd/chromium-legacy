@@ -114,7 +114,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
 
   registrar().RegisterApp(std::move(web_app));
   EXPECT_TRUE(registrar().IsInstalled(app_id));
-  WebApp* app = registrar().GetAppById(app_id);
+  const WebApp* app = registrar().GetAppById(app_id);
 
   EXPECT_EQ(app_id, app->app_id());
   EXPECT_EQ(name, app->name());
@@ -128,7 +128,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
 
   registrar().RegisterApp(std::move(web_app2));
   EXPECT_TRUE(registrar().IsInstalled(app_id2));
-  WebApp* app2 = registrar().GetAppById(app_id2);
+  const WebApp* app2 = registrar().GetAppById(app_id2);
   EXPECT_EQ(app_id2, app2->app_id());
   EXPECT_FALSE(registrar().is_empty());
 

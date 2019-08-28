@@ -423,34 +423,20 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
                        HasRoundedCorner(layer);
 
   int parent_index = TransformTree::kRootNodeId;
-  int source_index = TransformTree::kRootNodeId;
-  gfx::Vector2dF source_offset;
-
+  gfx::Vector2dF parent_offset;
   if (!is_root) {
     parent_index = data_from_ancestor.transform_tree_parent;
-    // Because Blink still provides positions with respect to the parent layer,
-    // we track both a parent TransformNode (which is the parent in the
-    // TransformTree) and a 'source' TransformNode (which is the TransformNode
-    // for the parent in the Layer tree).
-    source_index = LayerParent(layer)->transform_tree_index();
-    source_offset = LayerParent(layer)->offset_to_transform_parent();
-    // TODO(wangxianzhu): Remove all "source" handling code.
-    DCHECK_EQ(parent_index, source_index);
+    // Now layer tree mode (IsUsingLayerLists is false) is for ui compositor
+    // only. The transform tree hierarchy is always the same as layer hierarchy.
+    DCHECK_EQ(parent_index, LayerParent(layer)->transform_tree_index());
+    parent_offset = LayerParent(layer)->offset_to_transform_parent();
   }
 
   if (!requires_node) {
     data_for_children->should_flatten |= ShouldFlattenTransform(layer);
     gfx::Vector2dF local_offset =
         Position(layer).OffsetFromOrigin() + Transform(layer).To2dTranslation();
-    gfx::Vector2dF source_to_parent;
-    if (source_index != parent_index) {
-      gfx::Transform to_parent;
-      transform_tree_.ComputeTranslation(source_index, parent_index,
-                                         &to_parent);
-      source_to_parent = to_parent.To2dTranslation();
-    }
-    layer->SetOffsetToTransformParent(source_offset + source_to_parent +
-                                      local_offset);
+    layer->SetOffsetToTransformParent(parent_offset + local_offset);
     layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(
         data_from_ancestor.should_flatten);
     layer->SetTransformTreeIndex(parent_index);
@@ -473,13 +459,12 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   node->scrolls = is_scrollable;
   node->should_be_snapped = is_snapped;
   node->flattens_inherited_transform = data_for_children->should_flatten;
-  node->source_node_id = source_index;
   node->sorting_context_id = SortingContextId(layer);
 
   if (is_root || is_page_scale_layer) {
     // Root layer and page scale layer should not have transform or offset.
     DCHECK(Position(layer).IsOrigin());
-    DCHECK(source_offset.IsZero());
+    DCHECK(parent_offset.IsZero());
     DCHECK(Transform(layer).IsIdentity());
 
     if (is_root) {
@@ -493,10 +478,9 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
       data_for_children->in_subtree_of_page_scale_layer = true;
     }
   } else {
-    node->source_offset = source_offset;
     node->local = Transform(layer);
     node->origin = TransformOrigin(layer);
-    node->UpdatePostTranslation(Position(layer));
+    node->post_translation = parent_offset + Position(layer).OffsetFromOrigin();
   }
 
   node->in_subtree_of_page_scale_layer =

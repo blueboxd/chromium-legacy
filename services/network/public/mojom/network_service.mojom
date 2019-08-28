@@ -323,6 +323,15 @@ interface NetworkService {
   // kMimeHandlerViewInCrossProcessFrame feature ships.
   AddExtraMimeTypesForCorb(array<string> mime_types);
 
+  // Registers a scheme that should not be subject to
+  // |request_initiator_site_lock| checks (e.g. a scheme that is typically
+  // used in isolated worlds, with a separate origin, such as
+  // "chrome-extension").
+  //
+  // TODO(lukasza): https://crbug.com/940068: Remove this method once isolated
+  // worlds use the same |request_initiator| as the main world.
+  ExcludeSchemeFromRequestInitiatorSiteLockChecks(string scheme) => ();
+
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
 

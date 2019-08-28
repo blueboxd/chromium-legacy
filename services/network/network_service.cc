@@ -47,6 +47,7 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/http_auth_cache_copier.h"
+#include "services/network/initiator_lock_compatibility.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
@@ -618,6 +619,14 @@ void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
 void NetworkService::AddExtraMimeTypesForCorb(
     const std::vector<std::string>& mime_types) {
   CrossOriginReadBlocking::AddExtraMimeTypesForCorb(mime_types);
+}
+
+void NetworkService::ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+    const std::string& scheme,
+    mojom::NetworkService::
+        ExcludeSchemeFromRequestInitiatorSiteLockChecksCallback callback) {
+  network::ExcludeSchemeFromRequestInitiatorSiteLockChecks(scheme);
+  std::move(callback).Run();
 }
 
 void NetworkService::OnMemoryPressure(

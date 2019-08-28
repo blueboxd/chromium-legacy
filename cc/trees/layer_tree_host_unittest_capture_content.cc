@@ -188,7 +188,6 @@ class LayerTreeHostCaptureContentTestTwoLayers
   // OnSetupSecondaryLayTransform().
   void SetupTransform(const gfx::Vector2dF& translate) {
     TransformNode transform_node;
-    transform_node.source_node_id = 0;
     transform_node.local.Translate(translate);
     transform_node.id =
         layer_tree_host()->property_trees()->transform_tree.Insert(

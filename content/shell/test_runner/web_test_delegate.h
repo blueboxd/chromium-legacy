@@ -258,6 +258,11 @@ class WebTestDelegate {
   // Forces a text input state update for the client of WebFrameWidget
   // associated with |frame|.
   virtual void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) = 0;
+
+  // Synchronously waits for the browser process to notify the NetworkService
+  // that |scheme| should be excluded from request_initiator_site_lock checks.
+  virtual void ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      const std::string& scheme) = 0;
 };
 
 }  // namespace test_runner

@@ -16,7 +16,6 @@ TransformNode::TransformNode()
     : id(TransformTree::kInvalidNodeId),
       parent_id(TransformTree::kInvalidNodeId),
       sticky_position_constraint_id(-1),
-      source_node_id(TransformTree::kInvalidNodeId),
       sorting_context_id(0),
       needs_local_transform_update(true),
       node_and_ancestors_are_animated_or_invertible(true),
@@ -43,7 +42,6 @@ bool TransformNode::operator==(const TransformNode& other) const {
          element_id == other.element_id && local == other.local &&
          origin == other.origin && post_translation == other.post_translation &&
          to_parent == other.to_parent &&
-         source_node_id == other.source_node_id &&
          sorting_context_id == other.sorting_context_id &&
          needs_local_transform_update == other.needs_local_transform_update &&
          node_and_ancestors_are_animated_or_invertible ==
@@ -67,14 +65,8 @@ bool TransformNode::operator==(const TransformNode& other) const {
          transform_changed == other.transform_changed &&
          scroll_offset == other.scroll_offset &&
          snap_amount == other.snap_amount &&
-         source_offset == other.source_offset &&
-         source_to_parent == other.source_to_parent &&
          maximum_animation_scale == other.maximum_animation_scale &&
          starting_animation_scale == other.starting_animation_scale;
-}
-
-void TransformNode::UpdatePostTranslation(const gfx::PointF& position) {
-  post_translation = position.OffsetFromOrigin() + source_offset;
 }
 
 void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {
@@ -84,7 +76,6 @@ void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("local", local, value);
   MathUtil::AddToTracedValue("origin", origin, value);
   MathUtil::AddToTracedValue("post_translation", post_translation, value);
-  value->SetInteger("source_node_id", source_node_id);
   value->SetInteger("sorting_context_id", sorting_context_id);
   value->SetInteger("flattens_inherited_transform",
                     flattens_inherited_transform);

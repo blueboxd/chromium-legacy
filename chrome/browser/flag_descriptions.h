@@ -1646,6 +1646,12 @@ extern const char kNtpCustomizationMenuV2Description[];
 extern const char kNtpDisableInitialMostVisitedFadeInName[];
 extern const char kNtpDisableInitialMostVisitedFadeInDescription[];
 
+extern const char kNtpRealboxName[];
+extern const char kNtpRealboxDescription[];
+
+extern const char kNtpZeroSuggestName[];
+extern const char kNtpZeroSuggestDescription[];
+
 extern const char kEnableReaderModeName[];
 extern const char kEnableReaderModeDescription[];
 

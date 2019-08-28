@@ -352,7 +352,6 @@ void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
       cros_settings_->GetPref(chromeos::kDeviceScheduledUpdateCheck);
   if (!value) {
     ResetState();
-    os_and_policies_update_checker_.Stop();
     return;
   }
 
@@ -542,6 +541,7 @@ void DeviceScheduledUpdateChecker::OnUpdateCheckCompletion(
 void DeviceScheduledUpdateChecker::ResetState() {
   update_check_timer_.reset();
   scheduled_update_check_data_ = base::nullopt;
+  os_and_policies_update_checker_.Stop();
   start_update_check_timer_task_executor_.Stop();
 }
 

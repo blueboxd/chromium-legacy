@@ -150,29 +150,12 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void ResetChangeTracking();
   // Updates the parent, target, and screen space transforms and snapping.
   void UpdateTransforms(int id);
-  void UpdateTransformChanged(TransformNode* node,
-                              TransformNode* parent_node,
-                              TransformNode* source_node);
+  void UpdateTransformChanged(TransformNode* node, TransformNode* parent_node);
   void UpdateNodeAndAncestorsAreAnimatedOrInvertible(
       TransformNode* node,
       TransformNode* parent_node);
 
   void set_needs_update(bool needs_update) final;
-
-  // A TransformNode's source_to_parent value is used to account for the fact
-  // that fixed-position layers are positioned by Blink wrt to their layer tree
-  // parent (their "source"), but are parented in the transform tree by their
-  // fixed-position container. This value needs to be updated on main-thread
-  // property trees (for position changes initiated by Blink), but not on the
-  // compositor thread (since the offset from a node corresponding to a
-  // fixed-position layer to its fixed-position container is unaffected by
-  // compositor-driven effects).
-  void set_source_to_parent_updates_allowed(bool allowed) {
-    source_to_parent_updates_allowed_ = allowed;
-  }
-  bool source_to_parent_updates_allowed() const {
-    return source_to_parent_updates_allowed_;
-  }
 
   // We store the page scale factor on the transform tree so that it can be
   // easily be retrieved and updated in UpdatePageScale.
@@ -254,9 +237,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   void UpdateNodeAndAncestorsHaveIntegerTranslations(
       TransformNode* node,
       TransformNode* parent_node);
-  bool NeedsSourceToParentUpdate(TransformNode* node);
 
-  bool source_to_parent_updates_allowed_;
   // When to_screen transform has perspective, the transform node's sublayer
   // scale is calculated using page scale factor, device scale factor and the
   // scale factor of device transform. So we need to store them explicitly.

@@ -28,6 +28,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -806,7 +807,10 @@ void Layer::SetPosition(const gfx::PointF& position) {
       TransformNode* transform_node =
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index_);
-      transform_node->UpdatePostTranslation(position);
+      // We should never set root layer's position to non-zero.
+      DCHECK(parent());
+      transform_node->post_translation =
+          position.OffsetFromOrigin() + parent()->offset_to_transform_parent();
       transform_node->needs_local_transform_update = true;
       transform_node->transform_changed = true;
       layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);

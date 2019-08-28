@@ -20,7 +20,11 @@ extern const base::Feature kNtpCustomizationMenuV2;
 
 extern const base::Feature kFirstRunDefaultSearchShortcut;
 
+// Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.
 extern const base::Feature kNtpRealbox;
+extern const base::Feature kNtpZeroSuggest;
+
+bool IsNtpRealboxEnabled();
 
 }  // namespace features
 

@@ -711,7 +711,8 @@ std::string TestURLLoader::TestTrustedHttpRequests() {
   // Trusted requests with custom referrer should succeed.
   {
     pp::URLRequestInfo request(instance_);
-    request.SetCustomReferrerURL("http://www.google.com/");
+    request.SetCustomReferrerURL("http://www.referer.com/");
+    request.SetHeaders("Referer: http://www.referer.com/");
 
     int32_t rv = OpenTrusted(request, NULL);
     if (rv != PP_OK)

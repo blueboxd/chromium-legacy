@@ -86,6 +86,12 @@ Polymer({
       computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
     },
 
+    /** @private {boolean} */
+    isSubpage_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!settings.Route|undefined} */
     currentRoute_: Object,
   },
@@ -140,6 +146,8 @@ Polymer({
     } else {
       assert(!this.hasExpandedSection_);
     }
+
+    this.isSubpage_ = newRoute.isSubpage();
 
     settings.MainPageBehavior.currentRouteChanged.call(
         this, newRoute, oldRoute);

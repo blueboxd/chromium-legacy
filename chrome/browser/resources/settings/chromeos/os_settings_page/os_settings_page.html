@@ -108,7 +108,8 @@
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
       <template is="dom-if"
           if="[[prefs.settings.cros.show_browser_banner.value]]">
-        <div id="browserSettingsBanner" class="settings-box banner">
+        <div id="browserSettingsBanner" hidden="[[isSubpage_]]"
+            class="settings-box banner">
           <div class="start">
             <span>$i18nRaw{browserSettingsBannerText}</span>
             <!-- Use role="presentation" because the <span> has an accessible

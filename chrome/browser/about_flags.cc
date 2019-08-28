@@ -3017,6 +3017,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpDisableInitialMostVisitedFadeInDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDisableInitialMostVisitedFadeIn)},
+
+    {"ntp-realbox", flag_descriptions::kNtpRealboxName,
+     flag_descriptions::kNtpRealboxDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNtpRealbox)},
+
+    {"ntp-zero-suggest", flag_descriptions::kNtpZeroSuggestName,
+     flag_descriptions::kNtpZeroSuggestDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNtpZeroSuggest)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)

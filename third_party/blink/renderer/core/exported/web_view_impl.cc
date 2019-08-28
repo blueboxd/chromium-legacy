@@ -1237,6 +1237,10 @@ void WebViewImpl::Close() {
     animation_host_ = nullptr;
   }
 
+  // TODO(bokan): Temporary debugging added to diagnose
+  // https://crbug.com/992315. Somehow we're synchronously calling
+  // WebViewImpl::Close while handling an input event.
+  CHECK(!debug_inside_input_handling_);
   AsView().page.Clear();
 
   // Reset the delegate to prevent notifications being sent as we're being
@@ -1690,6 +1694,12 @@ WebInputEventResult WebViewImpl::DispatchBufferedTouchEvents() {
 
 WebInputEventResult WebViewImpl::HandleInputEvent(
     const WebCoalescedInputEvent& coalesced_event) {
+  // TODO(bokan): Temporary debugging added to diagnose
+  // https://crbug.com/992315. Somehow we're synchronously calling
+  // WebViewImpl::Close while handling an input event.
+  base::AutoReset<bool> inside_input_handling(&debug_inside_input_handling_,
+                                              true);
+
   const WebInputEvent& input_event = coalesced_event.Event();
   // TODO(dcheng): The fact that this is getting called when there is no local
   // main frame is problematic and probably indicates a bug in the input event

@@ -6,9 +6,12 @@
 
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -17,6 +20,16 @@
 #include "url/url_constants.h"
 
 namespace network {
+
+namespace {
+
+base::flat_set<std::string>&
+GetSchemesExcludedFromRequestInitiatorSiteLockChecks() {
+  static base::NoDestructor<base::flat_set<std::string>> s_scheme;
+  return *s_scheme;
+}
+
+}  // namespace
 
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
     const base::Optional<url::Origin>& request_initiator_site_lock,
@@ -65,7 +78,32 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
       return InitiatorLockCompatibility::kCompatibleLock;
   }
 
+  // TODO(lukasza): https://crbug.com/940068: Stop excluding specific schemes
+  // after request_initiator=website also for requests from isolated worlds.
+  if (base::Contains(GetSchemesExcludedFromRequestInitiatorSiteLockChecks(),
+                     initiator.scheme())) {
+    return InitiatorLockCompatibility::kExcludedScheme;
+  }
+
   return InitiatorLockCompatibility::kIncorrectLock;
+}
+
+InitiatorLockCompatibility VerifyRequestInitiatorLock(
+    uint32_t process_id,
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator) {
+  if (process_id == mojom::kBrowserProcessId)
+    return InitiatorLockCompatibility::kBrowserProcess;
+
+  InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
+      request_initiator_site_lock, request_initiator);
+
+  if (result == InitiatorLockCompatibility::kIncorrectLock &&
+      CrossOriginReadBlocking::ShouldAllowForPlugin(process_id)) {
+    result = InitiatorLockCompatibility::kExcludedUniversalAccessPlugin;
+  }
+
+  return result;
 }
 
 url::Origin GetTrustworthyInitiator(
@@ -89,6 +127,13 @@ url::Origin GetTrustworthyInitiator(
 
   // If all the checks above passed, then |request_initiator| is trustworthy.
   return request_initiator.value();
+}
+
+void ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+    const std::string& scheme) {
+  base::flat_set<std::string>& excluded_schemes =
+      GetSchemesExcludedFromRequestInitiatorSiteLockChecks();
+  excluded_schemes.insert(scheme);
 }
 
 }  // namespace network

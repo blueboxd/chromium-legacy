@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_index_context.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/web_test_support.h"
@@ -28,6 +29,7 @@
 #include "content/test/mock_platform_notification_service.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -58,6 +60,14 @@ ContentIndexContext* GetContentIndexContext(const url::Origin& origin) {
   auto* storage_partition = BrowserContext::GetStoragePartitionForSite(
       context, origin.GetURL(), /* can_create= */ false);
   return storage_partition->GetContentIndexContext();
+}
+
+void ExcludeSchemeFromRequestInitiatorSiteLockChecksOnUIThread(
+    const std::string& scheme,
+    base::OnceClosure completion_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetNetworkService()->ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      scheme, std::move(completion_callback));
 }
 
 }  // namespace
@@ -109,6 +119,9 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WebTestHostMsg_ReadFileToString, OnReadFileToString)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_RegisterIsolatedFileSystem,
                         OnRegisterIsolatedFileSystem)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        WebTestHostMsg_ExcludeSchemeFromRequestInitiatorSiteLockChecks,
+        OnExcludeSchemeFromRequestInitiatorSiteLockChecks)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_ClearAllDatabases, OnClearAllDatabases)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClick,
@@ -154,6 +167,20 @@ void WebTestMessageFilter::OnRegisterIsolatedFileSystem(
   *filesystem_id =
       storage::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
   policy->GrantReadFileSystem(render_process_id_, *filesystem_id);
+}
+
+void WebTestMessageFilter::OnExcludeSchemeFromRequestInitiatorSiteLockChecks(
+    const std::string& scheme,
+    IPC::Message* reply_msg) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::OnceClosure completion_callback =
+      base::BindOnce(base::IgnoreResult(&IPC::Sender::Send), this, reply_msg);
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&ExcludeSchemeFromRequestInitiatorSiteLockChecksOnUIThread,
+                     scheme, base::Passed(std::move(completion_callback))));
 }
 
 void WebTestMessageFilter::OnClearAllDatabases() {

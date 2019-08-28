@@ -38,7 +38,6 @@ void CreateScrollingElement(PropertyTrees* property_trees,
   // Create a corresponding TransformNode for the scrolling element.
   TransformNode transform_node;
   transform_node.scrolls = true;
-  transform_node.source_node_id = TransformTree::kRootNodeId;
   int transform_node_id =
       property_trees->transform_tree.Insert(transform_node, 0);
   property_trees->element_id_to_transform_node_index[scroller_id] =

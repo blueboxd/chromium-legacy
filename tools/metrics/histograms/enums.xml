@@ -34663,6 +34663,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1684123448" label="disable-best-effort-tasks"/>
   <int value="-1682843294" label="DataReductionProxyDecidesTransform:enabled"/>
   <int value="-1681832882" label="shelf-scrollable"/>
+  <int value="-1679624666" label="NtpRealbox:enabled"/>
   <int value="-1677715989" label="UnifiedConsent:disabled"/>
   <int value="-1676256979"
       label="AutofillUpstreamUseGooglePayOnAndroidBranding:enabled"/>
@@ -35018,6 +35019,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1234740672" label="UsePdfCompositorServiceForPrint:disabled"/>
   <int value="-1232629319" label="ResamplingScrollEvents:disabled"/>
+  <int value="-1231507397" label="NtpZeroSuggest:enabled"/>
   <int value="-1230610048" label="SyncWifiConfigurations:disabled"/>
   <int value="-1228035246" label="PasswordEditingAndroid:enabled"/>
   <int value="-1227660915" label="WebContentsOcclusion:disabled"/>
@@ -35220,6 +35222,7 @@ from previous Chrome versions.
   <int value="-975787829" label="AutofillProfileServerValidation:enabled"/>
   <int value="-974378602" label="WebAuthenticationCable:disabled"/>
   <int value="-973509424" label="NewTabPageIcons:disabled"/>
+  <int value="-972945109" label="NtpRealbox:disabled"/>
   <int value="-972737445" label="ArcUseAuthEndpoint:disabled"/>
   <int value="-972425050" label="gesture-editing"/>
   <int value="-970067535" label="BackgroundTaskComponentUpdate:disabled"/>
@@ -37270,6 +37273,7 @@ from previous Chrome versions.
   <int value="1903290829" label="AnimatedAvatarButton:enabled"/>
   <int value="1905465678" label="ContextualSearchSingleActions:enabled"/>
   <int value="1906942630" label="enable-easy-unlock"/>
+  <int value="1907273605" label="NtpZeroSuggest:disabled"/>
   <int value="1910240042" label="enable-experimental-fullscreen-exit-ui"/>
   <int value="1913263516" label="OculusVR:enabled"/>
   <int value="1913298816" label="OverlayScrollbar:enabled"/>
@@ -51883,6 +51887,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="IncorrectLock">
     |request.request_initiator| is non-opaque/unique and differs from
     |factory_params_.request_initiator_site_lock|.
+  </int>
+  <int value="5" label="ExcludedScheme">
+    Scheme excluded from request_initiator_site_lock checks (e.g.
+    chrome-extension).
+  </int>
+  <int value="6" label="ExcludedUniversalAccessPlugin">
+    Requests from a renderer processes that embeds an universal access plugin
+    (like Flash).
   </int>
 </enum>
 

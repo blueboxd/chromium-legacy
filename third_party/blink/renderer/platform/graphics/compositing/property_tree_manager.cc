@@ -228,7 +228,6 @@ void PropertyTreeManager::SetupRootTransformNode() {
   cc::TransformNode& transform_node = *transform_tree.Node(
       transform_tree.Insert(cc::TransformNode(), kRealRootNodeId));
   DCHECK_EQ(transform_node.id, kSecondaryRootNodeId);
-  transform_node.source_node_id = transform_node.parent_id;
 
   // TODO(jaydasika): We shouldn't set ToScreen and FromScreen of root
   // transform node here. They should be set while updating transform tree in
@@ -392,8 +391,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   id = GetTransformTree().Insert(cc::TransformNode(), parent_id);
 
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
-  compositor_node.source_node_id = parent_id;
-
   UpdateCcTransformLocalMatrix(compositor_node, transform_node);
   compositor_node.transform_changed = transform_node.NodeChangeAffectsRaster();
   compositor_node.flattens_inherited_transform =

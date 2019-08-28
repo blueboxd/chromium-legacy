@@ -6,12 +6,15 @@
 
 #include <algorithm>
 
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -175,6 +178,24 @@ gfx::Size DeskMiniView::CalculatePreferredSize() const {
   return gfx::Size{
       std::max(preview_bounds.width(), label_size.width()),
       preview_bounds.height() + kLabelPreviewSpacing + label_size.height()};
+}
+
+void DeskMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+
+  if (desk_->is_active()) {
+    node_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kValue,
+        l10n_util::GetStringUTF8(
+            IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP));
+  }
+
+  if (DesksController::Get()->CanRemoveDesks()) {
+    node_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kDescription,
+        l10n_util::GetStringUTF8(
+            IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP));
+  }
 }
 
 void DeskMiniView::ButtonPressed(views::Button* sender,

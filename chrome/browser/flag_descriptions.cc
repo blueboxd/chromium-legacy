@@ -2776,10 +2776,22 @@ const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";
 
-extern const char kNtpDisableInitialMostVisitedFadeInName[] =
+const char kNtpDisableInitialMostVisitedFadeInName[] =
     "Disable NTP initial most visited fade in";
-extern const char kNtpDisableInitialMostVisitedFadeInDescription[] =
+const char kNtpDisableInitialMostVisitedFadeInDescription[] =
     "Do now initially fade in most visited tiles on the New Tab Page";
+
+const char kNtpRealboxName[] = "Real search box in New Tab Page";
+const char kNtpRealboxDescription[] =
+    "Enables a search box in the middle of the NTP that will accept input "
+    "directly (i.e. not be a \"fake\" box). Search results will show below the "
+    "non-fake input (\"realbox\").";
+
+const char kNtpZeroSuggestName[] =
+    "Suggest New Tab Page search results without input";
+const char kNtpZeroSuggestDescription[] =
+    "If enabled, forces on \"Real search box in New Tab Page\" and suggests "
+    "results without any typed input (i.e. on focus).";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =

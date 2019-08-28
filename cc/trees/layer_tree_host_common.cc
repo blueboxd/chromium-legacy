@@ -538,14 +538,6 @@ void CalculateDrawPropertiesInternal(
           inputs->property_trees);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees);
-
-      // Property trees are normally constructed on the main thread and
-      // passed to compositor thread. Source to parent updates on them are not
-      // allowed in the compositor thread. Some tests build them on the
-      // compositor thread, so we need to explicitly disallow source to parent
-      // updates when they are built on compositor thread.
-      inputs->property_trees->transform_tree
-          .set_source_to_parent_updates_allowed(false);
       break;
     }
     case DONT_BUILD_PROPERTY_TREES: {

@@ -6,10 +6,13 @@
 
 #include <memory>
 
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -347,6 +350,14 @@ bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
   }
 
   return accept_events && Button::CanAcceptEvent(event);
+}
+
+void CaptionContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+  node_data->AddStringAttribute(
+      ax::mojom::StringAttribute::kDescription,
+      l10n_util::GetStringUTF8(
+          IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP));
 }
 
 }  // namespace ash

@@ -61,7 +61,6 @@ TransformNode& CreateTransformNodeInternal(LayerType* layer, int parent_id) {
   layer->SetTransformTreeIndex(id);
   layer->SetHasTransformNode(true);
   auto* node = transform_tree.Node(id);
-  node->source_node_id = node->parent_id;
   node->element_id = layer->element_id();
   if (node->element_id) {
     property_trees->element_id_to_transform_node_index[node->element_id] =

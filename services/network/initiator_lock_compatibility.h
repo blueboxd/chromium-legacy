@@ -28,7 +28,8 @@ enum class InitiatorLockCompatibility {
   // and RenderProcessHostImpl::CreateURLLoaderFactoryWithOptionalOrigin.
   kNoLock = 1,
 
-  // |request_initiator| is missing.
+  // |request_initiator| is missing.  This indicates that the renderer has a bug
+  // or has been compromised by an attacker.
   kNoInitiator = 2,
 
   // |request.request_initiator| is compatible with
@@ -43,13 +44,33 @@ enum class InitiatorLockCompatibility {
   // - HTML Imports (see https://crbug.com/871827#c9).
   kIncorrectLock = 4,
 
-  kMaxValue = kIncorrectLock,
+  // Covered by ExcludeSchemeFromRequestInitiatorSiteLockChecks.
+  kExcludedScheme = 5,
+
+  // Covered by CrossOriginReadBlocking::ShouldAllowForPlugin.
+  kExcludedUniversalAccessPlugin = 6,
+
+  kMaxValue = kExcludedUniversalAccessPlugin,
 };
 
 // Verifies if |request.request_initiator| matches
 // |factory_params.request_initiator_site_lock|.
+//
+// This overload should only be called for requests from renderer processes
+// (ones that are not coverd by the kExcludedPlugin exception).
 COMPONENT_EXPORT(NETWORK_SERVICE)
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator);
+
+// Verifies if |request.request_initiator| matches
+// |factory_params.request_initiator_site_lock|.
+//
+// This overload takes into account exception for the browser process and/or for
+// renderer processes that embed universal-access plugins.
+COMPONENT_EXPORT(NETWORK_SERVICE)
+InitiatorLockCompatibility VerifyRequestInitiatorLock(
+    uint32_t process_id,
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator);
 
@@ -65,9 +86,22 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
 // |request_initiator| should come from net::URLRequest::initiator() or
 // network::ResourceRequest::request_initiator which may be initially set in an
 // untrustworthy process (eg: renderer process).
+//
+// TODO(lukasza): Remove this function if https://crrev.com/c/1661114 sticks
+// (i.e. if ResourceRequest::request_initiator is sanitized and made trustworthy
+// by CorsURLLoaderFactory::CreateLoaderAndStart and IsSane).
 url::Origin GetTrustworthyInitiator(
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator);
+
+// Registers a scheme that should not be subject to
+// |request_initiator_site_lock| checks (e.g. a scheme that is typically
+// used in isolated worlds, with a separate origin, such as
+// "chrome-extensions").
+//
+// TODO(lukasza): https://crbug.com/940068: Remove this method once isolated
+// worlds use the same |request_initiator| as the main world.
+void ExcludeSchemeFromRequestInitiatorSiteLockChecks(const std::string& scheme);
 
 }  // namespace network
 

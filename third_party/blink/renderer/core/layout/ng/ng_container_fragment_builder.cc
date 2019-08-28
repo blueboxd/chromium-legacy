@@ -91,7 +91,7 @@ void NGContainerFragmentBuilder::AddChild(
   //    have a child positioned above our block-start edge.
   if ((child_offset.block_offset < LayoutUnit() &&
        !child.IsOutOfFlowPositioned()) ||
-      (!child.IsBlockFormattingContextRoot() &&
+      (!child.IsBlockFormattingContextRoot() && !child.IsLineBox() &&
        child.MayHaveDescendantAboveBlockStart()))
     may_have_descendant_above_block_start_ = true;
 

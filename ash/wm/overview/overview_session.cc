@@ -45,6 +45,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
@@ -835,6 +836,11 @@ void OverviewSession::OnWindowHierarchyChanged(
 }
 
 void OverviewSession::OnWindowDestroying(aura::Window* window) {
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+          IDS_ASH_OVERVIEW_WINDOW_CLOSING_A11Y_ALERT, window->GetTitle()));
+
   window->RemoveObserver(this);
   observed_windows_.erase(window);
   if (window == restore_focus_window_)

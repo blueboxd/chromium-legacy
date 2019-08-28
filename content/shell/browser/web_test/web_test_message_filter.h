@@ -62,6 +62,9 @@ class WebTestMessageFilter : public BrowserMessageFilter {
   void OnRegisterIsolatedFileSystem(
       const std::vector<base::FilePath>& absolute_filenames,
       std::string* filesystem_id);
+  void OnExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      const std::string& scheme,
+      IPC::Message* reply_msg);
   void OnClearAllDatabases();
   void OnSetDatabaseQuota(int quota);
   void OnSimulateWebNotificationClick(

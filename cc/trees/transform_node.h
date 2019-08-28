@@ -37,6 +37,8 @@ struct CC_EXPORT TransformNode {
   //       T_post_translation * T_origin * T_scroll * M_local * -T_origin.
   gfx::Transform local;
   gfx::Point3F origin;
+  // For layer tree mode only. In layer list mode, when the translation is
+  // needed, blink creates paint offset translation node above this node.
   gfx::Vector2dF post_translation;
 
   gfx::Transform to_parent;
@@ -45,19 +47,13 @@ struct CC_EXPORT TransformNode {
   // transform node. -1 indicates there are no sticky position constraints.
   int sticky_position_constraint_id;
 
-  // This is the node with respect to which source_offset is defined. This will
-  // not be needed once layerization moves to cc, but is needed in order to
-  // efficiently update the transform tree for changes to position in the layer
-  // tree.
-  int source_node_id;
-
   // This id determines which 3d rendering context the node is in. 0 is a
   // special value and indicates that the node is not in any 3d rendering
   // context.
   int sorting_context_id;
 
   // True if |TransformTree::UpdateLocalTransform| needs to be called which
-  // will update |to_parent| and |source_to_parent| (if possible).
+  // will update |to_parent|.
   bool needs_local_transform_update : 1;
 
   // Whether this node or any ancestor has a potentially running
@@ -116,9 +112,6 @@ struct CC_EXPORT TransformNode {
   // otherwise we may need it to undo the snapping next frame.
   gfx::Vector2dF snap_amount;
 
-  gfx::Vector2dF source_offset;
-  gfx::Vector2dF source_to_parent;
-
   // See MutatorHost::GetAnimationScales() for their meanings. Updated by
   // PropertyTrees::AnimationScalesChanged().
   float maximum_animation_scale;
@@ -130,8 +123,6 @@ struct CC_EXPORT TransformNode {
     to_parent = transform;
     is_invertible = to_parent.IsInvertible();
   }
-
-  void UpdatePostTranslation(const gfx::PointF& position);
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 };

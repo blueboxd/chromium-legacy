@@ -161,6 +161,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
   void AddExtraMimeTypesForCorb(
       const std::vector<std::string>& mime_types) override;
+  void ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      const std::string& scheme,
+      mojom::NetworkService::
+          ExcludeSchemeFromRequestInitiatorSiteLockChecksCallback callback)
+      override;
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
   void OnPeerToPeerConnectionsCountChange(uint32_t count) override;

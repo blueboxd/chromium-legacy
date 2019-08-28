@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/scroll_arrow_view.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_container_view.h"
 #include "ash/shelf/shelf_view.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -18,7 +19,7 @@ namespace ash {
 
 class ASH_EXPORT ScrollableShelfView : public views::View,
                                        public ShellObserver,
-                                       public views::ButtonListener {
+                                       public ShelfButtonDelegate {
  public:
   enum LayoutStrategy {
     // The arrow buttons are not shown. It means that there is enough space to
@@ -97,8 +98,12 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // ShelfButtonDelegate:
+  void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
+                                                        bool reverse) override;
+  void ButtonPressed(views::Button* sender,
+                     const ui::Event& event,
+                     views::InkDrop* ink_drop) override;
 
   // Overridden from ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;

@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/transient_window_client.h"

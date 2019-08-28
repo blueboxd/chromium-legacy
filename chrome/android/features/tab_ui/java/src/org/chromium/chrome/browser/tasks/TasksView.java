@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,11 +17,13 @@ import org.chromium.chrome.tab_ui.R;
 
 // The view of the tasks surface.
 class TasksView extends LinearLayout {
+    private final Context mContext;
     private FrameLayout mTabSwitcherContainer;
 
     /** Default constructor needed to inflate via XML. */
     public TasksView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mContext = context;
     }
 
     @Override
@@ -37,12 +40,17 @@ class TasksView extends LinearLayout {
     void setIsTabCarousel(boolean isTabCarousel) {
         if (isTabCarousel) {
             // TODO(crbug.com/982018): Change view according to incognito and dark mode.
-            setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
             findViewById(R.id.tab_switcher_title).setVisibility(View.VISIBLE);
-            mTabSwitcherContainer.setLayoutParams(
-                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT));
+
+            // Add negative margin to start so as to reduce the first Tab card's visual distance to
+            // the start edge to ~16dp.
+            // TODO(crbug.com/982018): Add test to guard the visual expectation.
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            MarginLayoutParamsCompat.setMarginStart(layoutParams,
+                    mContext.getResources().getDimensionPixelSize(
+                            R.dimen.tab_carousel_start_margin));
+            mTabSwitcherContainer.setLayoutParams(layoutParams);
         }
     }
 

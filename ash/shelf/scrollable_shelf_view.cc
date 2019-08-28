@@ -162,11 +162,13 @@ void ScrollableShelfView::Init() {
 
   // Initialize the left arrow button.
   left_arrow_ = AddChildView(std::make_unique<ScrollArrowView>(
-      ScrollArrowView::kLeft, GetShelf()->IsHorizontalAlignment(), this));
+      ScrollArrowView::kLeft, GetShelf()->IsHorizontalAlignment(), GetShelf(),
+      this));
 
   // Initialize the right arrow button.
   right_arrow_ = AddChildView(std::make_unique<ScrollArrowView>(
-      ScrollArrowView::kRight, GetShelf()->IsHorizontalAlignment(), this));
+      ScrollArrowView::kRight, GetShelf()->IsHorizontalAlignment(), GetShelf(),
+      this));
 
   // Initialize the shelf container view.
   shelf_container_view_ =
@@ -401,8 +403,13 @@ const char* ScrollableShelfView::GetClassName() const {
   return "ScrollableShelfView";
 }
 
+void ScrollableShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
+    ShelfButton* button,
+    bool reverse) {}
+
 void ScrollableShelfView::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event) {
+                                        const ui::Event& event,
+                                        views::InkDrop* ink_drop) {
   // Verfies that |sender| is either |left_arrow_| or |right_arrow_|.
   views::View* sender_view = sender;
   DCHECK((sender_view == left_arrow_) || (sender_view == right_arrow_));

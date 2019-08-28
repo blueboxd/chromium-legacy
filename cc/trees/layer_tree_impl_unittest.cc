@@ -19,15 +19,17 @@
 namespace cc {
 namespace {
 
-class LayerTreeImplTest : public testing::Test {
+class LayerTreeImplTest : public LayerTestCommon::LayerImplTest,
+                          public testing::Test {
  public:
   explicit LayerTreeImplTest(
       const LayerTreeSettings& settings = LayerTreeSettings())
-      : impl_test_(settings) {}
+      : LayerImplTest(settings) {}
 
-  FakeLayerTreeHostImpl& host_impl() const { return *impl_test_.host_impl(); }
-
-  LayerImpl* root_layer() { return impl_test_.root_layer_for_testing(); }
+  FakeLayerTreeHostImpl& host_impl() const {
+    return *LayerImplTest::host_impl();
+  }
+  LayerImpl* root_layer() { return root_layer_for_testing(); }
 
   const RenderSurfaceList& GetRenderSurfaceList() const {
     return host_impl().active_tree()->GetRenderSurfaceList();
@@ -111,8 +113,12 @@ class LayerTreeImplTest : public testing::Test {
   const int kRightChildId = 4;
 
  private:
-  LayerTestCommon::LayerImplTest impl_test_;
   RenderSurfaceList render_surface_list_impl_;
+};
+
+class LayerTreeImplTestWithLayerLists : public LayerTreeImplTest {
+ public:
+  LayerTreeImplTestWithLayerLists() : LayerTreeImplTest(LayerListSettings()) {}
 };
 
 TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
@@ -1036,98 +1042,48 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayersAtVaryingDepths) {
   EXPECT_EQ(4, result_layer->id());
 }
 
-TEST_F(LayerTreeImplTest, HitTestingRespectsClipParents) {
+TEST_F(LayerTreeImplTestWithLayerLists, HitTestingRespectsClipParents) {
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
   root->SetHitTestable(true);
-  {
-    std::unique_ptr<LayerImpl> child =
-        LayerImpl::Create(host_impl().active_tree(), 2);
-    std::unique_ptr<LayerImpl> grand_child =
-        LayerImpl::Create(host_impl().active_tree(), 4);
+  SetupRootProperties(root);
 
-    child->test_properties()->position = gfx::PointF(10.f, 10.f);
-    child->SetBounds(gfx::Size(1, 1));
-    child->SetDrawsContent(true);
-    child->SetHitTestable(true);
-    child->SetMasksToBounds(true);
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  child->SetBounds(gfx::Size(1, 1));
+  child->SetOffsetToTransformParent(gfx::Vector2dF(10.f, 10.f));
+  child->SetDrawsContent(true);
+  child->SetHitTestable(true);
+  CopyProperties(root, child);
+  CreateClipNode(child);
 
-    grand_child->test_properties()->position = gfx::PointF(0.f, 40.f);
-    grand_child->SetBounds(gfx::Size(100, 50));
-    grand_child->SetDrawsContent(true);
-    grand_child->SetHitTestable(true);
-    grand_child->test_properties()->force_render_surface = true;
+  LayerImpl* scroll_child = AddChildToRoot<LayerImpl>();
+  scroll_child->SetBounds(gfx::Size(200, 200));
+  scroll_child->SetDrawsContent(true);
+  scroll_child->SetHitTestable(true);
+  CopyProperties(root, scroll_child);
+  scroll_child->SetClipTreeIndex(child->clip_tree_index());
 
-    // This should let |grand_child| "escape" |child|'s clip.
-    grand_child->test_properties()->clip_parent = root;
-    std::unique_ptr<std::set<LayerImpl*>> clip_children(
-        new std::set<LayerImpl*>);
-    clip_children->insert(grand_child.get());
-    root->test_properties()->clip_children = std::move(clip_children);
-
-    child->test_properties()->AddChild(std::move(grand_child));
-    root->test_properties()->AddChild(std::move(child));
-  }
+  LayerImpl* grand_child = AddChildToRoot<LayerImpl>();
+  grand_child->SetBounds(gfx::Size(200, 200));
+  grand_child->SetDrawsContent(true);
+  grand_child->SetHitTestable(true);
+  CopyProperties(scroll_child, grand_child);
+  CreateEffectNode(grand_child).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+  ExecuteCalculateDrawProperties(root);
 
   gfx::PointF test_point(12.f, 52.f);
   LayerImpl* result_layer =
       host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(4, result_layer->id());
-}
-
-TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
-  LayerImpl* root = root_layer();
-  root->SetBounds(gfx::Size(100, 100));
-  root->SetDrawsContent(true);
-  root->SetHitTestable(true);
-  {
-    std::unique_ptr<LayerImpl> child =
-        LayerImpl::Create(host_impl().active_tree(), 2);
-    std::unique_ptr<LayerImpl> scroll_child =
-        LayerImpl::Create(host_impl().active_tree(), 3);
-    std::unique_ptr<LayerImpl> grand_child =
-        LayerImpl::Create(host_impl().active_tree(), 4);
-
-    child->test_properties()->position = gfx::PointF(10.f, 10.f);
-    child->SetBounds(gfx::Size(1, 1));
-    child->SetDrawsContent(true);
-    child->SetHitTestable(true);
-    child->SetMasksToBounds(true);
-
-    scroll_child->SetBounds(gfx::Size(200, 200));
-    scroll_child->SetDrawsContent(true);
-    scroll_child->SetHitTestable(true);
-
-    // This should cause scroll child and its descendants to be affected by
-    // |child|'s clip.
-    scroll_child->test_properties()->scroll_parent = child.get();
-
-    grand_child->SetBounds(gfx::Size(200, 200));
-    grand_child->SetDrawsContent(true);
-    grand_child->SetHitTestable(true);
-    grand_child->test_properties()->force_render_surface = true;
-
-    scroll_child->test_properties()->AddChild(std::move(grand_child));
-    root->test_properties()->AddChild(std::move(scroll_child));
-    root->test_properties()->AddChild(std::move(child));
-  }
-
-  host_impl().active_tree()->SetDeviceViewportSize(root->bounds());
-  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
-
-  gfx::PointF test_point(12.f, 52.f);
-  LayerImpl* result_layer =
-      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
-  // The |test_point| should have been clipped away by |child|, the scroll
-  // parent, so the only thing that should be hit is |root|.
+  // The |test_point| should have been clipped away by |child|, so the only
+  // thing that should be hit is |root|.
   ASSERT_TRUE(result_layer);
   ASSERT_EQ(1, result_layer->id());
 }
+
 TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
   //
   // The geometry is set up similarly to the previous case, but
@@ -2594,9 +2550,11 @@ TEST_F(CommitToPendingTreeLayerTreeImplTest,
 
   std::unique_ptr<LayerImpl> child_ptr =
       LayerImpl::Create(host_impl().pending_tree(), 3);
-  // The easiest way to force the child to have a TransformNode is to make it
-  // fixed position. Similarly a non-one opacity forces an EffectNode.
-  child_ptr->test_properties()->position_constraint.set_is_fixed_position(true);
+  // A scale transform forces a TransformNode.
+  gfx::Transform scale3d;
+  scale3d.Scale3d(1, 1, 0.5);
+  child_ptr->test_properties()->transform = scale3d;
+  // A non-one opacity forces an EffectNode.
   child_ptr->test_properties()->opacity = 0.9f;
   LayerImpl* child = child_ptr.get();
   pending_root->test_properties()->AddChild(std::move(child_ptr));

@@ -216,8 +216,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/rtc_rtp_receiver.h",
     "media/webrtc/rtc_rtp_sender.cc",
     "media/webrtc/rtc_rtp_sender.h",
-    "media/webrtc/rtc_rtp_source.cc",
-    "media/webrtc/rtc_rtp_source.h",
     "media/webrtc/rtc_rtp_transceiver.cc",
     "media/webrtc/rtc_rtp_transceiver.h",
     "media/webrtc/rtc_stats.cc",
@@ -575,7 +573,7 @@ target(link_target_type, "renderer") {
     set_sources_assignment_filter(sources_assignment_filter)
 
     deps += [
-      "//third_party/android_sdk:cpu_features",
+      "//third_party/android_ndk:cpu_features",
       "//third_party/libphonenumber",
     ]
   } else {

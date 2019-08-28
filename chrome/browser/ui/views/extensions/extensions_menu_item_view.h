@@ -7,30 +7,51 @@
 
 #include <memory>
 
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view.h"
 
 class Browser;
+class ExtensionContextMenuController;
 class ExtensionsMenuButton;
 class ToolbarActionViewController;
 
 namespace views {
-class ButtonController;
+class MenuButton;
 }  // namespace views
 
-class ExtensionsMenuItemView : public views::View {
+// ExtensionsMenuItemView is a single row inside the extensions menu for a
+// particular extension. Includes information about the extension in addition to
+// a button to pin the extension to the toolbar and a button for accessing the
+// associated context menu.
+class ExtensionsMenuItemView : public views::View,
+                               public views::MenuButtonListener {
  public:
+  static constexpr int kSecondaryIconSizeDp = 16;
+
   ExtensionsMenuItemView(
       Browser* browser,
       std::unique_ptr<ToolbarActionViewController> controller);
   ~ExtensionsMenuItemView() override;
 
+  // views::MenuButtonListener:
+  void OnMenuButtonClicked(views::Button* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override;
+
   void UpdatePinButton();
 
-  views::ButtonController* primary_action_button_controller_for_testing();
+  ExtensionsMenuButton* primary_action_button_for_testing();
 
  private:
-  ExtensionsMenuButton* extensions_menu_button_;
+  ExtensionsMenuButton* const primary_action_button_;
+
+  std::unique_ptr<ToolbarActionViewController> controller_;
+
+  views::MenuButton* context_menu_button_ = nullptr;
+
+  std::unique_ptr<ExtensionContextMenuController> context_menu_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuItemView);
 };
 

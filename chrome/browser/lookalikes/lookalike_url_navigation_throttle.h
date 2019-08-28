@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
+#include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -25,6 +26,9 @@ class Profile;
 namespace lookalikes {
 
 struct DomainInfo;
+
+// Returns true if the domain given by |domain_info| is a top domain.
+bool IsTopDomain(const DomainInfo& domain_info);
 
 // Returns true if the Levenshtein distance between |str1| and |str2| is at most
 // one. This has O(max(n,m)) complexity as opposed to O(n*m) of the usual edit
@@ -73,6 +77,21 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   static std::unique_ptr<LookalikeUrlNavigationThrottle>
   MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
 
+  static bool ShouldDisplayInterstitial(
+      LookalikeUrlInterstitialPage::MatchType match_type,
+      const DomainInfo& navigated_domain);
+
+  // Returns true if a domain is visually similar to the hostname of |url|. The
+  // matching domain can be a top domain or an engaged site. Similarity
+  // check is made using both visual skeleton and edit distance comparison.  If
+  // this returns true, match details will be written into |matched_domain|.
+  // Pointer arguments can't be nullptr.
+  static bool GetMatchingDomain(
+      const DomainInfo& navigated_domain,
+      const std::vector<DomainInfo>& engaged_sites,
+      std::string* matched_domain,
+      LookalikeUrlInterstitialPage::MatchType* match_type);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(LookalikeUrlNavigationThrottleTest,
                            IsEditDistanceAtMostOne);
@@ -95,22 +114,6 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
                              const DomainInfo& navigated_domain,
                              bool check_safe_redirect,
                              const std::vector<DomainInfo>& engaged_sites);
-
-  bool ShouldDisplayInterstitial(
-      LookalikeUrlInterstitialPage::MatchType match_type) const;
-
-  // Returns true if a domain is visually similar to the hostname of |url|. The
-  // matching domain can be a top 500 domain or an engaged site. Similarity
-  // check is made using both visual skeleton and edit distance comparison. If
-  // this returns true, match details will be written into |matched_domain| and
-  // |match_type|. They cannot be nullptr.
-  // |force_record_ukm| can be set to true even if the function returns false.
-  // In this case, the caller must record a UKM using |match_type|.
-  bool GetMatchingDomain(const DomainInfo& navigated_domain,
-                         const std::vector<DomainInfo>& engaged_sites,
-                         std::string* matched_domain,
-                         LookalikeUrlInterstitialPage::MatchType* match_type,
-                         bool* force_record_ukm);
 
   ThrottleCheckResult ShowInterstitial(
       const GURL& safe_domain,

@@ -14,6 +14,7 @@
 // test (AboutFlagsTest.OnlyPermittedFlagsNeverExpire).
 [
   "allow-previews",
+  "arc-native-bridge-toggle",
   "ash-debug-shortcuts",
   "ash-enable-unified-desktop",
   "data-saver-server-previews",

@@ -15,6 +15,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -103,7 +105,8 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreate(
   if (!ParseTargetTextIdentifier(url.FragmentIdentifier(), &selectors))
     return nullptr;
 
-  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
+  return MakeGarbageCollected<TextFragmentAnchor>(
+      selectors, frame, TextFragmentFormat::PlainFragment);
 }
 
 TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
@@ -137,13 +140,16 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
   stripped_url.SetFragmentIdentifier(stripped_fragment);
   frame.GetDocument()->SetURL(std::move(stripped_url));
 
-  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
+  return MakeGarbageCollected<TextFragmentAnchor>(
+      selectors, frame, TextFragmentFormat::FragmentDirective);
 }
 
 TextFragmentAnchor::TextFragmentAnchor(
     const Vector<TextFragmentSelector>& text_fragment_selectors,
-    LocalFrame& frame)
+    LocalFrame& frame,
+    const TextFragmentFormat fragment_format)
     : frame_(&frame),
+      fragment_format_(fragment_format),
       metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
           frame_->GetDocument())) {
   DCHECK(!text_fragment_selectors.IsEmpty());
@@ -157,6 +163,13 @@ TextFragmentAnchor::TextFragmentAnchor(
 }
 
 bool TextFragmentAnchor::Invoke() {
+  if (element_fragment_anchor_) {
+    DCHECK(search_finished_);
+    // We need to keep this TextFragmentAnchor alive if we're proxying an
+    // element fragment anchor.
+    return true;
+  }
+
   if (search_finished_)
     return false;
 
@@ -178,12 +191,12 @@ bool TextFragmentAnchor::Invoke() {
       finder.FindMatch(*frame_->GetDocument());
   }
 
-  search_finished_ = frame_->GetDocument()->IsLoadCompleted();
+  if (frame_->GetDocument()->IsLoadCompleted())
+    DidFinishSearch();
 
-  if (search_finished_)
-    metrics_->ReportMetrics();
-
-  return !search_finished_;
+  // We need another Invoke if we're not finished searching or if we're proxying
+  // an element fragment anchor.
+  return !search_finished_ || element_fragment_anchor_;
 }
 
 void TextFragmentAnchor::Installed() {}
@@ -195,21 +208,27 @@ void TextFragmentAnchor::DidScroll(ScrollType type) {
   user_scrolled_ = true;
 }
 
-void TextFragmentAnchor::PerformPreRafActions() {}
+void TextFragmentAnchor::PerformPreRafActions() {
+  if (element_fragment_anchor_) {
+    element_fragment_anchor_->Installed();
+    element_fragment_anchor_->Invoke();
+    element_fragment_anchor_->PerformPreRafActions();
+    element_fragment_anchor_ = nullptr;
+  }
+}
 
 void TextFragmentAnchor::DidCompleteLoad() {
   if (search_finished_)
     return;
 
   // If there is a pending layout we'll finish the search from Invoke.
-  if (!frame_->View()->NeedsLayout()) {
-    metrics_->ReportMetrics();
-    search_finished_ = true;
-  }
+  if (!frame_->View()->NeedsLayout())
+    DidFinishSearch();
 }
 
 void TextFragmentAnchor::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
+  visitor->Trace(element_fragment_anchor_);
   visitor->Trace(metrics_);
   FragmentAnchor::Trace(visitor);
 }
@@ -231,6 +250,7 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
   }
 
   metrics_->DidFindMatch(PlainText(range));
+  did_find_match_ = true;
 
   if (first_match_needs_scroll_) {
     first_match_needs_scroll_ = false;
@@ -278,6 +298,25 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
 
 void TextFragmentAnchor::DidFindAmbiguousMatch() {
   metrics_->DidFindAmbiguousMatch();
+}
+
+void TextFragmentAnchor::DidFinishSearch() {
+  DCHECK(!search_finished_);
+  search_finished_ = true;
+
+  metrics_->ReportMetrics();
+
+  if (!did_find_match_ &&
+      fragment_format_ == TextFragmentFormat::FragmentDirective) {
+    DCHECK(!element_fragment_anchor_);
+    element_fragment_anchor_ =
+        ElementFragmentAnchor::TryCreate(frame_->GetDocument()->Url(), *frame_);
+    if (element_fragment_anchor_) {
+      // Schedule a frame so we can invoke the element anchor in
+      // PerformPreRafActions.
+      frame_->GetPage()->GetChromeClient().ScheduleAnimation(frame_->View());
+    }
+  }
 }
 
 }  // namespace blink

@@ -382,29 +382,28 @@ void SplitViewController::SnapWindow(aura::Window* window,
   }
   StartObserving(window);
 
-  if (split_view_type_ == SplitViewType::kTabletType) {
-    // Insert the previous snapped window to overview if overview is active.
-    if (previous_snapped_window && GetOverviewSession()) {
-      InsertWindowToOverview(previous_snapped_window);
-      // Ensure that the close icon will fade in. This part is redundant for
-      // dragging from overview, but necessary for dragging from the top. For
-      // dragging from overview, |OverviewItem::OnSelectorItemDragEnded| will be
-      // called on all overview items including the |previous_snapped_window|
-      // item anyway, whereas for dragging from the top,
-      // |OverviewItem::OnSelectorItemDragEnded| already was called on all
-      // overview items and |previous_snapped_window| was not yet among them.
-      GetOverviewSession()
-          ->GetOverviewItemForWindow(previous_snapped_window)
-          ->OnSelectorItemDragEnded(/*snap=*/true);
-    }
+  // Insert the previous snapped window to overview if overview is active.
+  if (previous_snapped_window && GetOverviewSession()) {
+    InsertWindowToOverview(previous_snapped_window);
+    // Ensure that the close icon will fade in. This part is redundant for
+    // dragging from overview, but necessary for dragging from the top. For
+    // dragging from overview, |OverviewItem::OnSelectorItemDragEnded| will be
+    // called on all overview items including the |previous_snapped_window|
+    // item anyway, whereas for dragging from the top,
+    // |OverviewItem::OnSelectorItemDragEnded| already was called on all
+    // overview items and |previous_snapped_window| was not yet among them.
+    GetOverviewSession()
+        ->GetOverviewItemForWindow(previous_snapped_window)
+        ->OnSelectorItemDragEnded(/*snap=*/true);
+  }
 
     // Update the divider position and window bounds before snapping a new
     // window. Since the minimum size of |window| maybe larger than currently
     // bounds in |snap_position|.
-    if (state_ != SplitViewState::kNoSnap) {
-      divider_position_ = GetClosestFixedDividerPosition();
-      UpdateSnappedWindowsAndDividerBounds();
-    }
+  if (state_ != SplitViewState::kNoSnap &&
+      split_view_type_ == SplitViewType::kTabletType) {
+    divider_position_ = GetClosestFixedDividerPosition();
+    UpdateSnappedWindowsAndDividerBounds();
   }
 
   // Disable the bounds change animation for a to-be-snapped window if the

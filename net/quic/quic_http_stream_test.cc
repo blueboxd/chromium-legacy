@@ -1130,6 +1130,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
 
   quic::QuicConnectionCloseFrame frame;
   frame.quic_error_code = quic::QUIC_PEER_GOING_AWAY;
+  frame.extracted_error_code = quic::QUIC_PEER_GOING_AWAY;
   session_->connection()->OnConnectionCloseFrame(frame);
 
   NetErrorDetails details;
@@ -1176,6 +1177,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
 
   quic::QuicConnectionCloseFrame frame;
   frame.quic_error_code = quic::QUIC_PEER_GOING_AWAY;
+  frame.extracted_error_code = quic::QUIC_PEER_GOING_AWAY;
   session_->connection()->OnConnectionCloseFrame(frame);
 
   NetErrorDetails details;

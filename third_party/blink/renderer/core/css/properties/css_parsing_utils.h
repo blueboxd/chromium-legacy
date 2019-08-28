@@ -207,6 +207,7 @@ CSSValue* ConsumeWidthOrHeight(
 CSSValue* ConsumeMarginOrOffset(CSSParserTokenRange&,
                                 CSSParserMode,
                                 css_property_parser_helpers::UnitlessQuirk);
+CSSValue* ConsumeScrollPadding(CSSParserTokenRange&);
 CSSValue* ConsumeOffsetPath(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumePathOrNone(CSSParserTokenRange&);
 CSSValue* ConsumeOffsetRotate(CSSParserTokenRange&, const CSSParserContext&);

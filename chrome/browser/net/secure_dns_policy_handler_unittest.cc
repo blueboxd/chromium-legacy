@@ -127,7 +127,8 @@ TEST_F(SecureDnsPolicyHandlerTest, PolicyValueSecureShouldError) {
   // Secure will eventually be a valid option, but for the moment it should
   // error.
   SetPolicyValue(key::kDnsOverHttpsMode,
-                 std::make_unique<base::Value>(kDnsOverHttpsModeSecure));
+                 std::make_unique<base::Value>(
+                     chrome_browser_net::kDnsOverHttpsModeSecure));
 
   CheckAndApplyPolicySettings();
 
@@ -140,11 +141,12 @@ TEST_F(SecureDnsPolicyHandlerTest, PolicyValueSecureShouldError) {
   std::string mode;
   EXPECT_TRUE(prefs().GetString(prefs::kDnsOverHttpsMode, &mode));
   // Pref should have changed to "off."
-  EXPECT_EQ(mode, kDnsOverHttpsModeOff);
+  EXPECT_EQ(mode, chrome_browser_net::kDnsOverHttpsModeOff);
 }
 
 TEST_F(SecureDnsPolicyHandlerTest, ValidPolicyValueOff) {
-  const std::string test_policy_value = kDnsOverHttpsModeOff;
+  const std::string test_policy_value =
+      chrome_browser_net::kDnsOverHttpsModeOff;
 
   SetPolicyValue(key::kDnsOverHttpsMode,
                  std::make_unique<base::Value>(test_policy_value));
@@ -161,7 +163,8 @@ TEST_F(SecureDnsPolicyHandlerTest, ValidPolicyValueOff) {
 }
 
 TEST_F(SecureDnsPolicyHandlerTest, ValidPolicyValueAutomatic) {
-  const std::string test_policy_value = kDnsOverHttpsModeAutomatic;
+  const std::string test_policy_value =
+      chrome_browser_net::kDnsOverHttpsModeAutomatic;
 
   SetPolicyValue(key::kDnsOverHttpsMode,
                  std::make_unique<base::Value>(test_policy_value));

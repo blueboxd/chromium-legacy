@@ -137,6 +137,9 @@ class AudioSinkAudioTrackImpl {
     // Additional padding for minimum buffer time, determined experimentally.
     private static final long MIN_BUFFERED_TIME_PADDING_USEC = 120000;
 
+    // Max retries for AudioTrackBuilder
+    private static final int MAX_RETRIES_FOR_AUDIO_TRACKS = 1;
+
     private static AudioManager sAudioManager;
 
     private static int sSessionIdMedia = AudioManager.ERROR;
@@ -344,20 +347,24 @@ class AudioSinkAudioTrackImpl {
                         + " with session-id=" + sessionId);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            AudioTrack.Builder builder = new AudioTrack.Builder();
-            builder.setBufferSizeInBytes(bufferSizeInBytes)
-                    .setTransferMode(AUDIO_MODE)
-                    .setAudioAttributes(new AudioAttributes.Builder()
-                                                .setUsage(usageType)
-                                                .setContentType(contentType)
-                                                .build())
-                    .setAudioFormat(new AudioFormat.Builder()
-                                            .setEncoding(AUDIO_FORMAT)
-                                            .setSampleRate(mSampleRateInHz)
-                                            .setChannelMask(CHANNEL_CONFIG)
-                                            .build());
-            if (sessionId != AudioManager.ERROR) builder.setSessionId(sessionId);
-            mAudioTrack = builder.build();
+            // Retry if AudioTrack creation fails.
+            int retries = 0;
+            do {
+                AudioTrack.Builder builder = new AudioTrack.Builder();
+                builder.setBufferSizeInBytes(bufferSizeInBytes)
+                        .setTransferMode(AUDIO_MODE)
+                        .setAudioAttributes(new AudioAttributes.Builder()
+                                                    .setUsage(usageType)
+                                                    .setContentType(contentType)
+                                                    .build())
+                        .setAudioFormat(new AudioFormat.Builder()
+                                                .setEncoding(AUDIO_FORMAT)
+                                                .setSampleRate(mSampleRateInHz)
+                                                .setChannelMask(CHANNEL_CONFIG)
+                                                .build());
+                if (sessionId != AudioManager.ERROR) builder.setSessionId(sessionId);
+                mAudioTrack = builder.build();
+            } while (mAudioTrack == null && retries++ < MAX_RETRIES_FOR_AUDIO_TRACKS);
         } else {
             // Using pre-M API.
             if (sessionId == AudioManager.ERROR) {

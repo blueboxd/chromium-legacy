@@ -45,6 +45,15 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     bool user_scrollable_vertical = false;
     bool scrolls_inner_viewport = false;
     bool scrolls_outer_viewport = false;
+
+    // This bit tells the compositor whether the inner viewport should be
+    // scrolled using the full viewport mechanism (overscroll, top control
+    // movement, inner+outer panning, etc.). This can differ depending on
+    // whether the page has a non-default root scroller and is used to affect
+    // scroll chaining from fixed elements. See discussion on
+    // https://crbug.com/977954 for details.
+    bool prevent_viewport_scrolling_from_inner = false;
+
     bool max_scroll_offset_affected_by_page_scale = false;
     MainThreadScrollingReasons main_thread_scrolling_reasons =
         cc::MainThreadScrollingReason::kNotScrollingOnMain;
@@ -62,6 +71,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
           user_scrollable_vertical != other.user_scrollable_vertical ||
           scrolls_inner_viewport != other.scrolls_inner_viewport ||
           scrolls_outer_viewport != other.scrolls_outer_viewport ||
+          prevent_viewport_scrolling_from_inner !=
+              other.prevent_viewport_scrolling_from_inner ||
           max_scroll_offset_affected_by_page_scale !=
               other.max_scroll_offset_affected_by_page_scale ||
           main_thread_scrolling_reasons !=
@@ -136,6 +147,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   }
   bool ScrollsInnerViewport() const { return state_.scrolls_inner_viewport; }
   bool ScrollsOuterViewport() const { return state_.scrolls_outer_viewport; }
+  bool PreventViewportScrollingFromInner() const {
+    return state_.prevent_viewport_scrolling_from_inner;
+  }
   bool MaxScrollOffsetAffectedByPageScale() const {
     return state_.max_scroll_offset_affected_by_page_scale;
   }

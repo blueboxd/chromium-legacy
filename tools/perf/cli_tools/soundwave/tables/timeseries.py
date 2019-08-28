@@ -129,6 +129,10 @@ def _DataFrameFromJsonV2(ts_key, data):
 
 
 def _DataFrameFromJsonV1(test_path, data):
+  # The dashboard API returns an empty list if there is no recent data for the
+  # timeseries.
+  if not data:
+    return DataFrame()
   assert test_path == data['test_path']
   config = _ParseConfigFromTestPath(data['test_path'])
   config['improvement_direction'] = _CODE_TO_IMPROVEMENT_DIRECTION.get(

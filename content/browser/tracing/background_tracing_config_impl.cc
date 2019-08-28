@@ -29,6 +29,7 @@ const char kConfigsKey[] = "configs";
 const char kConfigModeKey[] = "mode";
 const char kConfigModePreemptive[] = "PREEMPTIVE_TRACING_MODE";
 const char kConfigModeReactive[] = "REACTIVE_TRACING_MODE";
+const char kConfigModeSystem[] = "SYSTEM_TRACING_MODE";
 
 const char kConfigScenarioName[] = "scenario_name";
 const char kConfigTraceBrowserProcessOnly[] = "trace_browser_process_only";
@@ -211,6 +212,9 @@ void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) {
     case BackgroundTracingConfigImpl::REACTIVE:
       dict->SetString(kConfigModeKey, kConfigModeReactive);
       break;
+    case BackgroundTracingConfigImpl::SYSTEM:
+      dict->SetString(kConfigModeKey, kConfigModeSystem);
+      break;
   }
 
   std::unique_ptr<base::ListValue> configs_list(new base::ListValue());
@@ -230,21 +234,21 @@ void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) {
 
 void BackgroundTracingConfigImpl::AddPreemptiveRule(
     const base::DictionaryValue* dict) {
-  std::unique_ptr<BackgroundTracingRule> rule =
-      BackgroundTracingRule::CreateRuleFromDict(dict);
-  if (rule)
-    rules_.push_back(std::move(rule));
+  AddRule(dict);
 }
 
 void BackgroundTracingConfigImpl::AddReactiveRule(
     const base::DictionaryValue* dict,
     BackgroundTracingConfigImpl::CategoryPreset category_preset) {
-  std::unique_ptr<BackgroundTracingRule> rule =
-      BackgroundTracingRule::CreateRuleFromDict(dict);
+  BackgroundTracingRule* rule = AddRule(dict);
   if (rule) {
     rule->set_category_preset(category_preset);
-    rules_.push_back(std::move(rule));
   }
+}
+
+void BackgroundTracingConfigImpl::AddSystemRule(
+    const base::DictionaryValue* dict) {
+  AddRule(dict);
 }
 
 TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
@@ -317,6 +321,8 @@ BackgroundTracingConfigImpl::FromDict(const base::DictionaryValue* dict) {
     config = PreemptiveFromDict(dict);
   } else if (mode == kConfigModeReactive) {
     config = ReactiveFromDict(dict);
+  } else if (mode == kConfigModeSystem) {
+    config = SystemFromDict(dict);
   } else {
     return nullptr;
   }
@@ -435,6 +441,32 @@ BackgroundTracingConfigImpl::ReactiveFromDict(
 }
 
 // static
+std::unique_ptr<BackgroundTracingConfigImpl>
+BackgroundTracingConfigImpl::SystemFromDict(const base::DictionaryValue* dict) {
+  DCHECK(dict);
+
+  auto config = std::make_unique<BackgroundTracingConfigImpl>(
+      BackgroundTracingConfigImpl::SYSTEM);
+
+  const base::ListValue* configs_list = nullptr;
+  if (!dict->GetList(kConfigsKey, &configs_list))
+    return nullptr;
+
+  for (const auto& it : *configs_list) {
+    const base::DictionaryValue* config_dict = nullptr;
+    if (!it.GetAsDictionary(&config_dict))
+      return nullptr;
+
+    config->AddSystemRule(config_dict);
+  }
+
+  if (config->rules().empty())
+    return nullptr;
+
+  return config;
+}
+
+// static
 TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
     BackgroundTracingConfigImpl::CategoryPreset preset,
     base::trace_event::TraceRecordMode record_mode) {
@@ -521,6 +553,17 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
   }
   NOTREACHED();
   return TraceConfig();
+}
+
+BackgroundTracingRule* BackgroundTracingConfigImpl::AddRule(
+    const base::DictionaryValue* dict) {
+  std::unique_ptr<BackgroundTracingRule> rule =
+      BackgroundTracingRule::CreateRuleFromDict(dict);
+  if (rule) {
+    rules_.push_back(std::move(rule));
+    return rules_.back().get();
+  }
+  return nullptr;
 }
 
 void BackgroundTracingConfigImpl::SetBufferSizeLimits(

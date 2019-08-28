@@ -6,8 +6,8 @@
 
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "chrome/renderer/page_load_metrics/fake_page_timing_sender.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using CSSSampleId = blink::mojom::CSSSampleId;

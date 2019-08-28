@@ -13,6 +13,8 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_saver/data_saver_top_host_provider.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,8 +23,10 @@
 #include "components/blacklist/opt_out_blacklist/sql/opt_out_store_sql.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_optimization_guide_decider.h"
 #include "components/previews/content/previews_optimization_guide_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
@@ -96,6 +100,33 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
 }  // namespace
 
 // static
+bool PreviewsService::HasURLRedirectCycle(
+    const GURL& start_url,
+    const base::MRUCache<GURL, GURL>& redirect_history) {
+  // Using an ordered set since using an unordered set requires defining
+  // comparator operator for GURL.
+  std::set<GURL> urls_seen_so_far;
+  GURL current_url = start_url;
+
+  while (true) {
+    urls_seen_so_far.insert(current_url);
+
+    // Check if |current_url| redirects to another URL that is already visited.
+    auto it = redirect_history.Peek(current_url);
+    if (it == redirect_history.end())
+      return false;
+
+    GURL redirect_target = it->second;
+    if (urls_seen_so_far.find(redirect_target) != urls_seen_so_far.end())
+      return true;
+    current_url = redirect_target;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
 blacklist::BlacklistData::AllowedTypesAndVersions
 PreviewsService::GetAllowedPreviews() {
   blacklist::BlacklistData::AllowedTypesAndVersions enabled_previews;
@@ -121,7 +152,10 @@ PreviewsService::PreviewsService(content::BrowserContext* browser_context)
       optimization_guide_url_loader_factory_(
           content::BrowserContext::GetDefaultStoragePartition(
               Profile::FromBrowserContext(browser_context))
-              ->GetURLLoaderFactoryForBrowserProcess()) {
+              ->GetURLLoaderFactoryForBrowserProcess()),
+      // Set cache size to 25 entries.  This should be sufficient since the
+      // redirect loop cache is needed for only one navigation.
+      redirect_history_(25u) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -145,20 +179,30 @@ void PreviewsService::Initialize(
       base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                        base::TaskPriority::BEST_EFFORT});
 
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+
+  std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide;
+  OptimizationGuideKeyedService* optimization_guide_keyed_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+  if (optimization_guide_keyed_service &&
+      optimization_guide::features::IsOptimizationGuideKeyedServiceEnabled()) {
+    previews_opt_guide =
+        std::make_unique<previews::PreviewsOptimizationGuideDecider>(
+            optimization_guide_keyed_service);
+  } else if (optimization_guide_service) {
+    previews_opt_guide =
+        std::make_unique<previews::PreviewsOptimizationGuideImpl>(
+            optimization_guide_service, ui_task_runner, background_task_runner,
+            profile_path, profile->GetPrefs(), database_provider,
+            top_host_provider_.get(), optimization_guide_url_loader_factory_);
+  }
+
   previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
       std::move(previews_decider_impl),
       std::make_unique<blacklist::OptOutStoreSQL>(
           ui_task_runner, background_task_runner,
           profile_path.Append(chrome::kPreviewsOptOutDBFilename)),
-      optimization_guide_service
-          ? std::make_unique<previews::PreviewsOptimizationGuideImpl>(
-                optimization_guide_service, ui_task_runner,
-                background_task_runner, profile_path,
-                Profile::FromBrowserContext(browser_context_)->GetPrefs(),
-                database_provider, top_host_provider_.get(),
-                optimization_guide_url_loader_factory_)
-          : nullptr,
-      base::Bind(&IsPreviewsTypeEnabled),
+      std::move(previews_opt_guide), base::Bind(&IsPreviewsTypeEnabled),
       std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews(),
       g_browser_process->network_quality_tracker());
 }
@@ -178,4 +222,29 @@ void PreviewsService::ClearBlackList(base::Time begin_time,
 
   if (previews_lite_page_decider_)
     previews_lite_page_decider_->ClearBlacklist();
+}
+
+void PreviewsService::ReportObservedRedirectWithDeferAllScriptPreview(
+    const GURL& start_url,
+    const GURL& end_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(previews::params::IsDeferAllScriptPreviewsEnabled());
+
+  // If |start_url| has been previously marked as ineligible for the preview,
+  // then do not update the existing entry since existing entry might cause
+  // |start_url| to be no longer marked as ineligible for the preview. This may
+  // happen if marking the URL as ineligible for preview resulted in breakage of
+  // the redirect loop.
+  if (!IsUrlEligibleForDeferAllScriptPreview(start_url))
+    return;
+
+  redirect_history_.Put(start_url, end_url);
+}
+
+bool PreviewsService::IsUrlEligibleForDeferAllScriptPreview(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(previews::params::IsDeferAllScriptPreviewsEnabled());
+
+  return !HasURLRedirectCycle(url, redirect_history_);
 }

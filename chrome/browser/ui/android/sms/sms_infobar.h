@@ -10,21 +10,25 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
+namespace content {
+class WebContents;
+}  // namespace content
+
 namespace url {
 class Origin;
 }  // namespace url
 
 class SmsInfoBarDelegate;
-class InfoBarService;
 
 class SmsInfoBar : public ConfirmInfoBar {
  public:
-  explicit SmsInfoBar(std::unique_ptr<SmsInfoBarDelegate> delegate);
+  SmsInfoBar(content::WebContents* web_contents,
+             std::unique_ptr<SmsInfoBarDelegate> delegate);
   ~SmsInfoBar() override;
 
   // Creates an SMS receiver infobar and delegate and adds it to
   // |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
+  static void Create(content::WebContents* web_contents,
                      const url::Origin& origin,
                      base::OnceCallback<void()> on_confirm,
                      base::OnceCallback<void()> on_cancel);
@@ -33,6 +37,8 @@ class SmsInfoBar : public ConfirmInfoBar {
   // ConfirmInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
+
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SmsInfoBar);
 };

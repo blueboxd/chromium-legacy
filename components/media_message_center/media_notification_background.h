@@ -29,8 +29,7 @@ namespace media_message_center {
 class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
     : public views::Background {
  public:
-  MediaNotificationBackground(views::View* owner,
-                              int top_radius,
+  MediaNotificationBackground(int top_radius,
                               int bottom_radius,
                               double artwork_max_width_pct);
   ~MediaNotificationBackground() override;
@@ -38,12 +37,12 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   // views::Background
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
-  void UpdateCornerRadius(int top_radius, int bottom_radius);
   void UpdateArtwork(const gfx::ImageSkia& image);
-  void UpdateArtworkMaxWidthPct(double max_width_pct);
+  bool UpdateCornerRadius(int top_radius, int bottom_radius);
+  bool UpdateArtworkMaxWidthPct(double max_width_pct);
 
   SkColor GetBackgroundColor() const;
-  SkColor GetForegroundColor() const;
+  SkColor GetForegroundColor(const views::View& owner) const;
 
  private:
   friend class MediaNotificationBackgroundTest;
@@ -53,14 +52,11 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
 
   int GetArtworkWidth(const gfx::Size& view_size) const;
   int GetArtworkVisibleWidth(const gfx::Size& view_size) const;
-  gfx::Rect GetArtworkBounds(const gfx::Rect& view_bounds) const;
-  gfx::Rect GetFilledBackgroundBounds(const gfx::Rect& view_bounds) const;
-  gfx::Rect GetGradientBounds(const gfx::Rect& view_bounds) const;
+  gfx::Rect GetArtworkBounds(const views::View& owner) const;
+  gfx::Rect GetFilledBackgroundBounds(const views::View& owner) const;
+  gfx::Rect GetGradientBounds(const views::View& owner) const;
   SkPoint GetGradientStartPoint(const gfx::Rect& draw_bounds) const;
   SkPoint GetGradientEndPoint(const gfx::Rect& draw_bounds) const;
-
-  // Reference to the owning view that this is a background for.
-  views::View* owner_;
 
   int top_radius_;
   int bottom_radius_;

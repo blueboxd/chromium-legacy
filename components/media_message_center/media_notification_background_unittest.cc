@@ -73,16 +73,13 @@ class MediaNotificationBackgroundTest : public testing::Test {
   ~MediaNotificationBackgroundTest() override = default;
 
   void SetUp() override {
-    owner_ = std::make_unique<views::StaticSizedView>();
-    background_ = std::make_unique<MediaNotificationBackground>(owner_.get(),
-                                                                10, 10, 0.1);
+    background_ = std::make_unique<MediaNotificationBackground>(10, 10, 0.1);
 
     EXPECT_FALSE(GetBackgroundColor().has_value());
   }
 
   void TearDown() override {
     background_.reset();
-    owner_.reset();
   }
 
   MediaNotificationBackground* background() const { return background_.get(); }
@@ -96,7 +93,6 @@ class MediaNotificationBackgroundTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<views::StaticSizedView> owner_;
   std::unique_ptr<MediaNotificationBackground> background_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationBackgroundTest);
@@ -322,6 +318,8 @@ class MediaNotificationBackgroundRTLTest
                                                 : switches::kForceDirectionLTR);
 
     MediaNotificationBackgroundTest::SetUp();
+
+    ASSERT_EQ(IsRTL(), base::i18n::IsRTL());
   }
 
   bool IsRTL() const { return GetParam(); }
@@ -336,15 +334,19 @@ INSTANTIATE_TEST_SUITE_P(, MediaNotificationBackgroundRTLTest, testing::Bool());
 TEST_P(MediaNotificationBackgroundRTLTest, BoundsSanityCheck) {
   // The test notification will have a width of 200 and a height of 50.
   gfx::Rect bounds(0, 0, 200, 50);
+  auto owner = std::make_unique<views::StaticSizedView>();
+  owner->SetBoundsRect(bounds);
+  ASSERT_EQ(bounds, owner->GetContentsBounds());
 
   // Check the artwork is not visible by default.
   EXPECT_EQ(0, background()->GetArtworkWidth(bounds.size()));
   EXPECT_EQ(0, background()->GetArtworkVisibleWidth(bounds.size()));
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -200 : 200, 0, 0, 50),
-            background()->GetArtworkBounds(bounds));
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -200 : 0, 0, 200, 50),
-            background()->GetFilledBackgroundBounds(bounds));
-  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), background()->GetGradientBounds(bounds));
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 0 : 200, 0, 0, 50),
+            background()->GetArtworkBounds(*owner.get()));
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 0 : 0, 0, 200, 50),
+            background()->GetFilledBackgroundBounds(*owner.get()));
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0),
+            background()->GetGradientBounds(*owner.get()));
 
   // The background artwork image will have an aspect ratio of 2:1.
   SkBitmap bitmap;
@@ -362,22 +364,22 @@ TEST_P(MediaNotificationBackgroundRTLTest, BoundsSanityCheck) {
   EXPECT_EQ(100, background()->GetArtworkVisibleWidth(bounds.size()));
 
   // Check the artwork is positioned to the right.
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -200 : 100, 0, 100, 50),
-            background()->GetArtworkBounds(bounds));
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 0 : 100, 0, 100, 50),
+            background()->GetArtworkBounds(*owner.get()));
 
   // Check the filled background is to the left of the image.
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -100 : 0, 0, 100, 50),
-            background()->GetFilledBackgroundBounds(bounds));
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 100 : 0, 0, 100, 50),
+            background()->GetFilledBackgroundBounds(*owner.get()));
 
   // Check the gradient is positioned above the artwork.
-  const gfx::Rect gradient_bounds = background()->GetGradientBounds(bounds);
-  EXPECT_EQ(gfx::Rect(IsRTL() ? -140 : 100, 0, 40, 50), gradient_bounds);
+  const gfx::Rect gradient_bounds =
+      background()->GetGradientBounds(*owner.get());
+  EXPECT_EQ(gfx::Rect(IsRTL() ? 60 : 100, 0, 40, 50), gradient_bounds);
 
   // Check the gradient point X-values are the start and end of
   // |gradient_bounds|.
-  EXPECT_EQ(IsRTL() ? -100 : 100,
-            background()->GetGradientStartPoint(gradient_bounds).x());
-  EXPECT_EQ(IsRTL() ? -140 : 140,
+  EXPECT_EQ(100, background()->GetGradientStartPoint(gradient_bounds).x());
+  EXPECT_EQ(IsRTL() ? 60 : 140,
             background()->GetGradientEndPoint(gradient_bounds).x());
 
   // Check both of the gradient point Y-values are half the height.

@@ -16,7 +16,6 @@ Polymer({
 
   behaviors: [
     CrNetworkListenerBehavior,
-    CrPolicyNetworkBehavior,
   ],
 
   properties: {

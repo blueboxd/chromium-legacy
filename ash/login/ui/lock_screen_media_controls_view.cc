@@ -63,9 +63,10 @@ constexpr int kChangeTrackIconSize = 14;
 constexpr int kSeekingIconsSize = 26;
 constexpr gfx::Size kMediaControlsButtonRowSize =
     gfx::Size(300, kMediaButtonSize.height());
+constexpr int kArtworkCornerRadius = 4;
 
-constexpr int kDragVelocityThreshold = -6;
-constexpr int kHeightDismissalThreshold = 20;
+constexpr int kDragVelocityThreshold = 6;
+constexpr int kDistanceDismissalThreshold = 20;
 constexpr base::TimeDelta kAnimationDuration =
     base::TimeDelta::FromMilliseconds(200);
 
@@ -560,7 +561,7 @@ void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
-      last_fling_velocity_ = event->details().scroll_y();
+      last_fling_velocity_ = event->details().scroll_x();
       UpdateDrag(point_in_screen);
       event->SetHandled();
       break;
@@ -680,21 +681,28 @@ void LockScreenMediaControlsView::SetArtwork(
 
   session_artwork_->SetImageSize(ScaleSizeToFitView(img->size(), kArtworkSize));
   session_artwork_->SetImage(*img);
+  session_artwork_->set_clip_path(GetArtworkClipPath());
+}
+
+SkPath LockScreenMediaControlsView::GetArtworkClipPath() const {
+  SkPath path;
+  path.addRoundRect(gfx::RectToSkRect(session_artwork_->GetImageBounds()),
+                    kArtworkCornerRadius, kArtworkCornerRadius);
+  return path;
 }
 
 void LockScreenMediaControlsView::UpdateDrag(
     const gfx::Point& location_in_screen) {
   is_in_drag_ = true;
-  int drag_delta = location_in_screen.y() - initial_drag_point_.y();
+  int drag_delta = location_in_screen.x() - initial_drag_point_.x();
 
   // Don't let the user drag |contents_view_| below the view area.
-  if (contents_view_->bounds().bottom() + drag_delta >=
-      GetLocalBounds().bottom()) {
+  if (contents_view_->bounds().x() + drag_delta <= GetLocalBounds().x()) {
     return;
   }
 
   gfx::Transform transform;
-  transform.Translate(0, drag_delta);
+  transform.Translate(drag_delta, 0);
   contents_view_->layer()->SetTransform(transform);
   UpdateOpacity();
 }
@@ -702,11 +710,13 @@ void LockScreenMediaControlsView::UpdateDrag(
 void LockScreenMediaControlsView::EndDrag() {
   is_in_drag_ = false;
 
+  int threshold = GetBoundsInScreen().right() - kDistanceDismissalThreshold;
+
   // If the user releases the drag with velocity over the threshold or drags
-  // |contents_view_| past the height threshold, dismiss the controls.
-  if (last_fling_velocity_ <= kDragVelocityThreshold ||
-      (contents_view_->GetBoundsInScreen().y() <= kHeightDismissalThreshold &&
-       last_fling_velocity_ < 0)) {
+  // |contents_view_| past the distance threshold, dismiss the controls.
+  if (last_fling_velocity_ >= kDragVelocityThreshold ||
+      (contents_view_->GetBoundsInScreen().x() >= threshold &&
+       last_fling_velocity_ < 1)) {
     RunHideControlsAnimation();
     return;
   }
@@ -716,8 +726,8 @@ void LockScreenMediaControlsView::EndDrag() {
 
 void LockScreenMediaControlsView::UpdateOpacity() {
   float progress =
-      static_cast<float>(contents_view_->GetBoundsInScreen().bottom()) /
-      GetBoundsInScreen().bottom();
+      GetBoundsInScreen().x() /
+      static_cast<float>(contents_view_->GetBoundsInScreen().right());
   contents_view_->layer()->SetOpacity(progress);
 }
 
@@ -730,7 +740,7 @@ void LockScreenMediaControlsView::RunHideControlsAnimation() {
   animation.SetTransitionDuration(kAnimationDuration);
 
   gfx::Transform transform;
-  transform.Translate(0, -GetBoundsInScreen().bottom());
+  transform.Translate(GetBoundsInScreen().right(), 0);
   contents_view_->layer()->SetTransform(transform);
   contents_view_->layer()->SetOpacity(0);
 }

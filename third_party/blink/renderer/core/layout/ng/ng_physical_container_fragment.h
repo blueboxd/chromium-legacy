@@ -101,7 +101,14 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return PostLayoutChildLinkList(num_children_, buffer_);
   }
 
+  // Returns true if we have any floating descendants.
   bool HasFloatingDescendants() const { return has_floating_descendants_; }
+
+  // Returns true if we have any adjoining-object descendants (floats, or
+  // inline-level OOF-positioned objects).
+  bool HasAdjoiningObjectDescendants() const {
+    return has_adjoining_object_descendants_;
+  }
 
   bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
 

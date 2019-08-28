@@ -780,6 +780,7 @@ void OverviewItem::HandleGestureEvent(ui::GestureEvent* event) {
     HandleGestureEventForTabletModeLayout(event);
     return;
   }
+
   const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -820,8 +821,12 @@ void OverviewItem::HandleGestureEventForTabletModeLayout(
         overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
       break;
     case ui::ET_SCROLL_FLING_START:
-      HandleFlingStartEvent(location, event->details().velocity_x(),
-                            event->details().velocity_y());
+      if (IsDragItem()) {
+        HandleFlingStartEvent(location, event->details().velocity_x(),
+                              event->details().velocity_y());
+      } else {
+        overview_grid()->grid_pre_event_handler()->OnGestureEvent(event);
+      }
       break;
     case ui::ET_GESTURE_SCROLL_END:
       if (IsDragItem())

@@ -64,20 +64,6 @@ bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
   return false;
 }
 
-// Returns true if the domain given by |domain_info| is a top domain.
-bool IsTopDomain(const DomainInfo& domain_info) {
-  // Top domains are only accessible through their skeletons, so query the top
-  // domains trie for each skeleton of this domain.
-  for (const std::string& skeleton : domain_info.skeletons) {
-    const TopDomainEntry top_domain =
-        url_formatter::LookupSkeletonInTopDomains(skeleton);
-    if (domain_info.domain_and_registry == top_domain.domain) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // Returns a site that the user has used before that the eTLD+1 in
 // |domain_and_registry| may be attempting to spoof, based on skeleton
 // comparison.
@@ -166,6 +152,25 @@ bool IsInterstitialReload(const GURL& current_url,
          stored_redirect_chain[stored_redirect_chain.size() - 1] == current_url;
 }
 
+void RecordUMAFromMatchType(MatchType match_type) {
+  switch (match_type) {
+    case MatchType::kTopSite:
+      RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
+      break;
+    case MatchType::kSiteEngagement:
+      RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
+      break;
+    case MatchType::kEditDistance:
+      RecordEvent(NavigationSuggestionEvent::kMatchEditDistance);
+      break;
+    case MatchType::kEditDistanceSiteEngagement:
+      RecordEvent(NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement);
+      break;
+    case MatchType::kNone:
+      break;
+  }
+}
+
 }  // namespace
 
 namespace lookalikes {
@@ -173,6 +178,19 @@ namespace lookalikes {
 // static
 const char LookalikeUrlNavigationThrottle::kHistogramName[] =
     "NavigationSuggestion.Event";
+
+bool IsTopDomain(const DomainInfo& domain_info) {
+  // Top domains are only accessible through their skeletons, so query the top
+  // domains trie for each skeleton of this domain.
+  for (const std::string& skeleton : domain_info.skeletons) {
+    const TopDomainEntry top_domain =
+        url_formatter::LookupSkeletonInTopDomains(skeleton);
+    if (domain_info.domain_and_registry == top_domain.domain) {
+      return true;
+    }
+  }
+  return false;
+}
 
 bool IsEditDistanceAtMostOne(const base::string16& str1,
                              const base::string16& str2) {
@@ -299,6 +317,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
   }
 
   const DomainInfo navigated_domain = GetDomainInfo(url);
+  // Empty domain_and_registry happens on private domains.
   if (navigated_domain.domain_and_registry.empty() ||
       IsTopDomain(navigated_domain)) {
     return content::NavigationThrottle::PROCEED;
@@ -397,6 +416,84 @@ LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
   return std::make_unique<LookalikeUrlNavigationThrottle>(navigation_handle);
 }
 
+// static
+bool LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
+    MatchType match_type,
+    const DomainInfo& navigated_domain) {
+  if (!base::FeatureList::IsEnabled(
+          features::kLookalikeUrlNavigationSuggestionsUI)) {
+    return false;
+  }
+  if (match_type == MatchType::kSiteEngagement) {
+    return true;
+  }
+  return match_type == MatchType::kTopSite &&
+         kEnableInterstitialForTopSites.Get() &&
+         navigated_domain.idn_result.matching_top_domain.is_top_500;
+}
+
+bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites,
+    std::string* matched_domain,
+    MatchType* match_type) {
+  DCHECK(!navigated_domain.domain_and_registry.empty());
+  DCHECK(matched_domain);
+  DCHECK(match_type);
+
+  if (navigated_domain.idn_result.has_idn_component) {
+    // If the navigated domain is IDN, check its skeleton against engaged sites
+    // and top domains.
+    const std::string matched_engaged_domain =
+        GetMatchingSiteEngagementDomain(engaged_sites, navigated_domain);
+    if (!matched_engaged_domain.empty()) {
+      *matched_domain = matched_engaged_domain;
+      *match_type = MatchType::kSiteEngagement;
+      return true;
+    }
+
+    if (!navigated_domain.idn_result.matching_top_domain.domain.empty()) {
+      // In practice, this is not possible since the top domain list does not
+      // contain IDNs, so domain_and_registry can't both have IDN and be a top
+      // domain. Still, sanity check in case the top domain list changes in the
+      // future.
+      // At this point, navigated domain should not be a top domain.
+      DCHECK_NE(navigated_domain.domain_and_registry,
+                navigated_domain.idn_result.matching_top_domain.domain);
+      *matched_domain = navigated_domain.idn_result.matching_top_domain.domain;
+      *match_type = MatchType::kTopSite;
+      return true;
+    }
+  }
+
+  if (!url_formatter::top_domains::IsEditDistanceCandidate(
+          navigated_domain.domain_and_registry)) {
+    return false;
+  }
+
+  // If we can't find an exact top domain or an engaged site, try to find an
+  // engaged domain within an edit distance of one.
+  const std::string similar_engaged_domain =
+      GetSimilarDomainFromEngagedSites(navigated_domain, engaged_sites);
+  if (!similar_engaged_domain.empty() &&
+      navigated_domain.domain_and_registry != similar_engaged_domain) {
+    *matched_domain = similar_engaged_domain;
+    *match_type = MatchType::kEditDistanceSiteEngagement;
+    return true;
+  }
+
+  // Finally, try to find a top domain within an edit distance of one.
+  const std::string similar_top_domain =
+      GetSimilarDomainFromTop500(navigated_domain);
+  if (!similar_top_domain.empty() &&
+      navigated_domain.domain_and_registry != similar_top_domain) {
+    *matched_domain = similar_top_domain;
+    *match_type = MatchType::kEditDistance;
+    return true;
+  }
+  return false;
+}
+
 void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
     const GURL& url,
     const DomainInfo& navigated_domain,
@@ -444,24 +541,20 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 
-  bool record_ukm;
   if (!GetMatchingDomain(navigated_domain, engaged_sites, &matched_domain,
-                         &match_type, &record_ukm)) {
-    if (record_ukm) {
-      LookalikeUrlInterstitialPage::RecordUkmEvent(
-          source_id, match_type, UserAction::kInterstitialNotShown);
-    }
+                         &match_type)) {
     return content::NavigationThrottle::PROCEED;
   }
   DCHECK(!matched_domain.empty());
+
+  RecordUMAFromMatchType(match_type);
 
   if (check_safe_redirect &&
       IsSafeRedirect(matched_domain, navigation_handle()->GetRedirectChain())) {
     return content::NavigationThrottle::PROCEED;
   }
 
-
-  if (ShouldDisplayInterstitial(match_type)) {
+  if (ShouldDisplayInterstitial(match_type, navigated_domain)) {
     // matched_domain can be a top domain or an engaged domain. Simply use its
     // eTLD+1 as the suggested domain.
     // 1. If matched_domain is a top domain: Top domain list already contains
@@ -494,95 +587,6 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
       source_id, match_type, UserAction::kInterstitialNotShown);
 
   return content::NavigationThrottle::PROCEED;
-}
-
-bool LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
-    MatchType match_type) const {
-  if (!interstitials_enabled_) {
-    return false;
-  }
-  if (match_type == MatchType::kSiteEngagement) {
-    return true;
-  }
-  return match_type == MatchType::kTopSite &&
-         kEnableInterstitialForTopSites.Get();
-}
-
-bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
-    const DomainInfo& navigated_domain,
-    const std::vector<DomainInfo>& engaged_sites,
-    std::string* matched_domain,
-    MatchType* match_type,
-    bool* force_record_ukm) {
-  DCHECK(!navigated_domain.domain_and_registry.empty());
-  DCHECK(matched_domain);
-  DCHECK(match_type);
-  DCHECK(force_record_ukm);
-  *force_record_ukm = false;
-
-  if (navigated_domain.idn_result.has_idn_component) {
-    // If the navigated domain is IDN, check its skeleton against engaged sites
-    // and top domains.
-    const std::string matched_engaged_domain =
-        GetMatchingSiteEngagementDomain(engaged_sites, navigated_domain);
-    if (!matched_engaged_domain.empty()) {
-      RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
-      *matched_domain = matched_engaged_domain;
-      *match_type = MatchType::kSiteEngagement;
-      return true;
-    }
-
-    if (!navigated_domain.idn_result.matching_top_domain.domain.empty()) {
-      // In practice, this is not possible since the top domain list does not
-      // contain IDNs, so domain_and_registry can't both have IDN and be a top
-      // domain. Still, sanity check in case the top domain list changes in the
-      // future.
-      // At this point, navigated domain should not be a top domain.
-      DCHECK_NE(navigated_domain.domain_and_registry,
-                navigated_domain.idn_result.matching_top_domain.domain);
-      RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
-      *matched_domain = navigated_domain.idn_result.matching_top_domain.domain;
-      *match_type = MatchType::kTopSite;
-
-      if (navigated_domain.idn_result.matching_top_domain.is_top_500) {
-        return true;
-      } else {
-        // We will not show an interstitial if the domain is not top 500 but we
-        // still want to record metrics.
-        *force_record_ukm = true;
-        return false;
-      }
-    }
-  }
-
-  if (!url_formatter::top_domains::IsEditDistanceCandidate(
-          navigated_domain.domain_and_registry)) {
-    return false;
-  }
-
-  // If we can't find an exact top domain or an engaged site, try to find an
-  // engaged domain within an edit distance of one.
-  const std::string similar_engaged_domain =
-      GetSimilarDomainFromEngagedSites(navigated_domain, engaged_sites);
-  if (!similar_engaged_domain.empty() &&
-      navigated_domain.domain_and_registry != similar_engaged_domain) {
-    RecordEvent(NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement);
-    *matched_domain = similar_engaged_domain;
-    *match_type = MatchType::kEditDistanceSiteEngagement;
-    return true;
-  }
-
-  // Finally, try to find a top domain within an edit distance of one.
-  const std::string similar_top_domain =
-      GetSimilarDomainFromTop500(navigated_domain);
-  if (!similar_top_domain.empty() &&
-      navigated_domain.domain_and_registry != similar_top_domain) {
-    RecordEvent(NavigationSuggestionEvent::kMatchEditDistance);
-    *matched_domain = similar_top_domain;
-    *match_type = MatchType::kEditDistance;
-    return true;
-  }
-  return false;
 }
 
 }  // namespace lookalikes

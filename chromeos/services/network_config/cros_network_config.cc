@@ -1799,6 +1799,30 @@ void CrosNetworkConfig::RequestNetworkScan(mojom::NetworkType type) {
   network_state_handler_->RequestScan(MojoTypeToPattern(type));
 }
 
+void CrosNetworkConfig::GetGlobalPolicy(GetGlobalPolicyCallback callback) {
+  auto result = mojom::GlobalPolicy::New();
+  // Global network configuration policy values come from the device policy.
+  const base::DictionaryValue* global_policy_dict =
+      network_configuration_handler_->GetGlobalConfigFromPolicy(
+          /*userhash=*/std::string());
+  if (global_policy_dict) {
+    result->allow_only_policy_networks_to_autoconnect = GetBoolean(
+        global_policy_dict,
+        ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect);
+    result->allow_only_policy_networks_to_connect = GetBoolean(
+        global_policy_dict,
+        ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect);
+    result->allow_only_policy_networks_to_connect_if_available = GetBoolean(
+        global_policy_dict, ::onc::global_network_config::
+                                kAllowOnlyPolicyNetworksToConnectIfAvailable);
+    base::Optional<std::vector<std::string>> blocked_hex_ssids = GetStringList(
+        global_policy_dict, ::onc::global_network_config::kBlacklistedHexSSIDs);
+    if (blocked_hex_ssids)
+      result->blocked_hex_ssids = std::move(*blocked_hex_ssids);
+  }
+  std::move(callback).Run(std::move(result));
+}
+
 // NetworkStateHandlerObserver
 void CrosNetworkConfig::NetworkListChanged() {
   observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {

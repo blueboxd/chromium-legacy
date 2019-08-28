@@ -121,12 +121,6 @@ const char kEngagementTimeOsVersion[] =
 // engagement time was last recorded. Accumulated results are sent to UMA if day
 // ID has changed.
 const char kEngagementTimeDayId[] = "arc.metrics.engagement_time.day_id";
-// A preference that indicates the user has allowed voice interaction services
-// to access the "context" (text and graphic content that is currently on
-// screen). This preference can be overridden by the
-// VoiceInteractionContextEnabled administrator policy.
-const char kVoiceInteractionContextEnabled[] =
-    "settings.voice_interaction.context.enabled";
 // A preference that indicates the user has enabled voice interaction services.
 const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
 // A preference that indicates the user has allowed voice interaction services
@@ -191,7 +185,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimeDeltaPref(kEngagementTimeForeground, base::TimeDelta());
   registry->RegisterStringPref(kEngagementTimeOsVersion, "");
   registry->RegisterTimeDeltaPref(kEngagementTimeTotal, base::TimeDelta());
-  registry->RegisterBooleanPref(kVoiceInteractionContextEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionHotwordEnabled, false);
 }

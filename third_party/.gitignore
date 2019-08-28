@@ -130,6 +130,7 @@
 /libexif/sources
 /libFuzzer/src
 /libprotobuf-mutator/src
+/libipp/libipp
 /libjingle/source
 /libjpeg_turbo
 /liblouis/src

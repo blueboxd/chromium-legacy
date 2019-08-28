@@ -65,6 +65,9 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window,
   if (CanUseTranslucentTooltipWidget())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  // Use software compositing to avoid using unnecessary hardware resources
+  // which just amount to overkill for this UI.
+  params.force_software_compositing = true;
   widget->Init(std::move(params));
   return widget;
 }
@@ -266,7 +269,15 @@ void TooltipAura::Show() {
 void TooltipAura::Hide() {
   tooltip_window_ = nullptr;
   if (widget_) {
-    widget_->Hide();
+    // If we simply hide the widget there's a chance to briefly show outdated
+    // information on the next Show() because the text isn't updated until
+    // OnPaint() which happens asynchronously after the Show(). As a result,
+    // we can just destroy the widget and create a new one each time which
+    // guarantees we never show outdated information.
+    // TODO: Figure out why the old content is displayed despite the size
+    // change.
+    // http://crbug.com/998280
+    DestroyWidget();
     tooltip_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTooltipClosed,
                                             true);
   }

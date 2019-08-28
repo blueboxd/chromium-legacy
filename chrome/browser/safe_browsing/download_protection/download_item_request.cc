@@ -17,6 +17,9 @@ namespace {
 
 std::string GetFileContentsBlocking(base::FilePath path) {
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return "";
+
   int64_t file_size = file.GetLength();
   std::string contents;
   contents.resize(file_size);
@@ -38,7 +41,10 @@ std::string GetFileContentsBlocking(base::FilePath path) {
 
 DownloadItemRequest::DownloadItemRequest(download::DownloadItem* item,
                                          BinaryUploadService::Callback callback)
-    : Request(std::move(callback)), item_(item), weakptr_factory_(this) {
+    : Request(std::move(callback)),
+      item_(item),
+      download_item_renamed_(false),
+      weakptr_factory_(this) {
   item_->AddObserver(this);
 }
 
@@ -54,16 +60,36 @@ void DownloadItemRequest::GetFileContents(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&GetFileContentsBlocking, item_->GetFullPath()),
-      base::BindOnce(&DownloadItemRequest::OnGotFileContents,
-                     weakptr_factory_.GetWeakPtr(), std::move(callback)));
+  pending_callbacks_.push_back(std::move(callback));
+
+  if (download_item_renamed_)
+    RunPendingGetFileContentsCallbacks();
+}
+
+void DownloadItemRequest::RunPendingGetFileContentsCallbacks() {
+  for (auto it = pending_callbacks_.begin(); it != pending_callbacks_.end();
+       it++) {
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
+        base::BindOnce(&GetFileContentsBlocking, item_->GetFullPath()),
+        base::BindOnce(&DownloadItemRequest::OnGotFileContents,
+                       weakptr_factory_.GetWeakPtr(), std::move(*it)));
+  }
+
+  pending_callbacks_.clear();
 }
 
 size_t DownloadItemRequest::GetFileSize() {
   return item_ == nullptr ? 0 : item_->GetTotalBytes();
+}
+
+void DownloadItemRequest::OnDownloadUpdated(download::DownloadItem* download) {
+  if (download == item_ && item_->GetFullPath() == item_->GetTargetFilePath()) {
+    download_item_renamed_ = true;
+    RunPendingGetFileContentsCallbacks();
+  }
 }
 
 void DownloadItemRequest::OnDownloadDestroyed(

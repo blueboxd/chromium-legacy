@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -268,17 +269,9 @@ class TestCascadeAutoLock {
   StyleCascade::AutoLock lock_;
 };
 
-class StyleCascadeTest : public PageTestBase {
+class StyleCascadeTest : public PageTestBase, private ScopedCSSCascadeForTest {
  public:
-  void SetUp() override {
-    RuntimeEnabledFeatures::SetCSSCascadeEnabled(true);
-    PageTestBase::SetUp();
-  }
-
-  void TearDown() override {
-    PageTestBase::TearDown();
-    RuntimeEnabledFeatures::SetCSSCascadeEnabled(false);
-  }
+  StyleCascadeTest() : ScopedCSSCascadeForTest(true) {}
 
   CSSStyleSheet* CreateSheet(const String& css_text) {
     auto* init = MakeGarbageCollected<CSSStyleSheetInit>();

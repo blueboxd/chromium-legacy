@@ -19,7 +19,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -111,18 +111,16 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
 
   CredentialsFilterTest()
       : client_(identity_manager()),
-        password_manager_(&client_),
         pending_(SimpleGaiaForm("user@gmail.com")),
-        form_manager_(&password_manager_,
-                      &client_,
+        form_manager_(&client_,
                       driver_.AsWeakPtr(),
-                      pending_,
+                      pending_.form_data,
+                      &fetcher_,
                       std::make_unique<StubFormSaver>(),
-                      &fetcher_),
+                      nullptr /* metrics_recorder */),
         filter_(&client_,
                 base::BindRepeating(&SyncUsernameTestBase::sync_service,
                                     base::Unretained(this))) {
-    form_manager_.Init(nullptr);
     fetcher_.Fetch();
   }
 
@@ -137,16 +135,15 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
     fetcher_.SetNonFederated(matches);
     fetcher_.NotifyFetchCompleted();
 
-    form_manager_.ProvisionallySave(pending_);
+    form_manager_.ProvisionallySave(pending_.form_data, &driver_);
   }
 
  protected:
   FakePasswordManagerClient client_;
-  PasswordManager password_manager_;
   StubPasswordManagerDriver driver_;
   PasswordForm pending_;
   FakeFormFetcher fetcher_;
-  PasswordFormManager form_manager_;
+  NewPasswordFormManager form_manager_;
 
   SyncCredentialsFilter filter_;
 };

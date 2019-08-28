@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/browser.h"
@@ -57,8 +58,23 @@ views::BubbleDialogDelegateView* HatsBubbleView::GetHatsBubble() {
 }
 
 // static
+void HatsBubbleView::ShowOnContentReady(Browser* browser,
+                                        const std::string& site_id) {
+  if (site_id == "test_site_id") {
+    // Directly show the bubble during tests.
+    HatsBubbleView::Show(browser, base::DoNothing());
+    return;
+  }
+
+  // Try to create the web dialog and preload the HaTS survey content first.
+  // The bubble will only show after the survey content is retrieved.
+  // If it fails due to no internet connection or any other reason, the bubble
+  // will not show.
+  HatsWebDialog::Create(browser, site_id);
+}
+
 void HatsBubbleView::Show(Browser* browser,
-                          const std::string& site_id) {
+                          HatsConsentCallback consent_callback) {
   AppMenuButton* anchor_button = BrowserView::GetBrowserViewForBrowser(browser)
                                      ->toolbar_button_provider()
                                      ->GetAppMenuButton();
@@ -70,20 +86,19 @@ void HatsBubbleView::Show(Browser* browser,
   gfx::NativeView parent_view = anchor_button->GetWidget()->GetNativeView();
 
   // Bubble delegate will be deleted when its window is destroyed.
-  auto* bubble =
-      new HatsBubbleView(browser, anchor_button, site_id, parent_view);
+  auto* bubble = new HatsBubbleView(browser, anchor_button, parent_view,
+                                    std::move(consent_callback));
   bubble->SetHighlightedButton(anchor_button);
   bubble->GetWidget()->Show();
 }
 
 HatsBubbleView::HatsBubbleView(Browser* browser,
                                AppMenuButton* anchor_button,
-                               const std::string& site_id,
-                               gfx::NativeView parent_view)
+                               gfx::NativeView parent_view,
+                               HatsConsentCallback consent_callback)
     : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_RIGHT),
       close_bubble_helper_(this, browser),
-      site_id_(site_id),
-      browser_(browser) {
+      consent_callback_(std::move(consent_callback)) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HATS_BUBBLE);
 
   set_close_on_deactivate(false);
@@ -104,7 +119,11 @@ HatsBubbleView::HatsBubbleView(Browser* browser,
   instance_ = this;
 }
 
-HatsBubbleView::~HatsBubbleView() {}
+HatsBubbleView::~HatsBubbleView() {
+  // If the callback was not run before, we need to run it now.
+  if (consent_callback_)
+    std::move(consent_callback_).Run(false);
+}
 
 base::string16 HatsBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_TITLE);
@@ -126,8 +145,15 @@ base::string16 HatsBubbleView::GetDialogButtonLabel(
              : l10n_util::GetStringUTF16(IDS_NO_THANKS);
 }
 
+bool HatsBubbleView::Cancel() {
+  if (consent_callback_)
+    std::move(consent_callback_).Run(false);
+  return true;
+}
+
 bool HatsBubbleView::Accept() {
-  HatsWebDialog::Show(browser_, site_id_);
+  if (consent_callback_)
+    std::move(consent_callback_).Run(true);
   return true;
 }
 

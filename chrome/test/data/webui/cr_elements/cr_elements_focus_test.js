@@ -94,7 +94,8 @@ CrElementsCheckboxTest.prototype = {
   ]),
 };
 
-TEST_F('CrElementsCheckboxTest', 'All', function() {
+// crbug.com/997943.
+TEST_F('CrElementsCheckboxTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

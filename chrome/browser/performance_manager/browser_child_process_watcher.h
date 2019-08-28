@@ -25,6 +25,12 @@ class BrowserChildProcessWatcher : public content::BrowserChildProcessObserver {
   BrowserChildProcessWatcher();
   ~BrowserChildProcessWatcher() override;
 
+  // Initialize this watcher.
+  void Initialize();
+
+  // Tear down this watcher and any state it's gathered.
+  void TearDown();
+
  private:
   // BrowserChildProcessObserver overrides.
   void BrowserChildProcessLaunchedAndConnected(

@@ -349,7 +349,9 @@ class WebMediaPlayerImplTest : public testing::Test {
         MediaMetricsProvider::FrameStatus::kNotTopFrame,
         base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
-        VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider));
+        VideoDecodePerfHistory::SaveCallback(),
+        MediaMetricsProvider::GetLearningSessionCallback(),
+        mojo::MakeRequest(&provider));
 
     // Initialize provider since none of the tests below actually go through the
     // full loading/pipeline initialize phase. If this ever changes the provider

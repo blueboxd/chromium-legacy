@@ -230,6 +230,8 @@ Layer::~Layer() {
   cc_layer_->RemoveFromParent();
   if (transfer_release_callback_)
     transfer_release_callback_->Run(gpu::SyncToken(), false);
+
+  ResetSubtreeReflectedLayer();
 }
 
 std::unique_ptr<Layer> Layer::Clone() const {
@@ -738,12 +740,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     animator_->SwitchToLayer(new_layer);
   }
 
-  if (subtree_reflected_layer_) {
-    size_t result =
-        subtree_reflected_layer_->subtree_reflecting_layers_.erase(this);
-    DCHECK_EQ(1u, result);
-    subtree_reflected_layer_ = nullptr;
-  }
+  ResetSubtreeReflectedLayer();
 
   if (texture_layer_.get())
     texture_layer_->ClearClient();
@@ -1630,6 +1627,16 @@ void Layer::MatchLayerSize(const Layer* layer) {
   gfx::Size new_size = layer->bounds().size();
   new_bounds.set_size(new_size);
   SetBounds(new_bounds);
+}
+
+void Layer::ResetSubtreeReflectedLayer() {
+  if (!subtree_reflected_layer_)
+    return;
+
+  size_t result =
+      subtree_reflected_layer_->subtree_reflecting_layers_.erase(this);
+  DCHECK_EQ(1u, result);
+  subtree_reflected_layer_ = nullptr;
 }
 
 }  // namespace ui

@@ -516,6 +516,9 @@ extern const char kEnableResourceLoadingHintsDescription[];
 extern const char kEnableSensorContentSettingName[];
 extern const char kEnableSensorContentSettingDescription[];
 
+extern const char kEnableSubresourceRedirectName[];
+extern const char kEnableSubresourceRedirectDescription[];
+
 extern const char kEnableSyncUSSBookmarksName[];
 extern const char kEnableSyncUSSBookmarksDescription[];
 
@@ -1195,8 +1198,8 @@ extern const char kTrySupportedChannelLayoutsDescription[];
 extern const char kTurnOffStreamingMediaCachingName[];
 extern const char kTurnOffStreamingMediaCachingDescription[];
 
-extern const char kUnexpireFlagsM78Name[];
-extern const char kUnexpireFlagsM78Description[];
+extern const char kUnexpireFlagsM76Name[];
+extern const char kUnexpireFlagsM76Description[];
 
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
@@ -1360,6 +1363,9 @@ extern const char kClearOldBrowsingDataDescription[];
 
 extern const char kClickToCallOpenDialerDirectlyName[];
 extern const char kClickToCallOpenDialerDirectlyDescription[];
+
+extern const char kCloseTabSuggestionsStaleName[];
+extern const char kCloseTabSuggestionsStaleDescription[];
 
 extern const char kClickToCallReceiverName[];
 extern const char kClickToCallReceiverDescription[];
@@ -1808,8 +1814,8 @@ extern const char kArcDocumentsProviderDescription[];
 extern const char kArcFilePickerExperimentName[];
 extern const char kArcFilePickerExperimentDescription[];
 
-extern const char kArcNativeBridgeExperimentName[];
-extern const char kArcNativeBridgeExperimentDescription[];
+extern const char kArcNativeBridgeToggleName[];
+extern const char kArcNativeBridgeToggleDescription[];
 
 extern const char kArcPrintSpoolerExperimentName[];
 extern const char kArcPrintSpoolerExperimentDescription[];

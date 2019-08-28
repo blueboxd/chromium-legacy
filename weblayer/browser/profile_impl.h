@@ -7,6 +7,10 @@
 
 #include "weblayer/public/profile.h"
 
+#if defined(OS_ANDROID)
+#include <jni.h>
+#endif
+
 namespace content {
 class BrowserContext;
 }
@@ -22,6 +26,10 @@ class ProfileImpl : public Profile {
 
   // Profile implementation:
   void ClearBrowsingData() override;
+
+#if defined(OS_ANDROID)
+  void ClearBrowsingData(JNIEnv* env) { ClearBrowsingData(); }
+#endif
 
  private:
   class BrowserContextImpl;

@@ -123,9 +123,11 @@
     "expiry_milestone": 76
   },
   {
-    "name": "arc-native-bridge-experiment",
+    "name": "arc-native-bridge-toggle",
     "owners": [ "levarum@google.com" ],
-    "expiry_milestone": 76
+    // Used on ChromeOS to compare and debug different ARC native-bridge
+    // implementations which are normally used on different platforms.
+    "expiry_milestone": -1
   },
   {
     "name": "arc-print-spooler-experiment",
@@ -1018,6 +1020,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "enable-close-tab-suggestions-stale",
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-cloud-print-xps",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
@@ -1657,6 +1664,11 @@
     "name": "enable-streamlined-usb-printer-setup",
     "owners": [ "baileyberro" ],
     "expiry_milestone": 77
+  },
+  {
+    "name" : "enable-subresource-redirect",
+    "owners" : [ "robertogden", "tbansal" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-suggestions-with-substring-match",
@@ -3077,9 +3089,9 @@
     "expiry_milestone": 81
   },
   {
-    "name": "temporary-unexpire-flags-m78",
+    "name": "temporary-unexpire-flags-m76",
     "owners": [ "ellyjones", "flags-dev" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 80
   },
   {
     "name": "terminal-system-app",

@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/load_states.h"
@@ -358,7 +359,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // network::ResourceRequest::fetch_window_id for details.
   base::Optional<base::UnguessableToken> fetch_window_id_;
 
-  mojom::TrustedHeaderClientPtr header_client_;
+  mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 
   std::unique_ptr<FileOpenerForUpload> file_opener_for_upload_;
 

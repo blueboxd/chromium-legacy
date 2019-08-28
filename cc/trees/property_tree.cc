@@ -355,18 +355,16 @@ bool TransformTree::CombineInversesBetween(int source_id,
 
 // This function should match the offset we set for sticky position layer in
 // CompositedLayerMapping::UpdateMainGraphicsLayerGeometry.
-gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
-  if (node->sticky_position_constraint_id == -1)
+gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
+  StickyPositionNodeData* sticky_data = MutableStickyPositionData(node->id);
+  if (!sticky_data)
     return gfx::Vector2dF();
-  StickyPositionNodeData* sticky_data = tree->StickyPositionData(node->id);
-  const LayerStickyPositionConstraint& constraint = sticky_data->constraints;
-  auto& property_trees = *tree->property_trees();
+  const StickyPositionConstraint& constraint = sticky_data->constraints;
   ScrollNode* scroll_node =
-      property_trees.scroll_tree.Node(sticky_data->scroll_ancestor);
-  TransformNode* transform_node =
-      property_trees.transform_tree.Node(scroll_node->transform_id);
+      property_trees()->scroll_tree.Node(sticky_data->scroll_ancestor);
+  TransformNode* transform_node = Node(scroll_node->transform_id);
   const auto& scroll_offset = transform_node->scroll_offset;
-  DCHECK(property_trees.scroll_tree.current_scroll_offset(
+  DCHECK(property_trees()->scroll_tree.current_scroll_offset(
              scroll_node->element_id) == scroll_offset);
   gfx::PointF scroll_position(scroll_offset.x(), scroll_offset.y());
   if (transform_node->scrolls) {
@@ -384,27 +382,32 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
   // viewport since it shouldn't be affected by pinch-zoom.
   DCHECK(!scroll_node->scrolls_inner_viewport);
   if (scroll_node->scrolls_outer_viewport) {
-    clip.set_width(clip.width() +
-                   property_trees.outer_viewport_container_bounds_delta().x());
-    clip.set_height(clip.height() +
-                    property_trees.outer_viewport_container_bounds_delta().y());
+    clip.set_width(
+        clip.width() +
+        property_trees()->outer_viewport_container_bounds_delta().x());
+    clip.set_height(
+        clip.height() +
+        property_trees()->outer_viewport_container_bounds_delta().y());
   }
 
   gfx::Vector2dF ancestor_sticky_box_offset;
   if (sticky_data->nearest_node_shifting_sticky_box !=
       TransformTree::kInvalidNodeId) {
+    const StickyPositionNodeData* ancestor_sticky_data =
+        GetStickyPositionData(sticky_data->nearest_node_shifting_sticky_box);
+    DCHECK(ancestor_sticky_data);
     ancestor_sticky_box_offset =
-        tree->StickyPositionData(sticky_data->nearest_node_shifting_sticky_box)
-            ->total_sticky_box_sticky_offset;
+        ancestor_sticky_data->total_sticky_box_sticky_offset;
   }
 
   gfx::Vector2dF ancestor_containing_block_offset;
   if (sticky_data->nearest_node_shifting_containing_block !=
       TransformTree::kInvalidNodeId) {
+    const StickyPositionNodeData* ancestor_sticky_data = GetStickyPositionData(
+        sticky_data->nearest_node_shifting_containing_block);
+    DCHECK(ancestor_sticky_data);
     ancestor_containing_block_offset =
-        tree->StickyPositionData(
-                sticky_data->nearest_node_shifting_containing_block)
-            ->total_containing_block_sticky_offset;
+        ancestor_sticky_data->total_containing_block_sticky_offset;
   }
 
   // Compute the current position of the constraint rects based on the original
@@ -514,20 +517,16 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
     node->source_to_parent = to_parent.To2dTranslation();
   }
 
-  gfx::Vector2dF fixed_position_adjustment;
-  gfx::Vector2dF outer_viewport_bounds_delta =
-      property_trees()->outer_viewport_container_bounds_delta();
-  if (node->moved_by_outer_viewport_bounds_delta_x)
-    fixed_position_adjustment.set_x(outer_viewport_bounds_delta.x());
+  float fixed_position_adjustment = 0;
+  if (node->moved_by_outer_viewport_bounds_delta_y) {
+    fixed_position_adjustment =
+        property_trees()->outer_viewport_container_bounds_delta().y();
+  }
 
-  if (node->moved_by_outer_viewport_bounds_delta_y)
-    fixed_position_adjustment.set_y(outer_viewport_bounds_delta.y());
-
-  transform.Translate(node->source_to_parent.x() - node->scroll_offset.x() +
-                          fixed_position_adjustment.x(),
+  transform.Translate(node->source_to_parent.x() - node->scroll_offset.x(),
                       node->source_to_parent.y() - node->scroll_offset.y() +
-                          fixed_position_adjustment.y());
-  transform.Translate(StickyPositionOffset(this, node));
+                          fixed_position_adjustment);
+  transform.Translate(StickyPositionOffset(node));
   transform.PreconcatTransform(node->local);
   transform.Translate3d(gfx::Point3F() - node->origin);
 
@@ -732,13 +731,20 @@ bool TransformTree::operator==(const TransformTree& other) const {
          cached_data_ == other.cached_data();
 }
 
-StickyPositionNodeData* TransformTree::StickyPositionData(int node_id) {
+StickyPositionNodeData* TransformTree::MutableStickyPositionData(int node_id) {
+  const TransformNode* node = Node(node_id);
+  if (node->sticky_position_constraint_id == -1)
+    return nullptr;
+  return &sticky_position_data_[node->sticky_position_constraint_id];
+}
+
+StickyPositionNodeData& TransformTree::EnsureStickyPositionData(int node_id) {
   TransformNode* node = Node(node_id);
   if (node->sticky_position_constraint_id == -1) {
     node->sticky_position_constraint_id = sticky_position_data_.size();
     sticky_position_data_.push_back(StickyPositionNodeData());
   }
-  return &sticky_position_data_[node->sticky_position_constraint_id];
+  return sticky_position_data_[node->sticky_position_constraint_id];
 }
 
 EffectTree::EffectTree() {
@@ -1075,24 +1081,6 @@ int EffectTree::LowestCommonAncestorWithRenderSurface(int id_1,
 
 void EffectTree::AddMaskLayerId(int id) {
   mask_layer_ids_.push_back(id);
-}
-
-void EffectTree::UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl) {
-  for (int id = kContentsRootNodeId; id < static_cast<int>(size()); ++id) {
-    EffectNode* effect_node = Node(id);
-    bool needs_render_surface =
-        id == kContentsRootNodeId || effect_node->HasRenderSurface();
-    if (needs_render_surface == !!render_surfaces_[id])
-      continue;
-
-    if (needs_render_surface) {
-      render_surfaces_[id] = std::make_unique<RenderSurfaceImpl>(
-          layer_tree_impl, effect_node->stable_id);
-      render_surfaces_[id]->set_effect_tree_index(id);
-    } else {
-      render_surfaces_[id].reset();
-    }
-  }
 }
 
 bool EffectTree::ContributesToDrawnSurface(int id) {

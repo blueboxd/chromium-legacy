@@ -38,12 +38,12 @@ LoggedInUserMixin::LoggedInUserMixin(
 
 LoggedInUserMixin::~LoggedInUserMixin() = default;
 
-void LoggedInUserMixin::LogInUser() {
+void LoggedInUserMixin::LogInUser(bool issue_any_scope_token) {
   UserContext user_context = LoginManagerMixin::CreateDefaultUserContext(user_);
   if (user_.user_type == user_manager::USER_TYPE_CHILD) {
     fake_gaia_.SetupFakeGaiaForChildUser(
         user_.account_id.GetUserEmail(), user_.account_id.GetGaiaId(),
-        FakeGaiaMixin::kFakeRefreshToken, false /*issue_any_scope_token*/);
+        FakeGaiaMixin::kFakeRefreshToken, issue_any_scope_token);
   } else {
     fake_gaia_.SetupFakeGaiaForLogin(user_.account_id.GetUserEmail(),
                                      user_.account_id.GetGaiaId(),
@@ -51,6 +51,10 @@ void LoggedInUserMixin::LogInUser() {
   }
   user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
   login_manager_.LoginAndWaitForActiveSession(user_context);
+}
+
+void LoggedInUserMixin::set_should_launch_browser(bool value) {
+  login_manager_.set_should_launch_browser(value);
 }
 
 }  // namespace chromeos

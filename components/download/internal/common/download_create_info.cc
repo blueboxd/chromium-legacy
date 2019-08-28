@@ -31,7 +31,8 @@ DownloadCreateInfo::DownloadCreateInfo(
       accept_range(RangeRequestSupportType::kNoSupport),
       connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       method("GET"),
-      ukm_source_id(ukm::kInvalidSourceId) {}
+      ukm_source_id(ukm::kInvalidSourceId),
+      is_content_initiated(false) {}
 
 DownloadCreateInfo::DownloadCreateInfo()
     : DownloadCreateInfo(base::Time(), base::WrapUnique(new DownloadSaveInfo)) {

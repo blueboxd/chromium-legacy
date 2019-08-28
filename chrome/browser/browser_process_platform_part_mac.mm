@@ -15,7 +15,7 @@ BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
 }
 
 void BrowserProcessPlatformPart::StartTearDown() {
-  app_shim_host_manager_ = NULL;
+  app_shim_listener_ = nullptr;
 }
 
 void BrowserProcessPlatformPart::AttemptExit(bool try_to_quit_application) {
@@ -42,12 +42,12 @@ void BrowserProcessPlatformPart::AttemptExit(bool try_to_quit_application) {
 }
 
 void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
-  // AppShimHostManager can not simply be reset, otherwise destroying the old
+  // AppShimListener can not simply be reset, otherwise destroying the old
   // domain socket will cause the just-created socket to be unlinked.
-  DCHECK(!app_shim_host_manager_.get());
-  app_shim_host_manager_ = new AppShimHostManager;
+  DCHECK(!app_shim_listener_.get());
+  app_shim_listener_ = new AppShimListener;
 }
 
-AppShimHostManager* BrowserProcessPlatformPart::app_shim_host_manager() {
-  return app_shim_host_manager_.get();
+AppShimListener* BrowserProcessPlatformPart::app_shim_listener() {
+  return app_shim_listener_.get();
 }

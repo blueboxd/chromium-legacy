@@ -45,9 +45,6 @@ class ToolbarIconContainerView : public views::View,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void ChildVisibilityChanged(views::View* child) override;
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
   gfx::Insets GetInsets() const override;
 
   // gfx::AnimationDelegate:

@@ -232,30 +232,11 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       occlusion = draw_properties().occlusion_in_content_space;
     }
 
-    SkColor color = raster_source_->GetSolidColor();
-    if (contents_opaque() && SkColorGetA(color) != 255) {
-      // If we get to this code, then this has been a failure of
-      // solid color detection on a layer that we think should
-      // be opaque.
-      //
-      // It would be nice to NOTREACHED() this, but too many
-      // ui/ tests set up transparent-but-opaque layers.
-      //
-      // Because this could lead to spoofing between pages, and
-      // other severe graphical issues due to not clearing the
-      // backbuffer, also set this color to something known to be
-      // opaque.
-#ifndef NDEBUG
-      color = DebugColors::MissingOpaqueTileColor();
-#else
-      color = SafeOpaqueBackgroundColor();
-#endif
-    }
-
     EffectNode* effect_node = GetEffectTree().Node(effect_tree_index());
     SolidColorLayerImpl::AppendSolidQuads(
         render_pass, occlusion, shared_quad_state, scaled_visible_layer_rect,
-        color, !layer_tree_impl()->settings().enable_edge_anti_aliasing,
+        raster_source_->GetSolidColor(),
+        !layer_tree_impl()->settings().enable_edge_anti_aliasing,
         effect_node->blend_mode, append_quads_data);
     return;
   }
@@ -460,34 +441,16 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
           break;
         }
         case TileDrawInfo::SOLID_COLOR_MODE: {
-          SkColor color = draw_info.solid_color();
-          if (contents_opaque() && SkColorGetA(color) != 255) {
-            // If we get to this code, then this has been a failure of
-            // solid color detection on a layer that we think should
-            // be opaque.
-            //
-            // It would be nice to NOTREACHED() this, but too many
-            // ui/ tests set up transparent-but-opaque layers.
-            //
-            // Because this could lead to spoofing between pages, and
-            // other severe graphical issues due to not clearing the
-            // backbuffer, also set this color to something known to be
-            // opaque.
-#ifndef NDEBUG
-            color = DebugColors::MissingOpaqueTileColor();
-#else
-            color = SafeOpaqueBackgroundColor();
-#endif
-          }
-          float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) *
-                        shared_quad_state->opacity;
+          float alpha =
+              (SkColorGetA(draw_info.solid_color()) * (1.0f / 255.0f)) *
+              shared_quad_state->opacity;
           if (mask_type_ != Layer::LayerMaskType::NOT_MASK ||
               alpha >= std::numeric_limits<float>::epsilon()) {
             auto* quad =
                 render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
             quad->SetNew(
                 shared_quad_state, offset_geometry_rect,
-                offset_visible_geometry_rect, color,
+                offset_visible_geometry_rect, draw_info.solid_color(),
                 !layer_tree_impl()->settings().enable_edge_anti_aliasing);
             ValidateQuadResources(quad);
           }

@@ -131,10 +131,9 @@ class VIEWS_EXPORT Label : public View,
 
   // Gets/Sets the vertical alignment. Affects how whitespace is distributed
   // vertically around the label text, or if the label is not tall enough to
-  // render all of the text, what gets cut off.
-  //
-  // Currently, this must be ALIGN_MIDDLE (default) for non-multiline labels.
-  // TODO(crbug.com/996905): support single-line vertical alignment.
+  // render all of the text, what gets cut off. ALIGN_MIDDLE is default and is
+  // strongly suggested for single-line labels because it produces a consistent
+  // baseline even when rendering with mixed fonts.
   gfx::VerticalAlignment GetVerticalAlignment() const;
   void SetVerticalAlignment(gfx::VerticalAlignment alignment);
 

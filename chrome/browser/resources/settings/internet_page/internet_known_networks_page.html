@@ -36,7 +36,7 @@
         <div class="list-item">
           <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
               on-click="fireShowDetails_">
-            <template is="dom-if" if="[[isPolicySourceMojo(item.source))]]">
+            <template is="dom-if" if="[[isPolicySource(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.source)]]">
               </cr-policy-indicator>
@@ -60,7 +60,7 @@
         <div class="list-item">
           <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
               on-click="fireShowDetails_">
-            <template is="dom-if" if="[[isPolicySourceMojo(item.source))]]">
+            <template is="dom-if" if="[[isPolicySource(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.source)]]">
               </cr-policy-indicator>

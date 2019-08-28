@@ -56,4 +56,10 @@ authoritative source of the expiry set for a given milestone.
 
 TODO(https://crbug.com/953690): Fill in this list :)
 
+## See Also
+
+* [//chrome/browser/flag-metadata.json](../chrome/browser/flag-metadata.json)
+* [//chrome/browser/expired_flags_list.h](../chrome/browser/expired_flags_list.h)
+* [//tools/flags/generate_expired_list.py](../tools/flags/generate_expired_list.py)
+
 [file a bug]: https://new.crbug.com

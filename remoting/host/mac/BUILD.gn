@@ -5,7 +5,10 @@
 import("//remoting/build/config/remoting_build.gni")
 
 source_set("constants") {
-  defines = [ "HOST_BUNDLE_NAME=\"" + host_bundle_name + "\"" ]
+  defines = [
+    "HOST_BUNDLE_NAME=\"" + me2me_host_bundle_name + "\"",
+    "HOST_LEGACY_BUNDLE_NAME=\"" + me2me_host_legacy_bundle_name + "\"",
+  ]
 
   sources = [
     "constants_mac.cc",

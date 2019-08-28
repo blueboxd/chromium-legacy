@@ -196,7 +196,6 @@
     const unsigned short LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS = 2;
     const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
     const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
-    const unsigned short LAYER_TREE_INCLUDES_CLIP_AND_SCROLL_PARENTS = 16;
     const unsigned short LAYER_TREE_INCLUDES_COMPOSITING_REASONS = 32;
     const unsigned short LAYER_TREE_INCLUDES_PAINT_RECORDS = 64;
     const unsigned short OUTPUT_AS_LAYER_TREE = 0x4000;

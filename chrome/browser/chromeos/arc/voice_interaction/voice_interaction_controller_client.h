@@ -52,12 +52,9 @@ class VoiceInteractionControllerClient
 
   // Notify the controller about state changes.
   void NotifySettingsEnabled();
-  void NotifyContextEnabled();
   void NotifyHotwordEnabled();
   void NotifyFeatureAllowed();
-  void NotifyNotificationEnabled();
   void NotifyLocaleChanged();
-  void NotifyLaunchWithMicOpen();
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
   void ActiveUserChanged(const user_manager::User* active_user) override;

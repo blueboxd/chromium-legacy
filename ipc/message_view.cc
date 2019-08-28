@@ -29,4 +29,9 @@ MessageView::~MessageView() = default;
 
 MessageView& MessageView::operator=(MessageView&&) = default;
 
+base::Optional<std::vector<mojo::native::SerializedHandlePtr>>
+MessageView::TakeHandles() {
+  return std::move(handles_);
+}
+
 }  // namespace IPC

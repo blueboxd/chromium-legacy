@@ -46,6 +46,12 @@ using FlagType = FlaggedPage::FlagType;
 
 namespace {
 
+enum class UIStatus {
+  kDisabled,
+  kEnabled,
+  kEnabledWithEditDistance,
+};
+
 // An engagement score above MEDIUM.
 const int kHighEngagement = 20;
 
@@ -87,6 +93,9 @@ bool IsUIShowing() {
 }
 
 void CloseWarningIgnore() {
+  if (!PageInfoBubbleViewBase::GetPageInfoBubbleForTesting()) {
+    return;
+  }
   auto* widget =
       PageInfoBubbleViewBase::GetPageInfoBubbleForTesting()->GetWidget();
   views::test::WidgetDestroyedWaiter waiter(widget);
@@ -112,24 +121,6 @@ void OpenPageInfoBubble(Browser* browser) {
       PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
   EXPECT_NE(nullptr, page_info);
   page_info->set_close_on_deactivate(false);
-}
-
-void CheckPageInfoShowsSafetyTipInfo(Browser* browser) {
-  OpenPageInfoBubble(browser);
-  views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
-  CHECK(page_info);
-  EXPECT_EQ(page_info->GetWindowTitle(),
-            l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
-}
-
-void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
-  OpenPageInfoBubble(browser);
-  views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
-  CHECK(page_info);
-  EXPECT_NE(page_info->GetWindowTitle(),
-            l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
 }
 
 void BlockPatterns(std::vector<std::pair<std::string, FlagType>> patterns) {
@@ -167,10 +158,32 @@ void TriggerWarning(Browser* browser,
 
 }  // namespace
 
-class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
+class SafetyTipPageInfoBubbleViewBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<UIStatus> {
  protected:
+  UIStatus ui_status() const { return GetParam(); }
+
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kSafetyTipUI);
+    switch (ui_status()) {
+      case UIStatus::kDisabled:
+        feature_list_.InitAndDisableFeature(features::kSafetyTipUI);
+        break;
+      case UIStatus::kEnabled:
+        feature_list_.InitWithFeaturesAndParameters(
+            {{features::kSafetyTipUI, {}},
+             {features::kLookalikeUrlNavigationSuggestionsUI,
+              {{"topsites", "true"}}}},
+            {});
+        break;
+      case UIStatus::kEnabledWithEditDistance:
+        feature_list_.InitWithFeaturesAndParameters(
+            {{features::kSafetyTipUI, {{"editdistance", "true"}}},
+             {features::kLookalikeUrlNavigationSuggestionsUI,
+              {{"topsites", "true"}}}},
+            {});
+    }
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -195,29 +208,64 @@ class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
   }
 
   void CloseWarningLeaveSite(Browser* browser) {
+    if (ui_status() == UIStatus::kDisabled) {
+      return;
+    }
     content::TestNavigationObserver navigation_observer(
         browser->tab_strip_model()->GetActiveWebContents(), 1);
     ClickLeaveButton();
     navigation_observer.Wait();
   }
 
+  bool IsUIShowingIfEnabled() {
+    return ui_status() == UIStatus::kDisabled ? true : IsUIShowing();
+  }
+
+  void CheckPageInfoShowsSafetyTipInfo(Browser* browser) {
+    if (ui_status() == UIStatus::kDisabled) {
+      return;
+    }
+
+    OpenPageInfoBubble(browser);
+    views::BubbleDialogDelegateView* page_info =
+        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
+    ASSERT_TRUE(page_info);
+    EXPECT_EQ(page_info->GetWindowTitle(),
+              l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
+  }
+
+  void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
+    OpenPageInfoBubble(browser);
+    views::BubbleDialogDelegateView* page_info =
+        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
+    ASSERT_TRUE(page_info);
+    EXPECT_NE(page_info->GetWindowTitle(),
+              l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
+INSTANTIATE_TEST_SUITE_P(,
+                         SafetyTipPageInfoBubbleViewBrowserTest,
+                         ::testing::Values(UIStatus::kDisabled,
+                                           UIStatus::kEnabled,
+                                           UIStatus::kEnabledWithEditDistance));
+
 // Ensure normal sites with low engagement are not blocked.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        NoShowOnLowEngagement) {
   auto kNavigatedUrl = GetURL("site1.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
 
-  CheckPageInfoDoesNotShowSafetyTipInfo(browser());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
 // Ensure blocked sites with high engagement are not blocked.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        NoShowOnHighEngagement) {
   auto kNavigatedUrl = GetURL("site1.com");
   BlockPatterns({{"site1.com/", FlaggedPage::BAD_REP}});
@@ -226,24 +274,28 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
 
-  CheckPageInfoDoesNotShowSafetyTipInfo(browser());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
 // Ensure blocked sites get blocked.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
   auto kNavigatedUrl = GetURL("site1.com");
   BlockPatterns({{"site1.com/", FlaggedPage::BAD_REP}});
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_TRUE(IsUIShowing());
+  EXPECT_TRUE(IsUIShowingIfEnabled());
 
-  CheckPageInfoShowsSafetyTipInfo(browser());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
 }
 
 // After the user clicks 'leave site', the user should end up on a safe domain.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        LeaveSiteLeavesSite) {
   auto kNavigatedUrl = GetURL("site1.com");
+  if (ui_status() == UIStatus::kDisabled) {
+    return;
+  }
+
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
   CloseWarningLeaveSite(browser());
@@ -251,12 +303,12 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_NE(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  CheckPageInfoDoesNotShowSafetyTipInfo(browser());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
 // If the user clicks 'leave site', the warning should re-appear when the user
 // re-visits the page.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        LeaveSiteStillWarnsAfter) {
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
@@ -265,15 +317,15 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
-  EXPECT_TRUE(IsUIShowing());
+  EXPECT_TRUE(IsUIShowingIfEnabled());
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  CheckPageInfoShowsSafetyTipInfo(browser());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
 }
 
 // After the user closes the warning, they should still be on the same domain.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStaysOnPage) {
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
@@ -283,12 +335,12 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  CheckPageInfoShowsSafetyTipInfo(browser());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
 }
 
 // If the user closes the bubble, the warning should not re-appear when the user
 // re-visits the page.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStopsWarning) {
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
@@ -301,11 +353,11 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  CheckPageInfoDoesNotShowSafetyTipInfo(browser());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
 // Non main-frame navigations should be ignored.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreIFrameNavigations) {
   const GURL kNavigatedUrl =
       embedded_test_server()->GetURL("a.com", "/iframe_cross_site.html");
@@ -315,14 +367,14 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   BlockPatterns({{"a.com/", FlaggedPage::BAD_REP}});
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_TRUE(IsUIShowing());
+  EXPECT_TRUE(IsUIShowingIfEnabled());
 
-  CheckPageInfoShowsSafetyTipInfo(browser());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(browser()));
 }
 
 // Background tabs shouldn't open a bubble initially, but should when they
 // become visible.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        BubbleWaitsForVisible) {
   auto kFlaggedUrl = GetURL("site1.com");
 
@@ -333,5 +385,37 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   auto* tab_strip = browser()->tab_strip_model();
   tab_strip->ActivateTabAt(tab_strip->active_index() + 1);
 
-  EXPECT_TRUE(IsUIShowing());
+  EXPECT_TRUE(IsUIShowingIfEnabled());
+}
+
+// Tests that Safety Tips do NOT trigger on lookalike domains that trigger an
+// interstitial.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       SkipLookalikeInterstitialed) {
+  const GURL kNavigatedUrl = GetURL("googlé.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+}
+
+// Tests that Safety Tips trigger on lookalike domains that don't qualify for an
+// interstitial.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TriggersOnLookalike) {
+  // This domain is a top domain, but not top 500
+  const GURL kNavigatedUrl = GetURL("googlé.sk");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(IsUIShowingIfEnabled());
+}
+
+// Tests that Safety Tips trigger (or not) on lookalike domains with edit
+// distance when enabled, and not otherwise.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TriggersOnEditDistance) {
+  // This domain is an edit distance of one from the top 500
+  const GURL kNavigatedUrl = GetURL("goooglé.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithEditDistance);
 }

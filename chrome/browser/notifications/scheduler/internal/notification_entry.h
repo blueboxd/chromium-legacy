@@ -22,6 +22,7 @@ struct NotificationEntry {
   NotificationEntry(SchedulerClientType type, const std::string& guid);
   NotificationEntry(const NotificationEntry& other);
   bool operator==(const NotificationEntry& other) const;
+  bool operator!=(const NotificationEntry& other) const;
   ~NotificationEntry();
 
   // The type of the notification.

@@ -24396,7 +24396,6 @@ Called by update_net_error_codes.py.-->
   <int value="2967" label="CSSValueAppearanceMeterForOthersRendered"/>
   <int value="2968" label="SVGSMILDiscardElementParsed"/>
   <int value="2969" label="SVGSMILDiscardElementTriggered"/>
-  <int value="2970" label="LinkHeaderStylesheet"/>
   <int value="2971" label="V8PointerEvent_GetPredictedEvents_Method"/>
   <int value="2972" label="ScrollSnapOnViewportBreaks"/>
   <int value="2973" label="ScrollPaddingOnViewportBreaks"/>
@@ -35200,6 +35199,7 @@ from previous Chrome versions.
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-994558985" label="EnableNotificationIndicator:disabled"/>
   <int value="-994088375" label="VrBrowsingExperimentalRendering:enabled"/>
+  <int value="-994044484" label="TemporaryUnexpireFlagsM76:disabled"/>
   <int value="-993476089" label="AutoScreenBrightness:disabled"/>
   <int value="-992785453" label="ExplicitLanguageAsk:disabled"/>
   <int value="-991253797"
@@ -35551,6 +35551,7 @@ from previous Chrome versions.
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
+  <int value="-506743105" label="enable-subresource-redirect"/>
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
@@ -35852,6 +35853,7 @@ from previous Chrome versions.
   <int value="-79327236" label="ModeSpecificPowerButton:enabled"/>
   <int value="-78035185" label="custom_summary"/>
   <int value="-77872983" label="BookmarkAppsMac:disabled"/>
+  <int value="-76953963" label="CloseTabSuggestionsStale:enabled"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-76445689" label="WasmCodeCache:enabled"/>
   <int value="-75418012" label="ContextualSuggestionsOptOut:disabled"/>
@@ -36649,6 +36651,7 @@ from previous Chrome versions.
   <int value="1060319397" label="enable-data-reduction-proxy-carrier-test"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1064288458" label="OfflineRecentPages:enabled"/>
+  <int value="1065216170" label="CloseTabSuggestionsStale:disabled"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1067990299" label="enable-ui-devtools"/>
   <int value="1069325321" label="CrostiniGpuSupport:enabled"/>
@@ -37182,6 +37185,7 @@ from previous Chrome versions.
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1803470125" label="SyncUSSSessions:enabled"/>
+  <int value="1803914892" label="TemporaryUnexpireFlagsM76:enabled"/>
   <int value="1807374811" label="CCTModuleCache:enabled"/>
   <int value="1809940714" label="SpeculativeLaunchServiceWorker:disabled"/>
   <int value="1810258949" label="DisplayLocking:enabled"/>
@@ -43434,6 +43438,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Chrome process launch failed"/>
 </enum>
 
+<enum name="NotificationSchedulerBackgroundTaskEvent">
+  <int value="0" label="Start"/>
+  <int value="1" label="Finish"/>
+  <int value="2" label="Stop by OS"/>
+</enum>
+
 <enum name="NotificationSchedulerImpressionEvent">
   <int value="0" label="New suppression"/>
   <int value="1" label="Suppression released"/>
@@ -45056,6 +45066,62 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="5" label="Invalid regular expression">
     There was an invalid RE2 in the regexps field.
+  </int>
+</enum>
+
+<enum name="OptimizationGuideOptimizationTargetDecision">
+  <int value="0" label="Unknown">
+    There was no model for the optimization target evaluated, so the target
+    decision is unknown.
+  </int>
+  <int value="1" label="Page load does not match target">
+    The model for the optimization target was evaluated and the page load was
+    not predicted to match the optimization target.
+  </int>
+  <int value="2" label="Page load matches target">
+    The model for the optimization target was evaluated and the page load was
+    predicted to match the optimization target.
+  </int>
+</enum>
+
+<enum name="OptimizationGuideOptimizationTypeDecision">
+  <int value="0" label="Unknown">
+    There was no hint or optimization filter consulted for the optimization
+    type, so the type decision is unknown.
+  </int>
+  <int value="1" label="Page load allowed by optimization filter">
+    An optimization filter for the optimization type was consulted and the page
+    load was allowed by the filter.
+  </int>
+  <int value="2" label="Page load not allowed by optimization filter">
+    An optimization filter for the optimization type was consulted and the page
+    load was not allowed by the filter.
+  </int>
+  <int value="3" label="Optimization filter on device but not loaded yet">
+    An optimization filter for the optimization type was on the device but was
+    not loaded in time to make a decision. There is no guarantee that had the
+    filter been loaded that the page load would have been allowed for the
+    optimization type.
+  </int>
+  <int value="4" label="Page load allowed by hint">
+    The optimization type was allowed to be applied based on information from a
+    hint.
+  </int>
+  <int value="5" label="Page load not allowed by hint">
+    The optimization type was not allowed to be applied based on information
+    from a hint.
+  </int>
+  <int value="6" label="No matching page hint for page load">
+    There was a hint loaded that matched the page load, but no matching page
+    hint for the page load.
+  </int>
+  <int value="7" label="Hint on device but not loaded yet">
+    A hint for the page load was on the device but was not loaded in time to
+    make a decision. There is no guarantee that had the hint been loaded that
+    the page load would have been allowed for the optimization type.
+  </int>
+  <int value="8" label="No hint available for page load">
+    There was no hint on the device that matched the page load.
   </int>
 </enum>
 

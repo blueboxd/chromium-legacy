@@ -2686,6 +2686,71 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesForcedBreak) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesForcedBreak2) {
+  // We have 7+5 lines and 3 columns. There's a forced break after 7 lines, then
+  // 5 more lines. There will be another implicit break among the first 7 lines,
+  // while the columns will have to fit 5 lines, because of the 5 lines after
+  // the forced break. The first column will have 5 lines. The second one will
+  // have 2. The third one (after the break) will have 5.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+        orphans: 1;
+        widows: 1;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <br><br><br><br><br><br><br>
+        <div style="width:99px; break-before:column;"></div>
+        <br><br><br><br><br>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+          offset:0,40 size:0x20
+            offset:0,9 size:0x1
+          offset:0,60 size:0x20
+            offset:0,9 size:0x1
+          offset:0,80 size:0x20
+            offset:0,9 size:0x1
+      offset:110,0 size:100x100
+        offset:0,0 size:100x40
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+      offset:220,0 size:100x100
+        offset:0,0 size:99x0
+        offset:0,0 size:100x100
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+          offset:0,40 size:0x20
+            offset:0,9 size:0x1
+          offset:0,60 size:0x20
+            offset:0,9 size:0x1
+          offset:0,80 size:0x20
+            offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesAvoidBreakInside) {
   // We have 6 lines and 3 columns. If we make the columns tall enough to hold 2
   // lines each, it should all fit. But then there's a block with 3 lines and

@@ -8,6 +8,7 @@
 #include "content/common/visual_properties.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/test/render_view_test.h"
+#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -221,6 +222,25 @@ TEST_F(RenderWidgetTest, PageFocusIme) {
   CommitText(text);
   EXPECT_EQ("hello world",
             GetInputMethodController()->TextInputInfo().value.Utf8());
+}
+
+// Tests that the value of VisualProperties::is_pinch_gesture_active is
+// not propagated to the LayerTreeHost when properties are synced for main
+// frame.
+TEST_F(RenderWidgetTest, ActivePinchGestureUpdatesLayerTreeHost) {
+  auto* layer_tree_host = widget()->layer_tree_view()->layer_tree_host();
+  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
+  content::VisualProperties visual_properties;
+
+  // Sync visual properties on a mainframe RenderWidget.
+  visual_properties.is_pinch_gesture_active = true;
+  widget()->OnSynchronizeVisualProperties(visual_properties);
+  // We do not expect the |is_pinch_gesture_active| value to propagate to the
+  // LayerTreeHost for the main-frame. Since GesturePinch events are handled
+  // directly by the layer tree for the main frame, it already knows whether or
+  // not a pinch gesture is active, and so we shouldn't propagate this
+  // information to the layer tree for a main-frame's widget.
+  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
 }
 
 }  // namespace content

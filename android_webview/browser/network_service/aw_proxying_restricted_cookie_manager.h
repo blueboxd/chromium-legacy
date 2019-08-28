@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -24,7 +25,8 @@ class AwProxyingRestrictedCookieManager
   //
   // Expects to be called on the UI thread.
   static void CreateAndBind(
-      network::mojom::RestrictedCookieManagerPtrInfo underlying_rcm,
+      mojo::PendingRemote<network::mojom::RestrictedCookieManager>
+          underlying_rcm,
       bool is_service_worker,
       int process_id,
       int frame_id,
@@ -70,20 +72,22 @@ class AwProxyingRestrictedCookieManager
   bool AllowCookies(const GURL& url, const GURL& site_for_cookies) const;
 
  private:
-  AwProxyingRestrictedCookieManager(network::mojom::RestrictedCookieManagerPtr
-                                        underlying_restricted_cookie_manager,
-                                    bool is_service_worker,
-                                    int process_id,
-                                    int frame_id);
+  AwProxyingRestrictedCookieManager(
+      mojo::PendingRemote<network::mojom::RestrictedCookieManager>
+          underlying_restricted_cookie_manager,
+      bool is_service_worker,
+      int process_id,
+      int frame_id);
 
   static void CreateAndBindOnIoThread(
-      network::mojom::RestrictedCookieManagerPtrInfo underlying_rcm,
+      mojo::PendingRemote<network::mojom::RestrictedCookieManager>
+          underlying_rcm,
       bool is_service_worker,
       int process_id,
       int frame_id,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
 
-  network::mojom::RestrictedCookieManagerPtr
+  mojo::Remote<network::mojom::RestrictedCookieManager>
       underlying_restricted_cookie_manager_;
   bool is_service_worker_;
   int process_id_;

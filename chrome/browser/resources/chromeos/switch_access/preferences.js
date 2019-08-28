@@ -81,7 +81,7 @@ class SwitchAccessPreferences {
 
   /**
    * Get the boolean value for the given name. Will throw a type error if the
-   * value associated with |name| is not a boolean, or undefined.
+   * value associated with |name| is not a boolean, or is undefined.
    *
    * @param  {SAConstants.Preference} name
    * @return {boolean}
@@ -95,8 +95,23 @@ class SwitchAccessPreferences {
   }
 
   /**
+   * Get the string value for the given name. Will throw a type error if the
+   * value associated with |name| is not a string, or is undefined.
+   *
+   * @param {SAConstants.Preference} name
+   * @return {string}
+   */
+  getStringPreference(name) {
+    const pref = this.preferences_.get(name);
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.STRING)
+      return /** @type {string} */ (pref.value);
+    else
+      throw new TypeError('No value of string type named \'' + name + '\'');
+  }
+
+  /**
    * Get the number value for the given name. Will throw a type error if the
-   * value associated with |name| is not a number, or undefined.
+   * value associated with |name| is not a number, or is undefined.
    *
    * @param  {SAConstants.Preference} name
    * @return {number}

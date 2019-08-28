@@ -298,8 +298,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
  private:
@@ -377,13 +375,17 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 // preloads resources in the HTML head using link-rel preload.
 // Second parameter is true if the blink feature
 // kSendPreviewsLoadingHintsBeforeCommit should be enabled.
+// Third parameter is true if the OptimizationGuideKeyedService feature is
+// enabled.
+// All tests should pass in the same way for all cases.
 class ResourceLoadingHintsBrowserTest
-    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool, bool>>,
       public ResourceLoadingNoFeaturesBrowserTest {
  public:
   ResourceLoadingHintsBrowserTest()
       : use_preload_resources_webpage_(std::get<0>(GetParam())),
-        use_render_frame_observer_(std::get<1>(GetParam())) {}
+        use_render_frame_observer_(std::get<1>(GetParam())),
+        use_optimization_guide_keyed_service_(std::get<2>(GetParam())) {}
 
   ~ResourceLoadingHintsBrowserTest() override = default;
 
@@ -407,6 +409,14 @@ class ResourceLoadingHintsBrowserTest
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
           {});
+    }
+
+    if (use_optimization_guide_keyed_service_) {
+      ogks_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
+    } else {
+      ogks_feature_list_.InitWithFeatures(
+          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
     }
     ResourceLoadingNoFeaturesBrowserTest::SetUp();
   }
@@ -434,9 +444,14 @@ class ResourceLoadingHintsBrowserTest
 
   bool use_render_frame_observer() const { return use_render_frame_observer_; }
 
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList ogks_feature_list_;
+
  private:
   const bool use_preload_resources_webpage_;
   const bool use_render_frame_observer_;
+  const bool use_optimization_guide_keyed_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsBrowserTest);
 };
@@ -444,10 +459,12 @@ class ResourceLoadingHintsBrowserTest
 // First parameter is true if the test should be run with a webpage that
 // preloads resources in the HTML head using link-rel preload. Second parameter
 // is true if the blink feature kSendPreviewsLoadingHintsBeforeCommit
-// should be enabled.
+// should be enabled. Third parameter is true if the
+// OptimizationGuideKeyedService feature is enabled.
 INSTANTIATE_TEST_SUITE_P(,
                          ResourceLoadingHintsBrowserTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.

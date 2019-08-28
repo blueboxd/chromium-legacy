@@ -398,34 +398,107 @@ scoped_refptr<const NGBreakToken> NGColumnLayoutAlgorithm::LayoutRow(
 LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
     const LogicalSize& column_size,
     const NGBlockBreakToken* child_break_token) {
-  // To calculate a balanced column size, we need to figure out how tall our
-  // content is. To do that we need to lay out. Create a special constraint
-  // space for column balancing, without splitting into fragmentainers. It will
-  // make us lay out all the multicol content as one single tall strip. When
-  // we're done with this layout pass, we can examine the result and calculate
-  // an ideal column block size.
-  int column_count =
-      ResolveUsedColumnCount(content_box_size_.inline_size, Style());
+  // To calculate a balanced column size for one row of columns, we need to
+  // figure out how tall our content is. To do that we need to lay out. Create a
+  // special constraint space for column balancing, without allowing soft
+  // breaks. It will make us lay out all the multicol content as one single tall
+  // strip (unless there are forced breaks). When we're done with this layout
+  // pass, we can examine the result and calculate an ideal column block-size.
   NGConstraintSpace space = CreateConstraintSpaceForBalancing(column_size);
   NGFragmentGeometry fragment_geometry =
       CalculateInitialFragmentGeometry(space, Node());
-  NGBlockLayoutAlgorithm balancing_algorithm(
-      {Node(), fragment_geometry, space, child_break_token});
-  scoped_refptr<const NGLayoutResult> result = balancing_algorithm.Layout();
 
-  LayoutUnit single_strip_block_size = CalculateColumnContentBlockSize(
-      result->PhysicalFragment(),
-      IsHorizontalWritingMode(space.GetWritingMode()));
+  // A run of content without explicit (forced) breaks; i.e. the content portion
+  // between two explicit breaks, between fragmentation context start and an
+  // explicit break, between an explicit break and fragmentation context end,
+  // or, in cases when there are no explicit breaks at all: between
+  // fragmentation context start and end. We need to know where the explicit
+  // breaks are, in order to figure out where the implicit breaks will end up,
+  // so that we get the columns properly balanced. A content run starts out as
+  // representing one single column, and we'll add as many additional implicit
+  // breaks as needed into the content runs that are the tallest ones
+  // (ColumnBlockSize()).
+  struct ContentRun {
+    ContentRun(LayoutUnit content_block_size)
+        : content_block_size(content_block_size) {}
 
-  // Some extra care is required the division here. We want a the resulting
-  // LayoutUnit value to be large enough to prevent overflowing columns. Use
-  // floating point to get higher precision than LayoutUnit. Then convert it to
-  // a LayoutUnit, but round it up to the nearest value that LayoutUnit is able
-  // to represent.
-  LayoutUnit block_size = LayoutUnit::FromFloatCeil(
-      single_strip_block_size.ToFloat() / static_cast<float>(column_count));
+    // Return the column block-size that this content run would require,
+    // considering the implicit breaks we have assumed so far.
+    LayoutUnit ColumnBlockSize() const {
+      // Some extra care is required for the division here. We want the
+      // resulting LayoutUnit value to be large enough to prevent overflowing
+      // columns. Use floating point to get higher precision than
+      // LayoutUnit. Then convert it to a LayoutUnit, but round it up to the
+      // nearest value that LayoutUnit is able to represent.
+      return LayoutUnit::FromFloatCeil(
+          float(content_block_size) / float(implicit_breaks_assumed_count + 1));
+    }
 
-  // Finally, honor {,min-,max-}{height,width} properties.
+    LayoutUnit content_block_size;
+
+    // The number of implicit breaks assumed to exist in this content run.
+    int implicit_breaks_assumed_count = 0;
+  };
+
+  class ContentRuns : public Vector<ContentRun, 1> {
+   public:
+    wtf_size_t IndexWithTallestColumns() const {
+      DCHECK_GT(size(), 0u);
+      wtf_size_t index = 0;
+      LayoutUnit largest_block_size = LayoutUnit::Min();
+      for (size_t i = 0; i < size(); i++) {
+        const ContentRun& run = at(i);
+        LayoutUnit block_size = run.ColumnBlockSize();
+        if (largest_block_size < block_size) {
+          largest_block_size = block_size;
+          index = i;
+        }
+      }
+      return index;
+    }
+
+    // When we have "inserted" (assumed) enough implicit column breaks, this
+    // method returns the block-size of the tallest column.
+    LayoutUnit TallestColumnBlockSize() const {
+      return at(IndexWithTallestColumns()).ColumnBlockSize();
+    }
+  };
+
+  // First split into content runs at explicit (forced) breaks.
+  ContentRuns content_runs;
+  scoped_refptr<const NGBlockBreakToken> break_token = child_break_token;
+  do {
+    NGBlockLayoutAlgorithm balancing_algorithm(
+        {Node(), fragment_geometry, space, break_token.get()});
+    scoped_refptr<const NGLayoutResult> result = balancing_algorithm.Layout();
+    const NGPhysicalBoxFragment& fragment =
+        To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+    break_token = To<NGBlockBreakToken>(fragment.BreakToken());
+    LayoutUnit column_block_size = CalculateColumnContentBlockSize(
+        fragment, IsHorizontalWritingMode(space.GetWritingMode()));
+    content_runs.emplace_back(column_block_size);
+  } while (break_token);
+
+  // Then distribute as many implicit breaks into the content runs as we need.
+  int used_column_count =
+      ResolveUsedColumnCount(content_box_size_.inline_size, Style());
+  for (int columns_found = content_runs.size();
+       columns_found < used_column_count; columns_found++) {
+    // The tallest content run (with all assumed implicit breaks added so far
+    // taken into account) is where we assume the next implicit break.
+    wtf_size_t index = content_runs.IndexWithTallestColumns();
+    content_runs[index].implicit_breaks_assumed_count++;
+  }
+
+  // We now have an estimated minimal block-size for the columns. Roughly
+  // speaking, this is the block-size that the columns will need if we are
+  // allowed to break freely at any offset. This is normally not the case,
+  // though, since there will typically be unbreakable pieces of content, such
+  // as replaced content, lines of text, and other things. We need to actually
+  // lay out into columns to figure out if they are tall enough or not (and
+  // stretch and retry if not). Also honor {,min-,max-}{height,width} properties
+  // before returning.
+  LayoutUnit block_size = content_runs.TallestColumnBlockSize();
   return ConstrainColumnBlockSize(block_size);
 }
 
@@ -511,6 +584,12 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
     const LogicalSize& column_size) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
+  space_builder.SetFragmentationType(kFragmentColumn);
+  // TODO(mstensho): It would be better to use kIndefiniteSize here, rather than
+  // LayoutUnit::Max(), but the fragmentation machinery currently gets confused
+  // by such a value.
+  space_builder.SetFragmentainerBlockSize(LayoutUnit::Max());
+  space_builder.SetFragmentainerSpaceAtBfcStart(LayoutUnit::Max());
   space_builder.SetAvailableSize({column_size.inline_size, kIndefiniteSize});
   space_builder.SetPercentageResolutionSize(column_size);
   space_builder.SetIsAnonymous(true);

@@ -50,7 +50,6 @@
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -444,13 +443,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return PrefServiceSyncableFromProfile(profile_)
           ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
           ->AsWeakPtr();
-    case syncer::AUTOFILL_WALLET_METADATA:
-      if (profile_web_data_service_) {
-        return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(profile_web_data_service_.get())
-                ->AsWeakPtr();
-      }
-      return nullptr;
     case syncer::SEARCH_ENGINES:
       return GetWeakPtrOrNull(
           TemplateURLServiceFactory::GetForProfile(profile_));

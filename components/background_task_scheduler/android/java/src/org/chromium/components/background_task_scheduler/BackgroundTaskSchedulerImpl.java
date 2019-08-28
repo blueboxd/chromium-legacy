@@ -48,9 +48,8 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
                     taskInfo.getTaskId(), success);
 
             // Retain expiration metrics
-            ExpirationMetricsVisitor expirationMetricsVisitor =
-                    new ExpirationMetricsVisitor(taskInfo.getTaskId());
-            taskInfo.getTimingInfo().accept(expirationMetricsVisitor);
+            MetricsVisitor metricsVisitor = new MetricsVisitor(taskInfo.getTaskId());
+            taskInfo.getTimingInfo().accept(metricsVisitor);
 
             if (success) {
                 BackgroundTaskSchedulerPrefs.addScheduledTask(taskInfo);
@@ -60,10 +59,10 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
     }
 
     // TODO(crbug.com/996178): Update the documentation for the expiration feature.
-    private class ExpirationMetricsVisitor implements TaskInfo.TimingInfoVisitor {
+    private class MetricsVisitor implements TaskInfo.TimingInfoVisitor {
         private final int mTaskId;
 
-        ExpirationMetricsVisitor(int taskId) {
+        MetricsVisitor(int taskId) {
             mTaskId = taskId;
         }
 
@@ -77,6 +76,11 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
         public void visit(TaskInfo.PeriodicInfo periodicInfo) {
             BackgroundTaskSchedulerUma.getInstance().reportTaskCreatedAndExpirationState(
                     mTaskId, periodicInfo.expiresAfterWindowEndTime());
+        }
+
+        @Override
+        public void visit(TaskInfo.ExactInfo exactInfo) {
+            BackgroundTaskSchedulerUma.getInstance().reportExactTaskCreated(mTaskId);
         }
     }
 

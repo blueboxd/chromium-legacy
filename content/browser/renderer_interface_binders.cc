@@ -233,12 +233,12 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
               std::move(request));
         }));
   }
-  parameterized_binder_registry_.AddInterface(
-      base::Bind([](blink::mojom::PermissionServiceRequest request,
-                    RenderProcessHost* host, const url::Origin& origin) {
+  parameterized_binder_registry_.AddInterface(base::Bind(
+      [](mojo::PendingReceiver<blink::mojom::PermissionService> receiver,
+         RenderProcessHost* host, const url::Origin& origin) {
         static_cast<RenderProcessHostImpl*>(host)
             ->permission_service_context()
-            .CreateServiceForWorker(std::move(request), origin);
+            .CreateServiceForWorker(std::move(receiver), origin);
       }));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
       [](blink::mojom::LockManagerRequest request, RenderProcessHost* host,
@@ -271,7 +271,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             std::move(request));
       }));
   parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&ContentIndexServiceImpl::CreateForRequest));
+      base::BindRepeating(&ContentIndexServiceImpl::Create));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {

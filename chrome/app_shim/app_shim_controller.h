@@ -76,11 +76,11 @@ class AppShimController : public chrome::mojom::AppShim {
   // Terminates the app shim process.
   void Close();
 
-  // Returns the connection to the AppShimHostManager in the browser. Returns
+  // Returns the connection to the AppShimListener in the browser. Returns
   // an invalid endpoint if it is not available yet.
   mojo::PlatformChannelEndpoint GetBrowserEndpoint();
 
-  // Sets up a connection to the AppShimHostManager at the given Mach
+  // Sets up a connection to the AppShimListener at the given Mach
   // endpoint name.
   static mojo::PlatformChannelEndpoint ConnectToBrowser(
       const mojo::NamedPlatformChannel::ServerName& server_name);
@@ -98,7 +98,7 @@ class AppShimController : public chrome::mojom::AppShim {
   base::scoped_nsobject<NSRunningApplication> FindChromeFromSingletonLock()
       const;
 
-  // Check to see if Chrome's AppShimHostManager has been initialized. If it
+  // Check to see if Chrome's AppShimListener has been initialized. If it
   // has, then connect.
   void PollForChromeReady(const base::TimeDelta& time_until_timeout);
 

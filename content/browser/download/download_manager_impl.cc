@@ -497,6 +497,7 @@ bool DownloadManagerImpl::InterceptDownload(
               info.render_process_id, info.render_frame_id);
       params.from_download_cross_origin_redirect = true;
       params.initiator_origin = info.request_initiator;
+      params.is_renderer_initiated = info.is_content_initiated;
       web_contents->GetController().LoadURLWithParams(params);
     }
     return true;

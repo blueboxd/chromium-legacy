@@ -1108,67 +1108,86 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
  public:
   LayerTreeHostScrollTestScrollZeroMaxScrollOffset() = default;
 
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->use_layer_lists = true;
+  }
+
+  void SetupTree() override {
+    LayerTreeHostScrollTest::SetupTree();
+
+    // Add a sub-scroller to test TryScroll against. The outer viewport scroll
+    // will be latched to for scrolling even if it doesn't have any scroll
+    // extent in the given direction to support overscroll actions.
+    scroller_ = Layer::Create();
+    scroller_->SetIsDrawable(true);
+    scroller_->SetHitTestable(true);
+    scroller_->SetScrollable(layer_tree_host()->root_layer()->bounds());
+    scroller_->SetElementId(LayerIdToElementIdForTesting(scroller_->id()));
+    CopyProperties(layer_tree_host()->outer_viewport_scroll_layer(),
+                   scroller_.get());
+    CreateTransformNode(scroller_.get());
+    CreateScrollNode(scroller_.get());
+    layer_tree_host()->outer_viewport_scroll_layer()->AddChild(scroller_.get());
+  }
+
   void BeginTest() override {
-    outer_viewport_container_layer_id_ =
-        layer_tree_host()->outer_viewport_container_layer()->id();
     PostSetNeedsCommitToMainThread();
   }
 
   void UpdateLayerTreeHost() override {
-    Layer* root = layer_tree_host()->root_layer();
-    Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
+    ScrollTree& scroll_tree = layer_tree_host()->property_trees()->scroll_tree;
+    ScrollNode* scroll_node = scroll_tree.Node(scroller_->scroll_tree_index());
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        scroll_layer->SetScrollable(root->bounds());
-        scroll_layer->SetHitTestable(true);
         // Set max_scroll_offset = (100, 100).
-        scroll_layer->SetBounds(gfx::Size(root->bounds().width() + 100,
-                                          root->bounds().height() + 100));
+        scroll_node->bounds = scroll_node->container_bounds;
+        scroll_node->bounds.Enlarge(100, 100);
         break;
       case 1:
         // Set max_scroll_offset = (0, 0).
-        scroll_layer->SetBounds(root->bounds());
+        scroll_node->bounds = scroll_node->container_bounds;
         break;
       case 2:
-        // Set max_scroll_offset = (-100, -100).
-        scroll_layer->SetBounds(gfx::Size());
+        // Set max_scroll_offset = (-1, -1).
+        scroll_node->bounds = gfx::Size();
         break;
     }
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
-
     ScrollTree& scroll_tree =
         impl->active_tree()->property_trees()->scroll_tree;
-    ScrollNode* scroll_node =
-        scroll_tree.Node(scroll_layer->scroll_tree_index());
+    ScrollNode* scroll_node = scroll_tree.Node(scroller_->scroll_tree_index());
     InputHandler::ScrollStatus status =
         impl->TryScroll(gfx::PointF(0.0f, 1.0f), scroll_tree, scroll_node);
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+        EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread)
+            << "In Frame 0";
         EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
-                  status.main_thread_scrolling_reasons);
+                  status.main_thread_scrolling_reasons)
+            << "In Frame 0";
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
+        EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread) << "In Frame 1";
         EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
-                  status.main_thread_scrolling_reasons);
+                  status.main_thread_scrolling_reasons)
+            << "In Frame 1";
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
+        EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread) << "In Frame 2";
         EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
-                  status.main_thread_scrolling_reasons);
+                  status.main_thread_scrolling_reasons)
+            << "In Frame 2";
         EndTest();
         break;
     }
   }
 
  private:
-  int outer_viewport_container_layer_id_;
+  scoped_refptr<Layer> scroller_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -2237,9 +2256,8 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
     middle_scrollable_->SetScrollable(gfx::Size(100, 200));
     middle_scrollable_->SetHitTestable(true);
     CopyProperties(bottom_.get(), middle_scrollable_.get());
-    auto& scroll_node = CreateScrollNode(middle_scrollable_.get());
-    scroll_node.scrollable = true;
-    scroll_node.bounds = gfx::Size(100, 200);
+    CreateTransformNode(middle_scrollable_.get());
+    CreateScrollNode(middle_scrollable_.get());
     root->AddChild(middle_scrollable_);
 
     top_ = FakePictureLayer::Create(&fake_content_layer_client_);

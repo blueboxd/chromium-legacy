@@ -53,13 +53,21 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
 
   bool updated_display_info = UpdateDisplayInfo();
   bool updated_eye_parameters = UpdateEyeParameters();
+  bool updated_stage_parameters = UpdateStageParameters();
 
   if (updated_eye_parameters) {
     frame_data->left_eye = current_display_info_->left_eye.Clone();
     frame_data->right_eye = current_display_info_->right_eye.Clone();
   }
 
-  if (updated_display_info || updated_eye_parameters) {
+  if (updated_stage_parameters) {
+    frame_data->stage_parameters_updated = true;
+    frame_data->stage_parameters =
+        current_display_info_->stage_parameters.Clone();
+  }
+
+  if (updated_display_info || updated_eye_parameters ||
+      updated_stage_parameters) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(on_display_info_changed_,
                                   current_display_info_.Clone()));
@@ -240,6 +248,37 @@ bool OpenXrRenderLoop::UpdateEye(const XrView& view,
       DirectX::XMConvertToDegrees(view.fov.angleRight));
   if (!(*eye)->field_of_view || !fov->Equals(*(*eye)->field_of_view)) {
     (*eye)->field_of_view = std::move(fov);
+    changed = true;
+  }
+
+  return changed;
+}
+
+bool OpenXrRenderLoop::UpdateStageParameters() {
+  bool changed = false;
+  XrExtent2Df stage_bounds;
+  gfx::Transform transform;
+  if (openxr_->GetStageParameters(&stage_bounds, &transform)) {
+    if (!current_display_info_->stage_parameters) {
+      current_display_info_->stage_parameters = mojom::VRStageParameters::New();
+      changed = true;
+    }
+
+    if (current_display_info_->stage_parameters->size_x != stage_bounds.width ||
+        current_display_info_->stage_parameters->size_z !=
+            stage_bounds.height) {
+      current_display_info_->stage_parameters->size_x = stage_bounds.width;
+      current_display_info_->stage_parameters->size_z = stage_bounds.height;
+      changed = true;
+    }
+
+    if (current_display_info_->stage_parameters->standing_transform !=
+        transform) {
+      current_display_info_->stage_parameters->standing_transform = transform;
+      changed = true;
+    }
+  } else if (current_display_info_->stage_parameters) {
+    current_display_info_->stage_parameters = nullptr;
     changed = true;
   }
 

@@ -71,6 +71,8 @@ security_state::SafetyTipStatus GetSecurityStateSafetyTipType(
       return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_NONE;
     case safety_tips::SafetyTipType::kBadReputation:
       return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_BAD_REPUTATION;
+    case safety_tips::SafetyTipType::kLookalikeUrl:
+      return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_LOOKALIKE;
     default:
       NOTREACHED();
       return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_NONE;

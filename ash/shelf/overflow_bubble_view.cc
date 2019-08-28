@@ -61,8 +61,12 @@ class OverflowBubbleView::OverflowScrollArrowView : public ScrollArrowView {
  public:
   OverflowScrollArrowView(ArrowType arrow_type,
                           bool is_horizontal_alignment,
-                          views::ButtonListener* button_lister)
-      : ScrollArrowView(arrow_type, is_horizontal_alignment, button_lister) {}
+                          Shelf* shelf,
+                          ShelfButtonDelegate* button_delegate)
+      : ScrollArrowView(arrow_type,
+                        is_horizontal_alignment,
+                        shelf,
+                        button_delegate) {}
   ~OverflowScrollArrowView() override = default;
 
   // views::View:
@@ -241,11 +245,13 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
 
   // Initialize the left arrow button.
   left_arrow_ = AddChildView(std::make_unique<OverflowScrollArrowView>(
-      ScrollArrowView::kLeft, GetShelf()->IsHorizontalAlignment(), this));
+      ScrollArrowView::kLeft, GetShelf()->IsHorizontalAlignment(), GetShelf(),
+      this));
 
   // Initialize the right arrow button.
   right_arrow_ = AddChildView(std::make_unique<OverflowScrollArrowView>(
-      ScrollArrowView::kRight, GetShelf()->IsHorizontalAlignment(), this));
+      ScrollArrowView::kRight, GetShelf()->IsHorizontalAlignment(), GetShelf(),
+      this));
 
   // Initialize the shelf container view.
   shelf_container_view_ = AddChildView(
@@ -550,8 +556,13 @@ const char* OverflowBubbleView::GetClassName() const {
   return "OverflowBubbleView";
 }
 
+void OverflowBubbleView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
+    ShelfButton* button,
+    bool reverse) {}
+
 void OverflowBubbleView::ButtonPressed(views::Button* sender,
-                                       const ui::Event& event) {
+                                       const ui::Event& event,
+                                       views::InkDrop* ink_drop) {
   // Verfies that |sender| is either |left_arrow_| or |right_arrow_|.
   views::View* sender_view = sender;
   DCHECK((sender_view == left_arrow_) || (sender_view == right_arrow_));

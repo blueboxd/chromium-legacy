@@ -358,8 +358,17 @@
   <message name="IDS_BOOKMARK_MANAGER_MENU_ADD_FOLDER" desc="Title of the bookmark toolbar dropdown menu item that adds a new folder.">
     Add new folder
   </message>
+  <message name="IDS_BOOKMARK_MANAGER_MENU_CUT" desc="Title of the bookmark dropdown menu item that cuts one or more bookmarks.">
+    Cut
+  </message>
+  <message name="IDS_BOOKMARK_MANAGER_MENU_COPY" desc="Title of the bookmark dropdown menu item that copies one or more bookmarks.">
+    Copy
+  </message>
   <message name="IDS_BOOKMARK_MANAGER_MENU_COPY_URL" desc="Title of the bookmark dropdown menu item that copies the url of the bookmark.">
     Copy URL
+  </message>
+  <message name="IDS_BOOKMARK_MANAGER_MENU_PASTE" desc="Title of the bookmark dropdown menu item that pastes one or more bookmarks.">
+    Paste
   </message>
   <message name="IDS_BOOKMARK_MANAGER_MENU_EXPORT" desc="Title of the bookmark toolbar dropdown menu item that exports bookmarks.">
     Export bookmarks

@@ -12,6 +12,10 @@ namespace base {
 class TimeTicks;
 }
 
+namespace webrtc {
+class RtpSource;
+}
+
 namespace blink {
 
 // Represents both SSRCs and CSRCs.
@@ -32,6 +36,9 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSource {
   virtual base::Optional<double> AudioLevel() const = 0;
   virtual uint32_t RtpTimestamp() const = 0;
 };
+
+BLINK_PLATFORM_EXPORT std::unique_ptr<WebRTCRtpSource> CreateRTCRtpSource(
+    const webrtc::RtpSource& source);
 
 }  // namespace blink
 

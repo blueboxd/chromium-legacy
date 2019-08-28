@@ -48,10 +48,11 @@ const base::Feature kEnableUnifiedAudioFocusFeature{
 const base::Feature kFilePickerExperimentFeature{
     "ArcFilePickerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls experimental native bridge feature for ARC.
-const base::Feature kNativeBridgeExperimentFeature {
-    "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT
-};
+// Toggles between native bridge implementations for ARC.
+// Note, that we keep the original feature name to preserve
+// corresponding metrics.
+const base::Feature kNativeBridgeToggleFeature{
+    "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls experimental print spooler feature for ARC.
 const base::Feature kPrintSpoolerExperimentFeature{

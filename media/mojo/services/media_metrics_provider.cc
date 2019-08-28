@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "media/learning/mojo/mojo_learning_task_controller_service.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -37,12 +38,14 @@ MediaMetricsProvider::MediaMetricsProvider(
     FrameStatus is_top_frame,
     ukm::SourceId source_id,
     learning::FeatureValue origin,
-    VideoDecodePerfHistory::SaveCallback save_cb)
+    VideoDecodePerfHistory::SaveCallback save_cb,
+    GetLearningSessionCallback learning_session_cb)
     : player_id_(g_player_id++),
       is_top_frame_(is_top_frame == FrameStatus::kTopFrame),
       source_id_(source_id),
       origin_(origin),
       save_cb_(std::move(save_cb)),
+      learning_session_cb_(learning_session_cb),
       uma_info_(is_incognito == BrowsingMode::kIncognito) {}
 
 MediaMetricsProvider::~MediaMetricsProvider() {
@@ -175,16 +178,18 @@ void MediaMetricsProvider::ReportPipelineUMA() {
 }
 
 // static
-void MediaMetricsProvider::Create(BrowsingMode is_incognito,
-                                  FrameStatus is_top_frame,
-                                  GetSourceIdCallback get_source_id_cb,
-                                  GetOriginCallback get_origin_cb,
-                                  VideoDecodePerfHistory::SaveCallback save_cb,
-                                  mojom::MediaMetricsProviderRequest request) {
+void MediaMetricsProvider::Create(
+    BrowsingMode is_incognito,
+    FrameStatus is_top_frame,
+    GetSourceIdCallback get_source_id_cb,
+    GetOriginCallback get_origin_cb,
+    VideoDecodePerfHistory::SaveCallback save_cb,
+    GetLearningSessionCallback learning_session_cb,
+    mojom::MediaMetricsProviderRequest request) {
   mojo::MakeStrongBinding(
       std::make_unique<MediaMetricsProvider>(
           is_incognito, is_top_frame, get_source_id_cb.Run(),
-          get_origin_cb.Run(), std::move(save_cb)),
+          get_origin_cb.Run(), std::move(save_cb), learning_session_cb),
       std::move(request));
 }
 
@@ -299,6 +304,29 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
   mojo::MakeStrongBinding(
       std::make_unique<VideoDecodeStatsRecorder>(save_cb_, source_id_, origin_,
                                                  is_top_frame_, player_id_),
+      std::move(request));
+}
+
+void MediaMetricsProvider::AcquireLearningTaskController(
+    const std::string& taskName,
+    media::learning::mojom::LearningTaskControllerRequest request) {
+  learning::LearningSession* session = learning_session_cb_.Run();
+  if (!session) {
+    DVLOG(3) << __func__ << " Ignoring request, unable to get LearningSession.";
+    return;
+  }
+
+  auto controller = session->GetController(taskName);
+
+  if (!controller) {
+    DVLOG(3) << __func__ << " Ignoring request, no controller found for task: '"
+             << taskName << "'.";
+    return;
+  }
+
+  mojo::MakeStrongBinding(
+      std::make_unique<learning::MojoLearningTaskControllerService>(
+          controller->GetLearningTask(), std::move(controller)),
       std::move(request));
 }
 

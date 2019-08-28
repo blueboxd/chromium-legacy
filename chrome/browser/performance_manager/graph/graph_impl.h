@@ -48,6 +48,9 @@ class GraphImpl : public Graph {
   GraphImpl();
   ~GraphImpl() override;
 
+  // Tear down the graph to prepare for deletion.
+  void TearDown();
+
   // Graph implementation:
   void AddGraphObserver(GraphObserver* observer) override;
   void AddFrameNodeObserver(FrameNodeObserver* observer) override;

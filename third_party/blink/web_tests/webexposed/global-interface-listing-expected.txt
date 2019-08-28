@@ -10800,11 +10800,26 @@ interface XRFrame
     attribute @@toStringTag
     getter session
     method constructor
+    method getHitTestResults
     method getPose
     method getViewerPose
 interface XRHitResult
     attribute @@toStringTag
     getter hitMatrix
+    method constructor
+interface XRHitTestOptions
+    attribute @@toStringTag
+    getter offsetRay
+    getter space
+    method constructor
+interface XRHitTestResult
+    attribute @@toStringTag
+    getter hitTestOptions
+    getter transform
+    method constructor
+interface XRHitTestSource
+    attribute @@toStringTag
+    getter hitTestOptions
     method constructor
 interface XRInputSource
     attribute @@toStringTag
@@ -10888,6 +10903,7 @@ interface XRSession : EventTarget
     method end
     method requestAnimationFrame
     method requestHitTest
+    method requestHitTestSource
     method requestReferenceSpace
     method updateRenderState
     setter onend

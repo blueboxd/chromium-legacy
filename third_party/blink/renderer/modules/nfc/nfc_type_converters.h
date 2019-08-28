@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_TYPE_CONVERTERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_TYPE_CONVERTERS_H_
 
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/device/public/mojom/nfc.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"

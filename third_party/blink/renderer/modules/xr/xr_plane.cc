@@ -6,17 +6,19 @@
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/xr/type_converters.h"
-#include "third_party/blink/renderer/modules/xr/xr_plane_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_object_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
 
-XRPlane::XRPlane(XRSession* session,
+XRPlane::XRPlane(int32_t id,
+                 XRSession* session,
                  const device::mojom::blink::XRPlaneDataPtr& plane_data,
                  double timestamp)
-    : XRPlane(session,
+    : XRPlane(id,
+              session,
               mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
                   plane_data->orientation),
               mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose),
@@ -24,12 +26,14 @@ XRPlane::XRPlane(XRSession* session,
                   plane_data->polygon),
               timestamp) {}
 
-XRPlane::XRPlane(XRSession* session,
+XRPlane::XRPlane(int32_t id,
+                 XRSession* session,
                  const base::Optional<Orientation>& orientation,
                  const TransformationMatrix& pose_matrix,
                  const HeapVector<Member<DOMPointReadOnly>>& polygon,
                  double timestamp)
-    : polygon_(polygon),
+    : id_(id),
+      polygon_(polygon),
       orientation_(orientation),
       pose_matrix_(std::make_unique<TransformationMatrix>(pose_matrix)),
       session_(session),
@@ -37,9 +41,13 @@ XRPlane::XRPlane(XRSession* session,
   DVLOG(3) << __func__;
 }
 
+int32_t XRPlane::id() const {
+  return id_;
+}
+
 XRSpace* XRPlane::planeSpace() const {
   if (!plane_space_) {
-    plane_space_ = MakeGarbageCollected<XRPlaneSpace>(session_, this);
+    plane_space_ = MakeGarbageCollected<XRObjectSpace<XRPlane>>(session_, this);
   }
 
   return plane_space_;
@@ -74,7 +82,7 @@ HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
 }
 
 ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
-                                    XRPose* pose,
+                                    XRRigidTransform* initial_pose,
                                     XRSpace* space) {
   // TODO(https://crbug.com/992033): Implement anchor creation from a plane
   // instead of rejecting the promise. This'll cause the string literal used
@@ -93,8 +101,8 @@ void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,
 
   orientation_ = mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
       plane_data->orientation);
-  pose_matrix_ = std::make_unique<TransformationMatrix>(
-      mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose));
+  *pose_matrix_ =
+      mojo::ConvertTo<blink::TransformationMatrix>(plane_data->pose);
   polygon_ = mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
       plane_data->polygon);
 }

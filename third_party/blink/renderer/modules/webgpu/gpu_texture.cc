@@ -81,11 +81,6 @@ GPUTextureView* GPUTexture::createView(
       device_, GetProcs().textureCreateView(GetHandle(), &dawn_desc));
 }
 
-GPUTextureView* GPUTexture::createDefaultView() {
-  return GPUTextureView::Create(
-      device_, GetProcs().textureCreateDefaultView(GetHandle()));
-}
-
 void GPUTexture::destroy() {
   GetProcs().textureDestroy(GetHandle());
 }

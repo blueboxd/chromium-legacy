@@ -120,7 +120,9 @@ class HoverButton : public views::LabelButton,
                            SetTitleLabel);
   FRIEND_TEST_ALL_PREFIXES(media_router::CastDialogSinkButtonTest,
                            SetStatusLabel);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionsMenuButtonTest,
+  FRIEND_TEST_ALL_PREFIXES(ExtensionsMenuItemViewTest,
+                           NotifyClickExecutesAction);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionsMenuItemViewTest,
                            UpdatesToDisplayCorrectActionTitle);
   friend class PageInfoBubbleViewBrowserTest;
 

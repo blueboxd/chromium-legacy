@@ -159,10 +159,11 @@ Polymer({
   },
 
   /**
-   * Values for reverting inputs when the user's date/time is invalid.
-   * @private {?Object}
+   * Values for reverting inputs when the user's date/time is invalid. The
+   * keys are element ids.
+   * @private {{dateInput: string, timeInput: string}}
    */
-  prevValues_: null,
+  prevValues_: {dateInput: '', timeInput: ''},
 
   /**
    * ID of the setTimeout() used to refresh the current time.
@@ -175,7 +176,6 @@ Polymer({
 
   /** @override */
   created: function() {
-    this.prevValues_ = {};
     this.browserProxy_ = settime.SetTimeBrowserProxyImpl.getInstance();
   },
 
@@ -265,8 +265,8 @@ Polymer({
     if (document.activeElement.id != 'dateInput' &&
         document.activeElement.id != 'timeInput') {
       const htmlValues = dateToHtmlValues(newTime);
-      this.prevValues_.date = this.$.dateInput.value = htmlValues.date;
-      this.prevValues_.time = this.$.timeInput.value = htmlValues.time;
+      this.prevValues_.dateInput = this.$.dateInput.value = htmlValues.date;
+      this.prevValues_.timeInput = this.$.timeInput.value = htmlValues.time;
     }
 
     if (this.timeTimeoutId_) {

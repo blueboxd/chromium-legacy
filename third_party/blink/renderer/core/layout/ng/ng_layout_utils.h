@@ -48,12 +48,16 @@ bool MaySkipLegacyLayout(const NGBlockNode& node,
 // affected by clearance, or floats, and therefore might be able to skip
 // layout.
 // Additionally (if this function returns true) it will calculate the new
-// |bfc_block_offset| for the layout result. This may still be |base::nullopt|
-// if not previously set.
+// |bfc_block_offset|, and |block_offset_delta| for the layout result.
+// |bfc_block_offset| may still be |base::nullopt| if not previously set.
+//
+// If this function returns false, both |bfc_block_offset|, and
+// |block_offset_delta| are in an undefined state and should not be used.
 bool MaySkipLayoutWithinBlockFormattingContext(
     const NGLayoutResult& cached_layout_result,
     const NGConstraintSpace& new_space,
-    base::Optional<LayoutUnit>* bfc_block_offset);
+    base::Optional<LayoutUnit>* bfc_block_offset,
+    LayoutUnit* block_offset_delta);
 
 // Return true if layout is considered complete. In some cases we require more
 // than one layout pass.

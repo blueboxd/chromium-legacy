@@ -415,13 +415,15 @@ float ScrollbarThemeMac::ThumbOpacity(const Scrollbar& scrollbar) const {
 
 // static
 void ScrollbarThemeMac::UpdateScrollbarsWithNSDefaults(
-    float initial_button_delay,
-    float autoscroll_button_delay,
+    base::Optional<float> initial_button_delay,
+    base::Optional<float> autoscroll_button_delay,
     NSScrollerStyle preferred_scroller_style,
     bool redraw,
     bool jump_on_track_click) {
-  s_initial_button_delay = initial_button_delay;
-  s_autoscroll_button_delay = autoscroll_button_delay;
+  s_initial_button_delay =
+      initial_button_delay.value_or(s_initial_button_delay);
+  s_autoscroll_button_delay =
+      autoscroll_button_delay.value_or(s_autoscroll_button_delay);
   s_preferred_scroller_style = preferred_scroller_style;
   s_jump_on_track_click = jump_on_track_click;
   if (redraw) {

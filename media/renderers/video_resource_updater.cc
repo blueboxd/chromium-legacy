@@ -70,7 +70,13 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_ABGR:
       DCHECK_EQ(num_textures, 1);
-      buffer_formats[0] = gfx::BufferFormat::RGBA_8888;
+      // This maps VideoPixelFormat back to GMB BufferFormat
+      // NOTE: ABGR == RGBA and ARGB == BGRA, they differ only byte order
+      // See: VideoFormat function in gpu_memory_buffer_video_frame_pool
+      // https://cs.chromium.org/chromium/src/media/video/gpu_memory_buffer_video_frame_pool.cc?type=cs&g=0&l=281
+      buffer_formats[0] = (format == PIXEL_FORMAT_ABGR)
+                              ? gfx::BufferFormat::RGBA_8888
+                              : gfx::BufferFormat::BGRA_8888;
       switch (target) {
         case GL_TEXTURE_EXTERNAL_OES:
           if (use_stream_video_draw_quad)

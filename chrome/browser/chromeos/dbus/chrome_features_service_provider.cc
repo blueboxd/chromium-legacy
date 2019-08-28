@@ -121,7 +121,7 @@ void ChromeFeaturesServiceProvider::IsFeatureEnabled(
       &arc::kBootCompletedBroadcastFeature,
       &arc::kCustomTabsExperimentFeature,
       &arc::kFilePickerExperimentFeature,
-      &arc::kNativeBridgeExperimentFeature,
+      &arc::kNativeBridgeToggleFeature,
       &arc::kPrintSpoolerExperimentFeature,
   };
 

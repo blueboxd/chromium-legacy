@@ -51,16 +51,16 @@
 
       #cloudOffIcon {
         --iron-icon-fill-color: rgb(95, 99, 104);
-        margin-bottom: 16px;
+        margin-top: 10px;
       }
 
       #connectionMessage {
-        text-align: center;
-        width: 250px;
+        padding-inline-start: 20px;
       }
 
       #noConnectivityContentContainer {
-        margin-top: 32px;
+        border-bottom: var(--cr-separator-line);
+        padding-inline-start: 20px;
       }
 
       #noSearchResultsMessage {
@@ -69,6 +69,12 @@
         font-weight: 500;
         margin-top: 80px;
         text-align: center;
+      }
+
+      :host(:not([can-add-printer])) #addPrinterSection,
+      :host(:not([can-add-printer])) #nearbyPrinters {
+        opacity: var(--cr-disabled-opacity);
+        pointer-events: none;
       }
     </style>
 
@@ -79,11 +85,11 @@
           <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
             $i18n{learnMore}
           </a>
-          <div class="secondary" hidden="[[canAddPrinter_]]">
+          <div class="secondary" hidden="[[canAddPrinter]]">
             $i18n{requireNetworkMessage}
           </div>
         </div>
-        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
+        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter,
             prefs.native_printing.user_native_printers_allowed.value)]]">
           <cr-policy-pref-indicator
               pref="[[prefs.native_printing.user_native_printers_allowed]]"
@@ -92,7 +98,7 @@
         </template>
         <cr-button class="action-button" id="addPrinter"
             on-click="onAddPrinterTap_"
-            disabled="[[!addPrinterButtonActive_(canAddPrinter_,
+            disabled="[[!addPrinterButtonActive_(canAddPrinter,
                 prefs.native_printing.user_native_printers_allowed.value)]]">
           $i18n{addCupsPrinter}
         </cr-button>
@@ -104,6 +110,17 @@
     </template>
 
     <template is="dom-if" if="[[enableUpdatedUi_]]">
+      <template is="dom-if" if="[[!canAddPrinter]]">
+        <div id="noConnectivityContentContainer"
+            class="layout horizontal padded">
+          <iron-icon id="cloudOffIcon" icon="settings20:cloud-off"></iron-icon>
+          <div id="connectionMessage" class="layout vertical">
+            <div>$i18n{noInternetConnection}</div>
+            <div class="secondary">$i18n{checkNetworkAndTryAgain}</div>
+          </div>
+        </div>
+      </template>
+
       <div class="settings-box first">
         <div class="start">
           <span>$i18n{savedPrintersTitle}</span>
@@ -120,10 +137,11 @@
         <span class="secondary">
           $i18n{nearbyPrintersListDescription}
         </span>
-        <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
+        <a href="$i18n{printingCUPSPrintLearnMoreUrl}"
+            target="_blank">
           $i18n{learnMore}
         </a>
-        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
+        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter,
             prefs.native_printing.user_native_printers_allowed.value)]]">
           <cr-policy-pref-indicator
               pref="[[prefs.native_printing.user_native_printers_allowed]]"
@@ -132,32 +150,22 @@
         </template>
       </div>
 
-      <template is="dom-if" if="[[canAddPrinter_]]">
-        <div id="addPrinterSection">
-          <div class="layout horizontal center custom-list-item">
-            <div id="addPrinterText">$i18n{addCupsPrinter}</div>
-            <cr-icon-button class="action-button" id="addManualPrinterIcon"
-                iron-icon="settings20:printer-add"
-                on-click="onAddPrinterTap_"
-                disabled="[[!addPrinterButtonActive_(canAddPrinter_,
-                    prefs.native_printing.user_native_printers_allowed.value)]]"
-                title="$i18n{addCupsPrinter}">
-            </cr-icon-button>
-          </div>
+      <div id="addPrinterSection">
+        <div class="layout horizontal center custom-list-item">
+          <div id="addPrinterText">$i18n{addCupsPrinter}</div>
+          <cr-icon-button class="action-button" id="addManualPrinterIcon"
+              iron-icon="settings20:printer-add"
+              on-click="onAddPrinterTap_"
+              disabled="[[!addPrinterButtonActive_(canAddPrinter,
+                  prefs.native_printing.user_native_printers_allowed.value)]]"
+              title="$i18n{addCupsPrinter}">
+          </cr-icon-button>
         </div>
+      </div>
+      <template is="dom-if" if="[[canAddPrinter]]">
         <settings-cups-nearby-printers search-term="[[searchTerm]]"
             active-printer="{{activePrinter}}">
         </settings-cups-nearby-printers>
-      </template>
-
-      <template is="dom-if" if="[[!canAddPrinter_]]">
-        <div id="noConnectivityContentContainer"
-            class="layout vertical center">
-          <iron-icon id="cloudOffIcon" icon="settings20:cloud_off"></iron-icon>
-          <div id="connectionMessage" class="secondary">
-            $i18n{checkNetworkMessage}
-          </div>
-        </div>
       </template>
     </template>
 

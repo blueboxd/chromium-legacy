@@ -164,6 +164,9 @@ class ASH_EXPORT LockScreenMediaControlsView
   // is set instead.
   void SetArtwork(base::Optional<gfx::ImageSkia> img);
 
+  // Returns the rounded rectangle clip path for the current artwork.
+  SkPath GetArtworkClipPath() const;
+
   // Creates and adds a new media button to |button_row_|. This should not be
   // used to create toggle buttons such as play/pause.
   void CreateMediaButton(int size,

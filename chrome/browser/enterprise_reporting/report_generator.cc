@@ -52,14 +52,18 @@ void ReportGenerator::Generate(ReportCallback callback) {
   if (basic_request_size_ > maximum_report_size_) {
     // Basic request is already too large so we can't upload any valid report.
     // Skip all Profiles and response an empty request list.
-    GetNextProfileReport(
-        basic_request_.browser_report().chrome_user_profile_infos_size());
+    std::move(callback_).Run(std::move(requests_));
     return;
   }
 
   requests_.push(
       std::make_unique<em::ChromeDesktopReportRequest>(basic_request_));
-  GetNextProfileReport(0);
+  for (int index = 0;
+       index < basic_request_.browser_report().chrome_user_profile_infos_size();
+       index++) {
+    GenerateProfileReportWithIndex(index);
+  }
+  std::move(callback_).Run(std::move(requests_));
 }
 
 void ReportGenerator::SetMaximumReportSizeForTesting(size_t size) {
@@ -127,29 +131,18 @@ ReportGenerator::GetProfiles() {
   return profiles;
 }
 
-void ReportGenerator::GetNextProfileReport(int profile_index) {
-  if (profile_index >=
-      basic_request_.browser_report().chrome_user_profile_infos_size()) {
-    std::move(callback_).Run(std::move(requests_));
-    return;
-  }
+void ReportGenerator::GenerateProfileReportWithIndex(int profile_index) {
+  DCHECK_LT(profile_index,
+            basic_request_.browser_report().chrome_user_profile_infos_size());
 
   auto basic_profile_report =
       basic_request_.browser_report().chrome_user_profile_infos(profile_index);
-  profile_report_generator_.MaybeGenerate(
+  auto profile_report = profile_report_generator_.MaybeGenerate(
       base::FilePath::FromUTF8Unsafe(basic_profile_report.id()),
-      basic_profile_report.name(),
-      base::BindOnce(&ReportGenerator::OnProfileReportReady,
-                     weak_ptr_factory_.GetWeakPtr(), profile_index));
-}
+      basic_profile_report.name());
 
-void ReportGenerator::OnProfileReportReady(
-    int profile_index,
-    std::unique_ptr<em::ChromeUserProfileInfo> profile_report) {
-  // Move to the next Profile if Profile is not loaded and there is no full
-  // report.
+  // Return if Profile is not loaded and there is no full report.
   if (!profile_report) {
-    GetNextProfileReport(profile_index + 1);
     return;
   }
 
@@ -176,8 +169,6 @@ void ReportGenerator::OnProfileReportReady(
   // Else: The new full Profile report is too big to be uploaded, skip this
   // Profile report.
   // TODO(crbug.com/956237): Record this event with UMA metrics.
-
-  GetNextProfileReport(profile_index + 1);
 }
 
 }  // namespace enterprise_reporting

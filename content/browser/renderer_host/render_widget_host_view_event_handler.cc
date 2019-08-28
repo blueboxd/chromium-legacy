@@ -75,12 +75,7 @@ bool IsFractionalScaleFactor(float scale_factor) {
 // DefWindowProc so it can generate WM_APPCOMMAND as necessary.
 bool ShouldGenerateAppCommand(const ui::MouseEvent* event) {
 #if defined(OS_WIN)
-  switch (event->native_event().message) {
-    case WM_XBUTTONUP:
-      return !base::FeatureList::IsEnabled(features::kExtendedMouseButtons);
-    case WM_NCXBUTTONUP:
-      return true;
-  }
+  return (event->native_event().message == WM_NCXBUTTONUP);
 #endif
   return false;
 }
@@ -628,7 +623,7 @@ bool RenderWidgetHostViewEventHandler::CanRendererHandleEvent(
     case WM_XBUTTONDOWN:
     case WM_XBUTTONUP:
     case WM_XBUTTONDBLCLK:
-      return base::FeatureList::IsEnabled(features::kExtendedMouseButtons);
+      return true;
     case WM_NCMOUSELEAVE:
     case WM_NCMOUSEMOVE:
     case WM_NCLBUTTONDOWN:
@@ -646,22 +641,6 @@ bool RenderWidgetHostViewEventHandler::CanRendererHandleEvent(
       return false;
     default:
       break;
-  }
-#elif defined(USE_X11)
-  if (!base::FeatureList::IsEnabled(features::kExtendedMouseButtons)) {
-    // Renderer only supports standard mouse buttons, so ignore programmable
-    // buttons.
-    switch (event->type()) {
-      case ui::ET_MOUSE_PRESSED:
-      case ui::ET_MOUSE_RELEASED: {
-        const int kAllowedButtons = ui::EF_LEFT_MOUSE_BUTTON |
-                                    ui::EF_MIDDLE_MOUSE_BUTTON |
-                                    ui::EF_RIGHT_MOUSE_BUTTON;
-        return (event->flags() & kAllowedButtons) != 0;
-      }
-      default:
-        break;
-    }
   }
 #endif
   return true;

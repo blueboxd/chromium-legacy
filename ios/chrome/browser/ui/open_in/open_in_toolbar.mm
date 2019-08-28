@@ -7,10 +7,10 @@
 #include <cmath>
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -28,28 +28,17 @@ const CGFloat kOpenButtonTrailingPadding = 16.0f;
 
 // The toolbar's border related constants.
 const CGFloat kTopBorderHeight = 0.5f;
-const CGFloat kTopBorderTransparency = 0.13f;
-const int kTopBorderColor = 0x000000;
-
-// The toolbar's background related constants.
-const int kToolbarBackgroundColor = 0xFFFFFF;
-const CGFloat kToolbarBackgroundTransparency = 0.97f;
 
 }  // anonymous namespace
 
-@interface OpenInToolbar () {
-  // Backing object for |self.openButton|.
-  MDCButton* _openButton;
-  // Backing object for |self.topBorder|.
-  UIView* _topBorder;
-}
+@interface OpenInToolbar ()
 
 // The "Open in..." button that's hooked up with the target and action passed
 // on initialization.
-@property(nonatomic, retain, readonly) MDCButton* openButton;
+@property(nonatomic, strong, readonly) MDCButton* openButton;
 
 // The line used as the border at the top of the toolbar.
-@property(nonatomic, retain, readonly) UIView* topBorder;
+@property(nonatomic, strong, readonly) UIView* topBorder;
 
 // View used to have a bottom margin to prevent overlapping with the bottom
 // toolbar. This view is used because the the CRWWebControllerContainerView is
@@ -95,6 +84,8 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
 
 @synthesize bottomMargin = _bottomMargin;
 @synthesize bottomMarginConstraint = _bottomMarginConstraint;
+@synthesize openButton = _openButton;
+@synthesize topBorder = _topBorder;
 
 - (instancetype)initWithFrame:(CGRect)aRect {
   NOTREACHED();
@@ -105,8 +96,7 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK([target respondsToSelector:action]);
-    [self setBackgroundColor:UIColorFromRGB(kToolbarBackgroundColor,
-                                            kToolbarBackgroundTransparency)];
+    self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
     [self addSubview:self.openButton];
     [self.openButton addTarget:target
                         action:action
@@ -147,7 +137,7 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
 - (MDCButton*)openButton {
   if (!_openButton) {
     _openButton = [[MDCFlatButton alloc] init];
-    [_openButton setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+    [_openButton setTitleColor:[UIColor colorNamed:kBlueColor]
                       forState:UIControlStateNormal];
     [_openButton setTitle:l10n_util::GetNSStringWithFixup(IDS_IOS_OPEN_IN)
                  forState:UIControlStateNormal];
@@ -159,8 +149,7 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
 - (UIView*)topBorder {
   if (!_topBorder) {
     _topBorder = [[UIView alloc] initWithFrame:CGRectZero];
-    [_topBorder setBackgroundColor:UIColorFromRGB(kTopBorderColor,
-                                                  kTopBorderTransparency)];
+    _topBorder.backgroundColor = [UIColor colorNamed:kToolbarShadowColor];
   }
   return _topBorder;
 }

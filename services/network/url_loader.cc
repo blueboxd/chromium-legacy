@@ -391,10 +391,10 @@ URLLoader::URLLoader(
   if (url_loader_header_client &&
       (options_ & mojom::kURLLoadOptionUseHeaderClient)) {
     url_loader_header_client->OnLoaderCreated(
-        request_id_, mojo::MakeRequest(&header_client_));
+        request_id_, header_client_.BindNewPipeAndPassReceiver());
     // Make sure the loader dies if |header_client_| has an error, otherwise
     // requests can hang.
-    header_client_.set_connection_error_handler(
+    header_client_.set_disconnect_handler(
         base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
   }
   if (want_raw_headers_) {

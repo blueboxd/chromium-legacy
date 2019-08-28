@@ -5,7 +5,7 @@
 # found in the LICENSE file.
 
 NAME=org.chromium.chromoting
-HOST_BUNDLE_NAME=@@HOST_BUNDLE_NAME@@
+HOST_BUNDLE_NAME=@@HOST_LEGACY_BUNDLE_NAME@@
 CONFIG_DIR=/Library/PrivilegedHelperTools
 ENABLED_FILE=$CONFIG_DIR/$NAME.me2me_enabled
 CONFIG_FILE=$CONFIG_DIR/$NAME.json

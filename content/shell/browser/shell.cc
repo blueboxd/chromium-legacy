@@ -533,7 +533,7 @@ bool Shell::CanOverscrollContent() {
 }
 
 void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
-  PlatformSetAddressBarURL(web_contents->GetLastCommittedURL());
+  PlatformSetAddressBarURL(web_contents->GetVisibleURL());
 }
 
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
@@ -597,7 +597,7 @@ std::unique_ptr<WebContents> Shell::SwapWebContents(
   web_contents_->SetDelegate(nullptr);
   std::swap(web_contents_, new_contents);
   PlatformSetContents();
-  PlatformSetAddressBarURL(web_contents_->GetLastCommittedURL());
+  PlatformSetAddressBarURL(web_contents_->GetVisibleURL());
   LoadingStateChanged(web_contents_.get(), true);
   return new_contents;
 }

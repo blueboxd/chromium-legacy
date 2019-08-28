@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UI_PROACTIVE_SUGGESTIONS_VIEW_H_
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {
@@ -20,7 +21,8 @@ class AssistantViewDelegate;
 class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
     : public views::Button,
       public views::ButtonListener,
-      public AssistantUiModelObserver {
+      public AssistantUiModelObserver,
+      public aura::WindowObserver {
  public:
   explicit ProactiveSuggestionsView(AssistantViewDelegate* delegate);
   ~ProactiveSuggestionsView() override;
@@ -37,9 +39,14 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
   // AssistantUiModelObserver:
   void OnUsableWorkAreaChanged(const gfx::Rect& usable_work_area) override;
 
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
+
  private:
   void InitLayout();
   void InitWidget();
+  void InitWindow();
   void UpdateBounds();
 
   AssistantViewDelegate* const delegate_;

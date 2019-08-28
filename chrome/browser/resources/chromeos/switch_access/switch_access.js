@@ -174,51 +174,63 @@ class SwitchAccess {
   }
 
   /**
-   * Set the value of the preference |key| to |value| in chrome.storage.sync.
+   * Set the value of the preference |name| to |value| in chrome.storage.sync.
    * Once the storage is set, the Switch Access preferences/behavior are
    * updated.
    *
    * @override
-   * @param {SAConstants.Preference} key
+   * @param {SAConstants.Preference} name
    * @param {boolean|number} value
    */
-  setPreference(key, value) {
-    this.switchAccessPreferences_.setPreference(key, value);
+  setPreference(name, value) {
+    this.switchAccessPreferences_.setPreference(name, value);
   }
 
   /**
-   * Get the boolean value for the given key. Will throw a type error if the
-   * value associated with |key| is not a boolean, or undefined.
+   * Get the boolean value for the given name. Will throw a type error if the
+   * value associated with |name| is not a boolean, or undefined.
    *
    * @override
-   * @param  {SAConstants.Preference} key
+   * @param  {SAConstants.Preference} name
    * @return {boolean}
    */
-  getBooleanPreference(key) {
-    return this.switchAccessPreferences_.getBooleanPreference(key);
+  getBooleanPreference(name) {
+    return this.switchAccessPreferences_.getBooleanPreference(name);
   }
 
   /**
-   * Get the number value for the given key. Will throw a type error if the
-   * value associated with |key| is not a number, or undefined.
+   * Get the string value for the given name. Will throw a type error if the
+   * value associated with |name| is not a string, or is undefined.
    *
    * @override
-   * @param  {SAConstants.Preference} key
+   * @param {SAConstants.Preference} name
+   * @return {string}
+   */
+  getStringPreference(name) {
+    return this.switchAccessPreferences_.getStringPreference(name);
+  }
+
+  /**
+   * Get the number value for the given name. Will throw a type error if the
+   * value associated with |name| is not a number, or undefined.
+   *
+   * @override
+   * @param  {SAConstants.Preference} name
    * @return {number}
    */
-  getNumberPreference(key) {
-    return this.switchAccessPreferences_.getNumberPreference(key);
+  getNumberPreference(name) {
+    return this.switchAccessPreferences_.getNumberPreference(name);
   }
 
   /**
-   * Get the number value for the given key, or |null| if none exists.
+   * Get the number value for the given name, or |null| if none exists.
    *
    * @override
-   * @param  {SAConstants.Preference} key
+   * @param  {SAConstants.Preference} name
    * @return {number|null}
    */
-  getNumberPreferenceIfDefined(key) {
-    return this.switchAccessPreferences_.getNumberPreferenceIfDefined(key);
+  getNumberPreferenceIfDefined(name) {
+    return this.switchAccessPreferences_.getNumberPreferenceIfDefined(name);
   }
 
   /**

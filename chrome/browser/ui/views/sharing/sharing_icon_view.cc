@@ -5,18 +5,16 @@
 #include "chrome/browser/ui/views/sharing/sharing_icon_view.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/scoped_canvas.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop.h"
 
 namespace {
-// Height of the loader bar in DIP.
-constexpr float kLoaderHeight = 4.0f;
-// Width of the loader bar in percent of its range.
-constexpr float kLoaderWidth = 0.2f;
-
 // TODO(knollr): move these into IconLabelBubbleView.
 constexpr int kIconTextSpacing = 8;
 constexpr int kIconTextSpacingTouch = 10;
+
+// Progress state when the full length of the animation text is visible.
+constexpr double kAnimationTextFullLengthShownProgressState = 0.5;
 }  // namespace
 
 SharingIconView::SharingIconView(PageActionIconView::Delegate* delegate)
@@ -24,7 +22,6 @@ SharingIconView::SharingIconView(PageActionIconView::Delegate* delegate)
                          /*command_id=*/0,
                          delegate) {
   SetVisible(false);
-  UpdateLoaderColor();
   SetUpForInOutAnimation();
 }
 
@@ -33,30 +30,31 @@ SharingIconView::~SharingIconView() = default;
 void SharingIconView::StartLoadingAnimation() {
   if (loading_animation_)
     return;
-  loading_animation_ = std::make_unique<gfx::ThrobAnimation>(this);
-  loading_animation_->SetTweenType(gfx::Tween::LINEAR);
-  loading_animation_->SetThrobDuration(750);
-  loading_animation_->StartThrobbing(-1);
+
+  loading_animation_ = true;
+  AnimateIn(IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL);
   SchedulePaint();
 }
 
-void SharingIconView::StopLoadingAnimation(base::Optional<int> string_id) {
+void SharingIconView::StopLoadingAnimation() {
   if (!loading_animation_)
     return;
 
-  if (!should_show_error_)
-    AnimateIn(string_id);
-
-  loading_animation_.reset();
+  loading_animation_ = false;
+  UnpauseAnimation();
   SchedulePaint();
 }
 
+// TODO(knollr): Introduce IconState / ControllerState {eg, Hidden, Success,
+// Sending} to define the various cases instead of a number of if else
+// statements.
 bool SharingIconView::Update() {
   auto* controller = GetController();
   if (!controller)
     return false;
 
-  if (should_show_error() != controller->send_failed()) {
+  // To ensure that we reset error icon badge.
+  if (!GetVisible()) {
     set_should_show_error(controller->send_failed());
     UpdateIconImage();
   }
@@ -64,17 +62,15 @@ bool SharingIconView::Update() {
   if (controller->is_loading())
     StartLoadingAnimation();
   else
-    StopLoadingAnimation(GetSuccessMessageId());
+    StopLoadingAnimation();
 
-  const bool is_bubble_showing = IsBubbleShowing();
-
-  if (is_bubble_showing || IsLoadingAnimationVisible() ||
-      last_controller_ != controller) {
+  if (last_controller_ != controller) {
     ResetSlideAnimation(/*show=*/false);
   }
 
   last_controller_ = controller;
 
+  const bool is_bubble_showing = IsBubbleShowing();
   const bool is_visible =
       is_bubble_showing || IsLoadingAnimationVisible() || label()->GetVisible();
   const bool visibility_changed = GetVisible() != is_visible;
@@ -82,50 +78,6 @@ bool SharingIconView::Update() {
   SetVisible(is_visible);
   UpdateInkDrop(is_bubble_showing);
   return visibility_changed;
-}
-
-void SharingIconView::UpdateLoaderColor() {
-  loader_color_ = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ProminentButtonColor);
-}
-
-void SharingIconView::OnThemeChanged() {
-  PageActionIconView::OnThemeChanged();
-  UpdateLoaderColor();
-}
-
-void SharingIconView::PaintButtonContents(gfx::Canvas* canvas) {
-  PageActionIconView::PaintButtonContents(canvas);
-  if (!loading_animation_)
-    return;
-
-  // TODO(knollr): Add support for this animation to PageActionIconView if other
-  // features need it as well.
-
-  gfx::ScopedCanvas scoped_canvas(canvas);
-  const float scale = canvas->UndoDeviceScaleFactor();
-  const gfx::Rect icon_bounds =
-      gfx::ScaleToEnclosedRect(image()->bounds(), scale);
-  const float progress = loading_animation_->GetCurrentValue();
-  const float range = icon_bounds.width();
-  const float offset = icon_bounds.x();
-
-  // Calculate start and end in percent of range.
-  float start = std::max(0.0f, (progress - kLoaderWidth) / (1 - kLoaderWidth));
-  float end = std::min(1.0f, progress / (1 - kLoaderWidth));
-  // Convert percentages to actual location.
-  const float size = kLoaderHeight * scale;
-  start = start * (range - size);
-  end = end * (range - size) + size;
-
-  gfx::RectF bounds(start + offset, icon_bounds.bottom() - size, end - start,
-                    size);
-
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(loader_color_);
-  canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
 }
 
 double SharingIconView::WidthMultiplier() const {
@@ -145,16 +97,25 @@ double SharingIconView::WidthMultiplier() const {
 }
 
 void SharingIconView::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation != loading_animation_.get()) {
-    UpdateOpacity();
-    return PageActionIconView::AnimationProgressed(animation);
+  if (animation->is_animating() &&
+      GetAnimationValue() >= kAnimationTextFullLengthShownProgressState &&
+      loading_animation_) {
+    PauseAnimation();
   }
-  SchedulePaint();
+  UpdateOpacity();
+  return PageActionIconView::AnimationProgressed(animation);
 }
 
 void SharingIconView::AnimationEnded(const gfx::Animation* animation) {
   PageActionIconView::AnimationEnded(animation);
   UpdateOpacity();
+
+  auto* controller = GetController();
+  if (controller && should_show_error() != controller->send_failed()) {
+    set_should_show_error(controller->send_failed());
+    UpdateIconImage();
+    controller->MaybeShowErrorDialog();
+  }
   Update();
 }
 
@@ -194,5 +155,5 @@ void SharingIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {}
 
 bool SharingIconView::IsLoadingAnimationVisible() {
-  return loading_animation_.get();
+  return loading_animation_;
 }

@@ -24,7 +24,6 @@ class GPUTexture : public DawnObject<DawnTexture> {
 
   // gpu_texture.idl
   GPUTextureView* createView(const GPUTextureViewDescriptor* webgpu_desc);
-  GPUTextureView* createDefaultView();
   void destroy();
 
  private:

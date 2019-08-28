@@ -13,6 +13,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
@@ -39,12 +40,12 @@ bool IsPreferenceDefaultEnabled(const PrefService* prefs,
 
 bool IsScreenContextDefaultEnabled(PrefService* prefs) {
   return IsPreferenceDefaultEnabled(
-      prefs, arc::prefs::kVoiceInteractionContextEnabled);
+      prefs, chromeos::assistant::prefs::kAssistantContextEnabled);
 }
 
 bool IsScreenContextToggleDisabled(PrefService* prefs) {
   return prefs->IsManagedPreference(
-      arc::prefs::kVoiceInteractionContextEnabled);
+      chromeos::assistant::prefs::kAssistantContextEnabled);
 }
 
 }  // namespace

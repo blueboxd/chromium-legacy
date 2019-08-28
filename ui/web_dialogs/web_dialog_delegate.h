@@ -153,6 +153,8 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // Returns true if |accelerator| is processed, otherwise false.
   virtual bool AcceleratorPressed(const Accelerator& accelerator);
 
+  virtual void OnWebContentsFinishedLoad() {}
+
   virtual ~WebDialogDelegate() {}
 };
 

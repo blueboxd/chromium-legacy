@@ -92,6 +92,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidSiteSettingsUIRefresh,
     &kBackgroundTaskSchedulerForBackgroundSync,
     &kCastDeviceFilter,
+    &kCloseTabSuggestionsStale,
     &kCCTBackgroundTab,
     &kCCTExternalLinkHandling,
     &kCCTModule,
@@ -281,6 +282,9 @@ const base::Feature kBackgroundTaskSchedulerForBackgroundSync{
 // Used in downstream code.
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCloseTabSuggestionsStale{
+    "CloseTabSuggestionsStale", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTBackgroundTab{"CCTBackgroundTab",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

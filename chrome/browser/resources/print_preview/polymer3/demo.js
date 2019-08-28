@@ -4,6 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
@@ -39,6 +40,8 @@ class HelloPolymer3Element extends PolymerElement {
       </select>
 
       <cr-input></cr-input>
+
+      <cr-icon-button iron-icon="cr:more-vert"></cr-icon-button>
 
       <div>
         <cr-button on-click="onClick_">Show toast</cr-button>

@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_DIALOG_VIEW_H_
 
 #include "base/optional.h"
-#include "chrome/browser/ui/global_media_controls/media_dialog_controller.h"
-#include "chrome/browser/ui/global_media_controls/media_dialog_controller_delegate.h"
+#include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace service_manager {
@@ -15,17 +14,19 @@ class Connector;
 }  // namespace service_manager
 
 class MediaNotificationListView;
+class MediaToolbarButtonController;
 
 // Dialog that shows media controls that control the active media session.
 class MediaDialogView : public views::BubbleDialogDelegateView,
-                        public MediaDialogControllerDelegate {
+                        public MediaDialogDelegate {
  public:
   static void ShowDialog(views::View* anchor_view,
+                         MediaToolbarButtonController* controller,
                          service_manager::Connector* connector);
   static void HideDialog();
   static bool IsShowing();
 
-  // MediaDialogControllerDelegate implementation.
+  // MediaDialogDelegate implementation.
   void ShowMediaSession(
       const std::string& id,
       base::WeakPtr<media_message_center::MediaNotificationItem> item) override;
@@ -41,6 +42,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
 
  private:
   explicit MediaDialogView(views::View* anchor_view,
+                           MediaToolbarButtonController* controller,
                            service_manager::Connector* connector);
   ~MediaDialogView() override;
 
@@ -50,7 +52,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void Init() override;
   void WindowClosing() override;
 
-  MediaDialogController controller_;
+  MediaToolbarButtonController* const controller_;
 
   MediaNotificationListView* const active_sessions_view_;
 

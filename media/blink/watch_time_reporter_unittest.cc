@@ -238,6 +238,10 @@ class WatchTimeReporterTest
         mojom::VideoDecodeStatsRecorderRequest request) override {
       FAIL();
     }
+    void AcquireLearningTaskController(
+        const std::string& taskName,
+        media::learning::mojom::LearningTaskControllerRequest request)
+        override {}
     void Initialize(bool is_mse, mojom::MediaURLScheme url_scheme) override {}
     void OnError(PipelineStatus status) override {}
     void SetIsAdMedia() override {}

@@ -1108,14 +1108,9 @@ bool AppListControllerImpl::KeyboardTraversalEngaged() {
 
 bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
   // Do not allow processing events during overview or while overview is
-  // finished but still animating out. Note in clamshell mode, if overview and
-  // splitview is both active, we still allow the user to open app list and
-  // select an app. The app will be opened in snapped window state and overview
-  // will be ended after the app is opened.
+  // finished but still animating out.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  auto* split_view_controller = Shell::Get()->split_view_controller();
-  if ((overview_controller->InOverviewSession() &&
-       !split_view_controller->InClamshellSplitViewMode()) ||
+  if (overview_controller->InOverviewSession() ||
       overview_controller->IsCompletingShutdownAnimations()) {
     return false;
   }

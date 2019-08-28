@@ -8,9 +8,9 @@
 #include <set>
 #include <vector>
 
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/renderer/page_load_metrics/page_timing_sender.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 
 namespace page_load_metrics {
 

@@ -160,7 +160,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   const gfx::Rect& screen_space_rect() const {
     return pending_visual_properties_.screen_space_rect;
   }
-  RenderWidget* GetMainWidget() const;
 
   const ScreenInfo& screen_info() const {
     return pending_visual_properties_.screen_info;

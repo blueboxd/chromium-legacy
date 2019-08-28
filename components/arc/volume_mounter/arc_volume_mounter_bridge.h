@@ -67,6 +67,8 @@ class ArcVolumeMounterBridge
 
   bool HasAccessToRemovableMedia() const;
   void OnPrefChanged();
+  bool IsVisibleToAndroidApps(const std::string& uuid) const;
+  void OnVisibleStoragesChanged();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 

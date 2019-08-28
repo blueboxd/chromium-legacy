@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -120,7 +121,8 @@ void ModuleScriptLoaderTestModulator::Trace(blink::Visitor* visitor) {
 
 }  // namespace
 
-class ModuleScriptLoaderTest : public PageTestBase {
+class ModuleScriptLoaderTest : public PageTestBase,
+                               private ScopedJSONModulesForTest {
   DISALLOW_COPY_AND_ASSIGN(ModuleScriptLoaderTest);
 
  public:
@@ -168,12 +170,12 @@ class ModuleScriptLoaderTest : public PageTestBase {
 };
 
 void ModuleScriptLoaderTest::SetUp() {
-  RuntimeEnabledFeatures::SetJSONModulesEnabled(true);
   PageTestBase::SetUp(IntSize(500, 500));
 }
 
 ModuleScriptLoaderTest::ModuleScriptLoaderTest()
-    : url_("https://example.test"),
+    : ScopedJSONModulesForTest(true),
+      url_("https://example.test"),
       security_origin_(SecurityOrigin::Create(url_)) {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 }

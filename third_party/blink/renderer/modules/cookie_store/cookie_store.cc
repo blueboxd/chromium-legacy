@@ -456,7 +456,7 @@ void CookieStore::RemovedEventListener(
 
 CookieStore::CookieStore(
     ExecutionContext* execution_context,
-    network::mojom::blink::RestrictedCookieManagerPtr backend,
+    mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend,
     mojo::Remote<blink::mojom::blink::CookieStore> subscription_backend)
     : ContextLifecycleObserver(execution_context),
       backend_(std::move(backend)),

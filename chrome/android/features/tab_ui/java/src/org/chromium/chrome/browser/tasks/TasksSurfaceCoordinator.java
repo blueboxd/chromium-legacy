@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.tasks;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
 
 import android.view.LayoutInflater;
-import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
@@ -56,7 +56,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     }
 
     @Override
-    public View getView() {
+    public ViewGroup getContainerView() {
         return mView;
     }
 }

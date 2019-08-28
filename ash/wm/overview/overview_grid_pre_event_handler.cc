@@ -38,10 +38,12 @@ OverviewGridPreEventHandler::OverviewGridPreEventHandler(OverviewGrid* grid)
 }
 
 OverviewGridPreEventHandler::~OverviewGridPreEventHandler() {
+  EndFling();
+  grid_->EndScroll();
+
   auto* wallpaper_view = GetWallpaperViewForRoot(grid_->root_window());
   if (wallpaper_view)
     wallpaper_view->RemovePreTargetHandler(this);
-  EndFling();
 }
 
 void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {
@@ -96,13 +98,18 @@ void OverviewGridPreEventHandler::OnAnimationStep(base::TimeTicks timestamp) {
   gfx::Vector2dF offset;
 
   // As a fling progresses, the velocity degenerates, and the difference in
-  // offset is passed into |grid_| as an updated scroll value.
-  bool fling =
+  // offset is passed into |grid_| as an updated scroll value. Stop flinging if
+  // the API for fling says to finish, or we reach one of the edges of the
+  // overview grid.
+  bool continue_fling =
       fling_curve_->ComputeScrollOffset(timestamp, &offset, &fling_velocity_);
-  grid_->UpdateScrollOffset(offset.x() - fling_last_offset_.x());
-  fling_last_offset_ = offset;
+  if (!continue_fling) {
+    continue_fling = grid_->UpdateScrollOffset(
+        fling_last_offset_ ? offset.x() - fling_last_offset_->x() : offset.x());
+  }
+  fling_last_offset_ = base::make_optional(offset);
 
-  if (!fling)
+  if (!continue_fling)
     EndFling();
 }
 
@@ -137,6 +144,7 @@ void OverviewGridPreEventHandler::EndFling() {
   observed_compositor_->RemoveAnimationObserver(this);
   observed_compositor_ = nullptr;
   fling_curve_.reset();
+  fling_last_offset_ = base::nullopt;
   grid_->EndScroll();
 }
 

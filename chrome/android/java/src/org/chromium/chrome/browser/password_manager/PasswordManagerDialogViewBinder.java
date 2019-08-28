@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.password_manager;
 
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.DETAILS;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION_VISIBLE;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.TITLE;
 
 import android.view.View;
@@ -21,6 +22,8 @@ class PasswordManagerDialogViewBinder {
         PasswordManagerDialogView dialogView = (PasswordManagerDialogView) view;
         if (ILLUSTRATION == propertyKey) {
             dialogView.setIllustration(model.get(ILLUSTRATION));
+        } else if (ILLUSTRATION_VISIBLE == propertyKey) {
+            dialogView.updateIllustrationVisibility(model.get(ILLUSTRATION_VISIBLE));
         } else if (TITLE == propertyKey) {
             dialogView.setTitle(model.get(TITLE));
         } else if (DETAILS == propertyKey) {

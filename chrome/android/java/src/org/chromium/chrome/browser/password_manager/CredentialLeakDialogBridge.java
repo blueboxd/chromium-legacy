@@ -18,7 +18,10 @@ public class CredentialLeakDialogBridge {
             WindowAndroid windowAndroid, long nativeCredentialLeakDialogViewAndroid) {
         mNativeCredentialLeakDialogViewAndroid = nativeCredentialLeakDialogViewAndroid;
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
-        mCredentialLeakDialog = new PasswordManagerDialogCoordinator(activity);
+        mCredentialLeakDialog = new PasswordManagerDialogCoordinator(
+                windowAndroid.getContext().get(), activity.getModalDialogManager(),
+                activity.findViewById(android.R.id.content), activity.getFullscreenManager(),
+                activity.getControlContainerHeightResource());
     }
 
     @CalledByNative

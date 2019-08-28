@@ -3177,7 +3177,6 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
     scoped_refptr<Layer> pinch = Layer::Create();
     pinch->SetBounds(gfx::Size(500, 500));
     pinch->SetScrollable(gfx::Size(200, 200));
-    pinch->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
 
@@ -5405,7 +5404,6 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
     scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
     inner_viewport_scroll_layer->SetScrollable(
         inner_viewport_container_layer->bounds());
-    inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
 
     root_layer_->AddChild(inner_viewport_container_layer);
     inner_viewport_container_layer->AddChild(overscroll_elasticity_layer);
@@ -6910,7 +6908,6 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     scoped_refptr<Layer> pinch = Layer::Create();
     pinch->SetBounds(gfx::Size(500, 500));
     pinch->SetScrollable(gfx::Size(500, 500));
-    pinch->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
 
@@ -7215,7 +7212,6 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     scoped_refptr<Layer> pinch = Layer::Create();
     pinch->SetBounds(gfx::Size(500, 500));
     pinch->SetScrollable(gfx::Size(500, 500));
-    pinch->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
 
@@ -7593,7 +7589,6 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
 
     page_scale->AddChild(inner_viewport_scroll);
     inner_viewport_scroll->AddChild(page_scale_grandchild);
-    inner_viewport_scroll->SetIsContainerForFixedPositionLayers(true);
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();

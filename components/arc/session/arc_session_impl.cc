@@ -365,7 +365,7 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
   state_ = State::STARTING_MINI_INSTANCE;
   StartArcMiniContainerRequest request;
   request.set_native_bridge_experiment(
-      base::FeatureList::IsEnabled(arc::kNativeBridgeExperimentFeature));
+      base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature));
   request.set_arc_file_picker_experiment(
       base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature));
   // Enable Custom Tabs only on Dev and Cannary, and only when Mash is enabled.

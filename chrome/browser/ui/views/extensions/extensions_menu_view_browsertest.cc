@@ -88,7 +88,8 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
                                gfx::Point(), base::TimeTicks(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
     menu_items[0]
-        ->primary_action_button_controller_for_testing()
+        ->primary_action_button_for_testing()
+        ->button_controller()
         ->OnMouseReleased(click_event);
   }
 

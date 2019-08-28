@@ -521,7 +521,6 @@ class RenderWidgetPopupUnittest : public testing::Test {
 
 class StubRenderWidgetDelegate : public RenderWidgetDelegate {
  public:
-  blink::WebWidget* GetWebWidgetForWidget() const override { return nullptr; }
   bool RenderWidgetWillHandleMouseEventForWidget(
       const blink::WebMouseEvent& event) override {
     return false;
@@ -537,7 +536,6 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void DisableAutoResizeForWidget() override {}
   void ScrollFocusedNodeIntoViewForWidget() override {}
   void DidReceiveSetFocusEventForWidget() override {}
-  void DidChangeFocusForWidget() override {}
   void DidCommitCompositorFrameForWidget() override {}
   void DidCompletePageScaleAnimationForWidget() override {}
   void ResizeWebWidgetForWidget(
@@ -552,9 +550,8 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
 };
 
 // Tests that the value of VisualProperties::is_pinch_gesture_active is
-// propagated to the LayerTreeHost when properties are synced, but only for
-// subframe widgets.
-TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHost) {
+// propagated to the LayerTreeHost when properties are synced for subframes.
+TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
   auto* layer_tree_host = widget()->layer_tree_view()->layer_tree_host();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   content::VisualProperties visual_properties;
@@ -573,20 +570,6 @@ TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHost) {
   visual_properties.is_pinch_gesture_active = false;
   widget()->OnSynchronizeVisualProperties(visual_properties);
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
-
-  // Repeat with a 'mainframe' widget.
-  std::unique_ptr<StubRenderWidgetDelegate> delegate =
-      std::make_unique<StubRenderWidgetDelegate>();
-  widget()->set_delegate(delegate.get());
-  visual_properties.is_pinch_gesture_active = true;
-  widget()->OnSynchronizeVisualProperties(visual_properties);
-  // We do not expect the |is_pinch_gesture_active| value to propagate to the
-  // LayerTreeHost for the main-frame. Since GesturePinch events are handled
-  // directly by the layer tree for the main frame, it already knows whether or
-  // not a pinch gesture is active, and so we shouldn't propagate this
-  // information to the layer tree for a main-frame's widget.
-  EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
-  DestroyWidget();
 }
 
 TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
@@ -615,11 +598,6 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
 
   std::unique_ptr<PopupRenderWidget> parent_widget(
       new PopupRenderWidget(&compositor_deps_));
-
-  // Emulation only happens for RenderWidgets with a delegate.
-  std::unique_ptr<StubRenderWidgetDelegate> delegate =
-      std::make_unique<StubRenderWidgetDelegate>();
-  parent_widget->set_delegate(delegate.get());
 
   // Setup emulation on the |parent_widget|.
   parent_widget->OnSynchronizeVisualProperties(visual_properties);

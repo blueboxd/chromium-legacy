@@ -880,6 +880,9 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
     if (web_frame->IsWebLocalFrame())
       prev_scroll_offset_ = web_frame->ToWebLocalFrame()->GetScrollOffset();
   }
+
+  // It doesn't make sense to print a detached WebView without a Widget.
+  CHECK(web_view->MainFrameWidget());
   prev_view_size_ = web_view->MainFrameWidget()->Size();
   web_view->MainFrameWidget()->Resize(print_layout_size);
 }
@@ -1007,6 +1010,8 @@ void PrepareFrameAndViewForPrint::RestoreSize() {
     return;
 
   blink::WebView* web_view = frame_.GetFrame()->View();
+  // It doesn't make sense to print a detached WebView without a Widget.
+  CHECK(web_view->MainFrameWidget());
   web_view->MainFrameWidget()->Resize(prev_view_size_);
   if (blink::WebFrame* web_frame = web_view->MainFrame()) {
     // TODO(lukasza, weili): Support restoring scroll offset of a remote main

@@ -180,7 +180,7 @@ static_library("libwebp_dsp") {
     ":libwebp_webp",
   ]
   if (is_android) {
-    deps += [ "//third_party/android_sdk:cpu_features" ]
+    deps += [ "//third_party/android_ndk:cpu_features" ]
   }
   if (current_cpu == "x86" || current_cpu == "x64") {
     defines = [

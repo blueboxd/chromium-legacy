@@ -208,9 +208,6 @@ gfx::VerticalAlignment Label::GetVerticalAlignment() const {
 }
 
 void Label::SetVerticalAlignment(gfx::VerticalAlignment alignment) {
-  // TODO(crbug.com/996905): remove once single-line vertical alignment is
-  // supported.
-  DCHECK(GetMultiLine() || alignment == gfx::ALIGN_MIDDLE);
   if (GetVerticalAlignment() == alignment)
     return;
   full_text_->SetVerticalAlignment(alignment);
@@ -237,9 +234,6 @@ bool Label::GetMultiLine() const {
 void Label::SetMultiLine(bool multi_line) {
   DCHECK(!multi_line || (elide_behavior_ == gfx::ELIDE_TAIL ||
                          elide_behavior_ == gfx::NO_ELIDE));
-  // TODO(crbug.com/996905): remove once single-line vertical alignment is
-  // supported.
-  DCHECK(multi_line || GetVerticalAlignment() == gfx::ALIGN_MIDDLE);
   if (this->GetMultiLine() == multi_line)
     return;
   multi_line_ = multi_line;

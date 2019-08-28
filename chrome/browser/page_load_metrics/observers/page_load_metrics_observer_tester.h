@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/test/weak_mock_timer.h"
+#include "components/page_load_metrics/common/test/weak_mock_timer.h"
 
 namespace blink {
 class WebInputEvent;

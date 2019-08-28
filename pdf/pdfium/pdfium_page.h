@@ -44,12 +44,9 @@ class PDFiumPage {
   // Returns FPDF_TEXTPAGE for the page, loading and parsing it if necessary.
   FPDF_TEXTPAGE GetTextPage();
 
-  // Given a start char index, find the longest continuous run of text that's
-  // in a single direction and with the same style and font size. Fill the
-  // |text_run_info| with the length of that sequence, text direction, bounding
-  // box and font size.
-  void GetTextRunInfo(int start_char_index,
-                      PP_PrivateAccessibilityTextRunInfo* text_run_info);
+  // See definition of PDFEngine::GetTextRunInfo().
+  base::Optional<PP_PrivateAccessibilityTextRunInfo> GetTextRunInfo(
+      int start_char_index);
   // Get a unicode character from the page.
   uint32_t GetCharUnicode(int char_index);
   // Get the bounds of a character in page pixels.

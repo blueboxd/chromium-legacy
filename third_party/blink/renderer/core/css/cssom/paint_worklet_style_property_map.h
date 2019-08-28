@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/platform_paint_worklet_layer_painter.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -41,8 +42,7 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
       const ComputedStyle&,
       const Vector<CSSPropertyID>& native_properties,
       const Vector<AtomicString>& custom_properties,
-      std::vector<std::pair<std::string, CompositorElementId>>&
-          input_property_ids);
+      CompositorPaintWorkletInput::PropertyKeys& input_property_keys);
 
   static CrossThreadData CopyCrossThreadData(const CrossThreadData& data);
 

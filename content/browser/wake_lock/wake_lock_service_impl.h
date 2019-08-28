@@ -14,12 +14,6 @@ namespace content {
 class WakeLockServiceImpl final
     : public FrameServiceBase<blink::mojom::WakeLockService> {
  public:
-  // TODO(https://crbug.com/955171): Remove this method and use Create once
-  // RenderFrameHostImpl uses service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  static void CreateForRequest(RenderFrameHost*,
-                               blink::mojom::WakeLockServiceRequest);
-
   static void Create(RenderFrameHost*,
                      mojo::PendingReceiver<blink::mojom::WakeLockService>);
 

@@ -450,6 +450,12 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(const std::string& app_name,
 }
 #endif  // !defined(OS_MACOSX)
 
+void InProcessBrowserTest::SelectFirstBrowser() {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  if (!browser_list->empty())
+    browser_ = browser_list->get(0);
+}
+
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -498,9 +504,8 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
   // Pump startup related events.
   content::RunAllPendingInMessageLoop();
 
-  const BrowserList* active_browser_list = BrowserList::GetInstance();
-  if (!active_browser_list->empty()) {
-    browser_ = active_browser_list->get(0);
+  SelectFirstBrowser();
+  if (browser_) {
 #if defined(OS_CHROMEOS)
     // There are cases where windows get created maximized by default.
     if (browser_->window()->IsMaximized())

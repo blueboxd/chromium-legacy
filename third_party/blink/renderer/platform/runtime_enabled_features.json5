@@ -705,7 +705,7 @@
     },
     {
       name: "FractionalScrollOffsets",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FreezeFramesOnVisibility",

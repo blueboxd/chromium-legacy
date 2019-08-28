@@ -6,6 +6,7 @@
 
 #include <cstdio>
 
+#include "base/files/scoped_temp_dir.h"
 #include "services/tracing/perfetto/test_utils.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
@@ -16,22 +17,57 @@ namespace tracing {
 
 MockSystemService::MockSystemService(const std::string& consumer_socket,
                                      const std::string& producer_socket)
-    : consumer_(consumer_socket),
+    : used_tmpdir_(false),
+      consumer_(consumer_socket),
       producer_(producer_socket),
       task_runner_(std::make_unique<PerfettoTaskRunner>(
           base::SequencedTaskRunnerHandle::Get())) {
-  service_ = perfetto::ServiceIPCHost::CreateInstance(task_runner_.get());
-  CHECK(service_);
-  unlink(producer_socket.c_str());
-  unlink(consumer_socket.c_str());
-  bool succeeded = service_->Start(producer_.c_str(), consumer_.c_str());
-  CHECK(succeeded);
+  StartService();
+}
+
+MockSystemService::MockSystemService(const base::ScopedTempDir& tmp_dir)
+    : used_tmpdir_(true),
+      task_runner_(std::make_unique<PerfettoTaskRunner>(
+          base::SequencedTaskRunnerHandle::Get())) {
+  // We need to set TMPDIR environment variable because when a new producer
+  // connects to the perfetto service it needs to create a memmap'd file for
+  // the shared memory buffer. Setting TMPDIR allows the service to know
+  // where this should be.
+  //
+  // Finally since environment variables are leaked into other tests if
+  // multiple tests run we need to restore the value so each test is
+  // hermetic.
+
+  old_tmpdir_ = getenv("TMPDIR");
+  setenv("TMPDIR", tmp_dir.GetPath().value().c_str(), true);
+  // Set up the system socket locations in a valid tmp directory.
+  producer_ = tmp_dir.GetPath().Append(FILE_PATH_LITERAL("producer")).value();
+  consumer_ = tmp_dir.GetPath().Append(FILE_PATH_LITERAL("consumer")).value();
+  StartService();
 }
 
 MockSystemService::~MockSystemService() {
   service_.reset();
   remove(producer().c_str());
   remove(consumer().c_str());
+  if (used_tmpdir_) {
+    if (old_tmpdir_) {
+      // Restore the old value back to its initial value.
+      setenv("TMPDIR", old_tmpdir_, true);
+    } else {
+      // TMPDIR wasn't set originally so unset it.
+      unsetenv("TMPDIR");
+    }
+  }
+}
+
+void MockSystemService::StartService() {
+  service_ = perfetto::ServiceIPCHost::CreateInstance(task_runner_.get());
+  CHECK(service_);
+  unlink(producer_.c_str());
+  unlink(consumer_.c_str());
+  bool succeeded = service_->Start(producer_.c_str(), consumer_.c_str());
+  CHECK(succeeded);
 }
 
 const std::string& MockSystemService::consumer() const {

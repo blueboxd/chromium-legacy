@@ -171,9 +171,6 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnBrowserRemoved(Browser* browser) override;
 
  protected:
-  typedef std::map<std::pair<Profile*, std::string>,
-                   std::unique_ptr<AppShimHost>>
-      HostMap;
   typedef std::set<Browser*> BrowserSet;
   typedef std::map<std::pair<Profile*, std::string>, BrowserSet> AppBrowserMap;
 
@@ -196,6 +193,12 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // Closes all browsers associated with an app.
   void CloseBrowsersForApp(Profile* profile, const std::string& app_id);
 
+  // Close all app shims associated with the specified profile.
+  void CloseShimsForProfile(Profile* profile);
+
+  // Close one specified app.
+  void CloseShimForApp(Profile* profile, const std::string& app_id);
+
   // This is passed to Delegate::LoadProfileAsync for shim-initiated launches
   // where the profile was not yet loaded.
   void OnProfileLoaded(std::unique_ptr<AppShimHostBootstrap> bootstrap,
@@ -207,7 +210,39 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   std::unique_ptr<Delegate> delegate_;
 
-  HostMap hosts_;
+  // The state for an individual (app, Profile) pair. This includes the
+  // AppShimHost.
+  // TODO(https://crbug.com/982024): Add browser windows.
+  struct ProfileState {
+    ProfileState();
+    ProfileState(ProfileState&& other);
+    ProfileState& operator=(ProfileState&& other);
+    ~ProfileState();
+
+    std::unique_ptr<AppShimHost> host;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ProfileState);
+  };
+
+  // The state for an individual app. This includes the state for all
+  // profiles that are using the app.
+  // TODO(https://crbug.com/982024): Add AppShimHost when shared amongst
+  // profiles.
+  struct AppState {
+    AppState();
+    AppState(AppState&& other);
+    AppState& operator=(AppState&& other);
+    ~AppState();
+
+    std::map<Profile*, ProfileState> profiles;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(AppState);
+  };
+
+  // Map from extension id to the state for that app.
+  std::map<std::string, AppState> apps_;
 
   // A map of app ids to associated browser windows.
   AppBrowserMap app_browser_windows_;

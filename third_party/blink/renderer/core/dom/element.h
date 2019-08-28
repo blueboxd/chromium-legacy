@@ -26,7 +26,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -40,7 +39,6 @@
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html/focus_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -75,6 +73,7 @@ class NamedNodeMap;
 class PseudoElement;
 class PseudoStyleRequest;
 class ResizeObservation;
+class ResizeObserver;
 class ScrollIntoViewOptions;
 class ScrollIntoViewOptionsOrBoolean;
 class ScrollToOptions;

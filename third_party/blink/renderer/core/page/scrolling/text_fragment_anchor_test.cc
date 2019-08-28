@@ -169,7 +169,7 @@ TEST_F(TextFragmentAnchorTest, IdFragmentTakesPrecedence) {
       }
     </style>
     <p id="text">This is a test page</p>
-    <div id="targetText=test"></div>
+    <div id="targetText=test">Some text</div>
   )HTML");
   Compositor().BeginFrame();
 
@@ -191,7 +191,7 @@ TEST_F(TextFragmentAnchorTest, MultipleMatches) {
     <!DOCTYPE html>
     <style>
       body {
-        height: 1200px;
+        height: 2200px;
       }
       #first {
         position: absolute;
@@ -262,7 +262,7 @@ TEST_F(TextFragmentAnchorTest, MultipleTextFragments) {
     <!DOCTYPE html>
     <style>
       body {
-        height: 1200px;
+        height: 2200px;
       }
       #first {
         position: absolute;
@@ -299,7 +299,7 @@ TEST_F(TextFragmentAnchorTest, FirstTextFragmentNotFound) {
     <!DOCTYPE html>
     <style>
       body {
-        height: 1200px;
+        height: 2200px;
       }
       #first {
         position: absolute;
@@ -1146,9 +1146,9 @@ TEST_F(TextFragmentAnchorTest, DoubleHashSyntax) {
   EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#");
 }
 
-// Test that the ##targetText fragment directive is stripped from the URL when
-// there's also non-directive fragment contents.
-TEST_F(TextFragmentAnchorTest, DoubleHashStrippedWithRemainingFragment) {
+// Test that the ##targetText fragment directive is scrolled into view and is
+// stripped from the URL when there's also a valid element fragment.
+TEST_F(TextFragmentAnchorTest, DoubleHashWithElementFragment) {
   SimRequest request("https://example.com/test.html#element##targetText=test",
                      "text/html");
   LoadURL("https://example.com/test.html#element##targetText=test");
@@ -1156,7 +1156,7 @@ TEST_F(TextFragmentAnchorTest, DoubleHashStrippedWithRemainingFragment) {
     <!DOCTYPE html>
     <style>
       body {
-        height: 1200px;
+        height: 2200px;
       }
       #text {
         position: absolute;
@@ -1168,7 +1168,7 @@ TEST_F(TextFragmentAnchorTest, DoubleHashStrippedWithRemainingFragment) {
       }
     </style>
     <p id="text">This is a test page</p>
-    <div id="element"></div>
+    <div id="element">Some text</div>
   )HTML");
   Compositor().BeginFrame();
 
@@ -1204,7 +1204,7 @@ TEST_F(TextFragmentAnchorTest, IdFragmentWithDoubleHash) {
       }
     </style>
     <p id="element">This is a test page</p>
-    <div id="element##id"></div>
+    <div id="element##id">Some text</div>
   )HTML");
   Compositor().BeginFrame();
 
@@ -1278,6 +1278,45 @@ TEST_F(TextFragmentAnchorTest, CSSTextTransform) {
       << LayoutViewport()->GetScrollOffset().ToString();
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Test that we scroll the element fragment into view if we don't find a match.
+TEST_F(TextFragmentAnchorTest, NoMatchFoundFallsBackToElementFragment) {
+  SimRequest request("https://example.com/test.html#element##targetText=cats",
+                     "text/html");
+  LoadURL("https://example.com/test.html#element##targetText=cats");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      #text {
+        position: absolute;
+        top: 1000px;
+      }
+      #element {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p>This is a test page</p>
+    <div id="element">Some text</div>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  // The TextFragmentAnchor needs another frame to invoke the element anchor
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#element");
+
+  Element& p = *GetDocument().getElementById("element");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
 }
 
 }  // namespace

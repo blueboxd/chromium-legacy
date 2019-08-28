@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
+#include "chrome/browser/extensions/api/extension_action/test_icon_image_observer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -264,39 +265,6 @@ class MultiActionAPITest
   ExtensionAction* GetExtensionAction(const Extension& extension) {
     auto* action_manager = ExtensionActionManager::Get(profile());
     return action_manager->GetExtensionAction(extension);
-  }
-
-  // Waits for the given |icon| to finish it's first load.
-  // TODO(devlin): It's unfortunate we need this here. Ideally, either this
-  // would be less convoluted, or would even be taken care of by the extension
-  // loading methods.
-  void WaitForIconLoaded(IconImage* icon) {
-    class IconImageWaiter : public IconImage::Observer {
-     public:
-      IconImageWaiter() : observer_(this) {}
-      ~IconImageWaiter() override = default;
-
-      void Wait(IconImage* icon) {
-        if (!icon->did_complete_initial_load()) {
-          observer_.Add(icon);
-          run_loop_.Run();
-        }
-      }
-
-     private:
-      // IconImage::Observer:
-      void OnExtensionIconImageChanged(IconImage* icon) override {
-        DCHECK(icon->did_complete_initial_load());
-        run_loop_.Quit();
-      }
-
-      base::RunLoop run_loop_;
-      ScopedObserver<IconImage, IconImage::Observer> observer_;
-
-      DISALLOW_COPY_AND_ASSIGN(IconImageWaiter);
-    };
-
-    IconImageWaiter().Wait(icon);
   }
 
  private:
@@ -641,7 +609,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
   ASSERT_TRUE(action->default_icon());
   // Wait for the default icon to finish loading; otherwise it may be empty
   // when we check it.
-  WaitForIconLoaded(action->default_icon_image());
+  TestIconImageObserver::WaitForIcon(action->default_icon_image());
 
   int tab_id = GetActiveTabId();
   EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));

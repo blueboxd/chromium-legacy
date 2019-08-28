@@ -44,27 +44,15 @@ namespace {{variant}} {
 {%- endif %}
 
 {% if structs|length -%}
-#include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "mojo/public/cpp/bindings/struct_forward.h"
 {%- endif %}
 
 {% if not disallow_interfaces and interfaces|length -%}
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
-#include "mojo/public/cpp/bindings/associated_interface_request.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/lib/control_message_handler.h"
-#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
-#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
+#include "mojo/public/cpp/bindings/deprecated_interface_types_forward.h"
 {%- endif %}
 
 {% if not disallow_native_types and structs|length %}
-#include "mojo/public/cpp/bindings/lib/native_enum_serialization.h"
-#include "mojo/public/cpp/bindings/lib/native_struct_serialization.h"
+#include "mojo/public/interfaces/bindings/native_struct.mojom-forward.h"
 {%- endif %}
 
 {%- if export_header and module.constants|length %}

@@ -14,15 +14,14 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -96,7 +95,6 @@ void CrostiniExportImport::ImportContainer(content::WebContents* web_contents) {
 
 void CrostiniExportImport::OpenFileDialog(ExportImportType type,
                                           content::WebContents* web_contents) {
-  PrefService* pref_service = profile_->GetPrefs();
   ui::SelectFileDialog::Type file_selector_mode;
   unsigned title = 0;
   base::FilePath default_path;
@@ -112,16 +110,15 @@ void CrostiniExportImport::OpenFileDialog(ExportImportType type,
       base::Time::Exploded exploded;
       base::Time::Now().LocalExplode(&exploded);
       default_path =
-          pref_service->GetFilePath(prefs::kDownloadDefaultDirectory)
-              .Append(base::StringPrintf("chromeos-linux-%04d-%02d-%02d.tini",
-                                         exploded.year, exploded.month,
-                                         exploded.day_of_month));
+          file_manager::util::GetMyFilesFolderForProfile(profile_).Append(
+              base::StringPrintf("chromeos-linux-%04d-%02d-%02d.tini",
+                                 exploded.year, exploded.month,
+                                 exploded.day_of_month));
       break;
     case ExportImportType::IMPORT:
       file_selector_mode = ui::SelectFileDialog::SELECT_OPEN_FILE,
       title = IDS_SETTINGS_CROSTINI_IMPORT;
-      default_path =
-          pref_service->GetFilePath(prefs::kDownloadDefaultDirectory);
+      default_path = file_manager::util::GetMyFilesFolderForProfile(profile_);
       break;
   }
 

@@ -1047,6 +1047,7 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Database* db,
 
   if (!db->Open(db_name))
     return sql::INIT_FAILURE;
+  db->Preload();
 
   return sql::INIT_OK;
 }

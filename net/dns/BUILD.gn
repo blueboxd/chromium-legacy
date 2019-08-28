@@ -396,7 +396,10 @@ source_set("tests") {
   }
 
   if (enable_built_in_dns) {
-    sources += [ "address_sorter_unittest.cc" ]
+    sources += [
+      "address_sorter_unittest.cc",
+      "dns_client_unittest.cc",
+    ]
     if (is_posix || is_fuchsia) {
       sources += [ "address_sorter_posix_unittest.cc" ]
     }

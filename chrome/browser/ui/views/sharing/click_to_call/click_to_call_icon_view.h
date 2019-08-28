@@ -29,7 +29,6 @@ class ClickToCallIconView : public SharingIconView {
 
   // SharingIconView
   SharingUiController* GetController() const override;
-  base::Optional<int> GetSuccessMessageId() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ClickToCallIconView);
 };

@@ -6,11 +6,18 @@ package org.chromium.chrome.browser.password_manager;
 
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.DETAILS;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION;
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION_VISIBLE;
 import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.TITLE;
 
+import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
+import android.view.View;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -19,11 +26,15 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Mediator class responsible for the logic of showing the password manager dialog (e.g. onboarding
  * dialog).
  */
-class PasswordManagerDialogMediator {
+class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
     private final PropertyModel mModel;
     private final ModalDialogManager mDialogManager;
     private PropertyModel.Builder mModalDialogBuilder;
     private PropertyModel mDialogModel;
+    private final View mAndroidContentView;
+    private final Resources mResources;
+    private final ChromeFullscreenManager mFullscreenManager;
+    private final int mContainerHeightResource;
 
     private static class DialogClickHandler implements ModalDialogProperties.Controller {
         private Callback<Boolean> mCallback;
@@ -52,11 +63,17 @@ class PasswordManagerDialogMediator {
         }
     }
 
-    PasswordManagerDialogMediator(
-            PropertyModel model, ModalDialogManager manager, PropertyModel.Builder dialogBuilder) {
+    PasswordManagerDialogMediator(PropertyModel model, PropertyModel.Builder dialogBuilder,
+            ModalDialogManager manager, View androidContentView, Resources resources,
+            ChromeFullscreenManager fullscreenManager, int containerHeightResource) {
         mModel = model;
         mDialogManager = manager;
         mModalDialogBuilder = dialogBuilder;
+        mAndroidContentView = androidContentView;
+        mResources = resources;
+        mFullscreenManager = fullscreenManager;
+        mContainerHeightResource = containerHeightResource;
+        mAndroidContentView.addOnLayoutChangeListener(this);
     }
 
     void setContents(String title, String details, @DrawableRes int drawableId) {
@@ -72,12 +89,36 @@ class PasswordManagerDialogMediator {
                 .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText);
     }
 
+    private boolean hasSufficientSpaceForIllustration(int heightPx) {
+        heightPx -= TabModalPresenter.getContainerTopMargin(mResources, mContainerHeightResource);
+        heightPx -= TabModalPresenter.getContainerBottomMargin(mFullscreenManager);
+        return heightPx >= mResources.getDimensionPixelSize(
+                       R.dimen.password_manager_dialog_min_vertical_space_to_show_illustration);
+    }
+
+    @Override
+    public void onLayoutChange(View view, int left, int top, int right, int bottom, int oldLeft,
+            int oldTop, int oldRight, int oldBottom) {
+        int oldHeight = oldBottom - oldTop;
+        int newHeight = bottom - top;
+        if (newHeight == oldHeight) return;
+        mModel.set(ILLUSTRATION_VISIBLE, hasSufficientSpaceForIllustration(newHeight));
+    }
+
     void showDialog() {
+        mModel.set(ILLUSTRATION_VISIBLE,
+                hasSufficientSpaceForIllustration(mAndroidContentView.getHeight()));
         mDialogModel = mModalDialogBuilder.build();
         mDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.TAB);
     }
 
     void dismissDialog(int dismissalClause) {
         mDialogManager.dismissDialog(mDialogModel, dismissalClause);
+        mAndroidContentView.removeOnLayoutChangeListener(this);
+    }
+
+    @VisibleForTesting
+    public PropertyModel getModelForTesting() {
+        return mModel;
     }
 }

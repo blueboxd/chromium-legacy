@@ -48,7 +48,6 @@ class LocalFrame;
 class LocalFrameView;
 class GraphicsLayer;
 class Page;
-class PaintLayer;
 class Region;
 class ScrollableArea;
 
@@ -137,11 +136,6 @@ class CORE_EXPORT ScrollingCoordinator final
                                              ScrollbarOrientation);
   // LocalFrame* must be a local root if non-null.
   void TouchEventTargetRectsDidChange(LocalFrame*);
-
-  void UpdateScrollParentForGraphicsLayer(GraphicsLayer* child,
-                                          const PaintLayer* parent);
-  void UpdateClipParentForGraphicsLayer(GraphicsLayer* child,
-                                        const PaintLayer* parent);
 
   // Computes the NonFastScrollableRegions for the given local root frame. It
   // outputs a separate region for areas that scroll with the viewport and

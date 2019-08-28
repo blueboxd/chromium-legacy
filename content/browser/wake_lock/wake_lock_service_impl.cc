@@ -10,15 +10,6 @@
 namespace content {
 
 // static
-void WakeLockServiceImpl::CreateForRequest(
-    RenderFrameHost* render_frame_host,
-    blink::mojom::WakeLockServiceRequest receiver) {
-  // Implicit conversion from WakeLockServiceRequest to
-  // mojo::PendingReceiver<blink::mojom::WakeLockService>.
-  Create(render_frame_host, std::move(receiver));
-}
-
-// static
 void WakeLockServiceImpl::Create(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::WakeLockService> receiver) {

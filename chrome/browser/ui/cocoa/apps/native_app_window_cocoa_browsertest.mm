@@ -17,7 +17,7 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
-#include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
+#include "chrome/browser/apps/app_shim/test/app_shim_listener_test_api_mac.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
@@ -177,8 +177,8 @@ class MockExtensionAppShimHandler : public apps::ExtensionAppShimHandler {
 // Test Hide/Show and Hide/ShowWithApp() behavior when shims are enabled.
 IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
                        HideShowWithAppWithShim) {
-  test::AppShimHostManagerTestApi test_api(
-      g_browser_process->platform_part()->app_shim_host_manager());
+  test::AppShimListenerTestApi test_api(
+      g_browser_process->platform_part()->app_shim_listener());
   MockExtensionAppShimHandler* mock = new MockExtensionAppShimHandler();
   test_api.SetExtensionAppShimHandler(
       std::unique_ptr<apps::ExtensionAppShimHandler>(

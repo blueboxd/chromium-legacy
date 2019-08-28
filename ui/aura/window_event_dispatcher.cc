@@ -20,7 +20,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_input_state_controller.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher_observer.h"
 #include "ui/aura/window_targeter.h"

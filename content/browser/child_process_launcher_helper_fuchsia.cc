@@ -6,13 +6,40 @@
 
 #include "base/command_line.h"
 #include "base/process/launch.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "services/service_manager/embedder/result_codes.h"
+#include "services/service_manager/embedder/switches.h"
 
 namespace content {
 namespace internal {
+
+namespace {
+
+const char* ProcessNameFromSandboxType(
+    service_manager::SandboxType sandbox_type) {
+  switch (sandbox_type) {
+    case service_manager::SANDBOX_TYPE_NO_SANDBOX:
+      return nullptr;
+    case service_manager::SANDBOX_TYPE_WEB_CONTEXT:
+      return "context";
+    case service_manager::SANDBOX_TYPE_RENDERER:
+      return "renderer";
+    case service_manager::SANDBOX_TYPE_UTILITY:
+      return "utility";
+    case service_manager::SANDBOX_TYPE_GPU:
+      return "gpu";
+    case service_manager::SANDBOX_TYPE_NETWORK:
+      return "network";
+    default:
+      NOTREACHED() << sandbox_type;
+      return nullptr;
+  }
+}
+
+}  // namespace
 
 void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
@@ -67,6 +94,12 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   mojo_channel_->PrepareToPassRemoteEndpoint(&options->handles_to_transfer,
                                              command_line());
   sandbox_policy_.UpdateLaunchOptionsForSandbox(options);
+
+  // Set process name suffix to make it easier to identify the process.
+  const char* process_type =
+      ProcessNameFromSandboxType(delegate_->GetSandboxType());
+  if (process_type)
+    options->process_name_suffix = base::StringPrintf(":%s", process_type);
 
   return true;
 }

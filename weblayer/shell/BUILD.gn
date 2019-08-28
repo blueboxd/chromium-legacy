@@ -77,10 +77,7 @@ jumbo_static_library("weblayer_shell_lib") {
   }
 
   if (is_android) {
-    deps += [
-      "//components/embedder_support/android:view",
-      "//ui/android",
-    ]
+    deps += [ "//ui/android" ]
   }
 
   if (toolkit_views) {

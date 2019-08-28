@@ -72,22 +72,8 @@ void ToolbarIconContainerView::OnMouseExited(const ui::MouseEvent& event) {
   UpdateHighlight();
 }
 
-void ToolbarIconContainerView::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
-  // Update the highlight as this might have changed the number of visible
-  // children.
-  UpdateHighlight();
-}
-
 void ToolbarIconContainerView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
-}
-
-void ToolbarIconContainerView::ChildVisibilityChanged(views::View* child) {
-  PreferredSizeChanged();
-  // Update the highlight as this might have changed the number of visible
-  // children.
-  UpdateHighlight();
 }
 
 gfx::Insets ToolbarIconContainerView::GetInsets() const {
@@ -101,24 +87,17 @@ bool ToolbarIconContainerView::ShouldDisplayHighlight() {
   if (!uses_highlight_)
     return false;
 
-  const int num_visible_children =
-      std::count_if(children().begin(), children().end(),
-                    [](views::View* child) { return child->GetVisible(); });
-
-  // If there's only one visible child we never need to draw a border stroke to
-  // connect them.
-  if (num_visible_children <= 1)
-    return false;
-
   // The container should also be highlighted if a dialog is anchored to.
-  if (highlighted_button_)
+  if (highlighted_button_ && highlighted_button_ != main_button_)
     return true;
 
-  if (IsMouseHovered())
+  if (IsMouseHovered() && (!main_button_ || !main_button_->IsMouseHovered()))
     return true;
 
   // Focused, pressed or hovered children should trigger the highlight.
   for (views::View* child : children()) {
+    if (child == main_button_)
+      continue;
     if (child->HasFocus())
       return true;
     views::Button* button = views::Button::AsButton(child);

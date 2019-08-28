@@ -46,7 +46,9 @@ class MediaMetricsProviderTest : public testing::Test {
         base::BindRepeating(&MediaMetricsProviderTest::GetSourceId,
                             base::Unretained(this)),
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
-        VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider_));
+        VideoDecodePerfHistory::SaveCallback(),
+        MediaMetricsProvider::GetLearningSessionCallback(),
+        mojo::MakeRequest(&provider_));
     provider_->Initialize(is_mse, scheme);
   }
 

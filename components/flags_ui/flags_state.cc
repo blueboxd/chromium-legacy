@@ -34,9 +34,6 @@ namespace internal {
 const char kTrialGroupAboutFlags[] = "AboutFlags";
 }  // namespace internal
 
-const base::Feature kUnexpireFlagsM78{"TemporaryUnexpireFlagsM78",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
 namespace {
 
 // Separator used for origin list values. The list of origins provided from

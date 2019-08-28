@@ -130,9 +130,13 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_android) {
     deps += [
-      ":weblayer_jni",
       "//components/embedder_support/android:view",
       "//ui/android",
+      "//weblayer/browser/java:jni",
+    ]
+    sources += [
+      "browser/browser_observer_proxy.cc",
+      "browser/browser_observer_proxy.h",
     ]
   }
 
@@ -165,24 +169,5 @@ if (is_android) {
     ]
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]
-  }
-
-  generate_jni("weblayer_jni") {
-    sources = [
-      "browser/java/org/chromium/weblayer/BrowserController.java",
-      "browser/java/org/chromium/weblayer/Profile.java",
-    ]
-  }
-
-  android_library("weblayer_java") {
-    java_files = [
-      "browser/java/org/chromium/weblayer/BrowserController.java",
-      "browser/java/org/chromium/weblayer/Profile.java",
-    ]
-    deps = [
-      "//base:base_java",
-      "//content/public/android:content_java",
-      "//ui/android:ui_java",
-    ]
   }
 }

@@ -1020,7 +1020,6 @@ Vector2d RenderText::GetLineOffset(size_t line_number) {
   Vector2d offset = display_rect().OffsetFromOrigin();
   // TODO(ckocagil): Apply the display offset for multiline scrolling.
   if (!multiline()) {
-    DCHECK_EQ(ALIGN_MIDDLE, vertical_alignment_);
     offset.Add(GetUpdatedDisplayOffset());
   } else {
     DCHECK_LT(line_number, lines().size());
@@ -1417,14 +1416,20 @@ Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
       offset.set_x((offset.x() + 1) / 2);
   }
 
-  if (!multiline_)
-    offset.set_y(GetBaseline() - GetDisplayTextBaseline());
-  else if (vertical_alignment_ == ALIGN_TOP)
-    offset.set_y(0);
-  else if (vertical_alignment_ == ALIGN_MIDDLE)
-    offset.set_y((display_rect_.height() - GetStringSize().height()) / 2);
-  else
-    offset.set_y(display_rect_.height() - GetStringSize().height());
+  switch (vertical_alignment_) {
+    case ALIGN_TOP:
+      offset.set_y(0);
+      break;
+    case ALIGN_MIDDLE:
+      if (multiline_)
+        offset.set_y((display_rect_.height() - GetStringSize().height()) / 2);
+      else
+        offset.set_y(GetBaseline() - GetDisplayTextBaseline());
+      break;
+    case ALIGN_BOTTOM:
+      offset.set_y(display_rect_.height() - GetStringSize().height());
+      break;
+  }
 
   return offset;
 }

@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_bubble.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "base/macros.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/button/button.h"
@@ -18,7 +19,7 @@ class ShelfView;
 // OverflowBubbleView hosts a ShelfView to display overflown items.
 // Exports to access this class from OverflowBubbleViewTestAPI.
 class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
-                                      public views::ButtonListener {
+                                      public ShelfButtonDelegate {
  public:
   enum LayoutStrategy {
     // The arrow buttons are not shown. It means that there is enough space to
@@ -108,8 +109,12 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   const char* GetClassName() const override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // ShelfButtonDelegate:
+  void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
+                                                        bool reverse) override;
+  void ButtonPressed(views::Button* sender,
+                     const ui::Event& event,
+                     views::InkDrop* ink_drop) override;
 
   // ui::EventHandler:
   void OnScrollEvent(ui::ScrollEvent* event) override;

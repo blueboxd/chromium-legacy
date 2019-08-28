@@ -7,6 +7,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -28,10 +29,7 @@ const char ExtensionsMenuButton::kClassName[] = "ExtensionsMenuButton";
 
 namespace {
 
-constexpr int EXTENSION_CONTEXT_MENU = 13;
 constexpr int EXTENSION_PINNING = 14;
-
-constexpr int kSecondaryIconSizeDp = 16;
 
 void SetSecondaryButtonHighlightPath(views::Button* button) {
   auto highlight_path = std::make_unique<SkPath>();
@@ -43,7 +41,8 @@ void SetSecondaryButtonHighlightPath(views::Button* button) {
 
 ExtensionsMenuButton::ExtensionsMenuButton(
     Browser* browser,
-    std::unique_ptr<ToolbarActionViewController> controller)
+    ExtensionsMenuItemView* parent,
+    ToolbarActionViewController* controller)
     : HoverButton(this,
                   ExtensionsMenuView::CreateFixedSizeIconView(),
                   base::string16(),
@@ -52,9 +51,9 @@ ExtensionsMenuButton::ExtensionsMenuButton(
                   true,
                   true),
       browser_(browser),
-      controller_(std::move(controller)),
+      controller_(controller),
       model_(ToolbarActionsModel::Get(browser_->profile())),
-      context_menu_controller_(nullptr, controller_.get()) {
+      context_menu_controller_(nullptr, controller_) {
   set_context_menu_controller(&context_menu_controller_);
 
   // Set so the extension button receives enter/exit on children to retain hover
@@ -82,7 +81,7 @@ void ExtensionsMenuButton::UpdatePinButton() {
                            : unpinned_icon_color;
   views::SetImageFromVectorIcon(
       pin_button_, IsPinned() ? views::kUnpinIcon : views::kPinIcon,
-      kSecondaryIconSizeDp, icon_color);
+      ExtensionsMenuItemView::kSecondaryIconSizeDp, icon_color);
   pin_button_->SetVisible(IsPinned() || IsMouseHovered() || IsMenuRunning());
 }
 
@@ -110,11 +109,7 @@ const char* ExtensionsMenuButton::GetClassName() const {
 
 void ExtensionsMenuButton::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
-  if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
-    context_menu_controller()->ShowContextMenuForView(
-        context_menu_button_, gfx::Point(), ui::MENU_SOURCE_MOUSE);
-    return;
-  } else if (sender->GetID() == EXTENSION_PINNING) {
+  if (sender->GetID() == EXTENSION_PINNING) {
     model_->SetActionVisibility(controller_->GetId(), !IsPinned());
     return;
   }
@@ -177,30 +172,6 @@ void ExtensionsMenuButton::ConfigureSecondaryView() {
   SetSecondaryButtonHighlightPath(pin_button_);
   UpdatePinButton();
   container->AddChildView(std::move(pin_button));
-
-  auto context_menu_button =
-      std::make_unique<views::MenuButton>(base::string16(), this);
-  context_menu_button->SetID(EXTENSION_CONTEXT_MENU);
-  context_menu_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP));
-
-  context_menu_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kBrowserToolsIcon, kSecondaryIconSizeDp,
-                            icon_color));
-
-  context_menu_button->set_ink_drop_base_color(icon_color);
-  context_menu_button->SetBorder(
-      views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_VECTOR_IMAGE_BUTTON)));
-  context_menu_button->SizeToPreferredSize();
-
-  context_menu_button->SetInkDropMode(InkDropMode::ON);
-  context_menu_button->set_has_ink_drop_action_on_click(true);
-
-  context_menu_button_ = context_menu_button.get();
-  SetSecondaryButtonHighlightPath(context_menu_button_);
-  container->AddChildView(std::move(context_menu_button));
 }
 
 bool ExtensionsMenuButton::IsPinned() {

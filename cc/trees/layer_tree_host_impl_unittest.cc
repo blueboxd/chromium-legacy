@@ -722,7 +722,10 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   LayerImpl* CreateLayerForSnapping() {
-    LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
+    SetupScrollAndContentsLayers(gfx::Size(200, 200));
+    LayerImpl* scroll_layer =
+        host_impl_->active_tree()->OuterViewportScrollLayer();
+
     host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
 
     gfx::Size overflow_size(400, 400);
@@ -1754,8 +1757,13 @@ TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoWhenZoomed) {
 }
 
 TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
-  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  const gfx::Size kViewportSize(100, 100);
+  const gfx::Size kContentSize(200, 200);
+  CreateBasicVirtualViewportLayers(kViewportSize, kContentSize);
+
+  LayerImpl* scroll_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  host_impl_->active_tree()->SetDeviceViewportSize(kViewportSize);
 
   gfx::Size overflow_size(400, 400);
   ASSERT_EQ(1u, scroll_layer->test_properties()->children.size());
@@ -1792,10 +1800,9 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 30), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  overflow->test_properties()->overscroll_behavior =
+  GetScrollNode(overflow)->overscroll_behavior =
       OverscrollBehavior(OverscrollBehavior::kOverscrollBehaviorTypeContain,
                          OverscrollBehavior::kOverscrollBehaviorTypeAuto);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   DrawFrame();
 
@@ -1845,10 +1852,9 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
   // Changing scroll-boundary-behavior to y axis.
-  overflow->test_properties()->overscroll_behavior =
+  GetScrollNode(overflow)->overscroll_behavior =
       OverscrollBehavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto,
                          OverscrollBehavior::kOverscrollBehaviorTypeContain);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   DrawFrame();
 
@@ -1899,10 +1905,9 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
 
   // Gesture scroll should latch to the first scroller that has non-auto
   // overscroll-behavior.
-  overflow->test_properties()->overscroll_behavior =
+  GetScrollNode(overflow)->overscroll_behavior =
       OverscrollBehavior(OverscrollBehavior::kOverscrollBehaviorTypeContain,
                          OverscrollBehavior::kOverscrollBehaviorTypeContain);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   DrawFrame();
 
@@ -1924,8 +1929,13 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
-  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  const gfx::Size kViewportSize(100, 100);
+  const gfx::Size kContentSize(200, 200);
+  CreateBasicVirtualViewportLayers(kViewportSize, kContentSize);
+
+  LayerImpl* scroll_layer =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+  host_impl_->active_tree()->SetDeviceViewportSize(kViewportSize);
 
   gfx::Size overflow_size(400, 400);
   ASSERT_EQ(1u, scroll_layer->test_properties()->children.size());
@@ -2756,9 +2766,14 @@ TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
   LayerImpl* viewport_scroll =
       SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  // This is to build property tree for viewport layers. The remaining part of
+  // this test is in layer list mode.
+  // TODO(crbug.com/994361): Avoid PropertyTreeBuilder.
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   // Set up two scrolling children of the root, one of which is a scroll parent
   // to the other. Scrolls shouldn't bubbling from the child.
+  LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
   LayerImpl* parent;
   LayerImpl* child;
   LayerImpl* child_clip;
@@ -2766,21 +2781,27 @@ TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
   std::unique_ptr<LayerImpl> scroll_parent =
       CreateScrollableLayer(7, gfx::Size(10, 10));
   parent = scroll_parent.get();
-  viewport_scroll->test_properties()->AddChild(std::move(scroll_parent));
+  root->test_properties()->AddChild(std::move(scroll_parent));
+  CopyProperties(viewport_scroll, parent);
+  CreateTransformNode(parent);
+  CreateScrollNode(parent);
 
   std::unique_ptr<LayerImpl> scroll_child_clip =
       LayerImpl::Create(host_impl_->active_tree(), 8);
+  child_clip = scroll_child_clip.get();
+  root->test_properties()->AddChild(std::move(scroll_child_clip));
+  CopyProperties(viewport_scroll, child_clip);
+  // child_clip scrolls in scroll_parent.
+  child_clip->SetScrollTreeIndex(parent->scroll_tree_index());
+  child_clip->SetTransformTreeIndex(parent->transform_tree_index());
+
   std::unique_ptr<LayerImpl> scroll_child =
       CreateScrollableLayer(9, gfx::Size(10, 10));
   child = scroll_child.get();
-  scroll_child->test_properties()->position = gfx::PointF(20.f, 20.f);
-  scroll_child_clip->test_properties()->AddChild(std::move(scroll_child));
-
-  child_clip = scroll_child_clip.get();
-  viewport_scroll->test_properties()->AddChild(std::move(scroll_child_clip));
-
-  child_clip->test_properties()->scroll_parent = parent;
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  root->test_properties()->AddChild(std::move(scroll_child));
+  CopyProperties(child_clip, child);
+  CreateTransformNode(child).post_translation = gfx::Vector2d(20, 20);
+  CreateScrollNode(child);
 
   DrawFrame();
 

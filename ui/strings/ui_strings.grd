@@ -988,8 +988,8 @@ need to be translated for each locale.-->
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE" desc="The label to be shown on the dialog when user click on a phone number, if sending it to a device failed.">
         Check your phone's connection and try again
       </message>
-      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS" desc="The label to be shown next to the omnibox icon after a phone number got sent to a users device.">
-        Sent to device
+      <message name="IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL" desc="The label to be shown next to the omnibox icon when the message is being sent to the other device.">
+        Sending...
       </message>
     </messages>
   </release>

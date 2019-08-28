@@ -1477,12 +1477,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DeleteWebBluetoothService(
       WebBluetoothServiceImpl* web_bluetooth_service);
 
-  // TODO(https://crbug.com/955171): Remove this method and use
-  // CreateWebUsbService directly once |this| uses
-  // service_manager::BinderMap instead of |registry_|.
-  void CreateWebUsbServiceForRequest(
-      blink::mojom::WebUsbServiceRequest request);
-
   // Creates connections to WebUSB interfaces bound to this frame.
   void CreateWebUsbService(
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);

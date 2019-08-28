@@ -380,7 +380,7 @@ class FuzzedHostResolverManager : public HostResolverManager {
         net_log_, &socket_factory_,
         base::Bind(&FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
                    base::Unretained(data_provider_)));
-    dns_client->SetConfig(GetFuzzedDnsConfig(data_provider_));
+    dns_client->SetSystemConfig(GetFuzzedDnsConfig(data_provider_));
     HostResolverManager::SetDnsClientForTesting(std::move(dns_client));
   }
 

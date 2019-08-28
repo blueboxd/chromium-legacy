@@ -39,6 +39,12 @@ suite('TabList', () => {
     ],
   };
 
+  function pinTabAt(tab, index) {
+    const changeInfo = {index: index, pinned: true};
+    const updatedTab = Object.assign({}, tab, changeInfo);
+    callbackRouter.onUpdated.dispatchEvent(tab.id, changeInfo, updatedTab);
+  }
+
   function getUnpinnedTabs() {
     return tabList.shadowRoot.querySelectorAll('#tabsContainer tabstrip-tab');
   }
@@ -173,5 +179,62 @@ suite('TabList', () => {
     assertEquals(getPinnedTabs().length, 0);
     assertEquals(unpinnedTabElements.length, 3);
     assertEquals(unpinnedTabElements[0].tab.id, tabToPin.id);
+  });
+
+  test('updates [empty] attribute on container for pinned tabs', () => {
+    assertTrue(tabList.shadowRoot.querySelector('#pinnedTabsContainer')
+                   .hasAttribute('empty'));
+    const tabToPin = currentWindow.tabs[1];
+    const changeInfo = {index: 0, pinned: true};
+    const updatedTab = Object.assign({}, tabToPin, changeInfo);
+    callbackRouter.onUpdated.dispatchEvent(tabToPin.id, changeInfo, updatedTab);
+    assertFalse(tabList.shadowRoot.querySelector('#pinnedTabsContainer')
+                    .hasAttribute('empty'));
+
+    // Remove the pinned tab
+    callbackRouter.onRemoved.dispatchEvent(
+        tabToPin.id, {windowId: currentWindow.id});
+    assertTrue(tabList.shadowRoot.querySelector('#pinnedTabsContainer')
+                   .hasAttribute('empty'));
+  });
+
+  test('shows and hides the ghost pinned tabs based on pinned tabs', () => {
+    const ghostPinnedTabs =
+        tabList.shadowRoot.querySelectorAll('.ghost-pinned-tab');
+    assertEquals(3, ghostPinnedTabs.length);
+
+    // all are hidden by default when there are no pinned tabs
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[0]).display);
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[1]).display);
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
+
+    // all are visible because 1 pinned tabs leaves room for 3 placeholders
+    pinTabAt(currentWindow.tabs[0], 0);
+    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[0]).display);
+    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[1]).display);
+    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[2]).display);
+
+    // only 2 are visible because 2 pinned tabs leaves room for 2 placeholders
+    pinTabAt(currentWindow.tabs[1], 1);
+    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[0]).display);
+    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[1]).display);
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
+
+    // only 2 are visible because 3 pinned tabs leaves room for 1 placeholders
+    pinTabAt(currentWindow.tabs[2], 1);
+    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[0]).display);
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[1]).display);
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
+
+    // all are hidden because 4 pinned tabs means no room for placeholders
+    callbackRouter.onCreated.dispatchEvent({
+      index: 3,
+      pinned: true,
+      title: 'New pinned tab',
+      windowId: currentWindow.id,
+    });
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[0]).display);
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[1]).display);
+    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
   });
 });

@@ -241,11 +241,11 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
 }
 
 void WebFrameWidgetImpl::DidEnterFullscreen() {
-  View()->MainFrameWidget()->DidEnterFullscreen();
+  View()->DidEnterFullscreen();
 }
 
 void WebFrameWidgetImpl::DidExitFullscreen() {
-  View()->MainFrameWidget()->DidExitFullscreen();
+  View()->DidExitFullscreen();
 }
 
 void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(

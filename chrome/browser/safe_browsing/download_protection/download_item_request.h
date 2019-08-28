@@ -33,14 +33,26 @@ class DownloadItemRequest : public BinaryUploadService::Request,
 
   // download::DownloadItem::Observer implementation.
   void OnDownloadDestroyed(download::DownloadItem* download) override;
+  void OnDownloadUpdated(download::DownloadItem* download) override;
 
  private:
   void OnGotFileContents(base::OnceCallback<void(const std::string&)> callback,
                          const std::string& contents);
 
+  // Calls to GetFileContents can be deferred if the download item is not yet
+  // renamed to its final location. When ready, this method runs those
+  // callbacks.
+  void RunPendingGetFileContentsCallbacks();
+
   // Pointer the download item for upload. This must be accessed only the UI
-  // thread.
+  // thread. Unowned.
   download::DownloadItem* item_;
+
+  // Whether the download item has been renamed to its final destination yet.
+  bool download_item_renamed_;
+
+  // All pending callbacks to GetFileContents before the download item is ready.
+  std::vector<base::OnceCallback<void(const std::string&)>> pending_callbacks_;
 
   base::WeakPtrFactory<DownloadItemRequest> weakptr_factory_;
 };

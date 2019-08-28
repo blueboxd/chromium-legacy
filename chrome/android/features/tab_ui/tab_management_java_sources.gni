@@ -14,6 +14,8 @@ public_tab_management_java_sources = [
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabManagementDelegate.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabManagementModuleProvider.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabSwitcher.java",
+  "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabContext.java",
+  "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestion.java",
 ]
 
 public_tab_management_java_sources += start_surface_public_java_sources
@@ -33,4 +35,6 @@ tab_management_junit_java_sources = [
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_management/TabGridItemTouchHelperCallbackUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiMediatorUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_management/TabListMediatorUnitTest.java",
+  "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabContextTests.java",
+  "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/StaleTabSuggestionProviderTest.java",
 ]

@@ -24,6 +24,7 @@ include_rules = [
   "+components/network_hints/renderer",
   "+components/network_session_configurator/common",
   "+components/offline_pages/buildflags",
+  "+components/page_load_metrics/common",
   "+components/password_manager/content/renderer",
   "+components/password_manager/core/common",
   "+components/pdf/renderer",

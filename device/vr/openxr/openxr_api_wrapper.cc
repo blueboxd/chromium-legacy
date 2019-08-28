@@ -16,6 +16,8 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/transform.h"
+#include "ui/gfx/transform_util.h"
 
 namespace device {
 
@@ -102,6 +104,7 @@ OpenXrApiWrapper::~OpenXrApiWrapper() {
 
 void OpenXrApiWrapper::Reset() {
   local_space_ = XR_NULL_HANDLE;
+  stage_space_ = XR_NULL_HANDLE;
   view_space_ = XR_NULL_HANDLE;
   color_swapchain_ = XR_NULL_HANDLE;
   session_ = XR_NULL_HANDLE;
@@ -193,6 +196,8 @@ bool OpenXrApiWrapper::HasSpace(XrReferenceSpaceType type) const {
       return local_space_ != XR_NULL_HANDLE;
     case XR_REFERENCE_SPACE_TYPE_VIEW:
       return view_space_ != XR_NULL_HANDLE;
+    case XR_REFERENCE_SPACE_TYPE_STAGE:
+      return stage_space_ != XR_NULL_HANDLE;
     default:
       NOTREACHED();
       return false;
@@ -285,6 +290,10 @@ XrResult OpenXrApiWrapper::StartSession(
   RETURN_IF_XR_FAILED(CreateSpace(XR_REFERENCE_SPACE_TYPE_VIEW, &view_space_));
   RETURN_IF_XR_FAILED(CreateGamepadHelper(gamepad_helper));
   RETURN_IF_XR_FAILED(BeginSession());
+
+  // It's ok if stage_space_ fails since not all OpenXR devices are required to
+  // support this reference space.
+  CreateSpace(XR_REFERENCE_SPACE_TYPE_STAGE, &stage_space_);
 
   // Since the objects in these arrays are used on every frame,
   // we don't want to create and destroy these objects every frame,
@@ -617,6 +626,51 @@ const XrView& OpenXrApiWrapper::GetView(uint32_t index) const {
   DCHECK(index < kNumViews);
 
   return views_[index];
+}
+
+XrResult OpenXrApiWrapper::GetStageBounds(XrExtent2Df* stage_bounds) const {
+  DCHECK(stage_bounds);
+  DCHECK(HasSession());
+
+  return xrGetReferenceSpaceBoundsRect(session_, XR_REFERENCE_SPACE_TYPE_STAGE,
+                                       stage_bounds);
+}
+
+bool OpenXrApiWrapper::GetStageParameters(XrExtent2Df* stage_bounds,
+                                          gfx::Transform* transform) const {
+  DCHECK(stage_bounds);
+  DCHECK(transform);
+  DCHECK(HasSession());
+
+  if (!HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL))
+    return false;
+
+  if (!HasSpace(XR_REFERENCE_SPACE_TYPE_STAGE))
+    return false;
+
+  if (XR_FAILED(GetStageBounds(stage_bounds)))
+    return false;
+
+  XrSpaceLocation location = {XR_TYPE_SPACE_LOCATION};
+  if (FAILED(xrLocateSpace(stage_space_, local_space_,
+                           frame_state_.predictedDisplayTime, &location)) ||
+      !(location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) ||
+      !(location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
+    return false;
+  }
+
+  // Convert the orientation and translation given by runtime into a
+  // transformation matrix.
+  gfx::DecomposedTransform seat_to_standing_decomp;
+  seat_to_standing_decomp.quaternion =
+      gfx::Quaternion(location.pose.orientation.x, location.pose.orientation.y,
+                      location.pose.orientation.z, location.pose.orientation.w);
+  seat_to_standing_decomp.translate[0] = location.pose.position.x;
+  seat_to_standing_decomp.translate[1] = location.pose.position.y;
+  seat_to_standing_decomp.translate[2] = location.pose.position.z;
+
+  *transform = gfx::ComposeTransform(seat_to_standing_decomp);
+  return true;
 }
 
 VRTestHook* OpenXrApiWrapper::test_hook_ = nullptr;

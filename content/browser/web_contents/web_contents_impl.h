@@ -45,6 +45,7 @@
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/media_stream_request.h"
+#include "content/public/browser/mhtml_generation_result.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -438,6 +439,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                             const base::string16& suggested_filename) override;
   void GenerateMHTML(const MHTMLGenerationParams& params,
                      base::OnceCallback<void(int64_t)> callback) override;
+  void GenerateMHTMLWithResult(
+      const MHTMLGenerationParams& params,
+      MHTMLGenerationResult::GenerateMHTMLCallback callback) override;
   const std::string& GetContentsMimeType() override;
   bool WillNotifyDisconnection() override;
   blink::mojom::RendererPreferences* GetMutableRendererPrefs() override;

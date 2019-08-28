@@ -27,6 +27,7 @@ class ASH_PUBLIC_EXPORT AssistantStateObserver
   ~AssistantStateObserver() override = default;
 
   virtual void OnAssistantConsentStatusChanged(int consent_status) {}
+  virtual void OnAssistantContextEnabled(bool enabled) {}
   virtual void OnAssistantHotwordAlwaysOn(bool hotword_always_on) {}
   virtual void OnAssistantLaunchWithMicOpen(bool launch_with_mic_open) {}
   virtual void OnAssistantNotificationEnabled(bool notification_enabled) {}
@@ -35,7 +36,6 @@ class ASH_PUBLIC_EXPORT AssistantStateObserver
   void OnAssistantStatusChanged(
       ash::mojom::VoiceInteractionState state) override {}
   void OnAssistantSettingsEnabled(bool enabled) override {}
-  void OnAssistantContextEnabled(bool enabled) override {}
   void OnAssistantHotwordEnabled(bool enabled) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
@@ -114,6 +114,7 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
 
   // Called when the related preferences are obtained from the pref service.
   void UpdateConsentStatus();
+  void UpdateContextEnabled();
   void UpdateHotwordAlwaysOn();
   void UpdateLaunchWithMicOpen();
   void UpdateNotificationEnabled();

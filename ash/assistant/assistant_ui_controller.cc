@@ -17,6 +17,7 @@
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
+#include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -34,6 +35,11 @@ namespace {
 
 // When hidden, Assistant will automatically close after |kAutoCloseThreshold|.
 constexpr base::TimeDelta kAutoCloseThreshold = base::TimeDelta::FromMinutes(5);
+
+// When shown, the proactive suggestions widget will automatically close if the
+// user doesn't interact with it within a fixed interval.
+constexpr base::TimeDelta kAutoCloseProactiveSuggestionsThreshold =
+    base::TimeDelta::FromSeconds(15);
 
 // Toast -----------------------------------------------------------------------
 
@@ -153,6 +159,13 @@ void AssistantUiController::OnProactiveSuggestionsChanged(
       CreateProactiveSuggestionsView();
       proactive_suggestions_view_->GetWidget()->ShowInactive();
     }
+    // The proactive suggestions widget will automatically be closed if the user
+    // doesn't interact with it within a fixed interval.
+    auto_close_proactive_suggestions_timer_.Start(
+        FROM_HERE, kAutoCloseProactiveSuggestionsThreshold,
+        base::BindRepeating(
+            &AssistantUiController::ResetProactiveSuggestionsView,
+            weak_factory_.GetWeakPtr()));
     return;
   }
   // When proactive suggestions are absent, we need to ensure that the
@@ -658,6 +671,8 @@ void AssistantUiController::CreateProactiveSuggestionsView() {
 
 void AssistantUiController::ResetProactiveSuggestionsView() {
   DCHECK(proactive_suggestions_view_);
+
+  auto_close_proactive_suggestions_timer_.Stop();
 
   proactive_suggestions_view_->GetWidget()->Close();
   proactive_suggestions_view_ = nullptr;

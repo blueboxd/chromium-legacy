@@ -1251,7 +1251,7 @@ void NetworkContext::CreateWebSocket(
     uint32_t options,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojom::AuthenticationHandlerPtr auth_handler,
-    mojom::TrustedHeaderClientPtr header_client) {
+    mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) {
 #if !defined(OS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);

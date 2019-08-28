@@ -10,3 +10,4 @@ per-file BUILD.gn=stevenjb@chromium.org
 per-file BUILD.gn=tbarzic@chromium.org
 
 # COMPONENT: Platform>Extensions
+# TEAM: extensions-dev@chromium.org

@@ -241,9 +241,6 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     return content::LITE_PAGE_REDIRECT_ON;
   }
 
-  // Record whether the hint cache has a matching entry for this pre-commit URL.
-  previews_decider->LogHintCacheMatch(url, false /* is_committed */);
-
   if (!previews::params::ArePreviewsAllowed()) {
     return previews_state;
   }
@@ -254,6 +251,9 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
 
   if (!is_data_saver_user)
     return previews_state;
+
+  // Record whether the hint cache has a matching entry for this pre-commit URL.
+  previews_decider->LogHintCacheMatch(url, false /* is_committed */);
 
   auto* previews_service =
       navigation_handle && navigation_handle->GetWebContents()
@@ -397,6 +397,26 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     previews_state &= ~content::LITE_PAGE_REDIRECT_ON;
   }
   DCHECK(!IsLitePageRedirectPreviewURL(url));
+
+  // Check if the URL is eligible for defer all script preview. A URL
+  // may not be eligible for the preview if it's likely to cause a
+  // client redirect loop.
+  if ((previews::params::DetectDeferRedirectLoopsUsingCache()) &&
+      (previews_state & content::DEFER_ALL_SCRIPT_ON)) {
+    content::WebContents* web_contents =
+        navigation_handle ? navigation_handle->GetWebContents() : nullptr;
+    if (web_contents) {
+      auto* previews_service = PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+      if (previews_service &&
+          !previews_service->IsUrlEligibleForDeferAllScriptPreview(url)) {
+        previews_state &= ~content::DEFER_ALL_SCRIPT_ON;
+        UMA_HISTOGRAM_BOOLEAN(
+            "Previews.DeferAllScript.RedirectLoopDetectedUsingCache", true);
+      }
+    }
+  }
 
   // Make priority decision among allowed client preview types that can be
   // decided at Commit time.

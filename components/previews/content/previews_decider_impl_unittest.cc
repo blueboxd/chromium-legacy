@@ -178,11 +178,10 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   void SetIsReady(bool is_ready) { is_ready_ = is_ready; }
 
   // PreviewsOptimizationGuide:
-  bool CanApplyOptimization(
-      PreviewsUserData* previews_user_data,
-      content::NavigationHandle* navigation_handle,
-      PreviewsType type,
-      net::EffectiveConnectionType* ect_threshold) const override {
+  bool CanApplyPreview(PreviewsUserData* previews_user_data,
+                       content::NavigationHandle* navigation_handle,
+                       PreviewsType type,
+                       net::EffectiveConnectionType* ect_threshold) override {
     EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
                 type == PreviewsType::RESOURCE_LOADING_HINTS ||
                 type == PreviewsType::DEFER_ALL_SCRIPT ||
@@ -226,7 +225,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   // PreviewsOptimizationGuide:
   bool GetResourceLoadingHints(
       const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const override {
+      std::vector<std::string>* out_resource_patterns_to_block) override {
     return false;
   }
 
@@ -1987,7 +1986,6 @@ TEST_F(PreviewsDeciderImplTest,
        optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
-  InitializeOptimizationGuideHints();
 
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(
@@ -2211,7 +2209,6 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowHintPreviewWithoutECT) {
        optimization_guide::features::kOptimizationHints},
       {});
   InitializeUIService();
-  InitializeOptimizationGuideHints();
 
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(

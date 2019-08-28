@@ -120,6 +120,11 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   mathml_style_sheet_.Clear();
   media_controls_style_sheet_.Clear();
   fullscreen_style_sheet_.Clear();
+  // Recreate the default style sheet to clean up possible SVG resources.
+  String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
+                         LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
+  default_style_sheet_ = ParseUASheet(default_rules);
+
   // Initialize the styles that have the lazily loaded style sheets.
   InitializeDefaultStyles();
   default_view_source_style_.Clear();

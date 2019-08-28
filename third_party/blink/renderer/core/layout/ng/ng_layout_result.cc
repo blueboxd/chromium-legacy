@@ -76,7 +76,8 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
 NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
                                const NGConstraintSpace& new_space,
                                LayoutUnit bfc_line_offset,
-                               base::Optional<LayoutUnit> bfc_block_offset)
+                               base::Optional<LayoutUnit> bfc_block_offset,
+                               LayoutUnit block_offset_delta)
     : space_(new_space),
       physical_fragment_(other.physical_fragment_),
       intrinsic_block_size_(other.intrinsic_block_size_),
@@ -97,7 +98,7 @@ NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
   }
 
   NGExclusionSpace new_exclusion_space = MergeExclusionSpaces(
-      other, space_.ExclusionSpace(), bfc_line_offset, bfc_block_offset);
+      other, space_.ExclusionSpace(), bfc_line_offset, block_offset_delta);
 
   if (new_exclusion_space != space_.ExclusionSpace()) {
     bitfields_.has_rare_data_exclusion_space = true;
@@ -167,18 +168,9 @@ NGExclusionSpace NGLayoutResult::MergeExclusionSpaces(
     const NGLayoutResult& other,
     const NGExclusionSpace& new_input_exclusion_space,
     LayoutUnit bfc_line_offset,
-    base::Optional<LayoutUnit> bfc_block_offset) {
-  // If we are merging exclusion spaces we should be copying a previous layout
-  // result. It is impossible to reach a state where bfc_block_offset has a
-  // value, and the result which we are copying doesn't (or visa versa).
-  // This would imply the result has switched its "empty" state for margin
-  // collapsing, which would mean it isn't possible to reuse the result.
-  DCHECK_EQ(bfc_block_offset.has_value(), other.BfcBlockOffset().has_value());
-
+    LayoutUnit block_offset_delta) {
   NGBfcDelta offset_delta = {bfc_line_offset - other.BfcLineOffset(),
-                             bfc_block_offset && other.BfcBlockOffset()
-                                 ? *bfc_block_offset - *other.BfcBlockOffset()
-                                 : LayoutUnit()};
+                             block_offset_delta};
 
   return NGExclusionSpace::MergeExclusionSpaces(
       /* old_output */ other.ExclusionSpace(),

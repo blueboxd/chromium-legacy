@@ -101,17 +101,6 @@ bool InMemoryDatabase::InitFromDisk(const base::FilePath& history_name) {
   UMA_HISTOGRAM_COUNTS_1M("History.InMemoryDBItemCount",
                           db_.GetLastChangeCount());
 
-  {
-    // This calculation should be fast (since it's on an in-memory DB with
-    // an average of only 35 rows).
-    sql::Statement visit_count(db_.GetUniqueStatement(
-        "SELECT sum(visit_count) FROM urls"));
-    if (visit_count.Step()) {
-      UMA_HISTOGRAM_COUNTS_1M("History.InMemoryTypedUrlVisitCount",
-                              visit_count.ColumnInt(0));
-    }
-  }
-
   // Insert keyword search related URLs.
   begin_load = base::TimeTicks::Now();
   if (!db_.Execute("INSERT OR IGNORE INTO urls SELECT u.id, u.url, u.title, "

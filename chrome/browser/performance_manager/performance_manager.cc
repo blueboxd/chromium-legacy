@@ -82,6 +82,8 @@ scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
 
 PerformanceManager::~PerformanceManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(https://crbug.com/966840): Move this to a TearDown function.
+  graph_.TearDown();
 }
 
 // static

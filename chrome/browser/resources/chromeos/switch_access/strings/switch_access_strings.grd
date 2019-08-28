@@ -162,6 +162,9 @@
       <message desc="The Switch Access action to open the Switch Access settings page. Should be short." name="IDS_SWITCH_ACCESS_SETTINGS_ACTION">
         Settings
       </message>
+      <message desc="The Switch Access action to show the text navigation menu for moving the text caret within a text element." name="IDS_SWITCH_ACCESS_MOVE_CURSOR">
+        Move cursor
+      </message>
       <message desc="The Switch Access action for moving the text caret to the beginning of the text element." name="IDS_SWITCH_ACCESS_JUMP_TO_BEGINNING_OF_TEXT">
         Jump to beginning
       </message>

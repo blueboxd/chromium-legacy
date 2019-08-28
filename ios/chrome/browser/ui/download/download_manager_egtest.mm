@@ -172,11 +172,6 @@ bool WaitForDownloadButton() {
 
 // Tests "Open in New Tab" on download link.
 - (void)testDownloadInNewTab {
-  // TODO(crbug.com/989550) Disable broken context menu tests on Xc11b5.
-  if (@available(iOS 13, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
-  }
-
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
   [ChromeEarlGrey waitForWebStateContainingText:"Download"];
 

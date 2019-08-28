@@ -530,10 +530,15 @@ const base::Feature kMediaEngagementHTTPSOnly{
 const base::Feature kMediaInspectorLogging{"MediaInspectorLogging",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables experimental local learning for media.  Adds reporting only; does not
-// change media behavior.
+// Enables experimental local learning for media. Used in the context of media
+// capabilities only. Adds reporting only; does not change media behavior.
 const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the general purpose media machine learning framework. Adds reporting
+// only; does not change media behavior.
+const base::Feature kMediaLearningFramework{"MediaLearningFramework",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables flash to be ducked by audio focus. This is enabled on Chrome OS which
 // has audio focus enabled.

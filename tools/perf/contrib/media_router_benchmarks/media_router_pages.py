@@ -27,12 +27,12 @@ class SharedState(shared_page_state.SharedPageState):
 class CastIdlePage(MediaRouterBasePage):
   """Cast page to open a cast-enabled page and do nothing."""
 
-  def __init__(self, page_set):
+  def __init__(self, page_set, name='basic_test.html'):
     super(CastIdlePage, self).__init__(
         page_set=page_set,
         url='file://test_site/basic_test.html',
         shared_page_state_class=SharedState,
-        name='basic_test.html')
+        name=name)
 
   def RunPageInteractions(self, action_runner):
     # Wait for 5s after Chrome is opened in order to get consistent results.
@@ -160,4 +160,4 @@ class CPUMemoryPageSet(story.StorySet):
   def __init__(self):
     super(CPUMemoryPageSet, self).__init__(
         cloud_storage_bucket=story.PARTNER_BUCKET)
-    self.AddStory(CastIdlePage(self))
+    self.AddStory(CastIdlePage(self, 'basic_test.html#no_component_extension'))

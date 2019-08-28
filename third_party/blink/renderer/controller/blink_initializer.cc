@@ -171,13 +171,9 @@ void BlinkInitializer::RegisterInterfaces(
                             &OomInterventionImpl::Create)),
                         main_thread->GetTaskRunner());
 
-  registry.AddInterface(
-      ConvertToBaseCallback(CrossThreadBindRepeating(
-          [](mojom::blink::CrashMemoryMetricsReporterRequest request) {
-            // Implicit conversion to PendingReceiver<T>
-            CrashMemoryMetricsReporterImpl::Bind(std::move(request));
-          })),
-      main_thread->GetTaskRunner());
+  registry.AddInterface(ConvertToBaseCallback(CrossThreadBindRepeating(
+                            &CrashMemoryMetricsReporterImpl::Bind)),
+                        main_thread->GetTaskRunner());
 #endif
 
   registry.AddInterface(ConvertToBaseCallback(CrossThreadBindRepeating(

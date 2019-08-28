@@ -10,6 +10,10 @@
 Polymer({
   is: 'cr-network-list-item',
 
+  behaviors: [
+    CrPolicyNetworkBehaviorMojo,
+  ],
+
   properties: {
     /** @type {!CrNetworkList.CrNetworkListItemType|undefined} */
     item: {
@@ -64,8 +68,6 @@ Polymer({
     /** Whether to show technology badge on mobile network icon. */
     showTechnologyBadge: {type: Boolean, value: true},
   },
-
-  behaviors: [CrPolicyNetworkBehavior],
 
   /** @override */
   attached: function() {

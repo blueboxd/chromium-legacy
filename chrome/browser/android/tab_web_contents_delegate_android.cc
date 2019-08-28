@@ -168,8 +168,7 @@ void TabWebContentsDelegateAndroid::CreateSmsPrompt(
     base::OnceClosure on_confirm,
     base::OnceClosure on_cancel) {
   auto* web_contents = content::WebContents::FromRenderFrameHost(host);
-  auto* infobar_service = InfoBarService::FromWebContents(web_contents);
-  SmsInfoBar::Create(infobar_service, origin, std::move(on_confirm),
+  SmsInfoBar::Create(web_contents, origin, std::move(on_confirm),
                      std::move(on_cancel));
 }
 

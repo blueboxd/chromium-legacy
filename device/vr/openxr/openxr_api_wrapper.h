@@ -21,6 +21,7 @@ namespace gfx {
 class Quaternion;
 class Point3F;
 class Size;
+class Transform;
 }  // namespace gfx
 
 namespace device {
@@ -57,6 +58,8 @@ class OpenXrApiWrapper {
   XrTime GetPredictedDisplayTime() const;
   XrResult GetLuid(LUID* luid) const;
   std::string GetRuntimeName() const;
+  bool GetStageParameters(XrExtent2Df* stage_bounds,
+                          gfx::Transform* standing_transform) const;
 
   static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
@@ -87,6 +90,7 @@ class OpenXrApiWrapper {
   bool HasFrameState() const;
 
   uint32_t GetRecommendedSwapchainSampleCount() const;
+  XrResult GetStageBounds(XrExtent2Df* stage_bounds) const;
 
   // Testing objects
   static VRTestHook* test_hook_;
@@ -106,6 +110,7 @@ class OpenXrApiWrapper {
   XrSwapchain color_swapchain_;
   std::vector<XrSwapchainImageD3D11KHR> color_swapchain_images_;
   XrSpace local_space_;
+  XrSpace stage_space_;
   XrSpace view_space_;
 
   // These objects store information about the current frame. They're

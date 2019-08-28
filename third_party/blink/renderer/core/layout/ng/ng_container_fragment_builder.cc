@@ -84,10 +84,11 @@ void NGContainerFragmentBuilder::AddChild(
     has_descendant_that_depends_on_percentage_block_size_ = true;
 
   // The |may_have_descendant_above_block_start_| flag is used to determine if
-  // a fragment can be re-used when floats are present. We only are about:
-  //  - Inflow children who are positioned above our block-start edge.
-  //  - Any inflow descendants (within the same formatting-context) that *may*
-  //    be positioned above our block-start edge.
+  // a fragment can be re-used when preceding floats are present. This is
+  // relatively rare, and is true if:
+  //  - An inflow child is positioned above our block-start edge.
+  //  - Any inflow descendants (within the same formatting-context) which *may*
+  //    have a child positioned above our block-start edge.
   if ((child_offset.block_offset < LayoutUnit() &&
        !child.IsOutOfFlowPositioned()) ||
       (!child.IsBlockFormattingContextRoot() &&
@@ -103,6 +104,16 @@ void NGContainerFragmentBuilder::AddChild(
           child.HasFloatingDescendants())
         has_floating_descendants_ = true;
     }
+  }
+
+  // The |has_adjoining_object_descendants_| is used to determine if a fragment
+  // can be re-used when preceding floats are present.
+  // If a fragment doesn't have any adjoining object descendants, and is
+  // self-collapsing, it can be "shifted" anywhere.
+  if (!has_adjoining_object_descendants_) {
+    if (!child.IsBlockFormattingContextRoot() &&
+        child.HasAdjoiningObjectDescendants())
+      has_adjoining_object_descendants_ = true;
   }
 
   // Collect any (block) break tokens, unless this is a fragmentation context

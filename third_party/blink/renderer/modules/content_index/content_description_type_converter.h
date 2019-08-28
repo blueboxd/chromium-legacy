@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CONTENT_INDEX_CONTENT_DESCRIPTION_TYPE_CONVERTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CONTENT_INDEX_CONTENT_DESCRIPTION_TYPE_CONVERTER_H_
 
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/content_index/content_description.h"
 #include "third_party/blink/renderer/modules/modules_export.h"

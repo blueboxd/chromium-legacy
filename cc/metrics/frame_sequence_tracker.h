@@ -13,6 +13,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/cc_export.h"
@@ -53,14 +54,13 @@ class CC_EXPORT FrameSequenceTrackerCollection {
       const FrameSequenceTrackerCollection&) = delete;
 
   // Creates a tracker for the specified sequence-type.
-  std::unique_ptr<FrameSequenceTracker> CreateTracker(
-      FrameSequenceTrackerType type);
+  void StartSequence(FrameSequenceTrackerType type);
 
   // Schedules |tracker| for destruction. This is preferred instead of outright
   // desrtruction of the tracker, since this ensures that the actual tracker
   // instance is destroyed *after* the presentation-feedbacks have been received
   // for all submitted frames.
-  void ScheduleRemoval(std::unique_ptr<FrameSequenceTracker> tracker);
+  void StopSequence(FrameSequenceTrackerType type);
 
   // Removes all trackers. This also immediately destroys all trackers that had
   // been scheduled for destruction, even if there are pending
@@ -85,11 +85,13 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   void NotifyFramePresented(uint32_t frame_token,
                             const gfx::PresentationFeedback& feedback);
 
- private:
-  void AddFrameTracker(FrameSequenceTracker* tracker);
-  void RemoveFrameTracker(FrameSequenceTracker* tracker);
+  FrameSequenceTracker* GetTrackerForTesting(FrameSequenceTrackerType type);
 
-  std::vector<FrameSequenceTracker*> frame_trackers_;
+ private:
+  // The callsite can use the type to manipulate the tracker.
+  base::flat_map<FrameSequenceTrackerType,
+                 std::unique_ptr<FrameSequenceTracker>>
+      frame_trackers_;
   std::vector<std::unique_ptr<FrameSequenceTracker>> removal_trackers_;
   CompositorFrameReportingController* const
       compositor_frame_reporting_controller_;
@@ -156,9 +158,7 @@ class CC_EXPORT FrameSequenceTracker {
  private:
   friend class FrameSequenceTrackerCollection;
 
-  FrameSequenceTracker(
-      FrameSequenceTrackerType type,
-      base::OnceCallback<void(FrameSequenceTracker*)> destroy_callback);
+  explicit FrameSequenceTracker(FrameSequenceTrackerType type);
 
   void ScheduleTerminate() {
     termination_status_ = TerminationStatus::kScheduledForTermination;
@@ -200,7 +200,6 @@ class CC_EXPORT FrameSequenceTracker {
   bool ShouldIgnoreBeginFrameSource(uint64_t source_id) const;
 
   const FrameSequenceTrackerType type_;
-  base::OnceCallback<void(FrameSequenceTracker*)> destroy_callback_;
 
   TerminationStatus termination_status_ = TerminationStatus::kActive;
 

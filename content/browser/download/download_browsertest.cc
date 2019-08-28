@@ -622,6 +622,38 @@ class ErrorStreamCountingObserver : download::DownloadItem::Observer {
   base::Closure completion_closure_;
 };
 
+// Class to wait for a WebContents to kick off a specified number of
+// navigations.
+class NavigationStartObserver : public WebContentsObserver {
+ public:
+  explicit NavigationStartObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  ~NavigationStartObserver() override {}
+
+  void WaitForFinished(int navigation_count) {
+    if (start_count_ >= navigation_count)
+      return;
+    navigation_count_ = navigation_count;
+    base::RunLoop run_loop;
+    completion_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  // WebContentsObserver implementations.
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    start_count_++;
+    if (start_count_ >= navigation_count_ && !completion_closure_.is_null()) {
+      std::move(completion_closure_).Run();
+    }
+  }
+
+  int navigation_count_ = 0;
+  int start_count_ = 0;
+  base::Closure completion_closure_;
+  DISALLOW_COPY_AND_ASSIGN(NavigationStartObserver);
+};
+
 bool IsDownloadInState(download::DownloadItem::DownloadState state,
                        download::DownloadItem* item) {
   return item->GetState() == state;
@@ -3298,8 +3330,54 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   std::vector<download::DownloadItem*> downloads;
   DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(0u, downloads.size());
-
   ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
+  ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
+}
+
+// Tests that if a renderer initiated download triggers cross origin in the
+// redirect chain, the visible URL of the current tab shouldn't change.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadAttributeSameOriginRedirectNavigationTimeOut) {
+  net::EmbeddedTestServer origin_one;
+  net::EmbeddedTestServer origin_two;
+  ASSERT_TRUE(origin_one.InitializeAndListen());
+  ASSERT_TRUE(origin_two.InitializeAndListen());
+
+  // The download-attribute.html page contains an anchor element whose href is
+  // set to the value of the query parameter (specified as |target| in the URL
+  // below). The suggested filename for the anchor is 'suggested-filename'. When
+  // the page is loaded, a script simulates a click on the anchor, triggering a
+  // download of the target URL.
+  //
+  // We construct two test servers; origin_one and origin_two. Once started, the
+  // server URLs will differ by the port number. Therefore they will be in
+  // different origins.
+  GURL download_url = origin_one.GetURL("/ping");
+  GURL referrer_url = origin_one.GetURL(
+      std::string("/download-attribute.html?target=") + download_url.spec());
+  origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+
+  // <origin_one>/download-attribute.html initiates a download of
+  // <origin_one>/ping, which redirects to <origin_two>/download. The latter
+  // will time out.
+  origin_one.RegisterRequestHandler(
+      CreateRedirectHandler("/ping", origin_two.GetURL("/download")));
+
+  origin_one.StartAcceptingConnections();
+
+  NavigationStartObserver obs(shell()->web_contents());
+  NavigationController::LoadURLParams params(referrer_url);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  shell()->web_contents()->GetController().LoadURLWithParams(params);
+  shell()->web_contents()->Focus();
+
+  // Waiting for 2 navigation to happen, one for the original request, one for
+  // the redirect.
+  obs.WaitForFinished(2);
+  EXPECT_EQ(referrer_url, shell()->web_contents()->GetVisibleURL());
+  ASSERT_TRUE(origin_one.ShutdownAndWaitUntilComplete());
+  origin_two.StartAcceptingConnections();
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }
 

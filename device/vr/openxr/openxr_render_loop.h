@@ -42,6 +42,7 @@ class OpenXrRenderLoop : public XRCompositorCommon {
                  const gfx::Point3F& center,
                  const gfx::Size& view_size,
                  mojom::VREyeParametersPtr* eye) const;
+  bool UpdateStageParameters();
 
   std::unique_ptr<OpenXrApiWrapper> openxr_;
   std::unique_ptr<OpenXrGamepadHelper> gamepad_helper_;

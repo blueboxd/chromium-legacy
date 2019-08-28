@@ -27,7 +27,16 @@ class LoggedInUserMixin {
                     net::EmbeddedTestServer* embedded_test_server);
   ~LoggedInUserMixin();
 
-  void LogInUser();
+  // Log in as regular or child account depending on the |type| argument passed
+  // to the constructor.
+  // * If |issue_any_scope_token|, FakeGaiaMixin will issue a special all-access
+  // token associated with the test refresh token. Only matters for child login.
+  void LogInUser(bool issue_any_scope_token = false);
+
+  // By default, LoginManagerMixin will set up user session manager not to
+  // launch browser as part of user session setup - use this to override that
+  // behavior.
+  void set_should_launch_browser(bool value);
 
  private:
   LoginManagerMixin::TestUserInfo user_;

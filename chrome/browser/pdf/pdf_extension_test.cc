@@ -2373,6 +2373,13 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
   RunTextExtractionTest(FILE_PATH_LITERAL("font-change.pdf"));
 }
 
+// Test one property of pdf_private/accessibility_crash_2.pdf, where a page has
+// only whitespace characters.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
+                       OnlyWhitespaceText) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("whitespace.pdf"));
+}
+
 class PDFExtensionAccessibilityTreeDumpTest
     : public PDFExtensionTest,
       public ::testing::WithParamInterface<size_t> {

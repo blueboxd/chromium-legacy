@@ -166,6 +166,8 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
   ui::Layer* contents_view_layer = desk_mirrored_contents_view_->layer();
   contents_view_layer->SetMasksToBounds(true);
   contents_view_layer->set_name("Desk mirrored contents view");
+  contents_view_layer->SetRoundedCornerRadius(kCornerRadii);
+  contents_view_layer->SetIsFastRoundedCorner(true);
   AddChildView(desk_mirrored_contents_view_);
 
   RecreateDeskContentsMirrorLayers();

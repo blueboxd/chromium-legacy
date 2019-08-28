@@ -8,7 +8,7 @@ into Blink for page timing metrics that are unavailable on iOS.
 
 This component has the following structure:
 - chrome/browser/page_load_metrics/: browser process code
-- chrome/common/page_load_metrics/: code shared by browser and renderer, such
+- components/page_load_metrics/common/: code shared by browser and renderer, such
                                     as IPC messages
 - chrome/renderer/page_load_metrics/ : renderer process code
 

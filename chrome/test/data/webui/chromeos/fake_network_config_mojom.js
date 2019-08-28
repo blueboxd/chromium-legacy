@@ -96,7 +96,7 @@ class FakeNetworkConfig {
   /**
    * @param {string} guid
    * @return {!Promise<{result:
-   *     !chromeos.networkConfig.mojom.ManagedProperties>>}
+   *     !chromeos.networkConfig.mojom.ManagedProperties}>}
    */
   getManagedProperties(guid) {
     return new Promise(resolve => {
@@ -124,6 +124,26 @@ class FakeNetworkConfig {
   /** @param { !chromeos.networkConfig.mojom.NetworkType } type */
   requestNetworkScan(type) {
     this.extensionApi_.requestNetworkScan();
+  }
+
+  /**
+   * @return { !Promise<{result: !chromeos.networkConfig.mojom.GlobalPolicy}>}
+   */
+  getGlobalPolicy() {
+    return new Promise(resolve => {
+      this.extensionApi_.getGlobalPolicy(globalPolicy => {
+        const result = {
+          allowOnlyPolicyNetworksToAutoconnect:
+              globalPolicy.AllowOnlyPolicyNetworksToAutoconnect,
+          allowOnlyPolicyNetworksToConnect:
+              globalPolicy.AllowOnlyPolicyNetworksToConnect,
+          allowOnlyPolicyNetworksToConnectIfAvailable:
+              globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable,
+          blacklistedHexSsids: globalPolicy.BlacklistedHexSsids,
+        };
+        resolve({result: result});
+      });
+    });
   }
 
   /**

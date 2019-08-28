@@ -20,11 +20,6 @@
 
 class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
  public:
-  // Creates a new server-side mojo channel at |endpoint|, which should contain
-  // a file descriptor of a channel created by an UnixDomainSocketAcceptor, and
-  // begins listening for messages on it.
-  static void CreateForChannel(mojo::PlatformChannelEndpoint endpoint);
-
   // Creates a new server-side mojo channel at |endpoint|, which contains a
   // a Mach port for a channel created by an MachBootstrapAcceptor, and
   // begins listening for messages on it. The PID of the sender of |endpoint|

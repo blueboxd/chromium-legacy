@@ -38,7 +38,7 @@ void MediaToolbarButtonView::ButtonPressed(views::Button* sender,
   if (MediaDialogView::IsShowing())
     MediaDialogView::HideDialog();
   else
-    MediaDialogView::ShowDialog(this, connector_);
+    MediaDialogView::ShowDialog(this, &controller_, connector_);
 }
 
 void MediaToolbarButtonView::Show() {

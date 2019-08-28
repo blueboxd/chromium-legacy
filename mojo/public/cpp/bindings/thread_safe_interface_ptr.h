@@ -17,6 +17,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/deprecated_interface_types_forward.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -394,14 +395,6 @@ class ThreadSafeInterfacePtrBase
 
   DISALLOW_COPY_AND_ASSIGN(ThreadSafeInterfacePtrBase);
 };
-
-template <typename Interface>
-using ThreadSafeAssociatedInterfacePtr =
-    ThreadSafeInterfacePtrBase<AssociatedInterfacePtr<Interface>>;
-
-template <typename Interface>
-using ThreadSafeInterfacePtr =
-    ThreadSafeInterfacePtrBase<InterfacePtr<Interface>>;
 
 }  // namespace mojo
 

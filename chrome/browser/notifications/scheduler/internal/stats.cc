@@ -35,6 +35,24 @@ void LogUserAction(const UserActionData& action_data) {
   base::UmaHistogramEnumeration(name, action_data.action_type);
 }
 
+void LogBackgroundTaskEvent(BackgroundTaskEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Scheduler.BackgroundTask.Event",
+                            event);
+
+  if (event == BackgroundTaskEvent::kStart) {
+    base::Time::Exploded explode;
+    base::Time::Now().LocalExplode(&explode);
+    UMA_HISTOGRAM_EXACT_LINEAR("Notifications.Scheduler.BackgroundTask.Start",
+                               explode.hour, 24);
+  }
+}
+
+void LogBackgroundTaskNotificationShown(int shown_count) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Notifications.Scheduler.BackgroundTask.NotificationShown", shown_count,
+      0, 10, 11);
+}
+
 void LogImpressionDbInit(bool success, int entry_count) {
   UMA_HISTOGRAM_BOOLEAN("Notifications.Scheduler.ImpressionDb.InitResult",
                         success);

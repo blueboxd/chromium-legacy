@@ -401,6 +401,8 @@ void ArCoreGl::GetFrameData(
     frame_data->detected_planes_data = arcore_->GetDetectedPlanesData();
   }
 
+  frame_data->anchors_data = arcore_->GetAnchorsData();
+
   fps_meter_.AddFrame(base::TimeTicks::Now());
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());
 

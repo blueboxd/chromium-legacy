@@ -17,7 +17,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/media_player_id.h"

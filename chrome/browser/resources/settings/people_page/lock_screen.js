@@ -130,19 +130,6 @@ Polymer({
       readOnly: true,
     },
 
-    /**
-     * Whether the lock screen media controls preference is enabled by the
-     * feature flag.
-     * @private
-     */
-    lockScreenMediaControlsPreferenceEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('lockScreenMediaControlsEnabled');
-      },
-      readOnly: true,
-    },
-
     /** @private */
     showPasswordPromptDialog_: Boolean,
 

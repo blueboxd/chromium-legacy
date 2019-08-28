@@ -136,10 +136,6 @@ const base::Feature kExperimentalAccessibilityLabels{
 const base::Feature kExpensiveBackgroundTimerThrottling{
     "ExpensiveBackgroundTimerThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables exposing back/forward mouse buttons to the renderer and the web.
-const base::Feature kExtendedMouseButtons{"ExtendedMouseButtons",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled Feature Policy propagation is similar to sandbox flags and,
 // sandbox flags are implemented on top of Feature Policy.
 const base::Feature kFeaturePolicyForSandbox{"FeaturePolicyForSandbox",
@@ -154,7 +150,7 @@ const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
 const base::Feature kFractionalScrollOffsets{"FractionalScrollOffsets",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Puts network quality estimate related Web APIs in the holdback mode. When the
 // holdback is enabled the related Web APIs return network quality estimate

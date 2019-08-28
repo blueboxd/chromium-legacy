@@ -36,6 +36,7 @@ run_jsbundler("switch_access_copied_files") {
     "back_button_manager.js",
     "background.js",
     "commands.js",
+    "focus_ring_manager.js",
     "icons/back.svg",
     "icons/copy.svg",
     "icons/cut.svg",
@@ -47,6 +48,7 @@ run_jsbundler("switch_access_copied_files") {
     "icons/keyboard.svg",
     "icons/moveBackwardOneCharOfText.svg",
     "icons/moveBackwardOneWordOfText.svg",
+    "icons/moveCursor.svg",
     "icons/moveDownOneLineOfText.svg",
     "icons/moveForwardOneCharOfText.svg",
     "icons/moveForwardOneWordOfText.svg",
@@ -173,6 +175,7 @@ js_type_check("closure_compile") {
     ":back_button_manager",
     ":background",
     ":commands",
+    ":focus_ring_manager",
     ":menu_manager",
     ":menu_panel",
     ":menu_panel_interface",
@@ -200,6 +203,7 @@ js_library("auto_scan_manager") {
 js_library("navigation_manager") {
   deps = [
     ":back_button_manager",
+    ":focus_ring_manager",
     ":menu_manager",
     ":menu_panel_interface",
     ":rect_helper",
@@ -238,6 +242,13 @@ js_library("commands") {
   deps = [
     ":switch_access_interface",
   ]
+}
+
+js_library("focus_ring_manager") {
+  deps = [
+    ":back_button_manager",
+  ]
+  externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
 js_library("menu_manager") {

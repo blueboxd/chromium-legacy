@@ -337,7 +337,7 @@ void BrowserPlugin::OnSetCursor(int browser_plugin_instance_id,
 
 void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
                                    bool enable) {
-  RenderWidget* render_widget = GetMainWidget();
+  RenderWidget* render_widget = embedding_render_widget_.get();
   if (enable) {
     if (mouse_locked_ || !render_widget)
       return;
@@ -362,20 +362,6 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int browser_plugin_instance_id,
         accept ? WebPluginContainer::kTouchEventRequestTypeRaw
                : WebPluginContainer::kTouchEventRequestTypeNone);
   }
-}
-
-RenderWidget* BrowserPlugin::GetMainWidget() const {
-  RenderFrameImpl* frame =
-      RenderFrameImpl::FromRoutingID(render_frame_routing_id());
-  if (frame) {
-    RenderViewImpl* render_view =
-        static_cast<RenderViewImpl*>(frame->GetRenderView());
-    if (render_view) {
-      return render_view->GetWidget();
-    }
-  }
-
-  return nullptr;
 }
 
 void BrowserPlugin::UpdateInternalInstanceId() {
@@ -422,9 +408,8 @@ void BrowserPlugin::UpdateCaptureSequenceNumber(
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
   bool embedder_focused = false;
-  RenderWidget* render_widget = GetMainWidget();
-  if (render_widget)
-    embedder_focused = render_widget->has_focus();
+  if (embedding_render_widget_)
+    embedder_focused = embedding_render_widget_->has_focus();
   return plugin_focused_ && embedder_focused;
 }
 
@@ -452,6 +437,8 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
 
   compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
 
+  DCHECK_EQ(RenderFrameImpl::FromWebFrame(container_->GetDocument().GetFrame()),
+            RenderFrameImpl::FromRoutingID(render_frame_routing_id()));
   embedding_render_widget_ =
       RenderFrameImpl::FromWebFrame(container_->GetDocument().GetFrame())
           ->GetLocalRootRenderWidget()
@@ -475,9 +462,10 @@ void BrowserPlugin::Destroy() {
 
   container_ = nullptr;
   // Will be a no-op if the mouse is not currently locked.
-  RenderWidget* render_widget = GetMainWidget();
-  if (render_widget)
-    render_widget->mouse_lock_dispatcher()->OnLockTargetDestroyed(this);
+  if (embedding_render_widget_) {
+    embedding_render_widget_->mouse_lock_dispatcher()->OnLockTargetDestroyed(
+        this);
+  }
 
   task_runner_->DeleteSoon(FROM_HERE, this);
 }

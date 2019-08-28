@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace service_manager {
@@ -46,7 +47,13 @@ class CallbackBinder : public InterfaceBinder<BinderArgs...> {
   CallbackBinder(const BindCallback& callback,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner)
       : callback_(callback), task_runner_(task_runner) {}
-  ~CallbackBinder() override {}
+  CallbackBinder(
+      const base::RepeatingCallback<void(mojo::PendingReceiver<Interface>,
+                                         BinderArgs...)>& callback,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+      : CallbackBinder(base::BindRepeating(&RunBindReceiverCallback, callback),
+                       task_runner) {}
+  ~CallbackBinder() override = default;
 
  private:
   // InterfaceBinder:
@@ -66,6 +73,14 @@ class CallbackBinder : public InterfaceBinder<BinderArgs...> {
   static void RunCallback(const BindCallback& callback,
                           mojo::InterfaceRequest<Interface> request,
                           BinderArgs... args) {
+    callback.Run(std::move(request), args...);
+  }
+
+  static void RunBindReceiverCallback(
+      const base::RepeatingCallback<void(mojo::PendingReceiver<Interface>,
+                                         BinderArgs...)>& callback,
+      mojo::InterfaceRequest<Interface> request,
+      BinderArgs... args) {
     callback.Run(std::move(request), args...);
   }
 

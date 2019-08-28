@@ -40,7 +40,29 @@ AndroidSystemProducer::~AndroidSystemProducer() {
 }
 
 void AndroidSystemProducer::SetDisallowPreAndroidPieForTesting(bool disallow) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   disallow_pre_android_pie = disallow;
+  if (!disallow && state_ == State::kUninitialized) {
+    // If previously we would not have connected, we now attempt to connect
+    // since we are now skipping a check.
+    Connect();
+  }
+}
+
+void AndroidSystemProducer::SetNewSocketForTesting(const char* socket) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  socket_name_ = socket;
+  if (state_ == State::kConnected) {
+    // If we are fully connected we need to reset the service before we
+    // reconnect.
+    DisconnectWithReply(base::BindOnce(&AndroidSystemProducer::OnDisconnect,
+                                       base::Unretained(this)));
+  } else {
+    // In any other case we just need to do a normal disconnect and
+    // DisconnectWithReply will ensure we set up the retries on the new
+    // |socket|.
+    DisconnectWithReply(base::OnceClosure());
+  }
 }
 
 bool AndroidSystemProducer::IsTracingActive() {
@@ -64,18 +86,6 @@ void AndroidSystemProducer::NewDataSourceAdded(
 void AndroidSystemProducer::DisconnectWithReply(
     base::OnceClosure on_disconnect_complete) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // If we are tracing we need to wait until we're fully disconnected
-  // to run the callback, otherwise we run it immediately (we will
-  // still unregister the data sources but that can happen async in
-  // the background).
-  if (!on_disconnect_complete.is_null()) {
-    if (IsTracingActive() || !on_disconnect_callbacks_.empty()) {
-      on_disconnect_callbacks_.push_back(std::move(on_disconnect_complete));
-    } else {
-      std::move(on_disconnect_complete).Run();
-    }
-  }
-
   if (state_ == State::kConnected) {
     // We are connected and need to unregister the DataSources to
     // inform the service these data sources are going away. If we
@@ -90,6 +100,17 @@ void AndroidSystemProducer::DisconnectWithReply(
          PerfettoTracedProcess::Get()->data_sources()) {
       DCHECK(service_.get());
       service_->UnregisterDataSource(data_source->name());
+    }
+  }
+  // If we are tracing we need to wait until we're fully disconnected
+  // to run the callback, otherwise we run it immediately (we will
+  // still unregister the data sources but that can happen async in
+  // the background).
+  if (!on_disconnect_complete.is_null()) {
+    if (IsTracingActive() || !on_disconnect_callbacks_.empty()) {
+      on_disconnect_callbacks_.push_back(std::move(on_disconnect_complete));
+    } else {
+      std::move(on_disconnect_complete).Run();
     }
   }
   DelayedReconnect();
@@ -328,9 +349,12 @@ AndroidSystemProducer::GetInProcessShmemArbiter() {
   return GetSharedMemoryArbiter();
 }
 
-void AndroidSystemProducer::ActivateTriggers(const std::vector<std::string>&) {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
+void AndroidSystemProducer::ActivateTriggers(
+    const std::vector<std::string>& triggers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (state_ == State::kConnected) {
+    service_->ActivateTriggers(triggers);
+  }
 }
 
 void AndroidSystemProducer::ConnectSocket() {

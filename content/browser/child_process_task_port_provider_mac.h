@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/child_process.mojom-forward.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/handle.h"
 
 namespace content {
 

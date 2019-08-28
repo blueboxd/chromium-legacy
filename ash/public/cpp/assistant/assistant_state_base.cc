@@ -69,6 +69,10 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
       base::BindRepeating(&AssistantStateBase::UpdateConsentStatus,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
+      chromeos::assistant::prefs::kAssistantContextEnabled,
+      base::BindRepeating(&AssistantStateBase::UpdateContextEnabled,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
       chromeos::assistant::prefs::kAssistantHotwordAlwaysOn,
       base::BindRepeating(&AssistantStateBase::UpdateHotwordAlwaysOn,
                           base::Unretained(this)));
@@ -90,6 +94,8 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
 void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
   if (consent_status_.has_value())
     observer->OnAssistantConsentStatusChanged(consent_status_.value());
+  if (context_enabled_.has_value())
+    observer->OnAssistantContextEnabled(context_enabled_.value());
   if (hotword_always_on_.has_value())
     observer->OnAssistantHotwordAlwaysOn(hotword_always_on_.value());
   if (launch_with_mic_open_.has_value())
@@ -105,8 +111,6 @@ void AssistantStateBase::InitializeObserverMojom(
   observer->OnAssistantStatusChanged(voice_interaction_state_);
   if (settings_enabled_.has_value())
     observer->OnAssistantSettingsEnabled(settings_enabled_.value());
-  if (context_enabled_.has_value())
-    observer->OnAssistantContextEnabled(context_enabled_.value());
   if (hotword_enabled_.has_value())
     observer->OnAssistantHotwordEnabled(hotword_enabled_.value());
   if (allowed_state_.has_value())
@@ -127,6 +131,18 @@ void AssistantStateBase::UpdateConsentStatus() {
   consent_status_ = consent_status;
   for (auto& observer : observers_)
     observer.OnAssistantConsentStatusChanged(consent_status_.value());
+}
+
+void AssistantStateBase::UpdateContextEnabled() {
+  auto context_enabled = pref_change_registrar_->prefs()->GetBoolean(
+      chromeos::assistant::prefs::kAssistantContextEnabled);
+  if (context_enabled_.has_value() &&
+      context_enabled_.value() == context_enabled) {
+    return;
+  }
+  context_enabled_ = context_enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantContextEnabled(context_enabled_.value());
 }
 
 void AssistantStateBase::UpdateHotwordAlwaysOn() {

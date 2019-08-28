@@ -47,7 +47,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   NGLayoutResult(const NGLayoutResult& other,
                  const NGConstraintSpace& new_space,
                  LayoutUnit bfc_line_offset,
-                 base::Optional<LayoutUnit> bfc_block_offset);
+                 base::Optional<LayoutUnit> bfc_block_offset,
+                 LayoutUnit block_offset_delta);
   ~NGLayoutResult();
 
   const NGPhysicalContainerFragment& PhysicalFragment() const {
@@ -266,7 +267,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       const NGLayoutResult& other,
       const NGExclusionSpace& new_input_exclusion_space,
       LayoutUnit bfc_line_offset,
-      base::Optional<LayoutUnit> bfc_block_offset);
+      LayoutUnit block_offset_delta);
 
   struct RareData {
     USING_FAST_MALLOC(RareData);

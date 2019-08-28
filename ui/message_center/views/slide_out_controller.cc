@@ -5,6 +5,7 @@
 #include "ui/message_center/views/slide_out_controller.h"
 
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"

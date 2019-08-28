@@ -9,6 +9,10 @@
 
 #include "services/tracing/public/cpp/perfetto/android_system_producer.h"
 
+namespace base {
+class ScopedTempDir;
+}
+
 namespace perfetto {
 class ServiceIPCHost;
 class TracingService;
@@ -23,6 +27,7 @@ class MockSystemService {
  public:
   MockSystemService(const std::string& consumer_socket,
                     const std::string& producer_socket);
+  MockSystemService(const base::ScopedTempDir& tmp_dir);
   ~MockSystemService();
 
   perfetto::TracingService* GetService();
@@ -30,8 +35,12 @@ class MockSystemService {
   const std::string& producer() const;
 
  private:
-  const std::string consumer_;
-  const std::string producer_;
+  void StartService();
+
+  const bool used_tmpdir_;
+  const char* old_tmpdir_ = nullptr;
+  std::string consumer_;
+  std::string producer_;
   std::unique_ptr<perfetto::ServiceIPCHost> service_;
   std::unique_ptr<perfetto::base::TaskRunner> task_runner_;
 };

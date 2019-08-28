@@ -603,6 +603,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Changes the size of |this| to match that of |layer|.
   void MatchLayerSize(const Layer* layer);
 
+  // Resets |subtree_reflected_layer_| and updates the reflected layer's
+  // |subtree_reflecting_layers_| list accordingly.
+  void ResetSubtreeReflectedLayer();
+
   const LayerType type_;
 
   Compositor* compositor_;

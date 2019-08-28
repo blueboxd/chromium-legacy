@@ -878,6 +878,7 @@ DOMWindow* ChromeClientImpl::PagePopupWindowForTesting() const {
 void ChromeClientImpl::SetBrowserControlsState(float top_height,
                                                float bottom_height,
                                                bool shrinks_layout) {
+  DCHECK(web_view_->MainFrameWidget());
   WebSize size = web_view_->MainFrameWidget()->Size();
   if (shrinks_layout)
     size.height -= top_height + bottom_height;

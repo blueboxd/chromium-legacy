@@ -32,6 +32,15 @@ void FakeComponentContext::ConnectToAgent(
   agent_impl_.Connect(component_url_, std::move(services));
 }
 
+void FakeComponentContext::ConnectToAgentService(
+    fuchsia::modular::AgentServiceRequest request) {
+  if (!agent_services_) {
+    ConnectToAgent(component_url_, agent_services_.NewRequest(), nullptr);
+  }
+  agent_services_->ConnectToService(std::move(request.service_name()),
+                                    std::move(*request.mutable_channel()));
+}
+
 void FakeComponentContext::NotImplemented_(const std::string& name) {
   NOTIMPLEMENTED() << " API: " << name;
 }

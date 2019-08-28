@@ -5,6 +5,8 @@
 class TestEnv {
   constructor() {
     this.inputContext = null;
+    this.surroundingText = '';
+    this.compositionBounds = [];
 
     chrome.input.ime.onFocus.addListener((context) => {
       this.inputContext = context;
@@ -13,33 +15,33 @@ class TestEnv {
     chrome.input.ime.onBlur.addListener(() => {
       this.inputContext = null;
     });
+
+    chrome.input.ime.onSurroundingTextChanged.addListener(
+        (_, surroundingInfo) => {
+          this.surroundingText = surroundingInfo.text;
+        });
+
+    chrome.inputMethodPrivate.onCompositionBoundsChanged.addListener(
+        (_, boundsList) => {
+          this.compositionBounds = boundsList;
+        });
   }
 
   getContextID() {
     return this.inputContext.contextID;
   }
-
-  onSurroundingTextChanged() {
-    return new Promise((resolve) => {
-      chrome.input.ime.onSurroundingTextChanged.addListener(
-          function listener(_, surroundingInfo) {
-            chrome.input.ime.onSurroundingTextChanged.removeListener(listener);
-            resolve(surroundingInfo.text);
-          });
-    });
-  }
-
-  onCompositionBoundsChanged() {
-    return new Promise((resolve) => {
-      chrome.inputMethodPrivate.onCompositionBoundsChanged.addListener(
-          function listener(_, boundsList) {
-            chrome.inputMethodPrivate.onCompositionBoundsChanged.removeListener(
-                listener);
-            resolve(boundsList);
-          });
-    });
-  }
 };
+
+function waitUntil(predicate) {
+  return new Promise((resolve) => {
+    const timer = setInterval(() => {
+      if (predicate()) {
+        clearInterval(timer);
+        resolve();
+      }
+    }, 100);
+  });
+}
 
 const testEnv = new TestEnv();
 
@@ -85,8 +87,7 @@ chrome.test.runTests([
       text: 'hello world'
     });
 
-    chrome.test.assertEq('hello world',
-        await testEnv.onSurroundingTextChanged());
+    await waitUntil(() => testEnv.surroundingText === 'hello world');
 
     // Cursor is at the end of the string.
     await asyncInputMethodPrivate.setCompositionRange({
@@ -100,8 +101,7 @@ chrome.test.runTests([
     });
 
     // Should underline "world".
-    chrome.test.assertEq(5,
-      (await testEnv.onCompositionBoundsChanged()).length);
+    await waitUntil(() => testEnv.compositionBounds.length === 5);
 
     await asyncInputIme.setComposition({
       contextID: testEnv.getContextID(),
@@ -110,8 +110,7 @@ chrome.test.runTests([
     });
 
     // Composition should change to "foo".
-    chrome.test.assertEq(3,
-      (await testEnv.onCompositionBoundsChanged()).length);
+    await waitUntil(() => testEnv.compositionBounds.length === 3);
 
     // Should replace composition with "again".
     await asyncInputIme.commitText({
@@ -119,8 +118,7 @@ chrome.test.runTests([
       text: 'again'
     });
 
-    chrome.test.assertEq('hello again',
-        await testEnv.onSurroundingTextChanged());
+    await waitUntil(() => testEnv.surroundingText === 'hello again');
 
     // Cursor is at end of the string.
     // Call setCompositionRange with no segments.
@@ -131,8 +129,7 @@ chrome.test.runTests([
     });
 
     // Composition should be "again".
-    chrome.test.assertEq(5,
-      (await testEnv.onCompositionBoundsChanged()).length);
+    waitUntil(() => testEnv.compositionBounds.length === 5);
 
     // Should commit "again" and set composition to "in".
     await asyncInputMethodPrivate.setCompositionRange({
@@ -140,6 +137,8 @@ chrome.test.runTests([
       selectionBefore: 2,
       selectionAfter: 0
     });
+
+    await waitUntil(() => testEnv.compositionBounds.length === 2);
 
     chrome.test.succeed();
   }

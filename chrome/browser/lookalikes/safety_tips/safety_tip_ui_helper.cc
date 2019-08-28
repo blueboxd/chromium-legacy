@@ -28,6 +28,7 @@ void LeaveSite(content::WebContents* web_contents) {
 int GetSafetyTipTitleId(SafetyTipType warning_type) {
   switch (warning_type) {
     case SafetyTipType::kBadReputation:
+    case SafetyTipType::kLookalikeUrl:
 #if defined(OS_ANDROID)
       return IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_TITLE;
 #else
@@ -35,7 +36,6 @@ int GetSafetyTipTitleId(SafetyTipType warning_type) {
 #endif
     // These don't have strings yet, so they're just an error:
     case SafetyTipType::kUncommonDomain:
-    case SafetyTipType::kLookalikeUrl:
     case SafetyTipType::kNone:
       NOTREACHED();
   }
@@ -51,9 +51,10 @@ int GetSafetyTipDescriptionId(SafetyTipType warning_type) {
 #else
       return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION;
 #endif
+    case SafetyTipType::kLookalikeUrl:
+      return IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH;
     // These don't have strings yet, so they're just an error:
     case SafetyTipType::kUncommonDomain:
-    case SafetyTipType::kLookalikeUrl:
     case SafetyTipType::kNone:
       NOTREACHED();
   }

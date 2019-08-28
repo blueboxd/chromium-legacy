@@ -36,6 +36,10 @@
 #include "sql/vfs_wrapper.h"
 #include "third_party/sqlite/sqlite3.h"
 
+#if defined(OS_WIN)
+#include "base/win/file_pre_reader.h"
+#endif
+
 namespace {
 
 // Spin for up to a second waiting for the lock to clear when setting
@@ -355,6 +359,9 @@ void Database::Preload() {
     return;
   }
 
+#if defined(OS_WIN)
+  base::win::PreReadFile(DbPath(), false);
+#else
   // The constructor and set_page_size() ensure that page_size_ is never zero.
   const int page_size = page_size_;
   DCHECK(page_size);
@@ -383,6 +390,7 @@ void Database::Preload() {
     if (rc != SQLITE_OK)
       return;
   }
+#endif
 }
 
 // SQLite keeps unused pages associated with a database in a cache.  It asks

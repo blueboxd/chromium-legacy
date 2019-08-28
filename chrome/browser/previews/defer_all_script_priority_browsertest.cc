@@ -63,8 +63,12 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 
 }  // namespace
 
+// The first parameter selects whether the DeferAllScript optimization type is
+// enabled, and the second parameter selects whether
+// OptimizationGuideKeyedService is enabled. (The tests should pass in the same
+// way for all cases).
 class DeferAllScriptPriorityBrowserTest
-    : public ::testing::WithParamInterface<bool>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
       public InProcessBrowserTest {
  public:
   DeferAllScriptPriorityBrowserTest() = default;
@@ -88,10 +92,20 @@ class DeferAllScriptPriorityBrowserTest
           {});
     }
 
+    if (std::get<1>(GetParam())) {
+      param_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
+    } else {
+      param_feature_list_.InitWithFeatures(
+          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
+    }
+
     InProcessBrowserTest::SetUp();
   }
 
-  bool IsDeferAllScriptFeatureEnabled() const { return GetParam(); }
+  bool IsDeferAllScriptFeatureEnabled() const {
+    return std::get<0>(GetParam());
+  }
 
   // Returns the fetch time for the JavaScript file (in milliseconds). This
   // value is obtained using the resource timing API.
@@ -232,6 +246,7 @@ class DeferAllScriptPriorityBrowserTest
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList param_feature_list_;
 
  private:
   void TearDownOnMainThread() override {
@@ -252,7 +267,8 @@ class DeferAllScriptPriorityBrowserTest
 // Parameter is true if the test should be run with defer feature enabled.
 INSTANTIATE_TEST_SUITE_P(,
                          DeferAllScriptPriorityBrowserTest,
-                         ::testing::Values(false, true));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 // Avoid flakes and issues on non-applicable platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)

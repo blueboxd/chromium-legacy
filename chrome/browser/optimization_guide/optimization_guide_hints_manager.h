@@ -19,7 +19,6 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "components/optimization_guide/hints_component_info.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
@@ -44,8 +43,13 @@ namespace optimization_guide {
 class HintCache;
 class HintUpdateData;
 class HintsFetcher;
+enum class OptimizationGuideDecision;
 class OptimizationFilter;
+struct OptimizationMetadata;
 class OptimizationGuideService;
+enum class OptimizationTarget;
+enum class OptimizationTargetDecision;
+enum class OptimizationTypeDecision;
 class TopHostProvider;
 }  // namespace optimization_guide
 
@@ -99,13 +103,15 @@ class OptimizationGuideHintsManager
   bool HasLoadedOptimizationFilter(
       optimization_guide::proto::OptimizationType optimization_type);
 
-  // Returns whether the current conditions match |optimization_target| and
-  // |optimization_type| can be applied for the URL associated with
-  // |navigation_handle|.
-  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
+  // Populates |optimization_target_decision| and |optimization_type_decision|
+  // for whether the page load matches the given parameters.
+  void CanApplyOptimization(
       content::NavigationHandle* navigation_handle,
       optimization_guide::OptimizationTarget optimization_target,
       optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationTargetDecision*
+          optimization_target_decision,
+      optimization_guide::OptimizationTypeDecision* optimization_type_decision,
       optimization_guide::OptimizationMetadata* optimization_metadata);
 
   // Clears fetched hints from |hint_cache_|.

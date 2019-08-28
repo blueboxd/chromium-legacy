@@ -180,8 +180,8 @@ class CQConfig(object):
     parsed_value = parse_text_proto_message(lines)
 
     # Sanity check.
-    assert len(parsed_value['config_groups']) == 1, (
-        'Expected only one config group, found %d' % len(
+    assert len(parsed_value['config_groups']) == 2, (
+        'Expected only two config group, found %d' % len(
             parsed_value['config_groups']))
     grp = parsed_value['config_groups'][0]
     gerrit = grp['gerrit'][0]

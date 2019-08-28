@@ -13,7 +13,11 @@ GraphTestHarness::GraphTestHarness()
     : task_env_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
                 base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
-GraphTestHarness::~GraphTestHarness() = default;
+GraphTestHarness::~GraphTestHarness() {
+  // Ideally this would be done in TearDown(), but that would require subclasses
+  // do destroy all their nodes before invoking TearDown below.
+  graph_.TearDown();
+}
 
 void GraphTestHarness::TearDown() {
   base::RunLoop().RunUntilIdle();

@@ -85,6 +85,7 @@ class IsolationContextMetricsTest : public GraphTestHarness {
 
   void TearDown() override {
     PerformanceManagerClock::ResetClockForTesting();
+    GraphTestHarness::TearDown();
   }
 
   void ExpectBrowsingInstanceData(int32_t browsing_instance_id,

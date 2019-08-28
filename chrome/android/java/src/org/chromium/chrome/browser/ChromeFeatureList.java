@@ -191,6 +191,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
             "CCTReportParallelRequestStatus";
     public static final String CCT_TARGET_TRANSLATE_LANGUAGE = "CCTTargetTranslateLanguage";
+    public static final String CLOSE_TAB_SUGGESTIONS_STALE = "CloseTabSuggestionsStale";
     public static final String CHROME_DUET = "ChromeDuet";
     public static final String CHROME_DUET_ADAPTIVE = "ChromeDuetAdaptive";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";

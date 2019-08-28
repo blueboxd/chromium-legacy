@@ -15,6 +15,9 @@ class ASH_PUBLIC_EXPORT WallpaperControllerObserver {
  public:
   WallpaperControllerObserver();
 
+  // Invoked when the wallpaper is about to change.
+  virtual void OnWallpaperChanging() {}
+
   // Invoked when the wallpaper is changed.
   virtual void OnWallpaperChanged() {}
 

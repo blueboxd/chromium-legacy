@@ -675,12 +675,16 @@ void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
     for (auto& observer : observers_)
       observer.OnFirstWallpaperShown();
   }
+
   for (auto& observer : observers_)
-    observer.OnWallpaperChanged();
+    observer.OnWallpaperChanging();
 
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
   ++wallpaper_count_for_testing_;
+
+  for (auto& observer : observers_)
+    observer.OnWallpaperChanged();
 }
 
 bool WallpaperControllerImpl::IsPolicyControlled(
@@ -1710,10 +1714,9 @@ void WallpaperControllerImpl::SetOnlineWallpaperImpl(
       CustomWallpaperElement(base::FilePath(), image);
 }
 
-void WallpaperControllerImpl::SetWallpaperFromInfo(
-    const AccountId& account_id,
-    const WallpaperInfo& info,
-    bool show_wallpaper) {
+void WallpaperControllerImpl::SetWallpaperFromInfo(const AccountId& account_id,
+                                                   const WallpaperInfo& info,
+                                                   bool show_wallpaper) {
   if (info.type != ONLINE && info.type != DEFAULT) {
     // This method is meant to be used for ONLINE and DEFAULT types. In
     // unexpected cases, revert to default wallpaper to fail safely. See
@@ -1850,12 +1853,11 @@ void WallpaperControllerImpl::SaveAndSetWallpaper(
       CustomWallpaperElement(wallpaper_path, image);
 }
 
-void WallpaperControllerImpl::OnWallpaperDecoded(
-    const AccountId& account_id,
-    const base::FilePath& path,
-    const WallpaperInfo& info,
-    bool show_wallpaper,
-    const gfx::ImageSkia& image) {
+void WallpaperControllerImpl::OnWallpaperDecoded(const AccountId& account_id,
+                                                 const base::FilePath& path,
+                                                 const WallpaperInfo& info,
+                                                 bool show_wallpaper,
+                                                 const gfx::ImageSkia& image) {
   // Empty image indicates decode failure. Use default wallpaper in this case.
   if (image.isNull()) {
     LOG(ERROR) << "Failed to decode user wallpaper at " << path.value()

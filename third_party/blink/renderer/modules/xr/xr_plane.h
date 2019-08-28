@@ -16,9 +16,9 @@
 
 namespace blink {
 
+class XRRigidTransform;
 class XRSession;
 class XRSpace;
-class XRPose;
 
 class XRPlane : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,14 +26,18 @@ class XRPlane : public ScriptWrappable {
  public:
   enum Orientation { kHorizontal, kVertical };
 
-  XRPlane(XRSession* session,
+  XRPlane(int32_t id,
+          XRSession* session,
           const device::mojom::blink::XRPlaneDataPtr& plane_data,
           double timestamp);
-  XRPlane(XRSession* session,
+  XRPlane(int32_t id,
+          XRSession* session,
           const base::Optional<Orientation>& orientation,
           const TransformationMatrix& pose_matrix,
           const HeapVector<Member<DOMPointReadOnly>>& polygon,
           double timestamp);
+
+  int32_t id() const;
 
   XRSpace* planeSpace() const;
 
@@ -44,7 +48,7 @@ class XRPlane : public ScriptWrappable {
   double lastChangedTime() const;
 
   ScriptPromise createAnchor(ScriptState* script_state,
-                             XRPose* pose,
+                             XRRigidTransform* initial_pose,
                              XRSpace* space);
 
   // Updates plane data from passed in |plane_data|. The resulting instance
@@ -56,6 +60,7 @@ class XRPlane : public ScriptWrappable {
   void Trace(blink::Visitor* visitor) override;
 
  private:
+  const int32_t id_;
   HeapVector<Member<DOMPointReadOnly>> polygon_;
   base::Optional<Orientation> orientation_;
 

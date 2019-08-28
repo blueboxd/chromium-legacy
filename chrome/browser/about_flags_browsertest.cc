@@ -5,13 +5,14 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/unexpire_flags.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/flags_ui/flags_state.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/window_open_disposition.h"
@@ -105,7 +106,7 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
                               public testing::WithParamInterface<bool> {
  public:
   AboutFlagsBrowserTest() {
-    feature_list_.InitWithFeatures({flags_ui::kUnexpireFlagsM78}, {});
+    feature_list_.InitWithFeatures({flags::kUnexpireFlagsM76}, {});
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

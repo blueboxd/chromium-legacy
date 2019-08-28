@@ -33,7 +33,7 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   // from |enabled| which means that the palette tool is currently selected by
   // the user.
   bool feature_enabled() const {
-    return voice_interaction_enabled_ && voice_interaction_context_enabled_ &&
+    return voice_interaction_enabled_ && assistant_context_enabled_ &&
            assistant_allowed_state_ == mojom::AssistantAllowedState::ALLOWED;
   }
 
@@ -88,7 +88,7 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
 
   bool voice_interaction_enabled_ = false;
 
-  bool voice_interaction_context_enabled_ = false;
+  bool assistant_context_enabled_ = false;
 
   mojom::AssistantAllowedState assistant_allowed_state_ =
       mojom::AssistantAllowedState::ALLOWED;

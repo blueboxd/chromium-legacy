@@ -541,13 +541,6 @@ void PreloadHelper::LoadLinksFromHeader(
     if (media_policy == kOnlyLoadNonMedia && header.IsViewportDependent())
       continue;
 
-    // TODO(domfarolino): Remove the following UseCounter-related lines when
-    // data on link stylesheet headers has been collected. See
-    // https://crbug.com/19237.
-    DCHECK_EQ(header.Rel(), header.Rel().DeprecatedLower());
-    if (header.Rel() == "stylesheet")
-      UseCounter::Count(document, WebFeature::kLinkHeaderStylesheet);
-
     LinkLoadParameters params(header, base_url);
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
       DCHECK(document);

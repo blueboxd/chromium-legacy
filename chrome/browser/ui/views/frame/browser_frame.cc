@@ -39,10 +39,6 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
-#if defined(OS_LINUX)
-#include "chrome/browser/ui/views/frame/browser_command_handler_linux.h"
-#endif
-
 #if defined(USE_X11)
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #endif
@@ -110,11 +106,6 @@ void BrowserFrame::InitBrowserFrame() {
     DCHECK(non_client_view());
     non_client_view()->set_context_menu_controller(this);
   }
-
-#if defined(OS_LINUX)
-  browser_command_handler_ =
-      std::make_unique<BrowserCommandHandlerLinux>(browser_view_);
-#endif
 }
 
 int BrowserFrame::GetMinimizeButtonOffset() const {

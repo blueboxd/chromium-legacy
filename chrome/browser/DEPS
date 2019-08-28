@@ -155,6 +155,7 @@ include_rules = [
   "+components/optimization_guide",
   "+components/os_crypt",
   "+components/ownership",
+  "+components/page_load_metrics/common",
   "+components/password_manager/content/browser",
   "+components/password_manager/core/browser",
   "+components/password_manager/core/common",

@@ -86,6 +86,11 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
                                        const std::string& reason,
                                        int net_error_code);
 
+  // Notifies listeners that deep scanning detected a dangerous download.
+  void OnDangerousDeepScanningResult(const GURL& url,
+                                     const std::string& file_name,
+                                     const std::string& download_digest_sha256);
+
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);
 

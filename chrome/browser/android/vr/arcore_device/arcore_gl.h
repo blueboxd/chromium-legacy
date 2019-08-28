@@ -103,6 +103,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                          const gfx::RectF& right_bounds,
                          const gfx::Size& source_size) override;
 
+  // XREnvironmentIntegrationProvider
   void RequestHitTest(
       mojom::XRRayPtr,
       mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback) override;

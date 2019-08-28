@@ -45,6 +45,7 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
     graph()->TakeFromGraph(metrics_collector_);  // Destroy the observer.
     metrics_collector_ = nullptr;
     PerformanceManagerClock::ResetClockForTesting();
+    GraphTestHarness::TearDown();
   }
 
  protected:

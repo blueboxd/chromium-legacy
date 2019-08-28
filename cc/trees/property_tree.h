@@ -14,10 +14,10 @@
 #include "base/containers/flat_map.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
-#include "cc/layers/layer_sticky_position_constraint.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/mutator_host_client.h"
+#include "cc/trees/sticky_position_constraint.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -219,7 +219,10 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
     return cached_data_;
   }
 
-  StickyPositionNodeData* StickyPositionData(int node_id);
+  const StickyPositionNodeData* GetStickyPositionData(int node_id) const {
+    return const_cast<TransformTree*>(this)->MutableStickyPositionData(node_id);
+  }
+  StickyPositionNodeData& EnsureStickyPositionData(int node_id);
 
   // Computes the combined transform between |source_id| and |dest_id|. These
   // two nodes must be on the same ancestor chain.
@@ -239,6 +242,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // |anc_id|.
   bool IsDescendant(int desc_id, int anc_id) const;
 
+  StickyPositionNodeData* MutableStickyPositionData(int node_id);
+  gfx::Vector2dF StickyPositionOffset(TransformNode* node);
   void UpdateLocalTransform(TransformNode* node);
   void UpdateScreenSpaceTransform(TransformNode* node,
                                   TransformNode* parent_node);
@@ -265,7 +270,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
 struct StickyPositionNodeData {
   int scroll_ancestor;
-  LayerStickyPositionConstraint constraints;
+  StickyPositionConstraint constraints;
 
   // In order to properly compute the sticky offset, we need to know if we have
   // any sticky ancestors both between ourselves and our containing block and
@@ -349,8 +354,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   const RenderSurfaceImpl* GetRenderSurface(int id) const {
     return render_surfaces_[id].get();
   }
-
-  void UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl);
 
   bool ContributesToDrawnSurface(int id);
 

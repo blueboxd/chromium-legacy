@@ -132,13 +132,6 @@ class TEST_RUNNER_EXPORT EventSender {
 
   void DumpFilenameBeingDragged();
 
-  void GestureFlingCancel();
-  void GestureFlingStart(float x,
-                         float y,
-                         float velocity_x,
-                         float velocity_y,
-                         gin::Arguments* args);
-  bool IsFlinging();
   void GestureScrollFirstPoint(float x, float y);
 
   void TouchStart(gin::Arguments* args);

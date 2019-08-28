@@ -52,11 +52,16 @@ public class TaskInfo {
          * @param periodicInfo object to act on.
          */
         void visit(PeriodicInfo periodicInfo);
+        /**
+         * Applies actions on a given {@link ExactInfo}. This affects information regarding
+         * timing for an exact task.
+         * @param exactInfo object to act on.
+         */
+        void visit(ExactInfo exactInfo);
     }
 
     /**
      * Specifies information regarding one-off tasks.
-     * This is part of a {@link TaskInfo} if the task is NOT a periodic task.
      */
     public static class OneOffInfo implements TimingInfo {
         private final long mWindowStartTimeMs;
@@ -181,7 +186,6 @@ public class TaskInfo {
 
     /**
      * Specifies information regarding periodic tasks.
-     * This is part of a {@link TaskInfo} if the task is a periodic task.
      */
     public static class PeriodicInfo implements TimingInfo {
         private final long mIntervalMs;
@@ -314,6 +318,68 @@ public class TaskInfo {
              */
             public PeriodicInfo build() {
                 return new PeriodicInfo(this);
+            }
+        }
+    }
+
+    /**
+     * Specifies information regarding exact tasks.
+     */
+    static class ExactInfo implements TimingInfo {
+        private final long mTriggerAtMs;
+
+        private ExactInfo(Builder builder) {
+            mTriggerAtMs = builder.mTriggerAtMs;
+        }
+
+        long getTriggerAtMs() {
+            return mTriggerAtMs;
+        }
+
+        @Override
+        public void accept(TimingInfoVisitor visitor) {
+            visitor.visit(this);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder("{");
+            sb.append("triggerAtMs: ").append(mTriggerAtMs).append("}");
+            return sb.toString();
+        }
+
+        /**
+         * @return a new {@link Builder} object to set the values of the exact task.
+         */
+        static Builder create() {
+            return new Builder();
+        }
+
+        /**
+         * A helper builder to provide a way to build {@link ExactInfo}.
+         *
+         * @see #create()
+         */
+        static final class Builder {
+            private long mTriggerAtMs;
+
+            /**
+             * Sets the exact UTC timestamp at which to schedule the exact task.
+             * @param triggerAtMs the UTC timestamp at which the task should be started.
+             * @return the {@link Builder} for creating the {@link ExactInfo} object.
+             */
+            Builder setTriggerAtMs(long triggerAtMs) {
+                mTriggerAtMs = triggerAtMs;
+                return this;
+            }
+
+            /**
+             * Build the {@link ExactInfo object} specified by this builder.
+             *
+             * @return the {@link ExactInfo} object.
+             */
+            ExactInfo build() {
+                return new ExactInfo(this);
             }
         }
     }

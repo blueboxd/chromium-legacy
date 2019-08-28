@@ -16,6 +16,7 @@ PAM_CONFIG=/etc/pam.d/chrome-remote-desktop
 ENABLED_FILE="$HELPERTOOLS/$SERVICE_NAME.me2me_enabled"
 ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
 HOST_BUNDLE_NAME=@@HOST_BUNDLE_NAME@@
+HOST_LEGACY_BUNDLE_NAME=@@HOST_LEGACY_BUNDLE_NAME@@
 HOST_EXE="$HELPERTOOLS/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host"
 
 KSADMIN=/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin
@@ -94,6 +95,12 @@ fi
 
 # Run the config-upgrade tool.
 "$HOST_EXE" --upgrade-token --host-config="$CONFIG_FILE" || true
+
+# Create a symlink from the legacy .bundle name to the new .app name. This
+# allows existing references to the legacy name to continue to work, and means
+# that no changes are required to the launchd script.
+rm -rf "$HELPERTOOLS/$HOST_LEGACY_BUNDLE_NAME"
+ln -s "$HELPERTOOLS/$HOST_BUNDLE_NAME" "$HELPERTOOLS/$HOST_LEGACY_BUNDLE_NAME"
 
 # Load the service for each user for whom the service was unloaded in the
 # preflight script (this includes the root user, in case only the login screen

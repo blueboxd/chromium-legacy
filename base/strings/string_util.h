@@ -160,6 +160,7 @@ BASE_EXPORT const string16& EmptyString16();
 // by HTML5, and don't include control characters.
 BASE_EXPORT extern const wchar_t kWhitespaceWide[];  // Includes Unicode.
 BASE_EXPORT extern const char16 kWhitespaceUTF16[];  // Includes Unicode.
+BASE_EXPORT extern const char16 kWhitespaceNoCrLfUTF16[];  // Unicode w/o CR/LF.
 BASE_EXPORT extern const char kWhitespaceASCII[];
 BASE_EXPORT extern const char16 kWhitespaceASCIIAs16[];  // No unicode.
 

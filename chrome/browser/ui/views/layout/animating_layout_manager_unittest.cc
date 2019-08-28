@@ -102,10 +102,7 @@ class AnimatingLayoutManagerSteppingTest : public testing::Test {
                  {children_[2], true, {10, 100, 10, 10}}}};
   }
 
-  void TearDown() override {
-    delete view_;
-    view_ = nullptr;
-  }
+  void TearDown() override { DestroyView(); }
 
   View* view() { return view_; }
   View* child(size_t index) const { return children_[index]; }
@@ -128,6 +125,13 @@ class AnimatingLayoutManagerSteppingTest : public testing::Test {
         EXPECT_EQ(expected_child.bounds, child->bounds())
             << " view " << i << " bounds";
       }
+    }
+  }
+
+  void DestroyView() {
+    if (view_) {
+      delete view_;
+      view_ = nullptr;
     }
   }
 
@@ -223,57 +227,6 @@ TEST_F(AnimatingLayoutManagerSteppingTest,
   EXPECT_FALSE(layout()->is_animating());
   EXPECT_EQ(expected.host_size, view()->size());
   EnsureLayout(expected);
-}
-
-TEST_F(AnimatingLayoutManagerSteppingTest, TestEvents) {
-  class EventWatcher : public AnimatingLayoutManager::Observer {
-   public:
-    ~EventWatcher() override {}
-
-    explicit EventWatcher(AnimatingLayoutManager* layout) {
-      scoped_observer_.Add(layout);
-    }
-
-    void OnLayoutIsAnimatingChanged(AnimatingLayoutManager* source,
-                                    bool is_animating) override {
-      events_.push_back(is_animating);
-    }
-
-    const std::vector<bool> events() const { return events_; }
-
-   private:
-    std::vector<bool> events_;
-    ScopedObserver<AnimatingLayoutManager, Observer> scoped_observer_{this};
-  };
-
-  layout()->SetShouldAnimateBounds(true);
-  auto* const test_layout =
-      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
-  test_layout->SetLayout(layout1());
-  layout()->ResetLayout();
-  view()->SetSize(view()->GetPreferredSize());
-
-  EXPECT_FALSE(layout()->is_animating());
-  EventWatcher watcher(layout());
-  test_layout->SetLayout(layout2());
-
-  // Invalidating the layout forces a recalculation, which starts the animation.
-  const std::vector<bool> expected1{true};
-  view()->InvalidateLayout();
-  EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(expected1, watcher.events());
-
-  // Advance to completion.
-  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(1000));
-  EXPECT_TRUE(layout()->is_animating());
-  EXPECT_EQ(expected1, watcher.events());
-
-  // Final layout clears the |is_animating| state because the views are now in
-  // their final configuration.
-  const std::vector<bool> expected2{true, false};
-  view()->Layout();
-  EXPECT_FALSE(layout()->is_animating());
-  EXPECT_EQ(expected2, watcher.events());
 }
 
 TEST_F(AnimatingLayoutManagerSteppingTest,
@@ -623,6 +576,255 @@ TEST_F(AnimatingLayoutManagerSteppingTest, FlexLayout_ResetAnimation) {
   view()->Layout();
   EXPECT_FALSE(layout()->is_animating());
   EnsureLayout(expected_end2);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, TestEvents) {
+  class EventWatcher : public AnimatingLayoutManager::Observer {
+   public:
+    ~EventWatcher() override {}
+
+    explicit EventWatcher(AnimatingLayoutManager* layout) {
+      scoped_observer_.Add(layout);
+    }
+
+    void OnLayoutIsAnimatingChanged(AnimatingLayoutManager* source,
+                                    bool is_animating) override {
+      events_.push_back(is_animating);
+    }
+
+    const std::vector<bool> events() const { return events_; }
+
+   private:
+    std::vector<bool> events_;
+    ScopedObserver<AnimatingLayoutManager, Observer> scoped_observer_{this};
+  };
+
+  layout()->SetShouldAnimateBounds(true);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(layout1());
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  EXPECT_FALSE(layout()->is_animating());
+  EventWatcher watcher(layout());
+  test_layout->SetLayout(layout2());
+
+  // Invalidating the layout forces a recalculation, which starts the animation.
+  const std::vector<bool> expected1{true};
+  view()->InvalidateLayout();
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected1, watcher.events());
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_EQ(expected1, watcher.events());
+
+  // Final layout clears the |is_animating| state because the views are now in
+  // their final configuration.
+  const std::vector<bool> expected2{true, false};
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EXPECT_EQ(expected2, watcher.events());
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, QueueDelayedAction) {
+  bool action1_called = false;
+  bool action2_called = false;
+  auto action1 =
+      base::BindOnce([](bool* var) { *var = true; }, &action1_called);
+  auto action2 =
+      base::BindOnce([](bool* var) { *var = true; }, &action2_called);
+
+  layout()->SetShouldAnimateBounds(true);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(layout1());
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  EXPECT_FALSE(layout()->is_animating());
+  test_layout->SetLayout(layout2());
+
+  // Invalidating the layout forces a recalculation, which starts the animation.
+  view()->InvalidateLayout();
+  layout()->QueueDelayedAction(std::move(action1));
+  layout()->QueueDelayedAction(std::move(action2));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Advance partially.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Final layout clears the |is_animating| state because the views are now in
+  // their final configuration.
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EXPECT_TRUE(action1_called);
+  EXPECT_TRUE(action2_called);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest,
+       QueueDelayedAction_ContinueAnimation) {
+  bool action1_called = false;
+  bool action2_called = false;
+  auto action1 =
+      base::BindOnce([](bool* var) { *var = true; }, &action1_called);
+  auto action2 =
+      base::BindOnce([](bool* var) { *var = true; }, &action2_called);
+
+  layout()->SetShouldAnimateBounds(true);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(layout1());
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  EXPECT_FALSE(layout()->is_animating());
+  test_layout->SetLayout(layout2());
+
+  // Invalidating the layout forces a recalculation, which starts the animation.
+  view()->InvalidateLayout();
+  layout()->QueueDelayedAction(std::move(action1));
+  layout()->QueueDelayedAction(std::move(action2));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Advance partially.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(850));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Redirect the layout.
+  test_layout->SetLayout(layout1());
+  view()->InvalidateLayout();
+
+  // Advance partially.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Final layout clears the |is_animating| state because the views are now in
+  // their final configuration.
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EXPECT_TRUE(action1_called);
+  EXPECT_TRUE(action2_called);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, QueueDelayedAction_NeverFinishes) {
+  bool action1_called = false;
+  bool action2_called = false;
+  auto action1 =
+      base::BindOnce([](bool* var) { *var = true; }, &action1_called);
+  auto action2 =
+      base::BindOnce([](bool* var) { *var = true; }, &action2_called);
+
+  layout()->SetShouldAnimateBounds(true);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(layout1());
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  EXPECT_FALSE(layout()->is_animating());
+  test_layout->SetLayout(layout2());
+
+  // Invalidating the layout forces a recalculation, which starts the animation.
+  view()->InvalidateLayout();
+  layout()->QueueDelayedAction(std::move(action1));
+  layout()->QueueDelayedAction(std::move(action2));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Advance partially.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Destroy the view and the layout manager. Verify the queued actions are
+  // never called (and nothing crashes).
+  DestroyView();
+  EXPECT_FALSE(action1_called);
+  EXPECT_FALSE(action2_called);
+}
+
+TEST_F(AnimatingLayoutManagerSteppingTest, RunOrQueueAction) {
+  bool action1_called = false;
+  bool action2_called = false;
+  auto action1 =
+      base::BindOnce([](bool* var) { *var = true; }, &action1_called);
+  auto action2 =
+      base::BindOnce([](bool* var) { *var = true; }, &action2_called);
+
+  layout()->SetShouldAnimateBounds(true);
+  auto* const test_layout =
+      layout()->SetTargetLayoutManager(std::make_unique<TestLayoutManager>());
+  test_layout->SetLayout(layout1());
+  layout()->ResetLayout();
+  view()->SetSize(view()->GetPreferredSize());
+
+  // Since the layout is not animating yet, this action runs immediately.
+  EXPECT_FALSE(layout()->is_animating());
+  layout()->RunOrQueueAction(std::move(action1));
+  EXPECT_TRUE(action1_called);
+
+  test_layout->SetLayout(layout2());
+
+  // Invalidating the layout forces a recalculation, which starts the animation.
+  view()->InvalidateLayout();
+
+  // Since the animation is running, this action is queued for later.
+  layout()->RunOrQueueAction(std::move(action2));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_TRUE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Advance partially.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  view()->Layout();
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_TRUE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Advance to completion.
+  animation_api()->IncrementTime(base::TimeDelta::FromMilliseconds(500));
+  EXPECT_TRUE(layout()->is_animating());
+  EXPECT_TRUE(action1_called);
+  EXPECT_FALSE(action2_called);
+
+  // Final layout clears the |is_animating| state because the views are now in
+  // their final configuration.
+  view()->Layout();
+  EXPECT_FALSE(layout()->is_animating());
+  EXPECT_TRUE(action1_called);
+  EXPECT_TRUE(action2_called);
 }
 
 namespace {

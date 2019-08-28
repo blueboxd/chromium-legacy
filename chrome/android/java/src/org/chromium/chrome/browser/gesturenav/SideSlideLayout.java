@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -299,7 +300,10 @@ public class SideSlideLayout extends ViewGroup {
 
         // Tint the arrow blue when swiped enough to initiate navigation if released.
         boolean navigating = willNavigate();
-        if (navigating != mWillNavigate) mArrowView.setImageTint(navigating);
+        if (navigating != mWillNavigate) {
+            mArrowView.setImageTint(navigating);
+            if (navigating) performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+        }
         mWillNavigate = navigating;
 
         if (mCloseIndicatorEnabled) {

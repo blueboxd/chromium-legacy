@@ -4,6 +4,7 @@
 
 module media.mojom;
 
+import "media/learning/mojo/public/mojom/learning_task_controller.mojom";
 import "media/mojo/mojom/media_types.mojom";
 import "media/mojo/mojom/video_decode_stats_recorder.mojom";
 import "media/mojo/mojom/watch_time_recorder.mojom";
@@ -60,6 +61,10 @@ interface MediaMetricsProvider {
 
   // Creates a VideoDecodeStatsRecorder instance.
   AcquireVideoDecodeStatsRecorder(VideoDecodeStatsRecorder& recorder);
+
+  // Returns a LearningTaskController for the given |taskName|.
+  AcquireLearningTaskController(
+    string taskName, media.learning.mojom.LearningTaskController& controller);
 
   // Reports that bytes have been received by the media player.
   AddBytesReceived(uint64 bytes_received);

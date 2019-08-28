@@ -110,13 +110,20 @@ class TestChangeStream : public mojom::WebUIGraphChangeStream {
   mojo::Binding<mojom::WebUIGraphChangeStream> binding_;
 };
 
+class WebUIGraphDumpImplTest : public testing::Test {
+ public:
+  void TearDown() override { graph_.TearDown(); }
+
+ protected:
+  GraphImpl graph_;
+};
+
 }  // namespace
 
-TEST(WebUIGraphDumpImplTest, ChangeStream) {
+TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
   content::BrowserTaskEnvironment task_environment;
 
-  GraphImpl graph;
-  MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph);
+  MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph_);
 
   base::TimeTicks now = PerformanceManagerClock::NowTicks();
 
@@ -127,7 +134,7 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
   auto* main_frame = mock_graph.page->GetMainFrameNodeImpl();
   main_frame->OnNavigationCommitted(kExampleUrl, /* same_document */ false);
 
-  WebUIGraphDumpImpl impl(&graph);
+  WebUIGraphDumpImpl impl(&graph_);
   // Create a mojo proxy to the impl.
   mojom::WebUIGraphDumpPtr impl_proxy;
   impl.Bind(mojo::MakeRequest(&impl_proxy), base::OnceClosure());

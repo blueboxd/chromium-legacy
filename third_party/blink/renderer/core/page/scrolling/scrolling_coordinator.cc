@@ -597,29 +597,6 @@ void ScrollingCoordinator::TouchEventTargetRectsDidChange(LocalFrame* frame) {
   frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(true);
 }
 
-void ScrollingCoordinator::UpdateScrollParentForGraphicsLayer(
-    GraphicsLayer* child,
-    const PaintLayer* parent) {
-  cc::Layer* scroll_parent_cc_layer = nullptr;
-  if (parent && parent->HasCompositedLayerMapping())
-    scroll_parent_cc_layer = GraphicsLayerToCcLayer(
-        parent->GetCompositedLayerMapping()->ScrollingContentsLayer());
-
-  child->SetScrollParent(scroll_parent_cc_layer);
-}
-
-void ScrollingCoordinator::UpdateClipParentForGraphicsLayer(
-    GraphicsLayer* child,
-    const PaintLayer* parent) {
-  cc::Layer* clip_parent_cc_layer = nullptr;
-  if (parent && parent->HasCompositedLayerMapping()) {
-    clip_parent_cc_layer = GraphicsLayerToCcLayer(
-        parent->GetCompositedLayerMapping()->ParentForSublayers());
-  }
-
-  child->SetClipParent(clip_parent_cc_layer);
-}
-
 void ScrollingCoordinator::AnimationHostInitialized(
     cc::AnimationHost& animation_host,
     LocalFrameView* view) {

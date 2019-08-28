@@ -50,16 +50,11 @@ class MenuManager {
     this.node_;
 
     /**
-     * The node that the menu has been opened for.
+     * The node that the menu has been opened for. Null if the menu is not
+     * currently open.
      * @private {chrome.automation.AutomationNode}
      */
     this.menuOriginNode_;
-
-    /**
-     * The node that the menu has been opened for.
-     * @private {!chrome.automation.AutomationNode}
-     */
-    this.menuOriginNode_ = desktop;
 
     /**
      * Keeps track of when we're in the Switch Access menu.
@@ -152,6 +147,8 @@ class MenuManager {
           chrome.automation.EventType.TEXT_SELECTION_CHANGED,
           this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
     }
+    this.menuOriginNode_ = null;
+
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
         false /** Hide the menu. */, SAConstants.EMPTY_LOCATION, 0);
   }
@@ -547,16 +544,7 @@ class MenuManager {
 
       if (window.switchAccess.improvedTextInputEnabled() &&
           node.state[StateType.FOCUSED]) {
-        // TODO(sophyang): Replace these with getTextNavigationActionsForNode_()
-        // once the text navigation submenu is implemented.
-        actions.push(SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT);
-        actions.push(SAConstants.MenuAction.JUMP_TO_END_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT);
-        actions.push(SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT);
+        actions.push(SAConstants.MenuAction.MOVE_CURSOR);
         actions.push(SAConstants.MenuAction.SELECT_START);
         if (this.navigationManager_.selectionStarted()) {
           actions.push(SAConstants.MenuAction.SELECT_END);
@@ -637,6 +625,13 @@ class MenuManager {
           this.exit();
         }
         this.navigationManager_.scroll(action);
+        break;
+      case SAConstants.MenuAction.MOVE_CURSOR:
+        if (this.menuOriginNode_) {
+          this.openMenu_(
+              this.menuOriginNode_, SAConstants.MenuId.TEXT_NAVIGATION,
+              true /** Opening a submenu. */);
+        }
         break;
       case SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT:
         this.navigationManager_.jumpToBeginningOfText();

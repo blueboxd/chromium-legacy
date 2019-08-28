@@ -256,10 +256,6 @@ class BASE_EXPORT TaskTraits {
         with_base_sync_primitives_(
             trait_helpers::HasTrait<WithBaseSyncPrimitives, ArgTypes...>()),
         use_thread_pool_(trait_helpers::HasTrait<ThreadPool, ArgTypes...>()) {
-#if !defined(OS_CHROMEOS)
-    // TODO(https://crbug.com/968047): Enable on Chrome OS in a separate CL.
-    // Initially disabled to keep the rule enforced on other platforms if the
-    // CL that enables it on Chrome OS is reverted.
     constexpr bool has_thread_pool =
         trait_helpers::HasTrait<ThreadPool, ArgTypes...>();
     constexpr bool has_extension =
@@ -268,7 +264,6 @@ class BASE_EXPORT TaskTraits {
         has_thread_pool ^ has_extension,
         "Traits must explicitly specify a destination (e.g. ThreadPool or a "
         "named thread like BrowserThread)");
-#endif
   }
 
   constexpr TaskTraits(const TaskTraits& other) = default;

@@ -7,6 +7,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 
@@ -70,11 +71,15 @@ class TestSafeBrowsingService : public SafeBrowsingService,
 
   // ServicesDelegate::ServicesCreator:
   bool CanCreateDatabaseManager() override;
+#if !defined(OS_ANDROID)
   bool CanCreateDownloadProtectionService() override;
+#endif
   bool CanCreateIncidentReportingService() override;
   bool CanCreateResourceRequestDetector() override;
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override;
+#if !defined(OS_ANDROID)
   DownloadProtectionService* CreateDownloadProtectionService() override;
+#endif
   IncidentReportingService* CreateIncidentReportingService() override;
   ResourceRequestDetector* CreateResourceRequestDetector() override;
 

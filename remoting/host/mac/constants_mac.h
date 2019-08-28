@@ -26,6 +26,9 @@ extern const char kHostHelperScriptPath[];
 // Path to the service binary (.app).
 extern const char kHostBinaryPath[];
 
+// Path to the legacy service binary (.bundle).
+extern const char kHostLegacyBinaryPath[];
+
 // If this file exists, it means that the host is enabled for sharing.
 extern const char kHostEnabledPath[];
 

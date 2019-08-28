@@ -817,6 +817,35 @@ TEST(AXTreeTest, MultipleIgnoredChangesDoesNotBreakCache) {
   EXPECT_TRUE(tree.GetFromId(3)->data().HasState(ax::mojom::State::kIgnored));
 }
 
+TEST(AXTreeTest, NodeToClearUpdatesParentUnignoredCount) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(4);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[1].child_ids.push_back(3);
+  initial_state.nodes[1].child_ids.push_back(4);
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[3].id = 4;
+
+  AXTree tree(initial_state);
+  EXPECT_EQ(2u, tree.GetFromId(1)->GetUnignoredChildCount());
+  EXPECT_EQ(2u, tree.GetFromId(2)->GetUnignoredChildCount());
+
+  AXTreeUpdate update;
+  update.nodes.resize(1);
+  update.node_id_to_clear = 2;
+  update.root_id = 1;
+  update.nodes[0] = initial_state.nodes[1];
+  update.nodes[0].state = 0;
+  update.nodes[0].child_ids.resize(0);
+  EXPECT_TRUE(tree.Unserialize(update)) << tree.error();
+
+  EXPECT_EQ(1u, tree.GetFromId(1)->GetUnignoredChildCount());
+}
+
 TEST(AXTreeTest, TreeObserverIsNotCalledForReparenting) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
@@ -1634,6 +1663,7 @@ TEST(AXTreeTest, CachedUnignoredValues) {
   root = tree.root();
   EXPECT_EQ(2u, root->GetUnignoredChildCount());
   EXPECT_EQ(2, root->GetUnignoredChildAtIndex(0)->id());
+  EXPECT_EQ(2u, tree.GetFromId(2)->GetUnignoredChildCount());
   EXPECT_EQ(0u, tree.GetFromId(4)->GetUnignoredIndexInParent());
   EXPECT_EQ(1u, tree.GetFromId(5)->GetUnignoredIndexInParent());
 
@@ -1644,6 +1674,7 @@ TEST(AXTreeTest, CachedUnignoredValues) {
 
   EXPECT_TRUE(tree.Unserialize(update2));
 
+  EXPECT_EQ(1u, tree.GetFromId(2)->GetUnignoredChildCount());
   EXPECT_EQ(0u, tree.GetFromId(5)->GetUnignoredIndexInParent());
 
   // Ensure siblings of a deleted node are updated.
@@ -1654,6 +1685,7 @@ TEST(AXTreeTest, CachedUnignoredValues) {
 
   EXPECT_TRUE(tree.Unserialize(update3));
 
+  EXPECT_EQ(1u, tree.GetFromId(1)->GetUnignoredChildCount());
   EXPECT_EQ(0u, tree.GetFromId(3)->GetUnignoredIndexInParent());
 
   // Ensure new nodes are correctly updated.
@@ -1667,6 +1699,7 @@ TEST(AXTreeTest, CachedUnignoredValues) {
 
   EXPECT_TRUE(tree.Unserialize(update4));
 
+  EXPECT_EQ(2u, tree.GetFromId(1)->GetUnignoredChildCount());
   EXPECT_EQ(0u, tree.GetFromId(3)->GetUnignoredIndexInParent());
   EXPECT_EQ(1u, tree.GetFromId(6)->GetUnignoredIndexInParent());
   EXPECT_EQ(0u, tree.GetFromId(7)->GetUnignoredIndexInParent());

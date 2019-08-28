@@ -37,6 +37,8 @@ class FakeComponentContext
       fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
       fidl::InterfaceRequest<fuchsia::modular::AgentController> controller)
       override;
+  void ConnectToAgentService(
+      fuchsia::modular::AgentServiceRequest request) override;
   void NotImplemented_(const std::string& name) override;
 
  private:
@@ -44,6 +46,7 @@ class FakeComponentContext
       binding_;
   AgentImpl agent_impl_;
   const std::string component_url_;
+  fuchsia::sys::ServiceProviderPtr agent_services_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeComponentContext);
 };

@@ -19,6 +19,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "media/base/android/media_url_interceptor.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/auth.h"
 #include "net/http/http_auth.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -32,24 +33,22 @@ namespace {
 // Returns the cookie manager for the |browser_context| at the client end of the
 // mojo pipe. This will be restricted to the origin of |url|, and will apply
 // policies from user and ContentBrowserClient to cookie operations.
-network::mojom::RestrictedCookieManagerPtr GetRestrictedCookieManagerForContext(
-    BrowserContext* browser_context,
-    const GURL& url,
-    int render_process_id,
-    int render_frame_id) {
+mojo::PendingRemote<network::mojom::RestrictedCookieManager>
+GetRestrictedCookieManagerForContext(BrowserContext* browser_context,
+                                     const GURL& url,
+                                     int render_process_id,
+                                     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   url::Origin origin = url::Origin::Create(url);
   StoragePartition* storage_partition =
       BrowserContext::GetDefaultStoragePartition(browser_context);
 
-  network::mojom::RestrictedCookieManagerPtr pipe;
-  mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver =
-      mojo::MakeRequest(&pipe);
+  mojo::PendingRemote<network::mojom::RestrictedCookieManager> pipe;
   storage_partition->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::NETWORK, origin,
       /* is_service_worker = */ false, render_process_id, render_frame_id,
-      std::move(receiver));
+      pipe.InitWithNewPipeAndPassReceiver());
   return pipe;
 }
 
@@ -61,7 +60,7 @@ void ReturnResultOnUIThread(
 }
 
 void ReturnResultOnUIThreadAndClosePipe(
-    network::mojom::RestrictedCookieManagerPtr pipe,
+    mojo::Remote<network::mojom::RestrictedCookieManager> pipe,
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& result) {
   base::PostTask(FROM_HERE, {BrowserThread::UI},
@@ -143,9 +142,9 @@ void MediaResourceGetterImpl::GetCookies(const GURL& url,
     return;
   }
 
-  network::mojom::RestrictedCookieManagerPtr cookie_manager =
+  mojo::Remote<network::mojom::RestrictedCookieManager> cookie_manager(
       GetRestrictedCookieManagerForContext(
-          browser_context_, url, render_process_id_, render_frame_id_);
+          browser_context_, url, render_process_id_, render_frame_id_));
   network::mojom::RestrictedCookieManager* cookie_manager_ptr =
       cookie_manager.get();
   cookie_manager_ptr->GetCookiesString(

@@ -219,6 +219,19 @@ bool PerfettoTracedProcess::CanStartTracing(
   return true;
 }
 
+void PerfettoTracedProcess::ActivateSystemTriggers(
+    const std::vector<std::string>& triggers) {
+  DCHECK(system_producer_endpoint_.get());
+  if (!GetTaskRunner()->GetOrCreateTaskRunner()->RunsTasksInCurrentSequence()) {
+    GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&PerfettoTracedProcess::ActivateSystemTriggers,
+                       base::Unretained(this), triggers));
+    return;
+  }
+  system_producer_endpoint_->ActivateTriggers(triggers);
+}
+
 ProducerClient* PerfettoTracedProcess::producer_client() {
   return producer_client_.get();
 }

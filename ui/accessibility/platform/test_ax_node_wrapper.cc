@@ -578,6 +578,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
 base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
   const AXNodeData& data = GetData();
   switch (data.role) {
+    case ax::mojom::Role::kArticle:
+      return base::ASCIIToUTF16("article");
+
     case ax::mojom::Role::kAudio:
       return base::ASCIIToUTF16("audio");
 
@@ -602,6 +605,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
 
     case ax::mojom::Role::kDetails:
       return base::ASCIIToUTF16("details");
+
+    case ax::mojom::Role::kFigure:
+      return base::ASCIIToUTF16("figure");
 
     case ax::mojom::Role::kMeter:
       return base::ASCIIToUTF16("meter");

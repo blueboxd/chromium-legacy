@@ -177,6 +177,12 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
             builder.setExtras(mTaskExtras);
             mBuilder = builder;
         }
+
+        @Override
+        public void visit(TaskInfo.ExactInfo exactInfo) {
+            throw new RuntimeException("Exact tasks should not be scheduled with "
+                    + "GcmNetworkManager.");
+        }
     }
 
     private static int getGcmNetworkManagerNetworkTypeFromTypeFromTaskNetworkType(

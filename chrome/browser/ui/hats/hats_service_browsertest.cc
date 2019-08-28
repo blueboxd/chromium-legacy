@@ -124,9 +124,13 @@ class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
     // injected below.
     ASSERT_FALSE(
         HatsServiceFactory::GetForProfile(browser()->profile(), false));
+    // TODO(weili): refactor to use constants from hats_service.cc for these
+    // parameters.
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kHappinessTrackingSurveysForDesktop,
-        {{"probability", "1.000"}, {"survey", "satisfaction"}});
+        {{"probability", "1.000"},
+         {"survey", "satisfaction"},
+         {"en_site_id", "test_site_id"}});
     // Set the profile creation time to be old enough to ensure triggering.
     browser()->profile()->SetCreationTimeForTesting(
         base::Time::Now() - base::TimeDelta::FromDays(45));

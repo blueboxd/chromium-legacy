@@ -95,6 +95,7 @@ jumbo_component("services") {
     "//media/gpu:buildflags",
     "//media/gpu/ipc/service",
     "//media/learning/impl",
+    "//media/learning/mojo:impl",
     "//media/mojo/common",
     "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//services/metrics/public/cpp:metrics_cpp",

@@ -28,6 +28,7 @@ import android.support.annotation.Nullable;
 
 import com.google.ipc.invalidation.util.Preconditions;
 
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -334,33 +335,49 @@ public class DownloadBroadcastManager extends Service {
      * @param intent Intent from the android DownloadManager.
      */
     private void openDownload(Context context, Intent intent, ContentId contentId) {
-        long ids[] =
-                intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
-        if (ids == null || ids.length == 0) {
-            DownloadManagerService.openDownloadsPage(context);
-            return;
-        }
-
-        long id = ids[0];
-        DownloadManagerBridge.queryDownloadResult(id, result -> {
-            if (result.contentUri == null) {
+        String downloadFilePath = IntentUtils.safeGetStringExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH);
+        if (ContentUriUtils.isContentUri(downloadFilePath)) {
+            // On Q+, content URI is being used and there is no download ID.
+            openDownloadWithId(context, intent, DownloadItem.INVALID_DOWNLOAD_ID, contentId);
+        } else {
+            long ids[] =
+                    intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
+            if (ids == null || ids.length == 0) {
                 DownloadManagerService.openDownloadsPage(context);
                 return;
             }
 
-            String downloadFilename = IntentUtils.safeGetStringExtra(
-                    intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH);
-            boolean isSupportedMimeType = IntentUtils.safeGetBooleanExtra(
-                    intent, DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE, false);
-            boolean isOffTheRecord = IntentUtils.safeGetBooleanExtra(
-                    intent, DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD, false);
-            String originalUrl =
-                    IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_ORIGINATING_URI);
-            String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
-            DownloadManagerService.openDownloadedContent(context, downloadFilename,
-                    isSupportedMimeType, isOffTheRecord, contentId.id, id, originalUrl, referrer,
-                    DownloadMetrics.DownloadOpenSource.NOTIFICATION, null);
-        });
+            long id = ids[0];
+            DownloadManagerBridge.queryDownloadResult(id, result -> {
+                if (result.contentUri == null) {
+                    DownloadManagerService.openDownloadsPage(context);
+                    return;
+                }
+                openDownloadWithId(context, intent, id, contentId);
+            });
+        }
+    }
+
+    /**
+     * Called to open a particular download item with the given ID.
+     * @param context Context of the receiver.
+     * @param intent Intent from the notification.
+     * @param id ID from the Android DownloadManager, or DownloadItem.INVALID_DOWNLOAD_ID on Q+.
+     * @param contentId Content ID of the download.
+     */
+    private void openDownloadWithId(Context context, Intent intent, long id, ContentId contentId) {
+        String downloadFilePath = IntentUtils.safeGetStringExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH);
+        boolean isSupportedMimeType = IntentUtils.safeGetBooleanExtra(
+                intent, DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE, false);
+        boolean isOffTheRecord = IntentUtils.safeGetBooleanExtra(
+                intent, DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD, false);
+        String originalUrl = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_ORIGINATING_URI);
+        String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
+        DownloadManagerService.openDownloadedContent(context, downloadFilePath, isSupportedMimeType,
+                isOffTheRecord, contentId.id, id, originalUrl, referrer,
+                DownloadMetrics.DownloadOpenSource.NOTIFICATION, null);
     }
 
     @Nullable

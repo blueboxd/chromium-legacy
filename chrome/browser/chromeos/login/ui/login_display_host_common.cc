@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/ui_base_features.h"
 
 namespace chromeos {

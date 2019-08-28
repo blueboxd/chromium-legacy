@@ -3038,7 +3038,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
 }
 
 void BrowserView::ShowHatsBubble(const std::string& site_id) {
-  HatsBubbleView::Show(browser(), site_id);
+  HatsBubbleView::ShowOnContentReady(browser(), site_id);
 }
 
 void BrowserView::ExecuteExtensionCommand(

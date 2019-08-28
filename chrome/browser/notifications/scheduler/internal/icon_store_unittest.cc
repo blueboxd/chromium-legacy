@@ -61,13 +61,18 @@ class IconStoreTest : public testing::Test {
     db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   }
 
-  std::vector<SkBitmap> CreateIcons(size_t size) {
-    std::vector<SkBitmap> result;
-    for (size_t i = 0; i < size; i++) {
-      SkBitmap icon;
-      icon.allocN32Pixels(1, 1);
-      result.emplace_back(std::move(icon));
-    }
+  IconStore::IconTypeBundleMap CreateIcons() {
+    IconStore::IconTypeBundleMap result;
+    SkBitmap large_icon;
+    large_icon.allocN32Pixels(1, 1);
+    IconBundle large_icon_bundle;
+    large_icon_bundle.bitmap = std::move(large_icon);
+    result.emplace(IconType::kLargeIcon, std::move(large_icon_bundle));
+    SkBitmap small_icon;
+    small_icon.allocN32Pixels(1, 1);
+    IconBundle small_icon_bundle;
+    small_icon_bundle.bitmap = std::move(small_icon);
+    result.emplace(IconType::kSmallIcon, std::move(small_icon_bundle));
     return result;
   }
 
@@ -84,7 +89,7 @@ class IconStoreTest : public testing::Test {
         base::BindOnce(&IconStoreTest::OnIconsLoaded, base::Unretained(this)));
   }
 
-  void AddIcons(std::vector<SkBitmap> input) {
+  void AddIcons(IconStore::IconTypeBundleMap input) {
     auto add_icons_callback =
         base::BindOnce(&IconStoreTest::OnIconsAdded, base::Unretained(this));
     EXPECT_CALL(*icon_converter(), ConvertIconToString(_, _))
@@ -97,12 +102,12 @@ class IconStoreTest : public testing::Test {
     store()->AddIcons(std::move(input), std::move(add_icons_callback));
   }
 
-  void OnIconsAdded(std::vector<std::string> icons_uuid, bool success) {
-    icons_uuid_ = std::move(icons_uuid);
+  void OnIconsAdded(IconStore::IconTypeUuidMap icons_uuid, bool success) {
+    icons_uuid_map_ = std::move(icons_uuid);
     add_result_ = success;
   }
 
-  void OnIconsLoaded(bool success, IconStore::IconsMap icons) {
+  void OnIconsLoaded(bool success, IconStore::LoadedIconsMap icons) {
     loaded_icons_ = std::move(icons);
     load_result_ = success;
   }
@@ -113,15 +118,23 @@ class IconStoreTest : public testing::Test {
   leveldb_proto::test::FakeDB<proto::Icon, IconEntry>* db() { return db_; }
   bool load_result() const { return load_result_; }
   bool add_result() const { return add_result_; }
-  const std::vector<std::string>& icons_uuid() const { return icons_uuid_; }
-  const IconStore::IconsMap& loaded_icons() const { return loaded_icons_; }
+  std::vector<std::string> icons_uuid() const {
+    std::vector<std::string> result;
+    for (const auto& pair : icons_uuid_map_) {
+      result.emplace_back(pair.second);
+    }
+    return result;
+  }
+  const IconStore::LoadedIconsMap& loaded_icons() const {
+    return loaded_icons_;
+  }
 
  private:
   base::test::TaskEnvironment task_environment_;
   bool add_result_;
   bool load_result_;
-  IconStore::IconsMap loaded_icons_;
-  std::vector<std::string> icons_uuid_;
+  IconStore::LoadedIconsMap loaded_icons_;
+  IconStore::IconTypeUuidMap icons_uuid_map_;
   std::unique_ptr<IconStore> store_;
   std::map<std::string, proto::Icon> db_entries_;
   leveldb_proto::test::FakeDB<proto::Icon, IconEntry>* db_;
@@ -144,7 +157,7 @@ TEST_F(IconStoreTest, InitFailed) {
 
 TEST_F(IconStoreTest, AddIconsFailed) {
   InitDb();
-  std::vector<SkBitmap> input = CreateIcons(2);
+  auto input = CreateIcons();
 
   // Save two icons into store.
   AddIcons(input);
@@ -155,7 +168,7 @@ TEST_F(IconStoreTest, AddIconsFailed) {
 
 TEST_F(IconStoreTest, AddAndLoadIcons) {
   InitDb();
-  std::vector<SkBitmap> input = CreateIcons(2);
+  auto input = CreateIcons();
 
   // Save two icons into store.
   AddIcons(input);
@@ -172,7 +185,7 @@ TEST_F(IconStoreTest, AddAndLoadIcons) {
 
 TEST_F(IconStoreTest, LoadIconsFailed) {
   InitDb();
-  std::vector<SkBitmap> input = CreateIcons(2);
+  auto input = CreateIcons();
 
   // Save two icons into store.
   AddIcons(input);
@@ -190,7 +203,7 @@ TEST_F(IconStoreTest, LoadIconsFailed) {
 
 TEST_F(IconStoreTest, DeleteIcons) {
   InitDb();
-  std::vector<SkBitmap> input = CreateIcons(2);
+  auto input = CreateIcons();
 
   // Save two icons into store.
   AddIcons(input);
@@ -212,7 +225,7 @@ TEST_F(IconStoreTest, DeleteIcons) {
 
 TEST_F(IconStoreTest, DeleteIconsFailed) {
   InitDb();
-  std::vector<SkBitmap> input = CreateIcons(2);
+  auto input = CreateIcons();
 
   // Save two icons into store.
   AddIcons(input);

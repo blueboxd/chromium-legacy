@@ -48,9 +48,13 @@ AXTreeManager* AXTreeManagerMap::GetManagerForChildTree(
   AXTreeManager* child_tree_manager =
       AXTreeManagerMap::GetInstance().GetManager(child_tree_id);
 
-  DCHECK(child_tree_manager &&
-         child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
-             parent_node.id());
+  // Some platforms do not use AXTreeManagers, so child trees don't exist in
+  // the browser process.
+  if (!child_tree_manager)
+    return nullptr;
+
+  DCHECK(child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
+         parent_node.id());
 
   return child_tree_manager;
 }

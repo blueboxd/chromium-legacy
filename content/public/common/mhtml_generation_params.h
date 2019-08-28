@@ -17,7 +17,10 @@ struct CONTENT_EXPORT MHTMLGenerationParams {
   // The file that will contain the generated MHTML.
   base::FilePath file_path;
 
-  // Uses Content-Transfer-Encoding: binary when encoding.  See
+  // If true, a Content-Transfer-Encoding value of 'binary' will be used,
+  // instead of a combination of 'quoted-printable' and 'base64'. Binary
+  // encoding is known to have interoperability issues and is not the
+  // recommended encoding for shareable content. See
   // https://tools.ietf.org/html/rfc2045 for details about
   // Content-Transfer-Encoding.
   bool use_binary_encoding = false;

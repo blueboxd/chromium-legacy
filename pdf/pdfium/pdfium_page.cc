@@ -251,28 +251,29 @@ FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
   return text_page();
 }
 
-void PDFiumPage::GetTextRunInfo(
-    int start_char_index,
-    PP_PrivateAccessibilityTextRunInfo* text_run_info) {
-  if (start_char_index < 0) {
-    text_run_info->len = 0;
-    text_run_info->font_size = 0;
-    text_run_info->bounds = pp::FloatRect();
-    text_run_info->direction = PP_PRIVATEDIRECTION_NONE;
-    return;
-  }
+base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumPage::GetTextRunInfo(
+    int start_char_index) {
   FPDF_PAGE page = GetPage();
   FPDF_TEXTPAGE text_page = GetTextPage();
   int chars_count = FPDFText_CountChars(text_page);
+  // Check to make sure |start_char_index| is within bounds.
+  if (start_char_index < 0 || start_char_index >= chars_count)
+    return base::nullopt;
 
   int actual_start_char_index = GetFirstNonUnicodeWhiteSpaceCharIndex(
       text_page, start_char_index, chars_count);
+  // Check to see if GetFirstNonUnicodeWhiteSpaceCharIndex() iterated through
+  // all the characters.
   if (actual_start_char_index >= chars_count) {
-    text_run_info->len = 0;
-    text_run_info->font_size = 0;
-    text_run_info->bounds = pp::FloatRect();
-    text_run_info->direction = PP_PRIVATEDIRECTION_NONE;
-    return;
+    // If so, |text_run_info->len| needs to take the number of characters
+    // iterated into account.
+    DCHECK_GT(actual_start_char_index, start_char_index);
+    PP_PrivateAccessibilityTextRunInfo info;
+    info.len = chars_count - start_char_index;
+    info.font_size = 0;
+    info.bounds = pp::FloatRect();
+    info.direction = PP_PRIVATEDIRECTION_NONE;
+    return info;
   }
   int char_index = actual_start_char_index;
 
@@ -377,16 +378,18 @@ void PDFiumPage::GetTextRunInfo(
     text_run_font_size = estimated_font_size;
   }
 
+  PP_PrivateAccessibilityTextRunInfo info;
+  info.len = char_index - start_char_index;
+  info.font_size = text_run_font_size;
+  info.bounds = text_run_bounds;
   // Infer text direction from first and last character of the text run. We
   // can't base our decision on the character direction, since a character of a
   // RTL language will have an angle of 0 when not rotated, just like a
   // character in a LTR language.
-  text_run_info->direction = char_index - actual_start_char_index > 1
-                                 ? GetDirectionFromAngle(text_run_angle)
-                                 : PP_PRIVATEDIRECTION_NONE;
-  text_run_info->len = char_index - start_char_index;
-  text_run_info->font_size = text_run_font_size;
-  text_run_info->bounds = text_run_bounds;
+  info.direction = char_index - actual_start_char_index > 1
+                       ? GetDirectionFromAngle(text_run_angle)
+                       : PP_PRIVATEDIRECTION_NONE;
+  return info;
 }
 
 uint32_t PDFiumPage::GetCharUnicode(int char_index) {

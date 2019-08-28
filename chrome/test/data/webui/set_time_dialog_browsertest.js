@@ -22,9 +22,7 @@ SetTimeDialogBrowserTest.prototype = {
   ],
 };
 
-// Fails on linux-chromeos-google-rel, flaky on other bots.
-// https://crbug.com/996000
-TEST_F('SetTimeDialogBrowserTest', 'DISABLED_All', function() {
+TEST_F('SetTimeDialogBrowserTest', 'All', function() {
   suite('SetTimeDialog', function() {
     let setTimeElement = null;
     let testBrowserProxy = null;
@@ -131,6 +129,16 @@ TEST_F('SetTimeDialogBrowserTest', 'DISABLED_All', function() {
             // The exact value isn't important (it depends on the current time).
             assertGT(timeInSeconds, todaySeconds);
           });
+    });
+
+    test('Revert invalid date on blur', () => {
+      const dateInput = setTimeElement.$$('#dateInput');
+      dateInput.focus();
+      dateInput.value = '9999-99-99';
+      dateInput.blur();
+      // The exact value isn't important (it depends on the current date, and
+      // the date could change in the middle of the test).
+      assertNotEquals('9999-99-99', dateInput.value);
     });
 
     test('SystemTimezoneChanged', () => {

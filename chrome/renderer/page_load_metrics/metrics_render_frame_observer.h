@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/renderer/page_load_metrics/page_resource_data_use.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"

@@ -38,12 +38,12 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-// The maximum amount of time to wait for Chrome's AppShimHostManager to be
+// The maximum amount of time to wait for Chrome's AppShimListener to be
 // ready.
 constexpr base::TimeDelta kPollTimeoutSeconds =
     base::TimeDelta::FromSeconds(60);
 
-// The period in between attempts to check of Chrome's AppShimHostManager is
+// The period in between attempts to check of Chrome's AppShimListener is
 // ready.
 constexpr base::TimeDelta kPollPeriodMsec =
     base::TimeDelta::FromMilliseconds(100);

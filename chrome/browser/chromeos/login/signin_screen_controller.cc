@@ -34,8 +34,6 @@ SignInScreenController::SignInScreenController(OobeUI* oobe_ui)
   // WeakPtr logic. See crbug.com/685287.
   user_board_view_->Bind(user_selection_screen_.get());
 
-  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                 content::NotificationService::AllSources());
   user_manager::UserManager::Get()->AddObserver(this);
 }
 
@@ -87,20 +85,6 @@ void SignInScreenController::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;
   user_selection_screen_->SetHandler(webui_handler_);
-}
-
-void SignInScreenController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_SESSION_STARTED, type);
-
-  // Stop listening to any notification once session has started.
-  // Sign in screen objects are marked for deletion with DeleteSoon so
-  // make sure no object would be used after session has started.
-  // http://crbug.com/125276
-  registrar_.RemoveAll();
-  user_manager::UserManager::Get()->RemoveObserver(this);
 }
 
 }  // namespace chromeos

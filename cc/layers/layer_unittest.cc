@@ -237,6 +237,13 @@ class LayerTest : public testing::Test {
   LayerTreeSettings settings_;
 };
 
+class LayerTestWithLayerList : public LayerTest {
+  void SetUp() override {
+    settings_.use_layer_lists = true;
+    LayerTest::SetUp();
+  }
+};
+
 TEST_F(LayerTest, BasicCreateAndDestroy) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   ASSERT_TRUE(test_layer.get());
@@ -264,8 +271,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   child->AddChild(grand_child);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   child->SetForceRenderSurfaceForTesting(true);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
-  child2->SetScrollParent(grand_child.get());
 
   // Resizing without a mask layer or masks_to_bounds, should only require a
   // regular commit. Note that a layer and its mask should match sizes, but
@@ -415,40 +420,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
-  // Setting the sticky constraints requires a subtree change. It shouldn't be
-  // required if they don't change.
-  LayerStickyPositionConstraint arbitrary_constraint;
-  arbitrary_constraint.is_sticky = true;
-  arbitrary_constraint.is_anchored_top = true;
-  arbitrary_constraint.top_offset = 50;
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetStickyPositionConstraint(arbitrary_constraint));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      root->PushPropertiesTo(root_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get());
-      layer_tree_host_->ClearLayersThatShouldPushProperties());
-
-  EXECUTE_AND_VERIFY_SUBTREE_NOT_CHANGED(
-      root->SetStickyPositionConstraint(arbitrary_constraint));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      root->PushPropertiesTo(root_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get()));
-
-  arbitrary_constraint.top_offset = 10;
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
-      root->SetStickyPositionConstraint(arbitrary_constraint));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      root->PushPropertiesTo(root_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get()));
-
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   root->SetPosition(arbitrary_point_f);
@@ -467,13 +438,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   child->SetPosition(arbitrary_point_f);
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       child->transform_tree_index());
-  EXPECT_TRUE(node->transform_changed);
-  // child2 is not in the subtree of child, but its scroll parent is. So, its
-  // to_screen will be effected by change in position of child2.
-  layer_tree_host_->property_trees()->transform_tree.UpdateTransforms(
-      child2->transform_tree_index());
-  node = layer_tree_host_->property_trees()->transform_tree.Node(
-      child2->transform_tree_index());
   EXPECT_TRUE(node->transform_changed);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       child->PushPropertiesTo(child_impl.get());
@@ -719,57 +683,6 @@ TEST_F(LayerTest, ReplaceChildWithNewChildThatHasOtherParent) {
   // and child2 should no longer have a parent.
   ASSERT_EQ(0U, test_layer->children().size());
   EXPECT_FALSE(child2_->parent());
-}
-
-TEST_F(LayerTest, DeleteRemovedScrollParent) {
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child1 = Layer::Create();
-  scoped_refptr<Layer> child2 = Layer::Create();
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
-
-  ASSERT_EQ(0U, parent->children().size());
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->InsertChild(child1, 0));
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->InsertChild(child2, 1));
-
-  ASSERT_EQ(2U, parent->children().size());
-  EXPECT_EQ(child1, parent->children()[0]);
-  EXPECT_EQ(child2, parent->children()[1]);
-
-  EXPECT_SET_NEEDS_COMMIT(1, child1->SetScrollParent(child2.get()));
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, child2->RemoveFromParent());
-
-  SimulateCommitForLayer(child1.get());
-
-  EXPECT_SET_NEEDS_COMMIT(1, child1->SetScrollParent(nullptr));
-  EXPECT_TRUE(base::Contains(layer_tree_host_->LayersThatShouldPushProperties(),
-                             child1.get()));
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
-}
-
-TEST_F(LayerTest, DeleteRemovedScrollChild) {
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child1 = Layer::Create();
-  scoped_refptr<Layer> child2 = Layer::Create();
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(parent));
-
-  ASSERT_EQ(0U, parent->children().size());
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->InsertChild(child1, 0));
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->InsertChild(child2, 1));
-
-  ASSERT_EQ(2U, parent->children().size());
-  EXPECT_EQ(child1, parent->children()[0]);
-  EXPECT_EQ(child2, parent->children()[1]);
-
-  EXPECT_SET_NEEDS_COMMIT(1, child1->SetScrollParent(child2.get()));
-
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, child1->RemoveFromParent());
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, layer_tree_host_->SetRootLayer(nullptr));
 }
 
 TEST_F(LayerTest, ReplaceChildWithSameChild) {

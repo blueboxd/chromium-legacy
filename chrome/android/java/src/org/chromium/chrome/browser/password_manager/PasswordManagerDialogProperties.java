@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.password_manager;
 
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
@@ -15,6 +16,9 @@ class PasswordManagerDialogProperties {
     // Illustration drawable resource id for the password manager.
     static final WritableIntPropertyKey ILLUSTRATION = new WritableIntPropertyKey();
 
+    // Boolean indicating whether there is enough space for the illustration to be shown.
+    static final WritableBooleanPropertyKey ILLUSTRATION_VISIBLE = new WritableBooleanPropertyKey();
+
     // Title that appears below the illustration.
     static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
 
@@ -24,6 +28,6 @@ class PasswordManagerDialogProperties {
     private PasswordManagerDialogProperties() {}
 
     static PropertyModel.Builder defaultModelBuilder() {
-        return new PropertyModel.Builder(ILLUSTRATION, TITLE, DETAILS);
+        return new PropertyModel.Builder(ILLUSTRATION, ILLUSTRATION_VISIBLE, TITLE, DETAILS);
     }
 }

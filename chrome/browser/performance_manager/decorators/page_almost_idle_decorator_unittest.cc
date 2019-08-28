@@ -33,6 +33,7 @@ class PageAlmostIdleDecoratorTest : public GraphTestHarness {
 
   void TearDown() override {
     PerformanceManagerClock::ResetClockForTesting();
+    GraphTestHarness::TearDown();
   }
 
   void TestPageAlmostIdleTransitions(bool timeout);

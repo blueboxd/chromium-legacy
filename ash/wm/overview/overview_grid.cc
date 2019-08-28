@@ -21,6 +21,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
@@ -70,8 +71,10 @@ constexpr float kOverviewInsetRatio = 0.05f;
 // Additional vertical inset reserved for windows in overview mode.
 constexpr float kOverviewVerticalInset = 0.1f;
 
-// Number of columns and rows for windows in tablet overview mode.
+// Number of rows for windows in tablet overview mode.
 constexpr int kTabletLayoutRow = 2;
+
+constexpr int kMinimumItemsForNewLayout = 6;
 
 // Histogram names for overview enter/exit smoothness in clamshell,
 // tablet mode and splitview.
@@ -376,6 +379,7 @@ OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown() {
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
+  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   grid_pre_event_handler_.reset();
 
   bool has_non_cover_animating = false;
@@ -420,6 +424,7 @@ void OverviewGrid::PrepareForOverview() {
   }
 
   grid_pre_event_handler_ = std::make_unique<OverviewGridPreEventHandler>(this);
+  Shell::Get()->wallpaper_controller()->AddObserver(this);
 }
 
 void OverviewGrid::PositionWindows(
@@ -432,7 +437,9 @@ void OverviewGrid::PositionWindows(
   DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);
 
   std::vector<gfx::RectF> rects =
-      ShouldUseTabletModeGridLayout()
+      ShouldUseTabletModeGridLayout() &&
+              (window_list_.size() - ignored_items.size() >=
+               kMinimumItemsForNewLayout)
           ? GetWindowRectsForTabletModeLayout(ignored_items)
           : GetWindowRects(ignored_items);
 
@@ -883,6 +890,14 @@ void OverviewGrid::OnScreenRotationAnimationFinished(
   Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
 }
 
+void OverviewGrid::OnWallpaperChanging() {
+  grid_pre_event_handler_.reset();
+}
+
+void OverviewGrid::OnWallpaperChanged() {
+  grid_pre_event_handler_ = std::make_unique<OverviewGridPreEventHandler>(this);
+}
+
 void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
   fps_counter_.reset();
   if (canceled)
@@ -1319,13 +1334,18 @@ void OverviewGrid::StartScroll() {
       kOverviewScrollHistogram, kOverviewScrollMaxLatencyHistogram);
 }
 
-void OverviewGrid::UpdateScrollOffset(float delta) {
+bool OverviewGrid::UpdateScrollOffset(float delta) {
+  const float previous_scroll_offset = scroll_offset_;
   scroll_offset_ += delta;
-  scroll_offset_ = base::ClampToRange(scroll_offset_, scroll_offset_min_, 0.0f);
-  PositionWindows(false);
+  scroll_offset_ = base::ClampToRange(scroll_offset_, scroll_offset_min_, 0.f);
+  if (scroll_offset_ == previous_scroll_offset)
+    return false;
+
+  PositionWindows(/*animate=*/false);
 
   DCHECK(presentation_time_recorder_);
   presentation_time_recorder_->RequestNext();
+  return true;
 }
 
 void OverviewGrid::EndScroll() {

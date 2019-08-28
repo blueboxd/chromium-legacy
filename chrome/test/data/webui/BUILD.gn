@@ -33,6 +33,7 @@ js2gtest("interactive_ui_tests_js_webui") {
   ]
   data = [
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_checkbox_test.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_focus_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_input_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toggle_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
@@ -159,6 +160,7 @@ js2gtest("browser_tests_js_webui") {
   ]
   data = [
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_button_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toast_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_view_manager_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",

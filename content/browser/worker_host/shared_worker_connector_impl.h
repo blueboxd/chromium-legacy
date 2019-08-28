@@ -17,14 +17,6 @@ namespace content {
 class CONTENT_EXPORT SharedWorkerConnectorImpl
     : public blink::mojom::SharedWorkerConnector {
  public:
-  // TODO(https://crbug.com/955171): Remove this method and use Create once
-  // RendererInterfaceBinders uses service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  static void CreateForRequest(
-      int client_process_id,
-      int frame_id,
-      blink::mojom::SharedWorkerConnectorRequest request);
-
   static void Create(
       int client_process_id,
       int frame_id,

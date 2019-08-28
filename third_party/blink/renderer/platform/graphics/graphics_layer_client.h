@@ -59,7 +59,6 @@ enum {
   kLayerTreeIncludesPaintInvalidations = 1 << 1,
   kLayerTreeIncludesPaintingPhases = 1 << 2,
   kLayerTreeIncludesRootLayer = 1 << 3,
-  kLayerTreeIncludesClipAndScrollParents = 1 << 4,
   kLayerTreeIncludesCompositingReasons = 1 << 5,
   kLayerTreeIncludesPaintRecords = 1 << 6,
   // Outputs all layers as a layer tree. The default is output children

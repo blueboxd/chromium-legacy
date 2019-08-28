@@ -16,6 +16,12 @@ namespace prefs {
 // This preference should only be changed in browser.
 const char kAssistantConsentStatus[] =
     "settings.voice_interaction.activity_control.consent_status";
+// A preference that indicates the user has allowed the Assistant services
+// to access the "context" (text and graphic content that is currently on
+// screen). This preference can be overridden by the
+// VoiceInteractionContextEnabled administrator policy.
+const char kAssistantContextEnabled[] =
+    "settings.voice_interaction.context.enabled";
 // A preference that indicates the Assistant has been disabled by domain policy.
 // If true, the Assistant will always been disabled and user cannot enable it.
 // This preference should only be changed in browser.
@@ -40,6 +46,8 @@ const char kAssistantNotificationEnabled[] =
 void RegisterProfilePrefsForBrowser(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kAssistantConsentStatus,
                                 ConsentStatus::kUnknown, PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(kAssistantContextEnabled, false,
+                                PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(kAssistantDisabledByPolicy, false,
                                 PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(kAssistantHotwordAlwaysOn, false,
@@ -58,6 +66,7 @@ void RegisterProfilePrefsForeign(PrefRegistrySimple* registry, bool for_test) {
     return;
   }
   registry->RegisterForeignPref(kAssistantConsentStatus);
+  registry->RegisterForeignPref(kAssistantContextEnabled);
   registry->RegisterForeignPref(kAssistantDisabledByPolicy);
   registry->RegisterForeignPref(kAssistantHotwordAlwaysOn);
   registry->RegisterForeignPref(kAssistantLaunchWithMicOpen);

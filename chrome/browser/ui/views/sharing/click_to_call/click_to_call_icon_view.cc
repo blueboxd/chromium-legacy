@@ -40,10 +40,6 @@ SharingUiController* ClickToCallIconView::GetController() const {
   return ClickToCallUiController::GetOrCreateFromWebContents(web_contents);
 }
 
-base::Optional<int> ClickToCallIconView::GetSuccessMessageId() const {
-  return IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS;
-}
-
 base::string16 ClickToCallIconView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringUTF16(
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);

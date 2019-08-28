@@ -58,6 +58,10 @@ class OptimizationGuideDecider {
       OptimizationTarget optimization_target,
       proto::OptimizationType optimization_type,
       OptimizationMetadata* optimization_metadata) = 0;
+
+ protected:
+  OptimizationGuideDecider() {}
+  virtual ~OptimizationGuideDecider() {}
 };
 
 }  // namespace optimization_guide

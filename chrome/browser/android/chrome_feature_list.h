@@ -25,6 +25,7 @@ extern const base::Feature kAndroidSearchEngineChoiceNotification;
 extern const base::Feature kAndroidSiteSettingsUIRefresh;
 extern const base::Feature kBackgroundTaskComponentUpdate;
 extern const base::Feature kBackgroundTaskSchedulerForBackgroundSync;
+extern const base::Feature kCloseTabSuggestionsStale;
 extern const base::Feature kCastDeviceFilter;
 extern const base::Feature kCCTBackgroundTab;
 extern const base::Feature kCCTExternalLinkHandling;

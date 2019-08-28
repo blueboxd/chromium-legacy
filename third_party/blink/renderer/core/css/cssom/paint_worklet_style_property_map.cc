@@ -81,13 +81,13 @@ bool BuildNativeValues(const ComputedStyle& style,
   return true;
 }
 
-bool BuildCustomValues(const Document& document,
-                       UniqueObjectId unique_object_id,
-                       const ComputedStyle& style,
-                       const Vector<AtomicString>& custom_properties,
-                       PaintWorkletStylePropertyMap::CrossThreadData& data,
-                       std::vector<std::pair<std::string, CompositorElementId>>&
-                           input_property_keys) {
+bool BuildCustomValues(
+    const Document& document,
+    UniqueObjectId unique_object_id,
+    const ComputedStyle& style,
+    const Vector<AtomicString>& custom_properties,
+    PaintWorkletStylePropertyMap::CrossThreadData& data,
+    CompositorPaintWorkletInput::PropertyKeys& input_property_keys) {
   DCHECK(IsMainThread());
   for (const auto& property_name : custom_properties) {
     CSSPropertyRef ref(property_name, document);
@@ -128,8 +128,7 @@ PaintWorkletStylePropertyMap::BuildCrossThreadData(
     const ComputedStyle& style,
     const Vector<CSSPropertyID>& native_properties,
     const Vector<AtomicString>& custom_properties,
-    std::vector<std::pair<std::string, CompositorElementId>>&
-        input_property_keys) {
+    CompositorPaintWorkletInput::PropertyKeys& input_property_keys) {
   DCHECK(IsMainThread());
   PaintWorkletStylePropertyMap::CrossThreadData data;
   data.ReserveCapacityForSize(native_properties.size() +

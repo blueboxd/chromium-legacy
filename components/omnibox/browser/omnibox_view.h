@@ -219,11 +219,19 @@ class OmniboxView {
   static base::string16 StripJavascriptSchemas(const base::string16& text);
 
   // Automatically collapses internal whitespace as follows:
-  // * If the only whitespace in |text| is newlines, users are most likely
-  // pasting in URLs split into multiple lines by terminals, email programs,
-  // etc. So all newlines are removed.
-  // * Otherwise, users may be pasting in search data, e.g. street addresses. In
-  // this case, runs of whitespace are collapsed down to single spaces.
+  // * Leading and trailing whitespace are often copied accidentally and rarely
+  //   affect behavior, so they are stripped.  If this collapses the whole
+  //   string, returns a space, since pasting nothing feels broken.
+  // * Internal whitespace sequences not containing CR/LF may be integral to the
+  //   meaning of the string and are preserved exactly.  The presence of any of
+  //   these also suggests the input is more likely a search than a navigation,
+  //   which affects the next bullet.
+  // * Internal whitespace sequences containing CR/LF have likely been split
+  //   across lines by terminals, email programs, etc., and are collapsed.  If
+  //   there are any internal non-CR/LF whitespace sequences, the input is more
+  //   likely search data (e.g. street addresses), so collapse these to a single
+  //   space.  If not, the input might be a navigation (e.g. a line-broken URL),
+  //   so collapse these away entirely.
   //
   // Finally, calls StripJavascriptSchemas() on the resulting string.
   static base::string16 SanitizeTextForPaste(const base::string16& text);

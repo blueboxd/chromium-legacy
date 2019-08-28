@@ -1681,9 +1681,10 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       pending_read_buf_(nullptr),
       pending_read_buf_len_(0),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)) {
-  DCHECK(data_);
-  data_->Initialize(this);
-  peer_addr_ = data->connect_data().peer_addr;
+  if (data_) {
+    data_->Initialize(this);
+    peer_addr_ = data->connect_data().peer_addr;
+  }
 }
 
 MockUDPClientSocket::~MockUDPClientSocket() {
@@ -1845,6 +1846,9 @@ void MockUDPClientSocket::Close() {
 }
 
 int MockUDPClientSocket::GetPeerAddress(IPEndPoint* address) const {
+  if (!data_)
+    return ERR_UNEXPECTED;
+
   *address = peer_addr_;
   return OK;
 }

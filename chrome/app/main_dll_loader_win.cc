@@ -27,12 +27,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "base/win/file_pre_reader.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/shlwapi.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_watcher_client_win.h"
 #include "chrome/app/chrome_watcher_command_line_win.h"
-#include "chrome/app/file_pre_reader_win.h"
 #include "chrome/browser/active_use_util.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/chrome_constants.h"
@@ -57,7 +57,7 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 // reference to the loaded module on success, or null on error.
 HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
-  PreReadFile(module);
+  base::win::PreReadFile(module, true);
   return ::LoadLibraryExW(module.value().c_str(), nullptr,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }

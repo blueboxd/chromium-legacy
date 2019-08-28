@@ -86,6 +86,10 @@ ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
       prefs::kArcHasAccessToRemovableMedia,
       base::BindRepeating(&ArcVolumeMounterBridge::OnPrefChanged,
                           weak_ptr_factory_.GetWeakPtr()));
+  change_registerar_.Add(
+      prefs::kArcVisibleExternalStorages,
+      base::BindRepeating(&ArcVolumeMounterBridge::OnVisibleStoragesChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ArcVolumeMounterBridge::~ArcVolumeMounterBridge() {
@@ -121,7 +125,7 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
 
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
       DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath, kMyFilesUuid,
-      device_label, device_type));
+      device_label, device_type, false));
 }
 
 bool ArcVolumeMounterBridge::HasAccessToRemovableMedia() const {
@@ -143,6 +147,31 @@ void ArcVolumeMounterBridge::OnPrefChanged() {
   for (const auto& keyValue : DiskMountManager::GetInstance()->mount_points()) {
     OnMountEvent(DiskMountManager::MountEvent::UNMOUNTING,
                  chromeos::MountError::MOUNT_ERROR_NONE, keyValue.second);
+  }
+}
+
+bool ArcVolumeMounterBridge::IsVisibleToAndroidApps(
+    const std::string& uuid) const {
+  const base::ListValue* uuid_list =
+      pref_service_->GetList(prefs::kArcVisibleExternalStorages);
+  for (auto& value : uuid_list->GetList()) {
+    if (value.is_string() && value.GetString() == uuid)
+      return true;
+  }
+  return false;
+}
+
+void ArcVolumeMounterBridge::OnVisibleStoragesChanged() {
+  // Remount all external mount points when the list of visible storage changes.
+  for (const auto& key_value :
+       DiskMountManager::GetInstance()->mount_points()) {
+    OnMountEvent(DiskMountManager::MountEvent::UNMOUNTING,
+                 chromeos::MountError::MOUNT_ERROR_NONE, key_value.second);
+  }
+  for (const auto& key_value :
+       DiskMountManager::GetInstance()->mount_points()) {
+    OnMountEvent(DiskMountManager::MountEvent::MOUNTING,
+                 chromeos::MountError::MOUNT_ERROR_NONE, key_value.second);
   }
 }
 
@@ -213,7 +242,7 @@ void ArcVolumeMounterBridge::OnMountEvent(
 
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
       event, mount_info.source_path, mount_info.mount_path, fs_uuid,
-      device_label, device_type));
+      device_label, device_type, IsVisibleToAndroidApps(fs_uuid)));
 }
 
 void ArcVolumeMounterBridge::RequestAllMountPoints() {

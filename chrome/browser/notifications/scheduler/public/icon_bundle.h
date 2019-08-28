@@ -13,6 +13,7 @@ namespace notifications {
 // A wrapper of various format of icon and andriod id.
 struct IconBundle {
   IconBundle();
+  explicit IconBundle(SkBitmap skbitmap);
   ~IconBundle();
 
   // The icon bitmap.

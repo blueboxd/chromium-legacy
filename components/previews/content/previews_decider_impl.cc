@@ -440,9 +440,9 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
     passed_reasons->push_back(
         PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
 
-    if (!previews_opt_guide_->CanApplyOptimization(
-            previews_data, navigation_handle, type,
-            /*out_ect_threshold=*/nullptr)) {
+    if (!previews_opt_guide_->CanApplyPreview(previews_data, navigation_handle,
+                                              type,
+                                              /*out_ect_threshold=*/nullptr)) {
       return PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER;
     }
     passed_reasons->push_back(
@@ -480,8 +480,8 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   // Check if request URL is whitelisted by the optimization guide.
   net::EffectiveConnectionType ect_threshold =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  if (!previews_opt_guide_->CanApplyOptimization(
-          previews_data, navigation_handle, type, &ect_threshold)) {
+  if (!previews_opt_guide_->CanApplyPreview(previews_data, navigation_handle,
+                                            type, &ect_threshold)) {
     return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
   }
   passed_reasons->push_back(

@@ -1328,11 +1328,11 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   // below on a 64-bit CPU, the maximum renderer count based on available RAM
   // alone will be as follows:
   //
-  //   128 MB -> 1
-  //   512 MB -> 4
-  //  1024 MB -> 8
-  //  4096 MB -> 34
-  // 16384 MB -> 136
+  //   128 MB -> 0
+  //   512 MB -> 3
+  //  1024 MB -> 6
+  //  4096 MB -> 24
+  // 16384 MB -> 96
   //
   // Then the calculated value will be clamped by |kMinRendererProcessCount| and
   // GetPlatformMaxRendererProcessCount().
@@ -1341,9 +1341,9 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   if (!max_count) {
     static constexpr size_t kEstimatedWebContentsMemoryUsage =
 #if defined(ARCH_CPU_64_BITS)
-        60;  // In MB
+        85;  // In MB
 #else
-        40;  // In MB
+        60;  // In MB
 #endif
     max_count = base::SysInfo::AmountOfPhysicalMemoryMB() / 2;
     max_count /= kEstimatedWebContentsMemoryUsage;
@@ -2058,7 +2058,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                             base::Unretained(push_messaging_manager_.get())));
   } else {
     registry->AddInterface(
-        base::BindRepeating(&PushMessagingManager::BindRequest,
+        base::BindRepeating(&PushMessagingManager::AddPushMessagingReceiver,
                             base::Unretained(push_messaging_manager_.get())));
   }
 
@@ -3443,6 +3443,7 @@ void RenderProcessHostImpl::Cleanup() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   deleting_soon_ = true;
 
+  io_thread_host_impl_.reset();
   if (render_frame_message_filter_) {
     // RenderFrameMessageFilter is refcounted and can outlive the
     // ResourceContext. If the BrowserContext is shutting down, after

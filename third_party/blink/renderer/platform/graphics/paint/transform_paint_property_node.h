@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_PAINT_PROPERTY_NODE_H_
 
 #include <algorithm>
-#include "cc/layers/layer_sticky_position_constraint.h"
+#include "cc/trees/sticky_position_constraint.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
@@ -20,7 +20,7 @@
 
 namespace blink {
 
-using CompositorStickyConstraint = cc::LayerStickyPositionConstraint;
+using CompositorStickyConstraint = cc::StickyPositionConstraint;
 
 // A transform (e.g., created by css "transform" or "perspective", or for
 // internal positioning such as paint offset or scrolling) along with a
@@ -292,7 +292,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.flags.in_subtree_of_page_scale;
   }
 
-  const cc::LayerStickyPositionConstraint* GetStickyConstraint() const {
+  const CompositorStickyConstraint* GetStickyConstraint() const {
     return state_.sticky_constraint.get();
   }
 

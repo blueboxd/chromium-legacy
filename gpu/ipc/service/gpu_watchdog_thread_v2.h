@@ -108,7 +108,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Set by the watchdog thread and Read by the test thread.
   base::AtomicFlag test_result_timeout_and_gpu_hang_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> watched_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> watched_gpu_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> watchdog_thread_task_runner_;
 
   base::WeakPtr<GpuWatchdogThreadImplV2> weak_ptr_;
   base::WeakPtrFactory<GpuWatchdogThreadImplV2> weak_factory_{this};

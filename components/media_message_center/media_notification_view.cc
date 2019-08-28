@@ -203,7 +203,7 @@ MediaNotificationView::MediaNotificationView(
           IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK));
 
   SetBackground(std::make_unique<MediaNotificationBackground>(
-      this, message_center::kNotificationCornerRadius,
+      message_center::kNotificationCornerRadius,
       message_center::kNotificationCornerRadius, kMediaImageMaxWidthPct));
 
   UpdateForegroundColor();
@@ -235,8 +235,10 @@ void MediaNotificationView::SetExpanded(bool expanded) {
 
 void MediaNotificationView::UpdateCornerRadius(int top_radius,
                                                int bottom_radius) {
-  GetMediaNotificationBackground()->UpdateCornerRadius(top_radius,
-                                                       bottom_radius);
+  if (GetMediaNotificationBackground()->UpdateCornerRadius(top_radius,
+                                                           bottom_radius)) {
+    SchedulePaint();
+  }
 }
 
 void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -394,8 +396,10 @@ void MediaNotificationView::UpdateViewForExpandedState() {
 
   main_row_->Layout();
 
-  GetMediaNotificationBackground()->UpdateArtworkMaxWidthPct(
-      expanded ? kMediaImageMaxWidthExpandedPct : kMediaImageMaxWidthPct);
+  if (GetMediaNotificationBackground()->UpdateArtworkMaxWidthPct(
+          expanded ? kMediaImageMaxWidthExpandedPct : kMediaImageMaxWidthPct)) {
+    SchedulePaint();
+  }
 
   header_row_->SetExpanded(expanded);
 
@@ -439,7 +443,7 @@ void MediaNotificationView::UpdateForegroundColor() {
   const SkColor background =
       GetMediaNotificationBackground()->GetBackgroundColor();
   const SkColor foreground =
-      GetMediaNotificationBackground()->GetForegroundColor();
+      GetMediaNotificationBackground()->GetForegroundColor(*this);
 
   title_label_->SetEnabledColor(foreground);
   artist_label_->SetEnabledColor(foreground);

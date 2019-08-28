@@ -213,6 +213,8 @@
       'linux-archive-rel-goma-latest-localoutputcache': 'release_bot',
       'linux-archive-rel-goma-rbe-canary': 'release_bot',
       'linux-archive-rel-goma-rbe-latest': 'release_bot',
+      'linux-archive-rel-goma-rbe-ats-canary': 'release_bot',
+      'linux-archive-rel-goma-rbe-ats-latest': 'release_bot',
 
       'Win Builder Goma Canary': 'gpu_tests_release_bot_x86_minimal_symbols',
       'Win Builder Goma Latest Client': 'gpu_tests_release_bot_x86_minimal_symbols',
@@ -254,6 +256,8 @@
       'android-archive-dbg-goma-latest': 'android_without_codecs_debug_bot',
       'android-archive-dbg-goma-rbe-canary': 'android_without_codecs_debug_bot',
       'android-archive-dbg-goma-rbe-latest': 'android_without_codecs_debug_bot',
+      'android-archive-dbg-goma-rbe-ats-latest': 'android_without_codecs_debug_bot',
+      'android-archive-dbg-goma-rbe-ats-canary': 'android_without_codecs_debug_bot',
       'ios-device-goma-canary-clobber': 'ios_error',
       'ios-device-goma-latest-clobber': 'ios_error',
       'ios-device-goma-rbe-canary-clobber': 'ios_error',
@@ -267,7 +271,6 @@
 
       'mac-hermetic-upgrade-rel': 'release_bot',
 
-      'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
@@ -420,6 +423,7 @@
     'chromium.linux': {
       'Cast Audio Linux': 'cast_audio_release_bot',
       'Cast Linux': 'cast_release_bot',
+      'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia',
       'Deterministic Linux (dbg)': {
         'local': 'debug_bot_local_build',
         'goma': 'debug_bot',

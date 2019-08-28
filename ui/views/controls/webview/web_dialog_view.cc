@@ -35,6 +35,23 @@ using ui::WebDialogWebContentsDelegate;
 
 namespace views {
 
+ObservableWebView::ObservableWebView(content::BrowserContext* browser_context,
+                                     WebDialogDelegate* delegate)
+    : WebView(browser_context), delegate_(delegate) {}
+
+ObservableWebView::~ObservableWebView() {}
+
+void ObservableWebView::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  // Only listen to the main frame.
+  if (render_frame_host->GetParent())
+    return;
+
+  if (delegate_)
+    delegate_->OnWebContentsFinishedLoad();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, public:
 
@@ -45,7 +62,7 @@ WebDialogView::WebDialogView(content::BrowserContext* context,
     : ClientView(nullptr, nullptr),
       WebDialogWebContentsDelegate(context, std::move(handler)),
       delegate_(delegate),
-      web_view_(new views::WebView(context)),
+      web_view_(new ObservableWebView(context, delegate)),
       use_dialog_frame_(use_dialog_frame) {
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);

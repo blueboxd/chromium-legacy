@@ -15,7 +15,7 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"

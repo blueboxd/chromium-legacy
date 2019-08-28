@@ -5,4 +5,5 @@ include_rules = [
     "+base/sampling_heap_profiler/sampling_heap_profiler.h",
     # for base::GetUniqueIdForProcess
     "+base/process/process_handle.h",
+    "+cc/trees/transform_node.h",
 ]

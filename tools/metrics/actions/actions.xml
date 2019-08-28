@@ -12121,9 +12121,7 @@ should be able to be added at any place in this file.
 <action name="MobileMenuCloseTab">
   <owner>lazzzis@google.com</owner>
   <owner>twellington@chromium.org</owner>
-  <description>
-    User pressed 'Close tab' in the tab switcher long-press menu.
-  </description>
+  <description>User pressed 'Close tab' in the app menu.</description>
 </action>
 
 <action name="MobileMenuDataSaverOpened">
@@ -23215,6 +23213,24 @@ should be able to be added at any place in this file.
   <suffix name="TabUnselected"
       label="Users un-selected a tab in TabSelectionEditor."/>
   <affected-action name="TabMultiSelect"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="LongTapMenu" label="Users closed a tab by long tap menu"/>
+  <affected-action name="MobileMenuCloseTab"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="AppMenu" label="Users opened a new tab by app menu"/>
+  <suffix name="LongTapMenu" label="Users opened a new tab by long tap menu"/>
+  <affected-action name="MobileMenuNewTab"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="AppMenu" label="Users opened a new incognito tab by app menu"/>
+  <suffix name="LongTapMenu"
+      label="Users opened a new incognito tab by long tap menu"/>
+  <affected-action name="MobileMenuNewIncognitoTab"/>
 </action-suffix>
 
 </actions>

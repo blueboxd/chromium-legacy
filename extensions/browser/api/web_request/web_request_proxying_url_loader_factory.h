@@ -19,6 +19,7 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/completion_once_callback.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -84,7 +85,8 @@ class WebRequestProxyingURLLoaderFactory
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         WebRequestAPI::AuthRequestCallback callback);
 
-    void OnLoaderCreated(network::mojom::TrustedHeaderClientRequest request);
+    void OnLoaderCreated(
+        mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver);
 
     // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
@@ -160,7 +162,8 @@ class WebRequestProxyingURLLoaderFactory
     bool current_request_uses_header_client_ = false;
     OnBeforeSendHeadersCallback on_before_send_headers_callback_;
     OnHeadersReceivedCallback on_headers_received_callback_;
-    mojo::Binding<network::mojom::TrustedHeaderClient> header_client_binding_;
+    mojo::Receiver<network::mojom::TrustedHeaderClient> header_client_receiver_{
+        this};
 
     // If |has_any_extra_headers_listeners_| is set to false and a redirect is
     // in progress, this stores the parameters to FollowRedirect that came from
@@ -220,7 +223,8 @@ class WebRequestProxyingURLLoaderFactory
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
-      network::mojom::TrustedHeaderClientRequest request) override;
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override;
 
   // WebRequestAPI::Proxy:
   void HandleAuthRequest(

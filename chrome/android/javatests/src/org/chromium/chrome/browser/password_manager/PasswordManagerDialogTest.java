@@ -7,11 +7,16 @@ package org.chromium.chrome.browser.password_manager;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.verify;
+
+import static org.chromium.chrome.browser.password_manager.PasswordManagerDialogProperties.ILLUSTRATION_VISIBLE;
 
 import android.support.test.filters.SmallTest;
 
@@ -32,12 +37,15 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /** Test for the password manager illustration modal dialog. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordManagerDialogTest {
-    private PasswordManagerDialogCoordinator mDialog;
+    private PasswordManagerDialogCoordinator mCoordinator;
+    private PasswordManagerDialogMediator mMediator;
+    private PropertyModel mModel;
     private static final String TITLE = "Title";
     private static final String DETAILS = "Explanation text.";
     private static final String OK_BUTTON = "OK";
@@ -56,10 +64,16 @@ public class PasswordManagerDialogTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mDialog = new PasswordManagerDialogCoordinator(mActivityTestRule.getActivity());
+        ChromeActivity activity = (ChromeActivity) mActivityTestRule.getActivity();
+        mCoordinator = new PasswordManagerDialogCoordinator(
+                activity.getWindowAndroid().getContext().get(), activity.getModalDialogManager(),
+                activity.findViewById(android.R.id.content), activity.getFullscreenManager(),
+                activity.getControlContainerHeightResource());
+        mMediator = mCoordinator.getMediatorForTesting();
+        mModel = mMediator.getModelForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mDialog.showDialog(TITLE, DETAILS, R.drawable.data_reduction_illustration, OK_BUTTON,
-                    CANCEL_BUTTON, mOnClick);
+            mCoordinator.showDialog(TITLE, DETAILS, R.drawable.data_reduction_illustration,
+                    OK_BUTTON, CANCEL_BUTTON, mOnClick);
         });
     }
 
@@ -85,5 +99,43 @@ public class PasswordManagerDialogTest {
     public void testCancelPressedCallback() {
         onView(withId(R.id.negative_button)).perform(click());
         verify(mOnClick).onResult(false);
+    }
+
+    @Test
+    @SmallTest
+    public void testSettingImageVisibility() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(ILLUSTRATION_VISIBLE, false); });
+        onView(withId(R.id.password_manager_dialog_illustration))
+                .check(matches(not(isDisplayed())));
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mModel.set(ILLUSTRATION_VISIBLE, true); });
+        onView(withId(R.id.password_manager_dialog_illustration)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    public void testWatchingLayoutChanges() {
+        float dipScale =
+                mActivityTestRule.getActivity().getWindowAndroid().getDisplay().getDipScale();
+
+        // Dimensions resembling landscape orientation.
+        int testHeightDip = 300; // Height of the android content view.
+        int testWidthDip = 500; // Width of the android content view.
+        mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDip * dipScale),
+                (int) (testHeightDip * dipScale), 0, 0, 0, 0);
+        assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(false));
+
+        // Dimensions resembling portrait orientation.
+        testHeightDip = 500;
+        testWidthDip = 320;
+        mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDip * dipScale),
+                (int) (testHeightDip * dipScale), 0, 0, 0, 0);
+        assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(true));
+
+        // Dimensions resembling multi-window mode.
+        testHeightDip = 250;
+        testWidthDip = 320;
+        mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDip * dipScale),
+                (int) (testHeightDip * dipScale), 0, 0, 0, 0);
+        assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(false));
     }
 }

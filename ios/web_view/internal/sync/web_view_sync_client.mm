@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
@@ -173,16 +172,7 @@ WebViewSyncClient::GetExtensionsActivity() {
 
 base::WeakPtr<syncer::SyncableService>
 WebViewSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
-  auto service = account_web_data_service_ ?: profile_web_data_service_;
-  if (!service) {
-    NOTREACHED();
-    return base::WeakPtr<syncer::SyncableService>();
-  }
   switch (type) {
-    case syncer::AUTOFILL_WALLET_METADATA:
-      return autofill::AutofillWalletMetadataSyncableService::
-          FromWebDataService(service.get())
-              ->AsWeakPtr();
     case syncer::PASSWORDS:
       return password_store_ ? password_store_->GetPasswordSyncableService()
                              : base::WeakPtr<syncer::SyncableService>();

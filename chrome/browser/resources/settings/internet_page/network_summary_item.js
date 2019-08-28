@@ -16,7 +16,10 @@ const mojom = chromeos.networkConfig.mojom;
 Polymer({
   is: 'network-summary-item',
 
-  behaviors: [CrPolicyNetworkBehavior, I18nBehavior],
+  behaviors: [
+    CrPolicyNetworkBehaviorMojo,
+    I18nBehavior,
+  ],
 
   properties: {
     /**
@@ -153,7 +156,7 @@ Polymer({
     return (activeNetworkState !== undefined &&
             OncMojo.connectionStateIsConnected(
                 activeNetworkState.connectionState)) ||
-        this.isPolicySourceMojo(activeNetworkState.source);
+        this.isPolicySource(activeNetworkState.source);
   },
 
   /**

@@ -1782,7 +1782,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             }
         } else if (id == R.id.close_tab) {
             getCurrentTabModel().closeTab(currentTab, true, false, true);
-            RecordUserAction.record("MobileMenuCloseTab");
+            RecordUserAction.record("MobileTabClosed");
         } else if (id == R.id.close_all_tabs_menu_id) {
             // Close both incognito and normal tabs
             getTabModelSelector().closeAllTabs();

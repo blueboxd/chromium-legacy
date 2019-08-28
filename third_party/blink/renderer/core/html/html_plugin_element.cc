@@ -312,6 +312,7 @@ void HTMLPlugInElement::DetachLayoutTree(bool performing_reattach) {
   if (!performing_reattach)
     SetDisposeView();
 
+  RemovePluginFromFrameView(plugin);
   ResetInstance();
 
   HTMLFrameOwnerElement::DetachLayoutTree(performing_reattach);
@@ -626,7 +627,9 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
   loaded_url_ = url;
 
   if (persisted_plugin_) {
+    auto* plugin = persisted_plugin_.Get();
     SetEmbeddedContentView(persisted_plugin_.Release());
+    layout_object->GetFrameView()->AddPlugin(plugin);
   } else {
     bool load_manually =
         GetDocument().IsPluginDocument() && !GetDocument().ContainsPlugins();
@@ -634,7 +637,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
         *this, url, plugin_params.Names(), plugin_params.Values(), mime_type,
         load_manually);
     if (!plugin) {
-      if (layout_object && !layout_object->ShowsUnavailablePluginIndicator()) {
+      if (!layout_object->ShowsUnavailablePluginIndicator()) {
         plugin_is_available_ = false;
         layout_object->SetPluginAvailability(
             LayoutEmbeddedObject::kPluginMissing);
@@ -642,12 +645,8 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
       return false;
     }
 
-    if (layout_object) {
-      SetEmbeddedContentView(plugin);
-      layout_object->GetFrameView()->AddPlugin(plugin);
-    } else {
-      SetPersistedPlugin(plugin);
-    }
+    SetEmbeddedContentView(plugin);
+    layout_object->GetFrameView()->AddPlugin(plugin);
   }
 
   GetDocument().SetContainsPlugins();
@@ -720,6 +719,25 @@ bool HTMLPlugInElement::AllowedToLoadPlugin(const KURL& url,
     return false;
   }
   return true;
+}
+
+void HTMLPlugInElement::RemovePluginFromFrameView(
+    WebPluginContainerImpl* plugin) {
+  if (!plugin)
+    return;
+
+  auto* layout_object = GetLayoutEmbeddedObject();
+  if (!layout_object)
+    return;
+
+  auto* frame_view = layout_object->GetFrameView();
+  if (!frame_view)
+    return;
+
+  if (!frame_view->Plugins().Contains(plugin))
+    return;
+
+  frame_view->RemovePlugin(plugin);
 }
 
 void HTMLPlugInElement::DidAddUserAgentShadowRoot(ShadowRoot&) {

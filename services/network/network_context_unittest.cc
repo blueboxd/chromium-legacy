@@ -42,6 +42,7 @@
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -3161,6 +3162,8 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   EXPECT_TRUE(resolver_closed);
 }
 
+// Config overrides are not supported on iOS.
+#if !defined(OS_IOS)
 TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   // Inject a factory to control and capture created net::HostResolvers.
   TestResolverFactory* factory =
@@ -3184,11 +3187,12 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   // enablable for the build config).
   ASSERT_EQ(1u, factory->resolvers().size());
   net::ContextHostResolver* internal_resolver = factory->resolvers().front();
-#if defined(ENABLE_BUILT_IN_DNS)
+
   EXPECT_TRUE(internal_resolver->GetDnsConfigAsValue());
-#endif
 
   // Override DnsClient with a basic mock.
+  net::DnsConfig base_configuration;
+  base_configuration.nameservers = {CreateExpectedEndPoint("12.12.12.12", 53)};
   const std::string kQueryHostname = "example.com";
   const std::string kResult = "1.2.3.4";
   net::IPAddress result;
@@ -3203,20 +3207,17 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
       kQueryHostname, net::dns_protocol::kTypeAAAA, false /* secure */,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::ResultType::EMPTY),
       false /* delay */);
-  auto mock_dns_client =
-      std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
+  auto mock_dns_client = std::make_unique<net::MockDnsClient>(
+      base_configuration, std::move(rules));
+  mock_dns_client->SetInsecureEnabled(true);
+  mock_dns_client->set_ignore_system_config_changes(true);
   auto* mock_dns_client_ptr = mock_dns_client.get();
   internal_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(mock_dns_client));
 
-  // Force the base configuration to ensure consistent overriding.
-  net::DnsConfig base_configuration;
-  base_configuration.nameservers = {CreateExpectedEndPoint("12.12.12.12", 53)};
-  internal_resolver->SetBaseDnsConfigForTesting(base_configuration);
-
   // Test that the DnsClient is getting the overridden configuration.
   EXPECT_TRUE(overrides.ApplyOverrides(base_configuration)
-                  .Equals(*mock_dns_client_ptr->GetConfig()));
+                  .Equals(*mock_dns_client_ptr->GetEffectiveConfig()));
 
   // Ensure we are using the private resolver by testing that we get results
   // from the overridden DnsClient.
@@ -3236,6 +3237,7 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint(kResult, 80)));
 }
+#endif  // defined(OS_IOS)
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {
   std::unique_ptr<NetworkContext> network_context =
@@ -4526,7 +4528,7 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
  public:
   class TestHeaderClient : public mojom::TrustedHeaderClient {
    public:
-    TestHeaderClient() : binding_(this) {}
+    TestHeaderClient() {}
 
     // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
@@ -4553,15 +4555,16 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
       on_headers_received_result_ = result;
     }
 
-    void Bind(network::mojom::TrustedHeaderClientRequest request) {
-      binding_.Close();
-      binding_.Bind(std::move(request));
+    void Bind(
+        mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
+      receiver_.reset();
+      receiver_.Bind(std::move(receiver));
     }
 
    private:
     int on_before_send_headers_result_ = net::OK;
     int on_headers_received_result_ = net::OK;
-    mojo::Binding<mojom::TrustedHeaderClient> binding_;
+    mojo::Receiver<mojom::TrustedHeaderClient> receiver_{this};
 
     DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
   };
@@ -4573,8 +4576,9 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
-      network::mojom::TrustedHeaderClientRequest request) override {
-    header_client_.Bind(std::move(request));
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override {
+    header_client_.Bind(std::move(receiver));
   }
 
   void set_on_before_send_headers_result(int result) {
@@ -4717,7 +4721,7 @@ class HangingTestURLLoaderHeaderClient
  public:
   class TestHeaderClient : public mojom::TrustedHeaderClient {
    public:
-    TestHeaderClient() : binding_(this) {}
+    TestHeaderClient() {}
 
     // network::mojom::TrustedHeaderClient:
     void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
@@ -4753,8 +4757,9 @@ class HangingTestURLLoaderHeaderClient
 
     void WaitForOnHeadersReceived() { on_headers_received_loop_.Run(); }
 
-    void Bind(network::mojom::TrustedHeaderClientRequest request) {
-      binding_.Bind(std::move(request));
+    void Bind(
+        mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
+      receiver_.Bind(std::move(receiver));
     }
 
    private:
@@ -4765,7 +4770,7 @@ class HangingTestURLLoaderHeaderClient
     base::RunLoop on_headers_received_loop_;
     std::string saved_received_headers_;
     OnHeadersReceivedCallback saved_on_headers_received_callback_;
-    mojo::Binding<mojom::TrustedHeaderClient> binding_;
+    mojo::Receiver<mojom::TrustedHeaderClient> receiver_{this};
 
     DISALLOW_COPY_AND_ASSIGN(TestHeaderClient);
   };
@@ -4777,8 +4782,9 @@ class HangingTestURLLoaderHeaderClient
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
-      network::mojom::TrustedHeaderClientRequest request) override {
-    header_client_.Bind(std::move(request));
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override {
+    header_client_.Bind(std::move(receiver));
   }
 
   void CallOnBeforeSendHeadersCallback() {

@@ -7,7 +7,7 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
+#include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "net/base/ip_endpoint.h"

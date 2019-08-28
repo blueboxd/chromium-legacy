@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
@@ -27,9 +28,11 @@ MediaDialogView* MediaDialogView::instance_ = nullptr;
 
 // static
 void MediaDialogView::ShowDialog(views::View* anchor_view,
+                                 MediaToolbarButtonController* controller,
                                  service_manager::Connector* connector) {
   DCHECK(!instance_);
-  instance_ = new MediaDialogView(anchor_view, connector);
+  DCHECK(controller);
+  instance_ = new MediaDialogView(anchor_view, controller, connector);
 
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
@@ -38,8 +41,10 @@ void MediaDialogView::ShowDialog(views::View* anchor_view,
 
 // static
 void MediaDialogView::HideDialog() {
-  if (IsShowing())
+  if (IsShowing()) {
+    instance_->controller_->SetDialogDelegate(nullptr);
     instance_->GetWidget()->Close();
+  }
 
   // Set |instance_| to nullptr so that |IsShowing()| returns false immediately.
   // We also set to nullptr in |WindowClosing()| (which happens asynchronously),
@@ -77,6 +82,8 @@ void MediaDialogView::AddedToWidget() {
   views::BubbleFrameView* frame = GetBubbleFrameView();
   if (frame)
     frame->SetCornerRadius(kMediaDialogCornerRadius);
+
+  controller_->SetDialogDelegate(this);
 }
 
 gfx::Size MediaDialogView::CalculatePreferredSize() const {
@@ -91,11 +98,14 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
 }
 
 MediaDialogView::MediaDialogView(views::View* anchor_view,
+                                 MediaToolbarButtonController* controller,
                                  service_manager::Connector* connector)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      controller_(connector, this),
+      controller_(controller),
       active_sessions_view_(
-          AddChildView(std::make_unique<MediaNotificationListView>())) {}
+          AddChildView(std::make_unique<MediaNotificationListView>())) {
+  DCHECK(controller_);
+}
 
 MediaDialogView::~MediaDialogView() = default;
 
@@ -104,11 +114,11 @@ void MediaDialogView::Init() {
   set_margins(gfx::Insets());
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  controller_.Initialize();
 }
 
 void MediaDialogView::WindowClosing() {
-  if (instance_ == this)
+  if (instance_ == this) {
     instance_ = nullptr;
+    controller_->SetDialogDelegate(nullptr);
+  }
 }

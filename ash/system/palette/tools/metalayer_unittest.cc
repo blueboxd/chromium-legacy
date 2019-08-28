@@ -8,6 +8,7 @@
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/mojom/voice_interaction_controller.mojom.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"
 #include "ash/system/palette/palette_ids.h"
@@ -18,6 +19,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
@@ -50,6 +53,9 @@ class MetalayerToolTest : public AshTestBase {
   }
 
   AssistantState* assistant_state() { return AssistantState::Get(); }
+  PrefService* prefs() {
+    return Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+  }
 
  protected:
   std::unique_ptr<HighlighterControllerTestApi> highlighter_test_api_;
@@ -91,8 +97,9 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
 
           assistant_state()->NotifyStatusChanged(state);
           assistant_state()->NotifySettingsEnabled(enabled);
-          assistant_state()->NotifyContextEnabled(context);
           assistant_state()->NotifyFeatureAllowed(allowed_state);
+          prefs()->SetBoolean(
+              chromeos::assistant::prefs::kAssistantContextEnabled, context);
 
           std::unique_ptr<views::View> view =
               base::WrapUnique(tool_->CreateView());
@@ -140,7 +147,8 @@ TEST_F(MetalayerToolTest, EnablingDisablingMetalayerEnablesDisablesController) {
 TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
   assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::RUNNING);
   assistant_state()->NotifySettingsEnabled(true);
-  assistant_state()->NotifyContextEnabled(true);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                      true);
 
   // Disabling the user prefs individually should disable the tool.
   tool_->OnEnable();
@@ -153,9 +161,11 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
   tool_->OnEnable();
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::METALAYER));
-  assistant_state()->NotifyContextEnabled(false);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                      false);
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
-  assistant_state()->NotifyContextEnabled(true);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                      true);
 
   // Test VoiceInteractionState changes.
   tool_->OnEnable();

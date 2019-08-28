@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
@@ -55,8 +55,9 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
     ASSERT_EQ(1u, [[NSApp windows] count]);
 
-    handler_ = g_browser_process->platform_part()->app_shim_host_manager()->
-        extension_app_shim_handler();
+    handler_ = g_browser_process->platform_part()
+                   ->app_shim_listener()
+                   ->extension_app_shim_handler();
 
     // Attach a host for the app.
     extensions::ExtensionRegistry* registry =

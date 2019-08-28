@@ -142,6 +142,8 @@ class BasePreviewsLitePageServerBrowserTest
 
   virtual bool UseURLLoaderImplementation() const = 0;
 
+  virtual bool UseOptimizationGuideKeyedServiceImplementation() const = 0;
+
   enum PreviewsServerAction {
     // Previews server will respond with HTTP 200 OK, OFCL=60,
     // Content-Length=20.
@@ -329,6 +331,13 @@ class BasePreviewsLitePageServerBrowserTest
     if (UseURLLoaderImplementation()) {
       url_loader_feature_list_.InitWithFeatures(
           {previews::features::kHTTPSServerPreviewsUsingURLLoader}, {});
+    }
+    if (UseOptimizationGuideKeyedServiceImplementation()) {
+      opt_guide_keyed_service_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
+    } else {
+      opt_guide_keyed_service_feature_list_.InitWithFeatures(
+          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
     }
   }
 
@@ -960,6 +969,7 @@ class BasePreviewsLitePageServerBrowserTest
   base::test::ScopedFeatureList scoped_parameterized_feature_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList url_loader_feature_list_;
+  base::test::ScopedFeatureList opt_guide_keyed_service_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> previews_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
@@ -989,17 +999,28 @@ class BasePreviewsLitePageServerBrowserTest
   base::OnceClosure waiting_for_report_closure_;
 };
 
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
 class PreviewsLitePageServerBrowserTest
     : public BasePreviewsLitePageServerBrowserTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
-  bool UseURLLoaderImplementation() const override { return GetParam(); }
+  bool UseURLLoaderImplementation() const override {
+    return std::get<0>(GetParam());
+  }
+  bool UseOptimizationGuideKeyedServiceImplementation() const override {
+    return std::get<1>(GetParam());
+  }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageServerBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageServerBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
 // See https://crbug.com/782322 for detail.
@@ -1217,7 +1238,7 @@ IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Success)) {
   // This behavior is not implemented for the nav throttle.
-  if (!GetParam())
+  if (!UseURLLoaderImplementation())
     return;
 
   set_origin_probe_success(true);
@@ -1231,7 +1252,7 @@ IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Fail)) {
   // This behavior is not implemented for the nav throttle.
-  if (!GetParam())
+  if (!UseURLLoaderImplementation())
     return;
 
   set_origin_probe_success(false);
@@ -1774,10 +1795,13 @@ class PreviewsLitePageServerTimeoutBrowserTest
   }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageServerTimeoutBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageServerTimeoutBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsTimeout)) {
@@ -1820,10 +1844,13 @@ class PreviewsLitePageServerBadServerBrowserTest
   }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageServerBadServerBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageServerBadServerBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBadServerBrowserTest,
@@ -1868,10 +1895,13 @@ class PreviewsLitePageServerDataSaverBrowserTest
   }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageServerDataSaverBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageServerDataSaverBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerDataSaverBrowserTest,
@@ -1903,10 +1933,13 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
   }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
@@ -1942,10 +1975,13 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
   }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageNotificationDSEnabledBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageNotificationDSEnabledBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSEnabledBrowserTest,
@@ -2001,10 +2037,13 @@ class PreviewsLitePageDSDisabledBrowserTest
   }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageDSDisabledBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageDSDisabledBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageDSDisabledBrowserTest,
@@ -2032,10 +2071,13 @@ class PreviewsLitePageControlBrowserTest
   }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageControlBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageControlBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageControlBrowserTest,
@@ -2088,6 +2130,10 @@ class PreviewsLitePageServerNetworkIsolationBrowserTest
   }
 
   bool UseURLLoaderImplementation() const override { return true; }
+
+  bool UseOptimizationGuideKeyedServiceImplementation() const override {
+    return false;
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2164,10 +2210,13 @@ class PreviewsLitePageAndPageHintsBrowserTest
   }
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         PreviewsLitePageAndPageHintsBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PreviewsLitePageAndPageHintsBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 // Regression test for crbug.com/954554.
 IN_PROC_BROWSER_TEST_P(
@@ -2359,10 +2408,13 @@ class CoinFlipHoldbackExperimentBrowserTest
   base::test::ScopedFeatureList ukm_feature_list_;
 };
 
-// True if testing using the URLLoader Interceptor implementation.
-INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
-                         CoinFlipHoldbackExperimentBrowserTest,
-                         testing::Bool());
+// First param is true if testing using the URLLoader Interceptor implementation
+// and the second param is true if testing using the
+// OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    CoinFlipHoldbackExperimentBrowserTest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_NoCoinFlip)) {

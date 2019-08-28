@@ -57,10 +57,7 @@ class ReportGenerator {
   std::vector<std::unique_ptr<em::ChromeUserProfileInfo>> GetProfiles();
 
  private:
-  void GetNextProfileReport(int profile_index);
-  void OnProfileReportReady(
-      int profile_index,
-      std::unique_ptr<em::ChromeUserProfileInfo> profile_report);
+  void GenerateProfileReportWithIndex(int profile_index);
 
   ProfileReportGenerator profile_report_generator_;
 

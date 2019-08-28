@@ -169,6 +169,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // Used to check if the URL is safe to request.
   URLSecurityPolicy url_security_policy_;
 
+  // Whether download is initated by the content on the page.
+  bool is_content_initiated_;
+
   // Used to keep the system from sleeping while a download is ongoing. If the
   // system enters power saving mode while a download is alive, it can cause
   // download to be interrupted.

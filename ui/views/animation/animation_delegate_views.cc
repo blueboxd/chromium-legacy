@@ -6,7 +6,6 @@
 
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/views/animation/compositor_animation_runner.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {

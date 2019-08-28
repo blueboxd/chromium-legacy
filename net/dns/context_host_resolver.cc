@@ -168,11 +168,6 @@ void ContextHostResolver::SetProcParamsForTesting(
   manager_->set_proc_params_for_test(proc_params);
 }
 
-void ContextHostResolver::SetBaseDnsConfigForTesting(
-    const DnsConfig& base_config) {
-  manager_->SetBaseDnsConfigForTesting(base_config);
-}
-
 void ContextHostResolver::SetTickClockForTesting(
     const base::TickClock* tick_clock) {
   manager_->SetTickClockForTesting(tick_clock);

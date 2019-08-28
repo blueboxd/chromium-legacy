@@ -10,6 +10,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -23,6 +24,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
 using base::UserMetricsAction;
@@ -125,15 +127,16 @@ void CriticalNotificationBubbleView::Init() {
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  views::Label* message = new views::Label();
+  auto message = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_TEXT),
+      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT, STYLE_SECONDARY);
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetText(l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_TEXT));
   message->SizeToFit(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
       margins().width());
-  AddChildView(message);
+  AddChildView(std::move(message));
 
   refresh_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kRefreshBubbleEvery),

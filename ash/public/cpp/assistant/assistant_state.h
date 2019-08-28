@@ -29,7 +29,6 @@ class ASH_PUBLIC_EXPORT AssistantState
   void BindRequest(mojom::AssistantStateControllerRequest request);
   void NotifyStatusChanged(mojom::VoiceInteractionState state);
   void NotifySettingsEnabled(bool enabled);
-  void NotifyContextEnabled(bool enabled);
   void NotifyHotwordEnabled(bool enabled);
   void NotifyFeatureAllowed(mojom::AssistantAllowedState state);
   void NotifyLocaleChanged(const std::string& locale);

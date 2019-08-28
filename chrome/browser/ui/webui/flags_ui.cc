@@ -140,7 +140,8 @@ void FlagsUI::AddFlagsStrings(content::WebUIDataSource* source) {
                              IDS_FLAGS_UI_PAGE_WARNING_EXPLANATION);
   source->AddLocalizedString("relaunch", IDS_FLAGS_UI_RELAUNCH);
   source->AddLocalizedString("reset", IDS_FLAGS_UI_PAGE_RESET);
-  source->AddLocalizedString("reset-complete", IDS_FLAGS_UI_RESET_COMPLETE);
+  source->AddLocalizedString("reset-acknowledged",
+                             IDS_FLAGS_UI_RESET_ACKNOWLEDGED);
   source->AddLocalizedString("search-placeholder",
                              IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
   source->AddLocalizedString("title", IDS_FLAGS_UI_TITLE);
@@ -169,8 +170,8 @@ void FlagsEnterpriseUI::AddEnterpriseStrings(content::WebUIDataSource* source) {
                              IDS_ENTERPRISE_SETTINGS_PAGE_WARNING_EXPLANATION);
   source->AddLocalizedString("relaunch", IDS_ENTERPRISE_SETTINGS_RELAUNCH);
   source->AddLocalizedString("reset", IDS_ENTERPRISE_SETTINGS_PAGE_RESET);
-  source->AddLocalizedString("reset-complete",
-                             IDS_ENTERPRISE_UI_RESET_COMPLETE);
+  source->AddLocalizedString("reset-acknowledged",
+                             IDS_ENTERPRISE_UI_RESET_ACKNOWLEDGED);
   source->AddLocalizedString("search-placeholder",
                              IDS_ENTERPRISE_SETTINGS_SEARCH_PLACEHOLDER);
   source->AddLocalizedString("title", IDS_ENTERPRISE_SETTINGS_TITLE);

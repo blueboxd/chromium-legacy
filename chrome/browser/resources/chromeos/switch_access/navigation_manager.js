@@ -32,6 +32,14 @@ class NavigationManager {
     this.backButtonManager_ = new BackButtonManager(this);
 
     /**
+     * Handles setting, changing, and clearing the focus rings onscreen.
+     * Can be accessed directly by NavigationManager's children.
+     * @public {!FocusRingManager}
+     */
+    this.focusRingManager =
+        new FocusRingManager(switchAccess, this.backButtonManager_);
+
+    /**
      * Handles the details of text input, including typing and showing an
      * additional focus ring for context when typing.
      * @private {!TextInputManager}
@@ -78,34 +86,6 @@ class NavigationManager {
      * @private {boolean}
      */
     this.inSystemMenu_ = false;
-
-    /**
-     * @private {chrome.accessibilityPrivate.FocusRingInfo}
-     */
-    this.primaryFocusRing_ = {
-      id: SAConstants.Focus.PRIMARY_ID,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.SOLID,
-      color: SAConstants.Focus.PRIMARY_COLOR,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    };
-
-    /**
-     * @private {chrome.accessibilityPrivate.FocusRingInfo}
-     */
-    this.scopeFocusRing_ = {
-      id: SAConstants.Focus.SCOPE_ID,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: SAConstants.Focus.PRIMARY_COLOR,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    };
-
-    /**
-     * The currently highlighted scope object. Tracked for comparison purposes.
-     * @private {chrome.automation.AutomationNode}
-     */
-    this.focusedScope_;
 
     this.init_();
   }
@@ -459,7 +439,7 @@ class NavigationManager {
       this.scope_ = this.scopeStack_.pop();
     } while (!this.scope_.role && this.scopeStack_.length > 0);
 
-    this.updateFocusRings_();
+    this.focusRingManager.setFocusNodes(this.node_, this.scope_);
   }
 
   /**
@@ -592,7 +572,7 @@ class NavigationManager {
 
     // In case the node that gained focus is not a subtreeLeaf.
     if (SwitchAccessPredicate.isInteresting(this.node_, this.scope_))
-      this.updateFocusRings_();
+      this.focusRingManager.setFocusNodes(this.node_, this.scope_);
     else
       this.moveForward();
   }
@@ -629,7 +609,7 @@ class NavigationManager {
     if (!removedByRWA && treeChange.target !== this.node_)
       return;
 
-    this.clearFocusRings_();
+    this.focusRingManager.clearAll();
 
     // Current node not invalid until after treeChange callback, so move to
     // valid node after callback. Delay added to prevent moving to another
@@ -645,6 +625,9 @@ class NavigationManager {
    * @private
    */
   init_() {
+    // TODO(anastasi): call this when it's actually ready
+    this.focusRingManager.onPrefsReady();
+
     this.desktop_.addEventListener(
         chrome.automation.EventType.FOCUS, this.onFocusChange_.bind(this),
         false);
@@ -665,7 +648,7 @@ class NavigationManager {
    */
   setCurrentNode_(node) {
     this.node_ = node;
-    this.updateFocusRings_();
+    this.focusRingManager.setFocusNodes(this.node_, this.scope_);
   }
 
   /**
@@ -713,56 +696,6 @@ class NavigationManager {
       this.node_ = this.scopeStack_.pop();
       this.scope_ = this.node_;
     }
-  }
-
-  /**
-   * Set the focus ring for the current node and scope.
-   * @private
-   */
-  updateFocusRings_() {
-    const focusRect = this.node_.location;
-
-    // If the scope element has not changed, we want to use the previously
-    // calculated rect as the current scope rect.
-    let scopeRect = this.scope_.location;
-    if (this.scopeFocusRing_.rects.length && this.scope_ === this.focusedScope_)
-      scopeRect = this.scopeFocusRing_.rects[0];
-    this.focusedScope_ = this.scope_;
-
-    if (this.node_ === this.backButtonManager_.buttonNode()) {
-      this.backButtonManager_.show(scopeRect);
-
-      this.primaryFocusRing_.rects = [];
-      this.scopeFocusRing_.rects = [scopeRect];
-
-      chrome.accessibilityPrivate.setFocusRings(
-          [this.primaryFocusRing_, this.scopeFocusRing_]);
-
-      return;
-    }
-    this.backButtonManager_.hide();
-
-    // If the current element is not the back button, the scope rect should
-    // expand to contain the focus rect.
-    scopeRect = RectHelper.expandToFitWithPadding(
-        SAConstants.Focus.SCOPE_BUFFER, scopeRect, focusRect);
-
-    this.primaryFocusRing_.rects = [focusRect];
-    this.scopeFocusRing_.rects = [scopeRect];
-
-    chrome.accessibilityPrivate.setFocusRings(
-        [this.primaryFocusRing_, this.scopeFocusRing_]);
-  }
-
-  /**
-   * Clears all focus rings.
-   * @private
-   */
-  clearFocusRings_() {
-    this.primaryFocusRing_.rects = [];
-    this.scopeFocusRing_.rects = [];
-    chrome.accessibilityPrivate.setFocusRings(
-        [this.primaryFocusRing_, this.scopeFocusRing_]);
   }
 
   /**

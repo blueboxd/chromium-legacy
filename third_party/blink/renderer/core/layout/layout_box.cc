@@ -2363,21 +2363,26 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   if (size_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
     cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
 
+  LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
   base::Optional<LayoutUnit> bfc_block_offset =
       cached_layout_result->BfcBlockOffset();
-  LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
+  LayoutUnit block_offset_delta;
 
   const NGConstraintSpace& old_space =
       cached_layout_result->GetConstraintSpaceForCaching();
 
   // Check the BFC offset. Even if they don't match, there're some cases we can
   // still reuse the fragment.
-  bool is_bfc_offset_equal = new_space.BfcOffset() == old_space.BfcOffset();
+  bool are_bfc_offsets_equal =
+      new_space.BfcOffset() == old_space.BfcOffset() &&
+      new_space.ExpectedBfcBlockOffset() ==
+          old_space.ExpectedBfcBlockOffset() &&
+      new_space.ForcedBfcBlockOffset() == old_space.ForcedBfcBlockOffset();
 
   // Even for the first fragment, when block fragmentation is enabled, block
   // offset changes should cause re-layout, since we will fragment at other
   // locations than before.
-  if (UNLIKELY(!is_bfc_offset_equal && new_space.HasBlockFragmentation())) {
+  if (UNLIKELY(!are_bfc_offsets_equal && new_space.HasBlockFragmentation())) {
     DCHECK(old_space.HasBlockFragmentation());
     return nullptr;
   }
@@ -2394,7 +2399,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // need to perform a series of additional checks if we can still reuse this
   // layout result.
   if (!is_new_formatting_context &&
-      (!is_bfc_offset_equal || !is_exclusion_space_equal ||
+      (!are_bfc_offsets_equal || !is_exclusion_space_equal ||
        new_space.ClearanceOffset() != old_space.ClearanceOffset())) {
     DCHECK(!CreatesNewFormattingContext());
 
@@ -2410,8 +2415,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
     DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
 
-    if (!MaySkipLayoutWithinBlockFormattingContext(
-            *cached_layout_result, new_space, &bfc_block_offset))
+    if (!MaySkipLayoutWithinBlockFormattingContext(*cached_layout_result,
+                                                   new_space, &bfc_block_offset,
+                                                   &block_offset_delta))
       return nullptr;
   }
 
@@ -2450,7 +2456,7 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
   // We can safely reuse this result if our BFC and "input" exclusion spaces
   // were equal.
-  if (is_bfc_offset_equal && is_exclusion_space_equal &&
+  if (are_bfc_offsets_equal && is_exclusion_space_equal &&
       !needs_cached_result_update) {
     // In order not to rebuild the internal derived-geometry "cache" of float
     // data, we need to move this to the new "output" exclusion space.
@@ -2459,9 +2465,9 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     return cached_layout_result;
   }
 
-  scoped_refptr<const NGLayoutResult> new_result =
-      base::AdoptRef(new NGLayoutResult(*cached_layout_result, new_space,
-                                        bfc_line_offset, bfc_block_offset));
+  scoped_refptr<const NGLayoutResult> new_result = base::AdoptRef(
+      new NGLayoutResult(*cached_layout_result, new_space, bfc_line_offset,
+                         bfc_block_offset, block_offset_delta));
 
   if (needs_cached_result_update)
     SetCachedLayoutResult(*new_result, break_token);

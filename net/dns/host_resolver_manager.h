@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -146,7 +147,7 @@ class NET_EXPORT HostResolverManager
 
   // Sets overriding configuration that will replace or add to configuration
   // read from the system for DnsClient resolution.
-  void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
+  void SetDnsConfigOverrides(DnsConfigOverrides overrides);
 
   // Support for invalidating HostCaches on changes to network or DNS
   // configuration. HostCaches should register/deregister invalidators here
@@ -161,18 +162,6 @@ class NET_EXPORT HostResolverManager
   // and aborting actions.
   void AddHostCacheInvalidator(HostCache::Invalidator* invalidator);
   void RemoveHostCacheInvalidator(const HostCache::Invalidator* invalidator);
-
-  // Returns the state of the insecure part of the DnsClient.
-  bool GetInsecureDnsClientEnabledForTesting();
-
-  // Returns the currently configured secure dns mode.  Returns OFF if there is
-  // not a valid config.
-  SecureDnsMode GetSecureDnsModeForTesting();
-
-  // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
-  // DNS over HTTPS is not enabled.
-  const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-  GetDnsOverHttpsServersForTesting() const;
 
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;
@@ -190,8 +179,12 @@ class NET_EXPORT HostResolverManager
       std::unique_ptr<MDnsSocketFactory> socket_factory);
   void SetMdnsClientForTesting(std::unique_ptr<MDnsClient> client);
 
-  void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
-
+  // To simulate modifications it would have received if |dns_client| had been
+  // in place before calling this, DnsConfig will be set with the configuration
+  // from the previous DnsClient being replaced (including system config if
+  // |dns_client| does not already contain a system config). This means tests do
+  // not normally need to worry about ordering between setting a test client and
+  // setting DnsConfig.
   void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
 
   // Allows the tests to catch slots leaking out of the dispatcher.  One
@@ -253,11 +246,6 @@ class NET_EXPORT HostResolverManager
     INSECURE_CACHE_LOOKUP,
     SECURE_CACHE_LOOKUP,
   };
-
-  // Number of consecutive failures of an insecure DnsTask (with successful
-  // fallback to ProcTask) before the insecure portion of the DnsClient is
-  // disabled until the next DNS change.
-  static const unsigned kMaximumInsecureDnsTaskFailures;
 
   // Attempts host resolution for |request|. Generally only expected to be
   // called from RequestImpl::Start().
@@ -336,10 +324,6 @@ class NET_EXPORT HostResolverManager
       base::StringPiece hostname,
       DnsQueryType query_type,
       bool default_family_due_to_no_ipv6);
-
-  // When no DoH servers are in an "available" state, no DoH requests should
-  // be sent.
-  bool HasAvailableDohServer();
 
   // Returns the secure dns mode to use for a job, taking into account the
   // global DnsConfig mode and any per-request override. Requests matching DoH
@@ -444,13 +428,7 @@ class NET_EXPORT HostResolverManager
   void OnDNSChanged() override;
   void OnInitialDNSConfigRead() override;
 
-  // Returns DNS configuration including applying overrides. |log_to_net_log|
-  // indicates whether the config should be logged to the netlog.
-  DnsConfig GetBaseDnsConfig(bool log_to_net_log);
-  void UpdateDNSConfig(bool config_changed);
-
-  // True if have a DnsClient with a valid DnsConfig.
-  bool HaveDnsConfig() const;
+  void UpdateJobsForChangedConfig();
 
   // Called on successful resolve after falling back to ProcTask after a failed
   // DnsTask resolve.
@@ -458,9 +436,7 @@ class NET_EXPORT HostResolverManager
 
   int GetOrCreateMdnsClient(MDnsClient** out_client);
 
-  // Update |mode_for_histogram_|. Called when DNS config changes. |dns_config|
-  // is the current DNS config and is only used if !HaveDnsConfig().
-  void UpdateModeForHistogram(const DnsConfig& dns_config);
+  ModeForHistogram DetermineModeForHistogram() const;
 
   void InvalidateCaches();
 
@@ -486,30 +462,9 @@ class NET_EXPORT HostResolverManager
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;
 
-  // True if received valid config from |dns_config_service_|. Temporary, used
-  // to measure performance of DnsConfigService: http://crbug.com/125599
-  bool received_dns_config_;
-
-  // If set, used instead of getting DNS configuration from
-  // NetworkChangeNotifier. Changes sent from NetworkChangeNotifier will also be
-  // ignored and not cancel any pending requests.
-  base::Optional<DnsConfig> test_base_config_;
-
-  // Overrides or adds to DNS configuration read from the system for DnsClient
-  // resolution.
-  DnsConfigOverrides dns_config_overrides_;
-
-  // Number of consecutive failures of insecure DnsTask, counted when fallback
-  // succeeds.
-  unsigned num_insecure_dns_task_failures_;
-
   // False if IPv6 should not be attempted and assumed unreachable when on a
   // WiFi connection. See https://crbug.com/696569 for further context.
   bool check_ipv6_on_wifi_;
-
-  // True if DnsConfigService detected that system configuration depends on
-  // local IPv6 connectivity. Disables probing.
-  bool use_local_ipv6_;
 
   base::TimeTicks last_ipv6_probe_time_;
   bool last_ipv6_probe_result_;
@@ -520,24 +475,9 @@ class NET_EXPORT HostResolverManager
   // Allow fallback to ProcTask if DnsTask fails.
   bool allow_fallback_to_proctask_;
 
-  // Whether insecure DnsTasks should not be added to the task sequence even if
-  // the insecure part of the DnsClient is enabled. This is set to true when
-  // there are too many successive insecure DnsTask failures.
-  bool bypass_insecure_dns_client_;
-
   // Task runner used for DNS lookups using the system resolver. Normally a
   // ThreadPool task runner, but can be overridden for tests.
   scoped_refptr<base::TaskRunner> proc_task_runner_;
-
-  // Current resolver mode, useful for breaking down histogram data.
-  ModeForHistogram mode_for_histogram_;
-
-  // Whether insecure requests should be issued by DnsClient. This field is
-  // complementary to the SecureDnsMode in DnsConfig. If we're in AUTOMATIC
-  // mode, |insecure_dns_client_enabled_| will determine whether or not we
-  // fallback to the insecure part of DnsClient before falling back to the
-  // system resolver.
-  bool insecure_dns_client_enabled_;
 
   // Shared tick clock, overridden for testing.
   const base::TickClock* tick_clock_;

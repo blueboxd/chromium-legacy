@@ -214,7 +214,11 @@ cr.define('bookmarks', function() {
     isCommandVisible_: function(command, itemIds) {
       switch (command) {
         case Command.EDIT:
+        case Command.PASTE:
           return itemIds.size == 1 && this.globalCanEdit_;
+        case Command.CUT:
+        case Command.COPY:
+          return itemIds.size >= 1 && this.globalCanEdit_;
         case Command.COPY_URL:
           return this.isSingleBookmark_(itemIds);
         case Command.DELETE:
@@ -269,6 +273,8 @@ cr.define('bookmarks', function() {
           return this.canChangeList_();
         case Command.IMPORT:
           return this.globalCanEdit_;
+        case Command.PASTE:
+          return true;  // TODO(hcarmona): Add check for CanPasteFromClipboard.
         default:
           return true;
       }
@@ -613,8 +619,17 @@ cr.define('bookmarks', function() {
           const itemUrl = this.getState().nodes[id].url;
           label = itemUrl ? 'menuEdit' : 'menuRename';
           break;
+        case Command.CUT:
+          label = 'menuCut';
+          break;
+        case Command.COPY:
+          label = 'menuCopy';
+          break;
         case Command.COPY_URL:
           label = 'menuCopyURL';
+          break;
+        case Command.PASTE:
+          label = 'menuPaste';
           break;
         case Command.DELETE:
           label = 'menuDelete';
@@ -681,9 +696,13 @@ cr.define('bookmarks', function() {
         case MenuSource.TREE:
           return [
             Command.EDIT,
-            Command.COPY_URL,
             Command.SHOW_IN_FOLDER,
             Command.DELETE,
+            // <hr>
+            Command.CUT,
+            Command.COPY,
+            Command.COPY_URL,
+            Command.PASTE,
             // <hr>
             Command.OPEN_NEW_TAB,
             Command.OPEN_NEW_WINDOW,
@@ -732,11 +751,17 @@ cr.define('bookmarks', function() {
      * @private
      */
     showDividerAfter_: function(command, itemIds) {
-      return ((command == Command.SORT || command == Command.ADD_FOLDER ||
-               command == Command.EXPORT) &&
-              this.menuSource_ == MenuSource.TOOLBAR) ||
-          (command == Command.DELETE &&
-           (this.globalCanEdit_ || this.isSingleBookmark_(itemIds)));
+      switch (command) {
+        case Command.SORT:
+        case Command.ADD_FOLDER:
+        case Command.EXPORT:
+          return this.menuSource_ == MenuSource.TOOLBAR;
+        case Command.DELETE:
+          return this.globalCanEdit_;
+        case Command.PASTE:
+          return this.globalCanEdit_ || this.isSingleBookmark_(itemIds);
+      }
+      return false;
     },
 
     /**

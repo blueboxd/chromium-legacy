@@ -36,8 +36,11 @@ Polymer({
       type: String,
     },
 
-    /** @private */
-    canAddPrinter_: Boolean,
+    /** This is also used as an attribute for css styling. */
+    canAddPrinter: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     /** @private */
     showCupsEditPrinterDialog_: Boolean,
@@ -107,7 +110,7 @@ Polymer({
    * @private
    */
   onActiveNetworksChanged: function(networks) {
-    this.canAddPrinter_ = networks.some(function(network) {
+    this.canAddPrinter = networks.some(function(network) {
       // Note: Check for kOnline rather than using
       // OncMojo.connectionStateIsConnected() since the latter could return true
       // for networks without connectivity (e.g., captive portals).

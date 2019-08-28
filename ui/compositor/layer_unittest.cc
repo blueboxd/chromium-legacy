@@ -1594,6 +1594,12 @@ TEST_F(LayerWithNullDelegateTest, SetShowReflectedLayerSubtreeBounds) {
   reflected_layer->SetBounds(new_reflected_bounds);
   EXPECT_EQ(reflecting_bounds.origin(), reflecting_layer->bounds().origin());
   EXPECT_EQ(new_reflected_bounds.size(), reflecting_layer->bounds().size());
+
+  // No crashes on reflected layer bounds change after the reflecting layer is
+  // released.
+  reflecting_layer = nullptr;
+  reflected_layer->SetBounds(reflected_bounds);
+  EXPECT_EQ(reflected_bounds, reflected_layer->bounds());
 }
 
 void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {

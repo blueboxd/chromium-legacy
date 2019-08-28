@@ -64,6 +64,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       const std::string& network_id,
       SelectCellularMobileNetworkCallback callback) override;
   void RequestNetworkScan(mojom::NetworkType type) override;
+  void GetGlobalPolicy(GetGlobalPolicyCallback callback) override;
 
  private:
   void GetManagedPropertiesSuccess(int callback_id,

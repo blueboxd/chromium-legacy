@@ -15,6 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        android:background="@color/modern_primary_color"
         android:orientation="horizontal">
         <TextView
             android:layout_width="0dp"
@@ -23,7 +24,7 @@
             android:layout_gravity="center_vertical"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:paddingStart="16dp"
+            android:paddingStart="24dp"
             android:paddingEnd="16dp"
             android:textAlignment="viewStart"
             android:textAppearance="@style/TextAppearance.BlackCaption"

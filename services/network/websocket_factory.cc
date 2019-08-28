@@ -31,7 +31,7 @@ void WebSocketFactory::CreateWebSocket(
     uint32_t options,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojom::AuthenticationHandlerPtr auth_handler,
-    mojom::TrustedHeaderClientPtr header_client) {
+    mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) {
   if (throttler_.HasTooManyPendingConnections(process_id)) {
     // Too many websockets!
     mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_remote(

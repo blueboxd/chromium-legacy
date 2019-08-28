@@ -132,7 +132,7 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
           model->RowCount(), first_item, second_item);
     }
     auto* label = label_container->AddChildView(std::make_unique<views::Label>(
-        label_text, CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY));
+        label_text, CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_layout->SetFlexForView(label, 1);
     auto button = views::CreateVectorToggleImageButton(this);
@@ -364,7 +364,7 @@ void NativeFileSystemUsageBubbleView::Init() {
         auto label = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SAVE_CHANGES),
-            CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+            CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_PRIMARY);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(std::move(label));
       }
@@ -377,7 +377,7 @@ void NativeFileSystemUsageBubbleView::Init() {
         auto label = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_VIEW_CHANGES),
-            CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+            CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_PRIMARY);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         AddChildView(std::move(label));
       }

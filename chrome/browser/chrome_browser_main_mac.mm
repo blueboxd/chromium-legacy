@@ -25,7 +25,7 @@
 #include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -477,7 +477,7 @@ void ChromeBrowserMainPartsMac::PreProfileInit() {
 
   // This is called here so that the app shim socket is only created after
   // taking the singleton lock.
-  g_browser_process->platform_part()->app_shim_host_manager()->Init();
+  g_browser_process->platform_part()->app_shim_listener()->Init();
 }
 
 void ChromeBrowserMainPartsMac::PostProfileInit() {

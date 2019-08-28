@@ -35,6 +35,10 @@ std::string HashUsername(base::StringPiece canonicalized_username) {
       120, 112,  44,  114,  24, 86,  84,  -103, -77, -23, 33,
       24,  108,  33,  26,   1,  34,  60,  69,   74,  -6};
 
+  // Check that |canonicalized_username| is actually canonicalized.
+  // Note: We can't use CanonicalizeUsername() again, since it's not idempotent
+  // if multiple '@' signs are present in the initial username.
+  DCHECK_EQ(base::ToLowerASCII(canonicalized_username), canonicalized_username);
   return crypto::SHA256HashString(base::StrCat(
       {canonicalized_username,
        base::StringPiece(kUsernameSalt, base::size(kUsernameSalt))}));
@@ -44,13 +48,19 @@ std::string BucketizeUsername(base::StringPiece canonicalized_username) {
   static_assert(
       kUsernameHashPrefixLength % CHAR_BIT == 0,
       "The prefix length must be a multiple of the number of bits in a char.");
+
+  // Check that |canonicalized_username| is actually canonicalized.
+  // Note: We can't use CanonicalizeUsername() again, since it's not idempotent
+  // if multiple '@' signs are present in the initial username.
+  DCHECK_EQ(base::ToLowerASCII(canonicalized_username), canonicalized_username);
   return HashUsername(canonicalized_username)
       .substr(0, kUsernameHashPrefixLength / CHAR_BIT);
 }
 
-std::string ScryptHashUsernameAndPassword(base::StringPiece username,
-                                          base::StringPiece password) {
-  // Constant salt added to the password hash on top of username.
+std::string ScryptHashUsernameAndPassword(
+    base::StringPiece canonicalized_username,
+    base::StringPiece password) {
+  // Constant salt added to the password hash on top of canonicalized_username.
   // Needs to stay in sync with server side constant: go/passwords-leak-salts
   static constexpr char kPasswordHashSalt[] = {
       48,   118, 42,  -46,  63,  123, -95, -101, -8,  -29, 66,
@@ -62,10 +72,15 @@ std::string ScryptHashUsernameAndPassword(base::StringPiece username,
   static constexpr uint64_t kScryptParallelization = 1;
   static constexpr size_t kScryptMaxMemory = 1024 * 1024 * 32;
 
+  // Check that |canonicalized_username| is actually canonicalized.
+  // Note: We can't use CanonicalizeUsername() again, since it's not idempotent
+  // if multiple '@' signs are present in the initial username.
+  DCHECK_EQ(base::ToLowerASCII(canonicalized_username), canonicalized_username);
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  std::string username_password = base::StrCat({username, password});
+  std::string username_password =
+      base::StrCat({canonicalized_username, password});
   std::string salt = base::StrCat(
-      {username,
+      {canonicalized_username,
        base::StringPiece(kPasswordHashSalt, base::size(kPasswordHashSalt))});
 
   std::string result;

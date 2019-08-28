@@ -39,6 +39,11 @@ class Panel {
   init() {
     this.panel_ = document.getElementById(SAConstants.MENU_PANEL_ID);
 
+    let menuList = Object.values(SAConstants.MenuId);
+    for (const menuId of menuList) {
+      this.updateButtonOrder_(menuId);
+    }
+
     const buttons = document.getElementsByTagName('button');
     for (const button of buttons) {
       this.setupButton_(button);
@@ -144,14 +149,14 @@ class Panel {
    * @param {!Array<string>} buttonOrder
    * @private
    */
-  updatePositionAttributes_(buttonOrder) {
+  updatePositionAttributes_(buttonOrder, menuId) {
     this.menuManager_.exit();
     for (let pos = 0; pos < buttonOrder.length; pos++) {
       let buttonPosition = pos;
       let button = document.getElementById(buttonOrder[pos]);
       button.setAttribute('data-position', String(buttonPosition));
     }
-    this.updateButtonOrder_('switchaccess_menu_actions');
+    this.updateButtonOrder_(menuId);
   }
 
   /**

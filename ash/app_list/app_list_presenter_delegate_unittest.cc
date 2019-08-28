@@ -161,6 +161,13 @@ class AppListPresenterDelegateTest
   }
   ~AppListPresenterDelegateTest() override = default;
 
+ protected:
+  void SetAppListStateAndWait(AppListViewState new_state) {
+    GetAppListView()->SetState(new_state);
+    GetAppListTestHelper()->WaitUntilIdle();
+    GetAppListTestHelper()->CheckState(new_state);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -541,6 +548,129 @@ TEST_F(AppListPresenterDelegateTest, AppListWindowBounds) {
   EXPECT_EQ(
       secondary_display_rect,
       GetAppListView()->GetWidget()->GetNativeView()->GetBoundsInScreen());
+}
+
+// Tests that the app list window's bounds and the search box bounds are updated
+// when the display bounds change.
+TEST_F(AppListPresenterDelegateTest, AppListBoundsChangeForDisplayChange) {
+  UpdateDisplay("1024x768");
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  const gfx::Rect app_list_bounds =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetAppListView()
+                                          ->search_box_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen();
+
+  UpdateDisplay("800x600");
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect app_list_bounds2 =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetAppListView()
+                                           ->search_box_view()
+                                           ->GetWidget()
+                                           ->GetWindowBoundsInScreen();
+  EXPECT_GT(app_list_bounds.size().GetArea(),
+            app_list_bounds2.size().GetArea());
+  EXPECT_NE(search_box_bounds, search_box_bounds2);
+  EXPECT_EQ(400, search_box_bounds2.CenterPoint().x());
+}
+
+// Tests that the app list window's bounds and the search box bounds in the half
+// state are updated when the display bounds change.
+TEST_F(AppListPresenterDelegateTest,
+       AppListBoundsChangeForDisplayChangeSearch) {
+  UpdateDisplay("1024x768");
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  SetAppListStateAndWait(AppListViewState::kHalf);
+
+  const gfx::Rect app_list_bounds =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetAppListView()
+                                          ->search_box_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen();
+
+  UpdateDisplay("800x600");
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect app_list_bounds2 =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetAppListView()
+                                           ->search_box_view()
+                                           ->GetWidget()
+                                           ->GetWindowBoundsInScreen();
+  EXPECT_GT(app_list_bounds.size().GetArea(),
+            app_list_bounds2.size().GetArea());
+  EXPECT_NE(search_box_bounds, search_box_bounds2);
+  EXPECT_EQ(400, search_box_bounds2.CenterPoint().x());
+}
+
+// Tests that the app list window's bounds and the search box bounds in the
+// fullscreen state are updated when the display bounds change.
+TEST_F(AppListPresenterDelegateTest,
+       AppListBoundsChangeForDisplayChangeFullscreen) {
+  UpdateDisplay("1024x768");
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  SetAppListStateAndWait(AppListViewState::kFullscreenAllApps);
+
+  const gfx::Rect app_list_bounds =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetAppListView()
+                                          ->search_box_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen();
+
+  UpdateDisplay("800x600");
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect app_list_bounds2 =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetAppListView()
+                                           ->search_box_view()
+                                           ->GetWidget()
+                                           ->GetWindowBoundsInScreen();
+  EXPECT_GT(app_list_bounds.size().GetArea(),
+            app_list_bounds2.size().GetArea());
+  EXPECT_NE(search_box_bounds, search_box_bounds2);
+  EXPECT_EQ(400, search_box_bounds2.CenterPoint().x());
+}
+
+// Tests that the app list window's bounds and the search box bounds in the
+// fullscreen search state are updated when the display bounds change.
+TEST_F(AppListPresenterDelegateTest,
+       AppListBoundsChangeForDisplayChangeFullscreenSearch) {
+  UpdateDisplay("1024x768");
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  SetAppListStateAndWait(AppListViewState::kFullscreenAllApps);
+  SetAppListStateAndWait(AppListViewState::kFullscreenSearch);
+
+  const gfx::Rect app_list_bounds =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds = GetAppListView()
+                                          ->search_box_view()
+                                          ->GetWidget()
+                                          ->GetWindowBoundsInScreen();
+
+  UpdateDisplay("800x600");
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  const gfx::Rect app_list_bounds2 =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen();
+  const gfx::Rect search_box_bounds2 = GetAppListView()
+                                           ->search_box_view()
+                                           ->GetWidget()
+                                           ->GetWindowBoundsInScreen();
+  EXPECT_GT(app_list_bounds.size().GetArea(),
+            app_list_bounds2.size().GetArea());
+  EXPECT_NE(search_box_bounds, search_box_bounds2);
+  EXPECT_EQ(400, search_box_bounds2.CenterPoint().x());
 }
 
 // Tests that the app list is not draggable in side shelf alignment.

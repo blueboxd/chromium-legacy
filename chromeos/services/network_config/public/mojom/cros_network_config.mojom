@@ -658,6 +658,25 @@ struct CellularSimState {
   bool require_pin;
 };
 
+// Properties provided by GetGlobalPolicy. These properties affect network
+// configuration as a whole instead of individual network configurations.
+struct GlobalPolicy {
+  // If true, only policy networks may auto connect.
+  bool allow_only_policy_networks_to_autoconnect = false;
+
+  // If true, only policy networks may be connected to and no new networks may
+  // be added or configured.
+  bool allow_only_policy_networks_to_connect = false;
+
+  // If true and a managed network is available in the visible network list,
+  // only policy networks may be connected to and no new networks may be added
+  // or configured.
+  bool allow_only_policy_networks_to_connect_if_available = false;
+
+  // List of blocked networks which can not be connected to.
+  array<string> blocked_hex_ssids;
+};
+
 // Interface for fetching and setting network configuration properties, e.g.
 // from Settings WebUI or the SystemTray.
 interface CrosNetworkConfig {
@@ -715,6 +734,10 @@ interface CrosNetworkConfig {
   // Requests a scan for new networks. If the list updates,
   // CrosNetworkConfigObserver::OnNetworkStateListChanged() will be signaled.
   RequestNetworkScan(NetworkType type);
+
+  // Returns the global policy properties. These properties are not expected to
+  // change during a session.
+  GetGlobalPolicy() => (GlobalPolicy result);
 };
 
 interface CrosNetworkConfigObserver {

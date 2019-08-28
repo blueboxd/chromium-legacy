@@ -39,12 +39,6 @@ void AssistantStateProxy::OnAssistantSettingsEnabled(bool enabled) {
     observer.OnAssistantSettingsEnabled(settings_enabled_.value());
 }
 
-void AssistantStateProxy::OnAssistantContextEnabled(bool enabled) {
-  context_enabled_ = enabled;
-  for (auto& observer : observers_)
-    observer.OnAssistantContextEnabled(context_enabled_.value());
-}
-
 void AssistantStateProxy::OnAssistantHotwordEnabled(bool enabled) {
   hotword_enabled_ = enabled;
   for (auto& observer : observers_)

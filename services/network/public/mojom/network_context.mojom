@@ -160,7 +160,8 @@ interface TrustedHeaderClient {
 interface TrustedURLLoaderHeaderClient {
   // When a new URLLoader is created, this will be called to pass a
   // corresponding |header_client|.
-  OnLoaderCreated(int32 request_id, TrustedHeaderClient& header_client);
+  OnLoaderCreated(int32 request_id,
+                  pending_receiver<TrustedHeaderClient> header_client);
 };
 
 // Parameters for constructing a network context.
@@ -998,7 +999,7 @@ interface NetworkContext {
         uint32 options,
         pending_remote<WebSocketHandshakeClient> handshake_client,
         AuthenticationHandler? auth_handler,
-        TrustedHeaderClient? header_client);
+        pending_remote<TrustedHeaderClient>? header_client);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.
   // Note that the log is generally global, including all NetworkContexts

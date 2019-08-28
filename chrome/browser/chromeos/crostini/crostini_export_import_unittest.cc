@@ -258,7 +258,7 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_FAILED);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::FAILED);
+            CrostiniExportImportNotification::Status::FAILED_UNKNOWN_REASON);
   EXPECT_FALSE(notification->get_notification()->pinned());
   // CrostiniExportImport should cleanup the file if an export fails.
   task_environment_.RunUntilIdle();
@@ -401,7 +401,7 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_FAILED);
   EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::FAILED);
+            CrostiniExportImportNotification::Status::FAILED_UNKNOWN_REASON);
   EXPECT_FALSE(notification->get_notification()->pinned());
   std::string msg("Restoring couldn't be completed due to an error");
   EXPECT_EQ(notification->get_notification()->message(),
@@ -484,8 +484,9 @@ TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
   SendImportProgress(
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_FAILED_ARCHITECTURE);
-  EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::FAILED);
+  EXPECT_EQ(
+      notification->status(),
+      CrostiniExportImportNotification::Status::FAILED_ARCHITECTURE_MISMATCH);
   EXPECT_FALSE(notification->get_notification()->pinned());
   std::string msg(
       "Cannot import container architecture type arch_con with this device "
@@ -510,8 +511,9 @@ TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
           .available_space = 20ul * 1'024 * 1'024 * 1'024,    // 20Gb
           .min_required_space = 35ul * 1'024 * 1'024 * 1'024  // 35Gb
       });
-  EXPECT_EQ(notification->status(),
-            CrostiniExportImportNotification::Status::FAILED);
+  EXPECT_EQ(
+      notification->status(),
+      CrostiniExportImportNotification::Status::FAILED_INSUFFICIENT_SPACE);
   EXPECT_FALSE(notification->get_notification()->pinned());
   std::string msg =
       "Cannot restore due to lack of storage space. Free up 15.0 GB from the "

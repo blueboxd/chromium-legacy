@@ -6,6 +6,7 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "base/barrier_closure.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/exo/data_offer.h"
 #include "components/exo/data_source.h"
 #include "components/exo/seat.h"

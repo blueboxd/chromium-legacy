@@ -2508,8 +2508,8 @@ void Document::PropagateStyleToViewport() {
     }
 
     // TODO(954423, 952711): overscroll-behavior (and most likely
-    // overflow-anchor) should be propagated from documet element and not the
-    // viewport defining element.
+    // overflow-anchor) should be propagated from the document element and not
+    // the viewport defining element.
     PROPAGATE_FROM(overflow_style, OverscrollBehaviorX, SetOverscrollBehaviorX,
                    EOverscrollBehavior::kAuto);
     PROPAGATE_FROM(overflow_style, OverscrollBehaviorY, SetOverscrollBehaviorY,

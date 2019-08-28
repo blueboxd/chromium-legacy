@@ -223,6 +223,10 @@ bool ShouldOverrideNavigationCoinFlipToAllowed();
 // Returns true if the given url matches an excluded media suffix.
 bool ShouldExcludeMediaSuffix(const GURL& url);
 
+// Returns true if the logic to detect redirect loops with defer all script
+// preview using a cache is enabled.
+bool DetectDeferRedirectLoopsUsingCache();
+
 }  // namespace params
 
 }  // namespace previews

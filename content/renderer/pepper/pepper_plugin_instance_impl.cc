@@ -2157,8 +2157,7 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
   if (!frame)
     return false;
 
-  WebView* view = frame->View();
-  return view && view->MainFrameWidget()->IsAcceleratedCompositingActive();
+  return frame->FrameWidget()->IsAcceleratedCompositingActive();
 }
 
 void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {

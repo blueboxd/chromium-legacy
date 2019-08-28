@@ -19,8 +19,7 @@ TooltipIcon::TooltipIcon(const base::string16& tooltip, int tooltip_icon_size)
       tooltip_icon_size_(tooltip_icon_size),
       mouse_inside_(false),
       bubble_(nullptr),
-      preferred_width_(0),
-      observer_(this) {
+      preferred_width_(0) {
   SetDrawAsHovered(false);
 }
 

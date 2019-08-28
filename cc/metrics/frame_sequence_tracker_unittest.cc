@@ -22,14 +22,17 @@ class FrameSequenceTrackerTest : public testing::Test {
   FrameSequenceTrackerTest()
       : compositor_frame_reporting_controller_(
             std::make_unique<CompositorFrameReportingController>()),
-        collection_(compositor_frame_reporting_controller_.get()),
-        tracker_(
-            collection_.CreateTracker(FrameSequenceTrackerType::kTouchScroll)) {
+        collection_(compositor_frame_reporting_controller_.get()) {
+    collection_.StartSequence(FrameSequenceTrackerType::kTouchScroll);
+    tracker_ = collection_.GetTrackerForTesting(
+        FrameSequenceTrackerType::kTouchScroll);
   }
   ~FrameSequenceTrackerTest() override = default;
 
-  std::unique_ptr<FrameSequenceTracker> CreateNewTracker() {
-    return collection_.CreateTracker(FrameSequenceTrackerType::kTouchScroll);
+  void CreateNewTracker() {
+    collection_.StartSequence(FrameSequenceTrackerType::kTouchScroll);
+    tracker_ = collection_.GetTrackerForTesting(
+        FrameSequenceTrackerType::kTouchScroll);
   }
 
   viz::BeginFrameArgs CreateBeginFrameArgs(uint64_t source_id,
@@ -76,7 +79,7 @@ class FrameSequenceTrackerTest : public testing::Test {
   std::unique_ptr<CompositorFrameReportingController>
       compositor_frame_reporting_controller_;
   FrameSequenceTrackerCollection collection_;
-  std::unique_ptr<FrameSequenceTracker> tracker_;
+  FrameSequenceTracker* tracker_;
 };
 
 // Tests that the tracker works correctly when the source-id for the
@@ -93,7 +96,7 @@ TEST_F(FrameSequenceTrackerTest, SourceIdChangeDuringSequence) {
   DispatchCompleteFrame(args_1, kImplDamage | kMainDamage);
 
   // Start a new tracker.
-  auto tracker = CreateNewTracker();
+  CreateNewTracker();
 
   // Change the source-id, and start an impl frame. This time, the main-frame
   // does not provide any damage.

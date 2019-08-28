@@ -476,6 +476,22 @@ TEST_F(ProcessUtilTest, HandlesToTransferClosedOnBadPathToMapFailure) {
   EXPECT_EQ(ZX_ERR_BAD_HANDLE, zx_handle_close(handles[0].get()));
   ignore_result(handles[0].release());
 }
+
+TEST_F(ProcessUtilTest, FuchsiaProcessNameSuffix) {
+  LaunchOptions options;
+  options.process_name_suffix = "#test";
+  Process process(SpawnChildWithOptions("SimpleChildProcess", options));
+
+  char name[256] = {};
+  size_t name_size = sizeof(name);
+  zx_status_t status =
+      zx_object_get_property(process.Handle(), ZX_PROP_NAME, name, name_size);
+  ASSERT_EQ(status, ZX_OK);
+  EXPECT_EQ(std::string(name),
+            CommandLine::ForCurrentProcess()->GetProgram().BaseName().value() +
+                "#test");
+}
+
 #endif  // defined(OS_FUCHSIA)
 
 // On Android SpawnProcess() doesn't use LaunchProcess() and doesn't support

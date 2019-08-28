@@ -10,6 +10,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -21,7 +22,21 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 /** Binder for the explore surface. */
 class ExploreSurfaceViewBinder {
-    public static void bind(PropertyModel model, ViewGroup view, PropertyKey propertyKey) {
+    /**
+     * The view holder holds the parent view and the header container view.
+     */
+    public static class ViewHolder {
+        public final ViewGroup parentView;
+        @Nullable
+        public final ViewGroup headerContainerView;
+
+        ViewHolder(ViewGroup parentView, @Nullable ViewGroup headerContainerView) {
+            this.parentView = parentView;
+            this.headerContainerView = headerContainerView;
+        }
+    }
+
+    public static void bind(PropertyModel model, ViewHolder view, PropertyKey propertyKey) {
         if (propertyKey == IS_EXPLORE_SURFACE_VISIBLE) {
             setVisibility(view, model, model.get(IS_EXPLORE_SURFACE_VISIBLE));
         } else if (propertyKey == IS_SHOWING_OVERVIEW) {
@@ -36,17 +51,44 @@ class ExploreSurfaceViewBinder {
         }
     }
 
+    /**
+     * Set the explore surface visibility.
+     * Note that if the {@link ViewHolder.headerContainerView} is not null, the feed surface view is
+     * added to the {@link ViewHolder.headerContainerView}, then the {@link
+     * ViewHolder.headerContainerView} is added to the {@link ViewHolder.parentView}. This is for
+     * the alignment between {@link ViewHolder.headerContainerView} and the feed surface view to
+     * avoid another level of view hiearachy. If the {@link ViewHolder.headerContainerView} is null,
+     * then the feed surface view is added to the {@link ViewHolder.parentView} directly.
+     * @param viewHolder The view holder holds the parent and possible the header container view.
+     * @param model The property model.
+     * @param isShowing Whether set the surface to visible or not.
+     */
     private static void setVisibility(
-            ViewGroup containerView, PropertyModel model, boolean isShowing) {
+            ViewHolder viewHolder, PropertyModel model, boolean isShowing) {
         if (model.get(FEED_SURFACE_COORDINATOR) == null) return;
+
+        if (viewHolder.headerContainerView != null) {
+            if (viewHolder.headerContainerView.getParent() == null) {
+                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                layoutParams.bottomMargin = model.get(BOTTOM_BAR_HEIGHT);
+                layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
+                viewHolder.parentView.addView(viewHolder.headerContainerView, layoutParams);
+            }
+            viewHolder.headerContainerView.setVisibility(isShowing ? View.VISIBLE : View.GONE);
+        }
 
         View feedSurfaceView = model.get(FEED_SURFACE_COORDINATOR).getView();
         if (isShowing) {
-            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-            layoutParams.bottomMargin = model.get(BOTTOM_BAR_HEIGHT);
-            layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
-            containerView.addView(feedSurfaceView, layoutParams);
+            if (viewHolder.headerContainerView == null) {
+                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                layoutParams.bottomMargin = model.get(BOTTOM_BAR_HEIGHT);
+                layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
+                viewHolder.parentView.addView(feedSurfaceView, layoutParams);
+            } else {
+                viewHolder.headerContainerView.addView(feedSurfaceView);
+            }
         } else {
             UiUtils.removeViewFromParent(feedSurfaceView);
         }

@@ -84,6 +84,8 @@ void ContextProviderImpl::Create(
   }
 
   base::LaunchOptions launch_options;
+  launch_options.process_name_suffix = ":context";
+
   service_manager::SandboxPolicyFuchsia sandbox_policy;
   sandbox_policy.Initialize(service_manager::SANDBOX_TYPE_WEB_CONTEXT);
   sandbox_policy.SetServiceDirectory(std::move(service_directory));

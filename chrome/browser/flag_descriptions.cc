@@ -907,6 +907,11 @@ const char kEnableSharedArrayBufferName[] =
 const char kEnableSharedArrayBufferDescription[] =
     "Enable SharedArrayBuffer support in JavaScript.";
 
+const char kEnableSubresourceRedirectName[] =
+    "Enable Render Level Data Use Optimization";
+const char kEnableSubresourceRedirectDescription[] =
+    "Allow Render Level Data Use Optimization";
+
 const char kEnableWasmName[] = "WebAssembly structured cloning support.";
 const char kEnableWasmDescription[] =
     "Enable web pages to use WebAssembly structured cloning.";
@@ -1982,9 +1987,9 @@ const char kTreatInsecureOriginAsSecureName[] =
     "Insecure origins treated as secure";
 const char kTreatInsecureOriginAsSecureDescription[] =
     "Treat given (insecure) origins as secure origins. Multiple origins can be "
-    "supplied as a comma-separated list. For the definition of secure "
-    "contexts, "
-    "see https://w3c.github.io/webappsec-secure-contexts/";
+    "supplied as a comma-separated list. Origins must have their protocol "
+    "specified e.g. \"http://example.com\". For the definition of secure "
+    "contexts, see https://w3c.github.io/webappsec-secure-contexts/";
 
 const char kTreatUnsafeDownloadsAsActiveName[] =
     "Treat risky downloads over insecure connections as active mixed content";
@@ -2008,9 +2013,9 @@ const char kTurnOffStreamingMediaCachingDescription[] =
     "Reduces disk activity during media playback, which can result in "
     "power savings.";
 
-const char kUnexpireFlagsM78Name[] = "Temporarily unexpire M78 flags.";
-const char kUnexpireFlagsM78Description[] =
-    "Temporarily unexpire flags that are expired as of M78. These flags will "
+const char kUnexpireFlagsM76Name[] = "Temporarily unexpire M76 flags.";
+const char kUnexpireFlagsM76Description[] =
+    "Temporarily unexpire flags that are expired as of M76. These flags will "
     "be removed soon.";
 
 const char kUnifiedConsentName[] = "Unified Consent";
@@ -2284,6 +2289,10 @@ const char kClickToCallOpenDialerDirectlyName[] =
 const char kClickToCallOpenDialerDirectlyDescription[] =
     "Enables opening the dialer directly instead of displaying a notification. "
     "Only available on Android P- and when the screen is on and unlocked.";
+const char kCloseTabSuggestionsStaleName[] = "Suggest to close stale Tabs";
+const char kCloseTabSuggestionsStaleDescription[] =
+    "Suggests to the user to close Tabs that have not been used above a "
+    "threshold such as 1 day. The threshold is configurable.";
 
 const char kClickToCallReceiverName[] =
     "Enable receiver device to handle click to call feature";
@@ -3035,10 +3044,10 @@ const char kArcFilePickerExperimentName[] =
 const char kArcFilePickerExperimentDescription[] =
     "Enables using Chrome OS file picker in ARC.";
 
-const char kArcNativeBridgeExperimentName[] =
-    "Enable native bridge experiment for ARC";
-const char kArcNativeBridgeExperimentDescription[] =
-    "Enables experimental native bridge feature.";
+const char kArcNativeBridgeToggleName[] =
+    "Toggle between native bridge implementations for ARC";
+const char kArcNativeBridgeToggleDescription[] =
+    "Toggle between native bridge implementations for ARC.";
 
 const char kArcPrintSpoolerExperimentName[] =
     "Enable print spooler experiment for ARC";

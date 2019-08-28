@@ -18,7 +18,19 @@
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace tracing {
-
+namespace {
+perfetto::TraceConfig GetDefaultTraceConfig(
+    const std::vector<std::string>& data_sources) {
+  perfetto::TraceConfig trace_config;
+  trace_config.add_buffers()->set_size_kb(1024 * 32);
+  for (const auto& data_source : data_sources) {
+    auto* ds_config = trace_config.add_data_sources()->mutable_config();
+    ds_config->set_name(data_source);
+    ds_config->set_target_buffer(0);
+  }
+  return trace_config;
+}
+}  // namespace
 // static
 std::unique_ptr<TestDataSource> TestDataSource::CreateAndRegisterDataSource(
     const std::string& data_source_name,
@@ -163,7 +175,17 @@ void MockProducerClient::SetAgentDisabledCallback(
 MockConsumer::MockConsumer(std::vector<std::string> data_source_names,
                            perfetto::TracingService* service,
                            PacketReceivedCallback packet_received_callback)
-    : packet_received_callback_(packet_received_callback) {
+    : MockConsumer(data_source_names,
+                   service,
+                   std::move(packet_received_callback),
+                   GetDefaultTraceConfig(data_source_names)) {}
+
+MockConsumer::MockConsumer(std::vector<std::string> data_source_names,
+                           perfetto::TracingService* service,
+                           PacketReceivedCallback packet_received_callback,
+                           const perfetto::TraceConfig& config)
+    : packet_received_callback_(packet_received_callback),
+      trace_config_(config) {
   for (const auto& source : data_source_names) {
     data_sources_.emplace_back(DataSourceStatus{
         source,
@@ -189,16 +211,8 @@ void MockConsumer::StopTracing() {
 }
 
 void MockConsumer::StartTracing() {
-  perfetto::TraceConfig trace_config;
-  trace_config.add_buffers()->set_size_kb(1024 * 32);
-  for (const auto& data_source : data_sources_) {
-    auto* ds_config = trace_config.add_data_sources()->mutable_config();
-    ds_config->set_name(data_source.name);
-    ds_config->set_target_buffer(0);
-  }
-
   CHECK(consumer_endpoint_);
-  consumer_endpoint_->EnableTracing(trace_config);
+  consumer_endpoint_->EnableTracing(trace_config_);
 }
 
 void MockConsumer::FreeBuffers() {
@@ -219,8 +233,9 @@ void MockConsumer::OnTraceData(std::vector<perfetto::TracePacket> packets,
   for (auto& encoded_packet : packets) {
     perfetto::protos::TracePacket packet;
     EXPECT_TRUE(encoded_packet.Decode(&packet));
+    ++received_packets_;
     if (packet.for_testing().str() == kPerfettoTestString) {
-      received_test_packets_++;
+      ++received_test_packets_;
     }
   }
 

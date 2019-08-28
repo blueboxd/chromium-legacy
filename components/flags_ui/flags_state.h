@@ -46,8 +46,6 @@ enum {
   kEnterprise = 1 << 7,
 };
 
-extern const base::Feature kUnexpireFlagsM78;
-
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -
 // whether it should add the sentinel switches around flags.
 enum SentinelsMode { kNoSentinels, kAddSentinels };

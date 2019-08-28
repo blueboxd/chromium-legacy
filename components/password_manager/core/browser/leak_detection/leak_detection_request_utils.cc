@@ -22,10 +22,12 @@ namespace {
 // asynchronously.
 LookupSingleLeakData PrepareLookupSingleLeakData(const std::string& username,
                                                  const std::string& password) {
+  std::string canonicalized_username = CanonicalizeUsername(username);
   LookupSingleLeakData data;
-  data.username_hash_prefix = BucketizeUsername(CanonicalizeUsername(username));
+  data.username_hash_prefix = BucketizeUsername(canonicalized_username);
   data.encrypted_payload = CipherEncrypt(
-      ScryptHashUsernameAndPassword(username, password), &data.encryption_key);
+      ScryptHashUsernameAndPassword(canonicalized_username, password),
+      &data.encryption_key);
   return data;
 }
 

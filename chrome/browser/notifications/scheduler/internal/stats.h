@@ -10,6 +10,19 @@
 namespace notifications {
 namespace stats {
 
+// Events to track behavior of the background task used by notification
+// scheduling system. Used in histograms, don't reuse or delete values. Needs to
+// match NotificationSchedulerBackgroundTaskEvent in enums.xml.
+enum class BackgroundTaskEvent {
+  // Background task starts.
+  kStart = 0,
+  // Background task finishes and stopped gracefully.
+  kFinish = 1,
+  // The background task is stopped by the OS without finishing the its job.
+  kStopByOS = 2,
+  kMaxValue = kStopByOS
+};
+
 // Used to log events in impression tracker. Don't reuse or delete values. Needs
 // to match NotificationSchedulerImpressionEvent in enums.xml.
 enum class ImpressionEvent {
@@ -25,6 +38,13 @@ enum class ImpressionEvent {
 // Logs the user action when the user interacts with notification sent from the
 // scheduling system.
 void LogUserAction(const UserActionData& user_action_data);
+
+// Logs events to track the behavior of the background task used by notification
+// scheduling system.
+void LogBackgroundTaskEvent(BackgroundTaskEvent event);
+
+// Logs the number of notification shown in the current background task.
+void LogBackgroundTaskNotificationShown(int shown_count);
 
 // Logs the initialization result for impression database.
 void LogImpressionDbInit(bool success, int entry_count);

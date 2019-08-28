@@ -492,6 +492,7 @@ class CORE_EXPORT LocalFrameView final
   using PluginSet = HeapHashSet<Member<WebPluginContainerImpl>>;
   const PluginSet& Plugins() const { return plugins_; }
   void AddPlugin(WebPluginContainerImpl*);
+  void RemovePlugin(WebPluginContainerImpl*);
   // Custom scrollbars in PaintLayerScrollableArea need to be called with
   // StyleChanged whenever window focus is changed.
   void RemoveScrollbar(Scrollbar*);

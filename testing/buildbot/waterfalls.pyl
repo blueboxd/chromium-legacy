@@ -195,7 +195,7 @@
       },
       'Android WebView L (dbg)': {
         'test_suites': {
-          'gtest_tests': 'webview_bot_gtests',
+          'gtest_tests': 'webview_bot_system_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -214,7 +214,7 @@
       },
       'Android WebView M (dbg)': {
         'test_suites': {
-          'gtest_tests': 'webview_bot_gtests',
+          'gtest_tests': 'webview_bot_system_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -232,7 +232,7 @@
       },
       'Android WebView N (dbg)': {
         'test_suites': {
-          'gtest_tests': 'webview_bot_gtests',
+          'gtest_tests': 'webview_bot_system_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -254,7 +254,7 @@
           'walleye',
         ],
         'test_suites': {
-          'gtest_tests': 'webview_bot_gtests',
+          'gtest_tests': 'webview_bot_all_gtests',
         },
         'use_swarming': True,
         'os_type': 'android',
@@ -586,7 +586,7 @@
           'walleye',
         ],
         'test_suites': {
-          'gtest_tests': 'webview_bot_gtests',
+          'gtest_tests': 'android_oreo_rel_gtests',
         },
         'use_swarming': True,
         'os_type': 'android',

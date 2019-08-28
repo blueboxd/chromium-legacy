@@ -52,39 +52,48 @@ class SwitchAccessInterface {
   onPreferencesChanged(changes) {}
 
   /**
-   * Set the value of the preference |key| to |value| in chrome.storage.sync.
+   * Set the value of the preference |name| to |value| in chrome.storage.sync.
    * The behavior is not updated until the storage update is complete.
    *
-   * @param {SAConstants.Preference} key
+   * @param {SAConstants.Preference} name
    * @param {boolean|number} value
    */
-  setPreference(key, value) {}
+  setPreference(name, value) {}
 
   /**
-   * Get the boolean value for the given key. Will throw a type error if the
-   * value associated with |key| is not a boolean, or undefined.
+   * Get the boolean value for the given name. Will throw a type error if the
+   * value associated with |name| is not a boolean, or undefined.
    *
-   * @param  {SAConstants.Preference} key
+   * @param  {SAConstants.Preference} name
    * @return {boolean}
    */
-  getBooleanPreference(key) {}
+  getBooleanPreference(name) {}
 
   /**
-   * Get the number value for the given key. Will throw a type error if the
-   * value associated with |key| is not a number, or undefined.
+   * Get the string value for the given name. Will throw a type error if the
+   * value associated with |name| is not a string, or is undefined.
    *
-   * @param  {SAConstants.Preference} key
+   * @param {SAConstants.Preference} name
+   * @return {string}
+   */
+  getStringPreference(name) {}
+
+  /**
+   * Get the number value for the given name. Will throw a type error if the
+   * value associated with |name| is not a number, or undefined.
+   *
+   * @param  {SAConstants.Preference} name
    * @return {number}
    */
-  getNumberPreference(key) {}
+  getNumberPreference(name) {}
 
   /**
-   * Get the number value for the given key, or |null| if none exists.
+   * Get the number value for the given name, or |null| if none exists.
    *
-   * @param  {SAConstants.Preference} key
+   * @param  {SAConstants.Preference} name
    * @return {number|null}
    */
-  getNumberPreferenceIfDefined(key) {}
+  getNumberPreferenceIfDefined(name) {}
 
   /**
    * Sets up the connection between the menuPanel and the menuManager.

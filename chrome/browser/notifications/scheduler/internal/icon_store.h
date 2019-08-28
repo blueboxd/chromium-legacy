@@ -36,12 +36,14 @@ namespace notifications {
 // be loaded into memory.
 class IconStore {
  public:
-  using IconsMap = std::map<std::string /*icons_uuid*/, SkBitmap>;
-  using LoadIconsCallback = base::OnceCallback<void(bool, IconsMap)>;
+  using LoadedIconsMap = std::map<std::string /*icons_uuid*/, IconBundle>;
+  using IconTypeUuidMap = std::map<IconType, std::string>;
+  using IconTypeBundleMap = std::map<IconType, IconBundle>;
+
   using InitCallback = base::OnceCallback<void(bool)>;
+  using LoadIconsCallback = base::OnceCallback<void(bool, LoadedIconsMap)>;
+  using AddCallback = base::OnceCallback<void(IconTypeUuidMap, bool)>;
   using UpdateCallback = base::OnceCallback<void(bool)>;
-  using AddCallback =
-      base::OnceCallback<void(std::vector<std::string> /*icons_uuid*/, bool)>;
 
   // Initializes the storage.
   virtual void Init(InitCallback callback) = 0;
@@ -51,7 +53,7 @@ class IconStore {
                          LoadIconsCallback callback) = 0;
 
   // Adds multiple icons to storage.
-  virtual void AddIcons(std::vector<SkBitmap>, AddCallback callback) = 0;
+  virtual void AddIcons(IconTypeBundleMap icons, AddCallback callback) = 0;
 
   // Deletes multiple icons.
   virtual void DeleteIcons(const std::vector<std::string>& keys,
@@ -77,7 +79,7 @@ class IconProtoDbStore : public IconStore {
   void Init(InitCallback callback) override;
   void LoadIcons(const std::vector<std::string>& keys,
                  LoadIconsCallback callback) override;
-  void AddIcons(std::vector<SkBitmap> icons, AddCallback callback) override;
+  void AddIcons(IconTypeBundleMap icons, AddCallback callback) override;
   void DeleteIcons(const std::vector<std::string>& keys,
                    UpdateCallback callback) override;
 
@@ -93,6 +95,7 @@ class IconProtoDbStore : public IconStore {
 
   // Called when the icons are encoded.
   void OnIconsEncoded(AddCallback callback,
+                      std::vector<IconType> icons_type,
                       std::vector<std::string> icons_uuid,
                       std::unique_ptr<EncodeResult> encode_result);
 

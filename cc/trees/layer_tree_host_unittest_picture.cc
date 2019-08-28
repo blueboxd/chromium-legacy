@@ -410,7 +410,6 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     pinch_ = Layer::Create();
     pinch_->SetBounds(gfx::Size(500, 500));
     pinch_->SetScrollable(root_clip->bounds());
-    pinch_->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch_);
     root_clip->AddChild(page_scale_layer);
 

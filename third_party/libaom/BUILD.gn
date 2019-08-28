@@ -205,7 +205,7 @@ if (enable_libaom_decoder) {
       deps += [ ":libaom_intrinsics_neon" ]
     }
     if (is_android) {
-      deps += [ "//third_party/android_sdk:cpu_features" ]
+      deps += [ "//third_party/android_ndk:cpu_features" ]
     }
     public_configs = [ ":libaom_external_config" ]
   }

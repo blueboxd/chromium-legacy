@@ -21,15 +21,6 @@ void PictureInPictureServiceImpl::Create(
 }
 
 // static
-void PictureInPictureServiceImpl::CreateFromRequest(
-    RenderFrameHost* render_frame_host,
-    blink::mojom::PictureInPictureServiceRequest request) {
-  // Implicit conversion to
-  // mojo::PendingReceiver<blink::mojom::PictureInPictureService>.
-  Create(render_frame_host, std::move(request));
-}
-
-// static
 PictureInPictureServiceImpl* PictureInPictureServiceImpl::CreateForTesting(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::PictureInPictureService> receiver) {

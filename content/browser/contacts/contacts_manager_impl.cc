@@ -54,15 +54,6 @@ void OnContactsSelected(
 }  // namespace
 
 // static
-void ContactsManagerImpl::CreateForRequest(
-    RenderFrameHostImpl* render_frame_host,
-    blink::mojom::ContactsManagerRequest request) {
-  // Implicit conversion from ContactsManagerRequest to
-  // mojo::PendingReceiver<blink::mojom::ContactsManager>.
-  Create(render_frame_host, std::move(request));
-}
-
-// static
 void ContactsManagerImpl::Create(
     RenderFrameHostImpl* render_frame_host,
     mojo::PendingReceiver<blink::mojom::ContactsManager> receiver) {

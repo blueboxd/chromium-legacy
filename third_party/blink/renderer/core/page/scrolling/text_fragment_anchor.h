@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/page/scrolling/element_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor_metrics.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_finder.h"
@@ -18,6 +19,8 @@ namespace blink {
 
 class LocalFrame;
 class KURL;
+
+enum class TextFragmentFormat { PlainFragment, FragmentDirective };
 
 class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                              public TextFragmentFinder::Client {
@@ -33,7 +36,8 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   TextFragmentAnchor(
       const Vector<TextFragmentSelector>& text_fragment_selectors,
-      LocalFrame& frame);
+      LocalFrame& frame,
+      const TextFragmentFormat fragment_format);
   ~TextFragmentAnchor() override = default;
 
   bool Invoke() override;
@@ -53,6 +57,10 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   void DidFindAmbiguousMatch() override;
 
  private:
+  // Called when the search is finished. Reports metrics and activates the
+  // element fragment anchor if we didn't find a match.
+  void DidFinishSearch();
+
   Vector<TextFragmentFinder> text_fragment_finders_;
 
   Member<LocalFrame> frame_;
@@ -66,6 +74,16 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // Whether we successfully scrolled into view a match at least once, used for
   // metrics reporting.
   bool did_scroll_into_view_ = false;
+  // Whether we found a match. Used to determine if we should activate the
+  // element fragment anchor at the end of searching.
+  bool did_find_match_ = false;
+  // Whether the text fragment anchor is specified as a regular URL fragment or
+  // a fragment directive. Used to determine if we should activate the element
+  // fragment anchor in the case where we don't find a match.
+  const TextFragmentFormat fragment_format_;
+  // If the text fragment anchor is defined as a fragment directive and we don't
+  // find a match, we fall back to the element anchor if it is present.
+  Member<ElementFragmentAnchor> element_fragment_anchor_;
 
   Member<TextFragmentAnchorMetrics> metrics_;
 

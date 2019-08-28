@@ -242,22 +242,49 @@ typedef std::vector<MockDnsClientRule> MockDnsClientRuleList;
 // MockDnsClient provides MockTransactionFactory.
 class MockDnsClient : public DnsClient {
  public:
-  MockDnsClient(const DnsConfig& config, MockDnsClientRuleList rules);
+  MockDnsClient(DnsConfig config, MockDnsClientRuleList rules);
   ~MockDnsClient() override;
 
   // DnsClient interface:
-  void SetConfig(const DnsConfig& config) override;
-  const DnsConfig* GetConfig() const override;
+  bool CanUseSecureDnsTransactions() const override;
+  bool CanUseInsecureDnsTransactions() const override;
+  void SetInsecureEnabled(bool enabled) override;
+  bool FallbackFromInsecureTransactionPreferred() const override;
+  bool SetSystemConfig(base::Optional<DnsConfig> system_config) override;
+  bool SetConfigOverrides(DnsConfigOverrides config_overrides) override;
+  const DnsConfig* GetEffectiveConfig() const override;
+  const DnsHosts* GetHosts() const override;
   DnsTransactionFactory* GetTransactionFactory() override;
   AddressSorter* GetAddressSorter() override;
+  void IncrementInsecureFallbackFailures() override;
+  void ClearInsecureFallbackFailures() override;
+  base::Optional<DnsConfig> GetSystemConfigForTesting() const override;
+  DnsConfigOverrides GetConfigOverridesForTesting() const override;
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();
 
+  void set_max_fallback_failures(int max_fallback_failures) {
+    max_fallback_failures_ = max_fallback_failures;
+  }
+
+  void set_ignore_system_config_changes(bool ignore_system_config_changes) {
+    ignore_system_config_changes_ = ignore_system_config_changes;
+  }
+
  private:
   class MockTransactionFactory;
 
-  DnsConfig config_;
+  base::Optional<DnsConfig> BuildEffectiveConfig();
+
+  bool insecure_enabled_ = false;
+  int fallback_failures_ = 0;
+  int max_fallback_failures_ = DnsClient::kMaxInsecureFallbackFailures;
+  bool ignore_system_config_changes_ = false;
+
+  base::Optional<DnsConfig> config_;
+  DnsConfigOverrides overrides_;
+  base::Optional<DnsConfig> effective_config_;
   std::unique_ptr<MockTransactionFactory> factory_;
   std::unique_ptr<AddressSorter> address_sorter_;
 };

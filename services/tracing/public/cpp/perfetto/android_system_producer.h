@@ -47,6 +47,9 @@ class COMPONENT_EXPORT(TRACING_CPP) AndroidSystemProducer
   // TODO(nuskos): We need to make this possible for telemetry as well, since
   // they might have side loaded the app.
   void SetDisallowPreAndroidPieForTesting(bool disallow);
+  // |socket| must remain alive as long as AndroidSystemProducer is around
+  // trying to connect to it.
+  void SetNewSocketForTesting(const char* socket);
 
   // PerfettoProducer implementation.
   bool IsTracingActive() override;

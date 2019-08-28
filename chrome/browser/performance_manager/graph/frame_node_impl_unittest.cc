@@ -26,7 +26,10 @@ class FrameNodeImplTest : public GraphTestHarness {
     clock_.SetNowTicks(base::TimeTicks::Now());
   }
 
-  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
+  void TearDown() override {
+    PerformanceManagerClock::ResetClockForTesting();
+    GraphTestHarness::TearDown();
+  }
 
  protected:
   void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }

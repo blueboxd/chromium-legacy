@@ -92,6 +92,7 @@ class CrosNetworkConfigTest : public testing::Test {
     managed_network_configuration_handler_->SetPolicy(
         ::onc::ONC_SOURCE_USER_POLICY, helper().UserHash(), user_policy_onc,
         /*global_network_config=*/base::DictionaryValue());
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetupNetworks() {
@@ -270,10 +271,27 @@ class CrosNetworkConfigTest : public testing::Test {
     return success;
   }
 
+  mojom::GlobalPolicyPtr GetGlobalPolicy() {
+    mojom::GlobalPolicyPtr result;
+    base::RunLoop run_loop;
+    cros_network_config()->GetGlobalPolicy(base::BindOnce(
+        [](mojom::GlobalPolicyPtr* result, base::OnceClosure quit_closure,
+           mojom::GlobalPolicyPtr global_policy) {
+          *result = std::move(global_policy);
+          std::move(quit_closure).Run();
+        },
+        &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
+  }
+
   NetworkStateTestHelper& helper() { return helper_; }
   CrosNetworkConfigTestObserver* observer() { return observer_.get(); }
   CrosNetworkConfig* cros_network_config() {
     return cros_network_config_.get();
+  }
+  ManagedNetworkConfigurationHandler* managed_network_configuration_handler() {
+    return managed_network_configuration_handler_.get();
   }
   std::string wifi1_path() { return wifi1_path_; }
 
@@ -745,6 +763,32 @@ TEST_F(CrosNetworkConfigTest, RequestNetworkScan) {
   base::RunLoop().RunUntilIdle();
   observer.FlushForTesting();
   EXPECT_TRUE(observer.wifi_scanning_);
+}
+
+TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
+  base::DictionaryValue global_config;
+  global_config.SetBoolKey(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      true);
+  global_config.SetBoolKey(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, false);
+  base::Value blocked(base::Value::Type::LIST);
+  blocked.GetList().push_back(base::Value("blocked_ssid1"));
+  blocked.GetList().push_back(base::Value("blocked_ssid2"));
+  global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
+                       std::move(blocked));
+  managed_network_configuration_handler()->SetPolicy(
+      ::onc::ONC_SOURCE_DEVICE_POLICY, /*userhash=*/std::string(),
+      base::ListValue(), global_config);
+  base::RunLoop().RunUntilIdle();
+  mojom::GlobalPolicyPtr policy = GetGlobalPolicy();
+  ASSERT_TRUE(policy);
+  EXPECT_EQ(true, policy->allow_only_policy_networks_to_autoconnect);
+  EXPECT_EQ(false, policy->allow_only_policy_networks_to_connect);
+  EXPECT_EQ(false, policy->allow_only_policy_networks_to_connect_if_available);
+  ASSERT_EQ(2u, policy->blocked_hex_ssids.size());
+  EXPECT_EQ("blocked_ssid1", policy->blocked_hex_ssids[0]);
+  EXPECT_EQ("blocked_ssid2", policy->blocked_hex_ssids[1]);
 }
 
 TEST_F(CrosNetworkConfigTest, NetworkListChanged) {

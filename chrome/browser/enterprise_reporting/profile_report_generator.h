@@ -17,10 +17,6 @@ namespace base {
 class FilePath;
 }
 
-namespace content {
-struct WebPluginInfo;
-}
-
 class Profile;
 
 namespace enterprise_reporting {
@@ -31,43 +27,34 @@ namespace enterprise_reporting {
  */
 class ProfileReportGenerator {
  public:
-  using ReportCallback =
-      base::OnceCallback<void(std::unique_ptr<em::ChromeUserProfileInfo>)>;
 
   ProfileReportGenerator();
   ~ProfileReportGenerator();
 
-  void set_extensions_and_plugins_enabled(bool enabled);
+  void set_extensions_enabled(bool enabled);
   void set_policies_enabled(bool enabled);
 
   // Generates report for Profile if it's activated. Returns the report with
   // |callback| once it's ready. The report is null if it can't be generated.
-  void MaybeGenerate(const base::FilePath& path,
-                     const std::string& name,
-                     ReportCallback callback);
+  std::unique_ptr<em::ChromeUserProfileInfo> MaybeGenerate(
+      const base::FilePath& path,
+      const std::string& name);
 
  protected:
   // Get Signin information includes email and gaia id.
   virtual void GetSigninUserInfo();
 
   void GetExtensionInfo();
-  void GetPluginInfo();
   void GetChromePolicyInfo();
   void GetExtensionPolicyInfo();
   void GetPolicyFetchTimestampInfo();
 
  private:
-  void OnPluginsLoaded(const std::vector<content::WebPluginInfo>& plugins);
-
-  void CheckReportStatus();
-
   Profile* profile_;
   base::Value policies_;
 
-  bool extensions_and_plugins_enabled_ = true;
+  bool extensions_enabled_ = true;
   bool policies_enabled_ = true;
-  bool is_plugin_info_ready_ = false;
-  ReportCallback callback_;
 
   std::unique_ptr<em::ChromeUserProfileInfo> report_ = nullptr;
 

@@ -254,12 +254,13 @@ _CONFIG = [
             # cc::Layer helper data structs.
             'cc::ElementId',
             'cc::LayerPositionConstraint',
-            'cc::LayerStickyPositionConstraint',
             'cc::OverscrollBehavior',
             'cc::Scrollbar',
             'cc::ScrollbarLayerInterface',
             'cc::ScrollbarOrientation',
             'cc::ScrollbarPart',
+            'cc::StickyPositionConstraint',
+            'cc::StickyPositionNodeData',
             'cc::ViewportLayers',
 
             # cc::Layer helper enums.

@@ -593,6 +593,8 @@ jumbo_static_library("browsertest_support") {
   }
 
   sources = [
+    "../browser/browsing_data/browsing_data_browsertest_utils.cc",
+    "../browser/browsing_data/browsing_data_browsertest_utils.h",
     "../public/test/content_browser_test.cc",
     "../public/test/content_browser_test.h",
     "../public/test/content_browser_test_utils.cc",
@@ -611,6 +613,7 @@ jumbo_static_library("browsertest_support") {
     "//base:i18n",
     "//base/test:test_config",
     "//base/test:test_support",
+    "//components/network_session_configurator/common:common",
     "//components/viz/service",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
@@ -1326,6 +1329,7 @@ test("content_browsertests") {
       "//content/shell:content_shell_lib",
       "//content/shell/android:content_shell_assets",
       "//content/shell/android:content_shell_jni_headers",
+      "//services/tracing:test_utils",
       "//testing/android/native_test:native_test_support",
       "//ui/android:android",
       "//ui/touch_selection:touch_selection",

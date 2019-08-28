@@ -35,8 +35,8 @@ using media_session::test::TestMediaController;
 namespace {
 
 const int kAppIconSize = 20;
-constexpr int kArtworkViewWidth = 80;
 constexpr int kArtworkViewHeight = 80;
+constexpr int kArtworkCornerRadius = 4;
 
 const base::string16 kTestAppName = base::ASCIIToUTF16("Test app");
 
@@ -237,6 +237,10 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
 
   const base::string16& GetAppName() const {
     return header_row()->app_name_for_testing();
+  }
+
+  const SkPath GetArtworkClipPath() const {
+    return media_controls_view_->GetArtworkClipPath();
   }
 
   LockScreenMediaControlsView* media_controls_view_ = nullptr;
@@ -735,11 +739,18 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
 
-  gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
+  {
+    // Verify that the provided artwork is correctly scaled down.
+    gfx::Rect expected_artwork_bounds(0, 20, 80, 40);
+    gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
+    EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
-  // Verify that the provided artwork is correctly scaled down.
-  EXPECT_EQ(kArtworkViewWidth, artwork_bounds.width());
-  EXPECT_EQ(40, artwork_bounds.height());
+    // Check the clip path uses the artwork bounds.
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(expected_artwork_bounds),
+                      kArtworkCornerRadius, kArtworkCornerRadius);
+    EXPECT_EQ(path, GetArtworkClipPath());
+  }
 
   // Create artwork that must be scaled up to fit the view.
   artwork.allocN32Pixels(40, 70);
@@ -747,11 +758,18 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
 
-  artwork_bounds = artwork_view()->GetImageBounds();
+  {
+    // Verify that the provided artwork is correctly scaled up.
+    gfx::Rect expected_artwork_bounds(17, 0, 45, 80);
+    gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
+    EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
-  // Verify that the provided artwork is correctly scaled up.
-  EXPECT_EQ(45, artwork_bounds.width());
-  EXPECT_EQ(kArtworkViewHeight, artwork_bounds.height());
+    // Check the clip path uses the artwork bounds.
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(expected_artwork_bounds),
+                      kArtworkCornerRadius, kArtworkCornerRadius);
+    EXPECT_EQ(path, GetArtworkClipPath());
+  }
 
   // Create artwork that already fits the view size.
   artwork.allocN32Pixels(70, kArtworkViewHeight);
@@ -759,11 +777,18 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
 
-  artwork_bounds = artwork_view()->GetImageBounds();
+  {
+    // Verify that the provided artwork size doesn't change.
+    gfx::Rect expected_artwork_bounds(5, 0, 70, 80);
+    gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
+    EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
-  // Verify that the provided artwork size doesn't change.
-  EXPECT_EQ(70, artwork_bounds.width());
-  EXPECT_EQ(kArtworkViewHeight, artwork_bounds.height());
+    // Check the clip path uses the artwork bounds.
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(expected_artwork_bounds),
+                      kArtworkCornerRadius, kArtworkCornerRadius);
+    EXPECT_EQ(path, GetArtworkClipPath());
+  }
 }
 
 TEST_F(LockScreenMediaControlsViewTest, AccessibleNodeData) {
@@ -796,7 +821,7 @@ TEST_F(LockScreenMediaControlsViewTest, DismissControlsVelocity) {
 
   gfx::Point scroll_start(
       media_controls_view_->GetBoundsInScreen().CenterPoint());
-  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 50);
+  gfx::Point scroll_end(scroll_start.x() + 50, scroll_start.y());
 
   // Simulate scroll with velocity past the threshold.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -809,15 +834,16 @@ TEST_F(LockScreenMediaControlsViewTest, DismissControlsVelocity) {
   EXPECT_FALSE(media_controls_view_->IsDrawn());
 }
 
-TEST_F(LockScreenMediaControlsViewTest, DismissControlsHeight) {
+TEST_F(LockScreenMediaControlsViewTest, DismissControlsDistance) {
   SimulateMediaSessionChanged(
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   gfx::Point scroll_start(
       media_controls_view_->GetBoundsInScreen().CenterPoint());
-  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 200);
+  gfx::Point scroll_end(media_controls_view_->GetBoundsInScreen().right() - 10,
+                        scroll_start.y());
 
-  // Simulate scroll with height past the threshold.
+  // Simulate scroll with distance past the threshold.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(scroll_start, scroll_end,
                                    base::TimeDelta::FromSeconds(3), 3);
@@ -839,9 +865,9 @@ TEST_F(LockScreenMediaControlsViewTest, DragReset) {
 
   gfx::Point scroll_start(
       media_controls_view_->GetBoundsInScreen().CenterPoint());
-  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 10);
+  gfx::Point scroll_end(scroll_start.x() + 10, scroll_start.y());
 
-  // Simulate scroll with neither height nor velocity past the thresholds.
+  // Simulate scroll with neither distance nor velocity past the thresholds.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(scroll_start, scroll_end,
                                    base::TimeDelta::FromSeconds(3), 3);
@@ -865,7 +891,7 @@ TEST_F(LockScreenMediaControlsViewTest, DragBounds) {
 
   gfx::Point scroll_start(
       media_controls_view_->GetBoundsInScreen().CenterPoint());
-  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() + 10);
+  gfx::Point scroll_end(scroll_start.x() - 10, scroll_start.y());
 
   // Simulate scroll that attempts to go below the view bounds.
   ui::test::EventGenerator* generator = GetEventGenerator();

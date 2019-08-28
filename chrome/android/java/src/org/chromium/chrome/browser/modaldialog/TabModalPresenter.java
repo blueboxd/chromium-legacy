@@ -215,6 +215,23 @@ public class TabModalPresenter
         }
     }
 
+    // Calculate the top margin of the dialog container and the dialog scrim
+    // so that the scrim doesn't overlap the toolbar.
+    public static int getContainerTopMargin(Resources resources, int containerHeightResource) {
+        int scrimVerticalMargin =
+                resources.getDimensionPixelSize(R.dimen.tab_modal_scrim_vertical_margin);
+        int containerVerticalMargin = -scrimVerticalMargin;
+        if (containerHeightResource != ChromeActivity.NO_CONTROL_CONTAINER) {
+            containerVerticalMargin += resources.getDimensionPixelSize(containerHeightResource);
+        }
+        return containerVerticalMargin;
+    }
+
+    // Calculate the bottom margin of the dialog container.
+    public static int getContainerBottomMargin(ChromeFullscreenManager manager) {
+        return manager.getBottomControlsHeight();
+    }
+
     /**
      * Inflate the dialog container in the dialog container view stub.
      */
@@ -236,25 +253,18 @@ public class TabModalPresenter
                 mChromeActivity.findViewById(R.id.tab_modal_dialog_container_sibling_view);
         assert mDefaultNextSiblingView != null;
 
-        // Set the margin of the container and the dialog scrim so that the scrim doesn't overlap
-        // the toolbar.
         Resources resources = mChromeActivity.getResources();
-        int scrimVerticalMargin =
-                resources.getDimensionPixelSize(R.dimen.tab_modal_scrim_vertical_margin);
-
-        int containerVerticalMargin = -scrimVerticalMargin;
-        int containerHeightResource = mChromeActivity.getControlContainerHeightResource();
-        if (containerHeightResource != ChromeActivity.NO_CONTROL_CONTAINER) {
-            containerVerticalMargin += resources.getDimensionPixelSize(containerHeightResource);
-        }
 
         MarginLayoutParams params = (MarginLayoutParams) mDialogContainer.getLayoutParams();
         params.width = ViewGroup.MarginLayoutParams.MATCH_PARENT;
         params.height = ViewGroup.MarginLayoutParams.MATCH_PARENT;
-        params.topMargin = containerVerticalMargin;
-        params.bottomMargin = mChromeActivity.getFullscreenManager().getBottomControlsHeight();
+        params.topMargin = getContainerTopMargin(
+                resources, mChromeActivity.getControlContainerHeightResource());
+        params.bottomMargin = getContainerBottomMargin(mChromeActivity.getFullscreenManager());
         mDialogContainer.setLayoutParams(params);
 
+        int scrimVerticalMargin =
+                resources.getDimensionPixelSize(R.dimen.tab_modal_scrim_vertical_margin);
         View scrimView = mDialogContainer.findViewById(R.id.scrim);
         params = (MarginLayoutParams) scrimView.getLayoutParams();
         params.width = MarginLayoutParams.MATCH_PARENT;

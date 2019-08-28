@@ -124,7 +124,8 @@ class WebRequestProxyingWebSocket
   mojo::Receiver<network::mojom::WebSocketHandshakeClient>
       binding_as_handshake_client_{this};
   mojo::Binding<network::mojom::AuthenticationHandler> binding_as_auth_handler_;
-  mojo::Binding<network::mojom::TrustedHeaderClient> binding_as_header_client_;
+  mojo::Receiver<network::mojom::TrustedHeaderClient>
+      receiver_as_header_client_{this};
 
   net::HttpRequestHeaders request_headers_;
   network::ResourceResponseHead response_;
@@ -139,6 +140,7 @@ class WebRequestProxyingWebSocket
   GURL redirect_url_;
   bool is_done_ = false;
   bool waiting_for_header_client_headers_received_ = false;
+  bool has_extra_headers_;
 
   WebRequestInfo info_;
 

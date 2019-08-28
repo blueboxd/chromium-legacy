@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/window_state_observer.h"
@@ -53,7 +54,8 @@ class PresentationTimeRecorder;
 // it reaches the end of its movement sequence.
 class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                                 public WindowStateObserver,
-                                public ScreenRotationAnimatorObserver {
+                                public ScreenRotationAnimatorObserver,
+                                public WallpaperControllerObserver {
  public:
   OverviewGrid(aura::Window* root_window,
                const std::vector<aura::Window*>& window_list,
@@ -182,6 +184,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void OnScreenRotationAnimationFinished(ScreenRotationAnimator* animator,
                                          bool canceled) override;
 
+  // WallpaperControllerObserver:
+  void OnWallpaperChanging() override;
+  void OnWallpaperChanged() override;
+
   // Called when overview starting animation completes.
   void OnStartingAnimationComplete(bool canceled);
 
@@ -272,8 +278,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void StartScroll();
 
   // |delta| is used for updating |scroll_offset_| with new scroll values so
-  // that windows in tablet overview mode get positioned accordingly.
-  void UpdateScrollOffset(float delta);
+  // that windows in tablet overview mode get positioned accordingly. Returns
+  // true if the grid was scrolled.
+  bool UpdateScrollOffset(float delta);
 
   void EndScroll();
 

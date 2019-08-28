@@ -217,16 +217,12 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
   // Enable dynamic code policies.
   if (!IsRunning32bitEmulatedOnArm64() &&
-      (flags & MITIGATION_DYNAMIC_CODE_DISABLE ||
-       flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT)) {
+      (flags & MITIGATION_DYNAMIC_CODE_DISABLE)) {
+    // Verify caller is not accidentally setting both mutually exclusive
+    // policies.
+    DCHECK(!(flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT));
     PROCESS_MITIGATION_DYNAMIC_CODE_POLICY policy = {};
     policy.ProhibitDynamicCode = true;
-
-    // Per-thread opt-out is only supported on >= Anniversary.
-    if (version >= base::win::Version::WIN10_RS1 &&
-        flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT) {
-      policy.AllowThreadOptOut = true;
-    }
 
     if (!set_process_mitigation_policy(ProcessDynamicCodePolicy, &policy,
                                        sizeof(policy)) &&
@@ -285,6 +281,27 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     }
 
     if (!set_process_mitigation_policy(ProcessImageLoadPolicy, &policy,
+                                       sizeof(policy)) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
+    }
+  }
+
+  if (version < base::win::Version::WIN10_RS1)
+    return true;
+
+  // Enable dynamic code policies.
+  // Per-thread opt-out is only supported on >= Anniversary (RS1).
+  if (!IsRunning32bitEmulatedOnArm64() &&
+      (flags & MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT)) {
+    // Verify caller is not accidentally setting both mutually exclusive
+    // policies.
+    DCHECK(!(flags & MITIGATION_DYNAMIC_CODE_DISABLE));
+    PROCESS_MITIGATION_DYNAMIC_CODE_POLICY policy = {};
+    policy.ProhibitDynamicCode = true;
+    policy.AllowThreadOptOut = true;
+
+    if (!set_process_mitigation_policy(ProcessDynamicCodePolicy, &policy,
                                        sizeof(policy)) &&
         ERROR_ACCESS_DENIED != ::GetLastError()) {
       return false;

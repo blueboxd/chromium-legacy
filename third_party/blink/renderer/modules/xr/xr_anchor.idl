@@ -8,8 +8,8 @@
     RuntimeEnabled=WebXRAnchors
 ]
 interface XRAnchor {
-    readonly attribute XRSpace anchorSpace;
-    readonly attribute DOMHighResTimeStamp lastChangedTime;
+    readonly attribute XRSpace? anchorSpace;
+    readonly attribute DOMHighResTimeStamp? lastChangedTime;
 
     void detach();
 };

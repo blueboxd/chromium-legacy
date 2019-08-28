@@ -306,6 +306,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
                        views::style::STYLE_PRIMARY);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
   title_label_->SetMultiLine(true);
   title_label_->SetMaxLines(kTitleMaxLines);
   title_label_->SetProperty(views::kFlexBehaviorKey,
@@ -557,14 +558,12 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   }
   base::string16 domain;
   if (domain_url.SchemeIsFile()) {
-    title_label_->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
     title_label_->SetMultiLine(false);
     title_label_->SetElideBehavior(gfx::ELIDE_MIDDLE);
     domain = l10n_util::GetStringUTF16(IDS_HOVER_CARD_FILE_URL_SOURCE);
   } else {
     title_label_->SetElideBehavior(gfx::ELIDE_TAIL);
     title_label_->SetMultiLine(true);
-    title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
     domain = url_formatter::FormatUrl(
         domain_url,
         url_formatter::kFormatUrlOmitDefaults |

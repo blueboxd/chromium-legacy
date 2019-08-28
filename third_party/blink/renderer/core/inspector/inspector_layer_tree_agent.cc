@@ -36,6 +36,7 @@
 #include "base/stl_util.h"
 #include "cc/base/region.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/transform_node.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -139,10 +140,17 @@ static const cc::Layer* FindLayerByElementId(const cc::Layer* root,
 
 static std::unique_ptr<protocol::LayerTree::StickyPositionConstraint>
 BuildStickyInfoForLayer(const cc::Layer* root, const cc::Layer* layer) {
-  cc::LayerStickyPositionConstraint constraints =
-      layer->sticky_position_constraint();
-  if (!constraints.is_sticky)
+  if (!layer->has_transform_node())
     return nullptr;
+  // Note that we'll miss the sticky transform node if multiple transform nodes
+  // apply to the layer.
+  const cc::StickyPositionNodeData* sticky_data =
+      layer->layer_tree_host()
+          ->property_trees()
+          ->transform_tree.GetStickyPositionData(layer->transform_tree_index());
+  if (!sticky_data)
+    return nullptr;
+  const cc::StickyPositionConstraint& constraints = sticky_data->constraints;
 
   std::unique_ptr<protocol::DOM::Rect> sticky_box_rect =
       BuildObjectForRect(constraints.scroll_container_relative_sticky_box_rect);

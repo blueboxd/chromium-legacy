@@ -23,6 +23,7 @@ ScrollNode::ScrollNode()
       max_scroll_offset_affected_by_page_scale(false),
       scrolls_inner_viewport(false),
       scrolls_outer_viewport(false),
+      prevent_viewport_scrolling_from_inner(false),
       should_flatten(false),
       user_scrollable_horizontal(false),
       user_scrollable_vertical(false),
@@ -41,6 +42,8 @@ bool ScrollNode::operator==(const ScrollNode& other) const {
          max_scroll_offset_affected_by_page_scale ==
              other.max_scroll_offset_affected_by_page_scale &&
          scrolls_inner_viewport == other.scrolls_inner_viewport &&
+         prevent_viewport_scrolling_from_inner ==
+             other.prevent_viewport_scrolling_from_inner &&
          scrolls_outer_viewport == other.scrolls_outer_viewport &&
          offset_to_transform_parent == other.offset_to_transform_parent &&
          should_flatten == other.should_flatten &&
@@ -65,6 +68,8 @@ void ScrollNode::AsValueInto(base::trace_event::TracedValue* value) const {
 
   value->SetBoolean("scrolls_inner_viewport", scrolls_inner_viewport);
   value->SetBoolean("scrolls_outer_viewport", scrolls_outer_viewport);
+  value->SetBoolean("prevent_viewport_scrolling_from_inner",
+                    prevent_viewport_scrolling_from_inner);
 
   element_id.AddToTracedValue(value);
   value->SetInteger("transform_id", transform_id);

@@ -11,6 +11,7 @@
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 
 namespace cc {
 
@@ -48,6 +49,9 @@ ScrollNode& CreateScrollNode(Layer*,
                              int parent_id = ScrollTree::kInvalidNodeId);
 ScrollNode& CreateScrollNode(LayerImpl*,
                              int parent_id = ScrollTree::kInvalidNodeId);
+
+void SetScrollOffset(Layer*, const gfx::ScrollOffset&);
+void SetScrollOffset(LayerImpl*, const gfx::ScrollOffset&);
 
 template <typename LayerType>
 TransformNode* GetTransformNode(LayerType* layer) {

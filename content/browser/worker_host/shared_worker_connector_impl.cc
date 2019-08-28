@@ -20,16 +20,6 @@
 namespace content {
 
 // static
-void SharedWorkerConnectorImpl::CreateForRequest(
-    int client_process_id,
-    int frame_id,
-    blink::mojom::SharedWorkerConnectorRequest request) {
-  // Implicit conversion to
-  // mojo::PendingReceiver<blink::mojom::SharedWorkerConnector>.
-  Create(client_process_id, frame_id, std::move(request));
-}
-
-// static
 void SharedWorkerConnectorImpl::Create(
     int client_process_id,
     int frame_id,

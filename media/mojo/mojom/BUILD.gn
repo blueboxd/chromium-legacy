@@ -53,6 +53,7 @@ mojom("mojom") {
 
   public_deps = [
     "//gpu/ipc/common:interfaces",
+    "//media/learning/mojo/public/mojom",
     "//mojo/public/mojom/base",
     "//services/service_manager/public/mojom",
     "//ui/gfx/geometry/mojom",

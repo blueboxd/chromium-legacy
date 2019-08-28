@@ -699,7 +699,6 @@ TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
         GetPropertyTrees()->transform_tree.Node(transform_tree_index);
 
     DCHECK(transform_node);
-    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_x);
     EXPECT_TRUE(transform_node->moved_by_outer_viewport_bounds_delta_y);
   }
 
@@ -715,7 +714,6 @@ TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
         GetPropertyTrees()->transform_tree.Node(transform_tree_index);
 
     DCHECK(transform_node);
-    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_x);
     EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_y);
   }
 }

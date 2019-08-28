@@ -21,9 +21,11 @@ namespace net {
 struct NET_EXPORT DnsConfigOverrides {
   DnsConfigOverrides();
   DnsConfigOverrides(const DnsConfigOverrides& other);
+  DnsConfigOverrides(DnsConfigOverrides&& other);
   ~DnsConfigOverrides();
 
   DnsConfigOverrides& operator=(const DnsConfigOverrides& other);
+  DnsConfigOverrides& operator=(DnsConfigOverrides&& other);
 
   bool operator==(const DnsConfigOverrides& other) const;
   bool operator!=(const DnsConfigOverrides& other) const;

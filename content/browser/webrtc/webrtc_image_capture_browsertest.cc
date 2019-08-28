@@ -33,12 +33,10 @@ namespace content {
 // TODO(crbug.com/793859): Re-enable test on Android as soon as the cause for
 // the bug is understood and fixed.
 #define MAYBE_ManipulatePan DISABLED_ManipulatePan
-#define MAYBE_ManipulateTilt DISABLED_ManipulateTilt
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
 #define MAYBE_ManipulateExposureTime DISABLED_ManipulateExposureTime
 #else
 #define MAYBE_ManipulatePan ManipulatePan
-#define MAYBE_ManipulateTilt ManipulateTilt
 #define MAYBE_ManipulateZoom ManipulateZoom
 #define MAYBE_ManipulateExposureTime ManipulateExposureTime
 #endif
@@ -185,8 +183,14 @@ class WebRtcImageCaptureSucceedsBrowserTest
   DISALLOW_COPY_AND_ASSIGN(WebRtcImageCaptureSucceedsBrowserTest);
 };
 
+// TODO(crbug.com/998305): Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_GetPhotoCapabilities DISABLED_GetPhotoCapabilities
+#else
+#define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
-                       GetPhotoCapabilities) {
+                       MAYBE_GetPhotoCapabilities) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(
       RunImageCaptureTestCase("testCreateAndGetPhotoCapabilitiesSucceeds()"));
@@ -227,6 +231,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testManipulatePan()"));
 }
 
+// TODO(crbug.com/998304): Flaky on Linux.
+// TODO(crbug.com/793859): Re-enable test on Android as soon as the cause for
+// the bug is understood and fixed.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#define MAYBE_ManipulateTilt DISABLED_ManipulateTilt
+#else
+#define MAYBE_ManipulateTilt ManipulateTilt
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
                        MAYBE_ManipulateTilt) {
   embedded_test_server()->StartAcceptingConnections();

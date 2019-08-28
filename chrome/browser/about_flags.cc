@@ -43,6 +43,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/unexpire_flags.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -466,6 +467,23 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
     {"with selective inversion of everything",
      kForceDark_SelectiveGeneralInversion,
      base::size(kForceDark_SelectiveGeneralInversion), nullptr}};
+
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_4Hours[] = {
+    {"close_tab_suggestions_stale_time_ms", "14400000"}};
+const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_8Hours[] = {
+    {"close_tab_suggestions_stale_time_ms", "28800000"}};
+const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_7Days[] = {
+    {"close_tab_suggestions_stale_time_ms", "604800000"}};
+const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
+    {"4 hours", kCloseTabSuggestionsStale_4Hours,
+     base::size(kCloseTabSuggestionsStale_4Hours), nullptr},
+    {"8 hours", kCloseTabSuggestionsStale_8Hours,
+     base::size(kCloseTabSuggestionsStale_8Hours), nullptr},
+    {"7 days", kCloseTabSuggestionsStale_7Days,
+     base::size(kCloseTabSuggestionsStale_7Days), nullptr},
+};
+#endif  // OS_ANDROID
 
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -2005,6 +2023,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDataReductionProxyServerExperimentName,
      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,
      kOsAll, MULTI_VALUE_TYPE(kDataReductionProxyServerExperiment)},
+    {"enable-subresource-redirect",
+     flag_descriptions::kEnableSubresourceRedirectName,
+     flag_descriptions::kEnableSubresourceRedirectDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableSubresourceRedirect)},
 #if defined(OS_ANDROID)
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
@@ -2509,10 +2531,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcFilePickerExperimentName,
      flag_descriptions::kArcFilePickerExperimentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kFilePickerExperimentFeature)},
-    {"arc-native-bridge-experiment",
-     flag_descriptions::kArcNativeBridgeExperimentName,
-     flag_descriptions::kArcNativeBridgeExperimentDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kNativeBridgeExperimentFeature)},
+    {"arc-native-bridge-toggle", flag_descriptions::kArcNativeBridgeToggleName,
+     flag_descriptions::kArcNativeBridgeToggleDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kNativeBridgeToggleFeature)},
     {"arc-print-spooler-experiment",
      flag_descriptions::kArcPrintSpoolerExperimentName,
      flag_descriptions::kArcPrintSpoolerExperimentDescription, kOsCrOS,
@@ -3212,6 +3233,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kStartSurfaceAndroid,
                                     kStartSurfaceAndroidVariations,
                                     "StartSurfaceAndroid")},
+
+    {"enable-close-tab-suggestions-stale",
+     flag_descriptions::kCloseTabSuggestionsStaleName,
+     flag_descriptions::kCloseTabSuggestionsStaleDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCloseTabSuggestionsStale,
+                                    kCloseTabSuggestionsStaleVariations,
+                                    "CloseSuggestionsStaleTab")},
 
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,
@@ -4333,9 +4361,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     // This set of flags is used to temporary reinstate expired flags; see
     // //docs/flag_expiry.md for details.
-    {"temporary-unexpire-flags-m78", flag_descriptions::kUnexpireFlagsM78Name,
-     flag_descriptions::kUnexpireFlagsM78Description, kOsAll,
-     FEATURE_VALUE_TYPE(flags_ui::kUnexpireFlagsM78)},
+    {"temporary-unexpire-flags-m76", flag_descriptions::kUnexpireFlagsM76Name,
+     flag_descriptions::kUnexpireFlagsM76Description, kOsAll,
+     FEATURE_VALUE_TYPE(flags::kUnexpireFlagsM76)},
 
 #if defined(OS_CHROMEOS)
     {"lock-screen-media-controls",
@@ -4482,6 +4510,9 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   if (!strcmp("dns-over-https", entry.internal_name)) {
     return true;
   }
+
+  if (flags::IsFlagExpired(entry.internal_name))
+    return true;
 
   return false;
 }

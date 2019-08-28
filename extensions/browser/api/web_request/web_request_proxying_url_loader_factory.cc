@@ -87,8 +87,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       has_any_extra_headers_listeners_(
           network_service_request_id_ != 0 &&
           ExtensionWebRequestEventRouter::GetInstance()
-              ->HasAnyExtraHeadersListener(factory_->browser_context_)),
-      header_client_binding_(this) {
+              ->HasAnyExtraHeadersListener(factory_->browser_context_)) {
   // If there is a client error, clean up the request.
   target_client_.set_connection_error_handler(base::BindOnce(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
@@ -187,8 +186,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
 
     // Pause the header client, since we want to wait until OnBeforeRequest has
     // finished before processing any future events.
-    if (header_client_binding_)
-      header_client_binding_.PauseIncomingMethodCallProcessing();
+    if (header_client_receiver_.is_bound())
+      header_client_receiver_.Pause();
     return;
   }
   DCHECK_EQ(net::OK, result);
@@ -358,8 +357,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::HandleAuthRequest(
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnLoaderCreated(
-    network::mojom::TrustedHeaderClientRequest request) {
-  header_client_binding_.Bind(std::move(request));
+    mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
+  header_client_receiver_.Bind(std::move(receiver));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnBeforeSendHeaders(
@@ -403,7 +402,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   // the load with it gives unexpected results. See
   // https://crbug.com/882661#c72.
   proxied_client_binding_.Close();
-  header_client_binding_.Close();
+  header_client_receiver_.reset();
   target_loader_.reset();
 
   constexpr int kInternalRedirectStatusCode = 307;
@@ -526,8 +525,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   if (proxied_client_binding_.is_bound())
     proxied_client_binding_.ResumeIncomingMethodCallProcessing();
 
-  if (header_client_binding_)
-    header_client_binding_.ResumeIncomingMethodCallProcessing();
+  if (header_client_receiver_.is_bound())
+    header_client_receiver_.Resume();
 
   if (!target_loader_.is_bound() && factory_->target_factory_.is_bound()) {
     // No extensions have cancelled us up to this point, so it's now OK to
@@ -547,7 +546,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   // From here the lifecycle of this request is driven by subsequent events on
   // either |proxy_loader_binding_|, |proxy_client_binding_|, or
-  // |header_client_binding_|.
+  // |header_client_receiver_|.
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -727,7 +726,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     // These will get re-bound if a new request is initiated by
     // |FollowRedirect()|.
     proxied_client_binding_.Close();
-    header_client_binding_.Close();
+    header_client_receiver_.reset();
     target_loader_.reset();
 
     ContinueToBeforeRedirect(redirect_info, net::OK);
@@ -942,14 +941,14 @@ void WebRequestProxyingURLLoaderFactory::Clone(
 
 void WebRequestProxyingURLLoaderFactory::OnLoaderCreated(
     int32_t request_id,
-    network::mojom::TrustedHeaderClientRequest request) {
+    mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
   auto it = network_request_id_to_web_request_id_.find(request_id);
   if (it == network_request_id_to_web_request_id_.end())
     return;
 
   auto request_it = requests_.find(it->second);
   DCHECK(request_it != requests_.end());
-  request_it->second->OnLoaderCreated(std::move(request));
+  request_it->second->OnLoaderCreated(std::move(receiver));
 }
 
 void WebRequestProxyingURLLoaderFactory::HandleAuthRequest(

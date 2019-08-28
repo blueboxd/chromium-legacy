@@ -24,7 +24,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -61,7 +60,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,8 +83,6 @@ public class WebappActivity extends SingleTabActivity {
             | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
             | View.SYSTEM_UI_FLAG_LOW_PROFILE
             | View.SYSTEM_UI_FLAG_IMMERSIVE;
-
-    private final WebappDirectoryManager mDirectoryManager;
 
     private WebappInfo mWebappInfo;
 
@@ -149,7 +145,6 @@ public class WebappActivity extends SingleTabActivity {
      */
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
-        mDirectoryManager = new WebappDirectoryManager();
         mTabObserverRegistrar = new TabObserverRegistrar(getLifecycleDispatcher());
         mSplashController =
                 new SplashController(this, getLifecycleDispatcher(), mTabObserverRegistrar);
@@ -348,14 +343,13 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mDirectoryManager.cancelCleanup();
-        saveState(outState);
+        saveTabState(outState);
     }
 
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        mDirectoryManager.cleanUpDirectories(this, getActivityId());
+        WebappDirectoryManager.cleanUpDirectories();
     }
 
     @Override
@@ -367,26 +361,17 @@ public class WebappActivity extends SingleTabActivity {
     /**
      * Saves the tab data out to a file.
      */
-    private void saveState(Bundle outState) {
-        if (getActivityTab() == null || getActivityTab().getUrl() == null
-                || getActivityTab().getUrl().isEmpty()) {
-            return;
-        }
-
-        outState.putInt(BUNDLE_TAB_ID, getActivityTab().getId());
-
-        String tabFileName = TabState.getTabStateFilename(getActivityTab().getId(), false);
-        File tabFile = new File(getActivityDirectory(), tabFileName);
-
-        // TODO(crbug.com/525785): Temporarily allowing disk access until more permanent fix is in.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            TabState.saveState(tabFile, TabState.from(getActivityTab()), false);
+    private void saveTabState(Bundle outState) {
+        Tab tab = getActivityTab();
+        if (tab == null || tab.getUrl() == null || tab.getUrl().isEmpty()) return;
+        if (TabState.saveState(outState, TabState.from(tab))) {
+            outState.putInt(BUNDLE_TAB_ID, tab.getId());
         }
     }
 
     @Override
     protected TabState restoreTabState(Bundle savedInstanceState, int tabId) {
-        return TabState.restoreTabState(getActivityDirectory(), tabId);
+        return TabState.restoreTabState(savedInstanceState);
     }
 
     @Override
@@ -804,15 +789,6 @@ public class WebappActivity extends SingleTabActivity {
      */
     protected String getActivityId() {
         return mWebappInfo.id();
-    }
-
-    /**
-     * Get the active directory by this web app.
-     *
-     * @return The directory used for the current web app.
-     */
-    private File getActivityDirectory() {
-        return mDirectoryManager.getWebappDirectory(this, getActivityId());
     }
 
     @VisibleForTesting

@@ -20,8 +20,11 @@ public class OnboardingDialogBridge {
 
     private OnboardingDialogBridge(WindowAndroid windowAndroid, long nativeOnboardingDialogView) {
         mNativeOnboardingDialogView = nativeOnboardingDialogView;
+        // TODO(crbug.com/983445): Get rid of this in favor of passing in direct dependencies.
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
-        mOnboardingDialog = new PasswordManagerDialogCoordinator(activity);
+        mOnboardingDialog = new PasswordManagerDialogCoordinator(windowAndroid.getContext().get(),
+                activity.getModalDialogManager(), activity.findViewById(android.R.id.content),
+                activity.getFullscreenManager(), activity.getControlContainerHeightResource());
         mResources = activity.getResources();
     }
 

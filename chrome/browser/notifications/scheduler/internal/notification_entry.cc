@@ -25,6 +25,10 @@ bool NotificationEntry::operator==(const NotificationEntry& other) const {
          schedule_params == other.schedule_params;
 }
 
+bool NotificationEntry::operator!=(const NotificationEntry& other) const {
+  return !(*this == other);
+}
+
 NotificationEntry::~NotificationEntry() = default;
 
 }  // namespace notifications

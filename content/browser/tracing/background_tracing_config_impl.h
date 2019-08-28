@@ -63,6 +63,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   void AddReactiveRule(
       const base::DictionaryValue* dict,
       BackgroundTracingConfigImpl::CategoryPreset category_preset);
+  void AddSystemRule(const base::DictionaryValue* dict);
 
   base::trace_event::TraceConfig GetTraceConfig() const;
 
@@ -79,6 +80,8 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   static std::unique_ptr<BackgroundTracingConfigImpl> PreemptiveFromDict(
       const base::DictionaryValue* dict);
   static std::unique_ptr<BackgroundTracingConfigImpl> ReactiveFromDict(
+      const base::DictionaryValue* dict);
+  static std::unique_ptr<BackgroundTracingConfigImpl> SystemFromDict(
       const base::DictionaryValue* dict);
 
   static std::unique_ptr<BackgroundTracingConfigImpl> FromDict(
@@ -108,6 +111,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
       BackgroundTracingConfigImpl::CategoryPreset,
       base::trace_event::TraceRecordMode);
 
+  BackgroundTracingRule* AddRule(const base::DictionaryValue* dict);
   void SetBufferSizeLimits(const base::DictionaryValue* dict);
   int GetMaximumTraceBufferSizeKb() const;
 

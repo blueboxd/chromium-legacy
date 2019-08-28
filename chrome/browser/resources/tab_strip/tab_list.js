@@ -8,6 +8,8 @@ import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
 import {TabsApiProxy} from './tabs_api_proxy.js';
 
+const GHOST_PINNED_TAB_COUNT = 3;
+
 class TabListElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
@@ -94,15 +96,17 @@ class TabListElement extends CustomElement {
     if (tabElement.tab && tabElement.tab.pinned) {
       this.pinnedTabsContainerElement_.insertBefore(
           tabElement, this.pinnedTabsContainerElement_.childNodes[index]);
-      return;
+    } else {
+      // Pinned tabs are in their own container, so the index of non-pinned
+      // tabs need to be offset by the number of pinned tabs
+      const offsetIndex = index -
+          (this.pinnedTabsContainerElement_.childElementCount -
+           GHOST_PINNED_TAB_COUNT);
+      this.tabsContainerElement_.insertBefore(
+          tabElement, this.tabsContainerElement_.childNodes[offsetIndex]);
     }
 
-    // Pinned tabs are in their own container, so the index of non-pinned
-    // tabs need to be offset by the number of pinned tabs
-    const offsetIndex =
-        index - this.pinnedTabsContainerElement_.childElementCount;
-    this.tabsContainerElement_.insertBefore(
-        tabElement, this.tabsContainerElement_.childNodes[offsetIndex]);
+    this.updatePinnedTabsState_();
   }
 
   /**
@@ -151,6 +155,7 @@ class TabListElement extends CustomElement {
     const tabElement = this.findTabElement_(tabId);
     if (tabElement) {
       tabElement.remove();
+      this.updatePinnedTabsState_();
     }
   }
 
@@ -175,6 +180,14 @@ class TabListElement extends CustomElement {
         this.insertTabOrMoveTo_(tabElement, tab.index);
       }
     }
+  }
+
+  /** @private */
+  updatePinnedTabsState_() {
+    this.pinnedTabsContainerElement_.toggleAttribute(
+        'empty',
+        this.pinnedTabsContainerElement_.childElementCount ===
+            GHOST_PINNED_TAB_COUNT);
   }
 }
 

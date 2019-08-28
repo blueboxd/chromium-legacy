@@ -66,7 +66,8 @@ void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
       "  " + good_get_template + "   " + good_post_template + "  ";
 
   PrefService* local_state = g_browser_process->local_state();
-  local_state->SetString(prefs::kDnsOverHttpsMode, kDnsOverHttpsModeSecure);
+  local_state->SetString(prefs::kDnsOverHttpsMode,
+                         chrome_browser_net::kDnsOverHttpsModeSecure);
   local_state->SetString(prefs::kDnsOverHttpsTemplates, bad_template);
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
@@ -84,7 +85,8 @@ void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
   EXPECT_EQ(good_post_template, dns_over_https_servers->at(0)->server_template);
   EXPECT_EQ(true, dns_over_https_servers->at(0)->use_post);
 
-  local_state->SetString(prefs::kDnsOverHttpsMode, kDnsOverHttpsModeAutomatic);
+  local_state->SetString(prefs::kDnsOverHttpsMode,
+                         chrome_browser_net::kDnsOverHttpsModeAutomatic);
   local_state->SetString(prefs::kDnsOverHttpsTemplates, bad_template);
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);
@@ -125,7 +127,8 @@ void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
   EXPECT_EQ(good_post_template, dns_over_https_servers->at(1)->server_template);
   EXPECT_TRUE(dns_over_https_servers->at(1)->use_post);
 
-  local_state->SetString(prefs::kDnsOverHttpsMode, kDnsOverHttpsModeOff);
+  local_state->SetString(prefs::kDnsOverHttpsMode,
+                         chrome_browser_net::kDnsOverHttpsModeOff);
   local_state->SetString(prefs::kDnsOverHttpsTemplates, good_get_template);
   GetStubResolverConfig(&insecure_stub_resolver_enabled, &secure_dns_mode,
                         &dns_over_https_servers);

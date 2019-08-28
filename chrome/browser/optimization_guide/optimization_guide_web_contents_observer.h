@@ -54,7 +54,8 @@ class OptimizationGuideWebContentsObserver
   // |navigation_id| and then removes any data associated with it, including its
   // entry in |inflight_optimization_guide_navigation_datas_|.
   void FlushMetricsAndRemoveOptimizationGuideNavigationData(
-      int64_t navigation_id);
+      int64_t navigation_id,
+      bool has_committed);
 
   // The data related to a given navigation ID.
   std::unordered_map<int64_t, OptimizationGuideNavigationData>

@@ -157,13 +157,6 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     json->SetArray("paintingPhases", std::move(painting_phases_json));
   }
 
-  if (flags & kLayerTreeIncludesClipAndScrollParents) {
-    if (layer->HasScrollParent())
-      json->SetBoolean("hasScrollParent", true);
-    if (layer->HasClipParent())
-      json->SetBoolean("hasClipParent", true);
-  }
-
   if (flags &
       (kLayerTreeIncludesDebugInfo | kLayerTreeIncludesCompositingReasons)) {
     bool debug = flags & kLayerTreeIncludesDebugInfo;

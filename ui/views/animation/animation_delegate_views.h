@@ -10,12 +10,11 @@
 #include "base/scoped_observer.h"
 #include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
 
 namespace views {
-
-class View;
 
 // Provides default implementaton to adapt CompositorAnimationRunner for
 // Animation. Falls back to the default animation runner when |view| is nullptr.
@@ -52,7 +51,7 @@ class VIEWS_EXPORT AnimationDelegateViews
   View* view_;
   gfx::AnimationContainer* container_ = nullptr;
 
-  ScopedObserver<View, AnimationDelegateViews> scoped_observer_{this};
+  ScopedObserver<View, ViewObserver> scoped_observer_{this};
 };
 
 }  // namespace views

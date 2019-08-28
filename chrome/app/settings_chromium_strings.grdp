@@ -59,7 +59,7 @@
 
   <!-- Main Page -->
   <message name="IDS_SETTINGS_BROWSER_SETTINGS_BANNER" desc="Banner displayed in settings page that links to Browser settings.">
-    If a setting doesn't show on this page, try your <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>
+    If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>
     Chromium browser settings<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
 

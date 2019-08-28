@@ -17,6 +17,7 @@ import android.widget.PopupWindow;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -51,9 +52,22 @@ public class TabSwitcherActionMenuCoordinator {
         return (view) -> {
             Context context = view.getContext();
             TabSwitcherActionMenuCoordinator menu = new TabSwitcherActionMenuCoordinator();
-            menu.displayMenu(context, view, menu.buildMenuItems(context), onItemClicked);
+            menu.displayMenu(context, view, menu.buildMenuItems(context), (id) -> {
+                recordUserActions(id);
+                onItemClicked.onResult(id);
+            });
             return true;
         };
+    }
+
+    private static void recordUserActions(int id) {
+        if (id == R.id.close_tab) {
+            RecordUserAction.record("MobileMenuCloseTab.LongTapMenu");
+        } else if (id == R.id.new_tab_menu_id) {
+            RecordUserAction.record("MobileMenuNewTab.LongTapMenu");
+        } else if (id == R.id.new_incognito_tab_menu_id) {
+            RecordUserAction.record("MobileMenuNewIncognitoTab.LongTapMenu");
+        }
     }
 
     /**

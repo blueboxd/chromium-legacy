@@ -291,11 +291,16 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                        IDS_PAGE_INFO_BILLING_DETAILS);
   }
 
-  if (identity_info.safety_tip_status ==
-      security_state::SAFETY_TIP_STATUS_BAD_REPUTATION) {
-    return CreateSecurityDescription(
-        SecuritySummaryColor::RED, IDS_PAGE_INFO_SAFETY_TIP_SUMMARY,
-        IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+  switch (identity_info.safety_tip_status) {
+    case security_state::SAFETY_TIP_STATUS_BAD_REPUTATION:
+    case security_state::SAFETY_TIP_STATUS_LOOKALIKE:
+      // TODO(jdeblasio): The BAD_REPUTATION string is generic enough to use for
+      // lookalikes too, but it probably deserves its own string.
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED, IDS_PAGE_INFO_SAFETY_TIP_SUMMARY,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+    case security_state::SAFETY_TIP_STATUS_NONE:
+      break;
   }
 
   switch (identity_info.identity_status) {

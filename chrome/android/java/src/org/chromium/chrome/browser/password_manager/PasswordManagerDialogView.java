@@ -8,7 +8,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -17,7 +17,7 @@ import org.chromium.chrome.R;
  * The dialog content view for illustration dialogs used by the password manager (e.g. onboarding,
  * leak warning).
  */
-public class PasswordManagerDialogView extends LinearLayout {
+public class PasswordManagerDialogView extends ScrollView {
     private ImageView mIllustrationView;
     private TextView mTitleView;
     private TextView mDetailsView;
@@ -37,6 +37,16 @@ public class PasswordManagerDialogView extends LinearLayout {
 
     void setIllustration(int illustration) {
         mIllustrationView.setImageResource(illustration);
+    }
+
+    public void updateIllustrationVisibility(boolean illustrationVisible) {
+        if (illustrationVisible) {
+            mIllustrationView.setVisibility(VISIBLE);
+        } else {
+            mIllustrationView.setVisibility(GONE);
+            requestLayout(); // Sometimes the visibility isn't propagated correctly and the image
+                             // appears as INVISIBLE.
+        }
     }
 
     void setTitle(String title) {

@@ -7,7 +7,6 @@ package org.chromium.chrome.features.start_surface;
 import android.app.Activity;
 import android.support.annotation.Nullable;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.libraries.feed.api.client.stream.Stream;
@@ -24,8 +23,6 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 /** The coordinator to control the explore surface. */
 class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDelegate {
     private final ChromeActivity mActivity;
-    @Nullable
-    private final View mHeaderView;
     private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
     private final FeedSurfaceCreator mFeedSurfaceCreator;
 
@@ -44,12 +41,12 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
     }
 
     ExploreSurfaceCoordinator(ChromeActivity activity, ViewGroup parentView,
-            @Nullable View headerView, PropertyModel containerPropertyModel) {
+            @Nullable ViewGroup headerContainerView, PropertyModel containerPropertyModel) {
         mActivity = activity;
-        mHeaderView = headerView;
 
-        mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
-                containerPropertyModel, parentView, ExploreSurfaceViewBinder::bind);
+        mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(containerPropertyModel,
+                new ExploreSurfaceViewBinder.ViewHolder(parentView, headerContainerView),
+                ExploreSurfaceViewBinder::bind);
         mFeedSurfaceCreator = new FeedSurfaceCreator() {
             @Override
             public FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isIncognito) {
@@ -91,7 +88,7 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
                                         : Profile.getLastUsedProfile()),
                         FeedProcessScopeFactory.getFeedLoggingBridge());
         return new FeedSurfaceCoordinator(
-                mActivity, null, null, mHeaderView, exploreSurfaceActionHandler, isIncognito, this);
+                mActivity, null, null, null, exploreSurfaceActionHandler, isIncognito, this);
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.
         // TODO(crbug.com/982018): Hide signin promo UI in incognito mode.
     }

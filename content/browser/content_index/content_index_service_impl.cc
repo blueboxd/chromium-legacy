@@ -19,16 +19,6 @@
 namespace content {
 
 // static
-void ContentIndexServiceImpl::CreateForRequest(
-    blink::mojom::ContentIndexServiceRequest request,
-    RenderProcessHost* render_process_host,
-    const url::Origin& origin) {
-  // Implicit conversion from ContentIndexServiceRequest to
-  // mojo::PendingReceiver<blink::mojom::ContentIndexService>.
-  Create(std::move(request), render_process_host, origin);
-}
-
-// static
 void ContentIndexServiceImpl::Create(
     mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
     RenderProcessHost* render_process_host,

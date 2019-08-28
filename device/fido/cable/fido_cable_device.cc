@@ -54,16 +54,12 @@ bool EncryptOutgoingMessage(
   crypto::Aead aes_key(crypto::Aead::AES_256_GCM);
   aes_key.Init(&encryption_data->session_key);
   DCHECK_EQ(nonce->size(), aes_key.NonceLength());
-  std::string ciphertext;
-  bool encryption_success = aes_key.Seal(
-      fido_parsing_utils::ConvertToStringPiece(*message_to_encrypt),
-      fido_parsing_utils::ConvertToStringPiece(*nonce),
-      std::string(1, base::strict_cast<uint8_t>(FidoBleDeviceCommand::kMsg)),
-      &ciphertext);
-  if (!encryption_success)
-    return false;
 
-  message_to_encrypt->assign(ciphertext.begin(), ciphertext.end());
+  const uint8_t additional_data[1] = {
+      base::strict_cast<uint8_t>(FidoBleDeviceCommand::kMsg)};
+  std::vector<uint8_t> ciphertext =
+      aes_key.Seal(*message_to_encrypt, *nonce, additional_data);
+  message_to_encrypt->swap(ciphertext);
   return true;
 }
 
@@ -82,17 +78,17 @@ bool DecryptIncomingMessage(
   crypto::Aead aes_key(crypto::Aead::AES_256_GCM);
   aes_key.Init(&encryption_data->session_key);
   DCHECK_EQ(nonce->size(), aes_key.NonceLength());
-  std::string plaintext;
 
-  bool decryption_success = aes_key.Open(
-      fido_parsing_utils::ConvertToStringPiece(incoming_frame->data()),
-      fido_parsing_utils::ConvertToStringPiece(*nonce),
-      std::string(1, base::strict_cast<uint8_t>(incoming_frame->command())),
-      &plaintext);
-  if (!decryption_success)
+  const uint8_t additional_data[1] = {
+      base::strict_cast<uint8_t>(incoming_frame->command())};
+  base::Optional<std::vector<uint8_t>> plaintext =
+      aes_key.Open(incoming_frame->data(), *nonce, additional_data);
+  if (!plaintext) {
+    FIDO_LOG(ERROR) << "Failed to decrypt caBLE message.";
     return false;
+  }
 
-  incoming_frame->data().assign(plaintext.begin(), plaintext.end());
+  incoming_frame->data().swap(*plaintext);
   return true;
 }
 

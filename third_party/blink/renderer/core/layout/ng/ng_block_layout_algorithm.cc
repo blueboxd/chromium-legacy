@@ -1454,14 +1454,9 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       child_bfc_block_offset = PositionSelfCollapsingChildWithParentBfc(
           child, child_space, *child_data, *layout_result);
 
-      // We may need to relayout this child if it had any objects which were
-      // positioned in the incorrect position.
-      //
-      // TODO(layout-dev): A more optimal version of this is to set this flag
-      // only if the child tree *added* any adjoining objects which it failed
-      // to position. Currently, we risk relaying out the sub-tree for no
-      // reason, because we're not able to make this distinction.
-      if (layout_result->AdjoiningObjectTypes() &&
+      // We may need to relayout this child if it had any (adjoining) objects
+      // which were positioned in the incorrect place.
+      if (layout_result->PhysicalFragment().HasAdjoiningObjectDescendants() &&
           *child_bfc_block_offset != child_space.ExpectedBfcBlockOffset())
         self_collapsing_child_needs_relayout = true;
     }

@@ -40,12 +40,6 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // Sets the delegate used for setting/clearing badges.
   void SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate);
 
-  // TODO(https://crbug.com/955171): Remove this method and use BindRequest once
-  // ChromeContentBrowserClient uses service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  static void BindBadgeForRequest(blink::mojom::BadgeServiceRequest request,
-                                  content::RenderFrameHost* frame);
-
   static void BindRequest(
       mojo::PendingReceiver<blink::mojom::BadgeService> receiver,
       content::RenderFrameHost* frame);

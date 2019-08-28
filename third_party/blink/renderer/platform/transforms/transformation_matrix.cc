@@ -789,7 +789,6 @@ static void Slerp(double qa[4], const double qb[4], double t) {
 // End of Supporting Math Functions
 
 TransformationMatrix::TransformationMatrix(const AffineTransform& t) {
-  CheckAlignment();
   SetMatrix(t.A(), t.B(), t.C(), t.D(), t.E(), t.F());
 }
 
@@ -1432,18 +1431,13 @@ TransformationMatrix& TransformationMatrix::Multiply(
   ST_DP(v_tmp_m1, &(matrix_[2][2]));
   ST_DP(v_tmp_m2, &(matrix_[3][0]));
   ST_DP(v_tmp_m3, &(matrix_[3][2]));
-#elif defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
-  static_assert(alignof(TransformationMatrix) == 16,
-                "TransformationMatrix must be aligned.");
-  static_assert(alignof(TransformationMatrix::Matrix4) == 16,
-                "Matrix4 must be aligned.");
-
+#elif defined(ARCH_CPU_X86_64)
   // x86_64 has 16 XMM registers which is enough to do the multiplication fully
   // in registers.
-  __m128d matrix_block_a = _mm_load_pd(&(matrix_[0][0]));
-  __m128d matrix_block_c = _mm_load_pd(&(matrix_[1][0]));
-  __m128d matrix_block_e = _mm_load_pd(&(matrix_[2][0]));
-  __m128d matrix_block_g = _mm_load_pd(&(matrix_[3][0]));
+  __m128d matrix_block_a = _mm_loadu_pd(&(matrix_[0][0]));
+  __m128d matrix_block_c = _mm_loadu_pd(&(matrix_[1][0]));
+  __m128d matrix_block_e = _mm_loadu_pd(&(matrix_[2][0]));
+  __m128d matrix_block_g = _mm_loadu_pd(&(matrix_[3][0]));
 
   // First column.
   __m128d other_matrix_first_param = _mm_set1_pd(mat.matrix_[0][0]);
@@ -1457,15 +1451,15 @@ TransformationMatrix& TransformationMatrix::Multiply(
   __m128d temp2 = _mm_mul_pd(matrix_block_e, other_matrix_third_param);
   __m128d temp3 = _mm_mul_pd(matrix_block_g, other_matrix_fourth_param);
 
-  __m128d matrix_block_b = _mm_load_pd(&(matrix_[0][2]));
-  __m128d matrix_block_d = _mm_load_pd(&(matrix_[1][2]));
-  __m128d matrix_block_f = _mm_load_pd(&(matrix_[2][2]));
-  __m128d matrix_block_h = _mm_load_pd(&(matrix_[3][2]));
+  __m128d matrix_block_b = _mm_loadu_pd(&(matrix_[0][2]));
+  __m128d matrix_block_d = _mm_loadu_pd(&(matrix_[1][2]));
+  __m128d matrix_block_f = _mm_loadu_pd(&(matrix_[2][2]));
+  __m128d matrix_block_h = _mm_loadu_pd(&(matrix_[3][2]));
 
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&matrix_[0][0], accumulator);
+  _mm_storeu_pd(&matrix_[0][0], accumulator);
 
   // output02 and output03.
   accumulator = _mm_mul_pd(matrix_block_b, other_matrix_first_param);
@@ -1476,7 +1470,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&matrix_[0][2], accumulator);
+  _mm_storeu_pd(&matrix_[0][2], accumulator);
 
   // Second column.
   other_matrix_first_param = _mm_set1_pd(mat.matrix_[1][0]);
@@ -1493,7 +1487,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&matrix_[1][0], accumulator);
+  _mm_storeu_pd(&matrix_[1][0], accumulator);
 
   // output12 and output13.
   accumulator = _mm_mul_pd(matrix_block_b, other_matrix_first_param);
@@ -1504,7 +1498,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&matrix_[1][2], accumulator);
+  _mm_storeu_pd(&matrix_[1][2], accumulator);
 
   // Third column.
   other_matrix_first_param = _mm_set1_pd(mat.matrix_[2][0]);
@@ -1521,7 +1515,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&matrix_[2][0], accumulator);
+  _mm_storeu_pd(&matrix_[2][0], accumulator);
 
   // output22 and output23.
   accumulator = _mm_mul_pd(matrix_block_b, other_matrix_first_param);
@@ -1532,7 +1526,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&matrix_[2][2], accumulator);
+  _mm_storeu_pd(&matrix_[2][2], accumulator);
 
   // Fourth column.
   other_matrix_first_param = _mm_set1_pd(mat.matrix_[3][0]);
@@ -1549,7 +1543,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&matrix_[3][0], accumulator);
+  _mm_storeu_pd(&matrix_[3][0], accumulator);
 
   // output32 and output33.
   accumulator = _mm_mul_pd(matrix_block_b, other_matrix_first_param);
@@ -1560,7 +1554,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
   accumulator = _mm_add_pd(accumulator, temp1);
   accumulator = _mm_add_pd(accumulator, temp2);
   accumulator = _mm_add_pd(accumulator, temp3);
-  _mm_store_pd(&matrix_[3][2], accumulator);
+  _mm_storeu_pd(&matrix_[3][2], accumulator);
 #else
   Matrix4 tmp;
 

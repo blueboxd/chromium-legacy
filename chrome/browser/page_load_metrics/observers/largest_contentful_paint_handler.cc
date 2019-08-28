@@ -5,7 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 
 namespace page_load_metrics {

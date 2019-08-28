@@ -58,8 +58,8 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
       browser_context_(browser_context),
       forwarding_handshake_client_(std::move(handshake_client)),
       binding_as_auth_handler_(this),
-      binding_as_header_client_(has_extra_headers ? this : nullptr),
       request_headers_(request.headers),
+      has_extra_headers_(has_extra_headers),
       info_(WebRequestInfoInitParams(request_id_generator->Generate(),
                                      process_id,
                                      render_frame_id,
@@ -98,7 +98,7 @@ void WebRequestProxyingWebSocket::Start() {
   // OnBeforeSendHeaders and OnSendHeaders will be handled there. Otherwise,
   // send these events before the request starts.
   base::RepeatingCallback<void(int)> continuation;
-  if (binding_as_header_client_.impl()) {
+  if (has_extra_headers_) {
     continuation = base::BindRepeating(
         &WebRequestProxyingWebSocket::ContinueToStartRequest,
         weak_factory_.GetWeakPtr());
@@ -143,8 +143,8 @@ void WebRequestProxyingWebSocket::OnResponseReceived(
   DCHECK(forwarding_handshake_client_);
 
   // response_.headers will be set in OnBeforeSendHeaders if
-  // binding_as_header_client_ is set.
-  if (!binding_as_header_client_) {
+  // |receiver_as_header_client_| is set.
+  if (!receiver_as_header_client_.is_bound()) {
     response_.headers =
         base::MakeRefCounted<net::HttpResponseHeaders>(base::StringPrintf(
             "HTTP/%d.%d %d %s", response->http_version.major_value(),
@@ -162,7 +162,7 @@ void WebRequestProxyingWebSocket::OnResponseReceived(
   // requests.
   forwarding_handshake_client_->OnResponseReceived(std::move(response));
 
-  if (!binding_as_header_client_ || response_.headers) {
+  if (!receiver_as_header_client_.is_bound() || response_.headers) {
     ContinueToHeadersReceived();
   } else {
     waiting_for_header_client_headers_received_ = true;
@@ -248,7 +248,7 @@ void WebRequestProxyingWebSocket::OnAuthRequired(
 void WebRequestProxyingWebSocket::OnBeforeSendHeaders(
     const net::HttpRequestHeaders& headers,
     OnBeforeSendHeadersCallback callback) {
-  DCHECK(binding_as_header_client_);
+  DCHECK(receiver_as_header_client_.is_bound());
 
   request_headers_ = headers;
   on_before_send_headers_callback_ = std::move(callback);
@@ -258,7 +258,7 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeaders(
 void WebRequestProxyingWebSocket::OnHeadersReceived(
     const std::string& headers,
     OnHeadersReceivedCallback callback) {
-  DCHECK(binding_as_header_client_);
+  DCHECK(receiver_as_header_client_.is_bound());
 
   // Note: since there are different pipes used for WebSocketClient and
   // TrustedHeaderClient, there are no guarantees whether this or
@@ -307,7 +307,8 @@ void WebRequestProxyingWebSocket::StartProxying(
 }
 
 void WebRequestProxyingWebSocket::OnBeforeRequestComplete(int error_code) {
-  DCHECK(binding_as_header_client_ || !binding_as_handshake_client_.is_bound());
+  DCHECK(receiver_as_header_client_.is_bound() ||
+         !binding_as_handshake_client_.is_bound());
   DCHECK(info_.url.SchemeIsWSOrWSS());
   if (error_code != net::OK) {
     OnError(error_code);
@@ -339,13 +340,14 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(
     const std::set<std::string>& removed_headers,
     const std::set<std::string>& set_headers,
     int error_code) {
-  DCHECK(binding_as_header_client_ || !binding_as_handshake_client_.is_bound());
+  DCHECK(receiver_as_header_client_.is_bound() ||
+         !binding_as_handshake_client_.is_bound());
   if (error_code != net::OK) {
     OnError(error_code);
     return;
   }
 
-  if (binding_as_header_client_) {
+  if (receiver_as_header_client_.is_bound()) {
     DCHECK(on_before_send_headers_callback_);
     std::move(on_before_send_headers_callback_)
         .Run(error_code, request_headers_);
@@ -354,7 +356,7 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(
   ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
       browser_context_, &info_, request_headers_);
 
-  if (!binding_as_header_client_)
+  if (!receiver_as_header_client_.is_bound())
     ContinueToStartRequest(net::OK);
 }
 
@@ -375,9 +377,11 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
 
   network::mojom::AuthenticationHandlerPtr auth_handler;
   binding_as_auth_handler_.Bind(mojo::MakeRequest(&auth_handler));
-  network::mojom::TrustedHeaderClientPtr trusted_header_client;
-  if (binding_as_header_client_.impl()) {
-    binding_as_header_client_.Bind(mojo::MakeRequest(&trusted_header_client));
+  mojo::PendingRemote<network::mojom::TrustedHeaderClient>
+      trusted_header_client = mojo::NullRemote();
+  if (has_extra_headers_) {
+    trusted_header_client =
+        receiver_as_header_client_.BindNewPipeAndPassRemote();
   }
 
   std::move(factory_).Run(
@@ -462,15 +466,15 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth(
 void WebRequestProxyingWebSocket::PauseIncomingMethodCallProcessing() {
   binding_as_handshake_client_.Pause();
   binding_as_auth_handler_.PauseIncomingMethodCallProcessing();
-  if (binding_as_header_client_)
-    binding_as_header_client_.PauseIncomingMethodCallProcessing();
+  if (receiver_as_header_client_.is_bound())
+    receiver_as_header_client_.Pause();
 }
 
 void WebRequestProxyingWebSocket::ResumeIncomingMethodCallProcessing() {
   binding_as_handshake_client_.Resume();
   binding_as_auth_handler_.ResumeIncomingMethodCallProcessing();
-  if (binding_as_header_client_)
-    binding_as_header_client_.ResumeIncomingMethodCallProcessing();
+  if (receiver_as_header_client_.is_bound())
+    receiver_as_header_client_.Resume();
 }
 
 void WebRequestProxyingWebSocket::OnError(int error_code) {

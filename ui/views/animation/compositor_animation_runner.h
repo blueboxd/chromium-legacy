@@ -7,13 +7,10 @@
 
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/animation/animation_container.h"
-
-namespace ui {
-class Compositor;
-}  // namespace ui
 
 namespace views {
 
@@ -51,7 +48,8 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
 
    private:
     CompositorAnimationRunner* runner_;
-    ScopedObserver<ui::Compositor, CompositorChecker> scoped_observer_{this};
+    ScopedObserver<ui::Compositor, ui::CompositorObserver> scoped_observer_{
+        this};
   };
 
   // When |compositor_| is nullptr, it means compositor has been shut down.

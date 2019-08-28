@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -53,6 +54,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
+#include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request_context.h"
@@ -563,14 +565,14 @@ class HostResolverManagerTest : public TestWithTaskEnvironment {
   }
 
   static unsigned maximum_insecure_dns_task_failures() {
-    return HostResolverManager::kMaximumInsecureDnsTaskFailures;
+    return DnsClient::kMaxInsecureFallbackFailures;
   }
 
   bool IsIPv6Reachable(const NetLogWithSource& net_log) {
     return resolver_->IsIPv6Reachable(net_log);
   }
 
-  void PopulateCache(HostCache::Key& key, IPEndPoint endpoint) {
+  void PopulateCache(const HostCache::Key& key, IPEndPoint endpoint) {
     resolver_->CacheResult(host_cache_.get(), key,
                            HostCache::Entry(OK, AddressList(endpoint),
                                             HostCache::Entry::SOURCE_UNKNOWN),
@@ -3413,6 +3415,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
         std::make_unique<MockDnsClient>(DnsConfig(), CreateDefaultDnsRules());
     dns_client_ = dns_client.get();
     resolver_->SetDnsClientForTesting(std::move(dns_client));
+    resolver_->SetInsecureDnsClientEnabled(options.insecure_dns_client_enabled);
     resolver_->set_proc_params_for_test(params);
 
     if (host_cache_)
@@ -4343,10 +4346,73 @@ TEST_F(HostResolverManagerDnsTest, DontDisableDnsClientOnSporadicFailure) {
   EXPECT_THAT(final_response.result_error(), IsOk());
 }
 
+TEST_F(HostResolverManagerDnsTest, Ipv6Unreachable) {
+  CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_.get()),
+                                    false /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 500), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsOk());
+
+  // Only expect IPv4 results.
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 500)));
+}
+
+// Without a valid DnsConfig, assume IPv6 is needed and ignore prober.
+TEST_F(HostResolverManagerDnsTest, Ipv6Unreachable_InvalidConfig) {
+  CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_.get()),
+                                    false /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
+
+  proc_->AddRule("example.com", ADDRESS_FAMILY_UNSPECIFIED, "1.2.3.4,::5");
+  proc_->SignalMultiple(1u);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("example.com", 500), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::UnorderedElementsAre(CreateExpected("1.2.3.4", 500),
+                                            CreateExpected("::5", 500)));
+}
+
+TEST_F(HostResolverManagerDnsTest, Ipv6Unreachable_UseLocalIpv6) {
+  CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_.get()),
+                                    false /* ipv6_reachable */,
+                                    true /* check_ipv6_on_wifi */);
+
+  DnsConfig config = CreateValidDnsConfig();
+  config.use_local_ipv6 = true;
+  ChangeDnsConfig(config);
+
+  ResolveHostResponseHelper response1(resolver_->CreateRequest(
+      HostPortPair("ok", 500), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response1.result_error(), IsOk());
+  EXPECT_THAT(response1.request()->GetAddressResults().value().endpoints(),
+              testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 500),
+                                            CreateExpected("::1", 500)));
+
+  // Set |use_local_ipv6| to false. Expect only IPv4 results.
+  config.use_local_ipv6 = false;
+  ChangeDnsConfig(config);
+
+  ResolveHostResponseHelper response2(resolver_->CreateRequest(
+      HostPortPair("ok", 500), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(response2.result_error(), IsOk());
+  EXPECT_THAT(response2.request()->GetAddressResults().value().endpoints(),
+              testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 500)));
+}
+
 // Confirm that resolving "localhost" is unrestricted even if there are no
 // global IPv6 address. See SystemHostResolverCall for rationale.
 // Test both the DnsClient and system host resolver paths.
-TEST_F(HostResolverManagerDnsTest, DualFamilyLocalhost) {
+TEST_F(HostResolverManagerDnsTest, Ipv6Unreachable_Localhost) {
   CreateResolverWithLimitsAndParams(kMaxJobs, DefaultParams(proc_.get()),
                                     false /* ipv6_reachable */,
                                     true /* check_ipv6_on_wifi */);
@@ -5463,7 +5529,7 @@ TEST_F(HostResolverManagerDnsTest,
         request_context_.get(), host_cache_.get()));
     EXPECT_FALSE(response_secure.complete());
 
-    proc_->SignalMultiple(maximum_insecure_dns_task_failures() + 6);
+    proc_->SignalMultiple(maximum_insecure_dns_task_failures() + 4);
 
     for (size_t i = 0u; i < maximum_insecure_dns_task_failures(); ++i) {
       EXPECT_THAT(failure_responses[i]->result_error(), IsOk());
@@ -6211,12 +6277,33 @@ TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerAndThenRemove) {
             static_cast<int>(DnsConfig::SecureDnsMode::OFF));
 }
 
+// Basic test socket factory that allows creation of UDP sockets, but those
+// sockets are mocks with no data and are not expected to be usable.
+class AlwaysFailSocketFactory : public MockClientSocketFactory {
+ public:
+  std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
+      DatagramSocket::BindType bind_type,
+      NetLog* net_log,
+      const NetLogSource& source) override {
+    return std::make_unique<MockUDPClientSocket>();
+  }
+};
+
+// Built-in client and config overrides not available on iOS.
+#if !defined(OS_IOS)
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
   DnsConfig original_config = CreateValidDnsConfig();
   ChangeDnsConfig(original_config);
 
   // Confirm pre-override state.
-  ASSERT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+  ASSERT_EQ(original_config, *client_ptr->GetEffectiveConfig());
 
   DnsConfigOverrides overrides;
   const std::vector<IPEndPoint> nameservers = {
@@ -6250,7 +6337,8 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
 
   resolver_->SetDnsConfigOverrides(overrides);
 
-  const DnsConfig* overridden_config = dns_client_->GetConfig();
+  const DnsConfig* overridden_config = client_ptr->GetEffectiveConfig();
+  ASSERT_TRUE(overridden_config);
   EXPECT_EQ(nameservers, overridden_config->nameservers);
   EXPECT_EQ(search, overridden_config->search);
   EXPECT_EQ(hosts, overridden_config->hosts);
@@ -6267,11 +6355,18 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
 
 TEST_F(HostResolverManagerDnsTest,
        SetDnsConfigOverrides_OverrideEverythingCreation) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
   DnsConfig original_config = CreateValidDnsConfig();
   ChangeDnsConfig(original_config);
 
   // Confirm pre-override state.
-  ASSERT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+  ASSERT_EQ(original_config, *client_ptr->GetEffectiveConfig());
   ASSERT_FALSE(original_config.Equals(DnsConfig()));
 
   DnsConfigOverrides overrides =
@@ -6287,15 +6382,22 @@ TEST_F(HostResolverManagerDnsTest,
 
   DnsConfig expected;
   expected.nameservers = nameservers;
-  EXPECT_TRUE(dns_client_->GetConfig()->Equals(DnsConfig(expected)));
+  EXPECT_THAT(client_ptr->GetEffectiveConfig(), testing::Pointee(expected));
 }
 
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
   DnsConfig original_config = CreateValidDnsConfig();
   ChangeDnsConfig(original_config);
 
   // Confirm pre-override state.
-  ASSERT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+  ASSERT_EQ(original_config, *client_ptr->GetEffectiveConfig());
 
   DnsConfigOverrides overrides;
   const std::vector<IPEndPoint> nameservers = {
@@ -6306,7 +6408,8 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
 
   resolver_->SetDnsConfigOverrides(overrides);
 
-  const DnsConfig* overridden_config = dns_client_->GetConfig();
+  const DnsConfig* overridden_config = client_ptr->GetEffectiveConfig();
+  ASSERT_TRUE(overridden_config);
   EXPECT_EQ(nameservers, overridden_config->nameservers);
   EXPECT_EQ(original_config.search, overridden_config->search);
   EXPECT_EQ(original_config.hosts, overridden_config->hosts);
@@ -6326,11 +6429,18 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
 // Test that overridden configs are reapplied over a changed underlying system
 // config.
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NewConfig) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
   DnsConfig original_config = CreateValidDnsConfig();
   ChangeDnsConfig(original_config);
 
   // Confirm pre-override state.
-  ASSERT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+  ASSERT_EQ(original_config, *client_ptr->GetEffectiveConfig());
 
   DnsConfigOverrides overrides;
   const std::vector<IPEndPoint> nameservers = {
@@ -6338,19 +6448,28 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NewConfig) {
   overrides.nameservers = nameservers;
 
   resolver_->SetDnsConfigOverrides(overrides);
-  ASSERT_EQ(nameservers, dns_client_->GetConfig()->nameservers);
+  ASSERT_TRUE(client_ptr->GetEffectiveConfig());
+  ASSERT_EQ(nameservers, client_ptr->GetEffectiveConfig()->nameservers);
 
   DnsConfig new_config = original_config;
   new_config.attempts = 103;
   ASSERT_NE(nameservers, new_config.nameservers);
   ChangeDnsConfig(new_config);
 
-  const DnsConfig* overridden_config = dns_client_->GetConfig();
+  const DnsConfig* overridden_config = client_ptr->GetEffectiveConfig();
+  ASSERT_TRUE(overridden_config);
   EXPECT_EQ(nameservers, overridden_config->nameservers);
   EXPECT_EQ(new_config.attempts, overridden_config->attempts);
 }
 
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_ClearOverrides) {
+  // Use a real DnsClient to test config-handling behavior.
+  AlwaysFailSocketFactory socket_factory;
+  auto client = DnsClient::CreateClientForTesting(
+      nullptr /* net_log */, &socket_factory, base::Bind(&base::RandInt));
+  DnsClient* client_ptr = client.get();
+  resolver_->SetDnsClientForTesting(std::move(client));
+
   DnsConfig original_config = CreateValidDnsConfig();
   ChangeDnsConfig(original_config);
 
@@ -6358,11 +6477,14 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_ClearOverrides) {
   overrides.attempts = 245;
   resolver_->SetDnsConfigOverrides(overrides);
 
-  ASSERT_FALSE(original_config.Equals(*dns_client_->GetConfig()));
+  ASSERT_THAT(client_ptr->GetEffectiveConfig(),
+              testing::Not(testing::Pointee(original_config)));
 
   resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
-  EXPECT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+  EXPECT_THAT(client_ptr->GetEffectiveConfig(),
+              testing::Pointee(original_config));
 }
+#endif  // !defined(OS_IOS)
 
 TEST_F(HostResolverManagerDnsTest, FlushCacheOnDnsConfigOverridesChange) {
   ChangeDnsConfig(CreateValidDnsConfig());
@@ -6517,7 +6639,7 @@ TEST_F(HostResolverManagerDnsTest,
 TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
   // Test Async resolver is detected.
   ChangeDnsConfig(CreateValidDnsConfig());
-  EXPECT_EQ(resolver_->mode_for_histogram_,
+  EXPECT_EQ(resolver_->DetermineModeForHistogram(),
             HostResolverManager::MODE_FOR_HISTOGRAM_ASYNC_DNS);
 
   // Test upgradability is detected for async DNS.
@@ -6536,14 +6658,14 @@ TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
         IPEndPoint(ip_address, dns_protocol::kDefaultPort));
     ChangeDnsConfig(dns_config);
     EXPECT_EQ(
-        resolver_->mode_for_histogram_,
+        resolver_->DetermineModeForHistogram(),
         HostResolverManager::MODE_FOR_HISTOGRAM_ASYNC_DNS_PRIVATE_SUPPORTS_DOH);
   }
 
   // Test system resolver is detected.
   resolver_->SetInsecureDnsClientEnabled(false);
   ChangeDnsConfig(CreateValidDnsConfig());
-  EXPECT_EQ(resolver_->mode_for_histogram_,
+  EXPECT_EQ(resolver_->DetermineModeForHistogram(),
             HostResolverManager::MODE_FOR_HISTOGRAM_SYSTEM);
 
   // Test upgradability is detected for system resolver.
@@ -6554,7 +6676,7 @@ TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
     dns_config.nameservers.push_back(
         IPEndPoint(ip_address, dns_protocol::kDefaultPort));
     ChangeDnsConfig(dns_config);
-    EXPECT_EQ(resolver_->mode_for_histogram_,
+    EXPECT_EQ(resolver_->DetermineModeForHistogram(),
               HostResolverManager::MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH);
   }
 
@@ -6562,7 +6684,7 @@ TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
   DnsConfig config = CreateValidDnsConfig();
   config.dns_over_tls_active = true;
   ChangeDnsConfig(config);
-  EXPECT_EQ(resolver_->mode_for_histogram_,
+  EXPECT_EQ(resolver_->DetermineModeForHistogram(),
             HostResolverManager::MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS);
 
   // Test upgradeability from IP addresses when private DNS is active.
@@ -6574,7 +6696,7 @@ TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
     dns_config.nameservers.push_back(
         IPEndPoint(ip_address, dns_protocol::kDefaultPort));
     ChangeDnsConfig(dns_config);
-    EXPECT_EQ(resolver_->mode_for_histogram_,
+    EXPECT_EQ(resolver_->DetermineModeForHistogram(),
               HostResolverManager::
                   MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH);
   }
@@ -6594,7 +6716,7 @@ TEST_F(HostResolverManagerDnsTest, ModeForHistogram) {
     dns_config.nameservers.push_back(
         IPEndPoint(IPAddress(1, 2, 3, 4), dns_protocol::kDefaultPort));
     ChangeDnsConfig(dns_config);
-    EXPECT_EQ(resolver_->mode_for_histogram_,
+    EXPECT_EQ(resolver_->DetermineModeForHistogram(),
               HostResolverManager::
                   MODE_FOR_HISTOGRAM_SYSTEM_PRIVATE_DNS_SUPPORTS_DOH);
   }

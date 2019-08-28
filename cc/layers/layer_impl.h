@@ -26,7 +26,6 @@
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_impl_test_properties.h"
-#include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/performance_properties.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/touch_action_region.h"

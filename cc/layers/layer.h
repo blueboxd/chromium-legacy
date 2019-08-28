@@ -21,10 +21,8 @@
 #include "cc/benchmarks/micro_benchmark.h"
 #include "cc/cc_export.h"
 #include "cc/input/input_handler.h"
-#include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/touch_action_region.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
@@ -191,15 +189,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetBounds(const gfx::Size& bounds);
   const gfx::Size& bounds() const { return inputs_.bounds; }
 
-  // Set and get the behaviour to be applied for compositor-thread scrolling of
-  // this layer beyond the beginning or end of the layer's content.
-  // TODO(bokan): With blink-gen-property-trees this is stored on the
-  // ScrollNode and can be removed here.
-  void SetOverscrollBehavior(const OverscrollBehavior& behavior);
-  OverscrollBehavior overscroll_behavior() const {
-    return inputs_.overscroll_behavior;
-  }
-
   // Set and get the snapping behaviour for compositor-thread scrolling of
   // this layer. The default value of null means there is no snapping for the
   // layer.
@@ -223,17 +212,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Returns the bounds which is clipped by the clip rect.
   gfx::RectF EffectiveClipRect();
-
-  // Set or get a layer that is not an ancestor of this layer, but which should
-  // be clipped to this layer's bounds if SetMasksToBounds() is set to true.
-  // The parent layer does *not* retain ownership of a reference on this layer.
-  void SetClipParent(Layer* ancestor);
-  Layer* clip_parent() { return inputs_.clip_parent; }
-
-  // The set of layers which are not in this layers subtree but which should be
-  // clipped to only appear within this layer's bounds.
-  std::set<Layer*>* clip_children() { return clip_children_.get(); }
-  const std::set<Layer*>* clip_children() const { return clip_children_.get(); }
 
   // Set or get a layer that will mask the contents of this layer. The alpha
   // channel of the mask layer's content is used as an alpha mask of this
@@ -353,50 +331,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHitTestable(bool should_hit_test);
   virtual bool HitTestable() const;
 
-  // Set or gets if this layer is a container for fixed position layers in its
-  // subtree. Such layers will be positioned and transformed relative to this
-  // layer instead of their direct parent.
-  //
-  // A layer that is a container for fixed position layers cannot be both
-  // scrollable and have a non-identity transform.
-  void SetIsContainerForFixedPositionLayers(bool container);
-  bool IsContainerForFixedPositionLayers() const;
-
-  // Set or get constraints applied to the layer's position, where it may be
-  // in a fixed position relative to the nearest ancestor that returns true for
-  // IsContainerForFixedPositionLayers(). This may also specify which edges
-  // of the layer are fixed to the same edges of the container ancestor. When
-  // fixed position, this layer's transform will be appended to the container
-  // ancestor's transform instead of to this layer's direct parent's.
-  // Position constraints are only used by the cc property tree builder to build
-  // property trees and are not needed when using layer lists.
-  void SetPositionConstraint(const LayerPositionConstraint& constraint);
-  const LayerPositionConstraint& position_constraint() const {
-    return inputs_.position_constraint;
-  }
-
-  // Set or get constraints applied to the layer's position, where it may act
-  // like a normal layer until, during scroll, its position triggers it to
-  // become fixed position relative to its scroller. See CSS position: sticky
-  // for more details.
-  void SetStickyPositionConstraint(
-      const LayerStickyPositionConstraint& constraint);
-  const LayerStickyPositionConstraint& sticky_position_constraint() const {
-    return inputs_.sticky_position_constraint;
-  }
-
-  // On some platforms (Android renderer) the viewport may resize during scroll
-  // on the compositor thread. During this resize and until the main thread
-  // matches, position fixed layers may need to have their position adjusted on
-  // the compositor thread to keep them fixed in place.  If
-  // IsContainerForFixedPositionLayers() is true for this layer, these set and
-  // get whether fixed position descendants of this layer should have this
-  // adjustment to their position applied during such a viewport resize.
-  // This value is only used by the cc property tree builder to build property
-  // trees and is not needed when using layer lists.
-  void SetIsResizedByBrowserControls(bool resized);
-  bool IsResizedByBrowserControls() const;
-
   // Set or get the transform to be used when compositing this layer into its
   // target. The transform is inherited by this layers children.
   void SetTransform(const gfx::Transform& transform);
@@ -418,11 +352,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   const gfx::Point3F& transform_origin() const {
     return inputs_.transform_origin;
   }
-
-  // Set or get a scroll parent layer. It is not an ancestor of this layer, but
-  // this layer will be moved by the scroll parent's scroll offset.
-  void SetScrollParent(Layer* parent);
-  Layer* scroll_parent() { return inputs_.scroll_parent; }
 
   // Set or get the scroll offset of the layer. The content of the layer, and
   // position of its subtree, as well as other layers for which this layer is
@@ -621,7 +550,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // While all layers have an index into the transform tree, this value
   // indicates whether the transform tree node was created for this layer.
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
-  bool has_transform_node() { return has_transform_node_; }
+  bool has_transform_node() const { return has_transform_node_; }
 
   // This value indicates whether a clip node was created for |this| layer.
   void SetHasClipNode(bool val) { has_clip_node_ = val; }
@@ -921,14 +850,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void RemoveClipChild(Layer* child);
 
   void SetParent(Layer* layer);
-  bool DescendantIsFixedToContainerLayer() const;
 
   // This should only be called from RemoveFromParent().
   void RemoveChildOrDependent(Layer* child);
-
-  // If this layer has a clip parent, it removes |this| from its list of clip
-  // children.
-  void RemoveFromClipTree();
 
   // When we detach or attach layer to new LayerTreeHost, all property trees'
   // indices becomes invalid.
@@ -1027,26 +951,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     TouchActionRegion touch_action_region;
 
-    // When set, position: fixed children of this layer will be affected by URL
-    // bar movement. bottom-fixed element will be pushed down as the URL bar
-    // hides (and the viewport expands) so that the element stays fixed to the
-    // viewport bottom. This will always be set on the outer viewport scroll
-    // layer. In the case of a non-default rootScroller, all iframes in the
-    // rootScroller ancestor chain will also have it set on their scroll
-    // layers.
-    // TODO(pdr): These values are only used by blink and only when blink does
-    // not generate property trees. Remove these values when
-    // BlinkGenPropertyTrees ships.
-    bool is_resized_by_browser_controls : 1;
-    bool is_container_for_fixed_position_layers : 1;
-    LayerPositionConstraint position_constraint;
-
-    LayerStickyPositionConstraint sticky_position_constraint;
-
     ElementId element_id;
-
-    Layer* scroll_parent;
-    Layer* clip_parent;
 
     bool has_will_change_transform_hint : 1;
 
@@ -1061,8 +966,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
         did_scroll_callback;
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
-
-    OverscrollBehavior overscroll_behavior;
 
     base::Optional<SnapContainerData> snap_container_data;
 
@@ -1101,8 +1004,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   SkColor safe_opaque_background_color_;
   uint64_t compositing_reasons_;
   int owner_node_id_;
-
-  std::unique_ptr<std::set<Layer*>> clip_children_;
 };
 
 }  // namespace cc

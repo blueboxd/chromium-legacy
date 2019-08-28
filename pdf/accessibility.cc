@@ -39,10 +39,12 @@ bool GetAccessibilityInfo(
 
   int char_index = 0;
   while (char_index < char_count) {
-    PP_PrivateAccessibilityTextRunInfo text_run_info;
-    engine->GetTextRunInfo(page_index, char_index, &text_run_info);
-    DCHECK_LE(char_index + text_run_info.len,
-              static_cast<uint32_t>(char_count));
+    base::Optional<PP_PrivateAccessibilityTextRunInfo> text_run_info_result =
+        engine->GetTextRunInfo(page_index, char_index);
+    DCHECK(text_run_info_result.has_value());
+    const auto& text_run_info = text_run_info_result.value();
+    uint32_t text_run_end = char_index + text_run_info.len;
+    DCHECK_LE(text_run_end, static_cast<uint32_t>(char_count));
     text_runs->push_back(text_run_info);
 
     // We need to provide enough information to draw a bounding box
@@ -55,11 +57,10 @@ bool GetAccessibilityInfo(
     // can be computed from the bounds of the text run.
     // The same idea is used for RTL, TTB and BTT text direction.
     pp::FloatRect char_bounds = engine->GetCharBounds(page_index, char_index);
-    for (uint32_t i = 0; i < text_run_info.len - 1; i++) {
-      DCHECK_LT(char_index + i + 1, static_cast<uint32_t>(char_count));
-      pp::FloatRect next_char_bounds =
-          engine->GetCharBounds(page_index, char_index + i + 1);
-      double& char_width = (*chars)[char_index + i].char_width;
+    for (uint32_t i = char_index; i < text_run_end - 1; i++) {
+      DCHECK_LT(i + 1, static_cast<uint32_t>(char_count));
+      pp::FloatRect next_char_bounds = engine->GetCharBounds(page_index, i + 1);
+      double& char_width = (*chars)[i].char_width;
       switch (text_run_info.direction) {
         case PP_PRIVATEDIRECTION_NONE:
         case PP_PRIVATEDIRECTION_LTR:
@@ -77,8 +78,7 @@ bool GetAccessibilityInfo(
       }
       char_bounds = next_char_bounds;
     }
-    double& char_width =
-        (*chars)[char_index + text_run_info.len - 1].char_width;
+    double& char_width = (*chars)[text_run_end - 1].char_width;
     if (text_run_info.direction == PP_PRIVATEDIRECTION_BTT ||
         text_run_info.direction == PP_PRIVATEDIRECTION_TTB) {
       char_width = char_bounds.height();

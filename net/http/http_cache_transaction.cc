@@ -1427,7 +1427,7 @@ int HttpCache::Transaction::DoDoneHeadersAddToEntryComplete(int result) {
   // created a new ActiveEntry (new_entry_) to write to (and doomed the old
   // one). Now that the new entry has been created, start writing the response.
 
-  DCHECK_EQ(result, OK);
+  CHECK_EQ(result, OK);
   DCHECK_EQ(mode_, WRITE);
   DCHECK(new_entry_);
   DCHECK(response_.headers);

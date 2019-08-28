@@ -34,6 +34,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -79,6 +80,10 @@ class PaletteTrayTest : public AshTestBase {
     palette_tray_ =
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray();
     test_api_ = std::make_unique<PaletteTrayTestApi>(palette_tray_);
+  }
+
+  PrefService* prefs() {
+    return Shell::Get()->session_controller()->GetPrimaryUserPrefService();
   }
 
  protected:
@@ -332,7 +337,8 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::RUNNING);
   assistant_state()->NotifySettingsEnabled(true);
-  assistant_state()->NotifyContextEnabled(true);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                      true);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->EnterPenPointerMode();
@@ -394,7 +400,8 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
   // Disabling metalayer support in the delegate should disable the palette
   // tool.
   test_api_->palette_tool_manager()->ActivateTool(PaletteToolId::METALAYER);
-  assistant_state()->NotifyContextEnabled(false);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                      false);
   EXPECT_FALSE(metalayer_enabled());
 
   // With the metalayer disabled again, press/drag does not activate the
@@ -410,7 +417,8 @@ TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
   assistant_state()->NotifyStatusChanged(
       mojom::VoiceInteractionState::NOT_READY);
   assistant_state()->NotifySettingsEnabled(false);
-  assistant_state()->NotifyContextEnabled(false);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                      false);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->EnterPenPointerMode();
@@ -430,7 +438,8 @@ TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
                              false /* no highlighter on press */);
 
   // Enable one of the two user prefs, should not be sufficient.
-  assistant_state()->NotifyContextEnabled(true);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                      true);
   WaitDragAndAssertMetalayer("one pref enabled", origin,
                              ui::EF_LEFT_MOUSE_BUTTON, false /* no metalayer */,
                              false /* no highlighter on press */);
@@ -506,7 +515,8 @@ TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
 
   // Disable the metalayer support.
   // This should deactivate both the palette tool and the highlighter.
-  assistant_state()->NotifyContextEnabled(false);
+  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                      false);
   EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::METALAYER));
 

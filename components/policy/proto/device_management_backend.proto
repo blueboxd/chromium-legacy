@@ -1287,6 +1287,8 @@ message PolicyFetchTimestamp {
 // Chrome user profile level status, used by activated Profiles. Profile name is
 // not listed here as they are in the ChromeUserProfileBasicInfo.
 message ChromeUserProfileInfo {
+  reserved 6;
+
   // A string to uniquely identify this profile within the browser.
   optional string id = 1;
 
@@ -1307,9 +1309,6 @@ message ChromeUserProfileInfo {
 
   // A list of extensions requested for installation.
   repeated ExtensionRequest extension_requests = 10;
-
-  // A list of plugins installed in the browser.
-  repeated Plugin plugins = 6;
 
   // A list of Chrome browser policies set for this user profile.
   repeated Policy chrome_policies = 7;
@@ -1347,6 +1346,9 @@ message BrowserReport {
   // upload full details due to the limitation of the report size.
   // These details will be uploaded in the following reports.
   repeated ChromeUserProfileInfo chrome_user_profile_infos = 6;
+
+  // A list of plugins installed in the browser.
+  repeated Plugin plugins = 7;
 }
 
 // Report Operating system related information.

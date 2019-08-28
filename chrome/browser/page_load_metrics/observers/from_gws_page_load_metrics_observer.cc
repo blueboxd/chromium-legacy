@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 

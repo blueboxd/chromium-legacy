@@ -58,6 +58,7 @@ class InternetHandler
   void RequestArcVpnProviders(const base::ListValue* args);
   void RequestGmsCoreNotificationsDisabledDeviceNames(
       const base::ListValue* args);
+  void ShowCellularSetupUI(const base::ListValue* args);
 
   // Sets list of Arc Vpn providers.
   void SetArcVpnProviders(

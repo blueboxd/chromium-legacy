@@ -7,16 +7,25 @@
 
 #include <stdint.h>
 #include <string>
+#include <unordered_map>
 
 #include "base/optional.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
+#include "components/optimization_guide/optimization_guide_enums.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 
 // A representation of optimization guide information related to a navigation.
+// This also includes methods for recording metrics based on this data.
 class OptimizationGuideNavigationData {
  public:
   explicit OptimizationGuideNavigationData(int64_t navigation_id);
   ~OptimizationGuideNavigationData();
 
   OptimizationGuideNavigationData(const OptimizationGuideNavigationData& other);
+
+  // Records metrics based on data currently held in |this|. |has_committed|
+  // indicates whether commit-time metrics should be recorded.
+  void RecordMetrics(bool has_committed) const;
 
   // The navigation ID of the navigation handle that this data is associated
   // with.
@@ -31,13 +40,82 @@ class OptimizationGuideNavigationData {
     serialized_hint_version_string_ = serialized_hint_version_string;
   }
 
+  // Returns the latest decision made for |optimization_type|.
+  base::Optional<optimization_guide::OptimizationTypeDecision>
+  GetDecisionForOptimizationType(
+      optimization_guide::proto::OptimizationType optimization_type) const;
+  // Sets the |decision| for |optimization_type|.
+  void SetDecisionForOptimizationType(
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationTypeDecision decision);
+
+  // Returns the latest decision made for |optimmization_target|.
+  base::Optional<optimization_guide::OptimizationTargetDecision>
+  GetDecisionForOptimizationTarget(
+      optimization_guide::OptimizationTarget optimization_target) const;
+  // Sets the |decision| for |optimization_target|.
+  void SetDecisionForOptimizationTarget(
+      optimization_guide::OptimizationTarget optimization_target,
+      optimization_guide::OptimizationTargetDecision decision);
+
+  // Whether the hint cache had a hint for the navigation before commit.
+  base::Optional<bool> has_hint_before_commit() const {
+    return has_hint_before_commit_;
+  }
+  void set_has_hint_before_commit(bool has_hint_before_commit) {
+    has_hint_before_commit_ = has_hint_before_commit;
+  }
+
+  // Whether the hint cache had a hint after commit.
+  base::Optional<bool> has_hint_after_commit() const {
+    return has_hint_after_commit_;
+  }
+  void set_has_hint_after_commit(bool has_hint_after_commit) {
+    has_hint_after_commit_ = has_hint_after_commit;
+  }
+
+  // Whether the hint cache had a page hint for the navigation.
+  base::Optional<bool> has_page_hint() const { return has_page_hint_; }
+  void set_has_page_hint(bool has_page_hint) { has_page_hint_ = has_page_hint; }
+
  private:
+  // Records hint cache histograms based on data currently held in |this|.
+  void RecordHintCacheMatch(bool has_committed) const;
+
+  // Records histograms for the decisions made for each optimization target and
+  // type that was queried for the navigation based on data currently held in
+  // |this|.
+  void RecordOptimizationTypeAndTargetDecisions() const;
+
+  // Records the OptimizationGuide UKM event based on data currently held in
+  // |this|.
+  void RecordOptimizationGuideUKM() const;
+
   // The navigation ID of the navigation handle that this data is associated
   // with.
   const int64_t navigation_id_;
 
   // The serialized hints version for the hint that applied to the navigation.
   base::Optional<std::string> serialized_hint_version_string_ = base::nullopt;
+
+  // The map from optimization type to the last decision made for that type.
+  std::unordered_map<optimization_guide::proto::OptimizationType,
+                     optimization_guide::OptimizationTypeDecision>
+      optimization_type_decisions_;
+
+  // The map from optimization target to the last decision made for that target.
+  std::unordered_map<optimization_guide::OptimizationTarget,
+                     optimization_guide::OptimizationTargetDecision>
+      optimization_target_decisions_;
+
+  // Whether the hint cache had a hint for the navigation before commit.
+  base::Optional<bool> has_hint_before_commit_ = base::nullopt;
+
+  // Whether the hint cache had a hint for the navigation after commit.
+  base::Optional<bool> has_hint_after_commit_ = base::nullopt;
+
+  // Whether there was a page hint for the navigation.
+  base::Optional<bool> has_page_hint_ = base::nullopt;
 
   DISALLOW_ASSIGN(OptimizationGuideNavigationData);
 };

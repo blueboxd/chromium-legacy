@@ -52,12 +52,6 @@ class FloatQuad;
 class FloatBox;
 class JSONArray;
 struct Rotation;
-#if defined(ARCH_CPU_X86_64)
-#define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
-#define ALIGNAS_TRANSFORMATION_MATRIX alignas(16)
-#else
-#define ALIGNAS_TRANSFORMATION_MATRIX
-#endif
 
 class PLATFORM_EXPORT TransformationMatrix {
   // TransformationMatrix must not be allocated on Oilpan's heap since
@@ -79,7 +73,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   // | matrix_[0][1] matrix_[1][1] matrix_[2][1] matrix_[3][1] |
   // | matrix_[0][2] matrix_[1][2] matrix_[2][2] matrix_[3][2] |
   // | matrix_[0][3] matrix_[1][3] matrix_[2][3] matrix_[3][3] |
-  struct ALIGNAS_TRANSFORMATION_MATRIX Matrix4 {
+  struct Matrix4 {
     using Column = double[4];
     Column& operator[](size_t i) { return columns[i]; }
     const Column& operator[](size_t i) const { return columns[i]; }
@@ -87,12 +81,10 @@ class PLATFORM_EXPORT TransformationMatrix {
   };
 
   TransformationMatrix() {
-    CheckAlignment();
     MakeIdentity();
   }
   TransformationMatrix(const AffineTransform&);
   TransformationMatrix(const TransformationMatrix& t) {
-    CheckAlignment();
     *this = t;
   }
   TransformationMatrix(double a,
@@ -101,7 +93,6 @@ class PLATFORM_EXPORT TransformationMatrix {
                        double d,
                        double e,
                        double f) {
-    CheckAlignment();
     SetMatrix(a, b, c, d, e, f);
   }
   TransformationMatrix(double m11,
@@ -120,12 +111,10 @@ class PLATFORM_EXPORT TransformationMatrix {
                        double m42,
                        double m43,
                        double m44) {
-    CheckAlignment();
     SetMatrix(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41,
               m42, m43, m44);
   }
   TransformationMatrix(const SkMatrix44& matrix) {
-    CheckAlignment();
     SetMatrix(
         matrix.get(0, 0), matrix.get(1, 0), matrix.get(2, 0), matrix.get(3, 0),
         matrix.get(0, 1), matrix.get(1, 1), matrix.get(2, 1), matrix.get(3, 1),
@@ -506,16 +495,6 @@ class PLATFORM_EXPORT TransformationMatrix {
   }
 
   void SetMatrix(const Matrix4& m) { memcpy(&matrix_, &m, sizeof(Matrix4)); }
-
-  void CheckAlignment() {
-#if defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
-    // m_matrix can cause this class to require higher than usual alignment.
-    // Make sure the allocator handles this.
-    DCHECK_EQ((reinterpret_cast<uintptr_t>(this) &
-               (alignof(TransformationMatrix) - 1)),
-              0UL);
-#endif
-  }
 
   Matrix4 matrix_;
 };

@@ -13,8 +13,8 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics_constants.h"
 #include "chrome/renderer/page_load_metrics/page_timing_sender.h"
+#include "components/page_load_metrics/common/page_load_metrics_constants.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 

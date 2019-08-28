@@ -14,10 +14,11 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
+class ExtensionsMenuItemView;
+
 namespace views {
 class Button;
 class ImageButton;
-class MenuButton;
 }  // namespace views
 
 class ExtensionsMenuButton : public HoverButton,
@@ -25,7 +26,8 @@ class ExtensionsMenuButton : public HoverButton,
                              public ToolbarActionViewDelegateViews {
  public:
   ExtensionsMenuButton(Browser* browser,
-                       std::unique_ptr<ToolbarActionViewController> controller);
+                       ExtensionsMenuItemView* parent,
+                       ToolbarActionViewController* controller);
   ~ExtensionsMenuButton() override;
 
   // Update pin button icon, color, tooltip, and visibility based on pinned
@@ -60,14 +62,9 @@ class ExtensionsMenuButton : public HoverButton,
   Browser* const browser_;
 
   // Responsible for executing the extension's actions.
-  const std::unique_ptr<ToolbarActionViewController> controller_;
-  ToolbarActionsModel* const model_;
+  ToolbarActionViewController* const controller_;
 
-  // TODO(pbos): There's complicated configuration code in place since menus
-  // can't be triggered from ImageButtons. When MenuRunner::RunMenuAt accepts
-  // views::Buttons, turn this into a views::ImageButton and use
-  // image_button_factory.h methods to configure it.
-  views::MenuButton* context_menu_button_ = nullptr;
+  ToolbarActionsModel* const model_;
 
   views::ImageButton* pin_button_ = nullptr;
 

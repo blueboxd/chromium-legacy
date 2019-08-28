@@ -58,18 +58,6 @@ void AssistantState::NotifySettingsEnabled(bool enabled) {
   });
 }
 
-void AssistantState::NotifyContextEnabled(bool enabled) {
-  if (context_enabled_.has_value() && context_enabled_.value() == enabled)
-    return;
-
-  context_enabled_ = enabled;
-  for (auto& observer : observers_)
-    observer.OnAssistantContextEnabled(enabled);
-  remote_observers_.ForAllPtrs([enabled](auto* observer) {
-    observer->OnAssistantContextEnabled(enabled);
-  });
-}
-
 void AssistantState::NotifyHotwordEnabled(bool enabled) {
   if (hotword_enabled_.has_value() && hotword_enabled_.value() == enabled)
     return;

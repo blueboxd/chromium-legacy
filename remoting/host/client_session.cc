@@ -44,13 +44,6 @@ namespace remoting {
 
 using protocol::ActionRequest;
 
-namespace {
-
-// Name of command-line flag to disable use of I444 by default.
-const char kDisableI444SwitchName[] = "disable-i444";
-
-}  // namespace
-
 ClientSession::ClientSession(
     EventHandler* event_handler,
     std::unique_ptr<protocol::ConnectionToClient> connection,
@@ -71,11 +64,7 @@ ClientSession::ClientSession(
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
-      pairing_registry_(pairing_registry),
-      // Note that |lossless_video_color_| defaults to true, but actually only
-      // controls VP9 video stream color quality.
-      lossless_video_color_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kDisableI444SwitchName)) {
+      pairing_registry_(pairing_registry) {
   connection_->session()->AddPlugin(&host_experiment_session_plugin_);
   connection_->SetEventHandler(this);
 

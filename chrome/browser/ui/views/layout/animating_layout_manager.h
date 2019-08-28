@@ -66,6 +66,10 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
                                             bool is_animating) = 0;
   };
 
+  // Call QueueDelayedAction() to queue up an action to be performed when the
+  // current animation ends.
+  using DelayedAction = base::OnceCallback<void()>;
+
   AnimatingLayoutManager();
   ~AnimatingLayoutManager() override;
 
@@ -108,6 +112,16 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
                                  int width) const override;
   void Layout(views::View* host) override;
 
+  // Queues an action to take place after the current animation completes.
+  // Must be called during an animation. If |delayed_action| needs access to
+  // external resources, views, etc. then it must check that those resources are
+  // still available and valid when it is run.
+  void QueueDelayedAction(DelayedAction delayed_action);
+
+  // Identical to QueueDelayedAction() except that if the layout is not
+  // animating the action is run immediately.
+  void RunOrQueueAction(DelayedAction action);
+
   // Returns the animation container being used by the layout manager, creating
   // one if one has not yet been created. Implicitly enables animation on this
   // layout, so you do not need to also call EnableAnimationForTesting().
@@ -145,6 +159,9 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
   // Notifies all observers that the animation state has changed.
   void NotifyIsAnimatingChanged();
 
+  // Runs all delayed actions. See QueueDelayedAction() for more information.
+  void RunDelayedActions();
+
   // Whether or not to animate the bounds of the host view when the preferred
   // size of the layout changes. If false, the size will have to be set
   // explicitly by the host view's owner. Bounds animation is done by changing
@@ -180,6 +197,7 @@ class AnimatingLayoutManager : public views::LayoutManagerBase {
 
   std::unique_ptr<AnimationDelegate> animation_delegate_;
   base::ObserverList<Observer, true> observers_;
+  std::vector<DelayedAction> delayed_actions_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimatingLayoutManager);
 };

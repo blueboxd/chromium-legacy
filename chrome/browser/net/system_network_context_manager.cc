@@ -96,14 +96,14 @@ void GetStubResolverConfig(
 
   std::string doh_mode;
   if (!local_state->FindPreference(prefs::kDnsOverHttpsMode)->IsManaged() &&
-      ShouldDisableDohForManaged())
-    doh_mode = kDnsOverHttpsModeOff;
+      chrome_browser_net::ShouldDisableDohForManaged())
+    doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
   else
     doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
 
-  if (doh_mode == kDnsOverHttpsModeSecure)
+  if (doh_mode == chrome_browser_net::kDnsOverHttpsModeSecure)
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
-  else if (doh_mode == kDnsOverHttpsModeAutomatic)
+  else if (doh_mode == chrome_browser_net::kDnsOverHttpsModeAutomatic)
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
   else
     *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
@@ -116,7 +116,8 @@ void GetStubResolverConfig(
     for (const std::string& server_template :
          SplitString(doh_templates, " ", base::TRIM_WHITESPACE,
                      base::SPLIT_WANT_NONEMPTY)) {
-      if (!IsValidDoHTemplate(server_template, &server_method)) {
+      if (!chrome_browser_net::IsValidDohTemplate(server_template,
+                                                  &server_method)) {
         continue;
       }
 
@@ -379,13 +380,13 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   // features before registering change callbacks for these preferences.
   local_state_->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
                                     base::Value(ShouldEnableAsyncDns()));
-  std::string default_doh_mode = kDnsOverHttpsModeOff;
+  std::string default_doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
   std::string default_doh_templates = "";
   if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
     if (features::kDnsOverHttpsFallbackParam.Get()) {
-      default_doh_mode = kDnsOverHttpsModeAutomatic;
+      default_doh_mode = chrome_browser_net::kDnsOverHttpsModeAutomatic;
     } else {
-      default_doh_mode = kDnsOverHttpsModeSecure;
+      default_doh_mode = chrome_browser_net::kDnsOverHttpsModeSecure;
     }
     default_doh_templates = features::kDnsOverHttpsTemplatesParam.Get();
   }
@@ -404,10 +405,11 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   if (entries.count("dns-over-https@1")) {
     // The user has "Enabled" selected.
     local_state_->SetString(prefs::kDnsOverHttpsMode,
-                            kDnsOverHttpsModeAutomatic);
+                            chrome_browser_net::kDnsOverHttpsModeAutomatic);
   } else if (entries.count("dns-over-https@2")) {
     // The user has "Disabled" selected.
-    local_state_->SetString(prefs::kDnsOverHttpsMode, kDnsOverHttpsModeOff);
+    local_state_->SetString(prefs::kDnsOverHttpsMode,
+                            chrome_browser_net::kDnsOverHttpsModeOff);
   } else {
     // The user has "Default" selected.
     local_state_->ClearPref(prefs::kDnsOverHttpsMode);

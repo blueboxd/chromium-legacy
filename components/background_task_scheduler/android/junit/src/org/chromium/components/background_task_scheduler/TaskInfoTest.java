@@ -6,8 +6,6 @@ package org.chromium.components.background_task_scheduler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
@@ -34,9 +32,19 @@ public class TaskInfoTest {
         BackgroundTaskSchedulerFactory.setBackgroundTaskFactory(new TestBackgroundTaskFactory());
     }
 
-    private void checkGeneralTaskInfoFields(TaskInfo taskInfo, int taskId) {
-        assertEquals(taskId, taskInfo.getTaskId());
-        assertEquals(TestBackgroundTask.class, taskInfo.getBackgroundTaskClass());
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testGeneralFields() {
+        TaskInfo.TimingInfo timingInfo = TaskInfo.OneOffInfo.create()
+                                                 .setWindowEndTimeMs(TEST_END_MS)
+                                                 .setExpiresAfterWindowEndTime(true)
+                                                 .build();
+        TaskInfo oneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
+
+        assertEquals(TaskIds.TEST, oneOffTask.getTaskId());
+        assertEquals(TestBackgroundTask.class,
+                BackgroundTaskSchedulerFactory.getBackgroundTaskFromTaskId(TaskIds.TEST)
+                        .getClass());
     }
 
     @Test
@@ -47,15 +55,8 @@ public class TaskInfoTest {
                                                  .setExpiresAfterWindowEndTime(true)
                                                  .build();
         TaskInfo oneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
-
-        checkGeneralTaskInfoFields(oneOffTask, TaskIds.TEST);
-
-        assertFalse(oneOffTask.getOneOffInfo().hasWindowStartTimeConstraint());
-        assertEquals(TEST_END_MS, oneOffTask.getOneOffInfo().getWindowEndTimeMs());
-        assertTrue(oneOffTask.getOneOffInfo().expiresAfterWindowEndTime());
-
-        assertNotNull(oneOffTask.getOneOffInfo());
-        assertNull(oneOffTask.getPeriodicInfo());
+        CheckTimingInfoVisitor visitor = new CheckTimingInfoVisitor(null, TEST_END_MS, true);
+        oneOffTask.getTimingInfo().accept(visitor);
     }
 
     @Test
@@ -67,11 +68,9 @@ public class TaskInfoTest {
                                                  .setExpiresAfterWindowEndTime(true)
                                                  .build();
         TaskInfo oneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
-
-        assertTrue(oneOffTask.getOneOffInfo().hasWindowStartTimeConstraint());
-        assertEquals(TEST_START_MS, oneOffTask.getOneOffInfo().getWindowStartTimeMs());
-        assertEquals(TEST_END_MS, oneOffTask.getOneOffInfo().getWindowEndTimeMs());
-        assertTrue(oneOffTask.getOneOffInfo().expiresAfterWindowEndTime());
+        CheckTimingInfoVisitor visitor =
+                new CheckTimingInfoVisitor(TEST_START_MS, TEST_END_MS, true);
+        oneOffTask.getTimingInfo().accept(visitor);
     }
 
     @Test
@@ -83,10 +82,8 @@ public class TaskInfoTest {
                                                  .setExpiresAfterWindowEndTime(true)
                                                  .build();
         TaskInfo oneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
-
-        assertEquals(TEST_END_MS, oneOffTask.getOneOffInfo().getWindowStartTimeMs());
-        assertEquals(TEST_END_MS, oneOffTask.getOneOffInfo().getWindowEndTimeMs());
-        assertTrue(oneOffTask.getOneOffInfo().expiresAfterWindowEndTime());
+        CheckTimingInfoVisitor visitor = new CheckTimingInfoVisitor(TEST_END_MS, TEST_END_MS, true);
+        oneOffTask.getTimingInfo().accept(visitor);
     }
 
     @Test
@@ -94,10 +91,8 @@ public class TaskInfoTest {
     public void testOneOffNoParamsSet() {
         TaskInfo.TimingInfo timingInfo = TaskInfo.OneOffInfo.create().build();
         TaskInfo oneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
-
-        assertFalse(oneOffTask.getOneOffInfo().hasWindowStartTimeConstraint());
-        assertEquals(0, oneOffTask.getOneOffInfo().getWindowEndTimeMs());
-        assertFalse(oneOffTask.getOneOffInfo().expiresAfterWindowEndTime());
+        CheckTimingInfoVisitor visitor = new CheckTimingInfoVisitor(null, new Long(0), false);
+        oneOffTask.getTimingInfo().accept(visitor);
     }
 
     @Test
@@ -108,14 +103,8 @@ public class TaskInfoTest {
                                                  .setExpiresAfterWindowEndTime(true)
                                                  .build();
         TaskInfo periodicTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
-
-        checkGeneralTaskInfoFields(periodicTask, TaskIds.TEST);
-
-        assertFalse(periodicTask.getPeriodicInfo().hasFlex());
-        assertEquals(TEST_END_MS, periodicTask.getPeriodicInfo().getIntervalMs());
-        assertTrue(periodicTask.getPeriodicInfo().expiresAfterWindowEndTime());
-
-        assertEquals(null, periodicTask.getOneOffInfo());
+        CheckTimingInfoVisitor visitor = new CheckTimingInfoVisitor(TEST_END_MS, null, true);
+        periodicTask.getTimingInfo().accept(visitor);
     }
 
     @Test
@@ -127,11 +116,9 @@ public class TaskInfoTest {
                                                  .setExpiresAfterWindowEndTime(true)
                                                  .build();
         TaskInfo periodicTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
-
-        assertTrue(periodicTask.getPeriodicInfo().hasFlex());
-        assertEquals(TEST_FLEX_MS, periodicTask.getPeriodicInfo().getFlexMs());
-        assertEquals(TEST_END_MS, periodicTask.getPeriodicInfo().getIntervalMs());
-        assertTrue(periodicTask.getPeriodicInfo().expiresAfterWindowEndTime());
+        CheckTimingInfoVisitor visitor =
+                new CheckTimingInfoVisitor(TEST_END_MS, TEST_FLEX_MS, true);
+        periodicTask.getTimingInfo().accept(visitor);
     }
 
     @Test
@@ -139,9 +126,60 @@ public class TaskInfoTest {
     public void testPeriodicNoParamsSet() {
         TaskInfo.TimingInfo timingInfo = TaskInfo.PeriodicInfo.create().build();
         TaskInfo periodicTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
+        CheckTimingInfoVisitor visitor = new CheckTimingInfoVisitor(new Long(0), null, false);
+        periodicTask.getTimingInfo().accept(visitor);
+    }
 
-        assertFalse(periodicTask.getPeriodicInfo().hasFlex());
-        assertEquals(0, periodicTask.getPeriodicInfo().getIntervalMs());
-        assertFalse(periodicTask.getPeriodicInfo().expiresAfterWindowEndTime());
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testExact() {
+        TaskInfo.TimingInfo timingInfo =
+                TaskInfo.ExactInfo.create().setTriggerAtMs(TEST_END_MS).build();
+        TaskInfo exactOneOffTask = TaskInfo.createTask(TaskIds.TEST, timingInfo).build();
+        CheckTimingInfoVisitor visitor = new CheckTimingInfoVisitor(TEST_END_MS, null, false);
+        exactOneOffTask.getTimingInfo().accept(visitor);
+    }
+
+    private class CheckTimingInfoVisitor implements TaskInfo.TimingInfoVisitor {
+        private final Long mStartOrIntervalOrTriggerMs;
+        private final Long mEndOrFlexMs;
+        private final boolean mExpires;
+
+        CheckTimingInfoVisitor(Long startOrIntervalOrTriggerMs, Long endOrFlexMs, boolean expires) {
+            mStartOrIntervalOrTriggerMs = startOrIntervalOrTriggerMs;
+            mEndOrFlexMs = endOrFlexMs;
+            mExpires = expires;
+        }
+
+        @Override
+        public void visit(TaskInfo.OneOffInfo oneOffInfo) {
+            if (mStartOrIntervalOrTriggerMs == null) {
+                assertFalse(oneOffInfo.hasWindowStartTimeConstraint());
+            } else {
+                assertTrue(oneOffInfo.hasWindowStartTimeConstraint());
+                assertEquals(
+                        mStartOrIntervalOrTriggerMs.longValue(), oneOffInfo.getWindowStartTimeMs());
+            }
+
+            assertEquals(mEndOrFlexMs.longValue(), oneOffInfo.getWindowEndTimeMs());
+            assertEquals(mExpires, oneOffInfo.expiresAfterWindowEndTime());
+        }
+
+        @Override
+        public void visit(TaskInfo.PeriodicInfo periodicInfo) {
+            assertEquals(mStartOrIntervalOrTriggerMs.longValue(), periodicInfo.getIntervalMs());
+
+            if (mEndOrFlexMs == null) {
+                assertFalse(periodicInfo.hasFlex());
+            } else {
+                assertTrue(periodicInfo.hasFlex());
+                assertEquals(mEndOrFlexMs.longValue(), periodicInfo.getFlexMs());
+            }
+        }
+
+        @Override
+        public void visit(TaskInfo.ExactInfo exactInfo) {
+            assertEquals(mStartOrIntervalOrTriggerMs.longValue(), exactInfo.getTriggerAtMs());
+        }
     }
 }

@@ -331,8 +331,6 @@ crbug.com/591099 external/wpt/css/css-flexbox/flexbox_align-items-stretch-3.html
 crbug.com/591099 external/wpt/css/css-flexbox/percentage-heights-006.html [ Failure ]
 
 # These would need a rebaseline back from LayoutNGBlockFlow to LayoutBlockFlow
-crbug.com/591099 compositing/overflow/scroll-parent-absolute-with-backdrop-filter.html [ Failure ]
-crbug.com/591099 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroll-parent-absolute-with-backdrop-filter.html [ Failure ]
 crbug.com/864567 paint/float/float-under-inline-self-painting-change.html [ Failure ]
 crbug.com/864567 paint/invalidation/compositing/iframe-inside-squashed-layer.html [ Failure ]
 crbug.com/864567 paint/invalidation/compositing/updating-scrolling-container.html [ Failure ]

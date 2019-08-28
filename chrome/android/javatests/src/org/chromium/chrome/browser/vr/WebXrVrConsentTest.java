@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_M
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -97,6 +98,9 @@ public class WebXrVrConsentTest {
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrVrConsentTestFramework.endSessionOrFail();
 
+        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
+        SystemClock.sleep(1000);
+
         mWebXrVrConsentTestFramework.setConsentDialogExpected(false);
 
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
@@ -139,6 +143,9 @@ public class WebXrVrConsentTest {
                 "setupImmersiveSessionToRequestHeight()", POLL_TIMEOUT_SHORT_MS);
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrVrConsentTestFramework.endSessionOrFail();
+
+        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
+        SystemClock.sleep(1000);
 
         // Now set up to request the lower level of consent. The session should be entered without
         // the consent prompt.

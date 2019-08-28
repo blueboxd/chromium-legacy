@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.IntentHandler;
@@ -247,12 +246,9 @@ public class NoTouchActivity extends SingleTabActivity {
     private void saveTabState(Bundle outState) {
         Tab tab = getActivityTab();
         if (tab == null || tab.getUrl() == null || tab.getUrl().isEmpty()) return;
-        long time = SystemClock.elapsedRealtime();
         if (TabState.saveState(outState, TabState.from(tab))) {
             outState.putInt(BUNDLE_TAB_ID, tab.getId());
         }
-        RecordHistogram.recordTimesHistogram("Android.StrictMode.NoTouchActivitySaveState",
-                SystemClock.elapsedRealtime() - time);
     }
 
     @Override

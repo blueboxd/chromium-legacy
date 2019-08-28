@@ -19,6 +19,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
 import java.util.List;
+
 /**
  * An implementation of {@link BackgroundTaskSchedulerDelegate} that uses the system
  * {@link JobScheduler} to schedule jobs.
@@ -182,6 +183,12 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
                 return;
             }
             mBuilder.setPeriodic(periodicInfo.getIntervalMs());
+        }
+
+        @Override
+        public void visit(TaskInfo.ExactInfo exactInfo) {
+            throw new RuntimeException("Exact tasks should not be scheduled with "
+                    + "JobScheduler.");
         }
     }
 

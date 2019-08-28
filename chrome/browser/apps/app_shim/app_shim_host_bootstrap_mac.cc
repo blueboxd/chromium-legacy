@@ -4,32 +4,11 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 
-#include <sys/socket.h>
-#include <sys/un.h>
-
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-
-// static
-void AppShimHostBootstrap::CreateForChannel(
-    mojo::PlatformChannelEndpoint endpoint) {
-  // AppShimHostBootstrap is initially owned by itself until it receives a
-  // LaunchApp message or a channel error. In LaunchApp, ownership is
-  // transferred to a unique_ptr.
-  DCHECK(endpoint.platform_handle().is_fd());
-
-  base::ProcessId pid;
-  socklen_t pid_size = sizeof(pid);
-  if (getsockopt(endpoint.platform_handle().GetFD().get(), SOL_LOCAL,
-                 LOCAL_PEERPID, &pid, &pid_size)) {
-    LOG(ERROR) << "Failed to get peer pid for app shim.";
-    return;
-  }
-  (new AppShimHostBootstrap(pid))->ServeChannel(std::move(endpoint));
-}
 
 // static
 void AppShimHostBootstrap::CreateForChannelAndPeerID(
@@ -112,7 +91,7 @@ void AppShimHostBootstrap::LaunchApp(
   apps::AppShimHandler* handler = GetHandler();
   if (handler)
     handler->OnShimProcessConnected(std::move(deleter));
-  // |handler| can only be NULL after AppShimHostManager is destroyed. Since
+  // |handler| can only be nullptr after AppShimListener is destroyed. Since
   // this only happens at shutdown, do nothing here.
 }
 

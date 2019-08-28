@@ -16,7 +16,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "weblayer/weblayer_jni/BrowserController_jni.h"
+#include "weblayer/browser/java/jni/BrowserControllerImpl_jni.h"
 #endif
 
 namespace weblayer {
@@ -61,9 +61,17 @@ void BrowserControllerImpl::AttachToView(views::WebView* web_view) {
 #endif
 
 #if defined(OS_ANDROID)
-static jlong JNI_BrowserController_Init(JNIEnv* env, jlong profile) {
+static jlong JNI_BrowserControllerImpl_CreateBrowserController(JNIEnv* env,
+                                                               jlong profile) {
+  // TODO: figure out size.
   return reinterpret_cast<intptr_t>(new BrowserControllerImpl(
       reinterpret_cast<ProfileImpl*>(profile), gfx::Size()));
+}
+
+static void JNI_BrowserControllerImpl_DeleteBrowserController(
+    JNIEnv* env,
+    jlong browser_controller) {
+  delete reinterpret_cast<BrowserControllerImpl*>(browser_controller);
 }
 
 base::android::ScopedJavaLocalRef<jobject>

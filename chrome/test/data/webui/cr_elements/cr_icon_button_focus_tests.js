@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+//
+// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 suite('cr-icon-button-focus-tests', function() {
   let button;
 

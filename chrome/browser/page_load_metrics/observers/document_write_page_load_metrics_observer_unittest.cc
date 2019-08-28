@@ -8,8 +8,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 

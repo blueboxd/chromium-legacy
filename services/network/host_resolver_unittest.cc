@@ -1168,8 +1168,9 @@ TEST_F(HostResolverTest, TextResults) {
           "example.com", {std::vector<std::string>(std::begin(kTextRecords),
                                                    std::end(kTextRecords))})),
       false /* delay */);
-  auto dns_client =
-      std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
+  auto dns_client = std::make_unique<net::MockDnsClient>(CreateValidDnsConfig(),
+                                                         std::move(rules));
+  dns_client->set_ignore_system_config_changes(true);
 
   net::NetLog net_log;
   std::unique_ptr<net::ContextHostResolver> inner_resolver =
@@ -1177,7 +1178,6 @@ TEST_F(HostResolverTest, TextResults) {
   inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(dns_client));
   inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
-  inner_resolver->SetBaseDnsConfigForTesting(CreateValidDnsConfig());
 
   HostResolver resolver(inner_resolver.get(), &net_log);
 
@@ -1208,8 +1208,9 @@ TEST_F(HostResolverTest, HostResults) {
       net::MockDnsClientRule::Result(net::BuildTestDnsPointerResponse(
           "example.com", {"google.com", "chromium.org"})),
       false /* delay */);
-  auto dns_client =
-      std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
+  auto dns_client = std::make_unique<net::MockDnsClient>(CreateValidDnsConfig(),
+                                                         std::move(rules));
+  dns_client->set_ignore_system_config_changes(true);
 
   net::NetLog net_log;
   std::unique_ptr<net::ContextHostResolver> inner_resolver =
@@ -1217,7 +1218,6 @@ TEST_F(HostResolverTest, HostResults) {
   inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(dns_client));
   inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
-  inner_resolver->SetBaseDnsConfigForTesting(CreateValidDnsConfig());
 
   HostResolver resolver(inner_resolver.get(), &net_log);
 

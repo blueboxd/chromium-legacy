@@ -45,6 +45,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
       buffer_(buffer),
       num_children_(builder->children_.size()) {
   has_floating_descendants_ = builder->has_floating_descendants_;
+  has_adjoining_object_descendants_ =
+      builder->has_adjoining_object_descendants_;
   has_orthogonal_flow_roots_ = builder->has_orthogonal_flow_roots_;
   may_have_descendant_above_block_start_ =
       builder->may_have_descendant_above_block_start_;

@@ -556,7 +556,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
                 ->GetStickyConstraintsMap()
                 .at(layer);
         auto constraint = std::make_unique<CompositorStickyConstraint>();
-        constraint->is_sticky = true;
         constraint->is_anchored_left = layout_constraint.is_anchored_left;
         constraint->is_anchored_right = layout_constraint.is_anchored_right;
         constraint->is_anchored_top = layout_constraint.is_anchored_top;

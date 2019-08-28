@@ -20,11 +20,13 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
   performance_manager_ = performance_manager::PerformanceManager::Create();
   browser_child_process_watcher_ =
       std::make_unique<performance_manager::BrowserChildProcessWatcher>();
+  browser_child_process_watcher_->Initialize();
 }
 
 void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
   // Release all graph nodes before destroying the performance manager.
   // First release the browser and GPU process nodes.
+  browser_child_process_watcher_->TearDown();
   browser_child_process_watcher_.reset();
 
   // There may still be WebContents with attached tab helpers at this point in

@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -102,11 +103,17 @@ public class AwBrowserContext {
     }
 
     private void migrateGeolocationPreferences() {
-        final String oldGlobalPrefsName = "WebViewChromiumPrefs";
-        SharedPreferences oldGlobalPrefs =
-                ContextUtils.getApplicationContext().getSharedPreferences(
-                        oldGlobalPrefsName, Context.MODE_PRIVATE);
-        AwGeolocationPermissions.migrateGeolocationPreferences(oldGlobalPrefs, mSharedPreferences);
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            // Prefs dir will be created if it doesn't exist, so must allow writes
+            // for this and so that the actual prefs can be written to the new
+            // location if needed.
+            final String oldGlobalPrefsName = "WebViewChromiumPrefs";
+            SharedPreferences oldGlobalPrefs =
+                    ContextUtils.getApplicationContext().getSharedPreferences(
+                            oldGlobalPrefsName, Context.MODE_PRIVATE);
+            AwGeolocationPermissions.migrateGeolocationPreferences(
+                    oldGlobalPrefs, mSharedPreferences);
+        }
     }
 
     /**
@@ -141,9 +148,12 @@ public class AwBrowserContext {
 
     @CalledByNative
     public static AwBrowserContext create(long nativeAwBrowserContext, boolean isDefault) {
-        SharedPreferences sharedPreferences =
-                ContextUtils.getApplicationContext().getSharedPreferences(
-                        CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences;
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            // Prefs dir will be created if it doesn't exist, so must allow writes.
+            sharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
+                    CHROMIUM_PREFS_NAME, Context.MODE_PRIVATE);
+        }
 
         return new AwBrowserContext(sharedPreferences, nativeAwBrowserContext, isDefault);
     }

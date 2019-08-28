@@ -14,12 +14,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -130,6 +133,22 @@ bool CheckCertificateChainAgainstWhitelist(
   }
 
   return false;
+}
+
+void MaybeReportDownloadDeepScanningVerdict(
+    Profile* profile,
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    BinaryUploadService::Result result,
+    DeepScanningClientResponse response) {
+  if (response.malware_scan_verdict().verdict() ==
+          MalwareDeepScanningVerdict::UWS ||
+      response.malware_scan_verdict().verdict() ==
+          MalwareDeepScanningVerdict::MALWARE) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnDangerousDeepScanningResult(url, file_name, download_digest_sha256);
+  }
 }
 
 }  // namespace
@@ -317,26 +336,30 @@ void CheckClientDownloadRequest::OnURLLoaderComplete(
   }
 
   if (ShouldUploadBinary(result)) {
-    auto request =
-        std::make_unique<DownloadItemRequest>(item_, base::DoNothing());
-
-    DlpDeepScanningClientRequest dlp_request;
-    dlp_request.set_content_source(DlpDeepScanningClientRequest::FILE_DOWNLOAD);
-    request->set_request_dlp_scan(std::move(dlp_request));
-
-    MalwareDeepScanningClientRequest malware_request;
-    malware_request.set_population(
-        MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
-    malware_request.set_download_token(token);
-    request->set_request_malware_scan(std::move(malware_request));
-
-    request->set_dm_token(
-        policy::BrowserDMTokenStorage::Get()->RetrieveDMToken());
-
     content::BrowserContext* browser_context =
         content::DownloadItemUtils::GetBrowserContext(item_);
     if (browser_context) {
       Profile* profile = Profile::FromBrowserContext(browser_context);
+      auto request = std::make_unique<DownloadItemRequest>(
+          item_, base::BindOnce(&MaybeReportDownloadDeepScanningVerdict,
+                                profile, url_chain_.back(),
+                                item_->GetTargetFilePath().AsUTF8Unsafe(),
+                                item_->GetHash()));
+
+      DlpDeepScanningClientRequest dlp_request;
+      dlp_request.set_content_source(
+          DlpDeepScanningClientRequest::FILE_DOWNLOAD);
+      request->set_request_dlp_scan(std::move(dlp_request));
+
+      MalwareDeepScanningClientRequest malware_request;
+      malware_request.set_population(
+          MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
+      malware_request.set_download_token(token);
+      request->set_request_malware_scan(std::move(malware_request));
+
+      request->set_dm_token(
+          policy::BrowserDMTokenStorage::Get()->RetrieveDMToken());
+
       service_->UploadForDeepScanning(profile, std::move(request));
     }
   }

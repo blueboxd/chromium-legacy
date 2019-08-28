@@ -55,14 +55,19 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern(page_pattern);
+    page_hint->set_max_ect_trigger(
+        optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_2G);
 
     optimization_guide::proto::Optimization* optimization =
         page_hint->add_whitelisted_optimizations();
     optimization->set_optimization_type(optimization_type);
+    optimization->mutable_previews_metadata()->set_max_ect_trigger(
+        optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_2G);
 
     for (auto resource_blocking_pattern : resource_blocking_patterns) {
       optimization_guide::proto::ResourceLoadingHint* resource_loading_hint =
-          optimization->add_resource_loading_hints();
+          optimization->mutable_previews_metadata()
+              ->add_resource_loading_hints();
       resource_loading_hint->set_loading_optimization_type(
           optimization_guide::proto::LOADING_BLOCK_RESOURCE);
       resource_loading_hint->set_resource_pattern(resource_blocking_pattern);
@@ -100,15 +105,20 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithExperimentalPageHints(
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern("*");
+    page_hint->set_max_ect_trigger(
+        optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_2G);
 
     optimization_guide::proto::Optimization* optimization =
         page_hint->add_whitelisted_optimizations();
     optimization->set_optimization_type(optimization_type);
     optimization->set_experiment_name(kFooExperimentName);
+    optimization->mutable_previews_metadata()->set_max_ect_trigger(
+        optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_2G);
 
     for (auto resource_blocking_pattern : experimental_resource_patterns) {
       optimization_guide::proto::ResourceLoadingHint* resource_loading_hint =
-          optimization->add_resource_loading_hints();
+          optimization->mutable_previews_metadata()
+              ->add_resource_loading_hints();
       resource_loading_hint->set_loading_optimization_type(
           optimization_guide::proto::LOADING_BLOCK_RESOURCE);
       resource_loading_hint->set_resource_pattern(resource_blocking_pattern);
@@ -146,6 +156,8 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern("*");
+    page_hint->set_max_ect_trigger(
+        optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_2G);
 
     // Add experimental patterns first so they get higher priority.
     {
@@ -153,10 +165,13 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
           page_hint->add_whitelisted_optimizations();
       optimization->set_optimization_type(optimization_type);
       optimization->set_experiment_name(kFooExperimentName);
+      optimization->mutable_previews_metadata()->set_max_ect_trigger(
+          optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_2G);
 
       for (auto resource_blocking_pattern : experimental_resource_patterns) {
         optimization_guide::proto::ResourceLoadingHint* resource_loading_hint =
-            optimization->add_resource_loading_hints();
+            optimization->mutable_previews_metadata()
+                ->add_resource_loading_hints();
         resource_loading_hint->set_loading_optimization_type(
             optimization_guide::proto::LOADING_BLOCK_RESOURCE);
         resource_loading_hint->set_resource_pattern(resource_blocking_pattern);
@@ -167,10 +182,13 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
       optimization_guide::proto::Optimization* optimization =
           page_hint->add_whitelisted_optimizations();
       optimization->set_optimization_type(optimization_type);
+      optimization->mutable_previews_metadata()->set_max_ect_trigger(
+          optimization_guide::proto::EFFECTIVE_CONNECTION_TYPE_2G);
 
       for (auto resource_blocking_pattern : default_resource_patterns) {
         optimization_guide::proto::ResourceLoadingHint* resource_loading_hint =
-            optimization->add_resource_loading_hints();
+            optimization->mutable_previews_metadata()
+                ->add_resource_loading_hints();
         resource_loading_hint->set_loading_optimization_type(
             optimization_guide::proto::LOADING_BLOCK_RESOURCE);
         resource_loading_hint->set_resource_pattern(resource_blocking_pattern);

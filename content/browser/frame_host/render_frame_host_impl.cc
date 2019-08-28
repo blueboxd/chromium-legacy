@@ -498,21 +498,6 @@ void GetRestrictedCookieManager(
       std::move(receiver));
 }
 
-// TODO(https://crbug.com/955171): Remove this method and use
-// GetRestrictedCookieManager once RenderFrameHostImpl uses
-// service_manager::BinderMap instead of service_manager::BinderRegistry.
-void GetRestrictedCookieManagerForRequest(
-    RenderFrameHostImpl* frame_host,
-    int process_id,
-    int frame_id,
-    StoragePartition* storage_partition,
-    network::mojom::RestrictedCookieManagerRequest request) {
-  // Implicit conversion from |request| to
-  // mojo::PendingReceiver<network::mojom::RestrictedCookieManager>.
-  GetRestrictedCookieManager(frame_host, process_id, frame_id,
-                             storage_partition, std::move(request));
-}
-
 // TODO(crbug.com/977040): Remove when no longer needed.
 const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
 
@@ -4221,7 +4206,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   // The default (no-op) implementation of InstalledAppProvider. On Android, the
   // real implementation is provided in Java.
   registry_->AddInterface(
-      base::Bind(&InstalledAppProviderImplDefault::CreateForRequest));
+      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
 #endif  // !defined(OS_ANDROID)
 
   PermissionControllerImpl* permission_controller =
@@ -4252,12 +4237,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   if (!permission_service_context_)
     permission_service_context_.reset(new PermissionServiceContext(this));
 
-  registry_->AddInterface(base::BindRepeating(
-      [](PermissionServiceContext* context,
-         blink::mojom::PermissionServiceRequest request) {
-        context->CreateService(std::move(request));
-      },
-      base::Unretained(permission_service_context_.get())));
+  registry_->AddInterface(
+      base::BindRepeating(&PermissionServiceContext::CreateService,
+                          base::Unretained(permission_service_context_.get())));
 
   registry_->AddInterface(base::BindRepeating(
       [](RenderFrameHostImpl* frame,
@@ -4276,25 +4258,22 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
       base::Unretained(this)));
 
-  registry_->AddInterface(
-      base::BindRepeating(&RenderFrameHostImpl::CreateWebUsbServiceForRequest,
-                          base::Unretained(this)));
+  registry_->AddInterface(base::BindRepeating(
+      &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(this)));
 
   registry_->AddInterface<media::mojom::InterfaceFactory>(
       base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
                  base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::CreateWebSocketConnectorForRequest,
-      base::Unretained(this)));
+      &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateDedicatedWorkerHostFactory,
       base::Unretained(this)));
 
-  registry_->AddInterface(
-      base::BindRepeating(&SharedWorkerConnectorImpl::CreateForRequest,
-                          process_->GetID(), routing_id_));
+  registry_->AddInterface(base::BindRepeating(
+      &SharedWorkerConnectorImpl::Create, process_->GetID(), routing_id_));
 
   registry_->AddInterface(base::BindRepeating(&device::GamepadMonitor::Create));
 
@@ -4386,7 +4365,20 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           },
           // Same as above.
           base::Unretained(this)),
-      std::move(save_stats_cb)));
+      std::move(save_stats_cb),
+      base::BindRepeating(
+          [](base::WeakPtr<RenderFrameHostImpl> frame)
+              -> media::learning::LearningSession* {
+            if (!base::FeatureList::IsEnabled(media::kMediaLearningFramework) ||
+                !frame) {
+              return nullptr;
+            }
+
+            return frame->GetProcess()
+                ->GetBrowserContext()
+                ->GetLearningSession();
+          },
+          weak_ptr_factory_.GetWeakPtr())));
 
   if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     registry_->AddInterface(
@@ -4407,17 +4399,17 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
 
-  registry_->AddInterface(base::BindRepeating(
-      &ContactsManagerImpl::CreateForRequest, base::Unretained(this)));
+  registry_->AddInterface(base::BindRepeating(&ContactsManagerImpl::Create,
+                                              base::Unretained(this)));
 
   registry_->AddInterface(
       base::BindRepeating(&FileChooserImpl::Create, base::Unretained(this)));
 
-  registry_->AddInterface(base::BindRepeating(
-      &WakeLockServiceImpl::CreateForRequest, base::Unretained(this)));
+  registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
+                                              base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
-      &PictureInPictureServiceImpl::CreateFromRequest, base::Unretained(this)));
+      &PictureInPictureServiceImpl::Create, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     registry_->AddInterface(base::BindRepeating(
@@ -4435,7 +4427,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   registry_->AddInterface(base::BindRepeating(
-      &GetRestrictedCookieManagerForRequest, base::Unretained(this),
+      &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
 
   if (base::FeatureList::IsEnabled(features::kSmsReceiver) &&
@@ -6131,13 +6123,6 @@ void RenderFrameHostImpl::DeleteWebBluetoothService(
   web_bluetooth_services_.erase(it);
 }
 
-void RenderFrameHostImpl::CreateWebUsbServiceForRequest(
-    blink::mojom::WebUsbServiceRequest request) {
-  // Implicit conversion from WebUsbServiceRequest to
-  // mojo::PendingReceiver<blink::mojom::WebUsbService>.
-  CreateWebUsbService(std::move(request));
-}
-
 void RenderFrameHostImpl::CreateWebUsbService(
     mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
   GetContentClient()->browser()->CreateWebUsbService(this, std::move(receiver));
@@ -6208,13 +6193,6 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
       this, std::move(request),
       base::Bind(&RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
                  base::Unretained(this))));
-}
-
-void RenderFrameHostImpl::CreateWebSocketConnectorForRequest(
-    blink::mojom::WebSocketConnectorRequest request) {
-  // Implicit conversion from WebSocketConnectorRequest to
-  // mojo::PendingReceiver<blink::mojom::WebSocketConnector>.
-  CreateWebSocketConnector(std::move(request));
 }
 
 void RenderFrameHostImpl::CreateWebSocketConnector(

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/notifications/scheduler/public/icon_bundle.h"
 
+#include <utility>
+
 namespace notifications {
 
 IconBundle::IconBundle() = default;
+IconBundle::IconBundle(SkBitmap skbitmap) : bitmap(std::move(skbitmap)) {}
 IconBundle::~IconBundle() = default;
 
 }  // namespace notifications

@@ -2138,7 +2138,12 @@ void RenderThreadImpl::UpdateScrollbarTheme(
     mojom::UpdateScrollbarThemeParamsPtr params) {
 #if defined(OS_MACOSX)
   blink::WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
-      params->initial_button_delay, params->autoscroll_button_delay,
+      params->has_initial_button_delay
+          ? base::make_optional(params->initial_button_delay)
+          : base::nullopt,
+      params->has_autoscroll_button_delay
+          ? base::make_optional(params->autoscroll_button_delay)
+          : base::nullopt,
       params->preferred_scroller_style, params->redraw,
       params->jump_on_track_click);
 

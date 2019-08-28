@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/browser_resources.h"
@@ -70,38 +71,23 @@ std::string LoadLocalHtmlAsString(const std::string& site_id,
 }  // namespace
 
 // static
-void HatsWebDialog::Show(const Browser* browser, const std::string& site_id) {
+void HatsWebDialog::Create(Browser* browser, const std::string& site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(browser);
 
-  Profile* profile = browser->profile();
-
   // Self deleting upon close.
-  auto* hats_dialog = new HatsWebDialog(profile, site_id);
-
-  // Create a web dialog aligned to the bottom center of the location bar.
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  LocationBarView* location_bar = browser_view->GetLocationBarView();
-  DCHECK(location_bar);
-  gfx::Rect bounds(location_bar->bounds());
-  views::View::ConvertRectToScreen(browser_view->toolbar(), &bounds);
-  bounds = gfx::Rect(
-      bounds.x() +
-          std::max(0, bounds.width() / 2 - kDefaultHatsDialogWidth / 2),
-      bounds.bottom() - views::BubbleBorder::GetBorderAndShadowInsets().top(),
-      kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
-  chrome::ShowWebDialogWithBounds(browser_view->GetWidget()->GetNativeView(),
-                                  hats_dialog->off_the_record_profile(),
-                                  hats_dialog, bounds);
+  auto* hats_dialog = new HatsWebDialog(browser, site_id);
+  hats_dialog->CreateWebDialog(browser);
 }
 
-HatsWebDialog::HatsWebDialog(Profile* profile, const std::string& site_id)
+HatsWebDialog::HatsWebDialog(Browser* browser, const std::string& site_id)
     : otr_profile_registration_(
           IndependentOTRProfileManager::GetInstance()
               ->CreateFromOriginalProfile(
-                  profile,
+                  browser->profile(),
                   base::BindOnce(&HatsWebDialog::OnOriginalProfileDestroyed,
                                  base::Unretained(this)))),
+      browser_(browser),
       site_id_(site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(
@@ -165,8 +151,70 @@ bool HatsWebDialog::HandleContextMenu(
   return true;
 }
 
+void HatsWebDialog::OnWebContentsFinishedLoad() {
+  // If this happens after the time out, the dialog is to be deleted. We
+  // should not handle this any more.
+  if (!loading_timer_.IsRunning())
+    return;
+  loading_timer_.Stop();
+
+  HatsBubbleView::Show(
+      browser_, base::BindOnce(&HatsWebDialog::Show, weak_factory_.GetWeakPtr(),
+                               preloading_widget_));
+}
+
+void HatsWebDialog::OnLoadTimedOut() {
+  // Once loading is timed out, it means there is some problem such as network
+  // error, unresponsive server etc. No need to wait any longer. Delete the
+  // dialog.
+  preloading_widget_->Close();
+}
+
+const base::TimeDelta HatsWebDialog::ContentLoadingTimeout() const {
+  // Time out for loading the survey content in the dialog.
+  static const base::TimeDelta kLoadingTimeOut =
+      base::TimeDelta::FromSeconds(10);
+
+  return kLoadingTimeOut;
+}
+
+void HatsWebDialog::CreateWebDialog(Browser* browser) {
+  // Create a web dialog aligned to the bottom center of the location bar.
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  LocationBarView* location_bar = browser_view->GetLocationBarView();
+  DCHECK(location_bar);
+  gfx::Rect bounds(location_bar->bounds());
+  views::View::ConvertRectToScreen(browser_view->toolbar(), &bounds);
+  bounds = gfx::Rect(
+      bounds.x() +
+          std::max(0, bounds.width() / 2 - kDefaultHatsDialogWidth / 2),
+      bounds.bottom() - views::BubbleBorder::GetBorderAndShadowInsets().top(),
+      kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
+  gfx::NativeWindow native_window = chrome::CreateWebDialogWithBounds(
+      browser_view->GetWidget()->GetNativeView(), off_the_record_profile(),
+      this, bounds,
+      /*show=*/false);
+  preloading_widget_ = views::Widget::GetWidgetForNativeWindow(native_window);
+
+  // Start the loading timer once it is created.
+  loading_timer_.Start(FROM_HERE, ContentLoadingTimeout(),
+                       base::BindOnce(&HatsWebDialog::OnLoadTimedOut,
+                                      weak_factory_.GetWeakPtr()));
+}
+
 void HatsWebDialog::OnOriginalProfileDestroyed(Profile* profile) {
   if (otr_profile_registration_ &&
       profile == otr_profile_registration_->profile())
     otr_profile_registration_.reset();
+}
+
+void HatsWebDialog::Show(views::Widget* widget, bool accept) {
+  if (accept) {
+    if (widget)
+      widget->Show();
+    return;
+  }
+
+  // Delete this dialog.
+  widget->Close();
 }

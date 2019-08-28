@@ -372,8 +372,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   bool RequiresVerticalScrollbarLayer() const;
   bool RequiresScrollCornerLayer() const;
   bool UpdateScrollingLayers(bool scrolling_layers);
-  void UpdateScrollParent(const PaintLayer*);
-  void UpdateClipParent(const PaintLayer* scroll_parent);
   bool UpdateSquashingLayers(bool needs_squashing_layers);
   void UpdateDrawsContentAndPaintsHitTest();
   void UpdateChildrenTransform();
@@ -434,7 +432,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const Vector<GraphicsLayerPaintInfo>& layers,
       GraphicsLayerPaintInfo&);
 
-  const PaintLayer* ScrollParent() const;
   const PaintLayer* CompositedClipParent() const;
   void UpdateClipInheritanceAncestor(const PaintLayer* compositing_container);
 

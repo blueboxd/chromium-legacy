@@ -52,9 +52,10 @@ bool CookieJar::CookiesEnabled() {
 }
 
 void CookieJar::RequestRestrictedCookieManagerIfNeeded() {
-  if (!backend_.is_bound() || backend_.encountered_error()) {
+  if (!backend_.is_bound() || !backend_.is_connected()) {
+    backend_.reset();
     document_->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&backend_));
+        backend_.BindNewPipeAndPassReceiver());
   }
 }
 

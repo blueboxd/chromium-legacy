@@ -102,40 +102,64 @@ TEST_F(OmniboxViewTest, TestStripSchemasUnsafeForPaste) {
 }
 
 TEST_F(OmniboxViewTest, SanitizeTextForPaste) {
-  // Broken URL has newlines stripped.
-  const base::string16 kWrappedURL(ASCIIToUTF16(
-      "http://www.chromium.org/developers/testing/chromium-\n"
-      "build-infrastructure/tour-of-the-chromium-buildbot"));
+  const struct {
+    base::string16 input;
+    base::string16 output;
+  } kTestcases[] = {
+      // No whitespace: leave unchanged.
+      {base::string16(), base::string16()},
+      {ASCIIToUTF16("a"), ASCIIToUTF16("a")},
+      {ASCIIToUTF16("abc"), ASCIIToUTF16("abc")},
 
-  const base::string16 kFixedURL(ASCIIToUTF16(
-      "http://www.chromium.org/developers/testing/chromium-"
-      "build-infrastructure/tour-of-the-chromium-buildbot"));
-  EXPECT_EQ(kFixedURL, OmniboxView::SanitizeTextForPaste(kWrappedURL));
+      // Leading/trailing whitespace: remove.
+      {ASCIIToUTF16(" abc"), ASCIIToUTF16("abc")},
+      {ASCIIToUTF16("  \n  abc"), ASCIIToUTF16("abc")},
+      {ASCIIToUTF16("abc "), ASCIIToUTF16("abc")},
+      {ASCIIToUTF16("abc\t \t"), ASCIIToUTF16("abc")},
+      {ASCIIToUTF16("\nabc\n"), ASCIIToUTF16("abc")},
 
-  // Multi-line address is converted to a single-line address.
-  const base::string16 kWrappedAddress(ASCIIToUTF16(
-      "1600 Amphitheatre Parkway\nMountain View, CA"));
+      // All whitespace: Convert to single space.
+      {ASCIIToUTF16(" "), ASCIIToUTF16(" ")},
+      {ASCIIToUTF16("\n"), ASCIIToUTF16(" ")},
+      {ASCIIToUTF16("   "), ASCIIToUTF16(" ")},
+      {ASCIIToUTF16("\n\n\n"), ASCIIToUTF16(" ")},
+      {ASCIIToUTF16(" \n\t"), ASCIIToUTF16(" ")},
 
-  const base::string16 kFixedAddress(ASCIIToUTF16(
-      "1600 Amphitheatre Parkway Mountain View, CA"));
-  EXPECT_EQ(kFixedAddress, OmniboxView::SanitizeTextForPaste(kWrappedAddress));
+      // Broken URL has newlines stripped.
+      {ASCIIToUTF16("http://www.chromium.org/developers/testing/chromium-\n"
+                    "build-infrastructure/tour-of-the-chromium-buildbot"),
+       ASCIIToUTF16("http://www.chromium.org/developers/testing/chromium-"
+                    "build-infrastructure/tour-of-the-chromium-buildbot")},
 
-  // Line-breaking the JavaScript scheme with no other whitespace results in a
-  // dangerous URL that is sanitized by dropping the scheme.
-  const base::string16 kDangerousJavaScriptUrl(
-      ASCIIToUTF16("java\x0d\x0ascript:alert(0)"));
-  const base::string16 kFixedDangerousJavaScriptUrl(ASCIIToUTF16("alert(0)"));
-  EXPECT_EQ(kFixedDangerousJavaScriptUrl,
-            OmniboxView::SanitizeTextForPaste(kDangerousJavaScriptUrl));
+      // Multi-line address is converted to a single-line address.
+      {ASCIIToUTF16("1600 Amphitheatre Parkway\nMountain View, CA"),
+       ASCIIToUTF16("1600 Amphitheatre Parkway Mountain View, CA")},
 
-  // Line-breaking the JavaScript scheme with whitespace elsewhere in the string
-  // results in a safe string with a space replacing the line break.
-  const base::string16 kSafeJavaScriptUrl(
-      ASCIIToUTF16("java\x0d\x0ascript: alert(0)"));
-  const base::string16 kFixedSafeJavaScriptUrl(
-      ASCIIToUTF16("java script: alert(0)"));
-  EXPECT_EQ(kFixedSafeJavaScriptUrl,
-            OmniboxView::SanitizeTextForPaste(kSafeJavaScriptUrl));
+      // Line-breaking the JavaScript scheme with no other whitespace results in
+      // a
+      // dangerous URL that is sanitized by dropping the scheme.
+      {ASCIIToUTF16("java\x0d\x0ascript:alert(0)"), ASCIIToUTF16("alert(0)")},
+
+      // Line-breaking the JavaScript scheme with whitespace elsewhere in the
+      // string results in a safe string with a space replacing the line break.
+      {ASCIIToUTF16("java\x0d\x0ascript: alert(0)"),
+       ASCIIToUTF16("java script: alert(0)")},
+
+      // Unusual URL with multiple internal spaces is preserved as-is.
+      {ASCIIToUTF16("http://foo.com/a.  b"),
+       ASCIIToUTF16("http://foo.com/a.  b")},
+
+      // URL with unicode whitespace is also preserved as-is.
+      {base::WideToUTF16(L"http://foo.com/a\x3000"
+                         "b"),
+       base::WideToUTF16(L"http://foo.com/a\x3000"
+                         "b")},
+  };
+
+  for (const auto& testcase : kTestcases) {
+    EXPECT_EQ(testcase.output,
+              OmniboxView::SanitizeTextForPaste(testcase.input));
+  }
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

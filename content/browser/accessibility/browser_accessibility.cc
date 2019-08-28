@@ -1851,6 +1851,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
   const ui::AXNodeData& data = GetData();
 
   switch (data.role) {
+    case ax::mojom::Role::kArticle:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_ARTICLE);
+
     case ax::mojom::Role::kAudio:
       return content_client->GetLocalizedString(IDS_AX_ROLE_AUDIO);
 
@@ -1876,6 +1879,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
 
     case ax::mojom::Role::kDetails:
       return content_client->GetLocalizedString(IDS_AX_ROLE_DETAILS);
+
+    case ax::mojom::Role::kFigure:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_FIGURE);
 
     case ax::mojom::Role::kMeter:
       return content_client->GetLocalizedString(IDS_AX_ROLE_METER);

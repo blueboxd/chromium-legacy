@@ -35,7 +35,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/web_float_size.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -207,8 +206,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetInsidePortal(bool inside_portal) override;
   void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
   void SetTextAutosizePageInfo(const WebTextAutosizerPageInfo&) override;
-
-  void DidUpdateFullscreenSize();
 
   float DefaultMinimumPageScaleFactor() const;
   float DefaultMaximumPageScaleFactor() const;
@@ -409,6 +406,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Node* FindNodeFromScrollableCompositorElementId(
       cc::ElementId element_id) const;
 
+  // WebWidget overrides
+  void DidEnterFullscreen() override;
+  void DidExitFullscreen() override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
@@ -431,8 +432,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetAnimationHost(cc::AnimationHost*) override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
-  void DidEnterFullscreen() override;
-  void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void BeginFrame(base::TimeTicks last_frame_time,
                   bool record_main_frame_metrics) override;

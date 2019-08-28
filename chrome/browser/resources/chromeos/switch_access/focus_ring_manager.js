@@ -7,15 +7,16 @@
  */
 class FocusRingManager {
   /**
+   * @param {!SwitchAccessInterface} switchAccess
    * @param {!BackButtonManager} backButtonManager
    */
-  constructor(backButtonManager) {
+  constructor(switchAccess, backButtonManager) {
     /**
      * A map of all the focus rings.
      * @private {!Map<SAConstants.Focus.ID,
      *     chrome.accessibilityPrivate.FocusRingInfo>}
      */
-    this.rings_;
+    this.rings_ = new Map();
 
     /**
      * Regex pattern to verify valid colors. Checks that the first character
@@ -31,7 +32,14 @@ class FocusRingManager {
     this.currentScope_;
 
     /**
+     * A reference to the Switch Access object.
+     * @private {!SwitchAccessInterface}
+     */
+    this.switchAccess_ = switchAccess;
+
+    /**
      * The back button manager.
+     * @private {!BackButtonManager}
      */
     this.backButtonManager_ = backButtonManager;
   }
@@ -39,31 +47,31 @@ class FocusRingManager {
   /** Finishes setup of focus rings once the preferences are loaded. */
   onPrefsReady() {
     // Currently all focus rings share the same color.
-    const color = this.switchAccess_.getStringPreference(
-        SAConstants.Preference.PRIMARY_FOCUS_COLOR);
+    // TODO(anastasi): Make the primary color a preference.
+    const color = SAConstants.Focus.PRIMARY_COLOR;
 
     // Create each focus ring.
-    this.rings_[SAConstants.Focus.ID.PRIMARY] = {
+    this.rings_.set(SAConstants.Focus.ID.PRIMARY, {
       id: SAConstants.Focus.ID.PRIMARY,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.SOLID,
       color: color,
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    };
-    this.rings_[SAConstants.Focus.ID.SCOPE] = {
+    });
+    this.rings_.set(SAConstants.Focus.ID.SCOPE, {
       id: SAConstants.Focus.ID.SCOPE,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.DASHED,
       color: color,
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    };
-    this.rings_[SAConstants.Focus.ID.TEXT] = {
+    });
+    this.rings_.set(SAConstants.Focus.ID.TEXT, {
       id: SAConstants.Focus.ID.TEXT,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.DASHED,
       color: color,
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    };
+    });
   }
 
   /**
@@ -72,10 +80,9 @@ class FocusRingManager {
    */
   setColor(color) {
     if (this.colorPattern_.test(color) !== true) {
-      new Error(
-          'Problem setting focus ring color: color is not a valid' +
-          'CSS color string.');
-      return;
+      const errorString = 'Problem setting focus ring color: color is not' +
+          'a valid CSS color string.';
+      throw new Error(errorString);
     }
     this.rings_.forEach((ring) => ring.color = color);
   }
@@ -92,7 +99,7 @@ class FocusRingManager {
     // If the scope element has not changed, we want to use the previously
     // calculated rect as the current scope rect.
     let scopeRect = scope.location;
-    const currentScopeRects = this.rings_[SAConstants.Focus.ID.SCOPE].rects;
+    const currentScopeRects = this.rings_.get(SAConstants.Focus.ID.SCOPE).rects;
     if (currentScopeRects.length && scope === this.currentScope_)
       scopeRect = currentScopeRects[0];
     this.currentScope_ = scope;
@@ -100,8 +107,8 @@ class FocusRingManager {
     if (primary === this.backButtonManager_.buttonNode()) {
       this.backButtonManager_.show(scopeRect);
 
-      this.rings_[SAConstants.Focus.ID.PRIMARY].rects = [];
-      this.rings_[SAConstants.Focus.ID.SCOPE].rects = [scopeRect];
+      this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];
+      this.rings_.get(SAConstants.Focus.ID.SCOPE).rects = [scopeRect];
       this.updateFocusRings_();
       return;
     }
@@ -112,8 +119,8 @@ class FocusRingManager {
     scopeRect = RectHelper.expandToFitWithPadding(
         SAConstants.Focus.SCOPE_BUFFER, scopeRect, focusRect);
 
-    this.rings_[SAConstants.Focus.ID.PRIMARY].rects = [focusRect];
-    this.rings_[SAConstants.Focus.ID.SCOPE].rects = [scopeRect];
+    this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [focusRect];
+    this.rings_.get(SAConstants.Focus.ID.SCOPE).rects = [scopeRect];
     this.updateFocusRings_();
   }
 
@@ -122,7 +129,7 @@ class FocusRingManager {
    * @param {!SAConstants.Focus.ID} id
    */
   clearRing(id) {
-    this.rings_[id].rects = [];
+    this.rings_.get(id).rects = [];
     this.updateFocusRings_();
   }
 
@@ -131,7 +138,7 @@ class FocusRingManager {
    */
   clearAll() {
     this.rings_.forEach((ring) => ring.rects = []);
-    updateFocusRings_();
+    this.updateFocusRings_();
   }
 
   /**
@@ -140,7 +147,7 @@ class FocusRingManager {
    * @param {!Array<chrome.accessibilityPrivate.ScreenRect>} rects
    */
   setRing(id, rects) {
-    this.rings_[id].rects = rects;
+    this.rings_.get(id).rects = rects;
     this.updateFocusRings_();
   }
 

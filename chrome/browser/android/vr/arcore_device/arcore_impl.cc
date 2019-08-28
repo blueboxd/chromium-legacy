@@ -282,8 +282,8 @@ std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
         GetMojomPoseFromArPose(arcore_session_.get(), std::move(anchor_pose));
 
     // ID
-    auto maybe_pair_with_anchor_id_and_created = CreateOrGetAnchorId(ar_anchor);
-    if (!maybe_pair_with_anchor_id_and_created) {
+    auto maybe_anchor_id_and_created = CreateOrGetAnchorId(ar_anchor);
+    if (!maybe_anchor_id_and_created) {
       // Skip the anchor - we have run out of IDs and there is not much we can
       // do about it.
       return;
@@ -291,7 +291,7 @@ std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
 
     int32_t anchor_id;
     bool created;
-    std::tie(anchor_id, created) = *maybe_pair_with_anchor_id_and_created;
+    std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
 
     result.push_back(mojom::XRAnchorData::New(anchor_id, std::move(pose)));
   });
@@ -308,8 +308,8 @@ std::vector<int32_t> ArCoreImpl::GetAllAnchorIds() {
 
   ForEachArCoreAnchor([this, &result](ArAnchor* ar_anchor) {
     // ID
-    auto maybe_pair_with_anchor_id_and_created = CreateOrGetAnchorId(ar_anchor);
-    if (!maybe_pair_with_anchor_id_and_created) {
+    auto maybe_anchor_id_and_created = CreateOrGetAnchorId(ar_anchor);
+    if (!maybe_anchor_id_and_created) {
       // Skip the anchor - we have run out of IDs and there is not much we can
       // do about it.
       return;
@@ -317,7 +317,7 @@ std::vector<int32_t> ArCoreImpl::GetAllAnchorIds() {
 
     int32_t anchor_id;
     bool created;
-    std::tie(anchor_id, created) = *maybe_pair_with_anchor_id_and_created;
+    std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
 
     // TODO(https://crbug.com/992033): Add explanation for the below DCHECK when
     // implementing anchor creation.
@@ -397,8 +397,8 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
     }
 
     // ID
-    auto maybe_pair_with_plane_id_and_created = CreateOrGetPlaneId(ar_plane);
-    if (!maybe_pair_with_plane_id_and_created) {
+    auto maybe_plane_id_and_created = CreateOrGetPlaneId(ar_plane);
+    if (!maybe_plane_id_and_created) {
       // Skip the plane - we have run out of IDs and there is not much we can
       // do about it.
       return;
@@ -406,7 +406,7 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
 
     int32_t plane_id;
     bool created;
-    std::tie(plane_id, created) = *maybe_pair_with_plane_id_and_created;
+    std::tie(plane_id, created) = *maybe_plane_id_and_created;
 
     result.push_back(mojom::XRPlaneData::New(
         plane_id,
@@ -428,8 +428,8 @@ std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
 
   ForEachArCorePlane([this, &result](ArPlane* ar_plane) {
     // ID
-    auto maybe_pair_with_plane_id_and_created = CreateOrGetPlaneId(ar_plane);
-    if (!maybe_pair_with_plane_id_and_created) {
+    auto maybe_plane_id_and_created = CreateOrGetPlaneId(ar_plane);
+    if (!maybe_plane_id_and_created) {
       // Skip the plane - we have run out of IDs and there is not much we can
       // do about it.
       return;
@@ -437,7 +437,7 @@ std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
 
     int32_t plane_id;
     bool created;
-    std::tie(plane_id, created) = *maybe_pair_with_plane_id_and_created;
+    std::tie(plane_id, created) = *maybe_plane_id_and_created;
 
     DCHECK(!created)
         << "Newly detected planes should be handled by GetUpdatedPlanesData().";

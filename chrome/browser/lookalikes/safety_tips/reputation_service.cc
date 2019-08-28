@@ -10,10 +10,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
+#include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -22,9 +25,41 @@ namespace {
 
 using chrome_browser_safety_tips::FlaggedPage;
 using lookalikes::DomainInfo;
+using lookalikes::LookalikeUrlNavigationThrottle;
 using lookalikes::LookalikeUrlService;
+using LookalikeMatchType = LookalikeUrlInterstitialPage::MatchType;
 using safe_browsing::V4ProtocolManagerUtil;
 using safety_tips::ReputationService;
+
+const base::FeatureParam<bool> kEnableLookalikeEditDistance{
+    &features::kSafetyTipUI, "editdistance", false};
+
+bool ShouldTriggerSafetyTipFromLookalike(
+    const GURL& url,
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites) {
+  std::string matched_domain;
+  LookalikeMatchType match_type;
+
+  if (!LookalikeUrlNavigationThrottle::GetMatchingDomain(
+          navigated_domain, engaged_sites, &matched_domain, &match_type)) {
+    return false;
+  }
+
+  // If we're already displaying an interstitial, don't warn again.
+  if (LookalikeUrlNavigationThrottle::ShouldDisplayInterstitial(
+          match_type, navigated_domain)) {
+    return false;
+  }
+
+  // Edit distance has higher false positives, so it gets its own feature param
+  if (match_type == LookalikeMatchType::kEditDistance ||
+      match_type == LookalikeMatchType::kEditDistanceSiteEngagement) {
+    return kEnableLookalikeEditDistance.Get();
+  }
+
+  return true;
+}
 
 // This factory helps construct and find the singleton ReputationService linked
 // to a Profile.
@@ -165,8 +200,9 @@ void ReputationService::GetReputationStatusWithEngagedSites(
                      return (navigated_domain.domain_and_registry ==
                              engaged_domain.domain_and_registry);
                    });
-  if (already_engaged != engaged_sites.end())
+  if (already_engaged != engaged_sites.end()) {
     return;
+  }
 
   // 2. Server-side blocklist check.
   SafetyTipType type = GetUrlBlockType(url);
@@ -175,7 +211,21 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     return;
   }
 
-  // TODO(crbug/984725): 3. Client-side heuristics or lookalike check.
+  // 3. Protect against bad false positives by allowing top domains.
+  // Empty domain_and_registry happens on private domains.
+  if (navigated_domain.domain_and_registry.empty() ||
+      lookalikes::IsTopDomain(navigated_domain)) {
+    return;
+  }
+
+  // 4. Lookalike heuristics.
+  if (ShouldTriggerSafetyTipFromLookalike(url, navigated_domain,
+                                          engaged_sites)) {
+    std::move(callback).Run(SafetyTipType::kLookalikeUrl, IsIgnored(url), url);
+    return;
+  }
+
+  // TODO(crbug/984725): 5. Additional client-side heuristics
 }
 
 SafetyTipType GetUrlBlockType(const GURL& url) {

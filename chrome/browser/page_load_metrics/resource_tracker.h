@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/browser/global_request_id.h"
 
 namespace page_load_metrics {

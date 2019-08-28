@@ -4,6 +4,8 @@
 
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/sessions/content/content_serialized_navigation_driver.h"
@@ -88,19 +90,15 @@ std::unique_ptr<content::NavigationEntry>
 ContentSerializedNavigationBuilder::ToNavigationEntry(
     const SerializedNavigationEntry* navigation,
     content::BrowserContext* browser_context) {
-  // TODO(lukasza): https://crbug.com/976055: |initiator_origin| should be
-  // persisted across session restore.
-  base::Optional<url::Origin> initiator_origin = base::nullopt;
+  // The initial values of the NavigationEntry are only temporary - they
+  // will get cloberred by one of the SetPageState calls below.
+  GURL temporary_url;
+  content::Referrer temporary_referrer;
+  base::Optional<url::Origin> temporary_initiator_origin = base::nullopt;
 
-  network::mojom::ReferrerPolicy policy =
-      static_cast<network::mojom::ReferrerPolicy>(navigation->referrer_policy_);
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationController::CreateNavigationEntry(
-          navigation->virtual_url_,
-          content::Referrer::SanitizeForRequest(
-              navigation->virtual_url_,
-              content::Referrer(navigation->referrer_url_, policy)),
-          initiator_origin,
+          temporary_url, temporary_referrer, temporary_initiator_origin,
           // Use a transition type of reload so that we don't incorrectly
           // increase the typed count.
           ui::PAGE_TRANSITION_RELOAD, false,
@@ -109,8 +107,20 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
           nullptr /* blob_url_loader_factory */));
 
   entry->SetTitle(navigation->title_);
-  entry->SetPageState(content::PageState::CreateFromEncodedData(
-      navigation->encoded_page_state_));
+  if (navigation->encoded_page_state_.empty()) {
+    // Conjure a new PageState, based on the URL.
+    //
+    // One case where the PageState may be empty is WebUI pages - see
+    // ChromeSerializedNavigationDriver::Sanitize.  Another case is tests for
+    // "foreign" session restore entries, such as
+    // SessionRestoreTest.RestoreForeignTab.
+    entry->SetPageState(
+        content::PageState::CreateFromURL(navigation->virtual_url_));
+  } else {
+    // Restore PageState.
+    entry->SetPageState(content::PageState::CreateFromEncodedData(
+        navigation->encoded_page_state_));
+  }
   entry->SetHasPostData(navigation->has_post_data_);
   entry->SetPostID(navigation->post_id_);
   entry->SetOriginalRequestURL(navigation->original_request_url_);
@@ -118,6 +128,7 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
   entry->SetTimestamp(navigation->timestamp_);
   entry->SetHttpStatusCode(navigation->http_status_code_);
   entry->SetRedirectChain(navigation->redirect_chain_);
+  entry->SetVirtualURL(navigation->virtual_url_);
   sessions::NavigationTaskId* navigation_task_id =
       sessions::NavigationTaskId::Get(entry.get());
   navigation_task_id->set_id(navigation->task_id());

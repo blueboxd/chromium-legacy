@@ -15,6 +15,7 @@
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -34,6 +35,13 @@ ResourceLoadingHintsWebContentsObserver::
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
+}
+
+void ResourceLoadingHintsWebContentsObserver::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  ReportRedirects(navigation_handle);
 }
 
 void ResourceLoadingHintsWebContentsObserver::ReadyToCommitNavigation(
@@ -59,16 +67,18 @@ void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
+    return;
+  }
+
+  ReportRedirects(navigation_handle);
+
   // When kSendPreviewsLoadingHintsBeforeCommit is enabled, resource
   // loading hints are sent in ReadyToCommitNavigation.
   if (base::FeatureList::IsEnabled(
           blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    return;
-  }
-
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
     return;
   }
 
@@ -169,6 +179,35 @@ ResourceLoadingHintsWebContentsObserver::GetResourceLoadingHintsReceiver(
         ->GetInterface(&loading_hints_agent);
   }
   return loading_hints_agent;
+}
+
+void ResourceLoadingHintsWebContentsObserver::ReportRedirects(
+    content::NavigationHandle* navigation_handle) {
+  if (!previews::params::IsDeferAllScriptPreviewsEnabled())
+    return;
+
+  if (!previews::params::DetectDeferRedirectLoopsUsingCache())
+    return;
+
+  if (!navigation_handle)
+    return;
+
+  if (navigation_handle->GetRedirectChain().size() < 2)
+    return;
+
+  GURL url_front = navigation_handle->GetRedirectChain().front();
+  GURL url_back = navigation_handle->GetRedirectChain().back();
+
+  if (!url_front.is_valid() || !url_back.is_valid())
+    return;
+
+  PreviewsService* previews_service =
+      PreviewsServiceFactory::GetForProfile(profile_);
+  if (!previews_service)
+    return;
+
+  previews_service->ReportObservedRedirectWithDeferAllScriptPreview(url_front,
+                                                                    url_back);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ResourceLoadingHintsWebContentsObserver)

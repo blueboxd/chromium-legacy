@@ -102,11 +102,11 @@ bool PreviewsOptimizationGuideImpl::IsReady() const {
   return !!hints_;
 }
 
-bool PreviewsOptimizationGuideImpl::CanApplyOptimization(
+bool PreviewsOptimizationGuideImpl::CanApplyPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
     PreviewsType type,
-    net::EffectiveConnectionType* out_ect_threshold) const {
+    net::EffectiveConnectionType* out_ect_threshold) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (!hints_) {
     return false;
@@ -181,7 +181,7 @@ bool PreviewsOptimizationGuideImpl::MaybeLoadOptimizationHints(
 
 bool PreviewsOptimizationGuideImpl::GetResourceLoadingHints(
     const GURL& url,
-    std::vector<std::string>* out_resource_patterns_to_block) const {
+    std::vector<std::string>* out_resource_patterns_to_block) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (!hints_)

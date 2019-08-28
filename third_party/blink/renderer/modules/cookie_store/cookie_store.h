@@ -37,9 +37,10 @@ class CookieStore final : public EventTargetWithInlineData,
  public:
   CookieStore(
       ExecutionContext*,
-      network::mojom::blink::RestrictedCookieManagerPtr backend,
+      mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend,
       mojo::Remote<blink::mojom::blink::CookieStore> subscription_backend);
-  // Needed because of the network::mojom::blink::RestrictedCookieManagerPtr
+  // Needed because of the
+  // mojo::Remote<network::mojom::blink::RestrictedCookieManager>
   ~CookieStore() override;
 
   ScriptPromise getAll(ScriptState*, const String& name, ExceptionState&);
@@ -146,7 +147,7 @@ class CookieStore final : public EventTargetWithInlineData,
   void StopObserving();
 
   // Wraps an always-on Mojo pipe for sending requests to the Network Service.
-  network::mojom::blink::RestrictedCookieManagerPtr backend_;
+  mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend_;
 
   // Wraps a Mojo pipe for managing service worker cookie change subscriptions.
   //

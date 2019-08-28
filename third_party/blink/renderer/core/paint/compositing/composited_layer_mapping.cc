@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/accessibility/apply_dark_mode.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -472,13 +471,6 @@ void CompositedLayerMapping::UpdateCompositingReasons() {
       owning_layer_.GetSquashingDisallowedReasons());
 }
 
-const PaintLayer* CompositedLayerMapping::ScrollParent() const {
-  const PaintLayer* scroll_parent = owning_layer_.ScrollParent();
-  if (scroll_parent && !scroll_parent->NeedsCompositedScrolling())
-    return nullptr;
-  return scroll_parent;
-}
-
 const PaintLayer* CompositedLayerMapping::CompositedClipParent() const {
   const PaintLayer* clip_parent = owning_layer_.ClipParent();
   return clip_parent ? clip_parent->EnclosingLayerWithCompositedLayerMapping(
@@ -530,10 +522,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
 
   if (UpdateSquashingLayers(!squashed_layers_.IsEmpty()))
     layer_config_changed = true;
-
-  const PaintLayer* scroll_parent = ScrollParent();
-  UpdateScrollParent(scroll_parent);
-  UpdateClipParent(scroll_parent);
 
   if (layer_config_changed)
     UpdateInternalHierarchy();
@@ -939,8 +927,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateRenderingContext();
   UpdateShouldFlattenTransform();
   UpdateChildrenTransform();
-  UpdateScrollParent(ScrollParent());
-
   UpdateCompositingReasons();
 }
 
@@ -1832,66 +1818,6 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
   }
 
   return layer_changed;
-}
-
-static void UpdateScrollParentForGraphicsLayer(
-    GraphicsLayer* layer,
-    GraphicsLayer* topmost_layer,
-    const PaintLayer* scroll_parent,
-    ScrollingCoordinator* scrolling_coordinator) {
-  if (!layer)
-    return;
-
-  // Only the topmost layer has a scroll parent. All other layers have a null
-  // scroll parent.
-  if (layer != topmost_layer)
-    scroll_parent = nullptr;
-
-  scrolling_coordinator->UpdateScrollParentForGraphicsLayer(layer,
-                                                            scroll_parent);
-}
-
-void CompositedLayerMapping::UpdateScrollParent(
-    const PaintLayer* scroll_parent) {
-  if (ScrollingCoordinator* scrolling_coordinator =
-          owning_layer_.GetScrollingCoordinator()) {
-    GraphicsLayer* topmost_layer = ChildForSuperlayers();
-    UpdateScrollParentForGraphicsLayer(squashing_containment_layer_.get(),
-                                       topmost_layer, scroll_parent,
-                                       scrolling_coordinator);
-    UpdateScrollParentForGraphicsLayer(graphics_layer_.get(), topmost_layer,
-                                       scroll_parent, scrolling_coordinator);
-  }
-}
-
-static void UpdateClipParentForGraphicsLayer(
-    GraphicsLayer* layer,
-    GraphicsLayer* topmost_layer,
-    const PaintLayer* clip_parent,
-    ScrollingCoordinator* scrolling_coordinator) {
-  if (!layer)
-    return;
-
-  // Only the topmost layer has a scroll parent. All other layers have a null
-  // scroll parent.
-  if (layer != topmost_layer)
-    clip_parent = nullptr;
-
-  scrolling_coordinator->UpdateClipParentForGraphicsLayer(layer, clip_parent);
-}
-
-void CompositedLayerMapping::UpdateClipParent(const PaintLayer* scroll_parent) {
-  const PaintLayer* clip_parent = CompositedClipParent();
-
-  if (ScrollingCoordinator* scrolling_coordinator =
-          owning_layer_.GetScrollingCoordinator()) {
-    GraphicsLayer* topmost_layer = ChildForSuperlayers();
-    UpdateClipParentForGraphicsLayer(squashing_containment_layer_.get(),
-                                     topmost_layer, clip_parent,
-                                     scrolling_coordinator);
-    UpdateClipParentForGraphicsLayer(graphics_layer_.get(), topmost_layer,
-                                     clip_parent, scrolling_coordinator);
-  }
 }
 
 bool CompositedLayerMapping::UpdateSquashingLayers(

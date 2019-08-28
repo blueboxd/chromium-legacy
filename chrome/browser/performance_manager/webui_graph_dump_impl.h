@@ -21,6 +21,7 @@ namespace performance_manager {
 class Graph;
 
 // TODO(siggi): Add workers to the WebUI graph.
+// TODO(siggi, https://crbug.com/966840): Make the WebUI dumper GraphOwned.
 class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
                            public FrameNodeObserver,
                            public PageNodeObserver,

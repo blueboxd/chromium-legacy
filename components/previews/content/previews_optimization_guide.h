@@ -30,15 +30,17 @@ class PreviewsOptimizationGuide {
   // Returns whether the optimization guide is ready to receive requests.
   virtual bool IsReady() const = 0;
 
-  // Returns whether |type| is allowed for the URL associated with
+  // Returns whether |type| can be applied for the URL associated with
   // |navigation_handle|. If so |out_ect_threshold| provides the maximum
   // effective connection type to trigger the preview for. |previews_data| can
-  // be modified (for further details provided by hints).
-  virtual bool CanApplyOptimization(
+  // be modified (for further details provided by hints). Note that this will
+  // return false if a hint is needed to determine if the preview is allowed but
+  // we do not have everything we need to make that determination in memory.
+  virtual bool CanApplyPreview(
       PreviewsUserData* previews_data,
       content::NavigationHandle* navigation_handle,
       PreviewsType type,
-      net::EffectiveConnectionType* out_ect_threshold) const = 0;
+      net::EffectiveConnectionType* out_ect_threshold) = 0;
 
   // Returns whether |navigation_handle| may have associated optimization hints
   // (specifically, PageHints). If so, but the hints are not available
@@ -53,7 +55,7 @@ class PreviewsOptimizationGuide {
   // |out_resource_patterns_to_block| with the resource patterns to block.
   virtual bool GetResourceLoadingHints(
       const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const = 0;
+      std::vector<std::string>* out_resource_patterns_to_block) = 0;
 
   // Logs UMA for whether the OptimizationGuide HintCache has a matching Hint
   // guidance for |url|. This is useful for measuring the effectiveness of the

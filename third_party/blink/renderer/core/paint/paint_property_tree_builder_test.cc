@@ -6225,8 +6225,6 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
             outer_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             outer_properties->StickyTranslation()->GetStickyConstraint());
-  EXPECT_TRUE(
-      outer_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(CompositorElementId(), outer_properties->StickyTranslation()
                                        ->GetStickyConstraint()
                                        ->nearest_element_shifting_sticky_box);
@@ -6241,8 +6239,6 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
             middle_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             middle_properties->StickyTranslation()->GetStickyConstraint());
-  EXPECT_TRUE(
-      middle_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(CompositorElementId(), middle_properties->StickyTranslation()
                                        ->GetStickyConstraint()
                                        ->nearest_element_shifting_sticky_box);
@@ -6257,8 +6253,6 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
             inner_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             inner_properties->StickyTranslation()->GetStickyConstraint());
-  EXPECT_TRUE(
-      inner_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
   EXPECT_EQ(middle_properties->StickyTranslation()->GetCompositorElementId(),
             inner_properties->StickyTranslation()
                 ->GetStickyConstraint()
@@ -6883,6 +6877,73 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformAnimationAxisAlignment) {
       PaintPropertiesForElement("rotation_animation")->Transform();
   EXPECT_TRUE(rotation->HasActiveTransformAnimation());
   EXPECT_FALSE(rotation->TransformAnimationIsAxisAligned());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollPropertyHierarchy) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="top-scroller"
+        style="position: relative; width: 50px; height: 50px; overflow: scroll">
+      <div id="middle-scroller"
+           style="width: 100px; height: 100px; overflow: scroll; opacity: 0.9">
+        <div id="fixed" style="position: fixed"></div>
+        <div id="absolute" style="position: absolute"></div>
+        <div id="relative" style="position: relative; height: 1000px"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* top_properties = PaintPropertiesForElement("top-scroller");
+  ASSERT_TRUE(top_properties->OverflowClip());
+  EXPECT_EQ(top_properties->ScrollTranslation()->ScrollNode(),
+            top_properties->Scroll());
+
+  auto* middle_properties = PaintPropertiesForElement("middle-scroller");
+  EXPECT_EQ(middle_properties->PaintOffsetTranslation(),
+            &middle_properties->OverflowClip()->LocalTransformSpace());
+  EXPECT_EQ(top_properties->OverflowClip(),
+            middle_properties->OverflowClip()->Parent());
+  EXPECT_EQ(top_properties->Scroll(), middle_properties->Scroll()->Parent());
+  EXPECT_EQ(middle_properties->ScrollTranslation()->ScrollNode(),
+            middle_properties->Scroll());
+  EXPECT_EQ(top_properties->ScrollTranslation(),
+            middle_properties->ScrollTranslation()->Parent()->Parent());
+  EXPECT_EQ(middle_properties->PaintOffsetTranslation(),
+            &middle_properties->Effect()->LocalTransformSpace());
+
+  // |fixed| escapes both top and middle scrollers.
+  auto& fixed_fragment = GetLayoutObjectByElementId("fixed")->FirstFragment();
+  // The difference is because of the extra PaintOffsetTranslation on |fixed|
+  // in pre-CompositeAfterPaint.
+  EXPECT_EQ(DocPreTranslation(),
+            RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                ? &fixed_fragment.PreTransform()
+                : fixed_fragment.PreTransform().Parent());
+  EXPECT_EQ(top_properties->OverflowClip()->Parent(),
+            &fixed_fragment.PreClip());
+
+  // |absolute| escapes |middle-scroller| (position: static), but is contained
+  // by |top-scroller| (position: relative)
+  auto& absolute_fragment =
+      GetLayoutObjectByElementId("absolute")->FirstFragment();
+  // The difference is because of the extra PaintOffsetTranslation on |absolute|
+  // in pre-CompositeAfterPaint.
+  EXPECT_EQ(top_properties->ScrollTranslation(),
+            RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                ? &absolute_fragment.PreTransform()
+                : absolute_fragment.PreTransform().Parent());
+  EXPECT_EQ(top_properties->OverflowClip(), &absolute_fragment.PreClip());
+
+  // |relative| is contained by |middle-scroller|.
+  auto& relative_fragment =
+      GetLayoutObjectByElementId("relative")->FirstFragment();
+  EXPECT_EQ(middle_properties->ScrollTranslation(),
+            &relative_fragment.PreTransform());
+  EXPECT_EQ(middle_properties->OverflowClip(), &relative_fragment.PreClip());
+
+  // The opacity on |middle-scroller| applies to all children.
+  EXPECT_EQ(middle_properties->Effect(), &fixed_fragment.PreEffect());
+  EXPECT_EQ(middle_properties->Effect(), &absolute_fragment.PreEffect());
+  EXPECT_EQ(middle_properties->Effect(), &relative_fragment.PreEffect());
 }
 
 }  // namespace blink

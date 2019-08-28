@@ -37,7 +37,10 @@ class SystemNodeImplTest : public GraphTestHarness {
     clock_.SetNowTicks(base::TimeTicks::Now());
   }
 
-  void TearDown() override { PerformanceManagerClock::ResetClockForTesting(); }
+  void TearDown() override {
+    PerformanceManagerClock::ResetClockForTesting();
+    GraphTestHarness::TearDown();
+  }
 
  protected:
   void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
@@ -61,8 +64,9 @@ TEST_F(SystemNodeImplTest, SafeDowncast) {
 using SystemNodeImplDeathTest = SystemNodeImplTest;
 
 TEST_F(SystemNodeImplDeathTest, SafeDowncast) {
-  auto system = CreateNode<SystemNodeImpl>();
-  ASSERT_DEATH_IF_SUPPORTED(PageNodeImpl::FromNodeBase(system.get()), "");
+  const NodeBase* system =
+      NodeBase::FromNode(graph()->FindOrCreateSystemNode());
+  ASSERT_DEATH_IF_SUPPORTED(PageNodeImpl::FromNodeBase(system), "");
 }
 
 namespace {

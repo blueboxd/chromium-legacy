@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_GLOBAL_MEDIA_CONTROLS_MEDIA_TOOLBAR_BUTTON_VIEW_H_
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -37,7 +38,7 @@ class MediaToolbarButtonView : public ToolbarButton,
   void UpdateIcon();
 
  private:
-  service_manager::Connector* connector_;
+  service_manager::Connector* const connector_;
   MediaToolbarButtonController controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaToolbarButtonView);

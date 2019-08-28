@@ -63,7 +63,9 @@ class WatchTimeRecorderTest : public testing::Test {
                             base::Unretained(this)),
         base::BindRepeating(
             []() { return learning::FeatureValue(0); }) /* origin callback */,
-        VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider_));
+        VideoDecodePerfHistory::SaveCallback(),
+        MediaMetricsProvider::GetLearningSessionCallback(),
+        mojo::MakeRequest(&provider_));
   }
 
   ~WatchTimeRecorderTest() override { base::RunLoop().RunUntilIdle(); }

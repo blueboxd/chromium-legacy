@@ -133,7 +133,7 @@ target(link_target_type, "child") {
   ]
 
   if (is_android) {
-    deps += [ "//third_party/android_sdk:cpu_features" ]
+    deps += [ "//third_party/android_ndk:cpu_features" ]
     if (notouch_build) {
       configs += [ ":notouch_config" ]
     }

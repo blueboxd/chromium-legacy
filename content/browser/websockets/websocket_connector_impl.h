@@ -54,7 +54,8 @@ class WebSocketConnectorImpl final : public blink::mojom::WebSocketConnector {
       mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
           handshake_client,
       network::mojom::AuthenticationHandlerPtr auth_handler,
-      network::mojom::TrustedHeaderClientPtr trusted_header_client);
+      mojo::PendingRemote<network::mojom::TrustedHeaderClient>
+          trusted_header_client);
 
   const int process_id_;
   const int frame_id_;

@@ -3455,6 +3455,11 @@ void LocalFrameView::AddPlugin(WebPluginContainerImpl* plugin) {
   plugins_.insert(plugin);
 }
 
+void LocalFrameView::RemovePlugin(WebPluginContainerImpl* plugin) {
+  DCHECK(plugins_.Contains(plugin));
+  plugins_.erase(plugin);
+}
+
 void LocalFrameView::RemoveScrollbar(Scrollbar* scrollbar) {
   DCHECK(scrollbars_.Contains(scrollbar));
   scrollbars_.erase(scrollbar);

@@ -409,28 +409,26 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
       transform_node.IsInSubtreeOfPageScale();
 
   if (const auto* sticky_constraint = transform_node.GetStickyConstraint()) {
-    DCHECK(sticky_constraint->is_sticky);
-    cc::StickyPositionNodeData* sticky_data =
-        GetTransformTree().StickyPositionData(id);
-    sticky_data->constraints = *sticky_constraint;
+    cc::StickyPositionNodeData& sticky_data =
+        GetTransformTree().EnsureStickyPositionData(id);
+    sticky_data.constraints = *sticky_constraint;
     // TODO(pdr): This could be a performance issue because it crawls up the
     // transform tree for each pending layer. If this is on profiles, we should
     // cache a lookup of transform node to scroll translation transform node.
     const auto& scroll_ancestor = transform_node.NearestScrollTranslationNode();
-    sticky_data->scroll_ancestor = EnsureCompositorScrollNode(scroll_ancestor);
+    sticky_data.scroll_ancestor = EnsureCompositorScrollNode(scroll_ancestor);
     if (scroll_ancestor.ScrollNode()->ScrollsOuterViewport())
       GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
     if (auto shifting_sticky_box_element_id =
-            sticky_data->constraints.nearest_element_shifting_sticky_box) {
-      sticky_data->nearest_node_shifting_sticky_box =
+            sticky_data.constraints.nearest_element_shifting_sticky_box) {
+      sticky_data.nearest_node_shifting_sticky_box =
           GetTransformTree()
               .FindNodeFromElementId(shifting_sticky_box_element_id)
               ->id;
     }
     if (auto shifting_containing_block_element_id =
-            sticky_data->constraints
-                .nearest_element_shifting_containing_block) {
-      sticky_data->nearest_node_shifting_containing_block =
+            sticky_data.constraints.nearest_element_shifting_containing_block) {
+      sticky_data.nearest_node_shifting_containing_block =
           GetTransformTree()
               .FindNodeFromElementId(shifting_containing_block_element_id)
               ->id;
@@ -533,6 +531,13 @@ void PropertyTreeManager::CreateCompositorScrollNode(
       scroll_node.UserScrollableVertical();
   compositor_node.scrolls_inner_viewport = scroll_node.ScrollsInnerViewport();
   compositor_node.scrolls_outer_viewport = scroll_node.ScrollsOuterViewport();
+  compositor_node.prevent_viewport_scrolling_from_inner =
+      scroll_node.PreventViewportScrollingFromInner();
+
+  // |scrolls_using_viewport| should only ever be set on the inner scroll node.
+  DCHECK(!compositor_node.prevent_viewport_scrolling_from_inner ||
+         compositor_node.scrolls_inner_viewport);
+
   compositor_node.max_scroll_offset_affected_by_page_scale =
       scroll_node.MaxScrollOffsetAffectedByPageScale();
   compositor_node.main_thread_scrolling_reasons =

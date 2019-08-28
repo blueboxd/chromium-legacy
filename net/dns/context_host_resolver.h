@@ -19,7 +19,6 @@ class TickClock;
 
 namespace net {
 
-struct DnsConfig;
 class HostCache;
 class HostResolverManager;
 struct ProcTaskParams;
@@ -64,7 +63,6 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
   size_t CacheSize() const;
 
   void SetProcParamsForTesting(const ProcTaskParams& proc_params);
-  void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   size_t GetNumActiveRequestsForTesting() const {

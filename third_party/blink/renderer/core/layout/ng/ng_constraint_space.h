@@ -579,7 +579,6 @@ class CORE_EXPORT NGConstraintSpace final {
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
-             forced_bfc_block_offset == other.forced_bfc_block_offset &&
              table_cell_borders == other.table_cell_borders &&
              table_cell_intrinsic_padding ==
                  other.table_cell_intrinsic_padding &&
@@ -594,7 +593,6 @@ class CORE_EXPORT NGConstraintSpace final {
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
       return margin_strut == NGMarginStrut() &&
-             forced_bfc_block_offset == base::nullopt &&
              table_cell_borders == NGBoxStrut() &&
              table_cell_intrinsic_padding == NGBoxStrut() &&
              fragmentainer_block_size == kIndefiniteSize &&

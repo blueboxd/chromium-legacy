@@ -5,13 +5,13 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUTextureViewDescriptor {
-    required GPUTextureFormat format;
-    required GPUTextureViewDimension dimension;
-    required GPUTextureAspect aspect;
+    GPUTextureFormat format;
+    GPUTextureViewDimension dimension;
+    GPUTextureAspect aspect = "all";
     unsigned long baseMipLevel = 0;
-    unsigned long mipLevelCount = 1;
+    unsigned long mipLevelCount = 0;
     unsigned long baseArrayLayer = 0;
-    unsigned long arrayLayerCount = 1;
+    unsigned long arrayLayerCount = 0;
 };
 
 enum GPUTextureViewDimension {

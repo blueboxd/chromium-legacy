@@ -104,101 +104,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         .starting_animation_scale;
   }
 
-  void ExecuteCalculateDrawProperties(Layer* root_layer,
-                                      float device_scale_factor,
-                                      float page_scale_factor,
-                                      Layer* page_scale_layer,
-                                      Layer* inner_viewport_scroll_layer,
-                                      Layer* outer_viewport_scroll_layer) {
-    EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
-    gfx::Size device_viewport_size =
-        gfx::Size(root_layer->bounds().width() * device_scale_factor,
-                  root_layer->bounds().height() * device_scale_factor);
-
-    root_layer->layer_tree_host()->SetViewportSizeAndScale(
-        device_viewport_size, device_scale_factor,
-        viz::LocalSurfaceIdAllocation());
-
-    // We are probably not testing what is intended if the root_layer bounds are
-    // empty.
-    DCHECK(!root_layer->bounds().IsEmpty());
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root_layer, device_viewport_size);
-    inputs.device_scale_factor = device_scale_factor;
-    inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_layer = page_scale_layer;
-    inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
-    inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
-    if (page_scale_layer) {
-      PropertyTrees* property_trees =
-          root_layer->layer_tree_host()->property_trees();
-      inputs.page_scale_transform_node = property_trees->transform_tree.Node(
-          page_scale_layer->transform_tree_index());
-    }
-    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-  }
-
-  void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
-                                      float device_scale_factor,
-                                      float page_scale_factor,
-                                      LayerImpl* page_scale_layer,
-                                      LayerImpl* inner_viewport_scroll_layer,
-                                      LayerImpl* outer_viewport_scroll_layer) {
-    if (device_scale_factor !=
-        root_layer->layer_tree_impl()->device_scale_factor())
-      root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
-
-    root_layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
-
-    EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
-
-    gfx::Size device_viewport_size =
-        gfx::Size(root_layer->bounds().width() * device_scale_factor,
-                  root_layer->bounds().height() * device_scale_factor);
-
-    render_surface_list_impl_.reset(new RenderSurfaceList);
-
-    // We are probably not testing what is intended if the root_layer bounds are
-    // empty.
-    DCHECK(!root_layer->bounds().IsEmpty());
-    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root_layer, device_viewport_size, render_surface_list_impl_.get());
-    inputs.device_scale_factor = device_scale_factor;
-    inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_layer = page_scale_layer;
-    inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
-    inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
-    if (page_scale_layer) {
-      PropertyTrees* property_trees =
-          root_layer->layer_tree_impl()->property_trees();
-      inputs.page_scale_transform_node = property_trees->transform_tree.Node(
-          page_scale_layer->transform_tree_index());
-    }
-
-    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-  }
-
-  template <class LayerType>
-  void ExecuteCalculateDrawProperties(LayerType* root_layer) {
-    LayerType* page_scale_application_layer = nullptr;
-    LayerType* inner_viewport_scroll_layer = nullptr;
-    LayerType* outer_viewport_scroll_layer = nullptr;
-    ExecuteCalculateDrawProperties(
-        root_layer, 1.f, 1.f, page_scale_application_layer,
-        inner_viewport_scroll_layer, outer_viewport_scroll_layer);
-  }
-
-  template <class LayerType>
-  void ExecuteCalculateDrawProperties(LayerType* root_layer,
-                                      float device_scale_factor) {
-    LayerType* page_scale_application_layer = nullptr;
-    LayerType* inner_viewport_scroll_layer = nullptr;
-    LayerType* outer_viewport_scroll_layer = nullptr;
-    ExecuteCalculateDrawProperties(
-        root_layer, device_scale_factor, 1.f, page_scale_application_layer,
-        inner_viewport_scroll_layer, outer_viewport_scroll_layer);
-  }
-
   const LayerList* GetUpdateLayerList() { return &update_layer_list_; }
 
   void ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(Layer* root_layer) {
@@ -269,19 +174,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         update_layer_impl_list(), property_trees);
   }
 
-  void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
-      LayerImpl* root_layer) {
-    gfx::Size device_viewport_size =
-        gfx::Size(root_layer->bounds().width(), root_layer->bounds().height());
-    render_surface_list_impl_.reset(new RenderSurfaceList);
-
-    DCHECK(!root_layer->bounds().IsEmpty());
-    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root_layer, device_viewport_size, render_surface_list_impl_.get());
-
-    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-  }
-
   bool UpdateLayerImplListContains(int id) const {
     for (auto* layer : *update_layer_impl_list_) {
       if (layer->id() == id)
@@ -298,9 +190,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     return false;
   }
 
-  const RenderSurfaceList* render_surface_list_impl() const {
-    return render_surface_list_impl_.get();
-  }
   const LayerImplList* update_layer_impl_list() const {
     return update_layer_impl_list_.get();
   }
@@ -312,7 +201,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   }
 
  private:
-  std::unique_ptr<RenderSurfaceList> render_surface_list_impl_;
   LayerList update_layer_list_;
   std::unique_ptr<LayerImplList> update_layer_impl_list_;
 };
@@ -360,11 +248,6 @@ class LayerTreeHostCommonDrawRectsTest : public LayerTreeHostCommonTest {
 
     return drawing_layer;
   }
-};
-
-class LayerListSettings : public LayerTreeSettings {
- public:
-  LayerListSettings() { use_layer_lists = true; }
 };
 
 class LayerTreeHostCommonTestWithLayerLists
@@ -2707,40 +2590,44 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectWithScalingClippingAndFilters) {
             GetRenderSurface(filter)->content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, ClipRectWithClipParentAndFilters) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       ClipRectWithClipParentAndFilters) {
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* clip = AddChild<LayerImpl>(root);
-  LayerImpl* filter = AddChild<LayerImpl>(clip);
-  LayerImpl* filter_child_1 = AddChild<LayerImpl>(filter);
-  LayerImpl* filter_child_2 = AddChild<LayerImpl>(filter);
+  LayerImpl* clip = AddChildToRoot<LayerImpl>();
+  LayerImpl* filter = AddChildToRoot<LayerImpl>();
+  LayerImpl* filter_child_1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* filter_child_2 = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
+  SetupRootProperties(root);
+  CreateClipNode(root);
+
   clip->SetBounds(gfx::Size(10, 10));
-  filter->test_properties()->force_render_surface = true;
+  CopyProperties(root, clip);
+  CreateClipNode(clip);
+
+  CopyProperties(clip, filter);
+  CreateEffectNode(filter).render_surface_reason = RenderSurfaceReason::kFilter;
 
   filter_child_1->SetBounds(gfx::Size(20, 20));
   filter_child_1->SetDrawsContent(true);
+  CopyProperties(filter, filter_child_1);
+  filter_child_1->SetClipTreeIndex(root->clip_tree_index());
+
   filter_child_2->SetBounds(gfx::Size(20, 20));
   filter_child_2->SetDrawsContent(true);
-
-  root->SetMasksToBounds(true);
-  clip->SetMasksToBounds(true);
-
-  root->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  root->test_properties()->clip_children->insert(filter_child_1);
-  filter_child_1->test_properties()->clip_parent = root;
+  CopyProperties(filter, filter_child_2);
 
   ExecuteCalculateDrawProperties(root);
+
   EXPECT_TRUE(filter_child_1->is_clipped());
   EXPECT_TRUE(filter_child_2->is_clipped());
   EXPECT_EQ(gfx::Rect(100, 100), filter_child_1->clip_rect());
   EXPECT_EQ(gfx::Rect(10, 10), filter_child_2->clip_rect());
 
-  FilterOperations blur_filter;
-  blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
-  filter->test_properties()->filters = blur_filter;
-  host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+  GetEffectNode(filter)->filters.Append(
+      FilterOperation::CreateBlurFilter(4.0f));
+  GetPropertyTrees(filter)->effect_tree.set_needs_update(true);
 
   ExecuteCalculateDrawProperties(root);
 
@@ -3277,34 +3164,38 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(100, 100), render_surface2->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest,
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
        VisibleRectsWhenClipChildIsBetweenTwoRenderSurfaces) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(clip_child);
+  LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface2 = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
+  SetupRootProperties(root);
 
   clip_parent->SetBounds(gfx::Size(50, 50));
-  clip_parent->SetMasksToBounds(true);
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(root, clip_parent);
+  CreateClipNode(clip_parent);
 
   render_surface1->SetBounds(gfx::Size(20, 20));
-  render_surface1->SetMasksToBounds(true);
   render_surface1->SetDrawsContent(true);
-  render_surface1->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent, render_surface1);
+  CreateEffectNode(render_surface1).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(render_surface1);
 
   clip_child->SetBounds(gfx::Size(60, 60));
   clip_child->SetDrawsContent(true);
-  clip_child->test_properties()->clip_parent = clip_parent;
+  CopyProperties(render_surface1, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   render_surface2->SetBounds(gfx::Size(60, 60));
   render_surface2->SetDrawsContent(true);
-  render_surface2->test_properties()->force_render_surface = true;
+  CopyProperties(clip_child, render_surface2);
+  CreateEffectNode(render_surface2).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(20, 20), render_surface1->visible_layer_rect());
@@ -3312,43 +3203,52 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(50, 50), render_surface2->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, ClipRectOfSurfaceWhoseParentIsAClipChild) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       ClipRectOfSurfaceWhoseParentIsAClipChild) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* clip_layer = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(clip_child);
+  LayerImpl* clip_layer = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface2 = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
+  SetupRootProperties(root);
 
-  clip_parent->test_properties()->position = gfx::PointF(2.f, 2.f);
   clip_parent->SetBounds(gfx::Size(50, 50));
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  clip_parent->SetOffsetToTransformParent(gfx::Vector2dF(2, 2));
+  CopyProperties(root, clip_parent);
+  CreateClipNode(clip_parent);
 
   clip_layer->SetBounds(gfx::Size(50, 50));
+  clip_layer->SetOffsetToTransformParent(gfx::Vector2dF(2, 2));
+  CopyProperties(clip_parent, clip_layer);
+  CreateClipNode(clip_layer);
 
   render_surface1->SetBounds(gfx::Size(20, 20));
   render_surface1->SetDrawsContent(true);
-  render_surface1->test_properties()->force_render_surface = true;
+  CopyProperties(clip_layer, render_surface1);
+  CreateTransformNode(render_surface1).post_translation = gfx::Vector2dF(2, 2);
+  CreateEffectNode(render_surface1).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(render_surface1);
 
   clip_child->SetBounds(gfx::Size(60, 60));
   clip_child->SetDrawsContent(true);
-  clip_child->test_properties()->clip_parent = clip_parent;
+  CopyProperties(render_surface1, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   render_surface2->SetBounds(gfx::Size(60, 60));
   render_surface2->SetDrawsContent(true);
-  render_surface2->test_properties()->force_render_surface = true;
-
-  clip_parent->SetMasksToBounds(true);
-  clip_layer->SetMasksToBounds(true);
-  render_surface1->SetMasksToBounds(true);
+  CopyProperties(clip_child, render_surface2);
+  CreateTransformNode(render_surface2);
+  CreateEffectNode(render_surface2).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   float device_scale_factor = 1.f;
   ExecuteCalculateDrawProperties(root, device_scale_factor);
   EXPECT_EQ(gfx::Rect(50, 50), GetRenderSurface(render_surface2)->clip_rect());
+
   device_scale_factor = 2.f;
   ExecuteCalculateDrawProperties(root, device_scale_factor);
   EXPECT_EQ(gfx::Rect(100, 100),
@@ -3375,41 +3275,46 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWhenLayerNotDrawn) {
   EXPECT_EQ(gfx::Rect(150, 150), GetRenderSurface(surface)->content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectsMultipleSurfaces) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, VisibleRectsMultipleSurfaces) {
   // Tests visible rects computation when we have unclipped_surface->
   // surface_with_unclipped_descendants->clipped_surface, checks that the bounds
   // of surface_with_unclipped_descendants doesn't propagate to the
   // clipped_surface below it.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* unclipped_surface = AddChildToRoot<LayerImpl>();
-  LayerImpl* clip_parent = AddChild<LayerImpl>(unclipped_surface);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface);
-  LayerImpl* clipped_surface = AddChild<LayerImpl>(clip_child);
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* unclipped_desc_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* clipped_surface = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
+  SetupRootProperties(root);
 
   unclipped_surface->SetBounds(gfx::Size(30, 30));
   unclipped_surface->SetDrawsContent(true);
-  unclipped_surface->test_properties()->force_render_surface = true;
+  CopyProperties(root, unclipped_surface);
+  CreateEffectNode(unclipped_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   clip_parent->SetBounds(gfx::Size(50, 50));
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(unclipped_surface, clip_parent);
+  CreateClipNode(clip_parent);
 
   unclipped_desc_surface->SetBounds(gfx::Size(20, 20));
   unclipped_desc_surface->SetDrawsContent(true);
-  unclipped_desc_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent, unclipped_desc_surface);
+  CreateEffectNode(unclipped_desc_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   clip_child->SetBounds(gfx::Size(60, 60));
-  clip_child->test_properties()->clip_parent = clip_parent;
+  CopyProperties(unclipped_desc_surface, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   clipped_surface->SetBounds(gfx::Size(60, 60));
   clipped_surface->SetDrawsContent(true);
-  clipped_surface->test_properties()->force_render_surface = true;
-
-  clip_parent->SetMasksToBounds(true);
+  CopyProperties(clip_child, clipped_surface);
+  CreateEffectNode(clipped_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(30, 30), unclipped_surface->visible_layer_rect());
@@ -3417,41 +3322,48 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectsMultipleSurfaces) {
   EXPECT_EQ(gfx::Rect(50, 50), clipped_surface->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, RootClipPropagationToClippedSurface) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       RootClipPropagationToClippedSurface) {
   // Tests visible rects computation when we have unclipped_surface->
   // surface_with_unclipped_descendants->clipped_surface, checks that the bounds
   // of root propagate to the clipped_surface.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* unclipped_surface = AddChildToRoot<LayerImpl>();
-  LayerImpl* clip_parent = AddChild<LayerImpl>(unclipped_surface);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface);
-  LayerImpl* clipped_surface = AddChild<LayerImpl>(clip_child);
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* unclipped_desc_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* clipped_surface = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(10, 10));
+  SetupRootProperties(root);
 
   unclipped_surface->SetBounds(gfx::Size(50, 50));
   unclipped_surface->SetDrawsContent(true);
-  unclipped_surface->test_properties()->force_render_surface = true;
+  CopyProperties(root, unclipped_surface);
+  CreateEffectNode(unclipped_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   clip_parent->SetBounds(gfx::Size(50, 50));
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(unclipped_surface, clip_parent);
+  CreateClipNode(clip_parent);
 
   unclipped_desc_surface->SetBounds(gfx::Size(100, 100));
   unclipped_desc_surface->SetDrawsContent(true);
-  unclipped_desc_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent, unclipped_desc_surface);
+  CreateEffectNode(unclipped_desc_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(unclipped_desc_surface);
 
   clip_child->SetBounds(gfx::Size(100, 100));
-  clip_child->test_properties()->clip_parent = clip_parent;
+  CopyProperties(unclipped_desc_surface, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   clipped_surface->SetBounds(gfx::Size(50, 50));
   clipped_surface->SetDrawsContent(true);
   clipped_surface->test_properties()->force_render_surface = true;
-
-  clip_parent->SetMasksToBounds(true);
-  unclipped_desc_surface->SetMasksToBounds(true);
+  CopyProperties(clip_child, clipped_surface);
+  CreateEffectNode(clipped_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(10, 10), unclipped_surface->visible_layer_rect());
@@ -5085,47 +4997,52 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCopyRequest) {
   EXPECT_EQ(gfx::Rect(5, 5), copy_surface->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, TransformedClipParent) {
   // Ensure that a transform between the layer and its render surface is not a
   // problem. Constructs the following layer tree.
   //
+  // Virtual layer tree:
   //   root (a render surface)
   //     + render_surface
   //       + clip_parent (scaled)
   //         + intervening_clipping_layer
-  //           + clip_child
+  //           + clip_child (clipped_by_clip_parent)
   //
   // The render surface should be resized correctly and the clip child should
   // inherit the right clip rect.
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
-  LayerImpl* clip_parent = AddChild<LayerImpl>(render_surface);
-  clip_parent->SetDrawsContent(true);
-  LayerImpl* intervening = AddChild<LayerImpl>(clip_parent);
-  intervening->SetDrawsContent(true);
-  LayerImpl* clip_child = AddChild<LayerImpl>(intervening);
-  clip_child->SetDrawsContent(true);
-  clip_child->test_properties()->clip_parent = clip_parent;
-  std::unique_ptr<std::set<LayerImpl*>> clip_children(new std::set<LayerImpl*>);
-  clip_children->insert(clip_child);
-  clip_parent->test_properties()->clip_children = std::move(clip_children);
-
-  intervening->SetMasksToBounds(true);
-  clip_parent->SetMasksToBounds(true);
-
-  gfx::Transform scale_transform;
-  scale_transform.Scale(2, 2);
-
   root->SetBounds(gfx::Size(50, 50));
+  SetupRootProperties(root);
+
+  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
   render_surface->SetBounds(gfx::Size(10, 10));
-  render_surface->test_properties()->force_render_surface = true;
-  clip_parent->test_properties()->transform = scale_transform;
-  clip_parent->test_properties()->position = gfx::PointF(1.f, 1.f);
+  CopyProperties(root, render_surface);
+  CreateEffectNode(render_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  clip_parent->SetDrawsContent(true);
   clip_parent->SetBounds(gfx::Size(10, 10));
-  intervening->test_properties()->position = gfx::PointF(1.f, 1.f);
+  CopyProperties(render_surface, clip_parent);
+  auto& clip_parent_transform = CreateTransformNode(clip_parent);
+  clip_parent_transform.local.Scale(2, 2);
+  clip_parent_transform.post_translation = gfx::Vector2dF(1, 1);
+  CreateClipNode(clip_parent);
+
+  LayerImpl* intervening = AddChildToRoot<LayerImpl>();
+  intervening->SetDrawsContent(true);
   intervening->SetBounds(gfx::Size(5, 5));
-  clip_child->test_properties()->position = gfx::PointF(1.f, 1.f);
+  intervening->SetOffsetToTransformParent(gfx::Vector2dF(1, 1));
+  CopyProperties(clip_parent, intervening);
+  CreateClipNode(intervening);
+
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  clip_child->SetDrawsContent(true);
   clip_child->SetBounds(gfx::Size(10, 10));
+  clip_child->SetOffsetToTransformParent(gfx::Vector2dF(2, 2));
+  CopyProperties(intervening, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
+
   ExecuteCalculateDrawProperties(root);
 
   ASSERT_TRUE(GetRenderSurface(root));
@@ -5150,47 +5067,60 @@ TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
       GetRenderSurface(render_surface)->content_rect()));
 }
 
-TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       ClipParentWithInterveningRenderSurface) {
   // Ensure that intervening render surfaces are not a problem in the basic
   // case. In the following tree, both render surfaces should be resized to
   // accomodate for the clip child, despite an intervening clip.
   //
+  // Virtual layer tree:
   //   root (a render surface)
-  //    + clip_parent (masks to bounds)
+  //    + clip_parent (clips)
   //      + render_surface1 (sets opacity)
-  //        + intervening (masks to bounds)
+  //        + intervening (clips)
   //          + render_surface2 (also sets opacity)
-  //            + clip_child
+  //            + clip_child (clipped by clip_parent)
   //
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* intervening = AddChild<LayerImpl>(render_surface1);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(intervening);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface2);
-  render_surface1->SetDrawsContent(true);
-  render_surface2->SetDrawsContent(true);
-  clip_child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-
-  intervening->SetMasksToBounds(true);
-  clip_parent->SetMasksToBounds(true);
-
-  gfx::Transform translation_transform;
-  translation_transform.Translate(2, 2);
+  LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* intervening = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface2 = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(50, 50));
-  clip_parent->test_properties()->position = gfx::PointF(1.f, 1.f);
+  SetupRootProperties(root);
+
   clip_parent->SetBounds(gfx::Size(40, 40));
+  clip_parent->SetOffsetToTransformParent(gfx::Vector2dF(1, 1));
+  CopyProperties(root, clip_parent);
+  CreateClipNode(clip_parent);
+
+  render_surface1->SetDrawsContent(true);
   render_surface1->SetBounds(gfx::Size(10, 10));
-  render_surface1->test_properties()->force_render_surface = true;
-  intervening->test_properties()->position = gfx::PointF(1.f, 1.f);
+  CopyProperties(clip_parent, render_surface1);
+  CreateTransformNode(render_surface1).post_translation = gfx::Vector2dF(1, 1);
+  CreateEffectNode(render_surface1).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   intervening->SetBounds(gfx::Size(5, 5));
+  intervening->SetOffsetToTransformParent(gfx::Vector2dF(1, 1));
+  CopyProperties(render_surface1, intervening);
+  CreateClipNode(intervening);
+
+  render_surface2->SetDrawsContent(true);
   render_surface2->SetBounds(gfx::Size(10, 10));
-  render_surface2->test_properties()->force_render_surface = true;
-  clip_child->test_properties()->position = gfx::PointF(-10.f, -10.f);
+  CopyProperties(intervening, render_surface2);
+  CreateTransformNode(render_surface2).post_translation = gfx::Vector2dF(1, 1);
+  CreateEffectNode(render_surface2).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   clip_child->SetBounds(gfx::Size(60, 60));
+  clip_child->SetDrawsContent(true);
+  clip_child->SetOffsetToTransformParent(gfx::Vector2dF(-10, -10));
+  CopyProperties(render_surface2, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
+
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(GetRenderSurface(root));
@@ -5233,52 +5163,65 @@ TEST_F(LayerTreeHostCommonTest, ClipParentWithInterveningRenderSurface) {
   EXPECT_FALSE(clip_child->is_clipped());
 }
 
-TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       ClipParentScrolledInterveningLayer) {
   // Ensure that intervening render surfaces are not a problem, even if there
   // is a scroll involved. Note, we do _not_ have to consider any other sort
   // of transform.
   //
+  // Virtual layer tree:
   //   root (a render surface)
-  //    + clip_parent (masks to bounds)
-  //      + render_surface1 (sets opacity)
-  //        + intervening (masks to bounds AND scrolls)
-  //          + render_surface2 (also sets opacity)
-  //            + clip_child
+  //    + clip_parent (clips and transforms)
+  //      + render_surface1 (has render surface)
+  //        + intervening (clips AND scrolls)
+  //          + render_surface2 (also has render surface)
+  //            + clip_child (clipped by clip_parent)
   //
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* intervening = AddChild<LayerImpl>(render_surface1);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(intervening);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface2);
-  render_surface1->SetDrawsContent(true);
-  render_surface2->SetDrawsContent(true);
-  clip_child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-
-  intervening->SetMasksToBounds(true);
-  clip_parent->SetMasksToBounds(true);
-  intervening->SetScrollable(gfx::Size(1, 1));
-  intervening->SetElementId(LayerIdToElementIdForTesting(intervening->id()));
-
-  gfx::Transform translation_transform;
-  translation_transform.Translate(2, 2);
+  LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* intervening = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface2 = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(50, 50));
-  clip_parent->test_properties()->transform = translation_transform;
-  clip_parent->test_properties()->position = gfx::PointF(1.f, 1.f);
+  SetupRootProperties(root);
+
   clip_parent->SetBounds(gfx::Size(40, 40));
+  CopyProperties(root, clip_parent);
+  auto& clip_parent_transform = CreateTransformNode(clip_parent);
+  clip_parent_transform.local.Translate(2, 2);
+  clip_parent_transform.post_translation = gfx::Vector2dF(1, 1);
+  CreateClipNode(clip_parent);
+
+  render_surface1->SetDrawsContent(true);
   render_surface1->SetBounds(gfx::Size(10, 10));
-  render_surface1->test_properties()->force_render_surface = true;
-  intervening->test_properties()->position = gfx::PointF(1.f, 1.f);
+  CopyProperties(clip_parent, render_surface1);
+  CreateEffectNode(render_surface1).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   intervening->SetBounds(gfx::Size(5, 5));
+  intervening->SetScrollable(gfx::Size(1, 1));
+  intervening->SetElementId(LayerIdToElementIdForTesting(intervening->id()));
+  CopyProperties(render_surface1, intervening);
+  CreateTransformNode(intervening).post_translation = gfx::Vector2dF(1, 1);
+  CreateScrollNode(intervening);
+  CreateClipNode(intervening);
+
+  render_surface2->SetDrawsContent(true);
   render_surface2->SetBounds(gfx::Size(10, 10));
-  render_surface2->test_properties()->force_render_surface = true;
-  clip_child->test_properties()->position = gfx::PointF(-10.f, -10.f);
+  CopyProperties(intervening, render_surface2);
+  CreateTransformNode(render_surface2);
+  CreateEffectNode(render_surface2).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   clip_child->SetBounds(gfx::Size(60, 60));
-  BuildPropertyTreesForTesting();
-  intervening->SetCurrentScrollOffset(gfx::ScrollOffset(3, 3));
+  clip_child->SetDrawsContent(true);
+  clip_child->SetOffsetToTransformParent(gfx::Vector2dF(-10, -10));
+  CopyProperties(render_surface2, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
+
+  SetScrollOffset(intervening, gfx::ScrollOffset(3, 3));
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(GetRenderSurface(root));
@@ -5320,35 +5263,41 @@ TEST_F(LayerTreeHostCommonTest, ClipParentScrolledInterveningLayer) {
   EXPECT_FALSE(clip_child->is_clipped());
 }
 
-TEST_F(LayerTreeHostCommonTest, DescendantsOfClipChildren) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, DescendantsOfClipChildren) {
   // Ensures that descendants of the clip child inherit the correct clip.
   //
+  // Virtual layer tree:
   //   root (a render surface)
-  //    + clip_parent (masks to bounds)
-  //      + intervening (masks to bounds)
-  //        + clip_child
+  //    + clip_parent (clips)
+  //      + intervening (clips)
+  //        + clip_child (clipped by clip_parent, skipping intervening)
   //          + child
   //
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* clip_parent = AddChild<LayerImpl>(root);
-  LayerImpl* intervening = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(intervening);
-  LayerImpl* child = AddChild<LayerImpl>(clip_child);
-  clip_child->SetDrawsContent(true);
-  child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* intervening = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(50, 50));
+  SetupRootProperties(root);
+
   clip_parent->SetBounds(gfx::Size(40, 40));
-  clip_parent->SetMasksToBounds(true);
+  CopyProperties(root, clip_parent);
+  CreateClipNode(clip_parent);
+
   intervening->SetBounds(gfx::Size(5, 5));
-  intervening->SetMasksToBounds(true);
+  CopyProperties(clip_parent, intervening);
+  CreateClipNode(intervening);
+
+  clip_child->SetDrawsContent(true);
   clip_child->SetBounds(gfx::Size(60, 60));
+  CopyProperties(intervening, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
+
+  child->SetDrawsContent(true);
   child->SetBounds(gfx::Size(60, 60));
+  CopyProperties(clip_child, child);
 
   ExecuteCalculateDrawProperties(root);
 
@@ -5362,52 +5311,62 @@ TEST_F(LayerTreeHostCommonTest, DescendantsOfClipChildren) {
   EXPECT_TRUE(child->is_clipped());
 }
 
-TEST_F(LayerTreeHostCommonTest,
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
        SurfacesShouldBeUnaffectedByNonDescendantClipChildren) {
   // Ensures that non-descendant clip children in the tree do not affect
   // render surfaces.
   //
   //   root (a render surface)
-  //    + clip_parent (masks to bounds)
-  //      + clip_layer (masks to bounds)
+  //    + clip_parent (clips)
+  //      + clip_layer (clips)
   //        + render_surface1
-  //          + clip_child
+  //          + clip_child (clipped by clip_parent)
   //        + render_surface2
-  //          + non_clip_child
+  //          + non_clip_child (in normal clip hierarchy)
   //
   // In this example render_surface2 should be unaffected by clip_child.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* clip_layer = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface1);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* non_clip_child = AddChild<LayerImpl>(render_surface2);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
-
-  clip_parent->SetMasksToBounds(true);
-  clip_layer->SetMasksToBounds(true);
-
-  render_surface1->SetDrawsContent(true);
-  clip_child->SetDrawsContent(true);
-  render_surface2->SetDrawsContent(true);
-  non_clip_child->SetDrawsContent(true);
+  LayerImpl* clip_layer = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface2 = AddChildToRoot<LayerImpl>();
+  LayerImpl* non_clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(15, 15));
+  SetupRootProperties(root);
+
   clip_parent->SetBounds(gfx::Size(10, 10));
+  CopyProperties(root, clip_parent);
+  CreateClipNode(clip_parent);
+
   clip_layer->SetBounds(gfx::Size(10, 10));
-  render_surface1->test_properties()->position = gfx::PointF(5, 5);
+  CopyProperties(clip_parent, clip_layer);
+  CreateClipNode(clip_layer);
+
+  render_surface1->SetDrawsContent(true);
   render_surface1->SetBounds(gfx::Size(5, 5));
-  render_surface1->test_properties()->force_render_surface = true;
+  CopyProperties(clip_layer, render_surface1);
+  CreateTransformNode(render_surface1).post_translation = gfx::Vector2dF(5, 5);
+  CreateEffectNode(render_surface1).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
+  render_surface2->SetDrawsContent(true);
   render_surface2->SetBounds(gfx::Size(5, 5));
-  render_surface2->test_properties()->force_render_surface = true;
-  clip_child->test_properties()->position = gfx::PointF(-1, 1);
+  CopyProperties(clip_layer, render_surface2);
+  CreateTransformNode(render_surface2).post_translation = gfx::Vector2dF(5, 5);
+  CreateEffectNode(render_surface2).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
+  clip_child->SetDrawsContent(true);
+  clip_child->SetOffsetToTransformParent(gfx::Vector2dF(-1, 1));
   clip_child->SetBounds(gfx::Size(10, 10));
+  CopyProperties(render_surface1, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
+
+  non_clip_child->SetDrawsContent(true);
   non_clip_child->SetBounds(gfx::Size(5, 5));
+  CopyProperties(render_surface2, non_clip_child);
 
   ExecuteCalculateDrawProperties(root);
 
@@ -5639,64 +5598,44 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {
                   ->hidden_by_backface_visibility);
 }
 
-TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
-  // Checks that the simple case (being clipped by a scroll parent that would
-  // have been processed before you anyhow) results in the right clips.
-  //
-  // + root
-  //   + scroll_parent_border
-  //   | + scroll_parent_clip
-  //   |   + scroll_parent
-  //   + scroll_child
-  //
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* scroll_parent_border = AddChildToRoot<LayerImpl>();
-  LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
-  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
-  LayerImpl* scroll_child = AddChild<LayerImpl>(root);
-
-  scroll_parent->SetDrawsContent(true);
-  scroll_child->SetDrawsContent(true);
-  scroll_parent_clip->SetMasksToBounds(true);
-
-  scroll_child->test_properties()->scroll_parent = scroll_parent;
-
-  root->SetBounds(gfx::Size(50, 50));
-  scroll_parent_border->SetBounds(gfx::Size(40, 40));
-  scroll_parent_clip->SetBounds(gfx::Size(30, 30));
-  scroll_parent->SetBounds(gfx::Size(50, 50));
-  scroll_child->SetBounds(gfx::Size(50, 50));
-  ExecuteCalculateDrawProperties(root);
-
-  EXPECT_TRUE(GetRenderSurface(root));
-
-  EXPECT_EQ(gfx::Rect(0, 0, 30, 30), scroll_child->clip_rect());
-  EXPECT_TRUE(scroll_child->is_clipped());
-}
-
-TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       ScrollChildAndScrollParentDifferentTargets) {
   // Tests the computation of draw transform for the scroll child when its
-  // target is different from its scroll parent's target.
+  // render surface is different from its scroll parent's render surface.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* scroll_child_target = AddChildToRoot<LayerImpl>();
   LayerImpl* scroll_child = AddChild<LayerImpl>(scroll_child_target);
   LayerImpl* scroll_parent_target = AddChild<LayerImpl>(scroll_child_target);
   LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_target);
 
-  scroll_parent->SetDrawsContent(true);
-  scroll_child->SetDrawsContent(true);
-
-  scroll_child->test_properties()->scroll_parent = scroll_parent;
-
   root->SetBounds(gfx::Size(50, 50));
+  SetupRootProperties(root);
+
   scroll_child_target->SetBounds(gfx::Size(50, 50));
-  scroll_child_target->test_properties()->force_render_surface = true;
-  scroll_child->SetBounds(gfx::Size(50, 50));
-  scroll_parent_target->test_properties()->position = gfx::PointF(10, 10);
+  CopyProperties(root, scroll_child_target);
+  auto& child_target_effect_node = CreateEffectNode(scroll_child_target);
+  child_target_effect_node.render_surface_reason = RenderSurfaceReason::kTest;
+
   scroll_parent_target->SetBounds(gfx::Size(50, 50));
-  scroll_parent_target->SetMasksToBounds(true);
-  scroll_parent_target->test_properties()->force_render_surface = true;
+  CopyProperties(scroll_child_target, scroll_parent_target);
+  CreateTransformNode(scroll_parent_target).post_translation =
+      gfx::Vector2dF(10, 10);
+  CreateScrollNode(scroll_parent_target);
+  CreateEffectNode(scroll_parent_target).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(scroll_parent_target);
+
   scroll_parent->SetBounds(gfx::Size(50, 50));
+  scroll_parent->SetDrawsContent(true);
+  CopyProperties(scroll_parent_target, scroll_parent);
+
+  scroll_child->SetBounds(gfx::Size(50, 50));
+  scroll_child->SetDrawsContent(true);
+  // Let |scroll_child| inherit |scroll_parent|'s transform/clip/scroll states,
+  CopyProperties(scroll_parent, scroll_child);
+  // and |scroll_child_target|'s effect state.
+  scroll_child->SetEffectTreeIndex(scroll_child_target->effect_tree_index());
+  scroll_child->SetOffsetToTransformParent(gfx::Vector2dF(-10, -10));
 
   float device_scale_factor = 1.5f;
   RenderSurfaceList render_surface_list_impl;
@@ -5759,371 +5698,66 @@ TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
   EXPECT_EQ(1u, render_surface_list_impl()->size());
 }
 
-TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollParent) {
-  // Checks that clipping by a scroll parent that follows you in paint order
-  // still results in correct clipping.
+TEST_F(LayerTreeHostCommonTestWithLayerLists, ScrollSnapping) {
+  // This test verifies that a scrolling layer gets scroll offset snapped to
+  // integer coordinates.
   //
-  // + root
-  //   + scroll_parent_border
-  //     + scroll_parent_clip
-  //       + scroll_parent
-  //   + scroll_child
-  //
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* scroll_parent_border = AddChild<LayerImpl>(root);
-  LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
-  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
-  LayerImpl* scroll_child = AddChild<LayerImpl>(root);
-
-  scroll_parent->SetDrawsContent(true);
-  scroll_child->SetDrawsContent(true);
-
-  root->SetBounds(gfx::Size(50, 50));
-  scroll_parent_border->SetBounds(gfx::Size(40, 40));
-  scroll_parent_clip->SetBounds(gfx::Size(30, 30));
-  scroll_parent_clip->SetMasksToBounds(true);
-  scroll_parent->SetBounds(gfx::Size(50, 50));
-  scroll_child->SetBounds(gfx::Size(50, 50));
-
-  scroll_child->test_properties()->scroll_parent = scroll_parent;
-
-  ExecuteCalculateDrawProperties(root);
-
-  EXPECT_TRUE(GetRenderSurface(root));
-
-  EXPECT_EQ(gfx::Rect(0, 0, 30, 30), scroll_child->clip_rect());
-  EXPECT_TRUE(scroll_child->is_clipped());
-}
-
-TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
-  // Checks that clipping by a scroll parent and scroll grandparent that follow
-  // you in paint order still results in correct clipping.
-  //
-  // + root
-  //   + scroll_child
-  //   + scroll_parent_border
-  //   | + scroll_parent_clip
-  //   |   + scroll_parent
-  //   + scroll_grandparent_border
-  //     + scroll_grandparent_clip
-  //       + scroll_grandparent
-  //
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* scroll_child = AddChild<LayerImpl>(root);
-  LayerImpl* scroll_parent_border = AddChild<LayerImpl>(root);
-  LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
-  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
-  LayerImpl* scroll_grandparent_border = AddChild<LayerImpl>(root);
-  LayerImpl* scroll_grandparent_clip =
-      AddChild<LayerImpl>(scroll_grandparent_border);
-  LayerImpl* scroll_grandparent = AddChild<LayerImpl>(scroll_grandparent_clip);
-
-  scroll_parent->SetDrawsContent(true);
-  scroll_grandparent->SetDrawsContent(true);
-  scroll_child->SetDrawsContent(true);
-
-  scroll_parent_clip->SetMasksToBounds(true);
-  scroll_grandparent_clip->SetMasksToBounds(true);
-
-  scroll_child->test_properties()->scroll_parent = scroll_parent;
-
-  scroll_parent_border->test_properties()->scroll_parent = scroll_grandparent;
-
-  root->SetBounds(gfx::Size(50, 50));
-  scroll_grandparent_border->SetBounds(gfx::Size(40, 40));
-  scroll_grandparent_clip->SetBounds(gfx::Size(20, 20));
-  scroll_grandparent->SetBounds(gfx::Size(50, 50));
-  scroll_parent_border->SetBounds(gfx::Size(40, 40));
-  scroll_parent_clip->SetBounds(gfx::Size(30, 30));
-  scroll_parent->SetBounds(gfx::Size(50, 50));
-  scroll_child->SetBounds(gfx::Size(50, 50));
-
-  ExecuteCalculateDrawProperties(root);
-
-  EXPECT_TRUE(GetRenderSurface(root));
-
-  EXPECT_EQ(gfx::Rect(0, 0, 20, 20), scroll_child->clip_rect());
-  EXPECT_TRUE(scroll_child->is_clipped());
-
-  // Despite the fact that we visited the above layers out of order to get the
-  // correct clip, the layer lists should be unaffected.
-  EXPECT_EQ(3, GetRenderSurface(root)->num_contributors());
-  EXPECT_TRUE(scroll_child->contributes_to_drawn_render_surface());
-  EXPECT_TRUE(scroll_parent->contributes_to_drawn_render_surface());
-  EXPECT_TRUE(scroll_grandparent->contributes_to_drawn_render_surface());
-}
-
-TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
-  // Ensures that even if we visit layers out of order, we still produce a
-  // correctly ordered render surface layer list.
-  // + root
-  //   + scroll_child
-  //   + scroll_parent_border
-  //     + scroll_parent_clip
-  //       + scroll_parent
-  //         + render_surface2
-  //   + scroll_grandparent_border
-  //     + scroll_grandparent_clip
-  //       + scroll_grandparent
-  //         + render_surface1
-  //
-  LayerImpl* root = root_layer_for_testing();
-  root->SetDrawsContent(true);
-
-  LayerImpl* scroll_child = AddChild<LayerImpl>(root);
-  scroll_child->SetDrawsContent(true);
-
-  LayerImpl* scroll_parent_border = AddChild<LayerImpl>(root);
-  LayerImpl* scroll_parent_clip = AddChild<LayerImpl>(scroll_parent_border);
-  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_clip);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(scroll_parent);
-  LayerImpl* scroll_grandparent_border = AddChild<LayerImpl>(root);
-  LayerImpl* scroll_grandparent_clip =
-      AddChild<LayerImpl>(scroll_grandparent_border);
-  LayerImpl* scroll_grandparent = AddChild<LayerImpl>(scroll_grandparent_clip);
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(scroll_grandparent);
-
-  scroll_parent->SetDrawsContent(true);
-  render_surface1->SetDrawsContent(true);
-  scroll_grandparent->SetDrawsContent(true);
-  render_surface2->SetDrawsContent(true);
-
-  scroll_parent_clip->SetMasksToBounds(true);
-  scroll_grandparent_clip->SetMasksToBounds(true);
-
-  scroll_child->test_properties()->scroll_parent = scroll_parent;
-
-  scroll_parent_border->test_properties()->scroll_parent = scroll_grandparent;
-
-  root->SetBounds(gfx::Size(50, 50));
-  scroll_grandparent_border->SetBounds(gfx::Size(40, 40));
-  scroll_grandparent_clip->SetBounds(gfx::Size(20, 20));
-  scroll_grandparent->SetBounds(gfx::Size(50, 50));
-  render_surface1->SetBounds(gfx::Size(50, 50));
-  render_surface1->test_properties()->force_render_surface = true;
-  scroll_parent_border->SetBounds(gfx::Size(40, 40));
-  scroll_parent_clip->SetBounds(gfx::Size(30, 30));
-  scroll_parent->SetBounds(gfx::Size(50, 50));
-  render_surface2->SetBounds(gfx::Size(50, 50));
-  render_surface2->test_properties()->force_render_surface = true;
-  scroll_child->SetBounds(gfx::Size(50, 50));
-
-  ExecuteCalculateDrawProperties(root);
-
-  EXPECT_TRUE(GetRenderSurface(root));
-
-  EXPECT_EQ(gfx::Rect(0, 0, 20, 20), scroll_child->clip_rect());
-  EXPECT_TRUE(scroll_child->is_clipped());
-
-  // Despite the fact that we had to process the layers out of order to get the
-  // right clip, our render_surface_list's order should be unaffected.
-  EXPECT_EQ(3u, render_surface_list_impl()->size());
-  EXPECT_EQ(GetRenderSurface(root), render_surface_list_impl()->at(0));
-  EXPECT_EQ(GetRenderSurface(render_surface2),
-            render_surface_list_impl()->at(1));
-  EXPECT_EQ(GetRenderSurface(render_surface1),
-            render_surface_list_impl()->at(2));
-}
-
-TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
-  // Ensures that when we have a render surface between a fixed position layer
-  // and its container, we compute the fixed position layer's draw transform
-  // with respect to that intervening render surface, not with respect to its
-  // container's render target.
-  //
-  // + root
-  //   + render_surface
-  //     + fixed
-  //       + child
-  //
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* render_surface = AddChild<LayerImpl>(root);
-  LayerImpl* fixed = AddChild<LayerImpl>(render_surface);
-  LayerImpl* child = AddChild<LayerImpl>(fixed);
-
-  render_surface->test_properties()->force_render_surface = true;
-  root->test_properties()->is_container_for_fixed_position_layers = true;
-
-  LayerPositionConstraint constraint;
-  constraint.set_is_fixed_position(true);
-  fixed->test_properties()->position_constraint = constraint;
-
-  root->SetBounds(gfx::Size(50, 50));
-  render_surface->test_properties()->position = gfx::PointF(7.f, 9.f);
-  render_surface->SetBounds(gfx::Size(50, 50));
-  render_surface->SetDrawsContent(true);
-  fixed->test_properties()->position = gfx::PointF(10.f, 15.f);
-  fixed->SetBounds(gfx::Size(50, 50));
-  fixed->SetDrawsContent(true);
-  child->test_properties()->position = gfx::PointF(1.f, 2.f);
-  child->SetBounds(gfx::Size(50, 50));
-  child->SetDrawsContent(true);
-  ExecuteCalculateDrawProperties(root);
-
-  TransformTree& transform_tree =
-      host_impl()->active_tree()->property_trees()->transform_tree;
-  EffectTree& effect_tree =
-      host_impl()->active_tree()->property_trees()->effect_tree;
-
-  gfx::Transform expected_fixed_draw_transform;
-  expected_fixed_draw_transform.Translate(10.f, 15.f);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_fixed_draw_transform,
-      draw_property_utils::DrawTransform(fixed, transform_tree, effect_tree));
-
-  gfx::Transform expected_fixed_screen_space_transform;
-  expected_fixed_screen_space_transform.Translate(17.f, 24.f);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_fixed_screen_space_transform,
-      draw_property_utils::ScreenSpaceTransform(fixed, transform_tree));
-
-  gfx::Transform expected_child_draw_transform;
-  expected_child_draw_transform.Translate(11.f, 17.f);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_child_draw_transform,
-      draw_property_utils::DrawTransform(child, transform_tree, effect_tree));
-
-  gfx::Transform expected_child_screen_space_transform;
-  expected_child_screen_space_transform.Translate(18.f, 26.f);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_child_screen_space_transform,
-      draw_property_utils::ScreenSpaceTransform(child, transform_tree));
-}
-
-TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
-  // This test verifies that a scrolling layer that gets snapped to
-  // integer coordinates doesn't move a fixed position child.
-  //
+  // Virtual layer hierarchy:
   // + root
   //   + container
   //     + scroller
-  //       + fixed
   //
-  FakeImplTaskRunnerProvider task_runner_provider;
-  TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
-  host_impl.CreatePendingTree();
-  std::unique_ptr<LayerImpl> root_ptr =
-      LayerImpl::Create(host_impl.active_tree(), 1);
-  LayerImpl* root = root_ptr.get();
-  std::unique_ptr<LayerImpl> container =
-      LayerImpl::Create(host_impl.active_tree(), 2);
-  LayerImpl* container_layer = container.get();
-  std::unique_ptr<LayerImpl> scroller =
-      LayerImpl::Create(host_impl.active_tree(), 3);
-  LayerImpl* scroll_layer = scroller.get();
-  std::unique_ptr<LayerImpl> fixed =
-      LayerImpl::Create(host_impl.active_tree(), 4);
-  LayerImpl* fixed_layer = fixed.get();
-
-  container->test_properties()->is_container_for_fixed_position_layers = true;
-
-  LayerPositionConstraint constraint;
-  constraint.set_is_fixed_position(true);
-  fixed->test_properties()->position_constraint = constraint;
-
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-
-  gfx::Transform container_transform;
-  container_transform.Translate3d(10.0, 20.0, 0.0);
-  gfx::Vector2dF container_offset = container_transform.To2dTranslation();
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* container = AddChildToRoot<LayerImpl>();
+  LayerImpl* scroller = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(50, 50));
-  container->test_properties()->transform = container_transform;
+  SetupRootProperties(root);
+
   container->SetBounds(gfx::Size(40, 40));
   container->SetDrawsContent(true);
+  CopyProperties(root, container);
+
+  gfx::Vector2dF container_offset(10, 20);
+
+  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetBounds(gfx::Size(30, 30));
   scroller->SetScrollable(container->bounds());
   scroller->SetDrawsContent(true);
-  fixed->SetBounds(gfx::Size(50, 50));
-  fixed->SetDrawsContent(true);
-
-  scroller->test_properties()->AddChild(std::move(fixed));
-  container->test_properties()->AddChild(std::move(scroller));
-  root->test_properties()->AddChild(std::move(container));
-  root->layer_tree_impl()->SetRootLayerForTesting(std::move(root_ptr));
-  root->layer_tree_impl()->BuildPropertyTreesForTesting();
+  CopyProperties(container, scroller);
+  CreateTransformNode(scroller).post_translation = container_offset;
+  CreateScrollNode(scroller);
 
   // Rounded to integers already.
   {
     gfx::Vector2dF scroll_delta(3.0, 5.0);
-    SetScrollOffsetDelta(scroll_layer, scroll_delta);
+    SetScrollOffsetDelta(scroller, scroll_delta);
+    ExecuteCalculateDrawProperties(root);
 
-    RenderSurfaceList render_surface_list;
-    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_list);
-    root->layer_tree_impl()
-        ->property_trees()
-        ->transform_tree.set_source_to_parent_updates_allowed(false);
-    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        container_layer->draw_properties().screen_space_transform,
-        fixed_layer->draw_properties().screen_space_transform);
     EXPECT_VECTOR_EQ(
-        fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
-        container_offset);
-    EXPECT_VECTOR_EQ(scroll_layer->draw_properties()
-                         .screen_space_transform.To2dTranslation(),
-                     container_offset - scroll_delta);
+        scroller->draw_properties().screen_space_transform.To2dTranslation(),
+        container_offset - scroll_delta);
   }
 
   // Scroll delta requiring rounding.
   {
     gfx::Vector2dF scroll_delta(4.1f, 8.1f);
-    SetScrollOffsetDelta(scroll_layer, scroll_delta);
+    SetScrollOffsetDelta(scroller, scroll_delta);
+    ExecuteCalculateDrawProperties(root);
 
     gfx::Vector2dF rounded_scroll_delta(4.f, 8.f);
-
-    RenderSurfaceList render_surface_list;
-    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_list);
-    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        container_layer->draw_properties().screen_space_transform,
-        fixed_layer->draw_properties().screen_space_transform);
     EXPECT_VECTOR_EQ(
-        fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
-        container_offset);
-    EXPECT_VECTOR_EQ(scroll_layer->draw_properties()
-                         .screen_space_transform.To2dTranslation(),
-                     container_offset - rounded_scroll_delta);
-  }
-
-  // Scale is applied earlier in the tree.
-  {
-    SetScrollOffsetDelta(scroll_layer, gfx::Vector2dF());
-    gfx::Transform scaled_container_transform = container_transform;
-    scaled_container_transform.Scale3d(2.0, 2.0, 1.0);
-    container_layer->test_properties()->transform = scaled_container_transform;
-
-    root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-
-    gfx::Vector2dF scroll_delta(4.5f, 8.5f);
-    SetScrollOffsetDelta(scroll_layer, scroll_delta);
-
-    RenderSurfaceList render_surface_list;
-    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_list);
-    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-
-    EXPECT_TRANSFORMATION_MATRIX_EQ(
-        container_layer->draw_properties().screen_space_transform,
-        fixed_layer->draw_properties().screen_space_transform);
-    EXPECT_VECTOR_EQ(
-        fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
-        container_offset);
-
-    container_layer->test_properties()->transform = container_transform;
+        scroller->draw_properties().screen_space_transform.To2dTranslation(),
+        container_offset - rounded_scroll_delta);
   }
 }
 
-TEST_F(LayerTreeHostCommonTest,
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
        ScrollSnappingWithAnimatedScreenSpaceTransform) {
   // This test verifies that a scrolling layer whose screen space transform is
   // animating doesn't get snapped to integer coordinates.
   //
+  // Virtual layer hierarchy:
   // + root
   //   + animated layer
   //     + surface
@@ -6132,23 +5766,34 @@ TEST_F(LayerTreeHostCommonTest,
   //
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* animated_layer = AddChildToRoot<FakePictureLayerImpl>();
-  LayerImpl* surface = AddChild<LayerImpl>(animated_layer);
-  LayerImpl* container = AddChild<LayerImpl>(surface);
-  LayerImpl* scroller = AddChild<LayerImpl>(container);
+  LayerImpl* surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* container = AddChildToRoot<LayerImpl>();
+  LayerImpl* scroller = AddChildToRoot<LayerImpl>();
+  SetElementIdsForTesting();
+
+  root->SetBounds(gfx::Size(50, 50));
+  SetupRootProperties(root);
 
   gfx::Transform start_scale;
   start_scale.Scale(1.5f, 1.5f);
 
-  root->SetBounds(gfx::Size(50, 50));
-  animated_layer->test_properties()->transform = start_scale;
   animated_layer->SetBounds(gfx::Size(50, 50));
+  CopyProperties(root, animated_layer);
+  CreateTransformNode(animated_layer).local = start_scale;
+
   surface->SetBounds(gfx::Size(50, 50));
-  surface->test_properties()->force_render_surface = true;
+  CopyProperties(animated_layer, surface);
+  CreateEffectNode(surface).render_surface_reason = RenderSurfaceReason::kTest;
+
   container->SetBounds(gfx::Size(50, 50));
+  CopyProperties(surface, container);
+
   scroller->SetBounds(gfx::Size(100, 100));
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
   scroller->SetScrollable(container->bounds());
   scroller->SetDrawsContent(true);
+  CopyProperties(container, scroller);
+  CreateTransformNode(scroller);
+  CreateScrollNode(scroller);
 
   gfx::Transform end_scale;
   end_scale.Scale(2.f, 2.f);
@@ -6156,12 +5801,11 @@ TEST_F(LayerTreeHostCommonTest,
   start_operations.AppendMatrix(start_scale);
   TransformOperations end_operations;
   end_operations.AppendMatrix(end_scale);
-  SetElementIdsForTesting();
 
   AddAnimatedTransformToElementWithAnimation(animated_layer->element_id(),
                                              timeline_impl(), 1.0,
                                              start_operations, end_operations);
-  BuildPropertyTreesForTesting();
+
   gfx::Vector2dF scroll_delta(5.f, 9.f);
   SetScrollOffsetDelta(scroller, scroll_delta);
 
@@ -6172,225 +5816,183 @@ TEST_F(LayerTreeHostCommonTest,
                       scroller->DrawTransform().To2dTranslation());
 }
 
-TEST_F(LayerTreeHostCommonTest, ScrollSnappingWithScrollChild) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, ScrollSnappingWithScrollChild) {
   // This test verifies that a scrolling child of a scrolling layer doesn't get
   // snapped to integer coordinates.
   //
+  // Virtual layer hierarchy:
   // + root
   //   + container
-  //    + scroller
-  //   + scroll_child
+  //     + scroller
+  //   + scroll_child (transform parent is scroller)
   //
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> scroll_child = Layer::Create();
-  root->AddChild(container);
-  root->AddChild(scroll_child);
-  container->AddChild(scroller);
-  host()->SetRootLayer(root);
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* container = AddChildToRoot<LayerImpl>();
+  LayerImpl* scroller = AddChildToRoot<LayerImpl>();
+  LayerImpl* scroll_child = AddChildToRoot<LayerImpl>();
+  SetElementIdsForTesting();
 
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  scroll_child->SetScrollParent(scroller.get());
-
-  gfx::Transform rotate;
-  rotate.RotateAboutYAxis(30);
   root->SetBounds(gfx::Size(50, 50));
+  SetupRootProperties(root);
+
   container->SetBounds(gfx::Size(50, 50));
+  CopyProperties(root, container);
+  gfx::Vector2dF container_offset(10.3f, 10.3f);
+
   scroller->SetBounds(gfx::Size(100, 100));
   scroller->SetScrollable(container->bounds());
-  scroller->SetPosition(gfx::PointF(10.3f, 10.3f));
+  CopyProperties(container, scroller);
+  CreateTransformNode(scroller).post_translation = container_offset;
+  CreateScrollNode(scroller);
+
   scroll_child->SetBounds(gfx::Size(10, 10));
-  scroll_child->SetTransform(rotate);
+  CopyProperties(root, scroll_child);
+  auto& scroll_child_transform =
+      CreateTransformNode(scroll_child, scroller->transform_tree_index());
+  scroll_child_transform.local.RotateAboutYAxis(30);
+  scroll_child_transform.post_translation = -container_offset;
 
-  ExecuteCalculateDrawProperties(root.get());
-
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* scroll_child_impl = layer_tree_impl->LayerById(scroll_child->id());
   gfx::Vector2dF scroll_delta(5.f, 9.f);
-  SetScrollOffsetDelta(scroller_impl, scroll_delta);
-
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller, scroll_delta);
+  ExecuteCalculateDrawProperties(root);
 
   gfx::Vector2dF expected_scroller_screen_space_transform_translation(5.f, 1.f);
   EXPECT_VECTOR2DF_EQ(expected_scroller_screen_space_transform_translation,
-                      scroller_impl->ScreenSpaceTransform().To2dTranslation());
+                      scroller->ScreenSpaceTransform().To2dTranslation());
 
   gfx::Transform expected_scroll_child_screen_space_transform;
   expected_scroll_child_screen_space_transform.Translate(-5.3f, -9.3f);
   expected_scroll_child_screen_space_transform.RotateAboutYAxis(30);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_scroll_child_screen_space_transform,
-                                  scroll_child_impl->ScreenSpaceTransform());
+                                  scroll_child->ScreenSpaceTransform());
 }
 
-TEST_F(LayerTreeHostCommonTest, StickyPositionTop) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
+class LayerTreeHostCommonStickyPositionTest
+    : public LayerTreeHostCommonTestWithLayerLists {
+ protected:
+  // Setup layers and property trees.
+  // Virtual layer hierarchy:
+  // + root
+  //   + container
+  //     + scroller
+  //       + sticky_pos
+  void CreateTree() {
+    CreateRootAndScroller();
+    sticky_pos_ = CreateSticky(scroller_.get());
+  }
 
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  void CreateRootAndScroller() {
+    root_ = Layer::Create();
+    container_ = Layer::Create();
+    scroller_ = Layer::Create();
+    scroller_->SetElementId(LayerIdToElementIdForTesting(scroller_->id()));
+
+    root_->SetBounds(gfx::Size(100, 100));
+    host()->SetRootLayer(root_);
+    SetupRootProperties(root_.get());
+
+    container_->SetBounds(gfx::Size(100, 100));
+    CopyProperties(root_.get(), container_.get());
+    root_->AddChild(container_);
+
+    scroller_->SetBounds(gfx::Size(1000, 1000));
+    scroller_->SetScrollable(container_->bounds());
+    CopyProperties(container_.get(), scroller_.get());
+    CreateTransformNode(scroller_.get());
+    CreateScrollNode(scroller_.get());
+    root_->AddChild(scroller_);
+  }
+
+  scoped_refptr<Layer> CreateSticky(Layer* parent) {
+    scoped_refptr<Layer> sticky = Layer::Create();
+    sticky->SetBounds(gfx::Size(10, 10));
+    CopyProperties(parent, sticky.get());
+    CreateTransformNode(sticky.get());
+    EnsureStickyData(sticky.get()).scroll_ancestor =
+        parent->scroll_tree_index();
+    root_->AddChild(sticky);
+    return sticky;
+  }
+
+  void CommitAndUpdateImplPointers() {
+    ExecuteCalculateDrawProperties(root_.get());
+    host()->host_impl()->CreatePendingTree();
+    host()->CommitAndCreatePendingTree();
+    host()->host_impl()->ActivateSyncTree();
+    LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
+    root_impl_ = layer_tree_impl->LayerById(root_->id());
+    scroller_impl_ = layer_tree_impl->LayerById(scroller_->id());
+    sticky_pos_impl_ = layer_tree_impl->LayerById(sticky_pos_->id());
+  }
+
+  StickyPositionNodeData& EnsureStickyData(Layer* layer) {
+    return GetPropertyTrees(layer)->transform_tree.EnsureStickyPositionData(
+        layer->transform_tree_index());
+  }
+
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> container_;
+  scoped_refptr<Layer> scroller_;
+  scoped_refptr<Layer> sticky_pos_;
+  LayerImpl* root_impl_;
+  LayerImpl* scroller_impl_;
+  LayerImpl* sticky_pos_impl_;
+};
+
+TEST_F(LayerTreeHostCommonStickyPositionTest, StickyPositionTop) {
+  CreateTree();
+
+  GetTransformNode(sticky_pos_.get())->post_translation =
+      gfx::Vector2dF(10, 20);
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(10, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 0, 50, 50);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(10, 20));
+  CommitAndUpdateImplPointers();
 
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-
-  ExecuteCalculateDrawProperties(root_impl);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(10.f, 20.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll less than sticking point, sticky element should move with scroll as
   // we haven't gotten to the initial sticky item location yet.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(5.f, 5.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(5.f, 5.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(5.f, 15.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll past the sticking point, the Y coordinate should now be clamped.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(15.f, 15.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(15.f, 15.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(-5.f, 10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(15.f, 25.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(15.f, 25.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(-5.f, 10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll past the end of the sticky container (note: this element does not
   // have its own layer as it does not need to be composited).
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(15.f, 50.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(15.f, 50.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(-5.f, -10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
-TEST_F(LayerTreeHostCommonTest, StickyPositionTopScrollParent) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  root->AddChild(sticky_pos);
-  sticky_pos->SetScrollParent(scroller.get());
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
+TEST_F(LayerTreeHostCommonStickyPositionTest, StickyPositionSubpixelScroll) {
+  CreateTree();
 
-  // The sticky layer has already been scrolled on the main thread side, and has
-  // stuck. This test then checks that further changes from cc-only scrolling
-  // are handled correctly.
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
-  sticky_position.is_anchored_top = true;
-  sticky_position.top_offset = 10.0f;
-  sticky_position.scroll_container_relative_sticky_box_rect =
-      gfx::Rect(10, 20, 10, 10);
-  sticky_position.scroll_container_relative_containing_block_rect =
-      gfx::Rect(0, 0, 50, 50);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
-
-  root->SetBounds(gfx::Size(200, 200));
-  container->SetBounds(gfx::Size(100, 100));
-  container->SetPosition(gfx::PointF(50, 50));
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(60, 70));
-
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-
-  ExecuteCalculateDrawProperties(root_impl);
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(60.f, 70.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-
-  // Scroll less than sticking point, sticky element should move with scroll as
-  // we haven't gotten to the initial sticky item location yet.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(5.f, 5.f));
-  ExecuteCalculateDrawProperties(root_impl);
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(55.f, 65.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-
-  // Scroll past the sticking point, the Y coordinate should now be clamped.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(15.f, 15.f));
-  ExecuteCalculateDrawProperties(root_impl);
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(45.f, 60.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(15.f, 25.f));
-  ExecuteCalculateDrawProperties(root_impl);
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(45.f, 60.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-
-  // Scroll past the end of the sticky container (note: this element does not
-  // have its own layer as it does not need to be composited).
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(15.f, 50.f));
-  ExecuteCalculateDrawProperties(root_impl);
-  EXPECT_VECTOR2DF_EQ(
-      gfx::Vector2dF(45.f, 40.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-}
-
-TEST_F(LayerTreeHostCommonTest, StickyPositionSubpixelScroll) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  GetTransformNode(sticky_pos_.get())->post_translation =
+      gfx::Vector2dF(0, 200);
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
   sticky_position.constraint_box_rect = gfx::Rect(0, 0, 100, 100);
@@ -6398,46 +6000,22 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionSubpixelScroll) {
       gfx::Rect(0, 200, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 0, 100, 500);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(100, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(0, 200));
+  CommitAndUpdateImplPointers();
 
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-
-  ExecuteCalculateDrawProperties(root_impl);
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 0.8f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 0.8f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 80.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
-TEST_F(LayerTreeHostCommonTest, StickyPositionBottom) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
+TEST_F(LayerTreeHostCommonStickyPositionTest, StickyPositionBottom) {
+  CreateTree();
 
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  GetTransformNode(sticky_pos_.get())->post_translation =
+      gfx::Vector2dF(0, 150);
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
   sticky_position.constraint_box_rect = gfx::Rect(0, 0, 100, 100);
@@ -6445,81 +6023,52 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottom) {
       gfx::Rect(0, 150, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 100, 50, 50);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(0, 150));
-
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
+  CommitAndUpdateImplPointers();
 
   // Initially the sticky element is moved up to the top of the container.
-  ExecuteCalculateDrawProperties(root_impl);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 100.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 5.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 5.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 95.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Once we get past the top of the container it moves to be aligned 10px
   // up from the the bottom of the scroller.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 25.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 25.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 80.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 30.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 30.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 80.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Once we scroll past its initial location, it sticks there.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 150.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 150.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
-TEST_F(LayerTreeHostCommonTest, StickyPositionBottomOuterViewportDelta) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> page_scale = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> outer_clip = Layer::Create();
-  scoped_refptr<Layer> outer_viewport = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(page_scale);
-  page_scale->AddChild(scroller);
-  scroller->AddChild(outer_clip);
-  outer_clip->AddChild(outer_viewport);
-  outer_viewport->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  ViewportLayers viewport_layers;
-  viewport_layers.page_scale = page_scale;
-  viewport_layers.inner_viewport_container = root;
-  viewport_layers.outer_viewport_container = outer_clip;
-  viewport_layers.inner_viewport_scroll = scroller;
-  viewport_layers.outer_viewport_scroll = outer_viewport;
-  host()->RegisterViewportLayers(viewport_layers);
+TEST_F(LayerTreeHostCommonStickyPositionTest,
+       StickyPositionBottomOuterViewportDelta) {
+  CreateTree();
 
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  GetScrollNode(scroller_.get())->scrolls_outer_viewport = true;
+
+  auto* sticky_transform = GetTransformNode(sticky_pos_.get());
+  sticky_transform->post_translation = gfx::Vector2dF(0, 70);
+  GetPropertyTrees(sticky_pos_.get())
+      ->transform_tree.AddNodeAffectedByOuterViewportBoundsDelta(
+          sticky_transform->id);
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_bottom = true;
   sticky_position.bottom_offset = 10.0f;
   sticky_position.constraint_box_rect = gfx::Rect(0, 0, 100, 100);
@@ -6527,573 +6076,398 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionBottomOuterViewportDelta) {
       gfx::Rect(0, 70, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 60, 100, 100);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  scroller->SetScrollable(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(100, 1000));
-  outer_clip->SetBounds(gfx::Size(100, 100));
-  outer_viewport->SetScrollable(gfx::Size(100, 100));
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(0, 70));
-
-  ExecuteCalculateDrawProperties(root.get(), 1.f, 1.f, nullptr, scroller.get(),
-                                 outer_viewport.get());
-  host()->CommitAndCreateLayerImplTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  ASSERT_EQ(outer_viewport->id(),
-            layer_tree_impl->OuterViewportScrollLayer()->id());
-
-  LayerImpl* inner_scroll = layer_tree_impl->InnerViewportScrollLayer();
-  LayerImpl* outer_scroll = layer_tree_impl->OuterViewportScrollLayer();
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-  LayerImpl* outer_clip_impl = layer_tree_impl->LayerById(outer_clip->id());
+  CommitAndUpdateImplPointers();
 
   // Initially the sticky element is moved to the bottom of the container.
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 70.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // We start to hide the toolbar, but not far enough that the sticky element
   // should be moved up yet.
-  outer_clip_impl->SetViewportBoundsDelta(gfx::Vector2dF(0.f, -10.f));
-  ExecuteCalculateDrawProperties(root_impl, 1.f, 1.f, nullptr, inner_scroll,
-                                 outer_scroll);
+  GetPropertyTrees(scroller_impl_)
+      ->SetOuterViewportContainerBoundsDelta(gfx::Vector2dF(0.f, -10.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 70.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // On hiding more of the toolbar the sticky element starts to stick.
-  outer_clip_impl->SetViewportBoundsDelta(gfx::Vector2dF(0.f, -20.f));
-  ExecuteCalculateDrawProperties(root_impl, 1.f, 1.f, nullptr, inner_scroll,
-                                 outer_scroll);
+  GetPropertyTrees(scroller_impl_)
+      ->SetOuterViewportContainerBoundsDelta(gfx::Vector2dF(0.f, -20.f));
+  ExecuteCalculateDrawProperties(root_impl_);
 
   // On hiding more the sticky element stops moving as it has reached its
   // limit.
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 60.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
-  outer_clip_impl->SetViewportBoundsDelta(gfx::Vector2dF(0.f, -30.f));
-  ExecuteCalculateDrawProperties(root_impl, 1.f, 1.f, nullptr, inner_scroll,
-                                 outer_scroll);
+  GetPropertyTrees(scroller_impl_)
+      ->SetOuterViewportContainerBoundsDelta(gfx::Vector2dF(0.f, -30.f));
+  ExecuteCalculateDrawProperties(root_impl_);
 
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 60.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
-TEST_F(LayerTreeHostCommonTest, StickyPositionLeftRight) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
+TEST_F(LayerTreeHostCommonStickyPositionTest, StickyPositionLeftRight) {
+  CreateTree();
 
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  GetTransformNode(sticky_pos_.get())->post_translation =
+      gfx::Vector2dF(145, 0);
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_left = true;
   sticky_position.is_anchored_right = true;
-  sticky_position.left_offset = 10.f;
-  sticky_position.right_offset = 10.f;
+  sticky_position.left_offset = 10.0f;
+  sticky_position.right_offset = 10.0f;
   sticky_position.constraint_box_rect = gfx::Rect(0, 0, 100, 100);
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(145, 0, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(100, 0, 100, 100);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(145, 0));
-
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
+  CommitAndUpdateImplPointers();
 
   // Initially the sticky element is moved the leftmost side of the container.
-  ExecuteCalculateDrawProperties(root_impl);
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(100.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(5.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(5.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(95.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Once we get past the left side of the container it moves to be aligned 10px
   // up from the the right of the scroller.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(25.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(25.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(80.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(30.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(30.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(80.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // When we get to the sticky element's original position we stop sticking
   // to the right.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(95.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(95.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(50.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(105.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(105.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(40.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // The element starts sticking to the left once we scroll far enough.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(150.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(150.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(10.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(155.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(155.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(10.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Finally it stops sticking when it hits the right side of the container.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(190.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(190.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(195.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(195.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(-5.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
 // This test ensures that the compositor sticky position code correctly accounts
 // for the element having been given a position from the main thread sticky
 // position code.
-TEST_F(LayerTreeHostCommonTest, StickyPositionMainThreadUpdates) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
+TEST_F(LayerTreeHostCommonStickyPositionTest, StickyPositionMainThreadUpdates) {
+  CreateTree();
 
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  GetTransformNode(sticky_pos_.get())->post_translation =
+      gfx::Vector2dF(10, 20);
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(10, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 0, 50, 50);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(10, 20));
+  CommitAndUpdateImplPointers();
 
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-
-  ExecuteCalculateDrawProperties(root_impl);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(10.f, 20.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll less than sticking point, sticky element should move with scroll as
   // we haven't gotten to the initial sticky item location yet.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(5.f, 5.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(5.f, 5.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(5.f, 15.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll past the sticking point, the Y coordinate should now be clamped.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(15.f, 15.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(15.f, 15.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(-5.f, 10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Now the main thread commits the new position of the sticky element.
-  scroller->SetScrollOffset(gfx::ScrollOffset(15, 15));
+  SetScrollOffset(scroller_.get(), gfx::ScrollOffset(15, 15));
   // Shift the layer by -offset_for_position_sticky.
-  sticky_pos->SetPosition(gfx::PointF(10, 25) - gfx::Vector2dF(0, 5));
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  layer_tree_impl = host()->host_impl()->active_tree();
-  root_impl = layer_tree_impl->LayerById(root->id());
-  scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
+  auto* sticky_transform = GetTransformNode(sticky_pos_.get());
+  sticky_transform->post_translation = gfx::PointF(10, 25) - gfx::PointF(0, 5);
+  sticky_transform->needs_local_transform_update = true;
+  GetPropertyTrees(scroller_.get())->transform_tree.set_needs_update(true);
+
+  CommitAndUpdateImplPointers();
 
   // The element should still be where it was before. We reset the delta to
   // (0, 0) because we have synced a scroll offset of (15, 15) from the main
   // thread.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(-5.f, 10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // And if we scroll a little further it remains there.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 10.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 10.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(-5.f, 10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
 // This tests the main thread updates with a composited sticky container. In
 // this case the position received from main is relative to the container but
 // the constraint rects are relative to the ancestor scroller.
-TEST_F(LayerTreeHostCommonTest, StickyPositionCompositedContainer) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_container = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(sticky_container);
-  sticky_container->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
+TEST_F(LayerTreeHostCommonStickyPositionTest,
+       StickyPositionCompositedContainer) {
+  CreateRootAndScroller();
 
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  scoped_refptr<Layer> sticky_container = Layer::Create();
+  sticky_container->SetBounds(gfx::Size(30, 30));
+  sticky_container->SetOffsetToTransformParent(gfx::Vector2dF(20, 20));
+  CopyProperties(scroller_.get(), sticky_container.get());
+  root_->AddChild(sticky_container);
+
+  sticky_pos_ = CreateSticky(sticky_container.get());
+  GetTransformNode(sticky_pos_.get())->post_translation =
+      gfx::Vector2dF(0, 10) + sticky_container->offset_to_transform_parent();
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 10.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(20, 30, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(20, 20, 30, 30);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_container->SetPosition(gfx::PointF(20, 20));
-  sticky_container->SetBounds(gfx::Size(30, 30));
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(0, 10));
+  CommitAndUpdateImplPointers();
 
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-
-  ExecuteCalculateDrawProperties(root_impl);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(20.f, 30.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll less than sticking point, sticky element should move with scroll as
   // we haven't gotten to the initial sticky item location yet.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 5.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 5.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(20.f, 25.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll past the sticking point, the Y coordinate should now be clamped.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 25.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 25.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(20.f, 10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Now the main thread commits the new position of the sticky element.
-  scroller->SetScrollOffset(gfx::ScrollOffset(0, 25));
+  SetScrollOffset(scroller_.get(), gfx::ScrollOffset(0, 25));
   // Shift the layer by -offset_for_position_sticky.
-  sticky_pos->SetPosition(gfx::PointF(0, 15) - gfx::Vector2dF(0, 5));
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  layer_tree_impl = host()->host_impl()->active_tree();
-  root_impl = layer_tree_impl->LayerById(root->id());
-  scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
+  GetTransformNode(sticky_pos_.get())->post_translation =
+      gfx::PointF(0, 15) - gfx::PointF(0, 5) +
+      sticky_container->offset_to_transform_parent();
+  CommitAndUpdateImplPointers();
 
   // The element should still be where it was before. We reset the delta to
   // (0, 0) because we have synced a scroll offset of (0, 25) from the main
   // thread.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 0.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 0.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(20.f, 10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // And if we scroll a little further it remains there.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 5.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 5.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(20.f, 10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // And hits the bottom of the container.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 10.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 10.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(20.f, 5.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
 // A transform on a sticky element should not affect its sticky position.
-TEST_F(LayerTreeHostCommonTest, StickyPositionScaledStickyBox) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  gfx::Transform t;
-  t.Scale(2, 2);
-  sticky_pos->SetTransform(t);
+TEST_F(LayerTreeHostCommonStickyPositionTest, StickyPositionScaledStickyBox) {
+  CreateTree();
 
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  auto* transform_node = GetTransformNode(sticky_pos_.get());
+  transform_node->local.Scale(2, 2);
+  transform_node->post_translation = gfx::Vector2dF(0, 20);
+
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 0.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 0, 50, 50);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(0, 20));
+  CommitAndUpdateImplPointers();
 
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-
-  ExecuteCalculateDrawProperties(root_impl);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 20.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll less than sticking point, sticky element should move with scroll as
   // we haven't gotten to the initial sticky item location yet.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 15.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 15.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 5.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll past the sticking point, the box is positioned at the scroller
   // edge.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 25.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 25.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 30.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 30.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 0.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll past the end of the sticky container.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 50.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 50.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, -10.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
 // Tests that a transform does not affect the sticking points. The sticky
 // element will however move relative to the viewport due to its transform.
-TEST_F(LayerTreeHostCommonTest, StickyPositionScaledContainer) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> sticky_container = Layer::Create();
-  scoped_refptr<Layer> sticky_pos = Layer::Create();
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(sticky_container);
-  sticky_container->AddChild(sticky_pos);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  gfx::Transform t;
-  t.Scale(2, 2);
-  sticky_container->SetTransform(t);
+TEST_F(LayerTreeHostCommonStickyPositionTest, StickyPositionScaledContainer) {
+  CreateRootAndScroller();
 
-  LayerStickyPositionConstraint sticky_position;
-  sticky_position.is_sticky = true;
+  scoped_refptr<Layer> sticky_container = Layer::Create();
+  sticky_container->SetBounds(gfx::Size(50, 50));
+  CopyProperties(scroller_.get(), sticky_container.get());
+  CreateTransformNode(sticky_container.get()).local.Scale(2, 2);
+  root_->AddChild(sticky_container);
+
+  sticky_pos_ = CreateSticky(sticky_container.get());
+  GetTransformNode(sticky_pos_.get())->post_translation = gfx::Vector2dF(0, 20);
+  auto& sticky_position = EnsureStickyData(sticky_pos_.get()).constraints;
   sticky_position.is_anchored_top = true;
   sticky_position.top_offset = 0.0f;
   sticky_position.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 20, 10, 10);
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 0, 50, 50);
-  sticky_pos->SetStickyPositionConstraint(sticky_position);
 
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetScrollable(container->bounds());
-  sticky_container->SetBounds(gfx::Size(50, 50));
-  sticky_pos->SetBounds(gfx::Size(10, 10));
-  sticky_pos->SetPosition(gfx::PointF(0, 20));
+  CommitAndUpdateImplPointers();
 
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* sticky_pos_impl = layer_tree_impl->LayerById(sticky_pos->id());
-
-  ExecuteCalculateDrawProperties(root_impl);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 40.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll less than sticking point, sticky element should move with scroll as
   // we haven't gotten to the initial sticky item location yet.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 15.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 15.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 25.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll past the sticking point, the box is positioned at the scroller
   // edge but is also scaled by its container so it begins to move down.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 25.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 25.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 25.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 30.f));
-  ExecuteCalculateDrawProperties(root_impl);
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 30.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 30.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Scroll past the end of the sticky container.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 50.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 50.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 30.f),
-      sticky_pos_impl->ScreenSpaceTransform().To2dTranslation());
+      sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 }
 
-TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> outer_sticky = Layer::Create();
-  scoped_refptr<Layer> inner_sticky = Layer::Create();
+TEST_F(LayerTreeHostCommonStickyPositionTest, StickyPositionNested) {
+  CreateTree();
 
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(outer_sticky);
-  outer_sticky->AddChild(inner_sticky);
-  host()->SetRootLayer(root);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  outer_sticky->SetElementId(LayerIdToElementIdForTesting(outer_sticky->id()));
-
-  root->SetBounds(gfx::Size(100, 100));
-  container->SetBounds(gfx::Size(100, 100));
-  scroller->SetBounds(gfx::Size(100, 1000));
-  scroller->SetScrollable(container->bounds());
-  outer_sticky->SetBounds(gfx::Size(10, 50));
-  outer_sticky->SetPosition(gfx::PointF(0, 50));
-  inner_sticky->SetBounds(gfx::Size(10, 10));
-  inner_sticky->SetPosition(gfx::PointF(0, 0));
-
-  LayerStickyPositionConstraint outer_sticky_pos;
-  outer_sticky_pos.is_sticky = true;
+  GetTransformNode(sticky_pos_.get())->post_translation = gfx::Vector2dF(0, 50);
+  auto& outer_sticky_pos = EnsureStickyData(sticky_pos_.get()).constraints;
   outer_sticky_pos.is_anchored_top = true;
   outer_sticky_pos.top_offset = 10.0f;
   outer_sticky_pos.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 50, 10, 50);
   outer_sticky_pos.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 0, 50, 400);
-  outer_sticky->SetStickyPositionConstraint(outer_sticky_pos);
 
-  LayerStickyPositionConstraint inner_sticky_pos;
-  inner_sticky_pos.is_sticky = true;
+  scoped_refptr<Layer> inner_sticky = CreateSticky(sticky_pos_.get());
+  auto& inner_sticky_pos = EnsureStickyData(inner_sticky.get()).constraints;
   inner_sticky_pos.is_anchored_top = true;
   inner_sticky_pos.top_offset = 25.0f;
   inner_sticky_pos.scroll_container_relative_sticky_box_rect =
       gfx::Rect(0, 50, 10, 10);
   inner_sticky_pos.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 50, 10, 50);
-  inner_sticky_pos.nearest_element_shifting_containing_block =
-      outer_sticky->element_id();
-  inner_sticky->SetStickyPositionConstraint(inner_sticky_pos);
+  EnsureStickyData(inner_sticky.get()).nearest_node_shifting_containing_block =
+      sticky_pos_->transform_tree_index();
 
-  ExecuteCalculateDrawProperties(root.get());
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
+  CommitAndUpdateImplPointers();
   LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* outer_sticky_impl = layer_tree_impl->LayerById(outer_sticky->id());
+  LayerImpl* outer_sticky_impl = sticky_pos_impl_;
   LayerImpl* inner_sticky_impl = layer_tree_impl->LayerById(inner_sticky->id());
-
-  ExecuteCalculateDrawProperties(root_impl);
 
   // Before any scrolling is done, the sticky elements should still be at their
   // original positions.
@@ -7106,8 +6480,8 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
 
   // Scroll less than the sticking point. Both sticky elements should move with
   // scroll as we haven't gotten to the sticky item locations yet.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 5.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 5.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 45.f),
       outer_sticky_impl->ScreenSpaceTransform().To2dTranslation());
@@ -7117,8 +6491,8 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
 
   // Scroll such that the inner sticky should stick, but the outer one should
   // keep going as it hasn't reached its position yet.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 30.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 30.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 20.f),
       outer_sticky_impl->ScreenSpaceTransform().To2dTranslation());
@@ -7127,108 +6501,14 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionNested) {
       inner_sticky_impl->ScreenSpaceTransform().To2dTranslation());
 
   // Keep going, both should stick.
-  SetScrollOffsetDelta(scroller_impl, gfx::Vector2dF(0.f, 100.f));
-  ExecuteCalculateDrawProperties(root_impl);
+  SetScrollOffsetDelta(scroller_impl_, gfx::Vector2dF(0.f, 100.f));
+  ExecuteCalculateDrawProperties(root_impl_);
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 10.f),
       outer_sticky_impl->ScreenSpaceTransform().To2dTranslation());
   EXPECT_VECTOR2DF_EQ(
       gfx::Vector2dF(0.f, 25.f),
       inner_sticky_impl->ScreenSpaceTransform().To2dTranslation());
-}
-
-TEST_F(LayerTreeHostCommonTest, NonFlatContainerForFixedPosLayer) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> fixed_pos = Layer::Create();
-
-  scroller->SetIsContainerForFixedPositionLayers(true);
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(fixed_pos);
-  host()->SetRootLayer(root);
-
-  LayerPositionConstraint fixed_position;
-  fixed_position.set_is_fixed_position(true);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  fixed_pos->SetPositionConstraint(fixed_position);
-
-  root->SetBounds(gfx::Size(50, 50));
-  container->SetBounds(gfx::Size(50, 50));
-  scroller->SetBounds(gfx::Size(50, 50));
-  scroller->SetScrollable(container->bounds());
-  fixed_pos->SetBounds(gfx::Size(50, 50));
-
-  gfx::Transform rotate;
-  rotate.RotateAboutXAxis(20);
-  container->SetTransform(rotate);
-
-  ExecuteCalculateDrawProperties(root.get());
-  TransformTree& tree =
-      root->layer_tree_host()->property_trees()->transform_tree;
-  gfx::Transform transform;
-  tree.ComputeTranslation(fixed_pos->transform_tree_index(),
-                          container->transform_tree_index(), &transform);
-  EXPECT_TRUE(transform.IsIdentity());
-}
-
-TEST_F(LayerTreeHostCommonTest, ScrollSnappingWithFixedPosChild) {
-  // This test verifies that a fixed pos child of a scrolling layer doesn't get
-  // snapped to integer coordinates.
-  //
-  // + root
-  //   + container
-  //    + scroller
-  //     + fixed_pos
-  //
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> container = Layer::Create();
-  scoped_refptr<Layer> scroller = Layer::Create();
-  scoped_refptr<Layer> fixed_pos = Layer::Create();
-
-  scroller->SetIsContainerForFixedPositionLayers(true);
-
-  root->AddChild(container);
-  container->AddChild(scroller);
-  scroller->AddChild(fixed_pos);
-  host()->SetRootLayer(root);
-
-  LayerPositionConstraint fixed_position;
-  fixed_position.set_is_fixed_position(true);
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  fixed_pos->SetPositionConstraint(fixed_position);
-
-  root->SetBounds(gfx::Size(50, 50));
-  container->SetBounds(gfx::Size(50, 50));
-  scroller->SetBounds(gfx::Size(100, 100));
-  scroller->SetScrollable(container->bounds());
-  scroller->SetPosition(gfx::PointF(10.3f, 10.3f));
-  fixed_pos->SetBounds(gfx::Size(10, 10));
-
-  ExecuteCalculateDrawProperties(root.get());
-
-  host()->host_impl()->CreatePendingTree();
-  host()->CommitAndCreatePendingTree();
-  host()->host_impl()->ActivateSyncTree();
-  LayerTreeImpl* layer_tree_impl = host()->host_impl()->active_tree();
-
-  LayerImpl* root_impl = layer_tree_impl->LayerById(root->id());
-  LayerImpl* scroller_impl = layer_tree_impl->LayerById(scroller->id());
-  LayerImpl* fixed_pos_impl = layer_tree_impl->LayerById(fixed_pos->id());
-  gfx::Vector2dF scroll_delta(5.f, 9.f);
-  SetScrollOffsetDelta(scroller_impl, scroll_delta);
-
-  ExecuteCalculateDrawProperties(root_impl);
-
-  gfx::Vector2dF expected_scroller_screen_space_transform_translation(5.f, 1.f);
-  EXPECT_VECTOR2DF_EQ(expected_scroller_screen_space_transform_translation,
-                      scroller_impl->ScreenSpaceTransform().To2dTranslation());
-
-  gfx::Vector2dF expected_fixed_pos_screen_space_transform_translation(10.3f,
-                                                                       10.3f);
-  EXPECT_VECTOR2DF_EQ(expected_fixed_pos_screen_space_transform_translation,
-                      fixed_pos_impl->ScreenSpaceTransform().To2dTranslation());
 }
 
 class AnimationScaleFactorTrackingLayerImpl : public LayerImpl {
@@ -8027,64 +7307,6 @@ TEST_F(LayerTreeHostCommonTest, ViewportBoundsDeltaAffectVisibleContentRect) {
   EXPECT_EQ(affected_by_delta, sublayer->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, NodesAffectedByViewportBoundsDeltaGetUpdated) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> page_scale_layer = Layer::Create();
-  scoped_refptr<Layer> inner_viewport_container_layer = Layer::Create();
-  scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
-  scoped_refptr<Layer> outer_viewport_container_layer = Layer::Create();
-  scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
-
-  root->AddChild(inner_viewport_container_layer);
-  inner_viewport_container_layer->AddChild(page_scale_layer);
-  page_scale_layer->AddChild(inner_viewport_scroll_layer);
-  inner_viewport_scroll_layer->AddChild(outer_viewport_container_layer);
-  outer_viewport_container_layer->AddChild(outer_viewport_scroll_layer);
-
-  inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
-  outer_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
-  outer_viewport_scroll_layer->SetIsResizedByBrowserControls(true);
-
-  host()->SetRootLayer(root);
-  ViewportLayers viewport_layers;
-  viewport_layers.page_scale = page_scale_layer;
-  viewport_layers.inner_viewport_container = inner_viewport_container_layer;
-  viewport_layers.outer_viewport_container = outer_viewport_container_layer;
-  viewport_layers.inner_viewport_scroll = inner_viewport_scroll_layer;
-  viewport_layers.outer_viewport_scroll = outer_viewport_scroll_layer;
-  host()->RegisterViewportLayers(viewport_layers);
-
-  scoped_refptr<Layer> fixed_to_inner = Layer::Create();
-  scoped_refptr<Layer> fixed_to_outer = Layer::Create();
-
-  inner_viewport_scroll_layer->AddChild(fixed_to_inner);
-  outer_viewport_scroll_layer->AddChild(fixed_to_outer);
-
-  LayerPositionConstraint fixed_to_right;
-  fixed_to_right.set_is_fixed_position(true);
-  fixed_to_right.set_is_fixed_to_right_edge(true);
-
-  fixed_to_inner->SetPositionConstraint(fixed_to_right);
-  fixed_to_outer->SetPositionConstraint(fixed_to_right);
-
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-
-  TransformTree& transform_tree = host()->property_trees()->transform_tree;
-  EXPECT_TRUE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
-
-  LayerPositionConstraint fixed_to_left;
-  fixed_to_left.set_is_fixed_position(true);
-  fixed_to_inner->SetPositionConstraint(fixed_to_left);
-
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_TRUE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
-
-  fixed_to_outer->SetPositionConstraint(fixed_to_left);
-
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_FALSE(transform_tree.HasNodesAffectedByOuterViewportBoundsDelta());
-}
-
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectForAnimatedLayer) {
   host_impl()->CreatePendingTree();
   std::unique_ptr<LayerImpl> pending_root =
@@ -8327,124 +7549,6 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
   EXPECT_FALSE(HasPotentiallyRunningFilterAnimation(*grandchild));
 }
 
-// Ensures that the property tree code accounts for offsets between fixed
-// position layers and their respective containers.
-TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* child = AddChild<LayerImpl>(root);
-  LayerImpl* grandchild = AddChild<LayerImpl>(child);
-
-  root->SetBounds(gfx::Size(50, 50));
-  root->SetMasksToBounds(true);
-  root->test_properties()->is_container_for_fixed_position_layers = true;
-  child->test_properties()->position = gfx::PointF(1000, 1000);
-  child->SetBounds(gfx::Size(50, 50));
-  grandchild->test_properties()->position = gfx::PointF(-1000, -1000);
-  grandchild->SetBounds(gfx::Size(50, 50));
-  grandchild->SetDrawsContent(true);
-
-  LayerPositionConstraint constraint;
-  constraint.set_is_fixed_position(true);
-  grandchild->test_properties()->position_constraint = constraint;
-
-  ExecuteCalculateDrawProperties(root);
-
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), grandchild->visible_layer_rect());
-}
-
-// Ensures that the property tree code accounts for offsets between fixed
-// position containers and their transform tree parents, when a fixed position
-// layer's container is its layer tree parent, but this parent doesn't have its
-// own transform tree node.
-TEST_F(LayerTreeHostCommonTest,
-       PropertyTreesAccountForFixedParentOffsetWhenContainerIsParent) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* child = AddChild<LayerImpl>(root);
-  LayerImpl* grandchild = AddChild<LayerImpl>(child);
-
-  root->SetBounds(gfx::Size(50, 50));
-  root->SetMasksToBounds(true);
-  root->test_properties()->is_container_for_fixed_position_layers = true;
-  child->test_properties()->position = gfx::PointF(1000, 1000);
-  child->SetBounds(gfx::Size(50, 50));
-  child->test_properties()->is_container_for_fixed_position_layers = true;
-  grandchild->test_properties()->position = gfx::PointF(-1000, -1000);
-  grandchild->SetBounds(gfx::Size(50, 50));
-  grandchild->SetDrawsContent(true);
-
-  LayerPositionConstraint constraint;
-  constraint.set_is_fixed_position(true);
-  grandchild->test_properties()->position_constraint = constraint;
-
-  ExecuteCalculateDrawProperties(root);
-
-  EXPECT_EQ(gfx::Rect(0, 0, 50, 50), grandchild->visible_layer_rect());
-}
-
-TEST_F(LayerTreeHostCommonTest, OnlyApplyFixedPositioningOnce) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* frame_clip = AddChild<LayerImpl>(root);
-  LayerImpl* fixed = AddChild<LayerImpl>(frame_clip);
-  gfx::Transform translate_z;
-  translate_z.Translate3d(0, 0, 10);
-
-  root->SetBounds(gfx::Size(800, 800));
-  root->test_properties()->is_container_for_fixed_position_layers = true;
-
-  frame_clip->test_properties()->position = gfx::PointF(500, 100);
-  frame_clip->SetBounds(gfx::Size(100, 100));
-  frame_clip->SetMasksToBounds(true);
-
-  fixed->SetBounds(gfx::Size(1000, 1000));
-  fixed->SetDrawsContent(true);
-
-  LayerPositionConstraint constraint;
-  constraint.set_is_fixed_position(true);
-  fixed->test_properties()->position_constraint = constraint;
-
-  ExecuteCalculateDrawProperties(root);
-
-  gfx::Rect expected(0, 0, 100, 100);
-  EXPECT_EQ(expected, fixed->visible_layer_rect());
-}
-
-TEST_F(LayerTreeHostCommonTest, FixedClipsShouldBeAssociatedWithTheRightNode) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* frame_clip = AddChild<LayerImpl>(root);
-  LayerImpl* scroller = AddChild<LayerImpl>(frame_clip);
-  LayerImpl* fixed = AddChild<LayerImpl>(scroller);
-
-  root->SetBounds(gfx::Size(800, 800));
-  root->SetDrawsContent(true);
-  root->test_properties()->is_container_for_fixed_position_layers = true;
-  frame_clip->test_properties()->position = gfx::PointF(500, 100);
-  frame_clip->SetBounds(gfx::Size(100, 100));
-  frame_clip->SetMasksToBounds(true);
-  frame_clip->SetDrawsContent(true);
-  scroller->SetBounds(gfx::Size(1000, 1000));
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  scroller->SetElementId(LayerIdToElementIdForTesting(scroller->id()));
-  scroller->SetScrollable(frame_clip->bounds());
-  scroller->SetDrawsContent(true);
-  fixed->test_properties()->position = gfx::PointF(100, 100);
-  fixed->SetBounds(gfx::Size(50, 50));
-  fixed->SetMasksToBounds(true);
-  fixed->SetDrawsContent(true);
-  fixed->test_properties()->force_render_surface = true;
-
-  BuildPropertyTreesForTesting();
-  scroller->SetCurrentScrollOffset(gfx::ScrollOffset(100, 100));
-
-  LayerPositionConstraint constraint;
-  constraint.set_is_fixed_position(true);
-  fixed->test_properties()->position_constraint = constraint;
-
-  ExecuteCalculateDrawProperties(root);
-
-  gfx::Rect expected(0, 0, 50, 50);
-  EXPECT_EQ(expected, fixed->visible_layer_rect());
-}
-
 TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
   gfx::Transform translate;
   gfx::Transform rotate;
@@ -8454,7 +7558,6 @@ TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
 
   scoped_refptr<Layer> root = Layer::Create();
   root->SetBounds(gfx::Size(800, 800));
-  root->SetIsContainerForFixedPositionLayers(true);
 
   host()->SetRootLayer(root);
 
@@ -8491,35 +7594,39 @@ TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
   EXPECT_EQ(gfx::Rect(5, 5, 5, 5), child->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, UpdateScrollChildPosition) {
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* scroll_parent = AddChild<LayerImpl>(root);
-  LayerImpl* scroll_child = AddChild<LayerImpl>(scroll_parent);
-
-  gfx::Transform scale;
-  scale.Scale(2.f, 2.f);
+  LayerImpl* scroll_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* scroll_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(50, 50));
-  scroll_child->test_properties()->transform = scale;
-  scroll_child->SetBounds(gfx::Size(40, 40));
-  scroll_child->SetDrawsContent(true);
+  SetupRootProperties(root);
+
   scroll_parent->SetBounds(gfx::Size(30, 30));
   scroll_parent->SetScrollable(gfx::Size(50, 50));
   scroll_parent->SetElementId(
       LayerIdToElementIdForTesting(scroll_parent->id()));
   scroll_parent->SetDrawsContent(true);
+  CopyProperties(root, scroll_parent);
+  CreateTransformNode(scroll_parent);
+  CreateScrollNode(scroll_parent);
 
-  scroll_child->test_properties()->scroll_parent = scroll_parent;
+  scroll_child->SetBounds(gfx::Size(40, 40));
+  scroll_child->SetDrawsContent(true);
+  CopyProperties(scroll_parent, scroll_child);
+  CreateTransformNode(scroll_child).local.Scale(2.f, 2.f);
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(25, 25), scroll_child->visible_layer_rect());
 
-  scroll_child->test_properties()->position = gfx::PointF(0, -10.f);
-  scroll_parent->SetCurrentScrollOffset(gfx::ScrollOffset(0.f, 10.f));
+  SetScrollOffset(scroll_parent, gfx::ScrollOffset(0.f, 10.f));
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 5, 25, 25), scroll_child->visible_layer_rect());
 
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  auto* child_transform = GetTransformNode(scroll_child);
+  child_transform->post_translation = gfx::Vector2dF(0, -10.f);
+  child_transform->needs_local_transform_update = true;
+  GetPropertyTrees(root)->transform_tree.set_needs_update(true);
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 10, 25, 25), scroll_child->visible_layer_rect());
 }
@@ -8997,31 +8104,6 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
-  // Ensure that the treewalk in LayerTreeHostCommom::
-  // PreCalculateMetaInformation happens when its required.
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-
-  root->SetBounds(gfx::Size(100, 100));
-  parent->SetBounds(gfx::Size(100, 100));
-  child->SetBounds(gfx::Size(100, 100));
-  child->SetClipParent(root.get());
-
-  root->AddChild(parent);
-  parent->AddChild(child);
-  host()->SetRootLayer(root);
-
-  child->RequestCopyOfOutput(viz::CopyOutputRequest::CreateStubForTesting());
-
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_TRUE(LayerSubtreeHasCopyRequest(root.get()));
-
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_TRUE(LayerSubtreeHasCopyRequest(root.get()));
-}
-
 TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
   scoped_refptr<Layer> root = Layer::Create();
   root->SetBounds(gfx::Size(800, 800));
@@ -9121,36 +8203,39 @@ TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {
   EXPECT_EQ(gfx::Rect(30, 30), test_layer->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest,
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
        RenderSurfaceWithUnclippedDescendantsClipsSubtree) {
   // Ensure clip rect is calculated correctly when render surface has unclipped
   // descendants.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* between_clip_parent_and_child = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* render_surface =
-      AddChild<LayerImpl>(between_clip_parent_and_child);
-  LayerImpl* test_layer = AddChild<LayerImpl>(render_surface);
-
-  gfx::Transform translate;
-  translate.Translate(2.0, 2.0);
+  LayerImpl* between_clip_parent_and_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* test_layer = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(30, 30));
-  clip_parent->test_properties()->transform = translate;
+  SetupRootProperties(root);
+
   clip_parent->SetBounds(gfx::Size(30, 30));
-  clip_parent->SetMasksToBounds(true);
-  between_clip_parent_and_child->test_properties()->transform = translate;
+  CopyProperties(root, clip_parent);
+  CreateTransformNode(clip_parent).local.Translate(2, 2);
+  CreateClipNode(clip_parent);
+
   between_clip_parent_and_child->SetBounds(gfx::Size(30, 30));
-  between_clip_parent_and_child->SetMasksToBounds(true);
+  CopyProperties(clip_parent, between_clip_parent_and_child);
+  CreateClipNode(between_clip_parent_and_child);
+  CreateTransformNode(between_clip_parent_and_child).local.Translate(2, 2);
+  CreateClipNode(between_clip_parent_and_child);
+
   render_surface->SetBounds(gfx::Size(30, 30));
-  render_surface->test_properties()->force_render_surface = true;
+  CopyProperties(between_clip_parent_and_child, render_surface);
+  CreateEffectNode(render_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   test_layer->SetBounds(gfx::Size(30, 30));
   test_layer->SetDrawsContent(true);
-
-  render_surface->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(render_surface);
+  CopyProperties(render_surface, test_layer);
+  test_layer->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   ExecuteCalculateDrawProperties(root);
 
@@ -9160,62 +8245,76 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(28, 28), test_layer->drawable_content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest,
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
        RenderSurfaceWithUnclippedDescendantsButDoesntApplyOwnClip) {
   // Ensure that the visible layer rect of a descendant of a surface with
   // unclipped descendants is computed correctly, when the surface doesn't apply
   // a clip.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface);
-  LayerImpl* child = AddChild<LayerImpl>(render_surface);
+  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(30, 10));
+  SetupRootProperties(root);
+
   clip_parent->SetBounds(gfx::Size(30, 30));
+  CopyProperties(root, clip_parent);
+
   render_surface->SetBounds(gfx::Size(10, 15));
-  render_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent, render_surface);
+  CreateEffectNode(render_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   clip_child->SetBounds(gfx::Size(10, 10));
   clip_child->SetDrawsContent(true);
+  CopyProperties(render_surface, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
+
   child->SetBounds(gfx::Size(40, 40));
   child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(clip_child, child);
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(30, 10), child->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest,
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
        RenderSurfaceClipsSubtreeAndHasUnclippedDescendants) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* test_layer1 = AddChild<LayerImpl>(render_surface);
-  LayerImpl* clip_child = AddChild<LayerImpl>(test_layer1);
-  LayerImpl* test_layer2 = AddChild<LayerImpl>(clip_child);
+  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* test_layer1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* test_layer2 = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(30, 30));
-  root->SetMasksToBounds(true);
+  SetupRootProperties(root);
+  CreateClipNode(root);
+
   clip_parent->SetBounds(gfx::Size(30, 30));
+  CopyProperties(root, clip_parent);
+
   render_surface->SetBounds(gfx::Size(50, 50));
-  render_surface->SetMasksToBounds(true);
   render_surface->SetDrawsContent(true);
-  render_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent, render_surface);
+  CreateEffectNode(render_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(render_surface);
+
   test_layer1->SetBounds(gfx::Size(50, 50));
   test_layer1->SetDrawsContent(true);
+  CopyProperties(render_surface, test_layer1);
+
   clip_child->SetBounds(gfx::Size(50, 50));
   clip_child->SetDrawsContent(true);
+  CopyProperties(test_layer1, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
+
   test_layer2->SetBounds(gfx::Size(50, 50));
   test_layer2->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(clip_child, test_layer2);
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(30, 30), render_surface->visible_layer_rect());
@@ -9224,26 +8323,30 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(30, 30), test_layer2->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, UnclippedClipParent) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, UnclippedClipParent) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface);
+  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(50, 50));
+  SetupRootProperties(root);
+
   clip_parent->SetBounds(gfx::Size(50, 50));
   clip_parent->SetDrawsContent(true);
+  CopyProperties(root, clip_parent);
+
   render_surface->SetBounds(gfx::Size(30, 30));
-  render_surface->test_properties()->force_render_surface = true;
-  render_surface->SetMasksToBounds(true);
   render_surface->SetDrawsContent(true);
+  CopyProperties(clip_parent, render_surface);
+  CreateEffectNode(render_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(render_surface);
+
   clip_child->SetBounds(gfx::Size(50, 50));
   clip_child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(render_surface, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   ExecuteCalculateDrawProperties(root);
 
@@ -9254,44 +8357,59 @@ TEST_F(LayerTreeHostCommonTest, UnclippedClipParent) {
   EXPECT_FALSE(clip_child->is_clipped());
 }
 
-TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       RenderSurfaceContentRectWithMultipleSurfaces) {
   // Tests the value of render surface content rect when we have multiple types
   // of surfaces : unclipped surfaces, surfaces with unclipped surfaces and
   // clipped surfaces.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* unclipped_surface = AddChildToRoot<LayerImpl>();
-  LayerImpl* clip_parent = AddChild<LayerImpl>(unclipped_surface);
-  LayerImpl* clip_layer = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* unclipped_desc_surface2 =
-      AddChild<LayerImpl>(unclipped_desc_surface);
-  LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface2);
-  LayerImpl* clipped_surface = AddChild<LayerImpl>(clip_child);
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_layer = AddChildToRoot<LayerImpl>();
+  LayerImpl* unclipped_desc_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* unclipped_desc_surface2 = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* clipped_surface = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(80, 80));
+  SetupRootProperties(root);
+
   unclipped_surface->SetBounds(gfx::Size(50, 50));
-  unclipped_surface->SetMasksToBounds(true);
   unclipped_surface->SetDrawsContent(true);
-  unclipped_surface->test_properties()->force_render_surface = true;
+  CopyProperties(root, unclipped_surface);
+  CreateEffectNode(unclipped_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(unclipped_surface);
+
   clip_parent->SetBounds(gfx::Size(50, 50));
-  clip_parent->SetMasksToBounds(true);
-  clip_layer->SetMasksToBounds(true);
+  CopyProperties(unclipped_surface, clip_parent);
+  CreateClipNode(clip_parent);
+
   clip_layer->SetBounds(gfx::Size(100, 100));
+  CopyProperties(clip_parent, clip_layer);
+  CreateClipNode(clip_layer);
+
   unclipped_desc_surface->SetBounds(gfx::Size(100, 100));
   unclipped_desc_surface->SetDrawsContent(true);
-  unclipped_desc_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_layer, unclipped_desc_surface);
+  CreateEffectNode(unclipped_desc_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   unclipped_desc_surface2->SetBounds(gfx::Size(60, 60));
   unclipped_desc_surface2->SetDrawsContent(true);
-  unclipped_desc_surface2->test_properties()->force_render_surface = true;
+  CopyProperties(unclipped_desc_surface, unclipped_desc_surface2);
+  CreateEffectNode(unclipped_desc_surface2).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   clip_child->SetBounds(gfx::Size(100, 100));
+  CopyProperties(unclipped_desc_surface2, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
+
   clipped_surface->SetBounds(gfx::Size(70, 70));
   clipped_surface->SetDrawsContent(true);
-  clipped_surface->test_properties()->force_render_surface = true;
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(clip_child, clipped_surface);
+  CreateEffectNode(clipped_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(50, 50),
@@ -9304,41 +8422,44 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceContentRectWithMultipleSurfaces) {
             GetRenderSurface(clipped_surface)->content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, ClipBetweenClipChildTargetAndClipParentTarget) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       ClipBetweenClipChildTargetAndClipParentTarget) {
   // Tests the value of render surface content rect when we have a layer that
   // clips between the clip parent's target and clip child's target.
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* surface = AddChildToRoot<LayerImpl>();
-  LayerImpl* clip_layer = AddChild<LayerImpl>(surface);
-  LayerImpl* clip_parent = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface);
-
-  gfx::Transform translate;
-  translate.Translate(10, 10);
-
-  gfx::Transform rotate;
-  rotate.RotateAboutXAxis(10);
+  LayerImpl* clip_layer = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* unclipped_desc_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
+  SetupRootProperties(root);
+
   surface->SetBounds(gfx::Size(100, 100));
-  surface->SetMasksToBounds(true);
-  surface->test_properties()->force_render_surface = true;
-  surface->test_properties()->transform = rotate;
+  CopyProperties(root, surface);
+  CreateTransformNode(surface).local.RotateAboutXAxis(10);
+  CreateEffectNode(surface).render_surface_reason = RenderSurfaceReason::kTest;
+  CreateClipNode(surface);
+
   clip_layer->SetBounds(gfx::Size(20, 20));
-  clip_layer->SetMasksToBounds(true);
+  CopyProperties(surface, clip_layer);
+  CreateClipNode(clip_layer);
+
   clip_parent->SetBounds(gfx::Size(50, 50));
-  unclipped_desc_surface->test_properties()->transform = translate;
+  CopyProperties(clip_layer, clip_parent);
+
   unclipped_desc_surface->SetBounds(gfx::Size(100, 100));
   unclipped_desc_surface->SetDrawsContent(true);
-  unclipped_desc_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent, unclipped_desc_surface);
+  CreateTransformNode(unclipped_desc_surface).local.Translate(10, 10);
+  CreateEffectNode(unclipped_desc_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   clip_child->SetBounds(gfx::Size(100, 100));
   clip_child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(unclipped_desc_surface, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   ExecuteCalculateDrawProperties(root);
 
@@ -9346,36 +8467,41 @@ TEST_F(LayerTreeHostCommonTest, ClipBetweenClipChildTargetAndClipParentTarget) {
             GetRenderSurface(unclipped_desc_surface)->content_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, VisibleRectForDescendantOfScaledSurface) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       VisibleRectForDescendantOfScaledSurface) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* surface = AddChildToRoot<LayerImpl>();
-  LayerImpl* clip_layer = AddChild<LayerImpl>(surface);
-  LayerImpl* clip_parent = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface);
-
-
-  gfx::Transform scale;
-  scale.Scale(2, 2);
+  LayerImpl* clip_layer = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* unclipped_desc_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
-  surface->test_properties()->transform = scale;
+  SetupRootProperties(root);
+
   surface->SetBounds(gfx::Size(100, 100));
-  surface->SetMasksToBounds(true);
-  surface->test_properties()->force_render_surface = true;
+  CopyProperties(root, surface);
+  CreateTransformNode(surface).local.Scale(2, 2);
+  CreateEffectNode(surface).render_surface_reason = RenderSurfaceReason::kTest;
+  CreateClipNode(surface);
+
   clip_layer->SetBounds(gfx::Size(20, 20));
-  clip_layer->SetMasksToBounds(true);
+  CopyProperties(surface, clip_layer);
+  CreateClipNode(clip_layer);
+
   clip_parent->SetBounds(gfx::Size(50, 50));
+  CopyProperties(clip_layer, clip_parent);
+
   unclipped_desc_surface->SetBounds(gfx::Size(100, 100));
   unclipped_desc_surface->SetDrawsContent(true);
-  unclipped_desc_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent, unclipped_desc_surface);
+  CreateEffectNode(unclipped_desc_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   clip_child->SetBounds(gfx::Size(100, 100));
   clip_child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(unclipped_desc_surface, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   ExecuteCalculateDrawProperties(root);
 
@@ -9408,33 +8534,40 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
                                   test_layer->ScreenSpaceTransform());
 }
 
-TEST_F(LayerTreeHostCommonTest, ClipParentDrawsIntoScaledRootSurface) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
+       ClipParentDrawsIntoScaledRootSurface) {
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* clip_layer = AddChild<LayerImpl>(root);
-  LayerImpl* clip_parent = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* clip_parent_child = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* unclipped_desc_surface = AddChild<LayerImpl>(clip_parent_child);
-  LayerImpl* clip_child = AddChild<LayerImpl>(unclipped_desc_surface);
+  LayerImpl* clip_layer = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_parent_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* unclipped_desc_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(100, 100));
+  SetupRootProperties(root);
+
   clip_layer->SetBounds(gfx::Size(20, 20));
-  clip_layer->SetMasksToBounds(true);
+  CopyProperties(root, clip_layer);
+  CreateClipNode(clip_layer);
+
   clip_parent->SetBounds(gfx::Size(50, 50));
+  CopyProperties(clip_layer, clip_parent);
+
   clip_parent_child->SetBounds(gfx::Size(20, 20));
-  clip_parent_child->SetMasksToBounds(true);
+  CopyProperties(clip_parent, clip_parent_child);
+  CreateClipNode(clip_parent_child);
+
   unclipped_desc_surface->SetBounds(gfx::Size(100, 100));
   unclipped_desc_surface->SetDrawsContent(true);
-  unclipped_desc_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent_child, unclipped_desc_surface);
+  CreateTransformNode(unclipped_desc_surface).local.Translate(10, 10);
+  CreateEffectNode(unclipped_desc_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   clip_child->SetBounds(gfx::Size(100, 100));
   clip_child->SetDrawsContent(true);
-  gfx::Transform translate;
-  translate.Translate(10, 10);
-  unclipped_desc_surface->test_properties()->transform = translate;
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(unclipped_desc_surface, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   float device_scale_factor = 1.f;
   ExecuteCalculateDrawProperties(root, device_scale_factor);
@@ -9447,47 +8580,59 @@ TEST_F(LayerTreeHostCommonTest, ClipParentDrawsIntoScaledRootSurface) {
   EXPECT_EQ(gfx::Rect(10, 10), clip_child->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, ClipChildVisibleRect) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, ClipChildVisibleRect) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* render_surface = AddChild<LayerImpl>(clip_parent);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface);
+  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(30, 30));
+  SetupRootProperties(root);
+
   clip_parent->SetBounds(gfx::Size(40, 40));
-  clip_parent->SetMasksToBounds(true);
+  CopyProperties(root, clip_parent);
+  CreateClipNode(clip_parent);
+
   render_surface->SetBounds(gfx::Size(50, 50));
-  render_surface->SetMasksToBounds(true);
   render_surface->SetDrawsContent(true);
-  render_surface->test_properties()->force_render_surface = true;
+  CopyProperties(clip_parent, render_surface);
+  CreateEffectNode(render_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(render_surface);
+
   clip_child->SetBounds(gfx::Size(50, 50));
   clip_child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = clip_parent;
-  clip_parent->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  clip_parent->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(render_surface, clip_child);
+  clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(30, 30), clip_child->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest,
+TEST_F(LayerTreeHostCommonTestWithLayerLists,
        LayerClipRectLargerThanClippingRenderSurfaceRect) {
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* render_surface = AddChild<LayerImpl>(root);
-  LayerImpl* test_layer = AddChild<LayerImpl>(render_surface);
+  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* test_layer = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(30, 30));
-  root->SetMasksToBounds(true);
   root->SetDrawsContent(true);
+  SetupRootProperties(root);
+  CreateClipNode(root);
+
   render_surface->SetBounds(gfx::Size(50, 50));
-  render_surface->SetMasksToBounds(true);
   render_surface->SetDrawsContent(true);
-  render_surface->test_properties()->force_render_surface = true;
+  CopyProperties(root, render_surface);
+  CreateTransformNode(render_surface);
+  CreateEffectNode(render_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
+  CreateClipNode(render_surface);
+
   test_layer->SetBounds(gfx::Size(50, 50));
-  test_layer->SetMasksToBounds(true);
   test_layer->SetDrawsContent(true);
+  CopyProperties(render_surface, test_layer);
+  CreateClipNode(test_layer);
+
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::Rect(30, 30), root->clip_rect());
@@ -9519,31 +8664,39 @@ TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
             GetRenderSurface(test)->OwningEffectNode()->screen_space_opacity);
 }
 
-TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, TwoUnclippedRenderSurfaces) {
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* clip_layer = AddChild<LayerImpl>(root);
-  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip_layer);
-  LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
-  LayerImpl* clip_child = AddChild<LayerImpl>(render_surface2);
+  LayerImpl* clip_layer = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface2 = AddChildToRoot<LayerImpl>();
+  LayerImpl* clip_child = AddChildToRoot<LayerImpl>();
 
   root->SetBounds(gfx::Size(30, 30));
-  root->SetMasksToBounds(true);
+  SetupRootProperties(root);
+  CreateClipNode(root);
+
   clip_layer->SetBounds(gfx::Size(30, 30));
-  clip_layer->SetMasksToBounds(true);
-  render_surface1->test_properties()->position = gfx::PointF(10, 10);
+  CopyProperties(root, clip_layer);
+  CreateClipNode(clip_layer);
+
   render_surface1->SetBounds(gfx::Size(30, 30));
   render_surface1->SetDrawsContent(true);
-  render_surface1->test_properties()->force_render_surface = true;
+  CopyProperties(clip_layer, render_surface1);
+  CreateTransformNode(render_surface1).post_translation =
+      gfx::Vector2dF(10, 10);
+  CreateEffectNode(render_surface1).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   render_surface2->SetBounds(gfx::Size(30, 30));
   render_surface2->SetDrawsContent(true);
-  render_surface2->test_properties()->force_render_surface = true;
+  CopyProperties(render_surface1, render_surface2);
+  CreateEffectNode(render_surface2).render_surface_reason =
+      RenderSurfaceReason::kTest;
+
   clip_child->SetBounds(gfx::Size(30, 30));
   clip_child->SetDrawsContent(true);
-
-  clip_child->test_properties()->clip_parent = root;
-  root->test_properties()->clip_children =
-      std::make_unique<std::set<LayerImpl*>>();
-  root->test_properties()->clip_children->insert(clip_child);
+  CopyProperties(render_surface2, clip_child);
+  clip_child->SetClipTreeIndex(root->clip_tree_index());
 
   ExecuteCalculateDrawProperties(root);
 
@@ -9634,18 +8787,14 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(15, 15), test_layer->visible_layer_rect());
 }
 
-TEST_F(LayerTreeHostCommonTest, NoisyTransform) {
+TEST_F(LayerTreeHostCommonTestWithLayerLists, NoisyTransform) {
   LayerImpl* root = root_layer_for_testing();
-  LayerImpl* render_surface = AddChild<LayerImpl>(root);
-  LayerImpl* scroll_child = AddChild<LayerImpl>(render_surface);
-  LayerImpl* scroll_clip = AddChild<LayerImpl>(render_surface);
-  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_clip);
+  LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
 
-  scroll_child->test_properties()->scroll_parent = scroll_parent;
-
-  scroll_parent->SetDrawsContent(true);
-  scroll_child->SetDrawsContent(true);
-  render_surface->test_properties()->force_render_surface = true;
+  root->SetBounds(gfx::Size(30, 30));
+  SetupRootProperties(root);
 
   // A noisy transform that's invertible.
   gfx::Transform transform;
@@ -9654,12 +8803,20 @@ TEST_F(LayerTreeHostCommonTest, NoisyTransform) {
   transform.matrix().setDouble(2, 2, 6.12323e-17);
   transform.matrix().setDouble(2, 0, -1);
 
-  scroll_child->test_properties()->transform = transform;
-  render_surface->test_properties()->transform = transform;
+  CopyProperties(root, render_surface);
+  CreateTransformNode(render_surface).local = transform;
+  CreateEffectNode(render_surface).render_surface_reason =
+      RenderSurfaceReason::kTest;
 
-  root->SetBounds(gfx::Size(30, 30));
-  scroll_child->SetBounds(gfx::Size(30, 30));
-  scroll_parent->SetBounds(gfx::Size(30, 30));
+  parent->SetBounds(gfx::Size(30, 30));
+  parent->SetDrawsContent(true);
+  CopyProperties(render_surface, parent);
+
+  child->SetBounds(gfx::Size(30, 30));
+  child->SetDrawsContent(true);
+  CopyProperties(parent, child);
+  CreateTransformNode(child).local = transform;
+
   ExecuteCalculateDrawProperties(root);
 
   gfx::Transform expected;
@@ -9667,8 +8824,7 @@ TEST_F(LayerTreeHostCommonTest, NoisyTransform) {
   expected.matrix().setDouble(0, 2, 6.12323e-17);
   expected.matrix().setDouble(2, 0, -1);
   expected.matrix().setDouble(2, 2, 6.12323e-17);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected,
-                                  scroll_child->ScreenSpaceTransform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected, child->ScreenSpaceTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
@@ -9864,206 +9020,6 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   node = tree.Node(animated->transform_tree_index());
   EXPECT_FALSE(node->is_currently_animating);
   EXPECT_FALSE(node->has_potential_animation);
-}
-
-TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
-  // Test the behavior of scroll tree builder
-  // Topology:
-  // +root1(1)[inner_viewport_container_layer]
-  // +-page_scale_layer
-  // +----parent2(2)[kHasBackgroundAttachmentFixedObjects|kScrollbarScrolling &
-  // scrollable, inner_viewport_scroll_layer]
-  // +------child6(6)[kScrollbarScrolling]
-  // +--------grand_child10(10)[kScrollbarScrolling]
-  // +----parent3(3)
-  // +------child7(7)[scrollable]
-  // +------child8(8)[scroll_parent=7]
-  // +--------grand_child11(11)[scrollable]
-  // +----parent4(4)
-  // +------child9(9)
-  // +--------grand_child12(12)
-  // +----parent5(5)[contains_non_fast_scrollable_region]
-  //
-  // Expected scroll tree topology:
-  // +property_tree_root---owner:-1
-  // +--root---owner:1, id:1
-  // +----node---owner:2, id:2
-  // +------node---owner:6, id:3
-  // +----node---owner:7, id:4
-  // +------node---owner:11, id:5
-  // +----node---owner:5, id:6
-  //
-  // Extra check:
-  //   scroll_tree_index() of:
-  //     grand_child10:3
-  //     parent3:1
-  //     child8:4
-  //     parent4:1
-  //     child9:1
-  //     grand_child12:1
-  scoped_refptr<Layer> root1 = Layer::Create();
-  scoped_refptr<Layer> page_scale_layer = Layer::Create();
-  scoped_refptr<Layer> parent2 = Layer::Create();
-  scoped_refptr<Layer> parent3 = Layer::Create();
-  scoped_refptr<Layer> parent4 = Layer::Create();
-  scoped_refptr<Layer> parent5 = Layer::Create();
-  scoped_refptr<Layer> child6 = Layer::Create();
-  scoped_refptr<Layer> child7 = Layer::Create();
-  scoped_refptr<Layer> child8 = Layer::Create();
-  scoped_refptr<Layer> child9 = Layer::Create();
-  scoped_refptr<Layer> grand_child10 = Layer::Create();
-  scoped_refptr<Layer> grand_child11 = Layer::Create();
-  scoped_refptr<Layer> grand_child12 = Layer::Create();
-
-  root1->AddChild(page_scale_layer);
-  page_scale_layer->AddChild(parent2);
-  page_scale_layer->AddChild(parent3);
-  page_scale_layer->AddChild(parent4);
-  page_scale_layer->AddChild(parent5);
-  parent2->AddChild(child6);
-  parent3->AddChild(child7);
-  parent3->AddChild(child8);
-  parent4->AddChild(child9);
-  child6->AddChild(grand_child10);
-  child8->AddChild(grand_child11);
-  child9->AddChild(grand_child12);
-  host()->SetRootLayer(root1);
-
-  root1->SetBounds(gfx::Size(1, 1));
-  parent2->AddMainThreadScrollingReasons(
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
-  parent2->AddMainThreadScrollingReasons(
-      MainThreadScrollingReason::kScrollbarScrolling);
-  parent2->SetElementId(LayerIdToElementIdForTesting(parent2->id()));
-  parent2->SetScrollable(root1->bounds());
-  child6->AddMainThreadScrollingReasons(
-      MainThreadScrollingReason::kScrollbarScrolling);
-  grand_child10->AddMainThreadScrollingReasons(
-      MainThreadScrollingReason::kScrollbarScrolling);
-
-  parent3->SetBounds(gfx::Size(2, 2));
-  child7->SetScrollable(parent3->bounds());
-  child7->SetElementId(LayerIdToElementIdForTesting(child7->id()));
-
-  child8->SetScrollParent(child7.get());
-  child8->SetBounds(gfx::Size(3, 3));
-  grand_child11->SetScrollable(child8->bounds());
-  grand_child11->SetElementId(
-      LayerIdToElementIdForTesting(grand_child11->id()));
-
-  parent5->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
-  parent5->SetBounds(gfx::Size(10, 10));
-
-  ViewportLayers viewport_layers;
-  viewport_layers.page_scale = page_scale_layer;
-  viewport_layers.inner_viewport_container = root1;
-  viewport_layers.inner_viewport_scroll = parent2;
-  host()->RegisterViewportLayers(viewport_layers);
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root1.get());
-
-  const int kRootPropertyTreeNodeId = 0;
-
-  // Property tree root
-  ScrollTree& scroll_tree = host()->property_trees()->scroll_tree;
-  PropertyTrees property_trees;
-  property_trees.is_main_thread = true;
-  property_trees.is_active = false;
-  ScrollTree& expected_scroll_tree = property_trees.scroll_tree;
-  ScrollNode* property_tree_root = expected_scroll_tree.Node(0);
-  property_tree_root->id = kRootPropertyTreeNodeId;
-  property_tree_root->parent_id = ScrollTree::kInvalidNodeId;
-  property_tree_root->scrollable = false;
-  property_tree_root->main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kNotScrollingOnMain;
-  property_tree_root->transform_id = kRootPropertyTreeNodeId;
-
-  // The node owned by root1
-  ScrollNode scroll_root1;
-  scroll_root1.id = 1;
-  scroll_root1.bounds = root1->bounds();
-  scroll_root1.user_scrollable_horizontal = true;
-  scroll_root1.user_scrollable_vertical = true;
-  scroll_root1.transform_id = root1->transform_tree_index();
-  expected_scroll_tree.Insert(scroll_root1, 0);
-
-  // The node owned by parent2
-  ScrollNode scroll_parent2;
-  scroll_parent2.id = 2;
-  scroll_parent2.element_id = parent2->element_id();
-  scroll_parent2.scrollable = true;
-  scroll_parent2.main_thread_scrolling_reasons =
-      parent2->GetMainThreadScrollingReasons();
-  scroll_parent2.container_bounds = root1->bounds();
-  scroll_parent2.bounds = parent2->bounds();
-  scroll_parent2.max_scroll_offset_affected_by_page_scale = true;
-  scroll_parent2.scrolls_inner_viewport = true;
-  scroll_parent2.user_scrollable_horizontal = true;
-  scroll_parent2.user_scrollable_vertical = true;
-  scroll_parent2.transform_id = parent2->transform_tree_index();
-  expected_scroll_tree.Insert(scroll_parent2, 1);
-
-  // The node owned by child6
-  ScrollNode scroll_child6;
-  scroll_child6.id = 3;
-  scroll_child6.main_thread_scrolling_reasons =
-      child6->GetMainThreadScrollingReasons();
-  scroll_child6.should_flatten = true;
-  scroll_child6.user_scrollable_horizontal = true;
-  scroll_child6.user_scrollable_vertical = true;
-  scroll_child6.transform_id = child6->transform_tree_index();
-  expected_scroll_tree.Insert(scroll_child6, 2);
-
-  // The node owned by child7, child7 also owns a transform node
-  ScrollNode scroll_child7;
-  scroll_child7.id = 4;
-  scroll_child7.element_id = child7->element_id();
-  scroll_child7.scrollable = true;
-  scroll_child7.container_bounds = parent3->bounds();
-  scroll_child7.bounds = child7->bounds();
-  scroll_child7.user_scrollable_horizontal = true;
-  scroll_child7.user_scrollable_vertical = true;
-  scroll_child7.transform_id = child7->transform_tree_index();
-  expected_scroll_tree.Insert(scroll_child7, 1);
-
-  // The node owned by grand_child11, grand_child11 also owns a transform node
-  ScrollNode scroll_grand_child11;
-  scroll_grand_child11.id = 5;
-  scroll_grand_child11.element_id = grand_child11->element_id();
-  scroll_grand_child11.scrollable = true;
-  scroll_grand_child11.container_bounds = child8->bounds();
-  scroll_grand_child11.user_scrollable_horizontal = true;
-  scroll_grand_child11.user_scrollable_vertical = true;
-  scroll_grand_child11.transform_id = grand_child11->transform_tree_index();
-  expected_scroll_tree.Insert(scroll_grand_child11, 4);
-
-  // The node owned by parent5
-  ScrollNode scroll_parent5;
-  scroll_parent5.id = 8;
-  scroll_parent5.bounds = gfx::Size(10, 10);
-  scroll_parent5.should_flatten = true;
-  scroll_parent5.user_scrollable_horizontal = true;
-  scroll_parent5.user_scrollable_vertical = true;
-  scroll_parent5.transform_id = parent5->transform_tree_index();
-  expected_scroll_tree.Insert(scroll_parent5, 1);
-
-  expected_scroll_tree.SetScrollOffset(parent2->element_id(),
-                                       gfx::ScrollOffset(0, 0));
-  expected_scroll_tree.SetScrollOffset(child7->element_id(),
-                                       gfx::ScrollOffset(0, 0));
-  expected_scroll_tree.SetScrollOffset(grand_child11->element_id(),
-                                       gfx::ScrollOffset(0, 0));
-  expected_scroll_tree.set_needs_update(false);
-
-  EXPECT_EQ(expected_scroll_tree, scroll_tree);
-
-  // Check other layers' scroll_tree_index
-  EXPECT_EQ(scroll_root1.id, page_scale_layer->scroll_tree_index());
-  EXPECT_EQ(scroll_child6.id, grand_child10->scroll_tree_index());
-  EXPECT_EQ(scroll_root1.id, parent3->scroll_tree_index());
-  EXPECT_EQ(scroll_child7.id, child8->scroll_tree_index());
-  EXPECT_EQ(scroll_root1.id, parent4->scroll_tree_index());
-  EXPECT_EQ(scroll_root1.id, child9->scroll_tree_index());
-  EXPECT_EQ(scroll_root1.id, grand_child12->scroll_tree_index());
 }
 
 TEST_F(LayerTreeHostCommonTest, CopyRequestScalingTest) {
@@ -10347,52 +9303,6 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCacheRenderSurface) {
   EXPECT_EQ(gfx::Rect(20, 20), copy_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(15, 15), copy_clipped_child->visible_layer_rect());
   EXPECT_EQ(gfx::Rect(20, 20), cache_surface->visible_layer_rect());
-}
-
-TEST_F(LayerTreeHostCommonTest, BuildPropertyNodesForScrollChildrenInOrder) {
-  // This test is intended to test against a bug that scroll children were
-  // visited in unspecified order, which can cause data dependency to fail
-  // while resolving clip parent.
-
-  // Try multiple times because in the original bug the probability to fail
-  // was 50%, depends on the hash values.
-  int trial = 10;
-  while (trial--) {
-    scoped_refptr<Layer> root = Layer::Create();
-    scoped_refptr<Layer> scroller = Layer::Create();
-    scoped_refptr<Layer> scroll_sibling_1 = Layer::Create();
-    scoped_refptr<Layer> scroll_sibling_2 = Layer::Create();
-    scoped_refptr<Layer> clip_escaper = Layer::Create();
-
-    root->SetBounds(gfx::Size(100, 100));
-    scroll_sibling_1->SetBounds(gfx::Size(10, 20));
-    scroll_sibling_1->SetMasksToBounds(true);
-    scroll_sibling_2->SetBounds(gfx::Size(20, 10));
-    scroll_sibling_2->SetMasksToBounds(true);
-    clip_escaper->SetBounds(gfx::Size(30, 30));
-    clip_escaper->SetIsDrawable(true);
-
-    host()->SetRootLayer(root);
-    root->AddChild(scroller.get());
-    root->AddChild(scroll_sibling_1.get());
-    root->AddChild(scroll_sibling_2.get());
-    scroll_sibling_2->AddChild(clip_escaper.get());
-
-    // Also randomize scroll children insertion order.
-    if (trial & 1) {
-      scroll_sibling_1->SetScrollParent(scroller.get());
-      scroll_sibling_2->SetScrollParent(scroller.get());
-    } else {
-      scroll_sibling_2->SetScrollParent(scroller.get());
-      scroll_sibling_1->SetScrollParent(scroller.get());
-    }
-    clip_escaper->SetClipParent(scroll_sibling_1.get());
-
-    ExecuteCalculateDrawProperties(root.get());
-
-    EXPECT_EQ(scroll_sibling_1->clip_tree_index(),
-              clip_escaper->clip_tree_index());
-  }
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTrilinearFiltering) {

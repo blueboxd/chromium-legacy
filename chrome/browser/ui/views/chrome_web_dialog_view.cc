@@ -27,8 +27,9 @@
 namespace chrome {
 namespace {
 
-gfx::NativeWindow ShowWebDialogWidget(views::Widget::InitParams params,
-                                      views::WebDialogView* view) {
+gfx::NativeWindow CreateWebDialogWidget(views::Widget::InitParams params,
+                                        views::WebDialogView* view,
+                                        bool show = true) {
   views::Widget* widget = new views::Widget;
   widget->Init(std::move(params));
 
@@ -37,7 +38,8 @@ gfx::NativeWindow ShowWebDialogWidget(views::Widget::InitParams params,
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       view->web_contents());
 
-  widget->Show();
+  if (show)
+    widget->Show();
   return widget->GetNativeWindow();
 }
 
@@ -68,7 +70,7 @@ gfx::NativeWindow ShowWebDialogWithParams(
     ash_util::SetupWidgetInitParamsForContainer(&params, container_id);
   }
 #endif
-  gfx::NativeWindow window = ShowWebDialogWidget(std::move(params), view);
+  gfx::NativeWindow window = CreateWebDialogWidget(std::move(params), view);
 #if defined(OS_CHROMEOS)
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
@@ -84,10 +86,11 @@ gfx::NativeWindow ShowWebDialogWithParams(
   return window;
 }
 
-gfx::NativeWindow ShowWebDialogWithBounds(gfx::NativeView parent,
-                                          content::BrowserContext* context,
-                                          ui::WebDialogDelegate* delegate,
-                                          const gfx::Rect& bounds) {
+gfx::NativeWindow CreateWebDialogWithBounds(gfx::NativeView parent,
+                                            content::BrowserContext* context,
+                                            ui::WebDialogDelegate* delegate,
+                                            const gfx::Rect& bounds,
+                                            bool show) {
   // Use custom dialog frame instead of platform frame when possible.
   bool use_dialog_frame = views::DialogDelegate::CanSupportCustomFrame(parent);
   views::WebDialogView* view = new views::WebDialogView(
@@ -108,8 +111,7 @@ gfx::NativeWindow ShowWebDialogWithBounds(gfx::NativeView parent,
 #endif
   }
 
-  gfx::NativeWindow window = ShowWebDialogWidget(std::move(params), view);
-  return window;
+  return CreateWebDialogWidget(std::move(params), view, show);
 }
 
 }  // namespace chrome

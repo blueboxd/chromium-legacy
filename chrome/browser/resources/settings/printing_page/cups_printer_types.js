@@ -15,6 +15,8 @@ let PrinterListEntry;
  * These values correspond to the different types of printers available. Refer
  * to cups_printer_management.md for more information about the different
  * categories of printers.
+ *
+ * The types are numbered in desired sorting order for display.
  */
 const PrinterType = {
   SAVED: 0,

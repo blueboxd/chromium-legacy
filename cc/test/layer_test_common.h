@@ -17,6 +17,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/quads/render_pass.h"
 
 #define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test)                 \
@@ -43,6 +44,11 @@ namespace cc {
 class LayerImpl;
 class LayerTreeFrameSink;
 class RenderSurfaceImpl;
+
+class LayerListSettings : public LayerTreeSettings {
+ public:
+  LayerListSettings() { use_layer_lists = true; }
+};
 
 // Returns the RenderSurfaceImpl into which the given layer draws.
 RenderSurfaceImpl* GetRenderSurface(LayerImpl* layer_impl);
@@ -212,6 +218,47 @@ class LayerTestCommon {
       host_impl()->active_tree()->SetElementIdsForTesting();
     }
 
+    void ExecuteCalculateDrawProperties(Layer* root_layer,
+                                        float device_scale_factor,
+                                        float page_scale_factor,
+                                        Layer* page_scale_layer,
+                                        Layer* inner_viewport_scroll_layer,
+                                        Layer* outer_viewport_scroll_layer);
+    void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
+                                        float device_scale_factor,
+                                        float page_scale_factor,
+                                        LayerImpl* page_scale_layer,
+                                        LayerImpl* inner_viewport_scroll_layer,
+                                        LayerImpl* outer_viewport_scroll_layer);
+
+    template <class LayerType>
+    void ExecuteCalculateDrawProperties(LayerType* root_layer) {
+      LayerType* page_scale_application_layer = nullptr;
+      LayerType* inner_viewport_scroll_layer = nullptr;
+      LayerType* outer_viewport_scroll_layer = nullptr;
+      ExecuteCalculateDrawProperties(
+          root_layer, 1.f, 1.f, page_scale_application_layer,
+          inner_viewport_scroll_layer, outer_viewport_scroll_layer);
+    }
+
+    template <class LayerType>
+    void ExecuteCalculateDrawProperties(LayerType* root_layer,
+                                        float device_scale_factor) {
+      LayerType* page_scale_application_layer = nullptr;
+      LayerType* inner_viewport_scroll_layer = nullptr;
+      LayerType* outer_viewport_scroll_layer = nullptr;
+      ExecuteCalculateDrawProperties(
+          root_layer, device_scale_factor, 1.f, page_scale_application_layer,
+          inner_viewport_scroll_layer, outer_viewport_scroll_layer);
+    }
+
+    void ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
+        LayerImpl* root_layer);
+
+    const RenderSurfaceList* render_surface_list_impl() const {
+      return render_surface_list_impl_.get();
+    }
+
    private:
     FakeLayerTreeHostClient client_;
     TestTaskGraphRunner task_graph_runner_;
@@ -222,6 +269,7 @@ class LayerTestCommon {
     scoped_refptr<AnimationTimeline> timeline_;
     scoped_refptr<AnimationTimeline> timeline_impl_;
     int layer_impl_id_;
+    std::unique_ptr<RenderSurfaceList> render_surface_list_impl_;
   };
 };
 

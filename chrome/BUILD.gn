@@ -195,7 +195,6 @@ if (!is_android && !is_mac) {
           ":chrome_dll",
           ":chrome_exe_version",
           ":copy_first_run",
-          ":file_pre_reader",
           ":visual_elements_resources",
           "//base",
           "//chrome/app/version_assembly:chrome_exe_manifest",
@@ -1492,16 +1491,6 @@ if (is_win) {
       "app/other.ver",
     ]
     output = "$target_gen_dir/other_version.rc"
-  }
-
-  source_set("file_pre_reader") {
-    sources = [
-      "app/file_pre_reader_win.cc",
-      "app/file_pre_reader_win.h",
-    ]
-    deps = [
-      "//base",
-    ]
   }
 }
 

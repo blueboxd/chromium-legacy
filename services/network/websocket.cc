@@ -189,7 +189,7 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
       std::move(readable));
   impl_->handshake_client_.reset();
   impl_->auth_handler_ = nullptr;
-  impl_->header_client_ = nullptr;
+  impl_->header_client_.reset();
   impl_->client_.set_connection_error_handler(
       base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(impl_)));
 }
@@ -371,7 +371,7 @@ WebSocket::WebSocket(
     HasRawHeadersAccess has_raw_headers_access,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojom::AuthenticationHandlerPtr auth_handler,
-    mojom::TrustedHeaderClientPtr header_client,
+    mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
     base::TimeDelta delay)
     : factory_(factory),
@@ -399,7 +399,7 @@ WebSocket::WebSocket(
   if (header_client_) {
     // Make sure the request dies if |header_client_| has an error, otherwise
     // requests can hang.
-    header_client_.set_connection_error_handler(
+    header_client_.set_disconnect_handler(
         base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
   }
   handshake_client_.set_disconnect_handler(
@@ -683,7 +683,7 @@ void WebSocket::Reset() {
   handshake_client_.reset();
   client_ = nullptr;
   auth_handler_ = nullptr;
-  header_client_ = nullptr;
+  header_client_.reset();
   binding_.Close();
 
   // net::WebSocketChannel requires that we delete it at this point.

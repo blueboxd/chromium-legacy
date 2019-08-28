@@ -11,6 +11,11 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_ICON_BUTTON_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_icon_button/cr_icon_button.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_ICONS_CSS_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_icons_css.m.js"
          use_base_dir="false"

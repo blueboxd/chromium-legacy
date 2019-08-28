@@ -15,6 +15,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_constants.h"
@@ -171,9 +172,10 @@ class RestrictedCookieManagerTest
             false /* is_service_worker*/,
             kProcessId,
             kRoutingId)),
-        binding_(service_.get(), mojo::MakeRequest(&service_ptr_)) {
+        receiver_(service_.get(),
+                  service_remote_.BindNewPipeAndPassReceiver()) {
     sync_service_ =
-        std::make_unique<RestrictedCookieManagerSync>(service_ptr_.get());
+        std::make_unique<RestrictedCookieManagerSync>(service_remote_.get());
   }
   ~RestrictedCookieManagerTest() override {}
 
@@ -242,7 +244,7 @@ class RestrictedCookieManagerTest
 
   bool received_bad_message() { return received_bad_message_; }
 
-  mojom::RestrictedCookieManager* backend() { return service_ptr_.get(); }
+  mojom::RestrictedCookieManager* backend() { return service_remote_.get(); }
 
  protected:
   void OnBadMessage(const std::string& reason) {
@@ -261,8 +263,8 @@ class RestrictedCookieManagerTest
   CookieSettings cookie_settings_;
   RecordingNetworkContextClient recording_client_;
   std::unique_ptr<RestrictedCookieManager> service_;
-  mojom::RestrictedCookieManagerPtr service_ptr_;
-  mojo::Binding<mojom::RestrictedCookieManager> binding_;
+  mojo::Remote<mojom::RestrictedCookieManager> service_remote_;
+  mojo::Receiver<mojom::RestrictedCookieManager> receiver_;
   std::unique_ptr<RestrictedCookieManagerSync> sync_service_;
   bool expecting_bad_message_ = false;
   bool received_bad_message_ = false;

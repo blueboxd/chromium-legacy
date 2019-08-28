@@ -157,12 +157,6 @@ static_library("common") {
     "multi_process_lock_win.cc",
     "origin_trials/chrome_origin_trial_policy.cc",
     "origin_trials/chrome_origin_trial_policy.h",
-    "page_load_metrics/page_end_reason.h",
-    "page_load_metrics/page_load_metrics_constants.h",
-    "page_load_metrics/page_load_metrics_util.cc",
-    "page_load_metrics/page_load_metrics_util.h",
-    "page_load_metrics/page_load_timing.cc",
-    "page_load_metrics/page_load_timing.h",
     "pdf_util.cc",
     "pdf_util.h",
     "pref_names_util.cc",
@@ -215,7 +209,6 @@ static_library("common") {
     ":ini_parser",
     ":mojo_bindings",
     ":offline_page_auto_fetcher_mojom",
-    ":page_load_metrics_mojom",
     ":supervised_user_commands_mojom",
     "//base",
     "//base:base_static",
@@ -249,6 +242,7 @@ static_library("common") {
     "//components/offline_pages/buildflags",
     "//components/offline_pages/core:switches",
     "//components/omnibox/common",
+    "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/password_manager/core/common",
     "//components/policy:generated",
     "//components/policy/core/common",
@@ -295,6 +289,7 @@ static_library("common") {
   deps = [
     "//build:branding_buildflags",
     "//components/metrics:call_stack_profile_builder",
+    "//components/page_load_metrics/common:common",
   ]
 
   if (enable_plugins) {
@@ -680,8 +675,6 @@ static_library("test_support") {
   visibility = [ "//chrome/test:*" ]
 
   sources = [
-    "page_load_metrics/test/page_load_metrics_test_util.cc",
-    "page_load_metrics/test/page_load_metrics_test_util.h",
     "search/mock_embedded_search_client.cc",
     "search/mock_embedded_search_client.h",
   ]
@@ -792,18 +785,6 @@ mojom("search_mojom") {
   public_deps = [
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
-  ]
-}
-
-mojom("page_load_metrics_mojom") {
-  sources = [
-    "page_load_metrics/page_load_metrics.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//third_party/blink/public/mojom:web_feature_mojo_bindings",
-    "//url/mojom:url_mojom_origin",
   ]
 }
 

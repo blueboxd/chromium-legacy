@@ -249,8 +249,23 @@ void AnimatingLayoutManager::Layout(views::View* host) {
   // event represents the final state instead of an intermediate state.
   if (is_animating_ && current_offset_ == 1.0) {
     is_animating_ = false;
+    RunDelayedActions();
+    DCHECK(!is_animating_)
+        << "Queued actions should not change animation state.";
     NotifyIsAnimatingChanged();
   }
+}
+
+void AnimatingLayoutManager::QueueDelayedAction(DelayedAction delayed_action) {
+  DCHECK(is_animating());
+  delayed_actions_.emplace_back(std::move(delayed_action));
+}
+
+void AnimatingLayoutManager::RunOrQueueAction(DelayedAction action) {
+  if (!is_animating())
+    std::move(action).Run();
+  else
+    QueueDelayedAction(std::move(action));
 }
 
 gfx::AnimationContainer*
@@ -360,4 +375,10 @@ void AnimatingLayoutManager::AnimateTo(double value) {
 void AnimatingLayoutManager::NotifyIsAnimatingChanged() {
   for (auto& observer : observers_)
     observer.OnLayoutIsAnimatingChanged(this, is_animating());
+}
+
+void AnimatingLayoutManager::RunDelayedActions() {
+  for (auto& action : delayed_actions_)
+    std::move(action).Run();
+  delayed_actions_.clear();
 }

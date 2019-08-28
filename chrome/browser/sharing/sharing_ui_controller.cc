@@ -87,6 +87,11 @@ void SharingUiController::OnDialogClosed(SharingDialog* dialog) {
   UpdateIcon();
 }
 
+void SharingUiController::MaybeShowErrorDialog() {
+  if (send_failed_ && web_contents_ == GetCurrentWebContents(web_contents_))
+    ShowNewDialog();
+}
+
 void SharingUiController::SendMessageToDevice(
     const syncer::DeviceInfo& device,
     chrome_browser_sharing::SharingMessage sharing_message) {
@@ -110,9 +115,6 @@ void SharingUiController::OnMessageSentToDevice(
   is_loading_ = false;
   send_failed_ = result != SharingSendMessageResult::kSuccessful;
   UpdateIcon();
-
-  if (send_failed_ && web_contents_ == GetCurrentWebContents(web_contents_))
-    ShowNewDialog();
 }
 
 void SharingUiController::UpdateAndShowDialog() {

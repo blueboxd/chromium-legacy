@@ -69,7 +69,8 @@ void XRWorldInformation::ProcessPlaneInformation(
       it->value->Update(plane, timestamp);
     } else {
       updated_planes.insert(
-          plane->id, MakeGarbageCollected<XRPlane>(session_, plane, timestamp));
+          plane->id,
+          MakeGarbageCollected<XRPlane>(plane->id, session_, plane, timestamp));
     }
   }
 

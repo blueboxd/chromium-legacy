@@ -441,6 +441,18 @@ struct AXTreeUpdateState {
     return base::Contains(invalidate_unignored_cached_values_ids, node_id);
   }
 
+  // Adds the parent of |node_id| to the list of nodes to invalidate unignored
+  // cached values.
+  void InvalidateParentNodeUnignoredCacheValues(AXNode::AXID node_id) {
+    DCHECK(computing_pending_changes) << "This method should be called before "
+                                         "any updates are made to the tree.";
+    base::Optional<AXNode::AXID> parent_node_id =
+        GetParentIdForPendingNode(node_id);
+    if (parent_node_id) {
+      invalidate_unignored_cached_values_ids.insert(*parent_node_id);
+    }
+  }
+
   // Indicates if the tree is calculating what changes will occur during
   // an update before the update applies changes.
   bool computing_pending_changes;
@@ -1167,6 +1179,10 @@ bool AXTree::ComputePendingChangesToNode(const AXNodeData& new_data,
   if (update_state->DoesPendingNodeRequireInit(new_data.id)) {
     update_state->invalidate_unignored_cached_values_ids.insert(new_data.id);
 
+    // If this node has been cleared via |node_id_to_clear| or is a new node,
+    // the last-known parent's unignored cache needs to be updated.
+    update_state->InvalidateParentNodeUnignoredCacheValues(new_data.id);
+
     for (AXNode::AXID child_id : new_child_id_set) {
       // If a |child_id| is already pending for creation, then it must be a
       // duplicate entry in the tree.
@@ -1206,12 +1222,7 @@ bool AXTree::ComputePendingChangesToNode(const AXNodeData& new_data,
     update_state->invalidate_unignored_cached_values_ids.insert(new_data.id);
 
     // If this ignored state had changed also invalidate the parent.
-    base::Optional<AXNode::AXID> parent_node_id =
-        update_state->GetParentIdForPendingNode(new_data.id);
-    if (parent_node_id && ignored_changed) {
-      update_state->invalidate_unignored_cached_values_ids.insert(
-          *parent_node_id);
-    }
+    update_state->InvalidateParentNodeUnignoredCacheValues(new_data.id);
   }
 
   for (AXNode::AXID child_id : create_or_destroy_ids) {

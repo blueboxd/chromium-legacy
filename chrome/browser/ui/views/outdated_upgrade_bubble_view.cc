@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -21,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -152,15 +154,16 @@ base::string16 OutdatedUpgradeBubbleView::GetDialogButtonLabel(
 
 void OutdatedUpgradeBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  views::Label* text_label =
-      new views::Label(l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TEXT));
+  auto text_label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TEXT),
+      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT, STYLE_SECONDARY);
   text_label->SetMultiLine(true);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label->SizeToFit(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
       margins().width());
-  AddChildView(text_label);
+  AddChildView(std::move(text_label));
 }
 
 OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(

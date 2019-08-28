@@ -1441,18 +1441,17 @@ bool Animation::Update(TimingUpdateReason reason) {
       CancelAnimationOnCompositor();
   }
 
-  bool finished = false;
+  bool active = true;
   if (reason == kTimingUpdateForAnimationFrame) {
     UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
-    if (CalculateAnimationPlayState() == kFinished) {
-      if (pending_finish_notification_)
-        ApplyUpdates();
-      finished = true;
-    }
+    AnimationPlayState play_state = CalculateAnimationPlayState();
+    active = play_state != kFinished && play_state != kIdle;
+    if (play_state == kFinished && pending_finish_notification_)
+      ApplyUpdates();
   }
 
   DCHECK(!outdated_);
-  return !finished || TimeToEffectChange();
+  return active || TimeToEffectChange();
 }
 
 void Animation::QueueFinishedEvent() {

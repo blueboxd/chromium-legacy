@@ -1631,6 +1631,12 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CHECK_CONNECTION_MESSAGE" desc="The message shown when there is no internet connection for detecting available printers">
       Please check your connection to see available printers in your network
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_INTERNET_CONNECTION" desc="The message shown when there is no internet connection.">
+      No internet connection
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONNECT_TO_NETWORK_SUBTEXT" desc="The message shown when the user needs to connect to a network with connectivity and try again.">
+      Connect to a network and try again
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE" desc="Text for the title of the dialog that is used to edit a CUPS printer's information.">
       Edit printer
     </message>
@@ -3869,9 +3875,6 @@
     </message>
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME" desc="The default name (plus a number for a newly added fingerprint).">
       Finger <ph name="NEW_FINGER_NUMBER">$1<ex>1</ex></ph>
-    </message>
-    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_MEDIA_CONTROLS" desc="Label for the checkbox which enables or disables media controls on the lock screen.">
-      Enable Chrome media playback at lock screen
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL" desc="Label of the Add account button in Account Manager.">
       Add account

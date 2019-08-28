@@ -8,6 +8,8 @@
 #include "chrome/android/chrome_jni_headers/SmsReceiverInfoBar_jni.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/sms/sms_infobar_delegate.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/android/window_android.h"
 #include "url/origin.h"
 
 using base::android::ConvertUTF16ToJavaString;
@@ -15,18 +17,21 @@ using base::android::ScopedJavaLocalRef;
 using infobars::InfoBarDelegate;
 
 // static
-void SmsInfoBar::Create(InfoBarService* infobar_service,
+void SmsInfoBar::Create(content::WebContents* web_contents,
                         const url::Origin& origin,
                         base::OnceClosure on_confirm,
                         base::OnceClosure on_cancel) {
   auto delegate = std::make_unique<SmsInfoBarDelegate>(
       origin, std::move(on_confirm), std::move(on_cancel));
-  auto infobar = std::make_unique<SmsInfoBar>(std::move(delegate));
+  auto infobar =
+      std::make_unique<SmsInfoBar>(web_contents, std::move(delegate));
+  auto* infobar_service = InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(std::move(infobar));
 }
 
-SmsInfoBar::SmsInfoBar(std::unique_ptr<SmsInfoBarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+SmsInfoBar::SmsInfoBar(content::WebContents* web_contents,
+                       std::unique_ptr<SmsInfoBarDelegate> delegate)
+    : ConfirmInfoBar(std::move(delegate)), web_contents_(web_contents) {}
 
 SmsInfoBar::~SmsInfoBar() = default;
 
@@ -39,6 +44,9 @@ ScopedJavaLocalRef<jobject> SmsInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   auto button = ConvertUTF16ToJavaString(
       env, GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK));
 
-  return Java_SmsReceiverInfoBar_create(env, GetEnumeratedIconId(), title,
-                                        message, button);
+  base::android::ScopedJavaLocalRef<jobject> window_android =
+      web_contents_->GetNativeView()->GetWindowAndroid()->GetJavaObject();
+
+  return Java_SmsReceiverInfoBar_create(
+      env, window_android, GetEnumeratedIconId(), title, message, button);
 }

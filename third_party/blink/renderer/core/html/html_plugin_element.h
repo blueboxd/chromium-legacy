@@ -200,6 +200,7 @@ class CORE_EXPORT HTMLPlugInElement
   bool AllowedToLoadPlugin(const KURL&, const String& mime_type);
   // Perform checks based on the URL and MIME-type of the object to load.
   bool AllowedToLoadObject(const KURL&, const String& mime_type);
+  void RemovePluginFromFrameView(WebPluginContainerImpl* plugin);
 
   enum class ObjectContentType {
     kNone,

@@ -117,11 +117,6 @@ public class WebApkUma {
     private static final String HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN =
             "WebApk.Startup.Cold.ShellLaunchToSplashscreenHidden";
 
-    private static final int WEBAPK_OPEN_MAX = 3;
-    public static final int WEBAPK_OPEN_LAUNCH_SUCCESS = 0;
-    // Obsolete: WEBAPK_OPEN_NO_LAUNCH_INTENT = 1;
-    public static final int WEBAPK_OPEN_ACTIVITY_NOT_FOUND = 2;
-
     private static final long WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES =
             100 * (long) ConversionUtils.BYTES_PER_MEGABYTE; // 100 MB
 

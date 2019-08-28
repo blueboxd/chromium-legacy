@@ -31,12 +31,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_client.h"
-#include "cc/layers/layer_sticky_position_constraint.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -158,9 +156,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   bool ContentsAreVisible() const { return contents_visible_; }
   void SetContentsVisible(bool);
-
-  void SetScrollParent(cc::Layer*);
-  void SetClipParent(cc::Layer*);
 
   // For special cases, e.g. drawing missing tiles on Android.
   // The compositor should never paint this color in normal cases because the
@@ -290,9 +285,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     needs_check_raster_invalidation_ = true;
   }
 
-  bool HasScrollParent() const { return has_scroll_parent_; }
-  bool HasClipParent() const { return has_clip_parent_; }
-
   bool PaintWithoutCommitForTesting(
       const base::Optional<IntRect>& interest_rect = base::nullopt);
 
@@ -355,9 +347,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool contents_visible_ : 1;
   bool hit_testable_ : 1;
   bool needs_check_raster_invalidation_ : 1;
-
-  bool has_scroll_parent_ : 1;
-  bool has_clip_parent_ : 1;
 
   bool painted_ : 1;
 

@@ -6,7 +6,6 @@ package org.chromium.android_webview;
 
 import android.content.SharedPreferences;
 
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.GURLUtils;
@@ -133,16 +132,14 @@ public final class AwGeolocationPermissions {
     /* package */
     static void migrateGeolocationPreferences(
             SharedPreferences oldPrefs, SharedPreferences newPrefs) {
-        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            SharedPreferences.Editor oldPrefsEditor = oldPrefs.edit();
+        SharedPreferences.Editor oldPrefsEditor = oldPrefs.edit();
 
-            SharedPreferences.Editor newPrefsEditor = newPrefs.edit();
+        SharedPreferences.Editor newPrefsEditor = newPrefs.edit();
 
-            for (String name : oldPrefs.getAll().keySet()) {
-                if (name.startsWith(AwGeolocationPermissions.PREF_PREFIX)) {
-                    newPrefsEditor.putBoolean(name, oldPrefs.getBoolean(name, false)).apply();
-                    oldPrefsEditor.remove(name).apply();
-                }
+        for (String name : oldPrefs.getAll().keySet()) {
+            if (name.startsWith(AwGeolocationPermissions.PREF_PREFIX)) {
+                newPrefsEditor.putBoolean(name, oldPrefs.getBoolean(name, false)).apply();
+                oldPrefsEditor.remove(name).apply();
             }
         }
     }

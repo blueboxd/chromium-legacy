@@ -360,7 +360,7 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
 }
 
 ScriptPromise XRSession::createAnchor(ScriptState* script_state,
-                                      XRPose* pose,
+                                      XRRigidTransform* initial_pose,
                                       XRSpace* space) {
   // TODO(https://crbug.com/992033): Implement anchor creation from a session
   // instead of rejecting the promise.
@@ -417,9 +417,6 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   }
 
   // Reject the promise if device doesn't support the hit-test API.
-  // TODO(https://crbug.com/878936): Get the environment provider without going
-  // up to xr_, since it doesn't know which runtime's environment provider
-  // we want.
   if (!xr_->xrEnvironmentProviderPtr()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -446,6 +443,13 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   hit_test_promises_.insert(resolver);
 
   return promise;
+}
+
+ScriptPromise XRSession::requestHitTestSource(ScriptState* script_state,
+                                              XRHitTestOptionsInit* options) {
+  return ScriptPromise::RejectWithDOMException(
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError));
 }
 
 void XRSession::OnHitTestResults(

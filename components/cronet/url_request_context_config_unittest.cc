@@ -659,7 +659,10 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
+      // Explicitly turn off "goaway_sessions_on_ip_change" which is default
+      // enabled on iOS but cannot be simultaneously set with migration option.
       "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true,"
+      "\"goaway_sessions_on_ip_change\":false,"
       "\"migrate_sessions_early_v2\":true,"
       "\"retry_on_alternate_network_before_handshake\":true,"
       "\"migrate_idle_sessions\":true,"

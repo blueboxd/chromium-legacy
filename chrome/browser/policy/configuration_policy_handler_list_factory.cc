@@ -37,6 +37,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/autofill/core/browser/autofill_address_policy_handler.h"
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/autofill/core/browser/autofill_policy_handler.h"
@@ -760,7 +761,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     plugin_vm::prefs::kPluginVmImage,
     base::Value::Type::DICTIONARY },
   { key::kVoiceInteractionContextEnabled,
-    arc::prefs::kVoiceInteractionContextEnabled,
+    chromeos::assistant::prefs::kAssistantContextEnabled,
     base::Value::Type::BOOLEAN },
   { key::kVoiceInteractionHotwordEnabled,
     arc::prefs::kVoiceInteractionHotwordEnabled,

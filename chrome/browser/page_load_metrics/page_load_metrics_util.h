@@ -9,7 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/common/page_load_metrics_util.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 // Up to 10 minutes, with 100 buckets.

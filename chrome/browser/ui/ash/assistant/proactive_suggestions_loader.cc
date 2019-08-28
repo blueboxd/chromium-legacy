@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_loader.h"
 
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
+#include "base/i18n/rtl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -39,9 +40,16 @@ constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
 GURL CreateProactiveSuggestionsUrl(const GURL& url) {
   static constexpr char kProactiveSuggestionsEndpoint[] =
       "https://assistant.google.com/proactivesuggestions/embeddedview";
+  GURL result = GURL(kProactiveSuggestionsEndpoint);
+
+  // The proactive suggestions service needs to be aware of the device locale.
+  static constexpr char kLocaleParamKey[] = "hl";
+  result = net::AppendOrReplaceQueryParameter(
+      result, kLocaleParamKey, base::i18n::GetConfiguredLocale());
+
+  // The proactive suggestions service needs to be informed of the given |url|.
   static constexpr char kUrlParamKey[] = "url";
-  return net::AppendOrReplaceQueryParameter(GURL(kProactiveSuggestionsEndpoint),
-                                            kUrlParamKey, url.spec());
+  return net::AppendOrReplaceQueryParameter(result, kUrlParamKey, url.spec());
 }
 
 // Parses proactive suggestions metadata from the specified |headers|.

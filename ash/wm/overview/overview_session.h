@@ -311,6 +311,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // the corresponding window grid.
   void Move(bool reverse);
 
+  // Helper function that processes a key event and maybe scrolls the overview
+  // grid on the primary display.
+  bool ProcessForScrolling(const ui::KeyEvent& event);
+
   // Removes all observers that were registered during construction and/or
   // initialization.
   void RemoveAllObservers();

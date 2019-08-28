@@ -33,7 +33,7 @@
 namespace {
 
 // See comments on lookup_table_addresses_ in the header.
-const uint8_t nBitTo8BitlookupTable[] = {
+constexpr uint8_t nBitTo8BitlookupTable[] = {
     // 1 bit
     0, 255,
     // 2 bits
@@ -70,20 +70,10 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent,
                                size_t img_data_offset,
                                bool is_in_ico)
     : parent_(parent),
-      buffer_(nullptr),
-      fast_reader_(nullptr),
       decoded_offset_(decoded_and_header_offset),
       header_offset_(decoded_and_header_offset),
       img_data_offset_(img_data_offset),
-      is_os21x_(false),
-      is_os22x_(false),
-      is_top_down_(false),
-      need_to_process_bitmasks_(false),
-      need_to_process_color_table_(false),
-      seen_non_zero_alpha_pixel_(false),
-      seen_zero_alpha_pixel_(false),
-      is_in_ico_(is_in_ico),
-      decoding_and_mask_(false) {
+      is_in_ico_(is_in_ico) {
   // Clue-in decodeBMP() that we need to detect the correct info header size.
   memset(&info_header_, 0, sizeof(info_header_));
 }
@@ -102,7 +92,14 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
   if ((decoded_offset_ < header_end) && !ProcessInfoHeader())
     return false;
 
-  // ProcessInfoHeader() set the size, so if that's all we needed, we're done.
+  // Set our size if we haven't already.  In ICO files, IsDecodedSizeAvailable()
+  // always returns true (since it reflects the size in the directory, which has
+  // already been read); call SetSize() anyway, since it sanity-checks that the
+  // size here matches the directory.
+  if ((is_in_ico_ || !parent_->IsDecodedSizeAvailable()) &&
+      !parent_->SetSize(info_header_.width, info_header_.height))
+    return false;
+
   if (only_size)
     return true;
 
@@ -116,25 +113,8 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
 
   // Initialize the framebuffer if needed.
   DCHECK(buffer_);  // Parent should set this before asking us to decode!
-  if (buffer_->GetStatus() == ImageFrame::kFrameEmpty) {
-    if (!buffer_->AllocatePixelData(parent_->Size().Width(),
-                                    parent_->Size().Height(),
-                                    parent_->ColorSpaceForSkImages())) {
-      return parent_->SetFailed();  // Unable to allocate.
-    }
-    buffer_->ZeroFillPixelData();
-    buffer_->SetStatus(ImageFrame::kFramePartial);
-    // SetSize() calls EraseARGB(), which resets the alpha flag, so we force
-    // it back to false here.  We'll set it true below in all cases where
-    // these 0s could actually show through.
-    buffer_->SetHasAlpha(false);
-
-    // For BMPs, the frame always fills the entire image.
-    buffer_->SetOriginalFrameRect(IntRect(IntPoint(), parent_->Size()));
-
-    if (!is_top_down_)
-      coord_.SetY(parent_->Size().Height() - 1);
-  }
+  if ((buffer_->GetStatus() == ImageFrame::kFrameEmpty) && !InitFrame())
+    return false;
 
   // Decode the data.
   if (!decoding_and_mask_ && !PastEndOfImage(0) &&
@@ -163,15 +143,6 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
   // Done!
   buffer_->SetStatus(ImageFrame::kFrameComplete);
   return true;
-}
-
-bool BMPImageReader::DecodePixelData(bool non_rle) {
-  const IntPoint coord(coord_);
-  const ProcessingResult result =
-      non_rle ? ProcessNonRLEData(false, 0) : ProcessRLEData();
-  if (coord_ != coord)
-    buffer_->SetPixelsChanged(true);
-  return (result == kFailure) ? parent_->SetFailed() : (result == kSuccess);
 }
 
 bool BMPImageReader::ReadInfoHeaderSize() {
@@ -218,15 +189,10 @@ bool BMPImageReader::ProcessInfoHeader() {
       ((data_->size() - decoded_offset_) < info_header_.size) ||
       !ReadInfoHeader())
     return false;
-  decoded_offset_ += info_header_.size;
 
-  // Sanity-check header values.
+  // Sanity-check header values before doing further fixup.
   if (!IsInfoHeaderValid())
     return parent_->SetFailed();
-
-  // Set our size.
-  if (!parent_->SetSize(info_header_.width, info_header_.height))
-    return false;
 
   // For paletted images, bitmaps can set clr_used to 0 to mean "all colors", so
   // set it to the maximum number of colors for this bit depth.  Also do this
@@ -251,6 +217,7 @@ bool BMPImageReader::ProcessInfoHeader() {
   else if (info_header_.bit_count)
     need_to_process_color_table_ = true;
 
+  decoded_offset_ += info_header_.size;
   return true;
 }
 
@@ -283,7 +250,6 @@ bool BMPImageReader::ReadInfoHeader() {
   if (is_os21x_) {
     info_header_.width = ReadUint16(4);
     info_header_.height = ReadUint16(6);
-    DCHECK(!is_in_ico_);  // ICO is a Windows format, not OS/2!
     info_header_.bit_count = ReadUint16(10);
     return true;
   }
@@ -292,6 +258,17 @@ bool BMPImageReader::ReadInfoHeader() {
   info_header_.height = ReadUint32(8);
   if (is_in_ico_)
     info_header_.height /= 2;
+  // Detect top-down BMPs.
+  if (info_header_.height < 0) {
+    // We can't negate INT32_MIN below to get a positive int32_t.
+    // IsInfoHeaderValid() will reject heights of 1 << 16 or larger anyway,
+    // so just reject this bitmap now.
+    if (info_header_.height == INT32_MIN)
+      return parent_->SetFailed();
+    is_top_down_ = true;
+    info_header_.height = -info_header_.height;
+  }
+
   info_header_.bit_count = ReadUint16(14);
 
   // Read compression type, if present.
@@ -334,17 +311,6 @@ bool BMPImageReader::ReadInfoHeader() {
   if (HasAlphaMaskInHeader())
     bit_masks_[3] = ReadUint32(52);
 
-  // Detect top-down BMPs.
-  if (info_header_.height < 0) {
-    // We can't negate INT32_MIN below to get a positive int32_t.
-    // IsInfoHeaderValid() will reject heights of 1 << 16 or larger anyway,
-    // so just reject this bitmap now.
-    if (info_header_.height == INT32_MIN)
-      return parent_->SetFailed();
-    is_top_down_ = true;
-    info_header_.height = -info_header_.height;
-  }
-
   return true;
 }
 
@@ -354,8 +320,8 @@ bool BMPImageReader::IsInfoHeaderValid() const {
   if ((info_header_.width <= 0) || !info_header_.height)
     return false;
 
-  // Only Windows V3+ has top-down bitmaps.
-  if (is_top_down_ && (is_os21x_ || is_os22x_))
+  // Only Windows V3+ has ICOs and top-down bitmaps.
+  if ((is_in_ico_ || is_top_down_) && (is_os21x_ || is_os22x_))
     return false;
 
   // Only bit depths of 1, 4, 8, or 24 are universally supported.
@@ -530,12 +496,6 @@ bool BMPImageReader::ProcessBitmasks() {
     bit_masks_[3] = use_mask ? uint32_t{0xff000000} : 0;
   }
 
-  // We've now decoded all the non-image data we care about.  Skip anything
-  // else before the actual raster data.
-  if (img_data_offset_)
-    decoded_offset_ = img_data_offset_;
-  need_to_process_bitmasks_ = false;
-
   // Check masks and set shift and LUT address values.
   for (int i = 0; i < 4; ++i) {
     // Trim the mask to the allowed bit depth.  Some Windows V4+ BMPs
@@ -586,6 +546,11 @@ bool BMPImageReader::ProcessBitmasks() {
         num_bits ? (nBitTo8BitlookupTable + (1 << num_bits) - 2) : nullptr;
   }
 
+  // We've now decoded all the non-image data we care about.  Skip anything
+  // else before the actual raster data.
+  if (img_data_offset_)
+    decoded_offset_ = img_data_offset_;
+  need_to_process_bitmasks_ = false;
   return true;
 }
 
@@ -630,8 +595,37 @@ bool BMPImageReader::ProcessColorTable() {
   if (img_data_offset_)
     decoded_offset_ = img_data_offset_;
   need_to_process_color_table_ = false;
-
   return true;
+}
+
+bool BMPImageReader::InitFrame() {
+  if (!buffer_->AllocatePixelData(parent_->Size().Width(),
+                                  parent_->Size().Height(),
+                                  parent_->ColorSpaceForSkImages()))
+    return parent_->SetFailed();  // Unable to allocate.
+
+  buffer_->ZeroFillPixelData();
+  buffer_->SetStatus(ImageFrame::kFramePartial);
+  // SetSize() calls EraseARGB(), which resets the alpha flag, so we force
+  // it back to false here.  We'll set it true below in all cases where
+  // these 0s could actually show through.
+  buffer_->SetHasAlpha(false);
+
+  // For BMPs, the frame always fills the entire image.
+  buffer_->SetOriginalFrameRect(IntRect(IntPoint(), parent_->Size()));
+
+  if (!is_top_down_)
+    coord_.SetY(parent_->Size().Height() - 1);
+  return true;
+}
+
+bool BMPImageReader::DecodePixelData(bool non_rle) {
+  const IntPoint coord(coord_);
+  const ProcessingResult result =
+      non_rle ? ProcessNonRLEData(false, 0) : ProcessRLEData();
+  if (coord_ != coord)
+    buffer_->SetPixelsChanged(true);
+  return (result == kFailure) ? parent_->SetFailed() : (result == kSuccess);
 }
 
 BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {

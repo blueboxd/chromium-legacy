@@ -51,9 +51,9 @@ First, create the file
     <dist:module
         dist:onDemand="true"
         dist:title="@string/foo_module_title">
-        <!-- This will fuse the module into the base APK if a system image
-             APK is built from this bundle. -->
-        <dist:fusing dist:include="true" />
+        <!-- This will prevent the module to become part of the Android K
+             build in case we ever want to use bundles on Android K. -->
+        <dist:fusing dist:include="false" />
     </dist:module>
 
     <!-- Remove android:hasCode="false" when adding Java code. -->
@@ -758,7 +758,7 @@ like this:
     <dist:module
       dist:instant="false"
       dist:title="@string/foo_module_title">
-      <dist:fusing dist:include="true" />
+      <dist:fusing dist:include="false" />
       <dist:delivery>
         <dist:install-time>
           <dist:conditions>

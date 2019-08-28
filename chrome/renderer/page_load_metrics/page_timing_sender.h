@@ -5,7 +5,7 @@
 #ifndef CHROME_RENDERER_PAGE_LOAD_METRICS_PAGE_TIMING_SENDER_H_
 #define CHROME_RENDERER_PAGE_LOAD_METRICS_PAGE_TIMING_SENDER_H_
 
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 
 namespace page_load_metrics {
 

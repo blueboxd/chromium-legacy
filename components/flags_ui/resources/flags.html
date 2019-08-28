@@ -43,8 +43,9 @@
       <button id="experiment-reset-all" type="button" tabindex="3">
           $i18n{reset}
       </button>
-      <div class="screen-reader-only" id="reset-all-success-message"
-           role="status">$i18n{reset-complete}</div>
+      <div class="screen-reader-only" id="reset-all-success-message" role="status" aria-disabled="true">
+        $i18n{reset-acknowledged}
+      </div>
     </div>
   </div>
 </div>

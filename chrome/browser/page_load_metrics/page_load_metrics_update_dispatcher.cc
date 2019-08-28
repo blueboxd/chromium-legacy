@@ -14,7 +14,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/common/page_load_metrics/page_load_metrics_constants.h"
+#include "components/page_load_metrics/common/page_load_metrics_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/common/constants.h"

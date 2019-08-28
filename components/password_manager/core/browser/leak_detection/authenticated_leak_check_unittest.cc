@@ -31,7 +31,7 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 constexpr char kTestEmail[] = "user@gmail.com";
-constexpr char kUsername[] = "username";
+constexpr char kUsername[] = "USERNAME@gmail.com";
 constexpr char kPassword[] = "password123";
 constexpr char kExampleCom[] = "https://example.com";
 
@@ -333,13 +333,20 @@ TEST_F(AuthenticatedLeakCheckTest, ParseResponse_Leak) {
   PayloadAndCallback payload_and_callback = ImitateNetworkRequest();
   ASSERT_TRUE(!payload_and_callback.payload.empty());
 
+  // |canonicalized_username| is passed to ScryptHashUsernameAndPassword() to
+  // make sure the canonicalization logic works correctly. Assert that
+  // CanonicalizeUsername() was not a no-op.
+  std::string canonicalized_username = CanonicalizeUsername(kUsername);
+  ASSERT_NE(kUsername, canonicalized_username);
+
   auto response = std::make_unique<SingleLookupResponse>();
   std::string key_server;
   response->reencrypted_lookup_hash =
       CipherReEncrypt(payload_and_callback.payload, &key_server);
   response->encrypted_leak_match_prefixes.push_back(
       crypto::SHA256HashString(CipherEncryptWithKey(
-          ScryptHashUsernameAndPassword(kUsername, kPassword), key_server)));
+          ScryptHashUsernameAndPassword(canonicalized_username, kPassword),
+          key_server)));
 
   EXPECT_CALL(delegate(), OnLeakDetectionDone(true, GURL(kExampleCom),
                                               base::ASCIIToUTF16(kUsername),

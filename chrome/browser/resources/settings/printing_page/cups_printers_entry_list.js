@@ -59,13 +59,27 @@ Polymer({
             item =>this.matchesSearchTerm_(item.printerInfo,this.searchTerm)) :
         this.printers.slice();
 
-    updatedPrinters.sort((first, second) => {
-      return settings.printing.alphabeticalSort(
-          first.printerInfo, second.printerInfo);
-    });
+    updatedPrinters.sort(this.sortPrinters_);
 
     this.updateList('filteredPrinters_', printer => printer.printerInfo,
         updatedPrinters);
+  },
+
+
+  /**
+   * @param {!PrinterListEntry} first
+   * @param {!PrinterListEntry} second
+   * @return {number}
+   * @private
+   */
+  sortPrinters_: function(first, second) {
+    if (first.printerType == second.printerType) {
+      return settings.printing.alphabeticalSort(
+          first.printerInfo, second.printerInfo);
+    }
+
+    // PrinterType sort order maintained in cups_printer_types.js
+    return first.printerType - second.printerType;
   },
 
   /**

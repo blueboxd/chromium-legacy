@@ -53,14 +53,6 @@ void BadgeManager::SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 
-void BadgeManager::BindBadgeForRequest(
-    blink::mojom::BadgeServiceRequest request,
-    content::RenderFrameHost* frame) {
-  // Implicit conversion from BadgeServiceRequest to
-  // mojo::PendingReceiver<blink::mojom::BadgeService>.
-  BindRequest(std::move(request), frame);
-}
-
 void BadgeManager::BindRequest(
     mojo::PendingReceiver<blink::mojom::BadgeService> receiver,
     content::RenderFrameHost* frame) {

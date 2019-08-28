@@ -7,6 +7,7 @@
 
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -25,7 +26,7 @@ class CookieJar {
  private:
   void RequestRestrictedCookieManagerIfNeeded();
 
-  network::mojom::blink::RestrictedCookieManagerPtr backend_;
+  mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend_;
   WeakPersistent<blink::Document> document_;  // Document owns |this|.
 };
 

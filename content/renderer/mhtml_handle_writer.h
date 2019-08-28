@@ -8,11 +8,21 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "content/common/download/mhtml_file_writer.mojom-forward.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+
+namespace base {
+class TaskRunner;
+}
 
 namespace blink {
 class WebThreadSafeData;
+}
+
+namespace mojo {
+class SimpleWatcher;
 }
 
 namespace content {

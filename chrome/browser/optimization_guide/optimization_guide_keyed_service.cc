@@ -8,6 +8,8 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
+#include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/optimization_guide/command_line_top_host_provider.h"
@@ -35,6 +37,78 @@ GetTopHostProviderIfUserPermitted(content::BrowserContext* browser_context) {
   // If not enabled by flag, see if the user is a Data Saver user and has seen
   // all the right prompts for it.
   return DataSaverTopHostProvider::CreateIfAllowed(browser_context);
+}
+
+// Logs |optimization_target_decision| for |optimization_target| and the
+// |optimization_type_decision| for |optimization_type| in the current
+// navigation's OptimizationGuideNavigationData;
+void LogDecisions(
+    content::NavigationHandle* navigation_handle,
+    optimization_guide::OptimizationTarget optimization_target,
+    optimization_guide::OptimizationTargetDecision optimization_target_decision,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
+  OptimizationGuideWebContentsObserver*
+      optimization_guide_web_contents_observer =
+          OptimizationGuideWebContentsObserver::FromWebContents(
+              navigation_handle->GetWebContents());
+  if (!optimization_guide_web_contents_observer)
+    return;
+
+  OptimizationGuideNavigationData* navigation_data =
+      optimization_guide_web_contents_observer
+          ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
+  navigation_data->SetDecisionForOptimizationTarget(
+      optimization_target, optimization_target_decision);
+  navigation_data->SetDecisionForOptimizationType(optimization_type,
+                                                  optimization_type_decision);
+}
+
+// Returns the OptimizationGuideDecision from |optimization_type_decision|.
+optimization_guide::OptimizationGuideDecision
+GetOptimizationGuideDecisionFromOptimizationTypeDecision(
+    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
+  switch (optimization_type_decision) {
+    case optimization_guide::OptimizationTypeDecision::
+        kAllowedByOptimizationFilter:
+    case optimization_guide::OptimizationTypeDecision::kAllowedByHint:
+      return optimization_guide::OptimizationGuideDecision::kTrue;
+    case optimization_guide::OptimizationTypeDecision::kUnknown:
+    case optimization_guide::OptimizationTypeDecision::
+        kHadOptimizationFilterButNotLoadedInTime:
+    case optimization_guide::OptimizationTypeDecision::
+        kHadHintButNotLoadedInTime:
+      return optimization_guide::OptimizationGuideDecision::kUnknown;
+    default:
+      return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+  static_assert(
+      optimization_guide::OptimizationTypeDecision::kMaxValue ==
+          optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
+      "This function should be updated when a new OptimizationTypeDecision is "
+      "added");
+}
+
+// Returns the OptimizationGuideDecision based on |optimization_target_decision|
+// and |optimization_guide_decision|. If either resolves to false,
+// then the decision will be false. Otherwise, resolves to true or unknown.
+optimization_guide::OptimizationGuideDecision ResolveOptimizationGuideDecision(
+    optimization_guide::OptimizationTargetDecision optimization_target_decision,
+    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
+  switch (optimization_target_decision) {
+    case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
+      return optimization_guide::OptimizationGuideDecision::kFalse;
+    case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
+      return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
+          optimization_type_decision);
+    default:
+      return optimization_guide::OptimizationGuideDecision::kUnknown;
+  }
+  static_assert(
+      optimization_guide::OptimizationTargetDecision::kMaxValue ==
+          optimization_guide::OptimizationTargetDecision::kPageLoadMatches,
+      "This function should be updated when a new OptimizationTargetDecision "
+      "is added");
 }
 
 }  // namespace
@@ -88,9 +162,18 @@ OptimizationGuideKeyedService::CanApplyOptimization(
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK(hints_manager_);
 
-  return hints_manager_->CanApplyOptimization(
+  optimization_guide::OptimizationTargetDecision optimization_target_decision;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision;
+  hints_manager_->CanApplyOptimization(
       navigation_handle, optimization_target, optimization_type,
+      &optimization_target_decision, &optimization_type_decision,
       optimization_metadata);
+
+  LogDecisions(navigation_handle, optimization_target,
+               optimization_target_decision, optimization_type,
+               optimization_type_decision);
+  return ResolveOptimizationGuideDecision(optimization_target_decision,
+                                          optimization_type_decision);
 }
 
 void OptimizationGuideKeyedService::ClearData() {

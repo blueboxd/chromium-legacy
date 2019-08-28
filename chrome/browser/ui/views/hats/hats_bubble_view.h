@@ -16,6 +16,11 @@
 class AppMenuButton;
 class Browser;
 
+// The type of the callback invoked when a user consents, cancels, or dismisses
+// the consent banner bubble.
+// |accept| indicates whether the user consents to take the survey.
+using HatsConsentCallback = base::OnceCallback<void(bool accept)>;
+
 // This bubble view is displayed when a Happiness tracking survey is triggered.
 // It displays a WebUI that hosts the survey.
 class HatsBubbleView : public views::BubbleDialogDelegateView {
@@ -33,9 +38,12 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
 
   // Returns a pointer to the Hats Bubble being shown. For testing only.
   static views::BubbleDialogDelegateView* GetHatsBubble();
-  // Creates and shows the bubble that leads to a survey identified by
-  // |site_id|.
-  static void Show(Browser* browser, const std::string& site_id);
+
+  // Shows the bubble when the survey content identified by |site_id| is ready.
+  static void ShowOnContentReady(Browser* browser, const std::string& site_id);
+
+  // Shows the bubble now with supplied callback |consent_callback|.
+  static void Show(Browser* browser, HatsConsentCallback consent_callback);
 
  protected:
   // views::WidgetDelegate:
@@ -46,6 +54,7 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
 
   // views::DialogDelegate:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool Cancel() override;
   bool Accept() override;
 
   // views::WidgetObserver:
@@ -58,14 +67,13 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
  private:
   HatsBubbleView(Browser* browser,
                  AppMenuButton* anchor_button,
-                 const std::string& site_id,
-                 gfx::NativeView parent_view);
+                 gfx::NativeView parent_view,
+                 HatsConsentCallback consent_callback);
   ~HatsBubbleView() override;
 
   static HatsBubbleView* instance_;
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
-  const std::string site_id_;
-  const Browser* browser_;
+  HatsConsentCallback consent_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsBubbleView);
 };

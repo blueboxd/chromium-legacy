@@ -1270,7 +1270,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       std::vector<network::mojom::HttpHeaderPtr> /* additional_headers */,
       mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>,
       network::mojom::AuthenticationHandlerPtr,
-      network::mojom::TrustedHeaderClientPtr)>;
+      mojo::PendingRemote<network::mojom::TrustedHeaderClient>)>;
 
   // Allows the embedder to intercept a WebSocket connection. This is called
   // only when WillInterceptWebSocket returns true.

@@ -2349,7 +2349,6 @@ enum WebFeature {
   kCSSValueAppearanceMeterForOthersRendered = 2967,
   kSVGSMILDiscardElementParsed = 2968,
   kSVGSMILDiscardElementTriggered = 2969,
-  kLinkHeaderStylesheet = 2970,
   kV8PointerEvent_GetPredictedEvents_Method = 2971,
   kScrollSnapOnViewportBreaks = 2972,
   kScrollPaddingOnViewportBreaks = 2973,

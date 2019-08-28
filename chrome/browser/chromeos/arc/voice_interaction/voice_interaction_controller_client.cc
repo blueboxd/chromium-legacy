@@ -91,13 +91,6 @@ void VoiceInteractionControllerClient::NotifySettingsEnabled() {
   ash::AssistantState::Get()->NotifySettingsEnabled(enabled);
 }
 
-void VoiceInteractionControllerClient::NotifyContextEnabled() {
-  DCHECK(profile_);
-  PrefService* prefs = profile_->GetPrefs();
-  bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled);
-  ash::AssistantState::Get()->NotifyContextEnabled(enabled);
-}
-
 void VoiceInteractionControllerClient::NotifyHotwordEnabled() {
   DCHECK(profile_);
   PrefService* prefs = profile_->GetPrefs();
@@ -158,18 +151,12 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
           &VoiceInteractionControllerClient::NotifySettingsEnabled,
           base::Unretained(this)));
   pref_change_registrar_->Add(
-      prefs::kVoiceInteractionContextEnabled,
-      base::BindRepeating(
-          &VoiceInteractionControllerClient::NotifyContextEnabled,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
       prefs::kVoiceInteractionHotwordEnabled,
       base::BindRepeating(
           &VoiceInteractionControllerClient::NotifyHotwordEnabled,
           base::Unretained(this)));
 
   NotifySettingsEnabled();
-  NotifyContextEnabled();
   NotifyLocaleChanged();
   NotifyHotwordEnabled();
   OnArcPlayStoreEnabledChanged(IsArcPlayStoreEnabledForProfile(profile_));

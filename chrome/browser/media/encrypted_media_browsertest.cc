@@ -829,7 +829,8 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DISABLED_CDMCrashDuringDecode) {
                        kEmeSessionClosedAndError);
 }
 
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, FileIOTest) {
+// Flaky: crbug.com/997953
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DISABLED_FileIOTest) {
   TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
 }
 

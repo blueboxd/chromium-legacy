@@ -549,9 +549,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   // for the algorithm to decide how many processes to create.
   const int kExpectedProcessCount =
 #if defined(ARCH_CPU_64_BITS)
-      17;
+      12;
 #else
-      25;
+      17;
 #endif
   if (base::SysInfo::AmountOfPhysicalMemoryMB() >= 2048) {
     EXPECT_GE(CountRenderProcessHosts(), kExpectedProcessCount);

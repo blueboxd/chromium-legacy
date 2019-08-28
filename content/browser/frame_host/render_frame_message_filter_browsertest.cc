@@ -295,7 +295,7 @@ class RestrictedCookieManagerInterceptor
  public:
   RestrictedCookieManagerInterceptor(
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver,
-      network::mojom::RestrictedCookieManagerPtr real_rcm)
+      mojo::PendingRemote<network::mojom::RestrictedCookieManager> real_rcm)
       : receiver_(this, std::move(receiver)), real_rcm_(std::move(real_rcm)) {}
 
   void set_override_url(base::Optional<std::string> maybe_url) {
@@ -332,7 +332,7 @@ class RestrictedCookieManagerInterceptor
   base::Optional<std::string> override_url_;
 
   mojo::Receiver<network::mojom::RestrictedCookieManager> receiver_;
-  network::mojom::RestrictedCookieManagerPtr real_rcm_;
+  mojo::Remote<network::mojom::RestrictedCookieManager> real_rcm_;
 };
 
 class CookieStoreContentBrowserClient : public ContentBrowserClient {
@@ -351,8 +351,8 @@ class CookieStoreContentBrowserClient : public ContentBrowserClient {
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
         orig_receiver = std::move(*receiver);
 
-    network::mojom::RestrictedCookieManagerPtr real_rcm;
-    *receiver = mojo::MakeRequest(&real_rcm);
+    mojo::PendingRemote<network::mojom::RestrictedCookieManager> real_rcm;
+    *receiver = real_rcm.InitWithNewPipeAndPassReceiver();
 
     rcm_interceptor_ = std::make_unique<RestrictedCookieManagerInterceptor>(
         std::move(orig_receiver), std::move(real_rcm));

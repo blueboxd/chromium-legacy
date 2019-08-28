@@ -158,42 +158,49 @@ void CrostiniExportImportNotification::SetStatusCancelled() {
 }
 
 void CrostiniExportImportNotification::SetStatusFailed() {
-  SetStatusFailed(l10n_util::GetStringUTF16(
-      type_ == ExportImportType::EXPORT
-          ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED
-          : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED));
+  SetStatusFailed(Status::FAILED_UNKNOWN_REASON,
+                  l10n_util::GetStringUTF16(
+                      type_ == ExportImportType::EXPORT
+                          ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED
+                          : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED));
 }
 
 void CrostiniExportImportNotification::SetStatusFailedArchitectureMismatch(
     const std::string& architecture_container,
     const std::string& architecture_device) {
   DCHECK(type_ == ExportImportType::IMPORT);
-  SetStatusFailed(l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_ARCHITECTURE,
-      base::ASCIIToUTF16(architecture_container),
-      base::ASCIIToUTF16(architecture_device)));
+  SetStatusFailed(
+      Status::FAILED_ARCHITECTURE_MISMATCH,
+      l10n_util::GetStringFUTF16(
+          IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_ARCHITECTURE,
+          base::ASCIIToUTF16(architecture_container),
+          base::ASCIIToUTF16(architecture_device)));
 }
 
 void CrostiniExportImportNotification::SetStatusFailedInsufficientSpace(
     uint64_t additional_required_space) {
   DCHECK(type_ == ExportImportType::IMPORT);
-  SetStatusFailed(l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_SPACE,
-      ui::FormatBytes(additional_required_space)));
+  SetStatusFailed(Status::FAILED_INSUFFICIENT_SPACE,
+                  l10n_util::GetStringFUTF16(
+                      IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_SPACE,
+                      ui::FormatBytes(additional_required_space)));
 }
 
 void CrostiniExportImportNotification::SetStatusFailedConcurrentOperation(
     ExportImportType in_progress_operation_type) {
-  SetStatusFailed(l10n_util::GetStringUTF16(
-      in_progress_operation_type == ExportImportType::EXPORT
-          ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED_IN_PROGRESS
-          : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_IN_PROGRESS));
+  SetStatusFailed(
+      Status::FAILED_CONCURRENT_OPERATION,
+      l10n_util::GetStringUTF16(
+          in_progress_operation_type == ExportImportType::EXPORT
+              ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED_IN_PROGRESS
+              : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_IN_PROGRESS));
 }
 
 void CrostiniExportImportNotification::SetStatusFailed(
+    Status status,
     const base::string16& message) {
   DCHECK(status_ == Status::RUNNING || status_ == Status::CANCELLING);
-  status_ = Status::FAILED;
+  status_ = status;
 
   notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
   notification_->set_accent_color(ash::kSystemNotificationColorCriticalWarning);
@@ -217,7 +224,10 @@ void CrostiniExportImportNotification::Close(bool by_user) {
       return;
     case Status::DONE:
     case Status::CANCELLED:
-    case Status::FAILED:
+    case Status::FAILED_UNKNOWN_REASON:
+    case Status::FAILED_ARCHITECTURE_MISMATCH:
+    case Status::FAILED_INSUFFICIENT_SPACE:
+    case Status::FAILED_CONCURRENT_OPERATION:
       delete this;
       return;
     default:

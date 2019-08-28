@@ -25,10 +25,6 @@ class CONTENT_EXPORT RenderWidgetDelegate {
  public:
   virtual ~RenderWidgetDelegate() = default;
 
-  // Returns the WebWidget if the delegate has one. Otherwise it returns null,
-  // and RenderWidget will fall back to its own WebWidget.
-  virtual blink::WebWidget* GetWebWidgetForWidget() const = 0;
-
   // As in RenderWidgetInputHandlerDelegate. Return true if the event was
   // handled.
   virtual bool RenderWidgetWillHandleMouseEventForWidget(
@@ -71,9 +67,6 @@ class CONTENT_EXPORT RenderWidgetDelegate {
 
   // Called when RenderWidget receives a SetFocus event.
   virtual void DidReceiveSetFocusEventForWidget() = 0;
-
-  // Called after RenderWidget changes focus.
-  virtual void DidChangeFocusForWidget() = 0;
 
   // Called when the RenderWidget handles
   // LayerTreeViewDelegate::DidCommitCompositorFrame().

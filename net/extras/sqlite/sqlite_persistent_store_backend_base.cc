@@ -102,6 +102,7 @@ bool SQLitePersistentStoreBackendBase::InitializeDatabase() {
     Reset();
     return false;
   }
+  db_->Preload();
 
   if (!MigrateDatabaseSchema() || !CreateDatabaseSchema()) {
     DLOG(ERROR) << "Unable to update or initialize " << histogram_tag_

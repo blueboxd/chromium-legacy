@@ -147,9 +147,13 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   void SetIsPushedByFloats() { is_pushed_by_floats_ = true; }
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
-  void ResetAdjoiningObjectTypes() { adjoining_object_types_ = kAdjoiningNone; }
+  void ResetAdjoiningObjectTypes() {
+    adjoining_object_types_ = kAdjoiningNone;
+    has_adjoining_object_descendants_ = false;
+  }
   void AddAdjoiningObjectTypes(NGAdjoiningObjectTypes adjoining_object_types) {
     adjoining_object_types_ |= adjoining_object_types;
+    has_adjoining_object_descendants_ |= adjoining_object_types;
   }
   void SetAdjoiningObjectTypes(NGAdjoiningObjectTypes adjoining_object_types) {
     adjoining_object_types_ = adjoining_object_types;
@@ -211,6 +215,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   NGBreakTokenVector inline_break_tokens_;
 
   NGAdjoiningObjectTypes adjoining_object_types_ = kAdjoiningNone;
+  bool has_adjoining_object_descendants_ = false;
 
   bool is_self_collapsing_ = false;
   bool is_pushed_by_floats_ = false;

@@ -2292,6 +2292,14 @@ CSSValue* ConsumeMarginOrOffset(
       range, css_parser_mode, kValueRangeAll, unitless);
 }
 
+CSSValue* ConsumeScrollPadding(CSSParserTokenRange& range) {
+  if (range.Peek().Id() == CSSValueID::kAuto)
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeLengthOrPercent(
+      range, kHTMLStandardMode, kValueRangeNonNegative,
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
 CSSValue* ConsumeOffsetPath(CSSParserTokenRange& range,
                             const CSSParserContext& context) {
   CSSValue* value = nullptr;

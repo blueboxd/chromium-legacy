@@ -916,5 +916,157 @@ TEST_F(NGLayoutResultCachingTest, OptimisticFloatPlacementNoRelayout) {
   EXPECT_EQ(space.ForcedBfcBlockOffset(), base::nullopt);
 }
 
+TEST_F(NGLayoutResultCachingTest, SelfCollapsingShifting) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+      .float { float: left; width: 10px; height: 10px; }
+      .adjoining-oof { position: absolute; display: inline; }
+    </style>
+    <div class="bfc">
+      <div class="float"></div>
+      <div id="test1"></div>
+    </div>
+    <div class="bfc">
+      <div class="float" style="height; 20px;"></div>
+      <div id="src1"></div>
+    </div>
+    <div class="bfc">
+      <div class="float"></div>
+      <div id="test2">
+        <div class="adjoining-oof"></div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div class="float" style="height; 20px;"></div>
+      <div id="src2">
+        <div class="adjoining-oof"></div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div class="float"></div>
+      <div style="height: 30px;"></div>
+      <div id="test3">
+        <div class="adjoining-oof"></div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div class="float" style="height; 20px;"></div>
+      <div style="height: 30px;"></div>
+      <div id="src3">
+        <div class="adjoining-oof"></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* test2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test2"));
+  auto* test3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test3"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+  auto* src3 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src3"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+
+  // Case 1: We have a different set of constraints, but as the child has no
+  // adjoining descendants it can be shifted anywhere.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test2->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+
+  // Case 2: We have a different set of constraints, but the child has an
+  // adjoining object and isn't "past" the floats - it can't be reused.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src3->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test3->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+
+  // Case 3: We have a different set of constraints, and adjoining descendants,
+  // but have a position past where they might affect us.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, ClearancePastAdjoiningFloatsMovement) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+      .float-left { float: left; width: 10px; height: 10px; }
+      .float-right { float: right; width: 10px; height: 20px; }
+    </style>
+    <div class="bfc">
+      <div>
+        <div class="float-left"></div>
+        <div class="float-right"></div>
+        <div id="test1" style="clear: both;">text</div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div>
+        <div class="float-left" style="height; 20px;"></div>
+        <div class="float-right"></div>
+        <div id="src1" style="clear: both;">text</div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div>
+        <div class="float-left"></div>
+        <div class="float-right"></div>
+        <div id="test2" style="clear: left;">text</div>
+      </div>
+    </div>
+    <div class="bfc">
+      <div>
+        <div class="float-left" style="height; 20px;"></div>
+        <div class="float-right"></div>
+        <div id="src2" style="clear: left;">text</div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* test1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test1"));
+  auto* test2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test2"));
+  auto* src1 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src1"));
+  auto* src2 = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src2"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+
+  NGConstraintSpace space =
+      src1->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = test1->CachedLayoutResult(
+      space, nullptr, &fragment_geometry, &cache_status);
+
+  // Case 1: We have forced clearance, but floats won't impact our children.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+
+  fragment_geometry.reset();
+  space = src2->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  result = test2->CachedLayoutResult(space, nullptr, &fragment_geometry,
+                                     &cache_status);
+
+  // Case 2: We have forced clearance, and floats will impact our children.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kNeedsLayout);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
 }  // namespace
 }  // namespace blink

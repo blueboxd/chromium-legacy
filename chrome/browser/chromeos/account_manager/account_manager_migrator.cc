@@ -472,6 +472,12 @@ void AccountManagerMigrator::Start() {
   if (!chromeos::IsAccountManagerAvailable(profile_))
     return;
 
+  if (migration_runner_ && (migration_runner_->GetStatus() ==
+                            AccountMigrationRunner::Status::kRunning)) {
+    return;
+  }
+  migration_runner_ = std::make_unique<AccountMigrationRunner>();
+
   ran_migration_steps_ = false;
   if (ShouldRunMigrations()) {
     ran_migration_steps_ = true;
@@ -481,7 +487,7 @@ void AccountManagerMigrator::Start() {
   // Cleanup tasks (like re-enabling Chrome account reconciliation) rely on the
   // migration being run, even if they were no-op. Check
   // |OnMigrationRunComplete| and |RunCleanupTasks|.
-  migration_runner_.Run(
+  migration_runner_->Run(
       base::BindOnce(&AccountManagerMigrator::OnMigrationRunComplete,
                      weak_factory_.GetWeakPtr()));
 }
@@ -524,7 +530,7 @@ void AccountManagerMigrator::AddMigrationSteps() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
 
-  migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(
+  migration_runner_->AddStep(std::make_unique<DeviceAccountMigration>(
       GetDeviceAccount(profile_),
       ProfileHelper::Get()
           ->GetUserByProfile(profile_)
@@ -538,14 +544,14 @@ void AccountManagerMigrator::AddMigrationSteps() {
           chromeos::prefs::kSecondaryGoogleAccountSigninAllowed);
 
   if (is_secondary_google_account_signin_allowed) {
-    migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
+    migration_runner_->AddStep(std::make_unique<ContentAreaAccountsMigration>(
         account_manager, identity_manager));
 
     if (arc::IsArcProvisioned(profile_)) {
       // Add a migration step for ARC only if ARC has been provisioned. If ARC
       // has not been provisioned yet, there cannot be any accounts that need to
       // be migrated.
-      migration_runner_.AddStep(std::make_unique<ArcAccountsMigration>(
+      migration_runner_->AddStep(std::make_unique<ArcAccountsMigration>(
           account_manager, identity_manager,
           arc::ArcAuthService::GetForBrowserContext(
               profile_) /* arc_auth_service */));
@@ -557,22 +563,32 @@ void AccountManagerMigrator::AddMigrationSteps() {
 
   // This MUST be the last step. Check the class level documentation of
   // |SuccessStorage| for the reason.
-  migration_runner_.AddStep(
+  migration_runner_->AddStep(
       std::make_unique<SuccessStorage>(profile_->GetPrefs()));
 
   // TODO(sinhak): Verify Device Account LST state.
 }
 
 AccountMigrationRunner::Status AccountManagerMigrator::GetStatus() const {
-  return migration_runner_.GetStatus();
+  if (!migration_runner_)
+    return AccountMigrationRunner::Status::kNotStarted;
+
+  return migration_runner_->GetStatus();
+}
+
+base::Optional<AccountMigrationRunner::MigrationResult>
+AccountManagerMigrator::GetLastMigrationRunResult() const {
+  return last_migration_run_result_;
 }
 
 void AccountManagerMigrator::OnMigrationRunComplete(
     const AccountMigrationRunner::MigrationResult& result) {
   DCHECK_NE(AccountMigrationRunner::Status::kNotStarted,
-            migration_runner_.GetStatus());
+            migration_runner_->GetStatus());
   DCHECK_NE(AccountMigrationRunner::Status::kRunning,
-            migration_runner_.GetStatus());
+            migration_runner_->GetStatus());
+
+  last_migration_run_result_ = base::make_optional(result);
 
   VLOG(1) << "Account migrations completed with result: "
           << static_cast<int>(result.final_status);

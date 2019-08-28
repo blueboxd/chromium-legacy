@@ -1453,10 +1453,6 @@ void WebViewImpl::DidExitFullscreen() {
   fullscreen_controller_->DidExitFullscreen();
 }
 
-void WebViewImpl::DidUpdateFullscreenSize() {
-  fullscreen_controller_->UpdateSize();
-}
-
 void WebViewImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
     bool suppress_frame_requests) {
   AsView().page->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(

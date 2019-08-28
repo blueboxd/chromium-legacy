@@ -11,10 +11,15 @@ DnsConfigOverrides::DnsConfigOverrides() = default;
 DnsConfigOverrides::DnsConfigOverrides(const DnsConfigOverrides& other) =
     default;
 
+DnsConfigOverrides::DnsConfigOverrides(DnsConfigOverrides&& other) = default;
+
 DnsConfigOverrides::~DnsConfigOverrides() = default;
 
 DnsConfigOverrides& DnsConfigOverrides::operator=(
     const DnsConfigOverrides& other) = default;
+
+DnsConfigOverrides& DnsConfigOverrides::operator=(DnsConfigOverrides&& other) =
+    default;
 
 bool DnsConfigOverrides::operator==(const DnsConfigOverrides& other) const {
   return nameservers == other.nameservers && search == other.search &&

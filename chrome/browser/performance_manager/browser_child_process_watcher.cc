@@ -20,21 +20,31 @@
 
 namespace performance_manager {
 
-BrowserChildProcessWatcher::BrowserChildProcessWatcher()
-    : browser_process_node_(
-          PerformanceManager::GetInstance()->CreateProcessNode(
-              RenderProcessHostProxy())) {
+BrowserChildProcessWatcher::BrowserChildProcessWatcher() = default;
+
+BrowserChildProcessWatcher::~BrowserChildProcessWatcher() {
+  DCHECK(!browser_process_node_);
+  DCHECK(gpu_process_nodes_.empty());
+}
+
+void BrowserChildProcessWatcher::Initialize() {
+  DCHECK(!browser_process_node_);
+  DCHECK(gpu_process_nodes_.empty());
+
+  browser_process_node_ = PerformanceManager::GetInstance()->CreateProcessNode(
+      RenderProcessHostProxy());
   OnProcessLaunched(base::Process::Current(), browser_process_node_.get());
   BrowserChildProcessObserver::Add(this);
 }
 
-BrowserChildProcessWatcher::~BrowserChildProcessWatcher() {
+void BrowserChildProcessWatcher::TearDown() {
   BrowserChildProcessObserver::Remove(this);
 
   PerformanceManager* performance_manager = PerformanceManager::GetInstance();
   performance_manager->DeleteNode(std::move(browser_process_node_));
   for (auto& node : gpu_process_nodes_)
     performance_manager->DeleteNode(std::move(node.second));
+  gpu_process_nodes_.clear();
 }
 
 void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(

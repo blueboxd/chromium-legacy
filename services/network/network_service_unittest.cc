@@ -24,7 +24,10 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/url_util.h"
+#include "net/dns/dns_client.h"
+#include "net/dns/dns_config.h"
 #include "net/dns/dns_config_service.h"
+#include "net/dns/dns_test_util.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -441,40 +444,39 @@ TEST_F(NetworkServiceTest, AuthEnableNegotiatePort) {
 #if !defined(OS_IOS)
 
 TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
-  // Set valid DnsConfig.
+  // Create valid DnsConfig.
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
-  service()->host_resolver_manager()->SetBaseDnsConfigForTesting(config);
+  auto dns_client = std::make_unique<net::MockDnsClient>(
+      std::move(config), net::MockDnsClientRuleList());
+  dns_client->set_ignore_system_config_changes(true);
+  net::DnsClient* dns_client_ptr = dns_client.get();
+  service()->host_resolver_manager()->SetDnsClientForTesting(
+      std::move(dns_client));
 
   service()->ConfigureStubHostResolver(
       true /* insecure_dns_client_enabled */,
       net::DnsConfig::SecureDnsMode::OFF,
       base::nullopt /* dns_over_https_servers */);
-  EXPECT_TRUE(service()
-                  ->host_resolver_manager()
-                  ->GetInsecureDnsClientEnabledForTesting());
+  EXPECT_TRUE(dns_client_ptr->CanUseInsecureDnsTransactions());
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
-            service()->host_resolver_manager()->GetSecureDnsModeForTesting());
+            dns_client_ptr->GetEffectiveConfig()->secure_dns_mode);
 
   service()->ConfigureStubHostResolver(
       false /* insecure_dns_client_enabled */,
       net::DnsConfig::SecureDnsMode::OFF,
       base::nullopt /* dns_over_https_servers */);
-  EXPECT_FALSE(service()
-                   ->host_resolver_manager()
-                   ->GetInsecureDnsClientEnabledForTesting());
+  EXPECT_FALSE(dns_client_ptr->CanUseInsecureDnsTransactions());
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
-            service()->host_resolver_manager()->GetSecureDnsModeForTesting());
+            dns_client_ptr->GetEffectiveConfig()->secure_dns_mode);
 
   service()->ConfigureStubHostResolver(
       false /* insecure_dns_client_enabled */,
       net::DnsConfig::SecureDnsMode::AUTOMATIC,
       base::nullopt /* dns_over_https_servers */);
-  EXPECT_FALSE(service()
-                   ->host_resolver_manager()
-                   ->GetInsecureDnsClientEnabledForTesting());
+  EXPECT_FALSE(dns_client_ptr->CanUseInsecureDnsTransactions());
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
-            service()->host_resolver_manager()->GetSecureDnsModeForTesting());
+            dns_client_ptr->GetEffectiveConfig()->secure_dns_mode);
 
   std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers_ptr;
   mojom::DnsOverHttpsServerPtr dns_over_https_server =
@@ -485,11 +487,9 @@ TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
   service()->ConfigureStubHostResolver(false /* insecure_dns_client_enabled */,
                                        net::DnsConfig::SecureDnsMode::AUTOMATIC,
                                        std::move(dns_over_https_servers_ptr));
-  EXPECT_FALSE(service()
-                   ->host_resolver_manager()
-                   ->GetInsecureDnsClientEnabledForTesting());
+  EXPECT_FALSE(dns_client_ptr->CanUseInsecureDnsTransactions());
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC,
-            service()->host_resolver_manager()->GetSecureDnsModeForTesting());
+            dns_client_ptr->GetEffectiveConfig()->secure_dns_mode);
 }
 
 TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
@@ -507,6 +507,16 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
                                   std::move(context_params));
 
+  // Create valid DnsConfig.
+  net::DnsConfig config;
+  config.nameservers.push_back(net::IPEndPoint());
+  auto dns_client = std::make_unique<net::MockDnsClient>(
+      std::move(config), net::MockDnsClientRuleList());
+  dns_client->set_ignore_system_config_changes(true);
+  net::DnsClient* dns_client_ptr = dns_client.get();
+  service()->host_resolver_manager()->SetDnsClientForTesting(
+      std::move(dns_client));
+
   // Enable DNS over HTTPS for one server.
 
   std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers_ptr;
@@ -521,12 +531,11 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
                                        net::DnsConfig::SecureDnsMode::AUTOMATIC,
                                        std::move(dns_over_https_servers_ptr));
   EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
-  const auto* dns_over_https_servers =
-      service()->host_resolver_manager()->GetDnsOverHttpsServersForTesting();
-  ASSERT_TRUE(dns_over_https_servers);
-  ASSERT_EQ(1u, dns_over_https_servers->size());
-  EXPECT_EQ(kServer1, (*dns_over_https_servers)[0].server_template);
-  EXPECT_EQ(kServer1UsePost, (*dns_over_https_servers)[0].use_post);
+  std::vector<net::DnsConfig::DnsOverHttpsServerConfig> dns_over_https_servers =
+      dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers;
+  ASSERT_EQ(1u, dns_over_https_servers.size());
+  EXPECT_EQ(kServer1, dns_over_https_servers[0].server_template);
+  EXPECT_EQ(kServer1UsePost, dns_over_https_servers[0].use_post);
 
   // Enable DNS over HTTPS for two servers.
 
@@ -546,13 +555,12 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
                                        std::move(dns_over_https_servers_ptr));
   EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
   dns_over_https_servers =
-      service()->host_resolver_manager()->GetDnsOverHttpsServersForTesting();
-  ASSERT_TRUE(dns_over_https_servers);
-  ASSERT_EQ(2u, dns_over_https_servers->size());
-  EXPECT_EQ(kServer2, (*dns_over_https_servers)[0].server_template);
-  EXPECT_EQ(kServer2UsePost, (*dns_over_https_servers)[0].use_post);
-  EXPECT_EQ(kServer3, (*dns_over_https_servers)[1].server_template);
-  EXPECT_EQ(kServer3UsePost, (*dns_over_https_servers)[1].use_post);
+      dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers;
+  ASSERT_EQ(2u, dns_over_https_servers.size());
+  EXPECT_EQ(kServer2, dns_over_https_servers[0].server_template);
+  EXPECT_EQ(kServer2UsePost, dns_over_https_servers[0].use_post);
+  EXPECT_EQ(kServer3, dns_over_https_servers[1].server_template);
+  EXPECT_EQ(kServer3UsePost, dns_over_https_servers[1].use_post);
 
   // Destroying the primary NetworkContext should disable DNS over HTTPS.
   network_context.reset();
@@ -560,8 +568,9 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   // DnsClient is still enabled.
   EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
   // DNS over HTTPS is not.
-  EXPECT_FALSE(
-      service()->host_resolver_manager()->GetDnsOverHttpsServersForTesting());
+  dns_over_https_servers =
+      dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers;
+  EXPECT_TRUE(dns_over_https_servers.empty());
 }
 
 #endif  // !defined(OS_IOS)

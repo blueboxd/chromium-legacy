@@ -28,15 +28,19 @@
 #include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/mhtml_extra_parts.h"
+#include "content/public/browser/mhtml_generation_result.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace {
+
 // Callback to notify the UI thread that writing to the MHTML file is complete.
 using MHTMLWriteCompleteCallback =
     base::RepeatingCallback<void(content::mojom::MhtmlSaveStatus)>;
@@ -44,11 +48,28 @@ using MHTMLWriteCompleteCallback =
 const char kContentLocation[] = "Content-Location: ";
 const char kContentType[] = "Content-Type: ";
 int kInvalidFileSize = -1;
+
+// CloseFileResult holds the result of closing the generated file using the
+// status of the operation, a file size and a pointer to a file digest. It
+// stores the values of the status and size directly, and makes a copy of the
+// digest if present.
 struct CloseFileResult {
-  CloseFileResult(content::mojom::MhtmlSaveStatus status, int64_t size)
-      : save_status(status), file_size(size) {}
+  CloseFileResult(content::mojom::MhtmlSaveStatus status,
+                  int64_t size,
+                  std::string* digest)
+      : save_status(status), file_size(size) {
+    if (digest)
+      file_digest = base::Optional<std::string>(*digest);
+  }
+
   content::mojom::MhtmlSaveStatus save_status;
   int64_t file_size;
+  base::Optional<std::string> file_digest;
+
+  content::MHTMLGenerationResult toMHTMLGenerationResult() const {
+    return content::MHTMLGenerationResult(file_size,
+                                          base::OptionalOrNullptr(file_digest));
+  }
 };
 
 base::File CreateMHTMLFile(const base::FilePath& file_path) {
@@ -88,19 +109,31 @@ namespace content {
 class MHTMLGenerationManager::Job {
  public:
   // Creates and registers a new job.
-  static void StartNewJob(WebContents* web_contents,
-                          const MHTMLGenerationParams& params,
-                          GenerateMHTMLCallback callback);
+  static void StartNewJob(
+      WebContents* web_contents,
+      const MHTMLGenerationParams& params,
+      MHTMLGenerationResult::GenerateMHTMLCallback callback);
 
  private:
   Job(WebContents* web_contents,
       const MHTMLGenerationParams& params,
-      GenerateMHTMLCallback callback);
+      MHTMLGenerationResult::GenerateMHTMLCallback callback);
   ~Job();
 
+  // Begins queuing frames from web_contents, creates a new MHTML file and
+  // begins page serialization to created file.
+  void initializeJob(WebContents* web_contents);
+
+  // Writes the string |to_write| to the file. If successful, updates hash and
+  // returns true, otherwise, returns false. Does not take ownership of |file|
+  // nor |raw_secure_hash|.
+  static bool WriteToFileAndUpdateHash(base::File* file,
+                                       crypto::SecureHash* secure_hash,
+                                       std::string to_write);
+
   // Writes the MHTML footer to the file and closes it. It also receives the
-  // SimpleWatcher instance used to watch the data pipe for safe destruction on
-  // the IO thread.
+  // SimpleWatcher instance used to watch the data pipe and the current hash
+  // state for safe destruction on the IO thread.
   //
   // Note: The same |boundary| marker must be used for all "boundaries" -- in
   // the header, parts and footer -- that belong to the same MHTML document (see
@@ -110,20 +143,19 @@ class MHTMLGenerationManager::Job {
       const std::string& boundary,
       base::File file,
       const std::vector<MHTMLExtraDataPart>& extra_data_parts,
-      std::unique_ptr<mojo::SimpleWatcher> watcher);
+      std::unique_ptr<mojo::SimpleWatcher> watcher,
+      std::unique_ptr<crypto::SecureHash> secure_hash);
 
   void AddFrame(RenderFrameHost* render_frame_host);
 
-  // If we have any extra MHTML parts to write out, write them into the file
-  // while on the file thread.  Returns true for success, or if there is no data
-  // to write.
-  static bool WriteExtraDataParts(
+  // Creates a string that encompasses any remaining extra data parts to write
+  // to the file.
+  static std::string CreateExtraDataParts(
       const std::string& boundary,
-      base::File& file,
       const std::vector<MHTMLExtraDataPart>& extra_data_parts);
 
-  // Writes the footer into the MHTML file.  Returns false for failure.
-  static bool WriteFooter(const std::string& boundary, base::File& file);
+  // Creates a string with the contents if htem MHTML file footer.
+  static std::string CreateFooter(const std::string& boundary);
 
   // Called on the UI thread when the file that should hold the MHTML data has
   // been created.
@@ -131,7 +163,7 @@ class MHTMLGenerationManager::Job {
 
   // Called on the UI thread after the file got finalized and we have its size,
   // or an error occurred while creating a new file.
-  void OnFinished(const CloseFileResult& close_file_result);
+  void OnFinished(const CloseFileResult& result);
 
   // Starts watching a handle on the file thread. Instantiates a new instance
   // of |watcher_| upon call.
@@ -237,7 +269,7 @@ class MHTMLGenerationManager::Job {
   std::string salt_;
 
   // The callback to call once generation is complete.
-  GenerateMHTMLCallback callback_;
+  MHTMLGenerationResult::GenerateMHTMLCallback callback_;
 
   // Whether the job is finished (set to true only for the short duration of
   // time between MHTMLGenerationManager::Job::Finalize is called and the job is
@@ -261,14 +293,20 @@ class MHTMLGenerationManager::Job {
   // Not used when the renderer is writing directly to file.
   bool waiting_on_data_streaming_;
 
+  // Current state of contents hash computation.
+  // This is updated upon every successful file write and finalized in the
+  // download sequence.
+  std::unique_ptr<crypto::SecureHash> secure_hash_;
+
   base::WeakPtrFactory<Job> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
-MHTMLGenerationManager::Job::Job(WebContents* web_contents,
-                                 const MHTMLGenerationParams& params,
-                                 GenerateMHTMLCallback callback)
+MHTMLGenerationManager::Job::Job(
+    WebContents* web_contents,
+    const MHTMLGenerationParams& params,
+    MHTMLGenerationResult::GenerateMHTMLCallback callback)
     : creation_time_(base::TimeTicks::Now()),
       params_(params),
       frame_tree_node_id_of_busy_frame_(FrameTreeNode::kFrameTreeNodeInvalidId),
@@ -277,12 +315,21 @@ MHTMLGenerationManager::Job::Job(WebContents* web_contents,
       callback_(std::move(callback)),
       is_finished_(false),
       waiting_on_data_streaming_(false) {
+  initializeJob(web_contents);
+}
+
+MHTMLGenerationManager::Job::~Job() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!watcher_);
+}
+
+void MHTMLGenerationManager::Job::initializeJob(WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
       "page-serialization", "SavingMhtmlJob", this, "url",
       web_contents->GetLastCommittedURL().possibly_invalid_spec(), "file",
-      params.file_path.AsUTF8Unsafe());
+      params_.file_path.AsUTF8Unsafe());
 
   web_contents->ForEachFrame(base::BindRepeating(
       &MHTMLGenerationManager::Job::AddFrame,
@@ -301,13 +348,8 @@ MHTMLGenerationManager::Job::Job(WebContents* web_contents,
 
   base::PostTaskAndReplyWithResult(
       download::GetDownloadTaskRunner().get(), FROM_HERE,
-      base::BindOnce(&CreateMHTMLFile, params.file_path),
+      base::BindOnce(&CreateMHTMLFile, params_.file_path),
       base::BindOnce(&Job::OnFileAvailable, weak_factory_.GetWeakPtr()));
-}
-
-MHTMLGenerationManager::Job::~Job() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!watcher_);
 }
 
 mojom::SerializeAsMHTMLParamsPtr
@@ -400,6 +442,13 @@ void MHTMLGenerationManager::Job::BeginWatchingHandle(
   watcher_ = std::make_unique<mojo::SimpleWatcher>(
       FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
       download::GetDownloadTaskRunner());
+  // It is entirely possible for BeginWatchingHandle to get bound multiple times
+  // if we have to serialize multiple render frames, but we will only ever want
+  // one secure hash instance created.
+  if (params_.compute_contents_hash && !secure_hash_) {
+    secure_hash_ =
+        crypto::SecureHash::Create(crypto::SecureHash::Algorithm::SHA256);
+  }
 
   // base::Unretained is safe, as |this| owns |mhtml_data_consumer_|, which
   // is responsible for invoking |watcher_| callbacks.
@@ -420,20 +469,21 @@ void MHTMLGenerationManager::Job::WriteMHTMLToDisk(
     const mojo::HandleSignalsState& state) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK_NE(result, MOJO_RESULT_FAILED_PRECONDITION);
-
   // Begin consumer data pipe handle read and file write loop.
   char buffer[1024];
+  uint32_t num_bytes = sizeof(buffer);
   while (result == MOJO_RESULT_OK && state.readable()) {
-    uint32_t num_bytes = sizeof(buffer);
     result = mhtml_data_consumer_->ReadData(&buffer, &num_bytes,
                                             MOJO_READ_DATA_FLAG_NONE);
-
-    if (result == MOJO_RESULT_OK &&
-        browser_file_.WriteAtCurrentPos(buffer, num_bytes) < 0) {
-      DLOG(ERROR) << "Error writing to file handle.";
-      OnWriteComplete(std::move(callback),
-                      mojom::MhtmlSaveStatus::kFileWritingError);
-      return;
+    if (result == MOJO_RESULT_OK) {
+      if (secure_hash_)
+        secure_hash_->Update(&buffer, num_bytes);
+      if (browser_file_.WriteAtCurrentPos(buffer, num_bytes) < 0) {
+        DLOG(ERROR) << "Error writing to file handle.";
+        OnWriteComplete(std::move(callback),
+                        mojom::MhtmlSaveStatus::kFileWritingError);
+        return;
+      }
     }
   }
 
@@ -510,8 +560,9 @@ void MHTMLGenerationManager::Job::OnFinished(
                       base::TimeTicks::Now() - creation_time_);
   UMA_HISTOGRAM_ENUMERATION("PageSerialization.MhtmlGeneration.FinalSaveStatus",
                             save_status);
-  std::move(callback_).Run(
-      save_status == mojom::MhtmlSaveStatus::kSuccess ? file_size : -1);
+
+  std::move(callback_).Run(close_file_result.toMHTMLGenerationResult());
+
   delete this;  // This is the last time the Job is referenced.
 }
 
@@ -593,7 +644,7 @@ void MHTMLGenerationManager::Job::CloseFile(
       base::BindOnce(&MHTMLGenerationManager::Job::FinalizeOnFileThread,
                      save_status, mhtml_boundary_marker_,
                      std::move(browser_file_), std::move(extra_data_parts_),
-                     std::move(watcher_)),
+                     std::move(watcher_), std::move(secure_hash_)),
       base::BindOnce(&Job::OnFinished, weak_factory_.GetWeakPtr()));
 }
 
@@ -679,11 +730,23 @@ void MHTMLGenerationManager::Job::Finalize(mojom::MhtmlSaveStatus save_status) {
 void MHTMLGenerationManager::Job::StartNewJob(
     WebContents* web_contents,
     const MHTMLGenerationParams& params,
-    GenerateMHTMLCallback callback) {
+    MHTMLGenerationResult::GenerateMHTMLCallback callback) {
   // Creates a new Job.
   // The constructor starts the serialization process and it will delete
   // itself upon finishing.
   new Job(web_contents, params, std::move(callback));
+}
+
+// static
+bool MHTMLGenerationManager::Job::WriteToFileAndUpdateHash(
+    base::File* file,
+    crypto::SecureHash* secure_hash,
+    std::string to_write) {
+  bool result = file->WriteAtCurrentPos(to_write.data(), to_write.size()) >= 0;
+  if (result && secure_hash) {
+    secure_hash->Update(to_write.data(), to_write.size());
+  }
+  return result;
 }
 
 // static
@@ -692,51 +755,68 @@ CloseFileResult MHTMLGenerationManager::Job::FinalizeOnFileThread(
     const std::string& boundary,
     base::File file,
     const std::vector<MHTMLExtraDataPart>& extra_data_parts,
-    std::unique_ptr<mojo::SimpleWatcher> watcher) {
+    std::unique_ptr<mojo::SimpleWatcher> watcher,
+    std::unique_ptr<crypto::SecureHash> secure_hash) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   watcher.reset();
+  DCHECK(!boundary.empty());
 
-  // If no previous error occurred the boundary should have been provided.
   if (save_status == mojom::MhtmlSaveStatus::kSuccess) {
     TRACE_EVENT0("page-serialization",
                  "MHTMLGenerationManager::Job MHTML footer writing");
-    DCHECK(!boundary.empty());
 
     // Write the extra data into a part of its own, if we have any.
-    if (!WriteExtraDataParts(boundary, file, extra_data_parts)) {
+    std::string serialized_extra_data_parts =
+        CreateExtraDataParts(boundary, extra_data_parts);
+    // Short circuit to prevent file IO if nothing to write.
+    if (!serialized_extra_data_parts.empty() &&
+        !WriteToFileAndUpdateHash(&file, secure_hash.get(),
+                                  serialized_extra_data_parts)) {
       save_status = mojom::MhtmlSaveStatus::kFileWritingError;
     }
 
     // Write out the footer at the bottom of the file.
+    std::string footer = CreateFooter(boundary);
     if (save_status == mojom::MhtmlSaveStatus::kSuccess &&
-        !WriteFooter(boundary, file)) {
+        !WriteToFileAndUpdateHash(&file, secure_hash.get(), footer)) {
       save_status = mojom::MhtmlSaveStatus::kFileWritingError;
     }
   }
 
   // If the file is still valid try to close it. Only update the status if that
   // won't hide an earlier error.
-  int64_t file_size = kInvalidFileSize;
+  int64_t file_size;
   if (!CloseFileIfValid(file, &file_size) &&
       save_status == mojom::MhtmlSaveStatus::kSuccess) {
     save_status = mojom::MhtmlSaveStatus::kFileClosingError;
   }
 
-  return CloseFileResult(save_status, file_size);
+  file_size = save_status == mojom::MhtmlSaveStatus::kSuccess
+                  ? file_size
+                  : kInvalidFileSize;
+  // If we do not have a pending hash or the file is invalid, finalize operation
+  // with an empty digest result.
+  if (!secure_hash || file_size == kInvalidFileSize)
+    return CloseFileResult(save_status, file_size, nullptr);
+
+  // Record hash and finish operation.
+  std::string file_digest = std::string(secure_hash->GetHashLength(), 0);
+  secure_hash->Finish(&(file_digest[0]), file_digest.size());
+  secure_hash.reset();
+  return CloseFileResult(save_status, file_size, &file_digest);
 }
 
 // static
-bool MHTMLGenerationManager::Job::WriteExtraDataParts(
+std::string MHTMLGenerationManager::Job::CreateExtraDataParts(
     const std::string& boundary,
-    base::File& file,
     const std::vector<MHTMLExtraDataPart>& extra_data_parts) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
+  std::string serialized_extra_data_parts;
+
   // Don't write an extra data part if there is none.
   if (extra_data_parts.empty())
-    return true;
-
-  std::string serialized_extra_data_parts;
+    return serialized_extra_data_parts;
 
   // For each extra part, serialize that part and add to our accumulator
   // string.
@@ -753,20 +833,17 @@ bool MHTMLGenerationManager::Job::WriteExtraDataParts(
 
     serialized_extra_data_parts += serialized_extra_data_part;
   }
-
-  // Write the string into the file.  Returns false if we failed the write.
-  return (file.WriteAtCurrentPos(serialized_extra_data_parts.data(),
-                                 serialized_extra_data_parts.size()) >= 0);
+  return serialized_extra_data_parts;
 }
 
 // static
-bool MHTMLGenerationManager::Job::WriteFooter(const std::string& boundary,
-                                              base::File& file) {
+std::string MHTMLGenerationManager::Job::CreateFooter(
+    const std::string& boundary) {
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
   // Per the spec, the boundary must occur at the beginning of a line.
   std::string footer = base::StringPrintf("\r\n--%s--\r\n", boundary.c_str());
   DCHECK(base::IsStringASCII(footer));
-  return (file.WriteAtCurrentPos(footer.data(), footer.size()) >= 0);
+  return footer;
 }
 
 // static
@@ -787,15 +864,15 @@ MHTMLGenerationManager* MHTMLGenerationManager::GetInstance() {
   return base::Singleton<MHTMLGenerationManager>::get();
 }
 
-MHTMLGenerationManager::MHTMLGenerationManager() {}
+MHTMLGenerationManager::MHTMLGenerationManager() = default;
 
-MHTMLGenerationManager::~MHTMLGenerationManager() {}
+MHTMLGenerationManager::~MHTMLGenerationManager() = default;
 
-void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
-                                       const MHTMLGenerationParams& params,
-                                       GenerateMHTMLCallback callback) {
+void MHTMLGenerationManager::SaveMHTML(
+    WebContents* web_contents,
+    const MHTMLGenerationParams& params,
+    MHTMLGenerationResult::GenerateMHTMLCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   Job::StartNewJob(web_contents, params, std::move(callback));
 }
 

@@ -32,7 +32,6 @@ class Rect;
 }
 
 namespace ui {
-class EventHandler;
 class MenuModel;
 }
 
@@ -152,8 +151,6 @@ class BrowserFrame : public views::Widget,
   // Used to show the system menu. Only used if
   // NativeBrowserFrame::UsesNativeSystemMenu() returns false.
   std::unique_ptr<views::MenuRunner> menu_runner_;
-
-  std::unique_ptr<ui::EventHandler> browser_command_handler_;
 
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 
 // Observer that records histograms for individual resources loaded by the page.
 class ResourceMetricsObserver

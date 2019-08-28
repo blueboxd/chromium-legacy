@@ -1098,12 +1098,11 @@ class MetaBuildWrapper(object):
       # these will lead to incorrect incremental builds if their directory
       # contents change. Do not add to this list.
       # TODO(https://crbug.com/912946): Remove this if statement.
-      if (f == 'angledata/gl_cts/' or  # http://anglebug.com/3827
-          (is_msan and f == 'instrumented_libraries_prebuilt/') or
+      if ((is_msan and f == 'instrumented_libraries_prebuilt/') or
+          f == 'mr_extension/' or # https://crbug.com/997947
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
-          f.startswith('ppapi_nacl_tests_libs/') or
-          f == 'test_url_loader_data/'):
+          f.startswith('ppapi_nacl_tests_libs/')):
         continue
 
       # This runs before the build, so we can't use isdir(f). But

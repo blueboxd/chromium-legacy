@@ -72,16 +72,16 @@ class PreviewsOptimizationGuideImpl
 
   // PreviewsOptimizationGuide implementation:
   bool IsReady() const override;
-  bool CanApplyOptimization(
+  bool CanApplyPreview(
       PreviewsUserData* previews_data,
       content::NavigationHandle* navigation_handle,
       PreviewsType type,
-      net::EffectiveConnectionType* out_ect_threshold) const override;
+      net::EffectiveConnectionType* out_ect_threshold) override;
   bool MaybeLoadOptimizationHints(content::NavigationHandle* navigation_handle,
                                   base::OnceClosure callback) override;
   bool GetResourceLoadingHints(
       const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const override;
+      std::vector<std::string>* out_resource_patterns_to_block) override;
   void LogHintCacheMatch(const GURL& url, bool is_committed) const override;
   void ClearFetchedHints() override;
 

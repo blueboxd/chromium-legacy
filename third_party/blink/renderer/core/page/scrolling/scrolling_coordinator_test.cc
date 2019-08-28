@@ -25,8 +25,8 @@
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 
 #include "build/build_config.h"
-#include "cc/layers/layer_sticky_position_constraint.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/sticky_position_constraint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"
@@ -222,7 +222,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
 }
 
 // Sticky constraints are stored on transform property tree nodes.
-static cc::LayerStickyPositionConstraint GetStickyConstraint(Element* element) {
+static cc::StickyPositionConstraint GetStickyConstraint(Element* element) {
   const auto* properties =
       element->GetLayoutObject()->FirstFragment().PaintProperties();
   DCHECK(properties);
@@ -243,7 +243,6 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   {
     Element* element = document->getElementById("div-tl");
     auto constraint = GetStickyConstraint(element);
-    ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
                 !constraint.is_anchored_right &&
                 !constraint.is_anchored_bottom);
@@ -257,28 +256,24 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   {
     Element* element = document->getElementById("div-tr");
     auto constraint = GetStickyConstraint(element);
-    ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && !constraint.is_anchored_left &&
                 constraint.is_anchored_right && !constraint.is_anchored_bottom);
   }
   {
     Element* element = document->getElementById("div-bl");
     auto constraint = GetStickyConstraint(element);
-    ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(!constraint.is_anchored_top && constraint.is_anchored_left &&
                 !constraint.is_anchored_right && constraint.is_anchored_bottom);
   }
   {
     Element* element = document->getElementById("div-br");
     auto constraint = GetStickyConstraint(element);
-    ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(!constraint.is_anchored_top && !constraint.is_anchored_left &&
                 constraint.is_anchored_right && constraint.is_anchored_bottom);
   }
   {
     Element* element = document->getElementById("span-tl");
     auto constraint = GetStickyConstraint(element);
-    ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
                 !constraint.is_anchored_right &&
                 !constraint.is_anchored_bottom);
@@ -286,7 +281,6 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   {
     Element* element = document->getElementById("span-tlbr");
     auto constraint = GetStickyConstraint(element);
-    ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top && constraint.is_anchored_left &&
                 constraint.is_anchored_right && constraint.is_anchored_bottom);
     EXPECT_EQ(1.f, constraint.top_offset);
@@ -297,7 +291,6 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   {
     Element* element = document->getElementById("composited-top");
     auto constraint = GetStickyConstraint(element);
-    ASSERT_TRUE(constraint.is_sticky);
     EXPECT_TRUE(constraint.is_anchored_top);
     EXPECT_EQ(gfx::Rect(100, 110, 10, 10),
               constraint.scroll_container_relative_sticky_box_rect);

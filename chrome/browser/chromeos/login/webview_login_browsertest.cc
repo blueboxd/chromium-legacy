@@ -278,7 +278,13 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   EXPECT_FALSE(LoginDisplayHost::default_host());
 }
 
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
+// TODO(crbug.com/998330): The test is flaky (timeout) on Chromium OS MSAN.
+#if defined(MEMORY_SANITIZER) && defined(OS_CHROMEOS)
+#define MAYBE_BackButton DISABLED_BackButton
+#else
+#define MAYBE_BackButton BackButton
+#endif
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, MAYBE_BackButton) {
   WaitForGaiaPageLoadAndPropertyUpdate();
 
   // Start with identifer page.

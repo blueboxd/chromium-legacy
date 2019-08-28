@@ -359,13 +359,12 @@ class PDFEngine {
   // Get a given unicode character on a given page.
   virtual uint32_t GetCharUnicode(int page_index, int char_index) = 0;
   // Given a start char index, find the longest continuous run of text that's
-  // in a single direction and with the same style and font size. Fill the
-  // |text_run_info| with the length of that sequence, text direction, bounding
-  // box and font size.
-  virtual void GetTextRunInfo(
+  // in a single direction and with the same style and font size. Return a
+  // filled out PP_PrivateAccessibilityTextRunInfo on success or base::nullopt
+  // on failure. e.g. When |start_char_index| is out of bounds.
+  virtual base::Optional<PP_PrivateAccessibilityTextRunInfo> GetTextRunInfo(
       int page_index,
-      int start_char_index,
-      PP_PrivateAccessibilityTextRunInfo* text_run_info) = 0;
+      int start_char_index) = 0;
   // Gets the PDF document's print scaling preference. True if the document can
   // be scaled to fit.
   virtual bool GetPrintScaling() = 0;

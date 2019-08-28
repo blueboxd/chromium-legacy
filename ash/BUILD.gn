@@ -1985,6 +1985,7 @@ test("ash_unittests") {
     # TODO(https://crbug.com/644355): Remove Shill dependencies.
     "//chromeos/network:test_support",
     "//chromeos/services/assistant:test_support",
+    "//chromeos/services/assistant/public/cpp:prefs",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",

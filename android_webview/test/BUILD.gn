@@ -44,8 +44,8 @@ if (public_android_sdk) {
 
 android_apk("webview_instrumentation_apk") {
   deps = [
-    ":android_webview_apk_assets",
-    ":android_webview_apk_resources",
+    ":webview_instrumentation_apk_assets",
+    ":webview_instrumentation_apk_resources",
     "//android_webview:android_webview_java",
     "//android_webview:android_webview_locale_config_java",
     "//android_webview:common_java",
@@ -90,12 +90,12 @@ android_apk("webview_instrumentation_apk") {
   command_line_flags_file = "android-webview-command-line"
 }
 
-android_resources("android_webview_apk_resources") {
+android_resources("webview_instrumentation_apk_resources") {
   resource_dirs = [ "shell/res" ]
   custom_package = "org.chromium.android_webview.shell"
 }
 
-android_assets("android_webview_apk_assets") {
+android_assets("webview_instrumentation_apk_assets") {
   deps = [
     "//android_webview:pak_file_assets",
     "//third_party/icu:icu_assets",

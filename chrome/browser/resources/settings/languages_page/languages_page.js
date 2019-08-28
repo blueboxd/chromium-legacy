@@ -117,6 +117,16 @@ Polymer({
      * @type {!LanguagesPageVisibility}
      */
     pageVisibility: Object,
+
+    // <if expr="chromeos">
+    /** @private */
+    isGuest_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isGuest');
+      },
+    },
+    // </if>
   },
 
   // <if expr="not is_macosx">
@@ -185,6 +195,11 @@ Polymer({
    * @private
    */
   shouldShowDialogSeparator_: function() {
+    // <if expr="chromeos">
+    if (this.isGuest_) {
+      return false;
+    }
+    // </if>
     return this.languages != undefined && this.languages.enabled.length > 1;
   },
 
@@ -268,7 +283,7 @@ Polymer({
     }
 
     // The UI language choice doesn't persist for guests.
-    if (loadTimeData.getBoolean('isGuest')) {
+    if (this.isGuest_) {
       menu.querySelector('#uiLanguageItem').hidden = true;
     }
   },
@@ -346,6 +361,7 @@ Polymer({
         });
     return inputMethod ? inputMethod.displayName : '';
   },
+
   // </if>
 
   // <if expr="chromeos or is_win">

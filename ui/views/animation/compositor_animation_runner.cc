@@ -4,8 +4,6 @@
 
 #include "ui/views/animation/compositor_animation_runner.h"
 
-#include "ui/compositor/compositor.h"
-
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////

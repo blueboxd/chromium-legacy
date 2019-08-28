@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_PAGE_LOAD_METRICS_PAGE_RESOURCE_DATA_USE_H_
 
 #include "base/macros.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "url/origin.h"

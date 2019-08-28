@@ -21,14 +21,6 @@ void InstalledAppProviderImplDefault::FilterInstalledApps(
 }
 
 // static
-void InstalledAppProviderImplDefault::CreateForRequest(
-    blink::mojom::InstalledAppProviderRequest request) {
-  // Implicit conversion to
-  // mojo::PendingReceiver<blink::mojom::InstalledAppProvider>.
-  Create(std::move(request));
-}
-
-// static
 void InstalledAppProviderImplDefault::Create(
     mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver) {
   mojo::MakeSelfOwnedReceiver(

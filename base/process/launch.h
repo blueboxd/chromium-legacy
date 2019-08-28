@@ -254,6 +254,10 @@ struct BASE_EXPORT LaunchOptions {
   // child process' namespace. Paths installed by |paths_to_clone| will be
   // overridden by these entries.
   std::vector<PathToTransfer> paths_to_transfer;
+
+  // Suffix that will be added to the process name. When specified process name
+  // will be set to "<binary_name><process_suffix>".
+  std::string process_name_suffix;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX)

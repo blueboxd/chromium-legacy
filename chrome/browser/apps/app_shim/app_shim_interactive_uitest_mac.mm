@@ -26,7 +26,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
@@ -240,7 +240,7 @@ NSString* GetBundleID(const base::FilePath& shim_path) {
 
 bool HasAppShimHost(Profile* profile, const std::string& app_id) {
   return g_browser_process->platform_part()
-      ->app_shim_host_manager()
+      ->app_shim_listener()
       ->extension_app_shim_handler()
       ->FindHost(profile, app_id);
 }

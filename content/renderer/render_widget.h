@@ -389,7 +389,7 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidgetScreenMetricsEmulatorDelegate
   void SynchronizeVisualProperties(
-      const VisualProperties& resize_params) override;
+      const VisualProperties& visual_properties) override;
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
@@ -692,7 +692,8 @@ class CONTENT_EXPORT RenderWidget
   virtual void RequestPresentation(PresentationTimeCallback callback);
 
   // RenderWidget IPC message handler that can be overridden by subclasses.
-  virtual void OnSynchronizeVisualProperties(const VisualProperties& params);
+  virtual void OnSynchronizeVisualProperties(
+      const VisualProperties& visual_properties);
 
   bool in_synchronous_composite_for_testing() const {
     return in_synchronous_composite_for_testing_;

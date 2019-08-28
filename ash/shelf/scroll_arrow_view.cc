@@ -5,6 +5,7 @@
 #include "ash/shelf/scroll_arrow_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -19,16 +20,21 @@ namespace ash {
 
 ScrollArrowView::ScrollArrowView(ArrowType arrow_type,
                                  bool is_horizontal_alignment,
-                                 views::ButtonListener* button_listener)
-    : Button(button_listener),
+                                 Shelf* shelf,
+                                 ShelfButtonDelegate* shelf_button_delegate)
+    : ShelfButton(shelf, shelf_button_delegate),
       arrow_type_(arrow_type),
       is_horizontal_alignment_(is_horizontal_alignment) {
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   set_has_ink_drop_action_on_click(true);
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 }
 
 ScrollArrowView::~ScrollArrowView() = default;
+
+void ScrollArrowView::NotifyClick(const ui::Event& event) {
+  Button::NotifyClick(event);
+  shelf_button_delegate()->ButtonPressed(/*sender=*/this, event, GetInkDrop());
+}
 
 void ScrollArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   const bool show_left_arrow = (arrow_type_ == kLeft && !base::i18n::IsRTL()) ||
@@ -50,12 +56,6 @@ void ScrollArrowView::PaintButtonContents(gfx::Canvas* canvas) {
 
 const char* ScrollArrowView::GetClassName() const {
   return "ScrollArrowView";
-}
-
-std::unique_ptr<views::InkDrop> ScrollArrowView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  return std::move(ink_drop);
 }
 
 std::unique_ptr<views::InkDropMask> ScrollArrowView::CreateInkDropMask() const {

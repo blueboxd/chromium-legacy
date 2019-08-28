@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"

@@ -2189,12 +2189,11 @@ uint32_t PDFiumEngine::GetCharUnicode(int page_index, int char_index) {
   return pages_[page_index]->GetCharUnicode(char_index);
 }
 
-void PDFiumEngine::GetTextRunInfo(
+base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumEngine::GetTextRunInfo(
     int page_index,
-    int start_char_index,
-    PP_PrivateAccessibilityTextRunInfo* text_run_info) {
+    int start_char_index) {
   DCHECK(PageIndexInBounds(page_index));
-  return pages_[page_index]->GetTextRunInfo(start_char_index, text_run_info);
+  return pages_[page_index]->GetTextRunInfo(start_char_index);
 }
 
 bool PDFiumEngine::GetPrintScaling() {

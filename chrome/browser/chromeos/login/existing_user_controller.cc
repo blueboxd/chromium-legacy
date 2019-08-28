@@ -372,8 +372,6 @@ ExistingUserController::ExistingUserController()
       network_state_helper_(new login::NetworkStateHelper) {
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                 content::NotificationService::AllSources());
   show_user_names_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefShowUserNamesOnSignIn,
       base::Bind(&ExistingUserController::DeviceSettingsChanged,
@@ -480,30 +478,27 @@ void ExistingUserController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_SESSION_STARTED) {
-    // Stop listening to any notification once session has started.
-    // Sign in screen objects are marked for deletion with DeleteSoon so
-    // make sure no object would be used after session has started.
-    // http://crbug.com/125276
-    registrar_.RemoveAll();
+  DCHECK_EQ(type, chrome::NOTIFICATION_AUTH_SUPPLIED);
+
+  // Don't transfer http auth cache on NOTIFICATION_AUTH_SUPPLIED after user
+  // session starts.
+  if (session_manager::SessionManager::Get()->IsSessionStarted())
     return;
-  }
-  if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
-    // Possibly the user has authenticated against a proxy server and we might
-    // need the credentials for enrollment and other system requests from the
-    // main |g_browser_process| request context (see bug
-    // http://crosbug.com/24861). So we transfer any credentials to the global
-    // request context here.
-    // The issue we have here is that the NOTIFICATION_AUTH_SUPPLIED is sent
-    // just after the UI is closed but before the new credentials were stored
-    // in the profile. Therefore we have to give it some time to make sure it
-    // has been updated before we copy it.
-    // TODO(pmarko): Find a better way to do this, see https://crbug.com/796512.
-    VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
-    base::PostDelayedTask(
-        FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
-        base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
-  }
+
+  // Possibly the user has authenticated against a proxy server and we might
+  // need the credentials for enrollment and other system requests from the
+  // main |g_browser_process| request context (see bug
+  // http://crosbug.com/24861). So we transfer any credentials to the global
+  // request context here.
+  // The issue we have here is that the NOTIFICATION_AUTH_SUPPLIED is sent
+  // just after the UI is closed but before the new credentials were stored
+  // in the profile. Therefore we have to give it some time to make sure it
+  // has been updated before we copy it.
+  // TODO(pmarko): Find a better way to do this, see https://crbug.com/796512.
+  VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
+  base::PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
+      base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

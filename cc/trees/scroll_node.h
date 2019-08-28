@@ -47,6 +47,7 @@ struct CC_EXPORT ScrollNode {
   bool max_scroll_offset_affected_by_page_scale : 1;
   bool scrolls_inner_viewport : 1;
   bool scrolls_outer_viewport : 1;
+  bool prevent_viewport_scrolling_from_inner : 1;
   bool should_flatten : 1;
   bool user_scrollable_horizontal : 1;
   bool user_scrollable_vertical : 1;

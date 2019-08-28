@@ -21,6 +21,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
+#include "chrome/browser/notifications/scheduler/internal/stats.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
@@ -171,6 +172,8 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   // NotificationBackgroundTaskScheduler::Handler implementation.
   void OnStartTask(SchedulerTaskTime task_time,
                    TaskFinishedCallback callback) override {
+    stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStart);
+
     task_start_time_ = task_time;
 
     // Updates the impression data to compute daily notification shown budget.
@@ -182,10 +185,12 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     // Schedule the next background task based on scheduled notifications.
     ScheduleBackgroundTask();
 
+    stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kFinish);
     std::move(callback).Run(false /*need_reschedule*/);
   }
 
   void OnStopTask(SchedulerTaskTime task_time) override {
+    stats::LogBackgroundTaskEvent(stats::BackgroundTaskEvent::kStopByOS);
     task_start_time_ = task_time;
     ScheduleBackgroundTask();
   }
@@ -258,6 +263,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     for (const auto& guid : results) {
       context_->notification_manager()->DisplayNotification(guid);
     }
+    stats::LogBackgroundTaskNotificationShown(results.size());
   }
 
   void ScheduleBackgroundTask() {

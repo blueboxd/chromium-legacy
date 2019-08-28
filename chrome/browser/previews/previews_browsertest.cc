@@ -64,11 +64,25 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 
 }  // namespace
 
-class PreviewsBrowserTest : public InProcessBrowserTest {
+// The parameter selects whether the OptimizationGuideKeyedService is enabled or
+// not (The tests should pass in the same way for both cases).
+class PreviewsBrowserTest : public InProcessBrowserTest,
+                            public testing::WithParamInterface<bool> {
  public:
   PreviewsBrowserTest() = default;
 
   ~PreviewsBrowserTest() override = default;
+
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
+    }
+    InProcessBrowserTest::SetUp();
+  }
 
   void SetUpOnMainThread() override {
     g_browser_process->network_quality_tracker()
@@ -121,6 +135,12 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     // at the time of first navigation. That may prevent Preview from
     // triggering, and causing the test to flake.
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+  }
+
+  void TearDown() override {
+    scoped_feature_list_.Reset();
+
+    InProcessBrowserTest::TearDown();
   }
 
   const GURL& https_url() const { return https_url_; }
@@ -181,6 +201,7 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     return std::move(response);
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
@@ -197,10 +218,15 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PreviewsBrowserTest);
 };
 
+// True if testing using the OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
+                         PreviewsBrowserTest,
+                         testing::Bool());
+
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is not evaluated and the
 // script resource is loaded.
-IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
+IN_PROC_BROWSER_TEST_P(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), https_url());
 
@@ -266,11 +292,25 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
         1);
   }
 
+  void TearDown() override {
+    // Make sure to reset the other feature list first, otherwise we hit a
+    // DCHECK where the feature lists aren't reset in the same order they are
+    // set up.
+    PreviewsBrowserTest::TearDown();
+
+    scoped_feature_list_.Reset();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
 };
+
+// True if testing using the OptimizationGuideKeyedService implementation.
+INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
+                         PreviewsNoScriptBrowserTest,
+                         testing::Bool());
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
@@ -281,7 +321,7 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is evaluated and the
 // script resource is not loaded.
-IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabled)) {
   GURL url = https_url();
 
@@ -300,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                                      "Previews.PreviewShown.NoScript", 1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledButHttpRequest)) {
   GURL url = http_url();
@@ -315,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(noscript_css_requested());
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(
                            NoScriptPreviewsEnabledButNoTransformDirective)) {
   GURL url = https_no_transform_url();
@@ -334,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
       "Previews.CacheControlNoTransform.BlockedPreview", 5 /* NoScript */, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledHttpRedirectToHttps)) {
   GURL url = redirect_url();
@@ -354,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(
                                      "Previews.PreviewShown.NoScript", 1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsRecordsOptOut)) {
   GURL url = redirect_url();
@@ -381,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(
                                      1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledByWhitelist)) {
   GURL url = https_url();
@@ -396,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(noscript_js_requested());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsNotEnabledByWhitelist)) {
   GURL url = https_url();

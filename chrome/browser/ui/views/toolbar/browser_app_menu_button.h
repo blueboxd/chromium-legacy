@@ -18,6 +18,10 @@
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/views/view.h"
 
+namespace ui {
+class MaterialDesignController;
+}
+
 class ToolbarView;
 enum class InProductHelpFeature;
 

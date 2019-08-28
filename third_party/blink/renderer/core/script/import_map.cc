@@ -176,26 +176,31 @@ ImportMap* ImportMap::Create(const Modulator& modulator_for_built_in_modules,
                                            SpecifierMap());
   }
 
-  // <spec step="4">If parsed["imports"] exists, then:</spec>
-  //
-  // <spec step="4.1">If parsed["imports"] is not a map, then throw a TypeError
-  // indicating that the "imports" top-level key must be a JSON object.</spec>
-  //
-  // TODO(hiroshige): Handle the non-existing "imports" case separately.
-  JSONObject* imports = parsed_map->GetJSONObject("imports");
-  if (!imports) {
-    logger.AddConsoleMessage(
-        mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kError,
-        "Failed to parse import map: no \"imports\" entry.");
-    // TODO(hiroshige): Return null.
-    return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
-                                           SpecifierMap());
-  }
+  // <spec step="3">Let sortedAndNormalizedImports be an empty map.</spec>
+  SpecifierMap sorted_and_normalized_imports;
 
-  // <spec step="4.2">Set sortedAndNormalizedImports to the result of sorting
-  // and normalizing a specifier map given parsed["imports"] and baseURL.</spec>
-  SpecifierMap sorted_and_normalized_imports =
-      SortAndNormalizeSpecifierMap(imports, base_url, logger);
+  // <spec step="4">If parsed["imports"] exists, then:</spec>
+  if (parsed_map->Get("imports")) {
+    // <spec step="4.1">If parsed["imports"] is not a map, then throw a
+    // TypeError indicating that the "imports" top-level key must be a JSON
+    // object.</spec>
+    JSONObject* imports = parsed_map->GetJSONObject("imports");
+    if (!imports) {
+      logger.AddConsoleMessage(mojom::ConsoleMessageSource::kOther,
+                               mojom::ConsoleMessageLevel::kError,
+                               "Failed to parse import map: \"imports\" "
+                               "top-level key must be a JSON object.");
+      // TODO(hiroshige): Return null.
+      return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
+                                             SpecifierMap());
+    }
+
+    // <spec step="4.2">Set sortedAndNormalizedImports to the result of sorting
+    // and normalizing a specifier map given parsed["imports"] and
+    // baseURL.</spec>
+    sorted_and_normalized_imports =
+        SortAndNormalizeSpecifierMap(imports, base_url, logger);
+  }
 
   // TODO(crbug.com/927181): Process "scopes" entry (Steps 5 and 6).
 

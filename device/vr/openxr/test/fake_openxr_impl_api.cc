@@ -515,6 +515,13 @@ XrResult xrGetInstanceProperties(XrInstance instance,
   return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
+XrResult xrGetReferenceSpaceBoundsRect(XrSession session,
+                                       XrReferenceSpaceType referenceSpaceType,
+                                       XrExtent2Df* bounds) {
+  // TODO(https://crbug.com/996502)
+  return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
 XrResult xrGetSystem(XrInstance instance,
                      const XrSystemGetInfo* get_info,
                      XrSystemId* system_id) {

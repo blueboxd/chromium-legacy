@@ -98,7 +98,7 @@ if (use_arm_neon_optimizations) {
         import("//build/config/android/config.gni")
         if (defined(android_ndk_root) && android_ndk_root != "") {
           deps = [
-            "//third_party/android_sdk:cpu_features",
+            "//third_party/android_ndk:cpu_features",
           ]
         } else {
           assert(false, "CPU detection requires the Android NDK")

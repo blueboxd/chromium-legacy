@@ -89,6 +89,8 @@ class SharingUiController {
     devices_ = std::move(devices);
   }
 
+  void MaybeShowErrorDialog();
+
  protected:
   virtual SharingDialog* DoShowDialog(BrowserWindow* window) = 0;
 

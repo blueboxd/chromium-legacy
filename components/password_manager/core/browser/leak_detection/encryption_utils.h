@@ -28,9 +28,10 @@ std::string HashUsername(base::StringPiece canonicalized_username);
 std::string BucketizeUsername(base::StringPiece canonicalized_username);
 
 // Produces the username/password pair hash using scrypt algorithm.
-// |username| and |password| are UTF-8 strings.
-std::string ScryptHashUsernameAndPassword(base::StringPiece username,
-                                          base::StringPiece password);
+// |canonicalized_username| and |password| are UTF-8 strings.
+std::string ScryptHashUsernameAndPassword(
+    base::StringPiece canonicalized_username,
+    base::StringPiece password);
 
 // Encrypt/decrypt routines.
 

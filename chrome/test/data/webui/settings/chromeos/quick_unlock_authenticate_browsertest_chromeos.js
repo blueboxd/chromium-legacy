@@ -272,11 +272,6 @@ cr.define('settings_people_page_quick_unlock', function() {
             key: 'ash.message_center.lock_screen_mode',
             type: chrome.settingsPrivate.PrefType.STRING,
             value: 'hide'
-          },
-          {
-            key: 'ash.lock_screen_media_controls_enabled',
-            type: chrome.settingsPrivate.PrefType.BOOLEAN,
-            value: true
           }
         ];
         fakeSettings = new settings.FakeSettingsPrivate(fakePrefs);

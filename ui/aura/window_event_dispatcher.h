@@ -18,6 +18,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"
 #include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_constants.h"

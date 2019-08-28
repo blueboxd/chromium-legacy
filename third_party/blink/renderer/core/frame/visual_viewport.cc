@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -230,6 +231,25 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     state.scrolls_inner_viewport = true;
     state.max_scroll_offset_affected_by_page_scale = true;
     state.compositor_element_id = GetCompositorScrollElementId();
+
+    if (MainFrame() && MainFrame()->GetDocument()) {
+      Document* document = MainFrame()->GetDocument();
+      bool uses_default_root_scroller =
+          &document->GetRootScrollerController().EffectiveRootScroller() ==
+          document;
+
+      // All position: fixed elements will chain scrolling directly up to the
+      // visual viewport's scroll node. In the case of a default root scroller
+      // (i.e. the LayoutView), we actually want to scroll the "full viewport".
+      // i.e. scrolling from the position: fixed element should cause the page
+      // to scroll. This is not the case when we have a different root
+      // scroller. We set |prevent_viewport_scrolling_from_inner| so the
+      // compositor can know to use the correct chaining behavior. This would be
+      // better fixed by setting the correct scroll_tree_index in PAC::Update on
+      // the fixed layer but that's a larger change. See
+      // https://crbug.com/977954 for details.
+      state.prevent_viewport_scrolling_from_inner = !uses_default_root_scroller;
+    }
 
     if (MainFrame() &&
         !MainFrame()->GetSettings()->GetThreadedScrollingEnabled()) {

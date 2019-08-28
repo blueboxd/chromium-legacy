@@ -17,7 +17,6 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/filename_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -173,7 +172,8 @@ class TestBrowserClientWithHeaderClient
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
-      network::mojom::TrustedHeaderClientRequest request) override {}
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override {}
 
   mojo::BindingSet<network::mojom::TrustedURLLoaderHeaderClient> bindings_;
 };

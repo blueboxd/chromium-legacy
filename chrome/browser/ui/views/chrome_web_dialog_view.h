@@ -28,12 +28,14 @@ gfx::NativeWindow ShowWebDialogWithParams(
 
 // The implementation is more aligned with the appearance of constrained
 // web dialog.
+// |show| indicates whether to show the web dialog after it is created.
 // TODO(weili): Solely use this function on non-ChromeOS platform, and
 // above ShowWebDialogWithParams() on ChromeOS. Or merge these two if possible.
-gfx::NativeWindow ShowWebDialogWithBounds(gfx::NativeView parent,
-                                          content::BrowserContext* context,
-                                          ui::WebDialogDelegate* delegate,
-                                          const gfx::Rect& bounds);
+gfx::NativeWindow CreateWebDialogWithBounds(gfx::NativeView parent,
+                                            content::BrowserContext* context,
+                                            ui::WebDialogDelegate* delegate,
+                                            const gfx::Rect& bounds,
+                                            bool show = true);
 
 }  // namespace chrome
 

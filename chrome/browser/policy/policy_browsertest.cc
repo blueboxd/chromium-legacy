@@ -119,6 +119,7 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
@@ -4291,11 +4292,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AutoclickEnabled) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
   PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantContextEnabled));
   EXPECT_FALSE(
-      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, true);
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled, true);
+  EXPECT_TRUE(
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
 
   // Verifies that the Assistant context can be forced to always disabled.
   PolicyMap policies;
@@ -4303,22 +4306,27 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(false), nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(
-      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, true);
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_TRUE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantContextEnabled));
+  EXPECT_FALSE(
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled, true);
+  EXPECT_FALSE(
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
 
   // Verifies that the Assistant context can be forced to always enabled.
   policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->IsManagedPreference(
+      chromeos::assistant::prefs::kAssistantContextEnabled));
   EXPECT_TRUE(
-      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, false);
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
+  prefs->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
+                    false);
+  EXPECT_TRUE(
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantHotwordEnabled) {

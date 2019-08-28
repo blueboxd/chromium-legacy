@@ -16,7 +16,7 @@ Polymer({
 
   behaviors: [
     CrNetworkListenerBehavior,
-    CrPolicyNetworkBehavior,
+    CrPolicyNetworkBehaviorMojo,
     settings.RouteObserverBehavior,
     I18nBehavior,
   ],
@@ -44,13 +44,12 @@ Polymer({
      */
     tetherDeviceState: Object,
 
-    /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
+    /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
     globalPolicy: Object,
 
     /**
      * List of third party VPN providers.
-     * @type
-     *     {!Array<!chrome.networkingPrivate.ThirdPartyVPNProperties>|undefined}
+     * @type {!Array<!settings.ThirdPartyVPNProperties>|undefined}
      */
     thirdPartyVpnProviders: Array,
 
@@ -411,12 +410,12 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} vpnState
+   * @param {!settings.ThirdPartyVPNProperties} vpnState
    * @return {string}
    * @private
    */
   getAddThirdPartyVpnA11yString_: function(vpnState) {
-    return this.i18n('internetAddThirdPartyVPN', vpnState.ProviderName || '');
+    return this.i18n('internetAddThirdPartyVPN', vpnState.providerName || '');
   },
 
   /**
@@ -429,17 +428,17 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
   allowAddConnection_: function(globalPolicy) {
-    return globalPolicy && !globalPolicy.AllowOnlyPolicyNetworksToConnect;
+    return globalPolicy && !globalPolicy.allowOnlyPolicyNetworksToConnect;
   },
 
   /**
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
@@ -462,13 +461,12 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{item:
-   *     !chrome.networkingPrivate.ThirdPartyVPNProperties}}} event
+   * @param {!{model: !{item: !settings.ThirdPartyVPNProperties}}} event
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
     const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(provider.ExtensionID);
+    this.browserProxy_.addThirdPartyVpn(provider.extensionId);
   },
 
   /**
@@ -513,17 +511,17 @@ Polymer({
 
   /**
    * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
-   * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} vpnState
+   * @param {!settings.ThirdPartyVPNProperties} vpnState
    * @return {!Array<!OncMojo.NetworkStateProperties>}
    * @private
    */
   getThirdPartyVpnNetworks_: function(thirdPartyVpns, vpnState) {
-    return thirdPartyVpns[vpnState.ProviderName] || [];
+    return thirdPartyVpns[vpnState.providerName] || [];
   },
 
   /**
    * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
-   * @param {!chrome.networkingPrivate.ThirdPartyVPNProperties} vpnState
+   * @param {!settings.ThirdPartyVPNProperties} vpnState
    * @return {boolean}
    * @private
    */
@@ -577,14 +575,14 @@ Polymer({
    */
   isBlockedByPolicy_: function(state) {
     if (state.type != mojom.NetworkType.kWiFi ||
-        this.isPolicySourceMojo(state.source) || !this.globalPolicy) {
+        this.isPolicySource(state.source) || !this.globalPolicy) {
       return false;
     }
-    return !!this.globalPolicy.AllowOnlyPolicyNetworksToConnect ||
-        (!!this.globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable &&
+    return !!this.globalPolicy.allowOnlyPolicyNetworksToConnect ||
+        (!!this.globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable &&
          !!this.deviceState && !!this.deviceState.managedNetworkAvailable) ||
-        (!!this.globalPolicy.BlacklistedHexSSIDs &&
-         this.globalPolicy.BlacklistedHexSSIDs.includes(state.wifi.hexSsid));
+        (!!this.globalPolicy.blockedHexSsids &&
+         this.globalPolicy.blockedHexSsids.includes(state.wifi.hexSsid));
   },
 
   /**

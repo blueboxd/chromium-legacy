@@ -91,11 +91,8 @@ Polymer({
       value: null,
     },
 
-    /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
-    globalPolicy: {
-      type: Object,
-      value: null,
-    },
+    /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
+    globalPolicy: Object,
 
     /**
      * Whether a managed network is available in the visible network list.
@@ -410,7 +407,7 @@ Polymer({
     let controlledBy;
     if (autoConnect.enforced ||
         (!!this.globalPolicy &&
-         !!this.globalPolicy.AllowOnlyPolicyNetworksToAutoconnect)) {
+         !!this.globalPolicy.allowOnlyPolicyNetworksToAutoconnect)) {
       enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
       controlledBy = chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
     }
@@ -661,7 +658,7 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy|undefined} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
@@ -673,17 +670,17 @@ Polymer({
         this.isPolicySource(managedProperties.source)) {
       return false;
     }
-    const hexSsid = OncMojo.getActiveValue(managedProperties.wifi.hexSsid);
-    return !!globalPolicy.AllowOnlyPolicyNetworksToConnect ||
-        (!!globalPolicy.AllowOnlyPolicyNetworksToConnectIfAvailable &&
+    const hexSsid = OncMojo.getActiveString(managedProperties.wifi.hexSsid);
+    return !!globalPolicy.allowOnlyPolicyNetworksToConnect ||
+        (!!globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable &&
          !!managedNetworkAvailable) ||
-        (typeof hexSsid == 'string' && !!globalPolicy.BlacklistedHexSSIDs &&
-         globalPolicy.BlacklistedHexSSIDs.includes(hexSsid));
+        (!!hexSsid && !!globalPolicy.blockedHexSsids &&
+         globalPolicy.blockedHexSsids.includes(hexSsid));
   },
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
@@ -765,7 +762,7 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
@@ -897,7 +894,7 @@ Polymer({
    * @param {?OncMojo.NetworkStateProperties} defaultNetwork
    * @param {boolean} propertiesReceived
    * @param {boolean} outOfRange
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
@@ -1007,7 +1004,7 @@ Polymer({
 
   /** @private */
   onActivateTap_: function() {
-    this.networkingPrivate.startActivate(this.guid);
+    this.browserProxy_.showCellularSetupUI(this.guid);
   },
 
   /** @private */
@@ -1028,8 +1025,8 @@ Polymer({
 
   /** @private */
   onViewAccountTap_: function() {
-    // startActivate() will show the account page for activated networks.
-    this.networkingPrivate.startActivate(this.guid);
+    // Currently 'Account Details' is the same as the activation UI.
+    this.browserProxy_.showCellularSetupUI(this.guid);
   },
 
   /** @type {string} */
@@ -1131,7 +1128,7 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the shared message should be shown.
    * @private
@@ -1147,7 +1144,7 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the AutoConnect checkbox should be shown.
    * @private
@@ -1188,7 +1185,7 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean} True if the prefer network checkbox should be shown.
    * @private
@@ -1409,7 +1406,7 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private
@@ -1434,7 +1431,7 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    * @private

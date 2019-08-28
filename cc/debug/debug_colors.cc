@@ -128,11 +128,6 @@ int DebugColors::OOMTileBorderWidth(float device_scale_factor) {
   return Scale(1, device_scale_factor);
 }
 
-// Missing opaque colors are magenta.
-SkColor DebugColors::MissingOpaqueTileColor() {
-  return SK_ColorMAGENTA;
-}
-
 // Direct picture borders are chartreuse.
 SkColor DebugColors::DirectPictureBorderColor() {
   return SkColorSetARGB(255, 127, 255, 0);

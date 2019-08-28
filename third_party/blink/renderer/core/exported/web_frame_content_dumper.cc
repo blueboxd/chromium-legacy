@@ -101,6 +101,7 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
   if (!frame)
     return WebString();
 
+  DCHECK(web_view->MainFrameWidget());
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 

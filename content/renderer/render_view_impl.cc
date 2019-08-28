@@ -67,7 +67,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/window_features_converter.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
-#include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/history_serialization.h"
@@ -520,7 +519,9 @@ void RenderViewImpl::Initialize(
     // only requires single ownership and adding scoped_refptr<RenderWidget>
     // muddies this unnecessarily -- especially since this RenderWidget should
     // ultimately be own by the main frame.
-    GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
+    // We intentionally pass in a null webwidget since it shouldn't be needed
+    // for remote frames.
+    GetWidget()->Init(std::move(show_callback), nullptr);
 
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -1063,10 +1064,6 @@ const blink::WebView* RenderViewImpl::webview() const {
 
 // RenderWidgetOwnerDelegate -----------------------------------------
 
-blink::WebWidget* RenderViewImpl::GetWebWidgetForWidget() const {
-  return frame_widget_;
-}
-
 bool RenderViewImpl::RenderWidgetWillHandleMouseEventForWidget(
     const blink::WebMouseEvent& event) {
   // If the mouse is locked, only the current owner of the mouse lock can
@@ -1123,12 +1120,6 @@ void RenderViewImpl::DidReceiveSetFocusEventForWidget() {
   // TODO(ajwong): Can this be removed and just check |delegate_| in
   // RenderWidget instead?
   CHECK(webview()->MainFrame()->IsWebLocalFrame());
-}
-
-void RenderViewImpl::DidChangeFocusForWidget() {
-  // Notify all BrowserPlugins of the RenderView's focus state.
-  if (BrowserPluginManager::Get())
-    BrowserPluginManager::Get()->UpdateFocusState();
 }
 
 void RenderViewImpl::DidCommitCompositorFrameForWidget() {
@@ -1911,9 +1902,11 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
 
   // We need to ensure |UpdatePreferredSize| gets called. If a layout is needed,
   // force an update here which will call |DidUpdateMainFrameLayout|.
-  webview()->MainFrameWidget()->UpdateLifecycle(
-      WebWidget::LifecycleUpdate::kLayout,
-      WebWidget::LifecycleUpdateReason::kOther);
+  if (webview()->MainFrameWidget()) {
+    webview()->MainFrameWidget()->UpdateLifecycle(
+        WebWidget::LifecycleUpdate::kLayout,
+        WebWidget::LifecycleUpdateReason::kOther);
+  }
 
   // If a layout was not needed, |DidUpdateMainFrameLayout| will not be called.
   // We explicitly update the preferred size here to ensure the preferred size
@@ -1945,7 +1938,7 @@ void RenderViewImpl::OnSetRendererPrefs(
                               renderer_prefs.active_selection_fg_color,
                               renderer_prefs.inactive_selection_bg_color,
                               renderer_prefs.inactive_selection_fg_color);
-    if (webview())
+    if (webview() && webview()->MainFrameWidget())
       webview()->MainFrameWidget()->ThemeChanged();
   }
 #endif
@@ -2077,9 +2070,9 @@ void RenderViewImpl::OnTextAutosizerPageInfoChanged(
 }
 
 void RenderViewImpl::SetFocus(bool enable) {
-  // This is not an IPC message, don't go through the IPC handler. This is used
-  // in cases where the IPC message should not happen.
-  GetWidget()->SetFocus(enable);
+  // This is only called from RenderFrameProxy.
+  CHECK(!webview()->MainFrame()->IsWebLocalFrame());
+  webview()->SetFocus(enable);
 }
 
 void RenderViewImpl::ZoomLimitsChanged(double minimum_level,

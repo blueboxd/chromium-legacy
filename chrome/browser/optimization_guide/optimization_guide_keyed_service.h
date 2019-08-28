@@ -36,7 +36,7 @@ class OptimizationGuideHintsManager;
 
 class OptimizationGuideKeyedService
     : public KeyedService,
-      optimization_guide::OptimizationGuideDecider {
+      public optimization_guide::OptimizationGuideDecider {
  public:
   explicit OptimizationGuideKeyedService(
       content::BrowserContext* browser_context);

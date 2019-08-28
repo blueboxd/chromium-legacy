@@ -529,8 +529,7 @@ void AssistantOptInFlowScreenHandler::HandleGetMoreScreenUserAction(
     const bool email_opted_in) {
   RecordAssistantOptInStatus(GET_MORE_CONTINUED);
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled,
-                    screen_context);
+  prefs->SetBoolean(assistant::prefs::kAssistantContextEnabled, screen_context);
   OnEmailOptInResult(email_opted_in);
 }
 

@@ -3980,6 +3980,20 @@ void WebContentsImpl::SaveFrameWithHeaders(
 void WebContentsImpl::GenerateMHTML(
     const MHTMLGenerationParams& params,
     base::OnceCallback<void(int64_t)> callback) {
+  base::OnceCallback<void(const MHTMLGenerationResult&)> wrapper_callback =
+      base::BindOnce(
+          [](base::OnceCallback<void(int64_t)> size_callback,
+             const MHTMLGenerationResult& result) {
+            std::move(size_callback).Run(result.file_size);
+          },
+          std::move(callback));
+  MHTMLGenerationManager::GetInstance()->SaveMHTML(this, params,
+                                                   std::move(wrapper_callback));
+}
+
+void WebContentsImpl::GenerateMHTMLWithResult(
+    const MHTMLGenerationParams& params,
+    MHTMLGenerationResult::GenerateMHTMLCallback callback) {
   MHTMLGenerationManager::GetInstance()->SaveMHTML(this, params,
                                                    std::move(callback));
 }

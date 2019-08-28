@@ -39,7 +39,6 @@ class ServicesDelegateAndroid : public ServicesDelegate {
       const DelayedAnalysisCallback& callback) override;
   void AddDownloadManager(content::DownloadManager* download_manager) override;
   ClientSideDetectionService* GetCsdService() override;
-  DownloadProtectionService* GetDownloadService() override;
 
   void StartOnIOThread(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,

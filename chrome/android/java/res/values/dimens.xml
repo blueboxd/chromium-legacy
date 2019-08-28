@@ -159,8 +159,13 @@
     <dimen name="password_generation_dialog_padding">24dp</dimen>
 
     <!-- Password manager illustration dialogs -->
-    <dimen name="password_manager_dialog_padding">16dp</dimen>
-    <dimen name="password_manager_illustration_margin">24dp</dimen>
+    <dimen name="password_manager_dialog_padding">8dp</dimen>
+    <dimen name="password_manager_dialog_illustration_height">156dp</dimen>
+    <dimen name="password_manager_dialog_min_vertical_space_to_show_illustration">350dp</dimen>
+    <dimen name="password_manager_dialog_text_horizontal_padding">16dp</dimen>
+    <dimen name="password_manager_dialog_title_padding_top">16dp</dimen>
+    <dimen name="password_manager_dialog_details_padding_bottom">22dp</dimen>
+    <dimen name="password_manager_dialog_details_padding_top">12dp</dimen>
 
     <!-- Promo dialogs -->
     <dimen name="promo_dialog_illustration_margin">24dp</dimen>

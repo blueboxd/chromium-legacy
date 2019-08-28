@@ -1567,8 +1567,6 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     if (viewport_layers_.outer_viewport_scroll)
       ids.outer_viewport_scroll = viewport_layers_.outer_viewport_scroll->id();
     tree_impl->SetViewportLayersFromIds(ids);
-    DCHECK(IsUsingLayerLists() || viewport_layers_.inner_viewport_scroll
-                                      ->IsContainerForFixedPositionLayers());
   } else {
     tree_impl->ClearViewportLayers();
   }

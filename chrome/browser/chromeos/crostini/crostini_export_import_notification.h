@@ -32,7 +32,10 @@ class CrostiniExportImportNotification
     CANCELLING,
     DONE,
     CANCELLED,
-    FAILED,
+    FAILED_UNKNOWN_REASON,
+    FAILED_ARCHITECTURE_MISMATCH,
+    FAILED_INSUFFICIENT_SPACE,
+    FAILED_CONCURRENT_OPERATION,
   };
 
   // Used to construct CrostiniExportImportNotification to ensure it controls
@@ -86,7 +89,7 @@ class CrostiniExportImportNotification
                                    base::FilePath path,
                                    ContainerId container_id);
 
-  void SetStatusFailed(const base::string16& message);
+  void SetStatusFailed(Status status, const base::string16& message);
 
   Profile* profile_;
   ExportImportType type_;

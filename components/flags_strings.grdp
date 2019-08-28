@@ -54,8 +54,8 @@
   <message name="IDS_FLAGS_UI_CLEAR_SEARCH" translateable="false" desc="Tooltip for icon button that clears the searchbar on the chrome://flags page.">
     Clear search
   </message>
-  <message name="IDS_FLAGS_UI_RESET_COMPLETE" translateable="false" desc="Screen reader text stating that the reset action was completed.">
-    Reset complete
+  <message name="IDS_FLAGS_UI_RESET_ACKNOWLEDGED" translateable="false" desc="Screen reader text stating that the reset action was acknowledged.">
+    Reset acknowledged.
   </message>
   <message name="IDS_FLAGS_UI_EXPERIMENT_ENABLED" translateable="false" desc="Screen reader text stating that an experiment is enabled.">
     Experiment enabled
@@ -112,8 +112,8 @@
   <message name="IDS_ENTERPRISE_UI_CLEAR_SEARCH" desc="Tooltip for icon button that clears the searchbar on the chrome://flags/enterprise page.">
     Clear search
   </message>
-  <message name="IDS_ENTERPRISE_UI_RESET_COMPLETE" desc="Screen reader text stating that the reset action was completed.">
-    Reset complete
+  <message name="IDS_ENTERPRISE_UI_RESET_ACKNOWLEDGED" desc="Screen reader text stating that the reset action was acknowledged.">
+    Reset acknowledged.
   </message>
   <message name="IDS_ENTERPRISE_UI_EXPERIMENT_ENABLED" desc="Screen reader text stating that an experiment is enabled.">
     Experiment enabled

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 3
+
 module arc.mojom;
 
 [Extensible]
@@ -36,6 +38,10 @@ struct MountPointInfo {
   // The device type that contains this mount point. If unknown, the event
   // should be ignored.
   DeviceType device_type;
+  // Whether the mounted volume should be visible to Android apps.
+  // This is a user-controlled setting, which is accessible in "External
+  // storage preferences" screen in device settings.
+  [MinVersion=2] bool visible;
 };
 
 // Next Method ID: 1

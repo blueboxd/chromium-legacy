@@ -204,7 +204,6 @@ class AssistantServiceTest : public testing::Test {
             &url_loader_factory_);
 
     assistant_state()->NotifyArcPlayStoreEnabledChanged(true);
-    assistant_state()->NotifyContextEnabled(true);
     assistant_state()->NotifyFeatureAllowed(
         ash::mojom::AssistantAllowedState::ALLOWED);
     assistant_state()->NotifyHotwordEnabled(true);

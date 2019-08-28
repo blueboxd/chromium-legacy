@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.sms;
 
+import android.app.Activity;
 import android.content.Context;
+import android.view.View;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -14,6 +16,8 @@ import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarControlLayout;
 import org.chromium.chrome.browser.infobar.InfoBarLayout;
+import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * An InfoBar that asks for the user's permission to share the SMS with the page.
@@ -22,26 +26,41 @@ public class SmsReceiverInfoBar extends ConfirmInfoBar {
     private static final String TAG = "SmsReceiverInfoBar";
     private static final boolean DEBUG = false;
     private String mMessage;
+    private WindowAndroid mWindowAndroid;
 
     @VisibleForTesting
     @CalledByNative
-    static SmsReceiverInfoBar create(
-            int enumeratedIconId, String title, String message, String okButtonLabel) {
+    static SmsReceiverInfoBar create(WindowAndroid windowAndroid, int enumeratedIconId,
+            String title, String message, String okButtonLabel) {
         if (DEBUG) Log.d(TAG, "SmsReceiverInfoBar.create()");
-        return new SmsReceiverInfoBar(enumeratedIconId, title, message, okButtonLabel);
+        return new SmsReceiverInfoBar(
+                windowAndroid, enumeratedIconId, title, message, okButtonLabel);
     }
 
-    private SmsReceiverInfoBar(
-            int enumeratedIconId, String title, String message, String okButtonLabel) {
+    private SmsReceiverInfoBar(WindowAndroid windowAndroid, int enumeratedIconId, String title,
+            String message, String okButtonLabel) {
         super(ResourceId.mapToDrawableId(enumeratedIconId), R.color.infobar_icon_drawable_color,
                 /*iconBitmap=*/null, /*message=*/title, /*linkText=*/null, okButtonLabel,
                 /*secondaryButtonText=*/null);
         mMessage = message;
+        mWindowAndroid = windowAndroid;
     }
 
     @Override
     public void createContent(InfoBarLayout layout) {
         super.createContent(layout);
+
+        Activity activity = mWindowAndroid.getActivity().get();
+        if (activity != null) {
+            View focusedView = activity.getCurrentFocus();
+            KeyboardVisibilityDelegate keyboardVisibilityDelegate =
+                    KeyboardVisibilityDelegate.getInstance();
+            if (focusedView != null
+                    && keyboardVisibilityDelegate.isKeyboardShowing(activity, focusedView)) {
+                keyboardVisibilityDelegate.hideKeyboard(focusedView);
+            }
+        }
+
         Context context = layout.getContext();
         InfoBarControlLayout control = layout.addControlLayout();
         control.addDescription(mMessage);

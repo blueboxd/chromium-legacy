@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -356,7 +357,8 @@ void FidoCableDiscovery::RecordAdvertisementResult(bool is_success) {
 
 void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
                                           BluetoothDevice* device) {
-  const auto* found_cable_device_data = GetCableDiscoveryData(device);
+  base::Optional<CableDiscoveryData> found_cable_device_data =
+      GetCableDiscoveryData(device);
   const std::string device_address = device->GetAddress();
   if (!found_cable_device_data ||
       base::Contains(active_authenticator_eids_,
@@ -366,21 +368,15 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
   }
 
   FIDO_LOG(EVENT) << "Found new caBLE device.";
-  // Nonce is embedded as first 8 bytes of client EID.
-  std::array<uint8_t, 8> nonce;
-  bool extract_success = fido_parsing_utils::ExtractArray(
-      found_cable_device_data->client_eid, 0, &nonce);
-  if (!extract_success)
-    return;
+  active_authenticator_eids_.insert(found_cable_device_data->authenticator_eid);
+  active_devices_.insert(device_address);
 
   auto cable_device =
       std::make_unique<FidoCableDevice>(adapter, device->GetAddress());
-  active_authenticator_eids_.insert(found_cable_device_data->authenticator_eid);
-  active_devices_.insert(device_address);
   StopAdvertisements(
       base::BindOnce(&FidoCableDiscovery::ConductEncryptionHandshake,
                      weak_factory_.GetWeakPtr(), std::move(cable_device),
-                     *found_cable_device_data));
+                     std::move(*found_cable_device_data)));
 }
 
 void FidoCableDiscovery::ConductEncryptionHandshake(
@@ -416,12 +412,12 @@ void FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage(
   }
 }
 
-const CableDiscoveryData* FidoCableDiscovery::GetCableDiscoveryData(
+base::Optional<CableDiscoveryData> FidoCableDiscovery::GetCableDiscoveryData(
     const BluetoothDevice* device) const {
-  const auto* discovery_data = GetCableDiscoveryDataFromServiceData(device);
-  if (discovery_data != nullptr) {
+  auto maybe_discovery_data = GetCableDiscoveryDataFromServiceData(device);
+  if (maybe_discovery_data) {
     FIDO_LOG(DEBUG) << "Found caBLE service data.";
-    return discovery_data;
+    return maybe_discovery_data;
   }
 
   FIDO_LOG(DEBUG)
@@ -431,39 +427,31 @@ const CableDiscoveryData* FidoCableDiscovery::GetCableDiscoveryData(
   return GetCableDiscoveryDataFromServiceUUIDs(device);
 }
 
-const CableDiscoveryData*
+base::Optional<CableDiscoveryData>
 FidoCableDiscovery::GetCableDiscoveryDataFromServiceData(
     const BluetoothDevice* device) const {
   const auto* service_data =
       device->GetServiceDataForUUID(CableAdvertisementUUID());
   if (!service_data) {
-    return nullptr;
+    return base::nullopt;
   }
-  DCHECK(service_data);
 
   // Received service data from authenticator must have a flag that signals that
   // the service data includes Cable EID.
   if (service_data->empty() || !(service_data->at(0) >> 5 & 1u))
-    return nullptr;
+    return base::nullopt;
 
   CableEidArray received_authenticator_eid;
   bool extract_success = fido_parsing_utils::ExtractArray(
       *service_data, 2, &received_authenticator_eid);
   if (!extract_success)
-    return nullptr;
+    return base::nullopt;
 
-  auto discovery_data_iterator = std::find_if(
-      discovery_data_.begin(), discovery_data_.end(),
-      [&received_authenticator_eid](const auto& data) {
-        return received_authenticator_eid == data.authenticator_eid;
-      });
-
-  return discovery_data_iterator != discovery_data_.end()
-             ? &(*discovery_data_iterator)
-             : nullptr;
+  return GetCableDiscoveryDataFromAuthenticatorEid(
+      std::move(received_authenticator_eid));
 }
 
-const CableDiscoveryData*
+base::Optional<CableDiscoveryData>
 FidoCableDiscovery::GetCableDiscoveryDataFromServiceUUIDs(
     const BluetoothDevice* device) const {
   const auto service_uuids = device->GetUUIDs();
@@ -471,18 +459,53 @@ FidoCableDiscovery::GetCableDiscoveryDataFromServiceUUIDs(
     if (uuid == CableAdvertisementUUID())
       continue;
 
-    auto discovery_data_iterator = std::find_if(
-        discovery_data_.begin(), discovery_data_.end(),
-        [&uuid](const auto& data) {
-          std::string received_eid_string =
-              fido_parsing_utils::ConvertBytesToUuid(data.authenticator_eid);
-          return uuid == BluetoothUUID(received_eid_string);
-        });
-    if (discovery_data_iterator != discovery_data_.end()) {
-      return &(*discovery_data_iterator);
+    // |uuid_hex| is a hex string with the format:
+    // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    const std::string& uuid_hex = uuid.canonical_value();
+    DCHECK_EQ(32u + 4u, uuid_hex.size());
+
+    // Copy substrings of |uuid_hex| to drop the hyphens.
+    std::string hex;
+    hex.reserve(32);
+    hex.append(uuid_hex, 0, 8);
+    hex.append(uuid_hex, 9, 4);
+    hex.append(uuid_hex, 14, 4);
+    hex.append(uuid_hex, 19, 4);
+    hex.append(uuid_hex, 24, 12);
+    DCHECK_EQ(32u, hex.size());
+
+    std::vector<uint8_t> uuid_binary;
+    const bool ok = base::HexStringToBytes(hex, &uuid_binary);
+    DCHECK(ok);
+
+    CableEidArray authenticator_eid;
+    DCHECK_EQ(authenticator_eid.size(), uuid_binary.size());
+    memcpy(authenticator_eid.data(), uuid_binary.data(),
+           authenticator_eid.size());
+
+    auto match = GetCableDiscoveryDataFromAuthenticatorEid(authenticator_eid);
+    if (match.has_value()) {
+      return match;
     }
   }
-  return nullptr;
+
+  return base::nullopt;
+}
+
+base::Optional<CableDiscoveryData>
+FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
+    CableEidArray authenticator_eid) const {
+  auto discovery_data_iterator =
+      std::find_if(discovery_data_.begin(), discovery_data_.end(),
+                   [&authenticator_eid](const auto& data) {
+                     return authenticator_eid == data.authenticator_eid;
+                   });
+
+  if (discovery_data_iterator != discovery_data_.end()) {
+    return *discovery_data_iterator;
+  }
+
+  return base::nullopt;
 }
 
 }  // namespace device

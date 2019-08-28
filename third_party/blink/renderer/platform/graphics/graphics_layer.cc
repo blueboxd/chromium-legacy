@@ -77,8 +77,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_visible_(true),
       hit_testable_(false),
       needs_check_raster_invalidation_(false),
-      has_scroll_parent_(false),
-      has_clip_parent_(false),
       painted_(false),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
@@ -655,16 +653,6 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
 
   contents_visible_ = contents_visible;
   UpdateLayerIsDrawable();
-}
-
-void GraphicsLayer::SetClipParent(cc::Layer* parent) {
-  has_clip_parent_ = !!parent;
-  CcLayer()->SetClipParent(parent);
-}
-
-void GraphicsLayer::SetScrollParent(cc::Layer* parent) {
-  has_scroll_parent_ = !!parent;
-  CcLayer()->SetScrollParent(parent);
 }
 
 RGBA32 GraphicsLayer::BackgroundColor() const {

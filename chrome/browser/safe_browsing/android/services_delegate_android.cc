@@ -101,10 +101,6 @@ ClientSideDetectionService* ServicesDelegateAndroid::GetCsdService() {
   return nullptr;
 }
 
-DownloadProtectionService* ServicesDelegateAndroid::GetDownloadService() {
-  return nullptr;
-}
-
 void ServicesDelegateAndroid::StartOnIOThread(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& v4_config) {

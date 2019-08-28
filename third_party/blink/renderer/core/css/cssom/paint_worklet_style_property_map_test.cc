@@ -154,7 +154,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, CreateSupportedCrossThreadData) {
   Node* node = PageNode();
 
   Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
-  std::vector<std::pair<std::string, CompositorElementId>> input_property_keys;
+  CompositorPaintWorkletInput::PropertyKeys input_property_keys;
   auto data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
       GetDocument(), node->GetLayoutObject()->UniqueId(),
       node->ComputedStyleRef(), native_properties, custom_properties,
@@ -196,7 +196,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, UnsupportedCrossThreadData) {
   Node* node = PageNode();
 
   Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
-  std::vector<std::pair<std::string, CompositorElementId>> input_property_keys;
+  CompositorPaintWorkletInput::PropertyKeys input_property_keys;
   auto data1 = PaintWorkletStylePropertyMap::BuildCrossThreadData(
       GetDocument(), node->GetLayoutObject()->UniqueId(),
       node->ComputedStyleRef(), native_properties1, custom_properties1,

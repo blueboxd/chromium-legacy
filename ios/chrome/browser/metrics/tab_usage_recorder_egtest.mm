@@ -653,10 +653,6 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
 // Tests that opening links in a new tab will not evict the source tab.
 - (void)testOpenLinkInNewTab {
-  // TODO(crbug.com/989550) Disable broken context menu tests on Xc11b5.
-  if (@available(iOS 13, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
-  }
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL initialURL =

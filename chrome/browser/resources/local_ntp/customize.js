@@ -2279,6 +2279,7 @@ customize.loadColorsMenu = function() {
       } else {
         $(customize.IDS.COLORS_DEFAULT_ICON).focus();
       }
+      event.preventDefault();
     }
   };
 

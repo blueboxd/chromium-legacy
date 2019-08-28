@@ -9,10 +9,6 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace gfx {
-class Canvas;
-class ThrobAnimation;
-}  // namespace gfx
 
 // The location bar icon to show the sharing features bubble.
 class SharingIconView : public PageActionIconView {
@@ -21,13 +17,7 @@ class SharingIconView : public PageActionIconView {
   ~SharingIconView() override;
 
   void StartLoadingAnimation();
-  void StopLoadingAnimation(base::Optional<int> string_id);
-
-  // views::View:
-  void OnThemeChanged() override;
-
-  // views::Button:
-  void PaintButtonContents(gfx::Canvas* canvas) override;
+  void StopLoadingAnimation();
 
  protected:
   // PageActionIconView:
@@ -43,7 +33,6 @@ class SharingIconView : public PageActionIconView {
 
   void UpdateInkDrop(bool activate);
   void UpdateOpacity();
-  void UpdateLoaderColor();
   bool IsLoadingAnimationVisible();
   bool should_show_error() { return should_show_error_; }
   void set_should_show_error(bool should_show_error) {
@@ -52,14 +41,11 @@ class SharingIconView : public PageActionIconView {
 
   // Get the supporting controller for this icon view.
   virtual SharingUiController* GetController() const = 0;
-  // Return the success delivery message Id.
-  virtual base::Optional<int> GetSuccessMessageId() const = 0;
 
  private:
   SharingUiController* last_controller_ = nullptr;
-  std::unique_ptr<gfx::ThrobAnimation> loading_animation_;
+  bool loading_animation_ = false;
   bool should_show_error_ = false;
-  SkColor loader_color_;
 
   DISALLOW_COPY_AND_ASSIGN(SharingIconView);
 };

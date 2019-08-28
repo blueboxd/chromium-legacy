@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/platform_paint_worklet_layer_painter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -102,8 +103,7 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
       Vector<AtomicString> custom_properties =
           generator_->CustomInvalidationProperties();
       float zoom = layout_object.StyleRef().EffectiveZoom();
-      std::vector<std::pair<std::string, CompositorElementId>>
-          input_property_keys;
+      CompositorPaintWorkletInput::PropertyKeys input_property_keys;
       auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
           document, layout_object.UniqueId(), style, native_properties,
           custom_properties, input_property_keys);

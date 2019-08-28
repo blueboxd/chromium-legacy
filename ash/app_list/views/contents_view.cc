@@ -574,6 +574,16 @@ void ContentsView::Layout() {
     page->SetBoundsRect(page->GetPageBoundsForState(current_state));
 
   UpdateExpandArrowOpacity(current_state, false);
+
+  // Update the searchbox bounds.
+  auto* search_box = GetSearchBoxView();
+  gfx::Rect search_box_bounds = GetSearchBoxBoundsForState(current_state);
+  search_box_bounds = search_box->GetViewBoundsForSearchBoxContentsBounds(
+      ConvertRectToWidgetWithoutTransform(search_box_bounds));
+  const float scale = GetAppListMainViewScale();
+  search_box_bounds.set_origin(
+      gfx::Point(search_box_bounds.x() * scale, search_box_bounds.y() * scale));
+  search_box->GetWidget()->SetBounds(search_box_bounds);
 }
 
 const char* ContentsView::GetClassName() const {

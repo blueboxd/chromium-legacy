@@ -92,11 +92,6 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionEnabled));
   EXPECT_EQ(true, ash::AssistantState::Get()->settings_enabled());
 
-  ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled));
-  prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled, true);
-  ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled));
-  EXPECT_EQ(true, ash::AssistantState::Get()->context_enabled());
-
   ASSERT_EQ(false, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
   prefs->SetBoolean(prefs::kVoiceInteractionHotwordEnabled, true);
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));

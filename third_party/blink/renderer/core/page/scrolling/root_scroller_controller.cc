@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/document_fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -210,8 +211,13 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
   ApplyRootScrollerProperties(*old_effective_root_scroller);
   ApplyRootScrollerProperties(*effective_root_scroller_);
 
-  if (Page* page = document_->GetPage())
+  if (Page* page = document_->GetPage()) {
     page->GlobalRootScrollerController().DidChangeRootScroller();
+
+    // Needed to set the |prevent_viewport_scrolling_from_inner| bit on the
+    // VisualViewportScrollNode.
+    page->GetVisualViewport().SetNeedsPaintPropertyUpdate();
+  }
 }
 
 bool RootScrollerController::IsValidRootScroller(const Element& element) const {

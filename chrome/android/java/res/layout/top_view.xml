@@ -16,7 +16,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="12dp"
         android:layout_marginStart="20dp"
-        android:layout_marginEnd="16dp" />
+        android:layout_marginEnd="16dp"
+        android:textAppearance="@style/TextAppearance.BlackBody" />
 
     <LinearLayout
         android:id="@+id/chip_container"

@@ -15,6 +15,7 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/mock_occlusion_tracker.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -232,6 +233,97 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
 void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
   root_layer_for_testing()->test_properties()->copy_requests.push_back(
       viz::CopyOutputRequest::CreateStubForTesting());
+}
+
+void LayerTestCommon::LayerImplTest::ExecuteCalculateDrawProperties(
+    Layer* root_layer,
+    float device_scale_factor,
+    float page_scale_factor,
+    Layer* page_scale_layer,
+    Layer* inner_viewport_scroll_layer,
+    Layer* outer_viewport_scroll_layer) {
+  EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
+  gfx::Size device_viewport_size =
+      gfx::Size(root_layer->bounds().width() * device_scale_factor,
+                root_layer->bounds().height() * device_scale_factor);
+
+  root_layer->layer_tree_host()->SetViewportSizeAndScale(
+      device_viewport_size, device_scale_factor,
+      viz::LocalSurfaceIdAllocation());
+
+  // We are probably not testing what is intended if the root_layer bounds are
+  // empty.
+  DCHECK(!root_layer->bounds().IsEmpty());
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      root_layer, device_viewport_size);
+  inputs.device_scale_factor = device_scale_factor;
+  inputs.page_scale_factor = page_scale_factor;
+  inputs.page_scale_layer = page_scale_layer;
+  inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
+  inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
+  if (page_scale_layer) {
+    PropertyTrees* property_trees =
+        root_layer->layer_tree_host()->property_trees();
+    inputs.page_scale_transform_node = property_trees->transform_tree.Node(
+        page_scale_layer->transform_tree_index());
+  }
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+}
+
+void LayerTestCommon::LayerImplTest::ExecuteCalculateDrawProperties(
+    LayerImpl* root_layer,
+    float device_scale_factor,
+    float page_scale_factor,
+    LayerImpl* page_scale_layer,
+    LayerImpl* inner_viewport_scroll_layer,
+    LayerImpl* outer_viewport_scroll_layer) {
+  if (device_scale_factor !=
+          root_layer->layer_tree_impl()->device_scale_factor() &&
+      !root_layer->layer_tree_impl()->settings().use_layer_lists)
+    root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
+
+  root_layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
+
+  EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
+
+  gfx::Size device_viewport_size =
+      gfx::Size(root_layer->bounds().width() * device_scale_factor,
+                root_layer->bounds().height() * device_scale_factor);
+
+  render_surface_list_impl_.reset(new RenderSurfaceList);
+
+  // We are probably not testing what is intended if the root_layer bounds are
+  // empty.
+  DCHECK(!root_layer->bounds().IsEmpty());
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_layer, device_viewport_size, render_surface_list_impl_.get());
+  inputs.device_scale_factor = device_scale_factor;
+  inputs.page_scale_factor = page_scale_factor;
+  inputs.page_scale_layer = page_scale_layer;
+  inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
+  inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
+  if (page_scale_layer) {
+    PropertyTrees* property_trees =
+        root_layer->layer_tree_impl()->property_trees();
+    inputs.page_scale_transform_node = property_trees->transform_tree.Node(
+        page_scale_layer->transform_tree_index());
+  }
+
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+}
+
+void LayerTestCommon::LayerImplTest::
+    ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(
+        LayerImpl* root_layer) {
+  gfx::Size device_viewport_size =
+      gfx::Size(root_layer->bounds().width(), root_layer->bounds().height());
+  render_surface_list_impl_.reset(new RenderSurfaceList);
+
+  DCHECK(!root_layer->bounds().IsEmpty());
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_layer, device_viewport_size, render_surface_list_impl_.get());
+
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
 void LayerTestCommon::SetupBrowserControlsAndScrollLayerWithVirtualViewport(

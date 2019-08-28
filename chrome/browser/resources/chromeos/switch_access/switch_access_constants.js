@@ -44,18 +44,17 @@ SAConstants.Focus = {};
 SAConstants.Focus.CLASS = 'focus';
 
 /**
- * The ID used for the focus ring around the current element.
- * @type {string}
- * @const
+ * The focus ring IDs used by Switch Access.
+ * @enum {string}
  */
-SAConstants.Focus.PRIMARY_ID = 'primary';
-
-/**
- * The ID used for the focus ring around the current scope.
- * @type {string}
- * @const
- */
-SAConstants.Focus.SCOPE_ID = 'scope';
+SAConstants.Focus.ID = {
+  // The ID for the user's current focus.
+  PRIMARY: 'primary',
+  // The ID for the group containing the user's focus.
+  SCOPE: 'scope',
+  // The ID for the area where text is being input.
+  TEXT: 'text'
+};
 
 /**
  * The buffer (in dip) between the primary focus ring and the scope focus ring.
@@ -63,13 +62,6 @@ SAConstants.Focus.SCOPE_ID = 'scope';
  * @const
  */
 SAConstants.Focus.SCOPE_BUFFER = 2;
-
-/**
- * The ID used for the focus ring around the active text input.
- * @type {string}
- * @const
- */
-SAConstants.Focus.TEXT_ID = 'text';
 
 /**
  * The inner color of the focus rings.
@@ -137,6 +129,8 @@ SAConstants.MenuAction = {
   MOVE_BACKWARD_ONE_CHAR_OF_TEXT: 'moveBackwardOneCharOfText',
   // Move text caret one word backward.
   MOVE_BACKWARD_ONE_WORD_OF_TEXT: 'moveBackwardOneWordOfText',
+  // Open the text navigation menu to move the text caret.
+  MOVE_CURSOR: 'moveCursor',
   // Move text caret one line down.
   MOVE_DOWN_ONE_LINE_OF_TEXT: 'moveDownOneLineOfText',
   // Move text caret one character forward.

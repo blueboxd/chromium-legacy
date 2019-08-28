@@ -929,10 +929,8 @@ jumbo_split_static_library("ui") {
       "global_error/global_error_service.h",
       "global_error/global_error_service_factory.cc",
       "global_error/global_error_service_factory.h",
-      "global_media_controls/media_dialog_controller.cc",
-      "global_media_controls/media_dialog_controller.h",
-      "global_media_controls/media_dialog_controller_delegate.cc",
-      "global_media_controls/media_dialog_controller_delegate.h",
+      "global_media_controls/media_dialog_delegate.cc",
+      "global_media_controls/media_dialog_delegate.h",
       "global_media_controls/media_toolbar_button_controller.cc",
       "global_media_controls/media_toolbar_button_controller.h",
       "global_media_controls/media_toolbar_button_controller_delegate.cc",
@@ -3210,8 +3208,6 @@ jumbo_split_static_library("ui") {
 
     if (is_linux) {
       sources += [
-        "views/frame/browser_command_handler_linux.cc",
-        "views/frame/browser_command_handler_linux.h",
         "views/process_singleton_dialog_linux.cc",
         "views/status_icons/status_tray_linux.cc",
         "views/status_icons/status_tray_linux.h",

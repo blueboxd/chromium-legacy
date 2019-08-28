@@ -95,8 +95,7 @@ class SmsBrowserTest : public ContentBrowserTest {
 
 }  // namespace
 
-// Flaky. crbug.com/997549
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Receive) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
@@ -124,15 +123,21 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Receive) {
     provider->NotifyReceive(url::Origin::Create(url), "hello");
   }));
 
+  // Wait for UKM to be recorded to avoid race condition.
+  base::RunLoop ukm_loop;
+  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
   EXPECT_EQ("hello", EvalJs(shell(), script));
+
+  ukm_loop.Run();
 
   ASSERT_FALSE(provider->HasObservers());
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-// Flaky. crbug.com/997549
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_AtMostOnePendingSmsRequest) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
@@ -159,23 +164,35 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_AtMostOnePendingSmsRequest) {
     loop.Quit();
   }));
 
+  // Wait for UKM to be recorded to avoid race condition.
+  base::RunLoop ukm_loop1;
+  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                        ukm_loop1.QuitClosure());
+
   EXPECT_EQ("AbortError", EvalJs(shell(), script));
+
+  loop.Run();
+  ukm_loop1.Run();
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kCancelled);
 
-  loop.Run();
+  // Wait for UKM to be recorded to avoid race condition.
+  base::RunLoop ukm_loop2;
+  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                        ukm_loop2.QuitClosure());
 
   provider->NotifyReceive(url::Origin::Create(url), "hello");
 
   EXPECT_EQ("hello", EvalJs(shell(), "first"));
+
+  ukm_loop2.Run();
 
   ASSERT_FALSE(provider->HasObservers());
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-// Flaky. crbug.com/997549
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Reload) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
@@ -206,7 +223,6 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Reload) {
 
   // Wait for UKM to be recorded to avoid race condition.
   base::RunLoop ukm_loop;
-
   ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                         ukm_loop.QuitClosure());
 
@@ -252,8 +268,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
   ExpectNoOutcomeUKM();
 }
 
-// Flaky. crbug.com/997549
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
@@ -307,6 +322,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
 
   {
     base::RunLoop loop;
+    base::RunLoop ukm_loop;
 
     EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
         .WillOnce(
@@ -316,20 +332,27 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
               loop.Quit();
             }));
 
+    // Wait for UKM to be recorded to avoid race condition.
+    ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                          ukm_loop.QuitClosure());
+
     provider->NotifyReceive(url::Origin::Create(url), "hello1");
 
     loop.Run();
+    ukm_loop.Run();
   }
 
   EXPECT_EQ("hello1", EvalJs(tab1, "sms"));
 
   ASSERT_TRUE(provider->HasObservers());
 
+  ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
+
+  ukm_recorder()->Purge();
+
   {
     base::RunLoop loop;
-    ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
-
-    ukm_recorder()->Purge();
+    base::RunLoop ukm_loop;
 
     EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
         .WillOnce(
@@ -339,9 +362,14 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
               loop.Quit();
             }));
 
+    // Wait for UKM to be recorded to avoid race condition.
+    ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                          ukm_loop.QuitClosure());
+
     provider->NotifyReceive(url::Origin::Create(url), "hello2");
 
     loop.Run();
+    ukm_loop.Run();
   }
 
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
@@ -351,8 +379,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-// Flaky. crbug.com/997549
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
@@ -396,6 +423,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
 
   {
     base::RunLoop loop;
+    base::RunLoop ukm_loop;
     EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
         .WillOnce(
             Invoke([&loop](RenderFrameHost*, const url::Origin&,
@@ -403,8 +431,12 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
               std::move(on_confirm).Run();
               loop.Quit();
             }));
+    // Wait for UKM to be recorded to avoid race condition.
+    ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                          ukm_loop.QuitClosure());
     provider->NotifyReceive(url::Origin::Create(url1), "hello1");
     loop.Run();
+    ukm_loop.Run();
   }
 
   EXPECT_EQ("hello1", EvalJs(tab1, "sms"));
@@ -413,6 +445,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
 
   {
     base::RunLoop loop;
+    base::RunLoop ukm_loop;
     EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
         .WillOnce(
             Invoke([&loop](RenderFrameHost*, const url::Origin&,
@@ -420,8 +453,12 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
               std::move(on_confirm).Run();
               loop.Quit();
             }));
+    // Wait for UKM to be recorded to avoid race condition.
+    ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                          ukm_loop.QuitClosure());
     provider->NotifyReceive(url::Origin::Create(url2), "hello2");
     loop.Run();
+    ukm_loop.Run();
   }
 
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
@@ -463,8 +500,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
   ExpectNoOutcomeUKM();
 }
 
-// Flaky. crbug.com/997549
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Cancels) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
@@ -475,6 +511,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Cancels) {
   shell()->web_contents()->SetDelegate(&delegate_);
 
   base::RunLoop loop;
+  base::RunLoop ukm_loop;
 
   EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
       .WillOnce(Invoke([&loop](RenderFrameHost*, const url::Origin&,
@@ -488,6 +525,10 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Cancels) {
     provider->NotifyReceive(url::Origin::Create(url), "hello");
   }));
 
+  // Wait for UKM to be recorded to avoid race condition.
+  ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
+                                        ukm_loop.QuitClosure());
+
   std::string script = R"(
     navigator.sms.receive({timeout: 60}).catch(({name}) => {
       error = name;
@@ -498,6 +539,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_Cancels) {
   EXPECT_EQ(true, EvalJs(shell(), script));
 
   loop.Run();
+  ukm_loop.Run();
 
   EXPECT_EQ("AbortError", EvalJs(shell(), "error"));
 

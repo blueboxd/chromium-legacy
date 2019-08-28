@@ -11,6 +11,7 @@
 #include "media/base/container_names.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/timestamp_constants.h"
+#include "media/learning/common/learning_session.h"
 #include "media/learning/common/value.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -29,11 +30,15 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
 
   enum class FrameStatus : bool { kTopFrame, kNotTopFrame };
 
+  using GetLearningSessionCallback =
+      base::RepeatingCallback<learning::LearningSession*()>;
+
   MediaMetricsProvider(BrowsingMode is_incognito,
                        FrameStatus is_top_frame,
                        ukm::SourceId source_id,
                        learning::FeatureValue origin,
-                       VideoDecodePerfHistory::SaveCallback save_cb);
+                       VideoDecodePerfHistory::SaveCallback save_cb,
+                       GetLearningSessionCallback learning_session_cb);
   ~MediaMetricsProvider() override;
 
   // Callback for retrieving a ukm::SourceId.
@@ -57,6 +62,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
                      GetSourceIdCallback get_source_id_cb,
                      GetOriginCallback get_origin_cb,
                      VideoDecodePerfHistory::SaveCallback save_cb,
+                     GetLearningSessionCallback learning_session_cb,
                      mojom::MediaMetricsProviderRequest request);
 
  private:
@@ -99,6 +105,9 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
       mojom::WatchTimeRecorderRequest request) override;
   void AcquireVideoDecodeStatsRecorder(
       mojom::VideoDecodeStatsRecorderRequest request) override;
+  void AcquireLearningTaskController(
+      const std::string& taskName,
+      media::learning::mojom::LearningTaskControllerRequest request) override;
   void AddBytesReceived(uint64_t bytes_received) override;
 
   void ReportPipelineUMA();
@@ -115,6 +124,7 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   const learning::FeatureValue origin_;
 
   const VideoDecodePerfHistory::SaveCallback save_cb_;
+  const GetLearningSessionCallback learning_session_cb_;
 
   // UMA pipeline packaged data
   PipelineInfo uma_info_;

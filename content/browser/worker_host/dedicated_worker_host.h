@@ -122,12 +122,6 @@ class DedicatedWorkerHost final
                                       RenderFrameHostImpl* render_frame_host,
                                       bool* bypass_redirect_checks);
 
-  // TODO(https://crbug.com/955171): Remove these methods and use
-  // CreateWebUsbService directly once |this| uses service_manager::BinderMap
-  // instead of |registry_|.
-  void CreateWebUsbServiceForRequest(
-      blink::mojom::WebUsbServiceRequest request);
-
   void CreateWebUsbService(
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
 

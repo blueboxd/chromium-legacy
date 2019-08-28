@@ -9,11 +9,16 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/media/router/presentation/independent_otr_profile_manager.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 class Browser;
 class Profile;
+
+namespace views {
+class Widget;
+}
 
 // Happiness tracking survey dialog which shows the survey content.
 // This class lives on the UI thread and is self deleting.
@@ -21,19 +26,18 @@ class Profile;
 // chrome/browser/chromeos/hats/, should be merged into one.
 class HatsWebDialog : public ui::WebDialogDelegate {
  public:
-  // Create and show an instance of HatsWebDialog.
-  static void Show(const Browser* browser, const std::string& site_id);
+  // Create an instance of HatsWebDialog and load its content without showing.
+  static void Create(Browser* browser, const std::string& site_id);
 
  private:
-  // Use Show() above. An off the record profile is created from the given
+  friend class TestHatsWebDialog;
+  friend class HatsWebDialogBrowserTest;
+
+  // Use Create() above. An off the record profile is created from the given
   // browser profile which is used for navigating to the survey. |site_id| is
   // used to select the survey.
-  explicit HatsWebDialog(Profile* profile, const std::string& site_id);
+  HatsWebDialog(Browser* browser, const std::string& site_id);
   ~HatsWebDialog() override;
-
-  Profile* off_the_record_profile() {
-    return otr_profile_registration_->profile();
-  }
 
   // ui::WebDialogDelegate implementation.
   ui::ModalType GetDialogModalType() const override;
@@ -51,12 +55,33 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   bool ShouldShowDialogTitle() const override;
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) override;
+  void OnWebContentsFinishedLoad() override;
 
+  // These are virtual for tests.
+  virtual void OnLoadTimedOut();
+  virtual const base::TimeDelta ContentLoadingTimeout() const;
+
+  Profile* off_the_record_profile() {
+    return otr_profile_registration_->profile();
+  }
+
+  void CreateWebDialog(Browser* browser);
   void OnOriginalProfileDestroyed(Profile* profile);
+  void Show(views::Widget* widget, bool accept);
 
   std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>
       otr_profile_registration_;
+  Browser* browser_;
   const std::string site_id_;
+
+  // A timer to prevent unresponsive loading of survey dialog.
+  base::OneShotTimer loading_timer_;
+
+  // The widget created for preloading. It is owned by us until it is shown to
+  // user.
+  views::Widget* preloading_widget_{nullptr};
+
+  base::WeakPtrFactory<HatsWebDialog> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HatsWebDialog);
 };

@@ -102,6 +102,7 @@ enum MaliciousContentStatus {
 enum SafetyTipStatus {
   SAFETY_TIP_STATUS_NONE,
   SAFETY_TIP_STATUS_BAD_REPUTATION,
+  SAFETY_TIP_STATUS_LOOKALIKE,
 };
 
 // Contains the security state relevant to computing the SecurityLevel

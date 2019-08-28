@@ -5,24 +5,17 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_for_mixer.h"
 
 #include <time.h>
+
 #include <limits>
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
+#include "chromecast/media/base/monotonic_clock.h"
 #include "chromecast/media/cma/backend/audio_decoder_for_mixer.h"
 #include "chromecast/media/cma/backend/av_sync.h"
 #include "chromecast/media/cma/backend/video_decoder_for_mixer.h"
-
-#if defined(OS_LINUX)
-#include "chromecast/media/cma/backend/audio_buildflags.h"
-#endif  // defined(OS_LINUX)
-
-#if defined(OS_FUCHSIA)
-#include <zircon/syscalls.h>
-#endif  // defined(OS_FUCHSIA)
 
 namespace {
 
@@ -239,21 +232,9 @@ MediaPipelineBackendForMixer::GetTaskRunner() const {
   return static_cast<TaskRunnerImpl*>(params_.task_runner)->runner();
 }
 
-#if defined(OS_LINUX)
 int64_t MediaPipelineBackendForMixer::MonotonicClockNow() const {
-  timespec now = {0, 0};
-#if BUILDFLAG(MEDIA_CLOCK_MONOTONIC_RAW)
-  clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-#else
-  clock_gettime(CLOCK_MONOTONIC, &now);
-#endif // MEDIA_CLOCK_MONOTONIC_RAW
-  return base::TimeDelta::FromTimeSpec(now).InMicroseconds();
+  return media::MonotonicClockNow();
 }
-#elif defined(OS_FUCHSIA)
-int64_t MediaPipelineBackendForMixer::MonotonicClockNow() const {
-  return zx_clock_get_monotonic() / 1000;
-}
-#endif
 
 bool MediaPipelineBackendForMixer::IsIgnorePtsMode() const {
   return params_.sync_type ==

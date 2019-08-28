@@ -61,9 +61,24 @@ GraphImpl::GraphImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-// TODO(chrisha|siggi): Move this to a TearDown, which is invoked by the
-// performance manager before the graph destructor.
 GraphImpl::~GraphImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // At this point, all typed observers should be empty.
+  DCHECK(graph_observers_.empty());
+  DCHECK(frame_node_observers_.empty());
+  DCHECK(page_node_observers_.empty());
+  DCHECK(process_node_observers_.empty());
+  DCHECK(system_node_observers_.empty());
+
+  // All process nodes should have been removed already.
+  DCHECK(processes_by_pid_.empty());
+
+  // All nodes should have been removed.
+  DCHECK(nodes_.empty());
+}
+
+void GraphImpl::TearDown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Notify graph observers that the graph is being destroyed.
@@ -81,9 +96,6 @@ GraphImpl::~GraphImpl() {
   DCHECK(page_node_observers_.empty());
   DCHECK(process_node_observers_.empty());
   DCHECK(system_node_observers_.empty());
-
-  // All process nodes should have been removed already.
-  DCHECK(processes_by_pid_.empty());
 
   // Remove the system node from the graph, this should be the only node left.
   ReleaseSystemNode();

@@ -14,10 +14,6 @@ interface AssistantStateObserver {
   // Called when the Assistant is enabled/disabled in settings.
   OnAssistantSettingsEnabled(bool enabled);
 
-  // Called when the Assistant service is allowed/disallowed to access
-  // the "context" (text and graphic content that is currently on screen).
-  OnAssistantContextEnabled(bool enabled);
-
   // Called when hotword listening is enabled/disabled.
   OnAssistantHotwordEnabled(bool enabled);
 

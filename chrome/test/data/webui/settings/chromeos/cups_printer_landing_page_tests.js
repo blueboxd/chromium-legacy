@@ -509,6 +509,53 @@ suite('CupsNearbyPrintersTests', function() {
     });
   });
 
+  test('nearbyPrintersSortOrderAutoFirstThenDiscovered', function() {
+    let discoveredPrinterA =
+        createCupsPrinterInfo('printerNameA', 'printerAddress1', 'printerId1');
+    let discoveredPrinterB =
+        createCupsPrinterInfo('printerNameB', 'printerAddress2', 'printerId2');
+    let discoveredPrinterC =
+        createCupsPrinterInfo('printerNameC', 'printerAddress3', 'printerId3');
+    let autoPrinterD =
+        createCupsPrinterInfo('printerNameD', 'printerAddress4', 'printerId4');
+    let autoPrinterE =
+        createCupsPrinterInfo('printerNameE', 'printerAddress5', 'printerId5');
+    let autoPrinterF =
+        createCupsPrinterInfo('printerNameF', 'printerAddress6', 'printerId6');
+
+    // Add printers in a non-alphabetical order to test sorting.
+    const automaticPrinterList = [autoPrinterF, autoPrinterD, autoPrinterE];
+    const discoveredPrinterList =
+        [discoveredPrinterC, discoveredPrinterA, discoveredPrinterB];
+
+    // Expected sort order is to sort automatic printers first then
+    // sort discovered printers
+    const expectedPrinterList = [
+      autoPrinterD, autoPrinterE, autoPrinterF, discoveredPrinterA,
+      discoveredPrinterB, discoveredPrinterC
+    ];
+
+    return test_util.flushTasks().then(() => {
+      nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+      assertTrue(!!nearbyPrintersElement);
+
+      // Assert that no printers have been detected.
+      let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
+      assertEquals(0, nearbyPrinterEntries.length);
+
+      // Simuluate finding nearby printers.
+      cr.webUIListenerCallback(
+          'on-nearby-printers-changed', automaticPrinterList,
+          discoveredPrinterList);
+
+      Polymer.dom.flush();
+
+      nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
+
+      verifyPrintersList(nearbyPrinterEntries, expectedPrinterList);
+    });
+  });
+
   test('addingAutomaticPrinterIsSuccessful', function() {
     const automaticPrinterList = [createCupsPrinterInfo('test1', '1', 'id1')];
     const discoveredPrinterList = [];
@@ -625,6 +672,7 @@ suite('CupsNearbyPrintersTests', function() {
       // connected to a network.
       assertTrue(!!page.$$('#cloudOffIcon'));
       assertTrue(!!page.$$('#connectionMessage'));
+      assertTrue(!!page.$$('#addManualPrinterIcon').disabled);
     });
   });
 
@@ -633,10 +681,11 @@ suite('CupsNearbyPrintersTests', function() {
     setNetworkConnectionState('wifi1_guid', 'NotConnected');
     return test_util.flushTasks()
         .then(() => {
-          // Expect "Check Connection" text to show up when no internet is
+          // Expect offline text to show up when no internet is
           // connected.
           assertTrue(!!page.$$('#cloudOffIcon'));
           assertTrue(!!page.$$('#connectionMessage'));
+          assertTrue(!!page.$$('#addManualPrinterIcon').disabled);
 
           // Simulate connecting to a network with connectivity.
           setNetworkConnectionState('wifi1_guid', 'Online');

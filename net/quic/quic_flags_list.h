@@ -218,12 +218,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_conservative_cwnd_and_pacing_gains,
           false)
 
-// If enabled, do not call OnStreamFrame() with empty frame after receiving
-// empty or too large headers with FIN.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_avoid_empty_frame_after_empty_headers,
-          true)
-
 // If true, ignore TLPR if there is no pending stream data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
@@ -341,13 +335,13 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames,
-    false)
+    true)
 
 // If true, static streams should never be closed before QuicSession
 // destruction.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_active_streams_never_negative,
-          false)
+          true)
 
 // If true and FIFO connection option is received, write_blocked_streams uses
 // FIFO(stream with smallest ID has highest priority) write scheduler.
@@ -376,13 +370,13 @@ QUIC_FLAG(
 // closed streams whose highest byte offset is not received yet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_aggressive_connection_aliveness,
-          false)
+          true)
 
 // If true, QuicStreamSequencer will not take in new data if the stream is
 // reset.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_stream_data_after_reset,
-          false)
+          true)
 
 // When true, QuicDispatcher::MaybeDispatchPacket will use
 // packet_info.use_length_prefix instead of an incorrect local computation.
@@ -391,7 +385,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, enable IETF style probe timeout.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
 
 // When true, QuicFramer will use QueueUndecryptablePacket on all QUIC versions.
 QUIC_FLAG(bool,
@@ -409,3 +403,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_reply_to_old_android_conformance_test,
           false)
+
+// If true, no SPDY SETTINGS will be sent after handshake is confirmed.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_send_settings, false)

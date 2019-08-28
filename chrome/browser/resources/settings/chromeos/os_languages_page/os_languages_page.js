@@ -68,6 +68,14 @@ Polymer({
         return map;
       },
     },
+
+    /** @private */
+    isGuest_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isGuest');
+      },
+    },
   },
 
   /** @private {boolean} */
@@ -111,7 +119,8 @@ Polymer({
    * @private
    */
   shouldShowDialogSeparator_: function() {
-    return this.languages != undefined && this.languages.enabled.length > 1;
+    return this.languages != undefined && this.languages.enabled.length > 1 &&
+        !this.isGuest_;
   },
 
   /**
@@ -403,11 +412,6 @@ Polymer({
       // TODO(michaelpg): The language selection should not be hidden, but
       // should show a policy indicator. crbug.com/648498
       if (this.isSecondaryUser_()) {
-        menu.querySelector('#uiLanguageItem').hidden = true;
-      }
-
-      // The UI language choice doesn't persist for guests.
-      if (loadTimeData.getBoolean('isGuest')) {
         menu.querySelector('#uiLanguageItem').hidden = true;
       }
     }

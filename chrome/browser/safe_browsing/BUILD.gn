@@ -99,12 +99,6 @@ jumbo_static_library("safe_browsing") {
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing:csd_proto",
       "//components/safe_browsing:safe_browsing",
-
-      # TODO(crbug/996380): This is needed because the DownloadProtectionService
-      # is being built on Android. Since we don't actually use any
-      # DownloadProtectionService features on Android, we should fix that
-      # dependency and move this to the 'safe_browsing_mode == 1' section.
-      "//components/safe_browsing:webprotect_proto",
       "//components/safe_browsing/browser",
       "//components/safe_browsing/common",
       "//components/safe_browsing/common:safe_browsing_prefs",
@@ -226,6 +220,7 @@ jumbo_static_library("safe_browsing") {
         "//components/content_settings/core/browser",
         "//components/language/core/common",
         "//components/prefs",
+        "//components/safe_browsing:webprotect_proto",
         "//components/safe_browsing/db",
         "//components/security_interstitials/content:security_interstitial_page",
         "//content/public/browser",

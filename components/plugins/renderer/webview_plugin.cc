@@ -148,6 +148,7 @@ v8::Local<v8::Object> WebViewPlugin::V8ScriptableObject(v8::Isolate* isolate) {
 
 void WebViewPlugin::UpdateAllLifecyclePhases(
     blink::WebWidget::LifecycleUpdateReason reason) {
+  DCHECK(web_view()->MainFrameWidget());
   web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(reason);
 }
 
@@ -184,6 +185,7 @@ void WebViewPlugin::UpdateGeometry(const WebRect& window_rect,
 
   if (static_cast<gfx::Rect>(window_rect) != rect_) {
     rect_ = window_rect;
+    DCHECK(web_view()->MainFrameWidget());
     web_view()->MainFrameWidget()->Resize(rect_.size());
   }
 
@@ -222,6 +224,7 @@ blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
     return blink::WebInputEventResult::kHandledSuppressed;
   }
   current_cursor_ = cursor;
+  DCHECK(web_view()->MainFrameWidget());
   blink::WebInputEventResult handled =
       web_view()->MainFrameWidget()->HandleInputEvent(
           blink::WebCoalescedInputEvent(event));
@@ -401,6 +404,7 @@ void WebViewPlugin::UpdatePluginForNewGeometry(
   // The delegate may have dirtied style and layout of the WebView.
   // See for example the resizePoster function in plugin_poster.html.
   // Run the lifecycle now so that it is clean.
+  DCHECK(web_view()->MainFrameWidget());
   web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::WebWidget::LifecycleUpdateReason::kOther);
 }

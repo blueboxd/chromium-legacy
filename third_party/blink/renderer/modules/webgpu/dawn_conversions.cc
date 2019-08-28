@@ -86,6 +86,10 @@ DawnCompareFunction AsDawnEnum<DawnCompareFunction>(
 template <>
 DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
     const WTF::String& webgpu_enum) {
+  if (webgpu_enum.IsNull()) {
+    return DAWN_TEXTURE_FORMAT_NONE;
+  }
+
   // Normal 8 bit formats
   if (webgpu_enum == "r8unorm") {
     return DAWN_TEXTURE_FORMAT_R8_UNORM;
@@ -231,6 +235,9 @@ DawnTextureDimension AsDawnEnum<DawnTextureDimension>(
 template <>
 DawnTextureViewDimension AsDawnEnum<DawnTextureViewDimension>(
     const WTF::String& webgpu_enum) {
+  if (webgpu_enum.IsNull()) {
+    return DAWN_TEXTURE_VIEW_DIMENSION_NONE;
+  }
   if (webgpu_enum == "2d") {
     return DAWN_TEXTURE_VIEW_DIMENSION_2D;
   }

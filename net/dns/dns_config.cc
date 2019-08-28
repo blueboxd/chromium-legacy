@@ -46,6 +46,10 @@ bool DnsConfig::operator==(const DnsConfig& d) const {
   return Equals(d);
 }
 
+bool DnsConfig::operator!=(const DnsConfig& d) const {
+  return !Equals(d);
+}
+
 bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
   return (nameservers == d.nameservers) &&
          (dns_over_tls_active == d.dns_over_tls_active) &&

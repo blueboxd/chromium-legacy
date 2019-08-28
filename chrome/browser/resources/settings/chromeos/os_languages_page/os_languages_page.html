@@ -225,14 +225,14 @@
       <cr-lazy-render id="menu">
         <template>
           <cr-action-menu class="complex" on-close="onCloseMenu_">
-            <cr-checkbox id="uiLanguageItem"
-                class="dropdown-item"
+            <cr-checkbox id="uiLanguageItem" class="dropdown-item"
+                hidden="[[isGuest_]]"
+                disabled="[[disableUILanguageCheckbox_(
+                    detailLanguage_, languages.prospectiveUILanguage)]]"
                 checked="[[isProspectiveUILanguage_(
                     detailLanguage_.language.code,
                     languages.prospectiveUILanguage)]]"
-                on-change="onUILanguageChange_"
-                disabled="[[disableUILanguageCheckbox_(
-                    detailLanguage_, languages.prospectiveUILanguage)]]">
+                on-change="onUILanguageChange_">
               <span>$i18n{displayInThisLanguage}</span>
               <iron-icon class="policy" icon="cr20:domain" hidden$="[[
                   !detailLanguage_.language.isProhibitedLanguage]]">

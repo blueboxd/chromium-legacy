@@ -5176,27 +5176,21 @@ const CSSValue* ScrollPaddingBlockEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingBlockStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingBottom::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingBottom::CSSValueFromComputedStyleInternal(
@@ -5212,27 +5206,21 @@ const CSSValue* ScrollPaddingInlineEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingInlineStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingLeft::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingLeft::CSSValueFromComputedStyleInternal(
@@ -5248,9 +5236,7 @@ const CSSValue* ScrollPaddingRight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingRight::CSSValueFromComputedStyleInternal(
@@ -5266,9 +5252,7 @@ const CSSValue* ScrollPaddingTop::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingTop::CSSValueFromComputedStyleInternal(

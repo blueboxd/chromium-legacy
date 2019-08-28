@@ -43,7 +43,7 @@ if (is_chromeos) {
     deps = [
       ":cr_network_list_types",
       ":cr_onc_types",
-      "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior",
+      "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
       "//ui/webui/resources/js:assert",
     ]
   }

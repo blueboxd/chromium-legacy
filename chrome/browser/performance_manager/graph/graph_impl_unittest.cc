@@ -17,104 +17,103 @@
 
 namespace performance_manager {
 
-TEST(GraphImplTest, SafeCasting) {
-  GraphImpl graph_impl;
-  const Graph* graph = &graph_impl;
-  EXPECT_EQ(&graph_impl, GraphImpl::FromGraph(graph));
+class GraphImplTest : public testing::Test {
+ public:
+  void TearDown() override { graph_impl_.TearDown(); }
+
+ protected:
+  GraphImpl graph_impl_;
+};
+
+TEST_F(GraphImplTest, SafeCasting) {
+  const Graph* graph = &graph_impl_;
+  EXPECT_EQ(&graph_impl_, GraphImpl::FromGraph(graph));
 }
 
-TEST(GraphImplTest, FindOrCreateSystemNode) {
-  GraphImpl graph;
-
-  SystemNodeImpl* system_node = graph.FindOrCreateSystemNodeImpl();
+TEST_F(GraphImplTest, FindOrCreateSystemNode) {
+  SystemNodeImpl* system_node = graph_impl_.FindOrCreateSystemNodeImpl();
 
   // A second request should return the same instance.
-  EXPECT_EQ(system_node, graph.FindOrCreateSystemNodeImpl());
+  EXPECT_EQ(system_node, graph_impl_.FindOrCreateSystemNodeImpl());
 }
 
-TEST(GraphImplTest, GetProcessNodeByPid) {
-  GraphImpl graph;
-
+TEST_F(GraphImplTest, GetProcessNodeByPid) {
   TestNodeWrapper<ProcessNodeImpl> process =
-      TestNodeWrapper<ProcessNodeImpl>::Create(&graph);
+      TestNodeWrapper<ProcessNodeImpl>::Create(&graph_impl_);
   EXPECT_EQ(base::kNullProcessId, process->process_id());
   EXPECT_FALSE(process->process().IsValid());
 
   const base::Process self = base::Process::Current();
 
-  EXPECT_EQ(nullptr, graph.GetProcessNodeByPid(self.Pid()));
+  EXPECT_EQ(nullptr, graph_impl_.GetProcessNodeByPid(self.Pid()));
   process->SetProcess(self.Duplicate(), base::Time::Now());
   EXPECT_TRUE(process->process().IsValid());
   EXPECT_EQ(self.Pid(), process->process_id());
-  EXPECT_EQ(process.get(), graph.GetProcessNodeByPid(self.Pid()));
+  EXPECT_EQ(process.get(), graph_impl_.GetProcessNodeByPid(self.Pid()));
 
   // Validate that an exited process isn't removed (yet).
   process->SetProcessExitStatus(0xCAFE);
   EXPECT_FALSE(process->process().IsValid());
   EXPECT_EQ(self.Pid(), process->process_id());
-  EXPECT_EQ(process.get(), graph.GetProcessNodeByPid(self.Pid()));
+  EXPECT_EQ(process.get(), graph_impl_.GetProcessNodeByPid(self.Pid()));
 
   process.reset();
 
-  EXPECT_EQ(nullptr, graph.GetProcessNodeByPid(self.Pid()));
+  EXPECT_EQ(nullptr, graph_impl_.GetProcessNodeByPid(self.Pid()));
 }
 
-TEST(GraphImplTest, PIDReuse) {
+TEST_F(GraphImplTest, PIDReuse) {
   // This test emulates what happens on Windows under aggressive PID reuse,
   // where a process termination notification can be delayed until after the
   // PID has been reused for a new process.
-  GraphImpl graph;
-
   static base::Process self = base::Process::Current();
 
   TestNodeWrapper<ProcessNodeImpl> process1 =
-      TestNodeWrapper<ProcessNodeImpl>::Create(&graph);
+      TestNodeWrapper<ProcessNodeImpl>::Create(&graph_impl_);
   TestNodeWrapper<ProcessNodeImpl> process2 =
-      TestNodeWrapper<ProcessNodeImpl>::Create(&graph);
+      TestNodeWrapper<ProcessNodeImpl>::Create(&graph_impl_);
 
   process1->SetProcess(self.Duplicate(), base::Time::Now());
-  EXPECT_EQ(process1.get(), graph.GetProcessNodeByPid(self.Pid()));
+  EXPECT_EQ(process1.get(), graph_impl_.GetProcessNodeByPid(self.Pid()));
 
   // First process exits, but hasn't been deleted yet.
   process1->SetProcessExitStatus(0xCAFE);
-  EXPECT_EQ(process1.get(), graph.GetProcessNodeByPid(self.Pid()));
+  EXPECT_EQ(process1.get(), graph_impl_.GetProcessNodeByPid(self.Pid()));
 
   // The second registration for the same PID should override the first one.
   process2->SetProcess(self.Duplicate(), base::Time::Now());
-  EXPECT_EQ(process2.get(), graph.GetProcessNodeByPid(self.Pid()));
+  EXPECT_EQ(process2.get(), graph_impl_.GetProcessNodeByPid(self.Pid()));
 
   // The destruction of the first process node shouldn't clear the PID
   // registration.
   process1.reset();
-  EXPECT_EQ(process2.get(), graph.GetProcessNodeByPid(self.Pid()));
+  EXPECT_EQ(process2.get(), graph_impl_.GetProcessNodeByPid(self.Pid()));
 }
 
-TEST(GraphImplTest, GetAllCUsByType) {
-  GraphImpl graph;
-  MockMultiplePagesInSingleProcessGraph mock_graph(&graph);
+TEST_F(GraphImplTest, GetAllCUsByType) {
+  MockMultiplePagesInSingleProcessGraph mock_graph(&graph_impl_);
 
-  std::vector<ProcessNodeImpl*> processes = graph.GetAllProcessNodeImpls();
+  std::vector<ProcessNodeImpl*> processes =
+      graph_impl_.GetAllProcessNodeImpls();
   ASSERT_EQ(1u, processes.size());
   EXPECT_NE(nullptr, processes[0]);
 
-  std::vector<FrameNodeImpl*> frames = graph.GetAllFrameNodeImpls();
+  std::vector<FrameNodeImpl*> frames = graph_impl_.GetAllFrameNodeImpls();
   ASSERT_EQ(2u, frames.size());
   EXPECT_NE(nullptr, frames[0]);
   EXPECT_NE(nullptr, frames[1]);
 
-  std::vector<PageNodeImpl*> pages = graph.GetAllPageNodeImpls();
+  std::vector<PageNodeImpl*> pages = graph_impl_.GetAllPageNodeImpls();
   ASSERT_EQ(2u, pages.size());
   EXPECT_NE(nullptr, pages[0]);
   EXPECT_NE(nullptr, pages[1]);
 }
 
-TEST(GraphImplTest, SerializationId) {
-  GraphImpl graph;
-
+TEST_F(GraphImplTest, SerializationId) {
   EXPECT_EQ(0u, NodeBase::GetSerializationId(nullptr));
 
   TestNodeWrapper<ProcessNodeImpl> process =
-      TestNodeWrapper<ProcessNodeImpl>::Create(&graph);
+      TestNodeWrapper<ProcessNodeImpl>::Create(&graph_impl_);
 
   // The serialization ID should be non-zero, and should be stable for a given
   // node.
@@ -122,7 +121,7 @@ TEST(GraphImplTest, SerializationId) {
   EXPECT_NE(0u, id);
   EXPECT_EQ(id, NodeBase::GetSerializationId(process.get()));
 
-  SystemNodeImpl* system = graph.FindOrCreateSystemNodeImpl();
+  SystemNodeImpl* system = graph_impl_.FindOrCreateSystemNodeImpl();
 
   // Different nodes should be assigned different IDs.
   EXPECT_NE(id, NodeBase::GetSerializationId(system));
@@ -148,7 +147,7 @@ using testing::Invoke;
 
 }  // namespace
 
-TEST(GraphImplTest, ObserverWorks) {
+TEST_F(GraphImplTest, ObserverWorks) {
   std::unique_ptr<GraphImpl> graph = base::WrapUnique(new GraphImpl());
   Graph* raw_graph = graph.get();
 
@@ -162,6 +161,7 @@ TEST(GraphImplTest, ObserverWorks) {
   EXPECT_CALL(obs, OnBeforeGraphDestroyed(raw_graph))
       .WillOnce(testing::Invoke(
           [&obs](Graph* graph) { graph->RemoveGraphObserver(&obs); }));
+  graph->TearDown();
   graph.reset();
 }
 
@@ -188,7 +188,7 @@ class Foo : public GraphOwned {
 
 }  // namespace
 
-TEST(GraphImplTest, GraphOwned) {
+TEST_F(GraphImplTest, GraphOwned) {
   int destructor_count = 0;
 
   std::unique_ptr<Foo> foo1 = base::WrapUnique(new Foo(&destructor_count));
@@ -221,6 +221,7 @@ TEST(GraphImplTest, GraphOwned) {
 
   // Now destroy the graph and expect the other object to have been torn down
   // too.
+  graph->TearDown();
   graph.reset();
   EXPECT_EQ(2, destructor_count);
 }

@@ -55,6 +55,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
+#include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/external_popup_menu.h"
@@ -522,7 +523,12 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
   LayerTreeView* layer_tree_view = InitializeLayerTreeView();
-  web_widget->SetAnimationHost(layer_tree_view->animation_host());
+
+  // TODO(https://crbug.com/995981): This conditional is temporary logic to
+  // handle the case of remote main frame RenderWidgets [which shouldn't exist
+  // to begin with].
+  if (web_widget)
+    web_widget->SetAnimationHost(layer_tree_view->animation_host());
 
   blink::scheduler::WebThreadScheduler* main_thread_scheduler = nullptr;
   if (render_thread_impl)
@@ -721,21 +727,17 @@ void RenderWidget::PrepareForClose() {
 }
 
 void RenderWidget::OnSynchronizeVisualProperties(
-    const VisualProperties& original_params) {
-  // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
-  // RenderWidget should also be destroyed, and this conditional should not be
-  // necessary.
-  if (!GetWebWidget())
-    return;
-
+    const VisualProperties& visual_properties_from_browser) {
   TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
 
-  VisualProperties params = original_params;
+  VisualProperties visual_properties = visual_properties_from_browser;
   // Web tests can override the device scale factor in the renderer.
   if (device_scale_factor_for_testing_) {
-    params.screen_info.device_scale_factor = device_scale_factor_for_testing_;
-    params.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
-        params.new_size, params.screen_info.device_scale_factor);
+    visual_properties.screen_info.device_scale_factor =
+        device_scale_factor_for_testing_;
+    visual_properties.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
+        visual_properties.new_size,
+        visual_properties.screen_info.device_scale_factor);
   }
 
   // Inform the rendering thread of the color space indicating the presence of
@@ -749,46 +751,47 @@ void RenderWidget::OnSynchronizeVisualProperties(
   {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
     if (render_thread)
-      render_thread->SetRenderingColorSpace(params.screen_info.color_space);
+      render_thread->SetRenderingColorSpace(
+          visual_properties.screen_info.color_space);
   }
 
   if (delegate()) {
-    if (size_ != params.new_size) {
+    if (size_ != visual_properties.new_size) {
       // Only hide popups when the size changes. Eg https://crbug.com/761908.
       delegate()->CancelPagePopupForWidget();
     }
 
-    if (display_mode_ != params.display_mode) {
-      display_mode_ = params.display_mode;
-      delegate()->ApplyNewDisplayModeForWidget(params.display_mode);
+    if (display_mode_ != visual_properties.display_mode) {
+      display_mode_ = visual_properties.display_mode;
+      delegate()->ApplyNewDisplayModeForWidget(visual_properties.display_mode);
     }
 
     bool auto_resize_mode_changed =
-        auto_resize_mode_ != params.auto_resize_enabled;
-    auto_resize_mode_ = params.auto_resize_enabled;
-    min_size_for_auto_resize_ = params.min_size_for_auto_resize;
-    max_size_for_auto_resize_ = params.max_size_for_auto_resize;
+        auto_resize_mode_ != visual_properties.auto_resize_enabled;
+    auto_resize_mode_ = visual_properties.auto_resize_enabled;
+    min_size_for_auto_resize_ = visual_properties.min_size_for_auto_resize;
+    max_size_for_auto_resize_ = visual_properties.max_size_for_auto_resize;
 
     if (auto_resize_mode_) {
       gfx::Size min_auto_size = min_size_for_auto_resize_;
       gfx::Size max_auto_size = max_size_for_auto_resize_;
       if (compositor_deps_->IsUseZoomForDSFEnabled()) {
         min_auto_size = gfx::ScaleToCeiledSize(
-            min_auto_size, params.screen_info.device_scale_factor);
+            min_auto_size, visual_properties.screen_info.device_scale_factor);
         max_auto_size = gfx::ScaleToCeiledSize(
-            max_auto_size, params.screen_info.device_scale_factor);
+            max_auto_size, visual_properties.screen_info.device_scale_factor);
       }
       delegate()->ApplyAutoResizeLimitsForWidget(min_auto_size, max_auto_size);
     } else if (auto_resize_mode_changed) {
       delegate()->DisableAutoResizeForWidget();
-      if (params.new_size.IsEmpty())
+      if (visual_properties.new_size.IsEmpty())
         return;
     }
 
     browser_controls_shrink_blink_size_ =
-        params.browser_controls_shrink_blink_size;
-    top_controls_height_ = params.top_controls_height;
-    bottom_controls_height_ = params.bottom_controls_height;
+        visual_properties.browser_controls_shrink_blink_size;
+    top_controls_height_ = visual_properties.top_controls_height;
+    bottom_controls_height_ = visual_properties.bottom_controls_height;
   }
 
   bool ignore_resize_ipc = false;
@@ -799,9 +802,9 @@ void RenderWidget::OnSynchronizeVisualProperties(
     // TODO(danakj): Does the browser actually change DSF inside a web test??
     // TODO(danakj): Isn't the display mode check redundant with the fullscreen
     // one?
-    if (params.is_fullscreen_granted == is_fullscreen_granted_ &&
-        params.display_mode == display_mode_ &&
-        params.screen_info.device_scale_factor ==
+    if (visual_properties.is_fullscreen_granted == is_fullscreen_granted_ &&
+        visual_properties.display_mode == display_mode_ &&
+        visual_properties.screen_info.device_scale_factor ==
             screen_info_.device_scale_factor)
       ignore_resize_ipc = true;
   }
@@ -817,7 +820,8 @@ void RenderWidget::OnSynchronizeVisualProperties(
   // things other than the size if we are in sync resize mode - if the emulator
   // is even used in sync resize tests. It probably isn't though, so either way
   // it'd be good to get the emulator out of this block (maybe by overwriting
-  // some of |params| in sync resize mode instead of just skipping the emulator.
+  // some of |visual_properties| in sync resize mode instead of just
+  // skipping the emulator.
   if (!ignore_resize_ipc) {
     if (screen_metrics_emulator_) {
       // This will call our SynchronizeVisualProperties() method with a
@@ -826,7 +830,8 @@ void RenderWidget::OnSynchronizeVisualProperties(
       // bit unclear to do this with the full structure. Anything it does not
       // modify can be consumed directly here instead of in
       // SynchronizeVisualProperties().
-      screen_metrics_emulator_->OnSynchronizeVisualProperties(params);
+      screen_metrics_emulator_->OnSynchronizeVisualProperties(
+          visual_properties);
     } else {
       if (!delegate()) {
         // The main frame controls the page scale factor, from blink. For other
@@ -835,17 +840,18 @@ void RenderWidget::OnSynchronizeVisualProperties(
         // page scale factor outside the main frame, the compositor does in
         // order to produce its output at the correct scale.
         layer_tree_view_->SetExternalPageScaleFactor(
-            params.page_scale_factor, params.is_pinch_gesture_active);
+            visual_properties.page_scale_factor,
+            visual_properties.is_pinch_gesture_active);
         // Store the value to give to any new RenderFrameProxy that is
         // registered.
-        page_scale_factor_from_mainframe_ = params.page_scale_factor;
+        page_scale_factor_from_mainframe_ = visual_properties.page_scale_factor;
         // Similarly, only the main frame knows when a pinch gesture is active,
         // but this information is needed in subframes so they can throttle
         // re-rastering in the same manner as the main frame.
         // |is_pinch_gesture_active| follows the same path to the subframe
         // compositor(s) as |page_scale_factor|.
         is_pinch_gesture_active_from_mainframe_ =
-            params.is_pinch_gesture_active;
+            visual_properties.is_pinch_gesture_active;
         // Push the page scale factor down to any child RenderWidgets via our
         // child proxy frames.
         // TODO(danakj): This ends up setting the page scale factor in the
@@ -855,13 +861,14 @@ void RenderWidget::OnSynchronizeVisualProperties(
         // (such as in RenderViewHost) and distribute it to each frame-hosted
         // RenderWidget from there.
         for (auto& child_proxy : render_frame_proxies_) {
-          child_proxy.OnPageScaleFactorChanged(params.page_scale_factor,
-                                               params.is_pinch_gesture_active);
+          child_proxy.OnPageScaleFactorChanged(
+              visual_properties.page_scale_factor,
+              visual_properties.is_pinch_gesture_active);
         }
       }
 
       gfx::Size old_visible_viewport_size = visible_viewport_size_;
-      SynchronizeVisualProperties(params);
+      SynchronizeVisualProperties(visual_properties);
       if (old_visible_viewport_size != visible_viewport_size_) {
         for (auto& render_frame : render_frames_)
           render_frame.ResetHasScrolledFocusedEditableIntoView();
@@ -873,7 +880,7 @@ void RenderWidget::OnSynchronizeVisualProperties(
   // when the focused node is inside an OOPIF. This code path where
   // scroll_focused_node_into_view is set is used only for WebView, crbug
   // 939118 tracks fixing webviews to not use scroll_focused_node_into_view.
-  if (delegate() && params.scroll_focused_node_into_view)
+  if (delegate() && visual_properties.scroll_focused_node_into_view)
     delegate()->ScrollFocusedNodeIntoViewForWidget();
 }
 
@@ -1038,8 +1045,9 @@ void RenderWidget::SetFocus(bool enable) {
   for (auto& observer : render_frames_)
     observer.RenderWidgetSetFocus(enable);
 
-  if (delegate())
-    delegate()->DidChangeFocusForWidget();
+  // Notify all BrowserPlugins of the RenderView's focus state.
+  if (BrowserPluginManager::Get())
+    BrowserPluginManager::Get()->UpdateFocusState();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1135,6 +1143,11 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
 
 void RenderWidget::DoRequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback) {
+  // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
+  // RenderWidget should also be destroyed, and this DCHECK should not be
+  // necessary.
+  DCHECK(GetWebWidget());
+
   // TODO(jonross): have this generated by the LayerTreeFrameSink itself, which
   // would then handle binding.
   mojom::RenderFrameMetadataObserverPtr ptr;
@@ -1572,6 +1585,10 @@ void RenderWidget::ResizeWebWidget() {
                                          browser_controls_shrink_blink_size_);
     return;
   }
+  // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
+  // RenderWidget should also be destroyed, and this DCHECK should not be
+  // necessary.
+  DCHECK(GetWebWidget());
   GetWebWidget()->Resize(size);
 }
 
@@ -1609,28 +1626,29 @@ void RenderWidget::UpdateZoom(double zoom_level) {
     plugin.OnZoomLevelChanged(zoom_level);
 }
 
-void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
-
+void RenderWidget::SynchronizeVisualProperties(
+    const VisualProperties& visual_properties) {
   gfx::Size new_compositor_viewport_pixel_size =
-      params.auto_resize_enabled
-          ? gfx::ScaleToCeiledSize(size_,
-                                   params.screen_info.device_scale_factor)
-          : params.compositor_viewport_pixel_size;
-  UpdateSurfaceAndScreenInfo(params.local_surface_id_allocation.value_or(
-                                 viz::LocalSurfaceIdAllocation()),
-                             new_compositor_viewport_pixel_size,
-                             params.screen_info);
-  UpdateCaptureSequenceNumber(params.capture_sequence_number);
+      visual_properties.auto_resize_enabled
+          ? gfx::ScaleToCeiledSize(
+                size_, visual_properties.screen_info.device_scale_factor)
+          : visual_properties.compositor_viewport_pixel_size;
+  UpdateSurfaceAndScreenInfo(
+      visual_properties.local_surface_id_allocation.value_or(
+          viz::LocalSurfaceIdAllocation()),
+      new_compositor_viewport_pixel_size, visual_properties.screen_info);
+  UpdateCaptureSequenceNumber(visual_properties.capture_sequence_number);
   layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
-      params.top_controls_height, params.bottom_controls_height,
-      params.browser_controls_shrink_blink_size);
+      visual_properties.top_controls_height,
+      visual_properties.bottom_controls_height,
+      visual_properties.browser_controls_shrink_blink_size);
 
-  UpdateZoom(params.zoom_level);
+  UpdateZoom(visual_properties.zoom_level);
 
-  if (!params.auto_resize_enabled) {
-    visible_viewport_size_ = params.visible_viewport_size;
-    display_mode_ = params.display_mode;
-    size_ = params.new_size;
+  if (!visual_properties.auto_resize_enabled) {
+    visible_viewport_size_ = visual_properties.visible_viewport_size;
+    display_mode_ = visual_properties.display_mode;
+    size_ = visual_properties.new_size;
 
     ResizeWebWidget();
 
@@ -1647,7 +1665,7 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
       delegate()->ResizeVisualViewportForWidget(visual_viewport_size);
 
     // NOTE: We may have entered fullscreen mode without changing our size.
-    SetIsFullscreen(params.is_fullscreen_granted);
+    SetIsFullscreen(visual_properties.is_fullscreen_granted);
   }
 }
 
@@ -1999,20 +2017,7 @@ blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
   if (closing_)
     return nullptr;
 
-  blink::WebWidget* widget;
-  if (delegate()) {
-    // Main frame WebFrameWidgets are held by the delegate, the internal widget
-    // points directly to the WebView.
-    // TODO(ekaramad): We should drop IPCs when |is_frozen_| instead of
-    // handling them and finding a null here. However there is also the case
-    // of the frame being detached without the widget being frozen to be
-    // resolved (https://crbug.com/906340). So for now this can return null.
-    widget = delegate()->GetWebWidgetForWidget();
-  } else {
-    // Subframes always have a WebFrameWidget themselves.
-    widget = webwidget_internal_;
-  }
-  return static_cast<blink::WebFrameWidget*>(widget);
+  return static_cast<blink::WebFrameWidget*>(webwidget_internal_);
 }
 
 void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
@@ -2564,6 +2569,15 @@ void RenderWidget::SetHidden(bool hidden) {
 }
 
 void RenderWidget::SetIsFullscreen(bool fullscreen) {
+  // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
+  // RenderWidget should also be destroyed, and this conditional should not be
+  // necessary.
+  // We intentionally avoid setting internal state so that the next time visual
+  // properties are synchronized, state will be correctly propagated to the
+  // WebWidget.
+  if (!GetWebWidget())
+    return;
+
   if (fullscreen == is_fullscreen_granted_)
     return;
   is_fullscreen_granted_ = fullscreen;
@@ -3704,11 +3718,6 @@ void RenderWidget::DidNavigate() {
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {
-  if (delegate()) {
-    blink::WebWidget* delegate_widget = delegate()->GetWebWidgetForWidget();
-    if (delegate_widget)
-      return delegate_widget;
-  }
   return webwidget_internal_;
 }
 
@@ -3878,6 +3887,11 @@ base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
 }
 
 void RenderWidget::SetWebWidgetInternal(blink::WebWidget* web_widget) {
+  // TODO(https://crbug.com/995981): This method should not need to exist, since
+  // we should be creating and destroying a RenderWidget along with the
+  // WebWidget.
+  if (web_widget)
+    web_widget->SetAnimationHost(layer_tree_view_->animation_host());
   webwidget_internal_ = web_widget;
 }
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -38,6 +39,7 @@ const char kAddThirdPartyVpnMessage[] = "addThirdPartyVpn";
 const char kConfigureThirdPartyVpnMessage[] = "configureThirdPartyVpn";
 const char kRequestArcVpnProviders[] = "requestArcVpnProviders";
 const char kSendArcVpnProviders[] = "sendArcVpnProviders";
+const char kShowCellularSetupUI[] = "showCellularSetupUI";
 const char kRequestGmsCoreNotificationsDisabledDeviceNames[] =
     "requestGmsCoreNotificationsDisabledDeviceNames";
 const char kSendGmsCoreNotificationsDisabledDeviceNames[] =
@@ -104,6 +106,10 @@ void InternetHandler::RegisterMessages() {
       base::BindRepeating(
           &InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kShowCellularSetupUI,
+      base::BindRepeating(&InternetHandler::ShowCellularSetupUI,
+                          base::Unretained(this)));
 }
 
 void InternetHandler::OnJavascriptAllowed() {}
@@ -225,6 +231,15 @@ void InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames(
     const base::ListValue* args) {
   AllowJavascript();
   SetGmsCoreNotificationsDisabledDeviceNames();
+}
+
+void InternetHandler::ShowCellularSetupUI(const base::ListValue* args) {
+  std::string guid;
+  if (args->GetSize() < 1 || !args->GetString(0, &guid)) {
+    NOTREACHED() << "Invalid args for: " << kConfigureThirdPartyVpnMessage;
+    return;
+  }
+  chromeos::NetworkConnect::Get()->ShowMobileSetup(guid);
 }
 
 void InternetHandler::SetArcVpnProviders(

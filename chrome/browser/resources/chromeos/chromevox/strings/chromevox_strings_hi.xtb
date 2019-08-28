@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">खोजें</translation>
 <translation id="1385214448885562192">स्वीकार करने के लिए enter या रद्द करने के लिए escape, अगले के लिए down और पिछले के लिए up दबाएं.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">रिच टेक्स्ट की विशेषताएं बताएं</translation>
 <translation id="1405567553485452995">हल्का हरा</translation>
 <translation id="1417889266572670458">गहरा नीला</translation>
 <translation id="1431911867058218151">बेर का रंग</translation>
@@ -156,7 +155,7 @@
 <translation id="2100350898815792233">सभी विराम चिह्न</translation>
 <translation id="2110480898214777136">किसी पेज, संवाद या अन्य कंटेनर के भीतर शुरुआत से अंत तक ले जाएं या अंत से शुरुआत तक ले जाएं</translation>
 <translation id="2119965627982867824">spnbtn</translation>
-<translation id="2121067395472282800">ऐक्सेस कुंजी:<ph name="KEY" /></translation>
+<translation id="2121067395472282800">एक्सेस कुंजी:<ph name="KEY" /></translation>
 <translation id="2127747486437921899">इटैलिक</translation>
 <translation id="2138345533858834403">स्क्रीन के ऊपर मौजूद ChromeVox पैनल में रीफ़्रेश
         किए जा सकने वाले ब्रेल प्रदर्शन के आउटपुट की नकल पेश करता है.</translation>
@@ -668,7 +667,7 @@
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ग्राफ़िक्स चिह्न</translation>
 <translation id="5637871198229500030">कोई पिछली टेबल नहीं.</translation>
-<translation id="5653397561111110475">Chromebook टच स्क्रीन ऐक्सेस-योग्यता सुविधाओं का उपयोग करें</translation>
+<translation id="5653397561111110475">Chromebook टच स्क्रीन सुलभता सुविधाओं का इस्तेमाल करें</translation>
 <translation id="5655682562155942719">आदेशों पर जाएं</translation>
 <translation id="56637627897541303">लेख क्षेत्र</translation>
 <translation id="5678161956734658133">mled</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">हल्का स्लेटी</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{बुलेट}one{# बुलेट}other{# बुलेट}}</translation>
 <translation id="6355910664415701303">कोई पिछला सूची आइटम नहीं.</translation>
-<translation id="6360318852623800555">रिच टेक्स्ट विशेषताएं</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">पिछला शीर्षक</translation>
 <translation id="6376999910001533545">मरून</translation>
@@ -1116,7 +1114,7 @@
 <translation id="844681116543532394">कोई पिछला चेकबॉक्स नहीं.</translation>
 <translation id="8446884382197647889">ज़्यादा जानें</translation>
 <translation id="8455868257606149352">अधिकतम <ph name="X" /></translation>
-<translation id="84575901236241018">ऐक्सेस कुंजी है, <ph name="KEY" /></translation>
+<translation id="84575901236241018">एक्सेस कुंजी है, <ph name="KEY" /></translation>
 <translation id="847154984256717791">व्यस्त</translation>
 <translation id="8476408756881832830">जब ChromeVox बोल रहा हो, तब प्लेबैक रोकें</translation>
 <translation id="8476508772960940536">विंडो अवलोकन</translation>

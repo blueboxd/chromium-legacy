@@ -415,6 +415,12 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Achtung: Es wird nicht empfohlen, die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version einer Kiosk-App zu überlassen, da das Gerät dann unter Umständen Softwareupdates und wichtige Sicherheitspatches nicht erhält. Wird die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version abgegeben, besteht eventuell ein Risiko für die Nutzer.</translation>
 <translation id="1675002386741412210">Unterstützt von:</translation>
+<translation id="1695708467571967752">Mit dieser Richtlinie wird festgelegt, ob Nutzer Medien wiedergeben können, wenn das Gerät gesperrt ist.
+
+      Wird sie auf "false" gesetzt, werden die Mediensteuerelemente auf dem Sperrbildschirm deaktiviert.
+
+      Wird sie auf "true" gesetzt oder nicht konfiguriert, werden die Mediensteuerelemente auf dem Sperrbildschirm angezeigt, wenn Nutzer das Gerät während der Medienwiedergabe sperren.
+      </translation>
 <translation id="1700811900332333712">Powerwash-Anfrage durch Gerät zulassen</translation>
 <translation id="1708496595873025510">Beschränkung für Abruf des Varianten-Seeds festlegen</translation>
 <translation id="1717817358640580294">Wenn die Richtlinie nicht konfiguriert ist und das Chrome Cleanup Tool unerwünschte Software findet, kann es Metadaten betreffend den Scan an Google senden. Dies geschieht in Übereinstimmung mit der über "SafeBrowsingExtendedReportingEnabled" festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Er kann die Ergebnisse der Bereinigung mit Google teilen, damit unerwünschte Software zukünftig besser erkannt wird. Diese Ergebnisse enthalten Dateimetadaten, automatisch installierte Erweiterungen und Registrierungsschlüssel, wie es im Whitepaper zum Datenschutz bei Chrome beschrieben ist.
@@ -2892,6 +2898,7 @@ Durch Festlegen dieser Richtlinie bestimmen Sie, ob sich ein Nutzer in <ph name=
 
           Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Android-Apps können nicht zur Verwendung eines Proxys gezwungen werden. 
 Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf freiwilliger Basis übernommen werden:
 
@@ -3045,15 +3052,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6731757988219967594">Websites auf oberster Ebene (aber nicht eingebettete iFrames) mit Inhalten nur für Erwachsene filtern</translation>
 <translation id="6734521799274931721">Steuert die Verfügbarkeit von Netzwerkfreigaben unter Chrome OS</translation>
 <translation id="6735701345096330595">Aktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>
-<translation id="673699536430961464">Mit dieser Einstellung können Nutzer nach der Anmeldung auf ihrem <ph name="PRODUCT_OS_NAME" />-Gerät im Inhaltsbereich des Browserfensters zwischen Google-Konten wechseln.
-
-      Wenn diese Richtlinie auf "false" festgelegt ist, ist die Anmeldung in einem anderen Konto im Inhaltsbereich eines Browsers, der nicht im Inkognitomodus ist, nicht erlaubt.
-
-      Wenn diese Richtlinie nicht oder auf "true" festgelegt ist, wird das Standardverhalten verwendet: Die Anmeldung in einem anderen Konto aus dem Inhaltsbereich eines Browsers ist dann erlaubt; hiervon ausgenommen sind jedoch Konten für Kinder, bei denen die Anmeldung für den Inhaltsbereich eines Browsers, der nicht im Inkognitomodus ist, blockiert wird.
-
-      Falls die Anmeldung in einem anderen Konto über den Inkognitomodus nicht erlaubt ist, können Sie diesen Modus mithilfe der IncognitoModeAvailability-Richtlinie blockieren.
-
-      Hinweis: Nutzer können durch Blockieren von Cookies auf Google-Dienste, die nicht authentifiziert sind, zugreifen.</translation>
 <translation id="6757438632136860443">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" gestattet ist.
 
           Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>
@@ -3887,6 +3885,7 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8312129124898414409">Ermöglicht Ihnen, festzulegen, ob die Schlüsselgenerierung für Websites zugelassen wird. Die Schlüsselgenerierung kann entweder für alle Websites zugelassen oder für alle Websites verboten werden.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird "BlockKeygen" verwendet, kann jedoch vom Nutzer geändert werden.</translation>
+<translation id="8314214821702356835">Erlaubt es Nutzern, Medien wiederzugeben, während das Gerät gesperrt ist</translation>
 <translation id="8320149248919453401">Akkulademodus</translation>
 <translation id="8329984337216493753">Diese Richtlinie ist nur im Händlermodus aktiv.
 
@@ -4314,7 +4313,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden
 <translation id="9152473318295429890">Kontextbezogene Vorschläge ähnlicher Webseiten aktivieren</translation>
 <translation id="9153446010242995516">Es wird ein Rollback durchgeführt und die Zielversion beibehalten, falls die Version des Betriebssystems neuer ist als die der Zielversion. Es wird nach Möglichkeit versucht, die Einstellungen auf Geräteebene (einschließlich der Anmeldedaten für das Netzwerk) während des Prozesses zu erhalten. Das Rollback wird jedoch mit einem vollständigen Powerwash durchgeführt, auch wenn das Wiederherstellen von Daten nicht möglich ist, weil rückwärtsinkompatible Änderungen vorliegen oder die Zielversion dies nicht unterstützt.
 Auf <ph name="PRODUCT_OS_NAME" />-Version 75 und höher unterstützt. Bei älteren Clients bedeutet dieser Wert, dass das Rollback deaktiviert ist.</translation>
-<translation id="9158929520101169054">Mehrfachanmeldung im Browser zulassen</translation>
 <translation id="9159126470527871268">Nutzer benachrichtigen, dass <ph name="PRODUCT_NAME" /> neu gestartet werden muss oder ein <ph name="PRODUCT_OS_NAME" />-Gerät neu gestartet werden muss, um ein ausstehendes Update durchzuführen.
 
       Mit dieser Richtlinieneinstellung kann der Nutzer durch Benachrichtigungen informiert werden, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist. Wenn die Richtlinie nicht festgelegt ist, wird dem Nutzer in <ph name="PRODUCT_NAME" /> durch kleinere Menüänderungen angezeigt, dass ein Neustart erforderlich ist. In <ph name="PRODUCT_OS_NAME" /> wird dies über eine Benachrichtigung in der Taskleiste angezeigt. Wenn die Richtlinie auf "Recommended" (Empfohlen) festgelegt ist, wird dem Nutzer in einer wiederkehrenden Warnung angezeigt, dass ein Neustart empfohlen wird. Der Nutzer kann diese Warnung schließen, um den Neustart zu verschieben. Wenn die Richtlinie auf "Required" (Erforderlich) festgelegt ist, wird dem Nutzer in einer wiederkehrenden Warnung angezeigt, dass nach Ablauf des Benachrichtigungszeitraums ein Neustart des Browsers erzwungen wird. Dieser Zeitraum beträgt standardmäßig sieben Tage für <ph name="PRODUCT_NAME" /> und vier Tage für <ph name="PRODUCT_OS_NAME" /> und kann über die <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-Richtlinieneinstellung konfiguriert werden.

@@ -192,7 +192,8 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       int render_process_id,
       content::ContentBrowserClient::URLLoaderFactoryType type,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client);
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client);
 
   // Any request which requires authentication to complete will be bounced
   // through this method.

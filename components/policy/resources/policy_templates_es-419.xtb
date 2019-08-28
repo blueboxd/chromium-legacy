@@ -414,6 +414,12 @@
 
       Advertencia: No se recomienda delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> a una Aplicación de kiosko ya que puede evitar que el dispositivo reciba actualizaciones de software y correcciones de seguridad críticas. Delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> puede poner en riesgo a los usuarios.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
+<translation id="1695708467571967752">Esta política controla si los usuarios pueden reproducir contenido multimedia cuando está bloqueado el dispositivo.
+
+      Si se establece como falsa, se inhabilitan los controles multimedia que se encuentran en la pantalla bloqueada.
+
+      Si se establece como verdadera o no se establece, se mostrarán los controles multimedia en la pantalla bloqueada cuando el usuario bloquea el dispositivo mientras se está reproduciendo contenido multimedia.
+      </translation>
 <translation id="1700811900332333712">Permite que el dispositivo solicite Powerwash</translation>
 <translation id="1708496595873025510">Establece la restricción en la obtención del valor de inicialización de las variaciones.</translation>
 <translation id="1717817358640580294">Si no se establece, en caso de que "Limpiar Chrome" detecte software no deseado, es posible que informe metadatos sobre el análisis a Google en conformidad con la política establecida por SafeBrowsingExtendedReportingEnabled. Además, "Limpiar Chrome" le preguntará al usuario si quiere borrar el software no deseado y si desea compartir los resultados de la limpieza con Google a fin de colaborar con futuras detecciones de ese tipo de software. Estos resultados contienen metadatos de archivos, extensiones instaladas automáticamente y claves de registro, como se describe en el Informe de privacidad de Chrome.
@@ -2899,6 +2905,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">No puedes forzar las apps de Android a que usen un proxy. Las apps de Android tienen a su disposición un subgrupo de opciones de configuración de proxy que pueden respetar de forma voluntaria:
 
           Si eliges no usar nunca un servidor proxy, se informa a las apps de Android que no hay ningún proxy configurado.
@@ -3052,15 +3059,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6731757988219967594">Aplicar filtros de contenido para adultos a los sitios principales (pero no a los iframes incorporados)</translation>
 <translation id="6734521799274931721">Controlar la disponibilidad de "Network File Shares" para el Sistema operativo Chrome</translation>
 <translation id="6735701345096330595">Habilitar la corrección ortográfica de idiomas</translation>
-<translation id="673699536430961464">Esta configuración permite que los usuarios cambien entre cuentas de Google en el área de contenido de la ventana del navegador después de acceder en el dispositivo con <ph name="PRODUCT_OS_NAME" />.
-
-      Si la política se establece como falsa, no se permitirá acceder a otra cuenta desde el área de contenido de una ventana de navegador que no sea de incógnito.
-
-      Si no se establece o se establece como verdadera, se usará el comportamiento predeterminado: se permitirá acceder a otra cuenta desde el área de contenido del navegador, excepto para las cuentas secundarias, donde se bloqueará para el área de contenido en ventanas que no sean de incógnito.
-
-      En caso de que no deba permitirse el acceso a otra cuenta a través del modo de navegación incógnito, considera bloquear dicho modo mediante la política IncognitoModeAvailability.
-
-      Debes tener en cuenta que, si bloquean sus cookies, los usuarios podrán acceder a los servicios de Google en un estado no autenticado.</translation>
 <translation id="6757438632136860443">Te permite establecer una lista de patrones de URL que especifican los sitios que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se establece, se usará el valor predeterminado global para todos los sitios, ya sea desde la política "DefaultPluginsSetting", si se establece, o desde otro tipo de configuración personal del usuario.</translation>
@@ -3908,6 +3906,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8312129124898414409">Te permite establecer si los sitios web están autorizados a utilizar la generación de claves. La generación de claves puede permitirse o rechazarse para todos los sitios web. 
 
           Si esta política no se configura, se usará "BlockKeygen" y el usuario podrá cambiarla.</translation>
+<translation id="8314214821702356835">Permite que los usuarios reproduzcan contenido multimedia cuando está bloqueado el dispositivo</translation>
 <translation id="8320149248919453401">Modo de carga de la batería</translation>
 <translation id="8329984337216493753">Esta política solo se encuentra activa en el modo de venta.
 
@@ -4355,7 +4354,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="9152473318295429890">Habilitar las sugerencias contextuales de páginas web relacionadas</translation>
 <translation id="9153446010242995516">Implementa la reversión y mantiene la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Intenta llevar a cabo la configuración a nivel de dispositivos (incluidas las credenciales de red) mediante el proceso de reversión, si es posible, pero realiza la reversión completa con la función Powerwash, incluso si no es posible restablecer los datos (porque la versión objetivo no admite el restablecimiento de los datos o porque un cambio no es compatible con las versiones anteriores).
           Esta política es compatible con la versión 75 de <ph name="PRODUCT_OS_NAME" /> y versiones posteriores. Para los clientes anteriores, este valor significa que la reversión está inhabilitada.</translation>
-<translation id="9158929520101169054">Permitir el acceso múltiple en el navegador</translation>
 <translation id="9159126470527871268">Notifica a los usuarios que se deben reiniciar <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> para que se aplique una actualización pendiente.
 
       La configuración de esta política habilita las notificaciones para informar al usuario que se debe realizar o es recomendable un reinicio del navegador o el dispositivo. Si no se establece, <ph name="PRODUCT_NAME" /> le indica al usuario que se necesita un reinicio a través de cambios sutiles en el menú, mientras que <ph name="PRODUCT_OS_NAME" /> indica eso a través de una notificación en la bandeja del sistema. Si se establece como recomendada, se mostrará una advertencia recurrente al usuario que indicará que se recomienda realizar un reinicio. Esta advertencia se puede descartar para posponer el reinicio. Si se establece como obligatoria, se mostrará una advertencia recurrente al usuario que indicará que se realizará automáticamente un reinicio del navegador una vez que finalice el período de notificación. El tiempo predeterminado es de siete días para <ph name="PRODUCT_NAME" /> y cuatro para <ph name="PRODUCT_OS_NAME" />, y se puede ajustar a través de la configuración de la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.

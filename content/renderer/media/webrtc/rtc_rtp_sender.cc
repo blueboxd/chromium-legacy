@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/renderer/media/webrtc/rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 
 namespace content {
 
@@ -323,7 +323,7 @@ class RTCRtpSender::RTCRtpSenderInternal
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     native_peer_connection_->GetStats(
         webrtc_sender_.get(),
-        RTCStatsCollectorCallbackImpl::Create(
+        blink::CreateRTCStatsCollectorCallback(
             main_task_runner_, std::move(callback), exposed_group_ids));
   }
 

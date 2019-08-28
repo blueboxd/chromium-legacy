@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Hostiga ei saa ühendust. Seda põhjustab ilmselt kasutatava võrgu konfiguratsioon.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Viimati nähtud võrgus <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Seda rakendust enam ei toetata. Uusimate funktsioonide ja turvavärskenduste saamiseks kasutage <ph name="LINK_BEGIN" />veebirakendust Chrome Remote Desktop<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Enne kui saate seadet teenusega <ph name="PRODUCT_NAME" /> kaugjuhtida, on vaja teha veel üks seadistustoiming.
-
-Funktsiooni lubamiseks valige nupp „<ph name="BUTTON_NAME" />”, et kuvada turva- ja privaatsuseelistuste paan, seejärel märkige ruut „<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Kui „<ph name="SERVICE_SCRIPT_NAME" />” on juba olemas ja märgitud, tuleb teil võib-olla see eemaldada ja uuesti lisada.</translation>
 <translation id="2499160551253595098">Aidake meil Chrome Remote Desktopi täiustada, lubades meil koguda kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="2509394361235492552">Ühendatud hostiga <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chrome Remote Desktop seadistada valikule „Ava aknana”.</translation>
@@ -317,6 +312,11 @@ Kui „<ph name="SERVICE_SCRIPT_NAME" />” on juba olemas ja märgitud, tuleb t
 <translation id="8804164990146287819">Privaatsuseeskirjad</translation>
 <translation id="894763922177556086">Hea</translation>
 <translation id="895780780740011433">Windows 7-le ja uuematele versioonidele</translation>
+<translation id="8963047137585288214">Enne kui saate seadet teenusega <ph name="PRODUCT_NAME" /> kaugjuhtida, on vaja teha veel üks seadistustoiming.
+
+Funktsiooni lubamiseks valige nupp „<ph name="BUTTON_NAME" />”, et kuvada turva- ja privaatsuseelistuste paan, seejärel märkige ruut „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Kui „<ph name="SERVICE_SCRIPT_NAME" />” on juba olemas ja märgitud, tuleb teil võib-olla märge eemaldada ja valik uuesti märkida.</translation>
 <translation id="897805526397249209">Muu arvutiga kaugühenduste lubamiseks installige sellesse rakendus Chromoting ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktopi hosti kontroller</translation>
 <translation id="9016232822027372900">Ühenda siiski</translation>

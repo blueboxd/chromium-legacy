@@ -396,6 +396,12 @@ Se la norma non viene configurata o viene impostata su false, la chiave manifest
 
 Avviso. Non è consigliato delegare il controllo della versione di <ph name="PRODUCT_OS_NAME" /> a un'app kiosk, poiché potrebbe impedire al dispositivo di ricevere aggiornamenti software e correzioni di sicurezza fondamentali. Delegare il controllo della versione di <ph name="PRODUCT_OS_NAME" /> potrebbe mettere a rischio gli utenti.</translation>
 <translation id="1675002386741412210">Supportato su:</translation>
+<translation id="1695708467571967752">Questo criterio consente di stabilire se gli utenti possono o meno riprodurre contenuti multimediali con il dispositivo bloccato.
+
+      Se questo criterio viene impostato su False, i controlli multimediali nella schermata di blocco vengono disattivati.
+
+      Se questo criterio viene impostato su True o non viene impostato, i controlli multimediali vengono visualizzati nella schermata di blocco se l'utente blocca il dispositivo durante la riproduzione di contenuti multimediali.
+      </translation>
 <translation id="1700811900332333712">Consenti al dispositivo di richiedere il powerwash</translation>
 <translation id="1708496595873025510">Imposta la limitazione sul recupero del numero di inizializzazione delle varianti</translation>
 <translation id="1717817358640580294">Se questa norma non viene impostata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà poi all'utente se vuole ripulire il software indesiderato. L'utente può scegliere se condividere i risultati della pulizia con Google per facilitare l'identificazione di software indesiderato in futuro. Questi risultati contengono metadati di file, estensioni installate automaticamente e chiavi del registro di sistema, come spiegato nel Whitepaper sulla privacy di Chrome.
@@ -2865,6 +2871,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="6417265370957905582">Assistente Google</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Non è possibile imporre l'utilizzo di un proxy alle app Android. Viene messo a disposizione un sottoinsieme di impostazioni proxy che le app Android possono decidere se rispettare o meno.
 
           Se si decide di non usare mai un server proxy, alle app Android viene comunicato che non è configurato alcun proxy.
@@ -3017,15 +3024,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6731757988219967594">Filtra i siti di contenuti per adulti di primo livello (ma non gli iframe incorporati)</translation>
 <translation id="6734521799274931721">Consente di controllare la disponibilità della funzione Condivisioni file di rete per Chrome OS</translation>
 <translation id="6735701345096330595">Forza attivazione lingue per controllo ortografico</translation>
-<translation id="673699536430961464">Questa impostazione consente agli utenti di passare da un Account Google a un altro all'interno dell'area dei contenuti della finestra del browser dopo avere eseguito l'accesso al dispositivo <ph name="PRODUCT_OS_NAME" />.
-
-      Se questa norma viene impostata su false, l'accesso a un altro account dall'area dei contenuti del browser in modalità diversa da quella di navigazione in incognito non sarà consentito.
-
-      Se questa norma non viene impostata o viene impostata su true, verrà usato il comportamento predefinito: sarà possibile accedere a un altro account dall'area dei contenuti del browser, ma non agli account di minori, per i quali tale accesso non sarà consentito dall'area dei contenuti in modalità diversa da quella di navigazione in incognito.
-
-      Qualora l'accesso a un altro account non debba essere consentito tramite la modalità di navigazione in incognito, potresti bloccare tale modalità usando la norma IncognitoModeAvailability.
-
-      Tieni presente che gli utenti potranno accedere ai servizi Google in uno stato non autenticato bloccando i loro cookie.</translation>
 <translation id="6757438632136860443">Consente di impostare un elenco di pattern URL che specificano i siti che possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se impostata, oppure la configurazione personale dell'utente..</translation>
@@ -3857,6 +3855,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8312129124898414409">Consente di stabilire se consentire o meno l'utilizzo della generazione di chiavi sui siti web. L'utilizzo della generazione di chiavi può essere consentito o negato per tutti i siti web.
 
           Se questa norma non viene impostata, verrà utilizzato il valore della norma "BlockKeygen", che potrà essere modificato dagli utenti.</translation>
+<translation id="8314214821702356835">Permette di consentire agli utenti di riprodurre contenuti multimediali con il dispositivo bloccato</translation>
 <translation id="8320149248919453401">Modalità di carica della batteria</translation>
 <translation id="8329984337216493753">Questa norma è attiva soltanto in modalità retail.
 
@@ -4269,7 +4268,6 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9152473318295429890">Attiva i suggerimenti contestuali delle pagine web correlate</translation>
 <translation id="9153446010242995516">Esegui il rollback e rimani nella versione target se la versione del sistema operativo è più recente di quella target. Prova a trasferire la configurazione a livello di dispositivo (incluse le credenziali di rete) tramite la procedura di rollback, se possibile, ma esegui il rollback con Powerwash completo anche se il ripristino dei dati non è possibile (perché la versione target non supporta il ripristino dei dati o a causa di una modifica non compatibile con le versioni precedenti).
           Supportato su <ph name="PRODUCT_OS_NAME" /> 75 e versioni successive. Per i client precedenti, questo valore indica che il rollback è disattivato.</translation>
-<translation id="9158929520101169054">Consenti accesso simultaneo nel browser</translation>
 <translation id="9159126470527871268">Consente di inviare agli utenti una notifica che comunica che <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> deve essere riavviato per applicare un aggiornamento in sospeso
 
       Questa impostazione della norma attiva le notifiche che informano l'utente che è consigliabile oppure obbligatorio riavviare il browser o il dispositivo. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu, mentre <ph name="PRODUCT_OS_NAME" /> indica ciò con una notifica nella barra delle applicazioni. Se l'impostazione è "Recommended", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Required", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni per <ph name="PRODUCT_NAME" /> e di quattro giorni per <ph name="PRODUCT_OS_NAME" /> e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.

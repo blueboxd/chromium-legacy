@@ -69,7 +69,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1385214448885562192">Klávesou Enter položku přijmete, klávesou Esc zrušíte akci, šipkou dolů přejdete na další položku a šipkou nahoru na předchozí položku.</translation>
 <translation id="1396114365388024581">seznam karet</translation>
-<translation id="139902759009894363">Oznamovat atributy formátovaného textu</translation>
 <translation id="1405567553485452995">Světle zelená</translation>
 <translation id="1417889266572670458">Námořnická modrá</translation>
 <translation id="1431911867058218151">Švestková</translation>
@@ -760,7 +759,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6348869651006731065">Kouřově šedá</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{odrážka}few{# odrážky}many{# odrážky}other{# odrážek}}</translation>
 <translation id="6355910664415701303">Žádná předchozí položka seznamu.</translation>
-<translation id="6360318852623800555">Atributy formátovaného textu</translation>
 <translation id="6364795331201459219">nadp 6</translation>
 <translation id="6368143427468974988">Předchozí záhlaví</translation>
 <translation id="6376999910001533545">Kaštanová</translation>

@@ -44,10 +44,6 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   void AddPushMessagingReceiver(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver);
 
-  // Temporary method while RenderProcessHostImpl does not migrate from using
-  // service_manager::BinderRegistry to using service_manager::BinderMap.
-  void BindRequest(blink::mojom::PushMessagingRequest request);
-
   base::WeakPtr<PushMessagingManager> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

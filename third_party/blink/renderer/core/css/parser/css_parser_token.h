@@ -14,6 +14,8 @@
 
 namespace blink {
 
+enum class CSSValueID;
+
 enum CSSParserTokenType {
   kIdentToken = 0,
   kFunctionToken,

@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Astuce Chromium. Pour afficher plus d'options de l'onglet, appuyez de manière prolongée sur le bouton "Afficher les onglets" situé dans la barre d'outils affichée dans la partie inférieure ou supérieure de l'écran.</translation>
 <translation id="4241912885070669028">Vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />. Cette opération entraînera la suppression de vos données Chromium de cet appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
 <translation id="4555020257205549924">Lorsque cette fonctionnalité est activée dans Chromium, un message s'affiche pour vous proposer que les pages de ce site rédigées dans d'autres langues soient traduites à l'aide de Google Traduction. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Activer le lecteur Chromium</translation>
 <translation id="4787850887676698916">Les onglets que vous avez ouverts dans Chromium sur vos autres appareils s'affichent ici.</translation>
 <translation id="4999538639245140991">Comme vous vous déconnectez d'un compte géré par <ph name="SIGNOUT_MANAGED_DOMAIN" />, vos données Chromium seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="5231355151045086930">Se déconnecter de Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Ouvrez Paramètres &gt; Confidentialité &gt; Appareil photo &gt; Chromium, puis activez l'appareil photo.</translation>
 <translation id="7746854981345936341">Astuce Chromium. Certains boutons sont désormais affichés en bas de l'écran, tels que "Arrière", "Avant" et "Rechercher".</translation>
 <translation id="786327964234957808">Vous changez de compte synchronisé pour passer de <ph name="USER_EMAIL1" /> à <ph name="USER_EMAIL2" />. Vos données Chromium actuelles sont gérées par <ph name="DOMAIN" />. Cette opération entraînera la suppression de vos données de cet appareil, mais celles-ci seront conservées dans le compte <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Commencer à utiliser le lecteur Chromium</translation>
 <translation id="8073677936375100957">Supprimer vos données Chromium sur cet appareil ?</translation>
 <translation id="8175055321229419309">Conseil : <ph name="BEGIN_LINK" />Placez Chromium dans le dock.<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Améliorez votre expérience Google dans Chromium grâce à votre position.</translation>

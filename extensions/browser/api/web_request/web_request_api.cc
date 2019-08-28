@@ -655,7 +655,8 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     int render_process_id,
     URLLoaderFactoryType type,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client) {
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!MayHaveProxies()) {
     bool skip_proxy = true;
@@ -697,9 +698,10 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
         std::make_unique<ExtensionNavigationUIData>(frame, tab_id, window_id);
   }
 
-  network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request;
+  mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
+      header_client_receiver;
   if (header_client)
-    header_client_request = mojo::MakeRequest(header_client);
+    header_client_receiver = header_client->InitWithNewPipeAndPassReceiver();
 
   // NOTE: This request may be proxied on behalf of an incognito frame, but
   // |this| will always be bound to a regular profile (see
@@ -712,7 +714,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
       browser_context, is_navigation ? -1 : render_process_id,
       type == URLLoaderFactoryType::kDownload, request_id_generator_,
       std::move(navigation_ui_data), std::move(proxied_receiver),
-      std::move(target_factory_info), std::move(header_client_request),
+      std::move(target_factory_info), std::move(header_client_receiver),
       proxies_.get());
   return true;
 }

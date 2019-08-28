@@ -17,7 +17,7 @@
 <translation id="1524282610922162960">Chromium 탭 공유</translation>
 <translation id="1668054258064581266">Chromium에서 계정을 삭제한 후 열려 있는 탭을 새로고침해야 적용됩니다.</translation>
 <translation id="1688750314291223739">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chromium에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
-<translation id="1705503634486268204">Chromium에서는 사용자가 기억하지 않아도 되도록 비밀번호가 저장됩니다.</translation>
+<translation id="1705503634486268204">Chromium에서는 사용자가 기억하지 않아도 되도록 비밀번호를 저장할 수 있습니다.</translation>
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="1766096484055239003">관리자가 업데이트를 적용하려면 사용자가 반드시 Chromium을 다시 시작하도록 설정했습니다.</translation>
 <translation id="1774152462503052664">백그라운드에서 Chromium을 실행</translation>
@@ -226,7 +226,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8417404458978023919">{0,plural, =1{1일 이내로 Chromium을 다시 시작해 주세요}other{#일 이내로 Chromium을 다시 시작해 주세요}}</translation>
 <translation id="8453117565092476964">설치 프로그램 아카이브가 손상되었거나 잘못되었습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="8493179195440786826">Chromium이 이전 버전임</translation>
-<translation id="8494843963476918365">페이지에 표시되지 않는 설정이 있다면 <ph name="LINK_BEGIN" />Chromium 브라우저 설정<ph name="LINK_END" />으로 이동해 보세요.</translation>
 <translation id="85843667276690461">Chromium 사용에 대한 도움말</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Chromium 실행 중...</translation>

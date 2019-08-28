@@ -36,8 +36,6 @@ using testing::SaveArg;
 
 namespace blink {
 
-constexpr uint64_t kInitialReceiveFlowControlQuota = 65536;
-
 typedef testing::StrictMock<testing::MockFunction<void(int)>> Checkpoint;
 
 class MockWebSocketChannelClient
@@ -104,7 +102,8 @@ class MockWebSocketHandle : public WebSocketHandle {
   MOCK_METHOD4(
       Send,
       void(bool, WebSocketHandle::MessageType, const char*, wtf_size_t));
-  MOCK_METHOD1(AddReceiveFlowControlQuota, void(int64_t));
+  MOCK_METHOD0(StartReceiving, void());
+  MOCK_METHOD0(ConsumePendingDataFrames, void());
   MOCK_METHOD2(Close, void(uint16_t, const String&));
 };
 
@@ -145,6 +144,7 @@ class WebSocketChannelImplTest : public PageTestBase {
     channel_ = WebSocketChannelImpl::CreateForTesting(
         &GetDocument(), channel_client_.Get(), SourceLocation::Capture(),
         Handle(), base::WrapUnique(handshake_throttle_));
+    EXPECT_CALL(*Handle(), StartReceiving());
   }
 
   MockWebSocketChannelClient* ChannelClient() { return channel_client_.Get(); }
@@ -166,13 +166,10 @@ class WebSocketChannelImplTest : public PageTestBase {
       InSequence s;
       EXPECT_CALL(*Handle(),
                   Connect(KURL("ws://localhost/"), _, _, _, ChannelImpl()));
-      EXPECT_CALL(*Handle(),
-                  AddReceiveFlowControlQuota(kInitialReceiveFlowControlQuota));
       EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
     }
     EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
-    ChannelImpl()->DidConnect(Handle(), String("a"), String("b"),
-                              kDefaultReceiveQuotaThreshold);
+    ChannelImpl()->DidConnect(Handle(), String("a"), String("b"));
     testing::Mock::VerifyAndClearExpectations(this);
   }
 
@@ -182,8 +179,6 @@ class WebSocketChannelImplTest : public PageTestBase {
   MockWebSocketHandshakeThrottle* handshake_throttle_;
   Persistent<WebSocketChannelImpl> channel_;
   uint64_t sum_of_consumed_buffered_amount_;
-
-  static const uint64_t kDefaultReceiveQuotaThreshold = 1 << 15;
 };
 
 class CallTrackingClosure {
@@ -236,8 +231,6 @@ TEST_F(WebSocketChannelImplTest, connectSuccess) {
                         KURLEq("http://example.com/"), _, ChannelImpl()))
         .WillOnce(SaveArg<1>(&protocols));
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*Handle(),
-                AddReceiveFlowControlQuota(kInitialReceiveFlowControlQuota));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
 
@@ -250,8 +243,7 @@ TEST_F(WebSocketChannelImplTest, connectSuccess) {
   EXPECT_EQ("x", protocols[0]);
 
   checkpoint.Call(1);
-  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"),
-                            kDefaultReceiveQuotaThreshold);
+  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"));
 }
 
 TEST_F(WebSocketChannelImplTest, sendText) {
@@ -724,23 +716,16 @@ TEST_F(WebSocketChannelImplTest, receiveBinaryNonUTF8) {
 
 TEST_F(WebSocketChannelImplTest, receiveWithBackpressure) {
   Connect();
-  std::string data(kInitialReceiveFlowControlQuota, 'a');
+  std::string data(100, 'a');
   Checkpoint checkpoint;
   {
     InSequence s;
-    EXPECT_CALL(*ChannelClient(), DidReceiveTextMessage(_));
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*Handle(),
-                AddReceiveFlowControlQuota(kInitialReceiveFlowControlQuota));
-    EXPECT_CALL(*Handle(),
-                AddReceiveFlowControlQuota(kInitialReceiveFlowControlQuota));
+    EXPECT_CALL(*Handle(), ConsumePendingDataFrames());
     EXPECT_CALL(*ChannelClient(), DidReceiveTextMessage(_));
   }
 
   ChannelImpl()->ApplyBackpressure();
-  ChannelImpl()->DidReceiveData(Handle(), true,
-                                WebSocketHandle::kMessageTypeText, data.data(),
-                                data.size());
   checkpoint.Call(1);
   ChannelImpl()->RemoveBackpressure();
   ChannelImpl()->DidReceiveData(Handle(), true,
@@ -851,6 +836,15 @@ class WebSocketChannelImplHandshakeThrottleTest
     handshake_throttle_ = MockWebSocketHandshakeThrottle::Create();
   }
 
+  void SetUp() override {
+    PageTestBase::SetUp(IntSize());
+    const KURL page_url("http://example.com/");
+    NavigateTo(page_url);
+    channel_ = WebSocketChannelImpl::CreateForTesting(
+        &GetDocument(), channel_client_.Get(), SourceLocation::Capture(),
+        Handle(), base::WrapUnique(handshake_throttle_));
+  }
+
   // Expectations for the normal result of calling Channel()->Connect() with a
   // non-null throttle.
   void NormalHandshakeExpectations() {
@@ -876,15 +870,14 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest, ThrottleSucceedsFirst) {
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handshake_throttle_, Destructor());
     EXPECT_CALL(checkpoint, Call(2));
-    EXPECT_CALL(*Handle(), AddReceiveFlowControlQuota(_));
+    EXPECT_CALL(*Handle(), StartReceiving());
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
   Channel()->Connect(url(), "");
   checkpoint.Call(1);
   ChannelImpl()->OnCompletion(base::nullopt);
   checkpoint.Call(2);
-  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"),
-                            kDefaultReceiveQuotaThreshold);
+  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"));
 }
 
 TEST_F(WebSocketChannelImplHandshakeThrottleTest, HandshakeSucceedsFirst) {
@@ -895,13 +888,12 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest, HandshakeSucceedsFirst) {
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*handshake_throttle_, Destructor());
-    EXPECT_CALL(*Handle(), AddReceiveFlowControlQuota(_));
+    EXPECT_CALL(*Handle(), StartReceiving());
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
   Channel()->Connect(url(), "");
   checkpoint.Call(1);
-  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"),
-                            kDefaultReceiveQuotaThreshold);
+  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"));
   checkpoint.Call(2);
   ChannelImpl()->OnCompletion(base::nullopt);
 }
@@ -938,8 +930,7 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest,
     EXPECT_CALL(checkpoint, Call(1));
   }
   Channel()->Connect(url(), "");
-  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"),
-                            kDefaultReceiveQuotaThreshold);
+  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"));
   Channel()->Fail("close during handshake",
                   mojom::ConsoleMessageLevel::kWarning,
                   std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
@@ -972,8 +963,7 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest,
     EXPECT_CALL(checkpoint, Call(1));
   }
   Channel()->Connect(url(), "");
-  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"),
-                            kDefaultReceiveQuotaThreshold);
+  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"));
   Channel()->Close(WebSocketChannelImpl::kCloseEventCodeGoingAway, "");
   checkpoint.Call(1);
 }
@@ -1001,8 +991,7 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest,
     EXPECT_CALL(checkpoint, Call(1));
   }
   Channel()->Connect(url(), "");
-  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"),
-                            kDefaultReceiveQuotaThreshold);
+  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"));
   Channel()->Disconnect();
   checkpoint.Call(1);
 }
@@ -1030,8 +1019,7 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest,
     EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
   }
   Channel()->Connect(url(), "");
-  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"),
-                            kDefaultReceiveQuotaThreshold);
+  ChannelImpl()->DidConnect(Handle(), String("a"), String("b"));
   ChannelImpl()->OnCompletion("Connection blocked by throttle");
 }
 

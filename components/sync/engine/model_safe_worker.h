@@ -31,7 +31,6 @@ enum ModelSafeGroup {
                        // changes to these models don't need to be pushed to a
                        // native model.
   GROUP_UI,            // Models that live on UI thread and are being synced.
-  GROUP_DB,            // Models that live on DB thread and are being synced.
   GROUP_PASSWORD,      // Models that live on the password thread and are
                        // being synced.  On windows and linux, this runs on the
                        // DB thread.

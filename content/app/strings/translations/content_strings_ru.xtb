@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Значение должно быть меньше или равно <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">описание</translation>
 <translation id="3557673793733683882">заголовок <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">выбор недели</translation>
 <translation id="3685101356851116974">Изображение без описания</translation>
 <translation id="3706100364254443312">переключить</translation>
 <translation id="3732799496749320381">мм</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Загружается описание...</translation>
 <translation id="8117451130807776954">На этой неделе</translation>
 <translation id="8199524924445686405">гггг</translation>
+<translation id="8208673686607688524">выбор местного времени и даты</translation>
 <translation id="8261464734335370856">Орфографическая ошибка</translation>
 <translation id="8284326494547611709">Титры</translation>
 <translation id="835897206747267392">Недопустимые данные.</translation>

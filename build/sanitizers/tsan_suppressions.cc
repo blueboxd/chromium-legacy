@@ -41,9 +41,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/157586
     "race:third_party/libvpx/source/libvpx/vp8/decoder/threading.c\n"
 
-    // http://crbug.com/244755
-    "race:v8::internal::Zone::NewExpand\n"
-
     // http://crbug.com/244856
     "race:libpulsecommon*.so\n"
 

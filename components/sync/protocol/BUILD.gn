@@ -35,26 +35,8 @@ jumbo_static_library("util") {
 if (is_android) {
   import("//build/config/android/rules.gni")
 
-  _test_support_prepared_protos_dir =
-      "$root_gen_dir/test_support_proto_java_prepare/"
-  action("test_support_java_prepare") {
-    script = "prepare_protos_for_java_tests.py"
-    inputs = sync_protocol_sources
-    outputs = process_file_template(
-            sync_protocol_sources,
-            [ "$_test_support_prepared_protos_dir/{{source_file_part}}" ])
-    args = [
-      "--output_dir",
-      rebase_path(_test_support_prepared_protos_dir, root_build_dir),
-    ]
-    args += rebase_path(sync_protocol_sources, root_build_dir)
-  }
-
   proto_java_library("test_support_java") {
-    proto_path = _test_support_prepared_protos_dir
-    sources = get_target_outputs(":test_support_java_prepare")
-    deps = [
-      ":test_support_java_prepare",
-    ]
+    proto_path = "//components/sync/protocol/"
+    sources = sync_protocol_sources
   }
 }

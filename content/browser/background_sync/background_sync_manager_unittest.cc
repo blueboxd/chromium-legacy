@@ -1300,38 +1300,6 @@ TEST_F(BackgroundSyncManagerTest, TestSupensionAndRevival) {
   Unregister(sync_options_2_);
 }
 
-TEST_F(BackgroundSyncManagerTest, CrossRegistrationLimitsForOrigin) {
-  InitPeriodicSyncEventTest();
-  base::TimeDelta thirteen_hours = base::TimeDelta::FromHours(13);
-  sync_options_1_.min_interval = thirteen_hours.InMilliseconds();
-  EXPECT_TRUE(Register(sync_options_1_));
-
-  EXPECT_EQ(0, periodic_sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-
-  // Register another periodic sync with the same origin, but a smaller
-  // minInterval. Expect the delay to be set to the larger minInterval from the
-  // already registered periodic sync.
-  base::TimeDelta twelve_hours = base::TimeDelta::FromHours(12);
-  sync_options_2_.min_interval = twelve_hours.InMilliseconds();
-  EXPECT_TRUE(Register(sync_options_2_));
-
-  EXPECT_EQ(0, periodic_sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_2_));
-
-  // Advance clock.
-  test_clock_.Advance(twelve_hours);
-  FireReadyEvents();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0, periodic_sync_events_called_);
-
-  test_clock_.Advance(base::TimeDelta::FromHours(1));
-  FireReadyEvents();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, periodic_sync_events_called_);
-}
-
 TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
   InitDelayedSyncEventTest();
   RegisterAndVerifySyncEventDelayed(sync_options_1_);

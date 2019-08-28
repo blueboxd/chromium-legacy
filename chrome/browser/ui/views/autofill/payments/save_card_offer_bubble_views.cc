@@ -205,7 +205,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
         std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_SAVE_CARD_PROMPT_CARDHOLDER_NAME),
-            CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+            CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
     cardholder_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     cardholder_name_label_row->AddChildView(cardholder_name_label.release());
 
@@ -314,7 +314,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   // Set up expiration date label.
   auto expiration_date_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE),
-      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+      CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
   expiration_date_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   expiration_date_view->AddChildView(expiration_date_label.release());

@@ -4327,6 +4327,11 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kPasswordManagerOnboardingAndroid)},
 #endif  // defined(OS_ANDROID)
 
+    {"enable-cooperative-scheduling",
+     flag_descriptions::kCooperativeSchedulingName,
+     flag_descriptions::kCooperativeSchedulingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kCooperativeScheduling)},
+
     {"enable-defer-all-script", flag_descriptions::kEnableDeferAllScriptName,
      flag_descriptions::kEnableDeferAllScriptDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kDeferAllScriptPreviews)},
@@ -4447,6 +4452,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewOverviewTabletLayoutDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kNewOverviewLayout)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"passwords-account-storage",
+     flag_descriptions::kEnablePasswordsAccountStorageName,
+     flag_descriptions::kEnablePasswordsAccountStorageDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnablePasswordsAccountStorage)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

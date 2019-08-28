@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Вредност сме да буде највише <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниција</translation>
 <translation id="3557673793733683882">заглавље <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">бирач недеља</translation>
 <translation id="3685101356851116974">Неозначена слика</translation>
 <translation id="3706100364254443312">прекидач</translation>
 <translation id="3732799496749320381">мм</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Преузима се опис...</translation>
 <translation id="8117451130807776954">Ова недеља</translation>
 <translation id="8199524924445686405">гггг</translation>
+<translation id="8208673686607688524">бирач локалног датума и времена</translation>
 <translation id="8261464734335370856">Нетачан правопис</translation>
 <translation id="8284326494547611709">Титл</translation>
 <translation id="835897206747267392">Неважећа вредност.</translation>

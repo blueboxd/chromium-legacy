@@ -27,7 +27,7 @@ FolderUploadConfirmationView::FolderUploadConfirmationView(
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringFUTF16(IDS_CONFIRM_FILE_UPLOAD_TEXT,
                                  path.BaseName().LossyDisplayName()),
-      CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+      CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label.release());

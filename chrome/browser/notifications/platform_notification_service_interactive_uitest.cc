@@ -508,15 +508,23 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       GetDisplayedNotifications(true /* is_persistent */);
   ASSERT_EQ(1u, notifications.size());
 
-  display_service_tester_->SimulateClick(
-      NotificationHandler::Type::WEB_PERSISTENT, notifications[0].id(),
-      base::nullopt /* action_index */, base::nullopt /* reply */);
+  {
+    base::RunLoop notification_closed_run_loop;
+    display_service_tester_->SetNotificationClosedClosure(
+        notification_closed_run_loop.QuitClosure());
 
-  // We have interacted with the button, so expect a notification bump.
-  EXPECT_DOUBLE_EQ(1.5, GetEngagementScore(GetLastCommittedURL()));
+    display_service_tester_->SimulateClick(
+        NotificationHandler::Type::WEB_PERSISTENT, notifications[0].id(),
+        base::nullopt /* action_index */, base::nullopt /* reply */);
 
-  ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
-  EXPECT_EQ("action_close", script_result);
+    // We have interacted with the button, so expect a notification bump.
+    EXPECT_DOUBLE_EQ(1.5, GetEngagementScore(GetLastCommittedURL()));
+
+    ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
+    EXPECT_EQ("action_close", script_result);
+
+    notification_closed_run_loop.Run();
+  }
 
   notifications = GetDisplayedNotifications(true /* is_persistent */);
   ASSERT_EQ(0u, notifications.size());

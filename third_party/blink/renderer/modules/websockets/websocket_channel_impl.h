@@ -107,8 +107,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
   // Called when the handle is opened.
   void DidConnect(WebSocketHandle* handle,
                   const String& selected_protocol,
-                  const String& extensions,
-                  uint64_t receive_quota_threshold);
+                  const String& extensions);
 
   // Called when the browser starts the opening handshake.
   // This notification can be omitted when the inspector is not active.
@@ -137,6 +136,7 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
                       WebSocketHandle::MessageType,
                       const char* data,
                       size_t);
+  bool HasBackPressureToReceiveData() { return backpressure_; }
 
   // Called when the handle is closed.
   // |handle| becomes unavailable once this notification arrives.
@@ -192,8 +192,6 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
   bool MaybeSendSynchronously(WebSocketHandle::MessageType,
                               base::span<const char>);
   void ProcessSendQueue();
-  void AddReceiveFlowControlIfNecessary();
-  void InitialReceiveFlowControl();
   void FailAsError(const String& reason) {
     Fail(reason, mojom::ConsoleMessageLevel::kError,
          location_at_construction_->Clone());
@@ -231,7 +229,6 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
   bool receiving_message_type_is_text_ = false;
   bool throttle_passed_ = false;
   uint64_t sending_quota_ = 0;
-  uint64_t received_data_size_for_flow_control_ = 0;
   wtf_size_t sent_size_of_top_message_ = 0;
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
@@ -244,8 +241,6 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
   std::unique_ptr<ConnectInfo> connect_info_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
-
-  base::Optional<uint64_t> receive_quota_threshold_;
 };
 
 MODULES_EXPORT std::ostream& operator<<(std::ostream&,

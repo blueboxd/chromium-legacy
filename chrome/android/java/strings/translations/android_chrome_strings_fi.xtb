@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">Kopioi linkin teksti</translation>
 <translation id="1208340532756947324">Ota synkronointi käyttöön, niin sisältö synkronoidaan ja yksilöidään eri laitteilla</translation>
 <translation id="1209206284964581585">Piilota toistaiseksi</translation>
+<translation id="1227058898775614466">Navigointihistoria</translation>
 <translation id="1231733316453485619">Otetaanko synkronointi käyttöön?</translation>
 <translation id="123724288017357924">Päivitä nykyinen sivu, ohita välimuistin sisältö</translation>
 <translation id="124116460088058876">Lisää kieliä</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">Laajenna napauttamalla.</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="1291207594882862231">Tyhjennä historia, evästeet, sivustojen tiedot, välimuisti ja niin edelleen.</translation>
+<translation id="129382876167171263">Sivustojen tallentamat tiedostot näkyvät tässä</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Lähetetty laitteelta <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Ryhmittele välilehtiä</translation>
+<translation id="1327257854815634930">Navigointihistoria avattu</translation>
 <translation id="1331212799747679585">Chromea ei voi päivittää. Lisää vaihtoehtoja</translation>
 <translation id="1332501820983677155">Google Chromen ominaisuuksien pikanäppäimet</translation>
 <translation id="1360432990279830238">Kirjaudu ulos ja lopeta synkronointi?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">Salli MIDI-laitteiden täysi käyttöoik.</translation>
 <translation id="145097072038377568">Poistettu käytöstä Android-asetuksissa</translation>
 <translation id="1477626028522505441">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui palvelinongelman vuoksi.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 muu)}other{ (+ # muuta)}}</translation>
 <translation id="1501480321619201731">Poista ryhmä</translation>
 <translation id="1506061864768559482">Hakukone</translation>
 <translation id="1513352483775369820">Kirjanmerkit ja verkkohistoria</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">Vedä liukusäädintä, kunnes voit lukea tämän mukavasti. Tekstin tulisi olla vähintään näin suurta kaksoisnapautettuasi kappaletta.</translation>
 <translation id="2323763861024343754">Sivustotietoja tallennettu</translation>
 <translation id="2328985652426384049">Kirjautuminen epäonnistui</translation>
-<translation id="2334057574886324800">Tekstiviesti vastaanotettu</translation>
 <translation id="2349710944427398404">Chromen käyttämän tallennustilan kokonaismäärä, mukaan lukien tilit, kirjanmerkit ja tallennetut asetukset.</translation>
 <translation id="2353636109065292463">Internetyhteyttäsi tarkistetaan</translation>
 <translation id="2359808026110333948">Jatka</translation>
@@ -417,12 +418,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4226663524361240545">Laite voi väristä ilmoitusten yhteydessä.</translation>
 <translation id="423219824432660969">Salaa synkronoitu data Google-salasanalla (<ph name="TIME" />)</translation>
 <translation id="4242533952199664413">Avaa asetukset</translation>
-<translation id="4247274662191902962">Anturidataa jaetaan vain, kun käytät tätä VR-kokemusta. Sivusto voi saada sinusta tietoa käyttämällä esimerkiksi
-    – sijaintiasi
-    – fyysisiä piirteitäsi, kuten silmiesi sijaintia
-    – liikkeitäsi, kuten kävelytapaasi.
-
-    Varmista, että sivusto on luotettava, ennen kuin myönnät sille käyttöoikeuden.</translation>
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopioi linkin osoite</translation>
@@ -554,8 +549,8 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5170568018924773124">Näytä kansiossa</translation>
 <translation id="5184329579814168207">Avaa Chromessa</translation>
 <translation id="5193988420012215838">Kopioitu leikepöydälle</translation>
+<translation id="5197729504361054390"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saa valitsemasi yhteystiedot.</translation>
 <translation id="5199929503336119739">Työprofiili</translation>
-<translation id="5202089186707505116">Saako tämä sivusto käyttää VR-antureita?</translation>
 <translation id="5210286577605176222">Siirry edelliselle välilehdelle</translation>
 <translation id="5210365745912300556">Sulje välilehti</translation>
 <translation id="5224771365102442243">Video sivulla</translation>
@@ -568,6 +563,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5301954838959518834">Selvä</translation>
 <translation id="5304593522240415983">Kenttä ei voi olla tyhjä.</translation>
+<translation id="5307446750509046227">Poista sivustotiedot</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5313967007315987356">Lisää sivusto</translation>
 <translation id="5317780077021120954">Tallenna</translation>
@@ -631,7 +627,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5686790454216892815">Tiedoston nimi on liian pitkä</translation>
 <translation id="5689516760719285838">Sijainti</translation>
 <translation id="569536719314091526">Käännä sivu mille tahansa kielelle Lisävalinnat-painikkeella</translation>
-<translation id="5719150327511160085">Odotetaan tekstiviestiä</translation>
 <translation id="572328651809341494">Hiljattain suljetut välilehdet</translation>
 <translation id="5726692708398506830">Suurenna sivun kaikki sisältö</translation>
 <translation id="5748802427693696783">Vaihdettiin näkyviin tavalliset välilehdet.</translation>
@@ -702,7 +697,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämällä sinulle mainoksia, jotka eivät perustu muihin vierailemiisi verkkosivustoihin. Monet sivustot keräävät ja käyttävät silti edelleen selaustietojasi – esimerkiksi turvallisuuden parantamiseen, sisällön, mainosten ja suositusten tarjoamiseen sekä raportointitilastojen luomiseen.</translation>
 <translation id="624789221780392884">Päivitys on valmis</translation>
 <translation id="6255999984061454636">Sisältöehdotukset</translation>
-<translation id="6264430811215618931"><ph name="ORIGIN" /> lähetti tekstiviestin puhelinnumeroosi. Vahvista henkilöllisyytesi sivustolle.</translation>
 <translation id="6277522088822131679">Sivua tulostettaessa tapahtui virhe. Yritä uudelleen.</translation>
 <translation id="6295158916970320988">Kaikki sivustot</translation>
 <translation id="629730747756840877">Tili</translation>
@@ -805,6 +799,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6989267951144302301">Lataus epäonnistui</translation>
 <translation id="6990079615885386641">Hanki sovellus Google Play Kaupasta: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pyydä lupaa, kun sivustot yrittävät käyttää mikrofonia (suositus).</translation>
+<translation id="7015203776128479407">Synkronoinnin ensimääritystä ei tehty loppuun. Synkronointi ei ole käytössä.</translation>
 <translation id="7016516562562142042">Sallittu nykyisellä hakukoneella</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ladattiin.</translation>
 <translation id="7022756207310403729">Avaa selaimessa</translation>
@@ -836,11 +831,11 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7274013316676448362">Estetty sivusto</translation>
 <translation id="7290209999329137901">Uudelleennimeäminen ei saatavilla</translation>
 <translation id="7291387454912369099">Assistantin käynnistämä maksaminen</translation>
+<translation id="7293171162284876153">Aloita synkronointi ottamalla Chrome-datan synkronointi käyttöön.</translation>
 <translation id="729975465115245577">Laitteella ei ole sovellusta, johon salasanatiedoston voisi tallentaa.</translation>
 <translation id="7302081693174882195">Lisätiedot: Lajiteltu säästetyn datan mukaan</translation>
 <translation id="7328017930301109123">Yksinkertaistetussa tilassa Chrome lataa sivuja nopeammin ja käyttää jopa 60 prosenttia vähemmän dataa.</translation>
 <translation id="7333031090786104871">Edellisen sivuston lisääminen kesken</translation>
-<translation id="7352651011704765696">Tapahtui jokin virhe</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Jaa 1 valittu kohde}other{Jaa # valittua kohdetta}}</translation>
 <translation id="7359002509206457351">Pääsy maksutapoihin</translation>
@@ -904,6 +899,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="773466115871691567">Käännä aina kielellä <ph name="SOURCE_LANGUAGE" /> kirjoitut sivut</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">Vaarallisia sovelluksia ja sivustoja löytääkseen Chrome lähettää joidenkin avattujen sivujen URL-osoitteita, rajallisia järjestelmätietoja ja osia sivujen sisällöstä Googlelle</translation>
+<translation id="7757787379047923882"><ph name="DEVICE_NAME" /> jakoi tekstin</translation>
 <translation id="7762668264895820836">SD-kortti <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Lisää osoite</translation>
 <translation id="7769602470925380267">Hyväksy ja kirjaudu ulos</translation>
@@ -1043,6 +1039,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="8730621377337864115">Valmis</translation>
 <translation id="8748850008226585750">Sisältö piilotettu</translation>
 <translation id="8751914237388039244">Valitse kuva</translation>
+<translation id="8788265440806329501">Navigointihistoria suljettu</translation>
 <translation id="8788968922598763114">Avaa viimeksi suljettu välilehti uudelleen</translation>
 <translation id="8801436777607969138">Estä JavaScript tietyllä sivustolla.</translation>
 <translation id="8812260976093120287">Tietyt sivustot tukevat yllä mainittuja laitteesi yhteensopivia maksusovelluksia.</translation>

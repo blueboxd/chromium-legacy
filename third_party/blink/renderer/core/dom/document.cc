@@ -979,6 +979,17 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
   bool bind_csp_immediately_ = false;
 };
 
+ExplicitlySetAttrElementMap* Document::GetExplicitlySetAttrElementMap(
+    Element* element) {
+  DCHECK(element);
+  DCHECK(element->GetDocument() == this);
+  if (!element_explicitly_set_attr_element_map_.Contains(element)) {
+    element_explicitly_set_attr_element_map_.insert(
+        element, MakeGarbageCollected<ExplicitlySetAttrElementMap>());
+  }
+  return element_explicitly_set_attr_element_map_.at(element);
+}
+
 Document* Document::Create(Document& document) {
   Document* new_document =
       MakeGarbageCollected<Document>(DocumentInit::Create()
@@ -8100,6 +8111,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(find_in_page_root_);
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
+  visitor->Trace(element_explicitly_set_attr_element_map_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);

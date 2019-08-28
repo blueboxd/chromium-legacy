@@ -498,7 +498,7 @@ struct URLLoaderFactoryParams {
   // callback to the |header_client|, allowing the Cookie/Referrer request
   // headers and Cookie response headers to be modified. This has a performance
   // impact because of the extra process hops, so use should be minimized.
-  TrustedURLLoaderHeaderClient? header_client;
+  pending_remote<TrustedURLLoaderHeaderClient>? header_client;
 
   // If non-empty array is given, |factory_bound_allow_patterns| is used for
   // CORS checks in addition to the per-context allow patterns that is managed

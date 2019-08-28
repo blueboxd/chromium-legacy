@@ -95,9 +95,10 @@ bool EnsureCacheDirectory(base::FilePath cache_directory) {
   // If the directory does not exist already, ensure that the parent directory
   // exists, which is usually the User Data directory. If it exists, we can try
   // creating the cache directory.
-  return base::DirectoryExists(cache_directory) ||
-         (base::DirectoryExists(cache_directory.DirName()) &&
-          CreateDirectory(cache_directory));
+  return !cache_directory.empty() &&
+         (base::DirectoryExists(cache_directory) ||
+          (base::DirectoryExists(cache_directory.DirName()) &&
+           CreateDirectory(cache_directory)));
 }
 
 }  // namespace
@@ -115,6 +116,10 @@ DWriteFontLookupTableBuilder::FontFileWithUniqueNames::FontFileWithUniqueNames(
 
 DWriteFontLookupTableBuilder::DWriteFontLookupTableBuilder()
     : font_indexing_timeout_(kFontIndexingTimeoutDefault) {
+  InitializeCacheDirectoryFromProfile();
+}
+
+void DWriteFontLookupTableBuilder::InitializeCacheDirectoryFromProfile() {
   // In FontUniqueNameBrowserTest the DWriteFontLookupTableBuilder is
   // instantiated to configure the cache directory for testing explicitly before
   // GetContentClient() is available. Catch this case here. It is safe to not
@@ -122,7 +127,7 @@ DWriteFontLookupTableBuilder::DWriteFontLookupTableBuilder()
   // detected by TableCacheFilePath and the LoadFromFile and PersistToFile
   // methods.
   cache_directory_ =
-      GetContentClient()
+      GetContentClient() && GetContentClient()->browser()
           ? GetContentClient()->browser()->GetFontLookupTableCacheDir()
           : base::FilePath();
 }
@@ -131,6 +136,9 @@ DWriteFontLookupTableBuilder::~DWriteFontLookupTableBuilder() = default;
 
 base::ReadOnlySharedMemoryRegion
 DWriteFontLookupTableBuilder::DuplicateMemoryRegion() {
+  DCHECK(!TableCacheFilePath().empty())
+      << "Ensure that a cache_directory_ is set (see "
+         "InitializeCacheDirectoryFromProfile())";
   DCHECK(FontUniqueNameTableReady());
   return font_table_memory_.region.Duplicate();
 }
@@ -151,10 +159,6 @@ void DWriteFontLookupTableBuilder::InitializeDirectWrite() {
     // renderers don't hang if they for some reason send us a font message.
     return;
   }
-
-  // QueryInterface for IDWriteFactory2. It's ok for this to fail if we are
-  // running an older version of DirectWrite (earlier than Win8.1).
-  factory.As<IDWriteFactory2>(&factory2_);
 
   // QueryInterface for IDwriteFactory3, needed for MatchUniqueFont on Windows
   // 10. May fail on older versions, in which case, unique font matching must be
@@ -315,8 +319,16 @@ void DWriteFontLookupTableBuilder::
     InitializeDirectWrite();
   }
 
-  // Nothing to do if we have API to directly lookup local fonts by unique name.
+  // Nothing to do if we have API to directly lookup local fonts by unique name
+  // (as on Windows 10, IDWriteFactory3 available).
   if (HasDWriteUniqueFontLookups())
+    return;
+
+  // Do not schedule indexing if we do not have a profile or temporary directory
+  // to store the cached table. This prevents repetitive and redundant scanning
+  // when the ContentBrowserClient did not provide a cache directory, as is the
+  // case in content_unittests.
+  if (TableCacheFilePath().empty())
     return;
 
   start_time_table_ready_ = base::TimeTicks::Now();
@@ -654,6 +666,15 @@ void DWriteFontLookupTableBuilder::ResetLookupTableForTesting() {
   font_table_memory_ = base::MappedReadOnlyRegion();
   caching_enabled_ = true;
   font_table_built_.Reset();
+}
+
+void DWriteFontLookupTableBuilder::ResetStateForTesting() {
+  ResetLookupTableForTesting();
+  // Recreate fFactory3 if available, to reset
+  // OverrideDWriteVersionChecksForTesting().
+  direct_write_initialized_ = false;
+  InitializeDirectWrite();
+  InitializeCacheDirectoryFromProfile();
 }
 
 void DWriteFontLookupTableBuilder::ResumeFromHangForTesting() {

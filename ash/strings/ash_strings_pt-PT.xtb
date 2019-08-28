@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Reduzir menu</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1419738280318246476">Desbloqueie o dispositivo para realizar a ação de notificação.</translation>
+<translation id="1420408895951708260">Ativar/desativar Luz noturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1455242230282523554">Mostrar definições de idioma</translation>
 <translation id="1460620680449458626">O volume está desativado.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">A funcionalidade <ph name="FEATURE_NAME" /> foi desativada por uma política aplicada a este dispositivo. Fale com o seu administrador para solicitar alterações.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (a carregar...)</translation>
+<translation id="1838895407229022812">A Luz noturna está desativada.</translation>
 <translation id="1850504506766569011">A ligação Wi-Fi está desativada.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">A espelhar para <ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
+<translation id="2542089167727451762">Toque na imagem do perfil.</translation>
 <translation id="255671100581129685">O Assistente Google não está disponível para sessões públicas.</translation>
 <translation id="2575685495496069081">O início de sessão integrado foi desativado</translation>
 <translation id="2582112259361606227">Reiniciar para atualizar</translation>
 <translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
-<translation id="2651765386227849097">O Assistente Google está desativado neste dispositivo.</translation>
 <translation id="2653659639078652383">Submeter</translation>
 <translation id="2658778018866295321">Clique e arraste</translation>
 <translation id="2700493154570097719">Definir o teclado</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">A carregar o Assistente...</translation>
-<translation id="435527878592612277">Selecionar a sua foto</translation>
 <translation id="4378551569595875038">A ligar...</translation>
 <translation id="4379531060876907730">Estas são as suas ferramentas da caneta stylus</translation>
 <translation id="4389184120735010762">Premiu o atalho de teclado da lupa ancorada. Pretende ativá-la?</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">Médio</translation>
 <translation id="5744083938413354016">Arrastamento através do toque</translation>
 <translation id="5750765938512549687">Bluetooth desativado</translation>
+<translation id="576453121877257266">A Luz noturna está ativada.</translation>
 <translation id="5777841717266010279">Parar a partilha do ecrã?</translation>
 <translation id="5820394555380036790">SO Chromium</translation>
 <translation id="5837036133683224804">Parar o <ph name="ROUTE_TITLE" /> no recetor <ph name="RECEIVER_NAME" /></translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">Resolução alterada</translation>
 <translation id="6297287540776456956">Utilizar a canela stylus para selecionar uma área</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi rodado para <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">Ativar/desativar Luz noturna</translation>
 <translation id="6376931439017688372">Bluetooth ativado</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>

@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">تمت الإضافة إلى قائمة القراءة</translation>
 <translation id="1828824471510190776">اقتراح  كلمة مرور...</translation>
 <translation id="1870148520156231997">الكشف عن كلمة المرور</translation>
+<translation id="1872096359983322073">الكشاف</translation>
 <translation id="1876721852596493031">إرسال بيانات الاستخدام</translation>
 <translation id="1911619930368729126">‏التحميل إلى Google Drive</translation>
 <translation id="1923342640370224680">الساعة الأخيرة</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">العام</translation>
 <translation id="6066301408025741299">انقر للإلغاء.</translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
+<translation id="6119050551270742952">صفحة الويب الحالية في وضع التصفح المتخفي</translation>
 <translation id="6122191549521593678">متصل</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
 <translation id="6136914049981179737">قبل ثانية</translation>
@@ -411,6 +413,9 @@
 <translation id="6807889908376551050">إظهار الكل...</translation>
 <translation id="681368974849482173">تم إنشاء العنصر</translation>
 <translation id="6851516051005285358">طلب موقع سطح المكتب</translation>
+<translation id="6858855187367714033">تم مسحه ضوئيًا.</translation>
+<translation id="6859944681507688231">لمسح رمز الاستجابة السريعة أو بطاقة ائتمان ضوئيًا، يمكنك تشغيل الكاميرا من الإعدادات.</translation>
+<translation id="6873263987691478642">وضع تقسيم العرض</translation>
 <translation id="6896758677409633944">نسخ</translation>
 <translation id="6903907808598579934">تشغيل المزامنة</translation>
 <translation id="6914583639806229067">البحث عن الصورة التي نسختها</translation>
@@ -509,6 +514,7 @@
 <translation id="8428045167754449968">المدينة/البلدة</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8458397775385147834">تم حذف عنصر واحد</translation>
+<translation id="8487667956631253959">مفعّل</translation>
 <translation id="8487700953926739672">التوفر بلا إنترنت</translation>
 <translation id="8490978609246021741">حفظ التغييرات</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
@@ -519,6 +525,7 @@
 <translation id="8532105204136943229">عام انتهاء الصلاحية</translation>
 <translation id="8534481786647257214">‏اكتمل النشر على Google+‎.</translation>
 <translation id="8548878600947630424">بحث في الصفحة...</translation>
+<translation id="8588404856427128947">غير مفعَّل</translation>
 <translation id="8605219856220328675">إغلاق علامة التبويب.</translation>
 <translation id="8620640915598389714">تعديل</translation>
 <translation id="8636825310635137004">للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل المزامنة.</translation>
@@ -559,6 +566,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">تم إرسال تقرير الأعطال.</translation>
 <translation id="935490618240037774">‏ستتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى مع حسابك على Google لكي يتسنّى لك استخدامها على جميع أجهزتك.</translation>
+<translation id="952704832371081537">إلغاء</translation>
 <translation id="976982866697960176">إدارة البيانات المتزامنة...</translation>
 <translation id="988141524645182168">أجهزة أخرى</translation>
 <translation id="989988560359834682">تعديل العنوان</translation>

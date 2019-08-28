@@ -26,6 +26,7 @@
 <translation id="4157467675761413638">Chromium-Tipp: Wenn Sie weitere Tab-Optionen sehen möchten, halten Sie die Schaltfläche "Tabs anzeigen" in der Symbolleiste gedrückt. Sie finden die Leiste unten oder oben auf dem Bildschirm.</translation>
 <translation id="4241912885070669028">Sie melden sich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chromium-Daten von diesem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="4555020257205549924">Wenn diese Funktion aktiviert ist, haben Sie in Chromium die Möglichkeit, Seiten in anderen Sprachen mithilfe von Google Übersetzer zu übersetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Chromium-Scanner aktivieren</translation>
 <translation id="4787850887676698916">Hier werden Tabs angezeigt, die Sie auf Ihren anderen Geräten in Chromium geöffnet haben.</translation>
 <translation id="4999538639245140991">Sie melden sich von einem Konto ab, das von <ph name="SIGNOUT_MANAGED_DOMAIN" /> verwaltet wird. Dadurch werden Ihre Chromium-Daten von diesem Gerät gelöscht. Sie bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="5231355151045086930">Von Chromium abmelden</translation>
@@ -45,6 +46,7 @@
 <translation id="7674213385180944843">Öffnen Sie "Einstellungen" &gt; "Datenschutz" &gt; "Kamera" &gt; "Chromium" und aktivieren Sie die Kamera.</translation>
 <translation id="7746854981345936341">Chromium-Tipp: Manche Schaltflächen wie "Zurück", "Weiter" und "Suche" befinden sich jetzt unten auf dem Bildschirm.</translation>
 <translation id="786327964234957808">Sie stellen die Kontosynchronisierung von <ph name="USER_EMAIL1" /> auf <ph name="USER_EMAIL2" /> um. Ihre bestehenden Chromium-Daten werden von <ph name="DOMAIN" /> verwaltet. Dadurch werden Ihre Daten von diesem Gerät gelöscht, bleiben jedoch in <ph name="USER_EMAIL1" /> erhalten.</translation>
+<translation id="7890287942691234100">Jetzt Chromium-Scanner verwenden</translation>
 <translation id="8073677936375100957">Ihre Chromium-Daten von diesem Gerät löschen?</translation>
 <translation id="8175055321229419309">Tipp: <ph name="BEGIN_LINK" />Ziehen Sie Chromium in Ihr Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Geben Sie Ihren Standort an, um Google über Chromium noch besser nutzen zu können.</translation>

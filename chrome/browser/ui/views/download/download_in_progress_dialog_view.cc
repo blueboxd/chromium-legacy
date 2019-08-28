@@ -47,7 +47,7 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
           ? IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE
           : IDS_ABANDON_DOWNLOAD_DIALOG_INCOGNITO_MESSAGE);
   auto message_label = std::make_unique<views::Label>(
-      message_text, CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+      message_text, CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
   message_label->SetMultiLine(true);
   message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(message_label.release());

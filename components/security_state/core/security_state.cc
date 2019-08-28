@@ -194,7 +194,7 @@ bool HasMajorCertificateError(
 
 VisibleSecurityState::VisibleSecurityState()
     : malicious_content_status(MALICIOUS_CONTENT_STATUS_NONE),
-      safety_tip_status(SAFETY_TIP_STATUS_NONE),
+      safety_tip_status(security_state::SafetyTipStatus::kUnknown),
       connection_info_initialized(false),
       cert_status(0),
       connection_status(0),

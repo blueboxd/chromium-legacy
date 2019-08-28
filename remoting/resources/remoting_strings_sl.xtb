@@ -53,11 +53,6 @@
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Zadnji odziv z vzpostavljeno povezavo: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ta aplikacija ni več podprta. Zaradi prejemanja najnovejših funkcij in varnostnih posodobitev uporabljajte <ph name="LINK_BEGIN" />spletno aplikacijo Oddaljeno namizje za Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Preden lahko ta računalnik na daljavo upravljate z izdelkom <ph name="PRODUCT_NAME" />, je potreben dodaten konfiguracijski korak.
-
-Če želite omogočiti to funkcijo, izberite »<ph name="BUTTON_NAME" />«, da prikažete podokno z nastavitvami za varnost in zasebnost, ter potrdite polje zraven možnosti »<ph name="SERVICE_SCRIPT_NAME" />«.
-
-Če je možnost »<ph name="SERVICE_SCRIPT_NAME" />« že na voljo in označena, jo morate morda odstraniti in nato znova dodati.</translation>
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
 <translation id="2512228156274966424">OPOMBA: Če želite zagotoviti, da bodo na voljo vse bližnjične tipke, lahko Oddaljeno namizje za Chrome konfigurirate na »Odpri kot okno«.</translation>
 <translation id="2540992418118313681">Ali želite ta računalnik deliti z drugimi, tako da bo imel drug uporabnik do njega dostop in ga bo lahko nadziral?</translation>
@@ -302,6 +297,11 @@
 <translation id="8804164990146287819">Pravilnik o zasebnosti</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="895780780740011433">Za Windows 7 in novejši</translation>
+<translation id="8963047137585288214">Preden lahko ta računalnik na daljavo upravljate z izdelkom <ph name="PRODUCT_NAME" />, je potreben dodaten konfiguracijski korak.
+
+Če želite omogočiti to funkcijo, izberite »<ph name="BUTTON_NAME" />«, da prikažete podokno z nastavitvami za varnost in zasebnost, ter potrdite polje zraven možnosti »<ph name="SERVICE_SCRIPT_NAME" />«.
+
+Če je možnost »<ph name="SERVICE_SCRIPT_NAME" />« že na voljo in označena, jo morate morda počistiti in nato znova označiti.</translation>
 <translation id="897805526397249209">Če želite omogočiti oddaljene povezave z drugim računalnikom, vanj namestite Oddaljeno povezovanje s Chromom in kliknite »<ph name="BUTTON_NAME" />«.</translation>
 <translation id="8998327464021325874">Krmilnik gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="9016232822027372900">Vseeno vzpostavi povezavo</translation>

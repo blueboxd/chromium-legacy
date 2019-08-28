@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">አስተናጋጁን መድረስ አልተቻለም። ይሄ በሚጠቀሙት አውታረ መረብ ላይ ባለ ውቅር ምክንያት ሳይሆን አይቀርም።</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  ለመጨረሻ ጊዜ መስመር ላይ የታየው በ<ph name="RELATIVE_TIMESTAMP" />።</translation>
 <translation id="2405928220797050937">ይህ መተግበሪያ ከእንግዲህ አይደገፍም። የቅርብ ጊዜዎቹን ባህሪዎች እና የደህንነት መጠበቂያ ዝማኔዎችን ማግኘትዎን እርግጠኛ ለመሆን እባክዎ  <ph name="LINK_BEGIN" />የChrome የርቀት ዴስክቶፕ የድር መተግበሪያ<ph name="LINK_END" />ን ይጠቀሙ።</translation>
-<translation id="2431841749166974386">ይህን ማሽን <ph name="PRODUCT_NAME" /> ን በመጠቀም በርቀት መቆጣጠር ከመቻልዎት በፊት ተጨማሪ የውቅረት እርምጃ ማከናወን ያስፈልጋል።
-
-ይህን ትግበራ ለማንቃት፣ የደህንነት እና የግላዊነት ምርጫዎች መቃንን ለማሳየት '<ph name="BUTTON_NAME" />' ን ይምረጡ፣ በመቀጠል ከ «<ph name="SERVICE_SCRIPT_NAME" />» ቀጥሎ ያለውን ሳጥን ይፈትሹ።
-
-«<ph name="SERVICE_SCRIPT_NAME" />» ቀደም ብሎ የሚገኝ ከሆነ እና ምልክት ከተደረገበት፣ ማስወገድ እና እንደገና ማከል ያስፈልግዎት ይሆናል።</translation>
 <translation id="2499160551253595098">የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን እንድንሰበስብ በመፍቀድ Chrome የርቀት ዴስክቶፕ እንድናሻሽል ያግዙን።</translation>
 <translation id="2509394361235492552">ከ<ph name="HOSTNAME" /> ጋር ተገናኝቷል</translation>
 <translation id="2512228156274966424">ማሳሰቢያ፦ ሁሉም የቁልፍ ሰሌዳ አቋራጮች የሚገኙ መሆናቸውን ለማረጋገጥ Chrome የርቀት ዴስክቶፕ ወደ «እንደ መስኮት ክፈት» ማዋቀር ይችላሉ።</translation>
@@ -317,6 +312,11 @@
 <translation id="8804164990146287819">የግላዊነት መመሪያ</translation>
 <translation id="894763922177556086">ጥሩ</translation>
 <translation id="895780780740011433">ለWindows 7 እና ከዚያ በላይ</translation>
+<translation id="8963047137585288214"><ph name="PRODUCT_NAME" />ን በመጠቀም ይህን ማሽን በርቀት መቆጣጠር ከመቻልዎ በፊት ተጨማሪ የውቅረት ደረጃ ያስፈልጋል።
+
+ይህን ተግባር ለማንቃት የደህንነት እና የግላዊነት ምርጫዎች መቃንን ለማሳየት «<ph name="BUTTON_NAME" />» ን ይምረጡ፣ ከዚያ ከ«<ph name="SERVICE_SCRIPT_NAME" />» ቀጥሎ ያለውን ሳጥን ላይ ምልክት ያድርጉ።
+
+«<ph name="SERVICE_SCRIPT_NAME" />» አስቀድሞ ያለ እና ምልክት የተደረገበት ከሆነ ምልክቱን አንስተው እንደገና ማድረግ ሊኖርብዎት ይችላል።</translation>
 <translation id="897805526397249209">ከአንድ ሌላ ኮምፒውተር ጋር የርቀት ግንኙነቶችን ለማንቃት Chromotingን እዚያው ይጫኑና «<ph name="BUTTON_NAME" />»ን ይጫኑ።</translation>
 <translation id="8998327464021325874">Chrome የርቀት ዴስክቶፕ አስተናጋጅ ምርጫዎች መቆጣጠሪያ</translation>
 <translation id="9016232822027372900">ለማንኛውም ተገናኝ</translation>

@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">മെനു ചുരുക്കുക</translation>
 <translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1419738280318246476">അറിയിപ്പ് പ്രവർത്തനം നിർവഹിക്കുന്നതിന് ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
+<translation id="1420408895951708260">നൈറ്റ് ലൈറ്റ് മാറ്റുക. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">അതെ</translation>
 <translation id="1455242230282523554">ഭാഷാ ക്രമീകരണം കാണിക്കുക</translation>
 <translation id="1460620680449458626">വോളിയം മ്യൂട്ട് ചെയ്‌തിരിക്കുന്നു.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">ഈ ഉപകരണത്തിൽ ബാധകമാക്കിയ ഒരു നയം <ph name="FEATURE_NAME" /> എന്നതിനെ പ്രവർത്തനരഹിതമാക്കി. മാറ്റങ്ങൾ അഭ്യർത്ഥിക്കാൻ നിങ്ങളുടെ അഡ്‌മിനോട് സംസാരിക്കുക.</translation>
 <translation id="1823873187264960516">ഇതർനെറ്റ്: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">സഹായി (ലോഡുചെയ്യുന്നു...)</translation>
+<translation id="1838895407229022812">നൈറ്റ് ലൈറ്റ് ഓഫാണ്.</translation>
 <translation id="1850504506766569011">Wi-Fi ഓഫുചെയ്‌തു.</translation>
 <translation id="1864454756846565995">USB-C ഉപകരണം (പുറകിലെ പോർട്ട്)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് മിറർ ചെയ്യുന്നു</translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">സ്‌റ്റിക്കി കീകൾ</translation>
 <translation id="2509468283778169019">CAPS LOCK ഓൺ ആണ്</translation>
 <translation id="2532589005999780174">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ്</translation>
+<translation id="2542089167727451762">നിങ്ങളുടെ പ്രൊഫൈൽ ചിത്രത്തിൽ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="255671100581129685">പൊതു സെഷനില്‍ Google അസി‌സ്‌റ്റന്റ് ലഭ്യമല്ല.</translation>
 <translation id="2575685495496069081">ഒന്നിലധികം സൈൻ ഇൻ പ്രവർത്തനരഹിതമാക്കിയിരിക്കുന്നു</translation>
 <translation id="2582112259361606227">അപ്‌ഡേറ്റ് ചെയ്യാൻ റീസ്‌റ്റാർട്ട് ചെയ്യുക</translation>
 <translation id="2617342710774726426">സിം കാർഡ് ലോക്കുചെയ്‌തു</translation>
-<translation id="2651765386227849097">ഈ ഉപകരണത്തിൽ Google അസിസ്‌റ്റന്റ് പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
 <translation id="2658778018866295321">ക്ലിക്ക് ചെയ്‌ത് വലിച്ചിടുക</translation>
 <translation id="2700493154570097719">നിങ്ങളുടെ കീബോഡ് സജ്ജീകരിക്കുക</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">മാഗ്‌നിഫൈയിംഗ് ഗ്ലാസ്</translation>
 <translation id="4351433414020964307">സഹായി ലോഡുചെയ്യുന്നു...</translation>
-<translation id="435527878592612277">നിങ്ങളുടെ ഫോട്ടോ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="4378551569595875038">കണക്റ്റുചെയ്യുന്നു...</translation>
 <translation id="4379531060876907730">ഇവയാണ് നിങ്ങളുടെ സ്‌റ്റൈലസ് ടൂളുകൾ</translation>
 <translation id="4389184120735010762">നിങ്ങൾ ഡോക്ക് ചെയ്‌ത മാഗ്നിഫയറിനായി കീബോഡ് കുറുക്കുവഴി അമർത്തി. അത് ഓണാക്കണോ?</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">ഇടത്തരം</translation>
 <translation id="5744083938413354016">ടാപ്പുചെയ്‌ത് വലിച്ചിടൽ</translation>
 <translation id="5750765938512549687">Bluetooth ഓഫാണ്</translation>
+<translation id="576453121877257266">നൈറ്റ് ലൈറ്റ് ഓണാണ്.</translation>
 <translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />-ൽ <ph name="ROUTE_TITLE" /> നിർത്തുക</translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">റെസല്യൂഷൻ മാറ്റി</translation>
 <translation id="6297287540776456956">ആവശ്യമുള്ള ഏരിയ തിരഞ്ഞെടുക്കാൻ സ്റ്റൈലസ് ഉപയോഗിക്കുക</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> എന്നതിനെ <ph name="ROTATION" /> എന്നതിലേയ്‌ക്ക് തിരിച്ചു</translation>
-<translation id="6344698853700675736">നൈറ്റ് ലൈറ്റ് മാറ്റുക</translation>
 <translation id="6376931439017688372">Bluetooth ഓണാണ്</translation>
 <translation id="639644700271529076">CAPS LOCK ഓഫാണ്</translation>
 <translation id="6406704438230478924">altgr</translation>

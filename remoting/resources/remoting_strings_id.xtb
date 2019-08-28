@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Tidak dapat menjangkau inang. Ini mungkin karena konfigurasi jaringan yang Anda gunakan.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Terakhir terlihat online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Aplikasi ini tidak lagi didukung. Untuk memastikan Anda mendapatkan update fitur dan keamanan terbaru, gunakan <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Langkah konfigurasi tambahan diperlukan sebelum Anda dapat mengontrol perangkat ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />.
-
-Untuk mengaktifkan fungsi ini, pilih <ph name="BUTTON_NAME" />' untuk menampilkan panel preferensi Keamanan dan Privasi, kemudian centang kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah ada dan dicentang, Anda mungkin perlu menghapusnya, lalu menambahkannya kembali.</translation>
 <translation id="2499160551253595098">Bantu kami meningkatkan Chrome Desktop Jarak Jauh dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
 <translation id="2509394361235492552">Terhubung ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chrome Desktop Jarak Jauh menjadi ‘Buka sebagai jendela’.</translation>
@@ -317,6 +312,11 @@ Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah ada dan dicentang, Anda mungkin p
 <translation id="8804164990146287819">Kebijakan Privasi</translation>
 <translation id="894763922177556086">Baik</translation>
 <translation id="895780780740011433">Untuk Windows 7 dan lebih tinggi</translation>
+<translation id="8963047137585288214">Langkah konfigurasi tambahan diperlukan sebelum Anda dapat mengontrol perangkat ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />.
+
+Untuk mengaktifkan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk menampilkan panel preferensi Keamanan dan Privasi, kemudian centang kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah ada dan dicentang, Anda mungkin perlu menghapus centangnya, lalu mencentangnya kembali.</translation>
 <translation id="897805526397249209">Untuk mengaktifkan sambungan jarak jauh ke komputer yang berbeda, instal Chromoting di komputer tersebut, lalu klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Pengontrol Host Chrome Desktop Jarak Jauh</translation>
 <translation id="9016232822027372900">Tetap sambungkan</translation>

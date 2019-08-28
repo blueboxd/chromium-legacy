@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">No se puede establecer la conexión con el host. Probablemente esto se deba a la configuración de la red que usas.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Última vez en línea <ph name="RELATIVE_TIMESTAMP" /></translation>
 <translation id="2405928220797050937">Esta app ya no es compatible. Para asegurarte de que recibes las actualizaciones de seguridad y las funciones más recientes, usa la <ph name="LINK_BEGIN" />app web de Escritorio remoto de Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Para poder controlar esta máquina de forma remota con <ph name="PRODUCT_NAME" />, se necesita un paso de configuración adicional.
-
-Para habilitar esta funcionalidad, selecciona "<ph name="BUTTON_NAME" />". Se mostrará el panel de preferencias de Seguridad y Privacidad. Luego, marca la casilla correspondiente a "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Si ya se muestra la opción "<ph name="SERVICE_SCRIPT_NAME" />" y está marcada, es posible que debas quitarla y volver a agregarla.</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
 <translation id="2509394361235492552">Conectado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Para asegurarte de que todas las combinaciones de teclas para acceso directo estén disponibles, puedes configurar Escritorio remoto de Chrome en "Abrir como ventana".</translation>
@@ -317,6 +312,11 @@ Si ya se muestra la opción "<ph name="SERVICE_SCRIPT_NAME" />" y está marcada,
 <translation id="8804164990146287819">Política de Privacidad</translation>
 <translation id="894763922177556086">Buena</translation>
 <translation id="895780780740011433">Para Windows 7 y versiones posteriores</translation>
+<translation id="8963047137585288214">Para poder controlar esta máquina de forma remota con <ph name="PRODUCT_NAME" />, se necesita un paso de configuración adicional.
+
+Para habilitar esta funcionalidad, selecciona "<ph name="BUTTON_NAME" />". Se mostrará el panel de preferencias de Seguridad y Privacidad. Luego, marca la casilla correspondiente a "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Si ya se muestra la opción "<ph name="SERVICE_SCRIPT_NAME" />" y está marcada, es posible que debas desmarcarla y volver a marcarla.</translation>
 <translation id="897805526397249209">Para habilitar conexiones remotas con otra computadora, instala allí Chromoting y haz clic en “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Controlador del host del Escritorio remoto de Chrome</translation>
 <translation id="9016232822027372900">Conectar de todos modos</translation>

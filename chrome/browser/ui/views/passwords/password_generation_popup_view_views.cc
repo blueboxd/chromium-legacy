@@ -54,7 +54,7 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
         suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
         state == PasswordGenerationPopupController::kOfferGeneration
             ? views::style::STYLE_PRIMARY
-            : STYLE_SECONDARY));
+            : views::style::STYLE_SECONDARY));
 
     DCHECK(!password_label_);
     password_label_ =
@@ -179,7 +179,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
 
   views::Label* help_label = new views::Label(
       controller_->HelpText(), ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-      STYLE_SECONDARY);
+      views::style::STYLE_SECONDARY);
   help_label->SetMultiLine(true);
   help_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   help_label->SetBackground(

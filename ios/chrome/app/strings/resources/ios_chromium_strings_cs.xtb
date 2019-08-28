@@ -26,6 +26,7 @@
 <translation id="4157467675761413638">Tip pro Chromium. Další možnosti karet zobrazíte podržením tlačítka Zobrazit karty, které najdete v dolní nebo horní části obrazovky.</translation>
 <translation id="4241912885070669028">Odhlašujete se z účtu, který je spravován doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Touto akcí svá data prohlížeče Chromium smažete z tohoto zařízení, ve vašem účtu Google však zůstanou.</translation>
 <translation id="4555020257205549924">Pokud je tato funkce zapnutá, bude Chromium nabízet překlad stránek v jiných jazycích pomocí Překladače Google.<ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Zapněte čtečku prohlížeče Chromium</translation>
 <translation id="4787850887676698916">Zde se objeví karty, které jste otevřeli v prohlížeči Chromium ve svých ostatních zařízeních.</translation>
 <translation id="4999538639245140991">Protože se odhlašujete z účtu spravovaného doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaše data prohlížeče Chromium z tohoto zařízení budou smazána. V účtu Google vám zůstanou.</translation>
 <translation id="5231355151045086930">Odhlášení z prohlížeče Chromium</translation>
@@ -45,6 +46,7 @@
 <translation id="7674213385180944843">Otevřete Nastavení &gt; Soukromí &gt; Kamera &gt; Chromium a zapněte fotoaparát.</translation>
 <translation id="7746854981345936341">Tip pro Chromium. Některá tlačítka, například Zpět, Vpřed a Hledat, jsou teď v dolní části obrazovky.</translation>
 <translation id="786327964234957808">Přepínáte účet pro synchronizaci z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Vaše existující data prohlížeče Chromium jsou spravována doménou <ph name="DOMAIN" />. Touto akcí svá data smažete z tohoto zařízení, v účtu <ph name="USER_EMAIL1" /> však vaše data zůstanou.</translation>
+<translation id="7890287942691234100">Začněte používat čtečku prohlížeče Chromium</translation>
 <translation id="8073677936375100957">Vymazat z tohoto zařízení data prohlížeče Chromium?</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Přesuňte si prohlížeč Chromium do doku<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Služby Google mohou v prohlížeči Chromium díky údajům o poloze fungovat lépe.</translation>

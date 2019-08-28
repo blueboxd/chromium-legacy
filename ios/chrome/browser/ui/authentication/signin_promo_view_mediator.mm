@@ -269,7 +269,12 @@ const char* AlreadySeenSigninViewPreferenceKey(
   [self sendConsumerNotificationWithIdentityChanged:NO];
 }
 
+// Sends the update notification to the consummer if the signin-in is not in
+// progress. This is to avoid to update the sign-in promo view in the
+// background.
 - (void)sendConsumerNotificationWithIdentityChanged:(BOOL)identityChanged {
+  if (self.signinInProgress)
+    return;
   SigninPromoViewConfigurator* configurator = [self createConfigurator];
   [_consumer configureSigninPromoWithConfigurator:configurator
                                   identityChanged:identityChanged];
@@ -378,10 +383,6 @@ const char* AlreadySeenSigninViewPreferenceKey(
 #pragma mark - ChromeIdentityServiceObserver
 
 - (void)identityListChanged {
-  // Don't update the sign-in promo view while doing sign-in, to avoid UI
-  // glitches.
-  if (self.signinInProgress)
-    return;
   ChromeIdentity* newIdentity = nil;
   NSArray* identities = ios::GetChromeBrowserProvider()
                             ->GetChromeIdentityService()
@@ -396,13 +397,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)profileUpdate:(ChromeIdentity*)identity {
-  // Don't update the sign-in promo view while doing sign-in, to avoid UI
-  // glitches.
-  if (!self.signinInProgress)
-    return;
-  if (identity == _defaultIdentity) {
-    [self sendConsumerNotificationWithIdentityChanged:NO];
-  }
+  [self sendConsumerNotificationWithIdentityChanged:NO];
 }
 
 - (void)chromeIdentityServiceWillBeDestroyed {

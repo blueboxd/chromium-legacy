@@ -224,7 +224,6 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium innerhalb eines Tages neu starten}other{Chromium innerhalb von # Tagen neu starten}}</translation>
 <translation id="8453117565092476964">Das Installationsarchiv ist beschädigt oder ungültig. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="8493179195440786826">Chromium ist veraltet.</translation>
-<translation id="8494843963476918365">Wenn Sie eine Einstellung nicht auf dieser Seite finden können, sehen Sie in den <ph name="LINK_BEGIN" />Browsereinstellungen von Chromium<ph name="LINK_END" /> nach.</translation>
 <translation id="85843667276690461">Hilfe für Chromium aufrufen</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="8619360774459241877">Chromium wird gestartet…</translation>

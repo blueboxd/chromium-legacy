@@ -24,24 +24,13 @@ SharingFCMSender::SharingFCMSender(
 
 SharingFCMSender::~SharingFCMSender() = default;
 
-void SharingFCMSender::SendMessageToDevice(
-    const std::string& device_guid,
-    base::TimeDelta time_to_live,
-    chrome_browser_sharing::SharingMessage message,
-    SendMessageCallback callback) {
-  auto synced_devices = sync_preference_->GetSyncedDevices();
-  auto iter = synced_devices.find(device_guid);
-  if (iter == synced_devices.end()) {
-    LOG(ERROR) << "Unable to find device in preference";
-    std::move(callback).Run(SharingSendMessageResult::kDeviceNotFound,
-                            base::nullopt);
-    return;
-  }
-
+void SharingFCMSender::SendMessageToDevice(Device target,
+                                           base::TimeDelta time_to_live,
+                                           SharingMessage message,
+                                           SendMessageCallback callback) {
   auto send_message_closure = base::BindOnce(
       &SharingFCMSender::DoSendMessageToDevice, weak_ptr_factory_.GetWeakPtr(),
-      device_guid, std::move(iter->second), time_to_live, std::move(message),
-      std::move(callback));
+      std::move(target), time_to_live, std::move(message), std::move(callback));
 
   if (device_info_provider_->GetLocalDeviceInfo()) {
     std::move(send_message_closure).Run();
@@ -66,18 +55,11 @@ void SharingFCMSender::OnLocalDeviceInfoInitialized() {
   local_device_info_ready_subscription_.reset();
 }
 
-void SharingFCMSender::DoSendMessageToDevice(
-    const std::string& device_guid,
-    SharingSyncPreference::Device target,
-    base::TimeDelta time_to_live,
-    chrome_browser_sharing::SharingMessage message,
-    SendMessageCallback callback) {
+void SharingFCMSender::DoSendMessageToDevice(Device target,
+                                             base::TimeDelta time_to_live,
+                                             SharingMessage message,
+                                             SendMessageCallback callback) {
   message.set_sender_guid(device_info_provider_->GetLocalDeviceInfo()->guid());
-
-  gcm::WebPushMessage web_push_message;
-  web_push_message.time_to_live = time_to_live.InSeconds();
-  web_push_message.urgency = gcm::WebPushMessage::Urgency::kHigh;
-  message.SerializeToString(&web_push_message.payload);
 
   auto fcm_registration = sync_preference_->GetFCMRegistration();
   if (!fcm_registration) {
@@ -87,17 +69,27 @@ void SharingFCMSender::DoSendMessageToDevice(
     return;
   }
 
+  if (message.payload_case() != SharingMessage::kAckMessage) {
+    auto* sender_info = message.mutable_sender_info();
+    sender_info->set_fcm_token(fcm_registration->fcm_token);
+    sender_info->set_p256dh(fcm_registration->p256dh);
+    sender_info->set_auth_secret(fcm_registration->auth_secret);
+  }
+
+  gcm::WebPushMessage web_push_message;
+  web_push_message.time_to_live = time_to_live.InSeconds();
+  web_push_message.urgency = gcm::WebPushMessage::Urgency::kHigh;
+  message.SerializeToString(&web_push_message.payload);
+
   gcm_driver_->SendWebPushMessage(
       kSharingFCMAppID, fcm_registration->authorized_entity, target.p256dh,
       target.auth_secret, target.fcm_token,
       vapid_key_manager_->GetOrCreateKey(), std::move(web_push_message),
       base::BindOnce(&SharingFCMSender::OnMessageSent,
-                     weak_ptr_factory_.GetWeakPtr(), device_guid,
-                     std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void SharingFCMSender::OnMessageSent(const std::string& device_guid,
-                                     SendMessageCallback callback,
+void SharingFCMSender::OnMessageSent(SendMessageCallback callback,
                                      gcm::SendWebPushMessageResult result,
                                      base::Optional<std::string> message_id) {
   SharingSendMessageResult send_message_result;
@@ -106,7 +98,6 @@ void SharingFCMSender::OnMessageSent(const std::string& device_guid,
       send_message_result = SharingSendMessageResult::kSuccessful;
       break;
     case gcm::SendWebPushMessageResult::kDeviceGone:
-      sync_preference_->RemoveDevice(device_guid);
       send_message_result = SharingSendMessageResult::kDeviceNotFound;
       break;
     case gcm::SendWebPushMessageResult::kNetworkError:

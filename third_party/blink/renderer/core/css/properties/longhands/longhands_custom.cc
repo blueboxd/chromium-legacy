@@ -3702,6 +3702,11 @@ const CSSValue* ListStyleType::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ListStyleType());
 }
 
+bool MarginBlockEnd::IsLayoutDependent(const ComputedStyle* style,
+                                       LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
+}
+
 const CSSValue* MarginBlockEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -3709,6 +3714,11 @@ const CSSValue* MarginBlockEnd::ParseSingleValue(
   return css_parsing_utils::ConsumeMarginOrOffset(
       range, context.Mode(),
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+bool MarginBlockStart::IsLayoutDependent(const ComputedStyle* style,
+                                         LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginBlockStart::ParseSingleValue(
@@ -3749,6 +3759,11 @@ const CSSValue* MarginBottom::CSSValueFromComputedStyleInternal(
                                 style);
 }
 
+bool MarginInlineEnd::IsLayoutDependent(const ComputedStyle* style,
+                                        LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
+}
+
 const CSSValue* MarginInlineEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -3756,6 +3771,11 @@ const CSSValue* MarginInlineEnd::ParseSingleValue(
   return css_parsing_utils::ConsumeMarginOrOffset(
       range, context.Mode(),
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+bool MarginInlineStart::IsLayoutDependent(const ComputedStyle* style,
+                                          LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginInlineStart::ParseSingleValue(
@@ -4396,6 +4416,11 @@ const CSSValue* OverscrollBehaviorY::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.OverscrollBehaviorY());
 }
 
+bool PaddingBlockEnd::IsLayoutDependent(const ComputedStyle* style,
+                                        LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
+}
+
 const CSSValue* PaddingBlockEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -4403,6 +4428,11 @@ const CSSValue* PaddingBlockEnd::ParseSingleValue(
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+bool PaddingBlockStart::IsLayoutDependent(const ComputedStyle* style,
+                                          LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* PaddingBlockStart::ParseSingleValue(
@@ -4443,6 +4473,11 @@ const CSSValue* PaddingBottom::CSSValueFromComputedStyleInternal(
       ToLayoutBox(layout_object)->ComputedCSSPaddingBottom(), style);
 }
 
+bool PaddingInlineEnd::IsLayoutDependent(const ComputedStyle* style,
+                                         LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
+}
+
 const CSSValue* PaddingInlineEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -4450,6 +4485,11 @@ const CSSValue* PaddingInlineEnd::ParseSingleValue(
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+bool PaddingInlineStart::IsLayoutDependent(const ComputedStyle* style,
+                                           LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* PaddingInlineStart::ParseSingleValue(

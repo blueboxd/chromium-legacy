@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">ค่าต้องน้อยกว่าหรือเท่ากับ <ph name="MAXIMUM" /></translation>
 <translation id="3486220673238053218">คำจำกัดความ</translation>
 <translation id="3557673793733683882">ส่วนหัว <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">เครื่องมือเลือกสัปดาห์</translation>
 <translation id="3685101356851116974">รูปภาพที่ไม่มีป้ายกำกับ</translation>
 <translation id="3706100364254443312">สวิตช์</translation>
 <translation id="3732799496749320381">ดด</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">กำลังโหลดคำอธิบาย...</translation>
 <translation id="8117451130807776954">สัปดาห์นี้</translation>
 <translation id="8199524924445686405">ปปปป</translation>
+<translation id="8208673686607688524">เครื่องมือเลือกวันที่และเวลาในท้องถิ่น</translation>
 <translation id="8261464734335370856">มีการสะกดผิด</translation>
 <translation id="8284326494547611709">คำบรรยาย</translation>
 <translation id="835897206747267392">ค่าไม่ถูกต้อง</translation>

@@ -838,8 +838,8 @@ bool Window::HitTest(const gfx::Point& local_point) {
   delegate_->GetHitTestMask(&mask);
 
   SkRegion clip_region;
-  clip_region.setRect(local_bounds.x(), local_bounds.y(),
-                      local_bounds.width(), local_bounds.height());
+  clip_region.setRect({local_bounds.x(), local_bounds.y(), local_bounds.width(),
+                       local_bounds.height()});
   SkRegion mask_region;
   return mask_region.setPath(mask, clip_region) &&
       mask_region.contains(local_point.x(), local_point.y());

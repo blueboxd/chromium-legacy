@@ -141,8 +141,6 @@ class NetworkTrafficAnnotationTools():
     """
 
     command_line = [self.auditor_path, "--build-path=" + self.build_path] + args
-    # TODO(nicolaso): Remove once it's no longer needed for debugging.
-    print("Running %s" % command_line)
 
     command = subprocess.Popen(
         command_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

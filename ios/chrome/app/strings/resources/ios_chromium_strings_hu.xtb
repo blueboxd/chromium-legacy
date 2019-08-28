@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Tipp a Chromium használatához. A további lapbeállításokhoz tartsa lenyomva az eszköztárban lévő Lapok megjelenítése gombot, amely a képernyő alsó vagy felső részén található.</translation>
 <translation id="4241912885070669028">Kijelentkezik egy <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chromium-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
 <translation id="4555020257205549924">Ha a funkció be van kapcsolva, a Chromium felajánlja a más nyelveken írt oldalak lefordítását a Google Fordító segítségével. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
+<translation id="4681781466797808448">Kapcsolja be a Chromium szkennerét</translation>
 <translation id="4787850887676698916">A más eszközökön futó Chromium böngészőben megnyitott lapok itt jelennek meg.</translation>
 <translation id="4999538639245140991">Mivel kijelentkezik a(z) <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból, törli az eszközön található Chromium-adatokat. Ezek az adatok Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="5231355151045086930">Kijelentkezés a Chromiumból</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Nyissa meg a Beállítások &gt; Adatvédelem &gt; Kamera &gt; Chromium elemet, és kapcsolja be a kamerát.</translation>
 <translation id="7746854981345936341">Tipp a Chromium használatához. Egyes gombok (például a Vissza, az Előre vagy a Keresés) mostantól a képernyő alján jelennek meg.</translation>
 <translation id="786327964234957808">A(z) <ph name="USER_EMAIL1" /> szinkronizált fiókról a következőre vált át: <ph name="USER_EMAIL2" />. A meglévő Chromium-adatokat a(z) <ph name="DOMAIN" /> kezeli. Ezzel törli az adatait erről az eszközről, viszont azok továbbra is megmaradnak a(z) <ph name="USER_EMAIL1" /> fiókban.</translation>
+<translation id="7890287942691234100">Használja a Chromium szkennerét</translation>
 <translation id="8073677936375100957">Törli Chromium-adatait az eszközről?</translation>
 <translation id="8175055321229419309">Tipp: <ph name="BEGIN_LINK" />Helyezze át a Chromiumot a Dockra<ph name="END_LINK" />.</translation>
 <translation id="8252885722420466166">Jobb Google-felhasználói élmény a Chromiumban a tartózkodási hely alapján.</translation>

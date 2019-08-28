@@ -23,10 +23,15 @@ class ScriptsSmokeTest(unittest.TestCase):
 
   perf_dir = os.path.dirname(__file__)
 
-  def RunPerfScript(self, command, env=None):
-    main_command = [sys.executable]
-    args = main_command + command.split(' ')
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+  def setUp(self):
+    self.options = options_for_unittests.GetCopy()
+
+  def RunPerfScript(self, args, env=None):
+    # TODO(crbug.com/985712): Switch all clients to pass a list of args rather
+    # than a string which we may not be parsing correctly.
+    if not isinstance(args, list):
+      args = args.split(' ')
+    proc = subprocess.Popen([sys.executable] + args, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, cwd=self.perf_dir,
                             env=env)
     stdout = proc.communicate()[0]
@@ -37,6 +42,13 @@ class ScriptsSmokeTest(unittest.TestCase):
     return_code, stdout = self.RunPerfScript('run_benchmark --help')
     self.assertEquals(return_code, 0, stdout)
     self.assertIn('usage: run_benchmark', stdout)
+
+  @decorators.Disabled('chromeos')  # crbug.com/754913
+  def testRunBenchmarkListBenchmarks(self):
+    return_code, stdout = self.RunPerfScript(
+        ['run_benchmark', 'list', '--browser', self.options.browser_type])
+    self.assertRegexpMatches(stdout, r'Available benchmarks .*? are:')
+    self.assertEqual(return_code, 0)
 
   def testRunBenchmarkRunListsOutBenchmarks(self):
     return_code, stdout = self.RunPerfScript('run_benchmark run')
@@ -66,8 +78,6 @@ class ScriptsSmokeTest(unittest.TestCase):
 
   @decorators.Disabled('chromeos')  # crbug.com/754913
   def testRunPerformanceTestsTelemetry_end2end(self):
-    options = options_for_unittests.GetCopy()
-    browser_type = options.browser_type
     tempdir = tempfile.mkdtemp()
     benchmarks = ['dummy_benchmark.stable_benchmark_1',
                   'dummy_benchmark.noisy_benchmark_1']
@@ -79,7 +89,7 @@ class ScriptsSmokeTest(unittest.TestCase):
         '--isolated-script-test-also-run-disabled-tests '
         '--isolated-script-test-output=%s' % (
             ','.join(benchmarks),
-            browser_type,
+            self.options.browser_type,
             os.path.join(tempdir, 'output.json')
         ))
     self.assertEquals(return_code, 0, stdout)
@@ -111,8 +121,6 @@ class ScriptsSmokeTest(unittest.TestCase):
   @decorators.Enabled('linux')  # Testing platform-independent code.
   def testRunPerformanceTestsTelemetry_NoTestResults(self):
     """Test that test results output gets returned for complete failures."""
-    options = options_for_unittests.GetCopy()
-    browser_type = options.browser_type
     tempdir = tempfile.mkdtemp()
     benchmarks = ['benchmark1', 'benchmark2']
     return_code, stdout = self.RunPerfScript(
@@ -122,7 +130,7 @@ class ScriptsSmokeTest(unittest.TestCase):
         '--browser=%s '
         '--isolated-script-test-output=%s' % (
             ','.join(benchmarks),
-            browser_type,
+            self.options.browser_type,
             os.path.join(tempdir, 'output.json')
         ))
     self.assertNotEqual(return_code, 0)
@@ -154,8 +162,6 @@ class ScriptsSmokeTest(unittest.TestCase):
   # Linux: crbug.com/996003
   @decorators.Disabled('chromeos', 'android', 'linux')
   def testRunPerformanceTestsTelemetrySharded_end2end(self):
-    options = options_for_unittests.GetCopy()
-    browser_type = options.browser_type
     tempdir = tempfile.mkdtemp()
     env = os.environ.copy()
     env['GTEST_SHARD_INDEX'] = '0'
@@ -171,7 +177,7 @@ class ScriptsSmokeTest(unittest.TestCase):
         '--isolated-script-test-repeat=2 '
         '--isolated-script-test-also-run-disabled-tests '
         '--isolated-script-test-output=%s' % (
-            browser_type,
+            self.options.browser_type,
             os.path.join(tempdir, 'output.json')
         ), env=env)
     self.assertEquals(return_code, 0, stdout)

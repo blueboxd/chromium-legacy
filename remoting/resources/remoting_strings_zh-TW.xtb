@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">無法連線到主機，原因可能與你使用的網路設定有關。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次上線時間：<ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2405928220797050937">我們已不再支援這個應用程式。為確保你取得最新功能和安全性更新，請使用 <ph name="LINK_BEGIN" />Chrome 遠端桌面網路應用程式<ph name="LINK_END" />。</translation>
-<translation id="2431841749166974386">你必須先完成一項額外的設定步驟，才能使用 <ph name="PRODUCT_NAME" />從遠端控制這部電腦。
-
-如要啟用這項功能，請先選取 [<ph name="BUTTON_NAME" />] 以開啟「安全性和隱私權」偏好設定窗格，然後勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。
-
-如果現有的 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請將其移除並再次新增。</translation>
 <translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
 <translation id="2509394361235492552">已連線至「<ph name="HOSTNAME" />」</translation>
 <translation id="2512228156274966424">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chrome 遠端桌面設定為 [在視窗中開啟]。</translation>
@@ -317,6 +312,11 @@
 <translation id="8804164990146287819">隱私權政策</translation>
 <translation id="894763922177556086">良好</translation>
 <translation id="895780780740011433">適用於 Windows 7 以上版本</translation>
+<translation id="8963047137585288214">你必須先完成一項額外的設定步驟，才能使用 <ph name="PRODUCT_NAME" />從遠端控制這部電腦。
+
+如要啟用這項功能，請先選取 [<ph name="BUTTON_NAME" />] 以開啟「安全性和隱私權」偏好設定窗格，然後勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。
+
+如果現有的 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請先取消勾選，然後再次勾選。</translation>
 <translation id="897805526397249209">如要為其他電腦啟用遠端連線，請在你想要連線的電腦上安裝 Chromoting，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>
 <translation id="8998327464021325874">Chrome 遠端桌面主機控制器</translation>
 <translation id="9016232822027372900">繼續連線</translation>

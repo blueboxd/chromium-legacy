@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Chromium-tip. Hvis du vil se flere indstillinger for faner, skal du trykke på knappen Vis faner på værktøjslinjen nederst eller øverst på skærmen.</translation>
 <translation id="4241912885070669028">Du er ved at logge ud af en konto, der administreres af <ph name="SIGNOUT_MANAGED_DOMAIN" />. Denne handling sletter dine Chromium-data fra denne enhed, men dine data forbliver gemt på din Google-konto.</translation>
 <translation id="4555020257205549924">Når denne funktion er aktiveret, vil Chromium tilbyde at oversætte sider, der er skrevet på andre sprog, ved hjælp af Google Oversæt. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Aktivér Chromium-scanner</translation>
 <translation id="4787850887676698916">Faner, du har åbnet i Chromium på dine andre enheder, vises her.</translation>
 <translation id="4999538639245140991">Da du er ved at logge ud af en konto, der administreres af <ph name="SIGNOUT_MANAGED_DOMAIN" />, slettes dine Chromium-data på denne enhed. Dine data forbliver på din Google-konto.</translation>
 <translation id="5231355151045086930">Log ud af Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Åbn Indstillinger &gt; Privatliv &gt; Kamera &gt; Chromium, og slå kameraet til.</translation>
 <translation id="7746854981345936341">Chromium-tip. Nogle knapper som f.eks. Tilbage, Frem og Søg findes nu nederst på skærmen.</translation>
 <translation id="786327964234957808">Du er ved at skifte synkroniseringskonto fra <ph name="USER_EMAIL1" /> til <ph name="USER_EMAIL2" />. Dine eksisterende Chromium-data administreres af <ph name="DOMAIN" />. Denne handling sletter dine data fra denne enhed, men dine data forbliver gemt på <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Begynd at bruge Chromium-scanner</translation>
 <translation id="8073677936375100957">Vil du rydde dine Chromium-data på denne enhed?</translation>
 <translation id="8175055321229419309">Tip! <ph name="BEGIN_LINK" />Flyt Chromium til din dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Angiv din placering, og få en bedre oplevelse, når du bruger Chromium.</translation>

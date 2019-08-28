@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">মেনুটি আড়াল করুন</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1419738280318246476">বিজ্ঞপ্তি সম্পর্কিত অ্যাকশনের জন্য ডিভাইস আনলক করুন</translation>
+<translation id="1420408895951708260">নাইট লাইট ফিচারটি টগল করুন। <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
 <translation id="1455242230282523554">ভাষার সেটিংস দেখুন</translation>
 <translation id="1460620680449458626">ভলিউম মিউট করা আছে।</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">এই ডিভাইসে প্রয়োগ করা একটি নীতির মাধ্যমে <ph name="FEATURE_NAME" /> বন্ধ করে দেওয়া হয়েছে। পরিবর্তন করতে আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="1823873187264960516">ইথারনেট: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">সহায়ক (লোড হচ্ছে...)</translation>
+<translation id="1838895407229022812">নাইট লাইট ফিচার বন্ধ করা আছে।</translation>
 <translation id="1850504506766569011">ওয়াই-ফাই বন্ধ আছে৷</translation>
 <translation id="1864454756846565995">USB-C ডিভাইস (পিছনের পোর্ট)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> তে প্রতিবিম্বিত হচ্ছে</translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">স্টিকি কীজ</translation>
 <translation id="2509468283778169019">CAPS LOCK চালু</translation>
 <translation id="2532589005999780174">উচ্চ কনট্রাস্ট মোড</translation>
+<translation id="2542089167727451762">আপনার প্রোফাইল ছবিতে ট্যাপ করুন</translation>
 <translation id="255671100581129685">সর্বজনীন সেশনে Google অ্যাসিস্ট্যান্ট উপলভ্য নয়।</translation>
 <translation id="2575685495496069081">একাধিক সাইন-ইন বিকল্প বন্ধ করা হয়েছে</translation>
 <translation id="2582112259361606227">আপডেট করার জন্য রিস্টার্ট করুন</translation>
 <translation id="2617342710774726426">সিম কার্ড লক করা আছে</translation>
-<translation id="2651765386227849097">এই ডিভাইসে Google অ্যাসিস্ট্যান্ট বন্ধ করা আছে।</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
 <translation id="2658778018866295321">ক্লিক করে ড্র্যাগ করুন</translation>
 <translation id="2700493154570097719">আপনার কীবোর্ড সেট করুন</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">আতস কাচ</translation>
 <translation id="4351433414020964307">সহায়ক লোড হচ্ছে...</translation>
-<translation id="435527878592612277">আপনার ফটো বেছে নিন</translation>
 <translation id="4378551569595875038">সংযুক্ত হচ্ছে...</translation>
 <translation id="4379531060876907730">এগুলি হল আপনার স্টাইলাস টুল</translation>
 <translation id="4389184120735010762">ডক করা ম্যাগনিফায়ারের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">মাঝারি</translation>
 <translation id="5744083938413354016">ট্যাপ করে টেনে আনা</translation>
 <translation id="5750765938512549687">ব্লুটুথ বন্ধ আছে</translation>
+<translation id="576453121877257266">নাইট লাইট ফিচার চালু করা আছে।</translation>
 <translation id="5777841717266010279">স্ক্রিন শেয়ার করা থামাবেন?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />-এ <ph name="ROUTE_TITLE" /> বন্ধ করুন</translation>
@@ -350,7 +352,6 @@
 <translation id="6284232397434400372">রেজোলিউশন পরিবর্তন করা হয়েছে</translation>
 <translation id="6297287540776456956">একটি অঞ্চল নির্বাচন করতে স্টাইলাস ব্যবহার করুন</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
-<translation id="6344698853700675736">নাইট লাইট টগল করুন</translation>
 <translation id="6376931439017688372">ব্লুটুথ চালু আছে</translation>
 <translation id="639644700271529076">CAPS LOCK বন্ধ আছে</translation>
 <translation id="6406704438230478924">altgr</translation>

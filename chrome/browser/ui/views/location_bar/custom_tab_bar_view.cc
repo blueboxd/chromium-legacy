@@ -105,7 +105,8 @@ class CustomTabBarTitleOriginView : public views::View {
         base::string16(), CONTEXT_BODY_TEXT_LARGE,
         views::style::TextStyle::STYLE_PRIMARY);
     auto location_label = std::make_unique<views::Label>(
-        base::string16(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY,
+        base::string16(), CONTEXT_BODY_TEXT_SMALL,
+        views::style::STYLE_SECONDARY,
         gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
 
     title_label->SetBackgroundColor(background_color);

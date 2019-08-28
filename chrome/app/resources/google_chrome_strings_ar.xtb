@@ -172,7 +172,7 @@
 <translation id="5906655207909574370">أوشك التحديث على الانتهاء! أعِد تشغيل الجهاز لإنهاء التحديث.</translation>
 <translation id="5940385492829620908">‏الويب والإشارات المرجعية وغيرها من عناصر Chrome توجد هنا.</translation>
 <translation id="5941830788786076944">‏جعل Google Chrome المتصفّح التلقائي</translation>
-<translation id="5977372243443849142">‏يمكن أن يساعدك Chrome على تذّكر كلمة مرورك حتى لا تضطر إلى تذكرها بنفسك.</translation>
+<translation id="5977372243443849142">‏يمكن أن يساعدك Chrome على تذكُّر كلمات المرور حتى لا تضطر إلى تذكُّرها بنفسك.</translation>
 <translation id="6014844626092547096">‏لقد سجلت الدخول الآن إلى Chrome! أوقف المشرف المزامنة.</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6070348360322141662">‏لمزيد من الأمان، سيشفِّر Google Chrome بياناتك</translation>
@@ -185,8 +185,6 @@
 <translation id="6291549208091401781">‏تم تثبيت Google Chrome من قبل لجميع المستخدمين على الكمبيوتر.</translation>
 <translation id="6338556085225130112">‏تحديث Google Chrome</translation>
 <translation id="6368958679917195344">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS" /> إضافي.</translation>
-<translation id="6400930858680434649">‏في حال عدم عرض إعداد على هذه الصفحة، جرِّب <ph name="LINK_BEGIN" />
-    إعدادات متصفِّح Chrome<ph name="LINK_END" />.</translation>
 <translation id="6515495397637126556">‏<ph name="PAGE_TITLE" /> - إصدار قناة مطوري البرامج من Google Chrome</translation>
 <translation id="6566149418543181476">‏جارٍ تحديث Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">‏أنت تستخدم <ph name="PROFILE_EMAIL" /> لمزامنة عناصرك في Chrome. لتحديث تفضيل المزامنة أو استخدام Chrome بدون حساب Google، يمكنك الانتقال إلى <ph name="SETTINGS_LINK" />.</translation>

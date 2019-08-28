@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Chromium টিপ। ট্যাবে আরও বিকল্পের জন্য, আপনার স্ক্রিনের নিচে অথবা উপরে থাকা টুলবারে দেখানো ট্যাবটি প্রেস করে ধরে থাকুন।</translation>
 <translation id="4241912885070669028"><ph name="SIGNOUT_MANAGED_DOMAIN" /> পরিচালিত একটি অ্যাকাউন্ট থেকে আপনি সাইন-আউট করছেন৷ এটি এই ডিভাইস থেকে আপনার Chromium ডেটা মুছে ফেলবে, কিন্তু আপনার Google অ্যাকাউন্টে ডেটা থেকে যাবে৷</translation>
 <translation id="4555020257205549924">যখন এই বৈশিষ্ট্যটি চালু করা হয় তখন Chromium, Google অনুবাদ ব্যবহার করে অন্যান্য ভাষায় লিখিত পৃষ্ঠাগুলি অনুবাদ করার অফার করবে৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Chromium স্ক্যানার চালু করুন</translation>
 <translation id="4787850887676698916">আপনার অন্য ডিভাইসগুলিতে Chromium এ আপনি যে ট্যাবগুলি খুলেছেন সেগুলি এখানে দেখা যাবে।</translation>
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> দ্বারা ম্যানেজ করা একটি অ্যাকাউন্ট থেকে আপনি সাইন-আউট করছেন বলে, এই ডিভাইস থেকে আপনার Chromium ডেটা মুছে যাবে। আপনার Google অ্যাকাউন্টে এই ডেটা থেকে যাবে।</translation>
 <translation id="5231355151045086930">Chromium থেকে সাইন-আউট করুন</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">সেটিংস &gt; গোপনীয়তা &gt; ক্যামেরা &gt; Chromium খুলুন এবং ক্যামেরা চালু করুন।</translation>
 <translation id="7746854981345936341">Chromium টিপ। কিছু বোতাম এখন আপনার স্ক্রিনে নিচের দিকে রয়েছে যেমন, ব্যাক, ফরওয়ার্ড এবং সার্চ বোতাম।</translation>
 <translation id="786327964234957808">আপনি সিঙ্ক অ্যাকাউন্টগুলিকে <ph name="USER_EMAIL1" /> থেকে <ph name="USER_EMAIL2" /> এ সুইচ করছেন। আপনার বিদ্যমান Chromium ডেটা <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়। এটি এই ডিভাইস থেকে আপনার ডেটা মুছে দেবে, কিন্তু <ph name="USER_EMAIL1" /> এ আপনার ডেটা থাকবে।</translation>
+<translation id="7890287942691234100">Chromium স্ক্যানার ব্যবহার করা শুরু করুন</translation>
 <translation id="8073677936375100957">এই ডিভাইস থেকে আপনার Chromium ডেটা সরিয়ে ফেলবেন?</translation>
 <translation id="8175055321229419309">টিপ: <ph name="BEGIN_LINK" />Chromium-কে আপনার ডকে সরান<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">আপনার অবস্থানের উপর ভিত্তি করে Chromium এ আরও ভাল Google অভিজ্ঞতা লাভ করুন৷</translation>

@@ -190,9 +190,12 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
       subprotocol_(""),
       extensions_(""),
       event_queue_(MakeGarbageCollected<EventQueue>(this)),
-      buffered_amount_update_task_pending_(false) {}
+      buffered_amount_update_task_pending_(false) {
+  NETWORK_DVLOG(1) << "DOMWebSocket " << this << " created";
+}
 
 DOMWebSocket::~DOMWebSocket() {
+  NETWORK_DVLOG(1) << "DOMWebSocket " << this << " destroyed";
   DCHECK(!channel_);
 }
 

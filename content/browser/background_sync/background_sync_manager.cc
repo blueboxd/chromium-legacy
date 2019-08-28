@@ -234,7 +234,8 @@ std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
 base::TimeDelta GetNextEventDelay(
     scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     const BackgroundSyncRegistration& registration,
-    std::unique_ptr<BackgroundSyncParameters> parameters) {
+    std::unique_ptr<BackgroundSyncParameters> parameters,
+    base::TimeDelta time_till_soonest_scheduled_event_for_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BackgroundSyncController* background_sync_controller =
@@ -243,8 +244,9 @@ base::TimeDelta GetNextEventDelay(
   if (!background_sync_controller)
     return base::TimeDelta::Max();
 
-  return background_sync_controller->GetNextEventDelay(registration,
-                                                       parameters.get());
+  return background_sync_controller->GetNextEventDelay(
+      registration, parameters.get(),
+      time_till_soonest_scheduled_event_for_origin);
 }
 
 void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
@@ -937,6 +939,10 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
           ? parameters_->max_sync_attempts_with_notification_permission
           : parameters_->max_sync_attempts);
 
+  // Skip the current registration when getting time till next scheduled
+  // periodic sync event for the origin. This is because we'll be updating the
+  // schedule time of this registration soon anyway, so considering its
+  // schedule time would cause us to calculate incorrect delay.
   if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
     // TODO(crbug.com/824858): Remove the else branch after the feature is
     // enabled. Also, try to make a RunOrPostTaskOnThreadAndReplyWithResult()
@@ -944,7 +950,9 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       base::TimeDelta delay = GetNextEventDelay(
           service_worker_context_, registration,
-          std::make_unique<BackgroundSyncParameters>(*parameters_));
+          std::make_unique<BackgroundSyncParameters>(*parameters_),
+          GetSmallestPeriodicSyncEventDelayForOrigin(
+              origin, registration.options()->tag));
       RegisterDidGetDelay(sw_registration_id, registration, std::move(callback),
                           delay);
     } else {
@@ -952,7 +960,9 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &GetNextEventDelay, service_worker_context_, registration,
-              std::make_unique<BackgroundSyncParameters>(*parameters_)),
+              std::make_unique<BackgroundSyncParameters>(*parameters_),
+              GetSmallestPeriodicSyncEventDelayForOrigin(
+                  origin, registration.options()->tag)),
           base::BindOnce(&BackgroundSyncManager::RegisterDidGetDelay,
                          weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
                          registration, std::move(callback)));
@@ -973,10 +983,8 @@ void BackgroundSyncManager::RegisterDidGetDelay(
 
   // We don't fire periodic Background Sync registrations immediately after
   // registration, so set delay_until to override its default value.
-  if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
-    registration.set_delay_until(GetDelayUntilAfterApplyingMinGapForOrigin(
-        BackgroundSyncType::PERIODIC, registration.origin(), delay));
-  }
+  if (registration.sync_type() == BackgroundSyncType::PERIODIC)
+    registration.set_delay_until(clock_->Now() + delay);
 
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
@@ -1674,29 +1682,10 @@ base::TimeDelta BackgroundSyncManager::MaybeApplyBrowserWakeupCountLimit(
   return std::max(soonest_wakeup_delta, time_till_next_allowed_browser_wakeup);
 }
 
-base::Time BackgroundSyncManager::GetDelayUntilAfterApplyingMinGapForOrigin(
-    BackgroundSyncType sync_type,
+base::TimeDelta
+BackgroundSyncManager::GetSmallestPeriodicSyncEventDelayForOrigin(
     const url::Origin& origin,
-    base::TimeDelta delay) const {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
-  base::Time now_plus_delay = clock_->Now() + delay;
-  if (sync_type != BackgroundSyncType::PERIODIC)
-    return now_plus_delay;
-
-  base::Time soonest_wakeup_time_for_origin =
-      GetSoonestPeriodicSyncEventTimeForOrigin(origin);
-  if (soonest_wakeup_time_for_origin.is_null())
-    return now_plus_delay;
-
-  if (now_plus_delay <= soonest_wakeup_time_for_origin)
-    return soonest_wakeup_time_for_origin;
-  else
-    return soonest_wakeup_time_for_origin + delay;
-}
-
-base::Time BackgroundSyncManager::GetSoonestPeriodicSyncEventTimeForOrigin(
-    const url::Origin& origin) const {
+    const std::string& tag_to_skip) const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   base::Time soonest_wakeup_time = base::Time();
@@ -1707,6 +1696,8 @@ base::Time BackgroundSyncManager::GetSoonestPeriodicSyncEventTimeForOrigin(
     const auto& tag_and_registrations =
         active_registration.second.registration_map;
     for (const auto& tag_and_registration : tag_and_registrations) {
+      if (/* tag= */ tag_and_registration.first.first == tag_to_skip)
+        continue;
       if (/* sync_type= */ tag_and_registration.first.second !=
           BackgroundSyncType::PERIODIC) {
         continue;
@@ -1719,7 +1710,14 @@ base::Time BackgroundSyncManager::GetSoonestPeriodicSyncEventTimeForOrigin(
       }
     }
   }
-  return soonest_wakeup_time;
+
+  if (soonest_wakeup_time.is_null())
+    return base::TimeDelta::Max();
+
+  if (soonest_wakeup_time < clock_->Now())
+    return base::TimeDelta();
+
+  return soonest_wakeup_time - clock_->Now();
 }
 
 void BackgroundSyncManager::RevivePeriodicSyncRegistrations(
@@ -1790,7 +1788,9 @@ void BackgroundSyncManager::ReviveOriginImpl(url::Origin origin,
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       base::TimeDelta delay = GetNextEventDelay(
           service_worker_context_, *registration,
-          std::make_unique<BackgroundSyncParameters>(*parameters_));
+          std::make_unique<BackgroundSyncParameters>(*parameters_),
+          GetSmallestPeriodicSyncEventDelayForOrigin(
+              origin, registration->options()->tag));
       ReviveDidGetNextEventDelay(service_worker_registration_ids[registration],
                                  *registration, received_new_delays_closure,
                                  delay);
@@ -1799,7 +1799,9 @@ void BackgroundSyncManager::ReviveOriginImpl(url::Origin origin,
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &GetNextEventDelay, service_worker_context_, *registration,
-              std::make_unique<BackgroundSyncParameters>(*parameters_)),
+              std::make_unique<BackgroundSyncParameters>(*parameters_),
+              GetSmallestPeriodicSyncEventDelayForOrigin(
+                  origin, registration->options()->tag)),
           base::BindOnce(&BackgroundSyncManager::ReviveDidGetNextEventDelay,
                          weak_ptr_factory_.GetWeakPtr(),
                          service_worker_registration_ids[registration],
@@ -2151,7 +2153,9 @@ void BackgroundSyncManager::EventCompleteImpl(
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       base::TimeDelta delay = GetNextEventDelay(
           service_worker_context_, *registration,
-          std::make_unique<BackgroundSyncParameters>(*parameters_));
+          std::make_unique<BackgroundSyncParameters>(*parameters_),
+          GetSmallestPeriodicSyncEventDelayForOrigin(
+              origin, registration->options()->tag));
       EventCompleteDidGetDelay(std::move(registration_info), status_code,
                                origin, std::move(callback), delay);
 
@@ -2160,7 +2164,9 @@ void BackgroundSyncManager::EventCompleteImpl(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &GetNextEventDelay, service_worker_context_, *registration,
-              std::make_unique<BackgroundSyncParameters>(*parameters_)),
+              std::make_unique<BackgroundSyncParameters>(*parameters_),
+              GetSmallestPeriodicSyncEventDelayForOrigin(
+                  origin, registration->options()->tag)),
           base::BindOnce(&BackgroundSyncManager::EventCompleteDidGetDelay,
                          weak_ptr_factory_.GetWeakPtr(),
                          std::move(registration_info), status_code, origin,
@@ -2212,8 +2218,7 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
              registration->sync_type() == BackgroundSyncType::PERIODIC) {
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     registration_completed = false;
-    registration->set_delay_until(GetDelayUntilAfterApplyingMinGapForOrigin(
-        registration->sync_type(), registration->origin(), delay));
+    registration->set_delay_until(clock_->Now() + delay);
 
     std::string event_name = GetSyncEventName(registration->sync_type()) +
                              (succeeded ? " event completed" : " event failed");

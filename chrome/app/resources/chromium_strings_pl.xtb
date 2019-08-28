@@ -222,8 +222,6 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Ponowne uruchomienie Chromium nastąpi w ciągu 1 dnia}few{Ponowne uruchomienie Chromium nastąpi w ciągu # dni}many{Ponowne uruchomienie Chromium nastąpi w ciągu # dni}other{Ponowne uruchomienie Chromium nastąpi w ciągu # dnia}}</translation>
 <translation id="8453117565092476964">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Chromium ponownie.</translation>
 <translation id="8493179195440786826">Chromium jest nieaktualny</translation>
-<translation id="8494843963476918365">Jeśli na tej stronie nie widać jakiegoś ustawienia, zajrzyj do <ph name="LINK_BEGIN" />
-    ustawień przeglądarki Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Pomoc do Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="8619360774459241877">Uruchamiam Chromium…</translation>

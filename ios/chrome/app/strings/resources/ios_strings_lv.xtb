@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Pievienota lasīšanas sarakstam</translation>
 <translation id="1828824471510190776">Ieteikt paroli...</translation>
 <translation id="1870148520156231997">Rādīt paroli</translation>
+<translation id="1872096359983322073">Lukturītis</translation>
 <translation id="1876721852596493031">Sūtīt liet. datus</translation>
 <translation id="1911619930368729126">Augšupielādēt Google diskā</translation>
 <translation id="1923342640370224680">Pēdējā stunda</translation>
@@ -355,6 +356,7 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="605721222689873409">GG</translation>
 <translation id="6066301408025741299">Pieskarieties, lai atceltu.</translation>
 <translation id="6108923351542677676">Notiek iestatīšana...</translation>
+<translation id="6119050551270742952">Šajā lapā esat inkognito</translation>
 <translation id="6122191549521593678">Tiešsaistē</translation>
 <translation id="6127379762771434464">Vienums ir noņemts</translation>
 <translation id="6136914049981179737">Pirms sek.</translation>
@@ -411,6 +413,9 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6807889908376551050">Rādīt visus...</translation>
 <translation id="681368974849482173">Vienums izveidots</translation>
 <translation id="6851516051005285358">Pieprasīt datora vietni</translation>
+<translation id="6858855187367714033">Skenēšana pabeigta</translation>
+<translation id="6859944681507688231">Lai skenētu QR kodu vai kredītkarti, iestatījumos iespējojiet kameras atļauju.</translation>
+<translation id="6873263987691478642">Dalītais skats</translation>
 <translation id="6896758677409633944">Kopēt</translation>
 <translation id="6903907808598579934">Ieslēgt sinhronizāciju</translation>
 <translation id="6914583639806229067">Meklēt jūsu kopēto attēlu</translation>
@@ -509,6 +514,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8428045167754449968">Pilsēta/ciems</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8458397775385147834">Tika dzēsts 1 vienums.</translation>
+<translation id="8487667956631253959">Ieslēgts</translation>
 <translation id="8487700953926739672">Pieejams bezsaistē</translation>
 <translation id="8490978609246021741">Saglabāt izmaiņas</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>
@@ -519,6 +525,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8532105204136943229">Der. term. gads</translation>
 <translation id="8534481786647257214">Google+ ziņa izveidota.</translation>
 <translation id="8548878600947630424">Atrast lapā...</translation>
+<translation id="8588404856427128947">Izslēgts</translation>
 <translation id="8605219856220328675">Aizvērt cilni.</translation>
 <translation id="8620640915598389714">Rediģēt</translation>
 <translation id="8636825310635137004">Ieslēdziet sinhronizāciju, lai būtu pieejamas cilnes no citām jūsu ierīcēm.</translation>
@@ -559,6 +566,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Avārijas ziņojums nosūtīts.</translation>
 <translation id="935490618240037774">Jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi tiks sinhronizēti ar jūsu Google kontu, lai jūs varētu tos izmantot visās savās ierīcēs.</translation>
+<translation id="952704832371081537">Atcelt</translation>
 <translation id="976982866697960176">Pārvaldīt sinhronizētos datus…</translation>
 <translation id="988141524645182168">Citas ierīces</translation>
 <translation id="989988560359834682">Rediģēt adresi</translation>

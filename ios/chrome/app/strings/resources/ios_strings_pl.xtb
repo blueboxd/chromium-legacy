@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Dodano do listy Do przeczytania</translation>
 <translation id="1828824471510190776">Zaproponuj hasło...</translation>
 <translation id="1870148520156231997">Pokaż hasło</translation>
+<translation id="1872096359983322073">Latarka</translation>
 <translation id="1876721852596493031">Wysyłaj dane na temat użytkowania</translation>
 <translation id="1911619930368729126">Prześlij na Dysk Google</translation>
 <translation id="1923342640370224680">Ostatnia godzina</translation>
@@ -355,6 +356,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="605721222689873409">RR</translation>
 <translation id="6066301408025741299">Kliknij, by anulować.</translation>
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
+<translation id="6119050551270742952">Bieżąca strona jest w trybie incognito</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Element został usunięty</translation>
 <translation id="6136914049981179737">Przed chwilą</translation>
@@ -411,6 +413,9 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6807889908376551050">Pokaż wszystkie...</translation>
 <translation id="681368974849482173">Utworzono element</translation>
 <translation id="6851516051005285358">Żądaj wersji na komputer</translation>
+<translation id="6858855187367714033">Zeskanowano</translation>
+<translation id="6859944681507688231">Aby zeskanować kod QR lub kartę kredytową, włącz aparat w ustawieniach.</translation>
+<translation id="6873263987691478642">Widok dzielony</translation>
 <translation id="6896758677409633944">Kopiuj</translation>
 <translation id="6903907808598579934">Włącz synchronizację</translation>
 <translation id="6914583639806229067">Wyszukaj skopiowany obraz</translation>
@@ -509,6 +514,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8428045167754449968">Miejscowość</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8458397775385147834">Usunąłeś 1 element</translation>
+<translation id="8487667956631253959">Włączono</translation>
 <translation id="8487700953926739672">Dostępny offline</translation>
 <translation id="8490978609246021741">Zapisz zmiany</translation>
 <translation id="8503813439785031346">Nazwa użytkownika</translation>
@@ -519,6 +525,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8532105204136943229">Rok utraty ważności</translation>
 <translation id="8534481786647257214">Wpis w Google+ opublikowany.</translation>
 <translation id="8548878600947630424">Znajdź na stronie...</translation>
+<translation id="8588404856427128947">Wyłączono</translation>
 <translation id="8605219856220328675">Zamknij kartę</translation>
 <translation id="8620640915598389714">Edytuj</translation>
 <translation id="8636825310635137004">Aby korzystać z kart ze swoich innych urządzeń, włącz synchronizację</translation>
@@ -559,6 +566,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Raport o awarii został wysłany.</translation>
 <translation id="935490618240037774">Zakładki, historia, hasła i inne ustawienia zostaną zsynchronizowane z kontem Google, by można było z nich korzystać na dowolnym urządzeniu.</translation>
+<translation id="952704832371081537">Anuluj</translation>
 <translation id="976982866697960176">Zarządzaj synchronizowanymi danymi…</translation>
 <translation id="988141524645182168">Inne urządzenia</translation>
 <translation id="989988560359834682">Edytuj adres</translation>

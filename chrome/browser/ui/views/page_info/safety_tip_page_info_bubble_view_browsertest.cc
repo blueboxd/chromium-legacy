@@ -13,6 +13,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tips.pb.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tips_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -39,10 +40,6 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-
-using chrome_browser_safety_tips::FlaggedPage;
-using chrome_browser_safety_tips::SafetyTipsConfig;
-using FlagType = FlaggedPage::FlagType;
 
 namespace {
 
@@ -123,20 +120,6 @@ void OpenPageInfoBubble(Browser* browser) {
   page_info->set_close_on_deactivate(false);
 }
 
-void BlockPatterns(std::vector<std::pair<std::string, FlagType>> patterns) {
-  auto config_proto = std::make_unique<SafetyTipsConfig>();
-  config_proto->set_version_id(2);
-
-  std::sort(patterns.begin(), patterns.end());
-  for (auto pair : patterns) {
-    FlaggedPage* page = config_proto->add_flagged_page();
-    page->set_pattern(pair.first);
-    page->set_type(pair.second);
-  }
-
-  safety_tips::SetRemoteConfigProto(std::move(config_proto));
-}
-
 // Go to |url| in such a way as to trigger a warning. This is just for
 // convenience, since how we trigger warnings will change. Even if the warning
 // is triggered, it may not be shown if the URL is opened in the background.
@@ -151,7 +134,7 @@ void TriggerWarning(Browser* browser,
   safe_browsing::V4ProtocolManagerUtil::CanonicalizeUrl(url, &host, &path,
                                                         &query);
   // For simplicity, ignore query
-  BlockPatterns({{host + path, FlaggedPage::BAD_REP}});
+  SetSafetyTipBadRepPatterns({host + path});
   SetEngagementScore(browser, url, kLowEngagement);
   NavigateToURL(browser, url, disposition);
 }
@@ -268,7 +251,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        NoShowOnHighEngagement) {
   auto kNavigatedUrl = GetURL("site1.com");
-  BlockPatterns({{"site1.com/", FlaggedPage::BAD_REP}});
+  SetSafetyTipBadRepPatterns({"site1.com/"});
 
   SetEngagementScore(browser(), kNavigatedUrl, kHighEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
@@ -280,7 +263,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // Ensure blocked sites get blocked.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
   auto kNavigatedUrl = GetURL("site1.com");
-  BlockPatterns({{"site1.com/", FlaggedPage::BAD_REP}});
+  SetSafetyTipBadRepPatterns({"site1.com/"});
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingIfEnabled());
@@ -364,7 +347,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   const GURL kFrameUrl =
       embedded_test_server()->GetURL("b.com", "/title1.html");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  BlockPatterns({{"a.com/", FlaggedPage::BAD_REP}});
+  SetSafetyTipBadRepPatterns({"a.com/"});
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingIfEnabled());

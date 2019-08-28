@@ -28,7 +28,7 @@ PasswordSaveConfirmationView::PasswordSaveConfirmationView(
   auto label = std::make_unique<views::StyledLabel>(
       model()->save_confirmation_text(), this);
   label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
-  label->SetDefaultTextStyle(STYLE_SECONDARY);
+  label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   auto link_style = views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.disable_line_wrapping = false;
   label->AddStyleRange(model()->save_confirmation_link_range(), link_style);

@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Ana bilgisayara erişilemiyor. Bu sorun, kullandığınız ağın yapılandırmasından kaynaklanıyor olabilir.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Çevrimiçi olarak son görüldüğü zaman: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Bu uygulama artık desteklenmiyor. En yeni özellikleri ve güvenlik güncellemelerini aldığınızdan emin olmak için lütfen <ph name="LINK_BEGIN" />Chrome Uzaktan Masaüstü web uygulamasını<ph name="LINK_END" /> kullanın.</translation>
-<translation id="2431841749166974386">Bu makineyi <ph name="PRODUCT_NAME" /> ürününü kullanarak uzaktan kontrol edebilmeniz için öncelikle bir ek yapılandırma adımını tamamlamanız gerekiyor.
-
-Bu işlevi etkinleştirmek için ''<ph name="BUTTON_NAME" />" düğmesini seçerek Güvenlik ve Gizlilik tercihleri bölmesini görüntüleyin ve ardından "<ph name="SERVICE_SCRIPT_NAME" />" öğesinin yanındaki kutuyu işaretleyin.
-
-"<ph name="SERVICE_SCRIPT_NAME" />" zaten mevcut ve işaretliyse bu öğeyi kaldırıp yeniden eklemeniz gerekebilir.</translation>
 <translation id="2499160551253595098">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chrome Uzaktan Masaüstü'nü daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> adlı ana makineye bağlandı</translation>
 <translation id="2512228156274966424">NOT: Tüm klavye kısayollarının kullanılabilir olmasını sağlamak için Chrome Uzaktan Masaüstü'nü 'Pencere olarak aç' modunda yapılandırabilirsiniz.</translation>
@@ -317,6 +312,11 @@ Bu işlevi etkinleştirmek için ''<ph name="BUTTON_NAME" />" düğmesini seçer
 <translation id="8804164990146287819">Gizlilik Politikası</translation>
 <translation id="894763922177556086">İyi</translation>
 <translation id="895780780740011433">Windows 7 ve sonraki sürümler için</translation>
+<translation id="8963047137585288214">Bu makineyi <ph name="PRODUCT_NAME" /> ürününü kullanarak uzaktan kontrol edebilmeniz için öncelikle bir ek yapılandırma adımını tamamlamanız gerekiyor.
+
+Bu işlevi etkinleştirmek için ''<ph name="BUTTON_NAME" />" düğmesini seçerek Güvenlik ve Gizlilik tercihleri bölmesini görüntüleyin ve ardından "<ph name="SERVICE_SCRIPT_NAME" />" öğesinin yanındaki kutuyu işaretleyin.
+
+"<ph name="SERVICE_SCRIPT_NAME" />" zaten mevcut ve işaretliyse işaretini kaldırıp yeniden işaretlemeniz gerekebilir.</translation>
 <translation id="897805526397249209">Başka bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chromoting'i o bilgisayara yükleyin ve “<ph name="BUTTON_NAME" />” düğmesini tıklayın.</translation>
 <translation id="8998327464021325874">Chrome Uzaktan Masaüstü Ana Makine Denetleyicisi</translation>
 <translation id="9016232822027372900">Yine de bağlan</translation>

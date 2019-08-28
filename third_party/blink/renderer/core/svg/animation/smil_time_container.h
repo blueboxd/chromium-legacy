@@ -56,7 +56,10 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   void Unschedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
   void NotifyIntervalsChanged();
 
+  // Returns the time we are currently updating.
   double Elapsed() const;
+  // Returns the current time in the document.
+  double CurrentDocumentTime() const;
 
   bool IsPaused() const;
   bool IsStarted() const;
@@ -109,9 +112,11 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   ImageAnimationPolicy AnimationPolicy() const;
   bool HandleAnimationPolicy(AnimationPolicyOnceAction);
   bool CanScheduleFrame(SMILTime earliest_fire_time) const;
-  void UpdateAnimationsAndScheduleFrameIfNeeded(double elapsed,
-                                                bool seek_to_time = false);
-  void UpdateAnimationTimings(double elapsed, bool seek_to_time);
+  void UpdateAnimationsAndScheduleFrameIfNeeded(double elapsed);
+  void RemoveUnusedKeys();
+  void UpdateIntervals(SMILTime);
+  SMILTime NextInterestingTime(SMILTime) const;
+  void UpdateAnimationTimings(SMILTime elapsed);
   void ApplyAnimationValues(double elapsed);
   void ServiceOnNextFrame();
   void ScheduleWakeUp(double delay_time, FrameSchedulingState);
@@ -127,12 +132,15 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   double presentation_time_;
   // The time on the document timeline corresponding to |m_presentationTime|.
   double reference_time_;
+  // The state all svg_smil_elements should be at.
+  double latest_update_time_;
 
   FrameSchedulingState frame_scheduling_state_;
   bool started_;  // The timeline has been started.
   bool paused_;   // The timeline is paused.
 
   bool document_order_indexes_dirty_;
+  bool intervals_dirty_;
 
   TaskRunnerTimer<SMILTimeContainer> wakeup_timer_;
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;

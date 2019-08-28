@@ -58,7 +58,7 @@ LoginView::LoginView(const base::string16& authority,
                         views::GridLayout::FIXED, kMessageWidth, 0);
   AddHeaderLabel(layout, authority, views::style::STYLE_PRIMARY);
   if (!explanation.empty())
-    AddHeaderLabel(layout, explanation, STYLE_SECONDARY);
+    AddHeaderLabel(layout, explanation, views::style::STYLE_SECONDARY);
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE));

@@ -59,7 +59,7 @@ std::unique_ptr<views::Label> CreateOriginLabel(const url::Origin& origin) {
   auto origin_label = std::make_unique<views::Label>(
       FormatOriginForSecurityDisplay(
           origin, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS),
-      CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
+      CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_SECONDARY);
 
   origin_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 

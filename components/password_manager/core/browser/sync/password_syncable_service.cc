@@ -57,6 +57,8 @@ bool AreLocalAndSyncPasswordsEqual(
       base::UTF16ToUTF8(password_form.password_value) ==
           password_specifics.password_value() &&
       password_form.preferred == password_specifics.preferred() &&
+      password_form.date_last_used.ToDeltaSinceWindowsEpoch()
+              .InMicroseconds() == password_specifics.date_last_used() &&
       password_form.date_created.ToInternalValue() ==
           password_specifics.date_created() &&
       password_form.blacklisted_by_user == password_specifics.blacklisted() &&
@@ -480,6 +482,8 @@ syncer::SyncData SyncDataFromPassword(
   CopyStringField(username_value);
   CopyStringField(password_value);
   CopyField(preferred);
+  password_specifics->set_date_last_used(
+      password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_specifics->set_date_created(
       password_form.date_created.ToInternalValue());
   password_specifics->set_blacklisted(password_form.blacklisted_by_user);
@@ -514,6 +518,15 @@ autofill::PasswordForm PasswordFromSpecifics(
   new_password.username_value = base::UTF8ToUTF16(password.username_value());
   new_password.password_value = base::UTF8ToUTF16(password.password_value());
   new_password.preferred = password.preferred();
+  if (password.has_date_last_used()) {
+    new_password.date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(password.date_last_used()));
+  } else if (password.preferred()) {
+    // For legacy passwords that don't have the |date_last_used| field set, we
+    // should set it similar to the logic in login database migration.
+    new_password.date_last_used =
+        base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromDays(1));
+  }
   new_password.date_created =
       base::Time::FromInternalValue(password.date_created());
   new_password.blacklisted_by_user = password.blacklisted();

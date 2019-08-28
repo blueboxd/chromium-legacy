@@ -27,6 +27,10 @@
 
 class GURL;
 
+namespace base {
+class Location;
+}  // namespace base
+
 namespace net {
 class SSLInfo;
 class WebSocketChannel;
@@ -64,7 +68,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void SendFrame(bool fin,
                  mojom::WebSocketMessageType type,
                  const std::vector<uint8_t>& data) override;
-  void AddReceiveFlowControlQuota(int64_t quota) override;
+  void StartReceiving() override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   bool handshake_succeeded() const { return handshake_succeeded_; }
@@ -109,7 +113,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
     DISALLOW_COPY_AND_ASSIGN(UnownedPointer);
   };
 
-  void OnConnectionError();
+  void OnConnectionError(const base::Location& set_from);
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
                   const GURL& site_for_cookies,
@@ -176,6 +180,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::ScopedDataPipeProducerHandle writable_;
   mojo::SimpleWatcher writable_watcher_;
   base::queue<DataFrame> pending_data_frames_;
+  bool wait_for_writable_ = false;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

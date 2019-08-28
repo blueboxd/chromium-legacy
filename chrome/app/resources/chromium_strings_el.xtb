@@ -224,8 +224,6 @@
 <translation id="8417404458978023919">{0,plural, =1{Επανεκκίνηση του Chromium σε μία ημέρα}other{Επανεκκίνηση του Chromium σε # ημέρες}}</translation>
 <translation id="8453117565092476964">Το αρχείο του προγράμματος εγκατάστασης είναι κατεστραμμένο ή μη έγκυρο. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="8493179195440786826">Το Chromium δεν είναι ενημερωμένο</translation>
-<translation id="8494843963476918365">Εάν μια ρύθμιση δεν εμφανίζεται σε αυτήν τη σελίδα, δοκιμάστε τις <ph name="LINK_BEGIN" />
-    ρυθμίσεις του προγράμματος περιήγησης Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Λήψη βοήθειας σχετικά με τη χρήση του Chromium</translation>
 <translation id="8586442755830160949">Πνευματικά δικαιώματα <ph name="YEAR" /> Οι συντάκτες του Chromium. Με επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="8619360774459241877">Εκκίνηση του Chromium…</translation>

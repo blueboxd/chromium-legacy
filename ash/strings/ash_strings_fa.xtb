@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">کوچک کردن منو</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1419738280318246476">برای اجرای کنش اعلان، قفل دستگاه را باز کنید</translation>
+<translation id="1420408895951708260">روشن/خاموش کردن «نور شب». <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">بله</translation>
 <translation id="1455242230282523554">نمایش تنظیمات زبان</translation>
 <translation id="1460620680449458626">دکمه میزان صدا صامت است.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526"><ph name="FEATURE_NAME" /> با خط‌مشی اعمال‌شده برای این دستگاه غیرفعال شد. لطفاً برای درخواست تغییرات، باز سرپرستتان صحبت کنید.</translation>
 <translation id="1823873187264960516">اترنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">دستیار (درحال بار کردن…)</translation>
+<translation id="1838895407229022812">«نور شب» خاموش است</translation>
 <translation id="1850504506766569011">‏Wi-Fi خاموش است.</translation>
 <translation id="1864454756846565995">‏دستگاه USB-C (درگاه عقب)</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">کلیدهای چسبان</translation>
 <translation id="2509468283778169019">‏CAPS LOCK روشن است</translation>
 <translation id="2532589005999780174">حالت کنتراست بالا</translation>
+<translation id="2542089167727451762">روی تصویر نمایه ضربه بزنید</translation>
 <translation id="255671100581129685">‏«دستیار Google» در جلسه عمومی در دسترس نیست.</translation>
 <translation id="2575685495496069081">ورود چندگانه به سیستم غیرفعال شده است</translation>
 <translation id="2582112259361606227">بازراه‌اندازی برای به‌روزرسانی</translation>
 <translation id="2617342710774726426">سیم‌کارت قفل است</translation>
-<translation id="2651765386227849097">‏«دستیار Google» در این دستگاه غیرفعال شده است.</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2658778018866295321">کلیک کنید و بکشید</translation>
 <translation id="2700493154570097719">تنظیم صفحه‌کلید</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">‏سیستم عامل Chrome</translation>
 <translation id="4338109981321384717">ذره‌بین</translation>
 <translation id="4351433414020964307">دستیار درحال بار کردن است...</translation>
-<translation id="435527878592612277">انتخاب عکس</translation>
 <translation id="4378551569595875038">در حال اتصال...</translation>
 <translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
 <translation id="4389184120735010762">میان‌بر صفحه‌کلید مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">متوسط</translation>
 <translation id="5744083938413354016">کشیدن با ضربه زدن</translation>
 <translation id="5750765938512549687">بلوتوث خاموش است</translation>
+<translation id="576453121877257266">«نور شب» روشن است.</translation>
 <translation id="5777841717266010279">اشتراک‌گذاری صفحه نمایش متوقف شود؟</translation>
 <translation id="5820394555380036790">‏سیستم عامل Chromium </translation>
 <translation id="5837036133683224804">توقف <ph name="ROUTE_TITLE" /> به <ph name="RECEIVER_NAME" /></translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">وضوح تغییر کرد</translation>
 <translation id="6297287540776456956">از قلم برای انتخاب منطقه استفاده کنید</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
-<translation id="6344698853700675736">روشن/خاموش کردن نور شب</translation>
 <translation id="6376931439017688372">بلوتوث روشن است</translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>
 <translation id="6406704438230478924">دگرساز راست</translation>

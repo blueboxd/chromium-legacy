@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -53,6 +54,26 @@ void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason) {
   base::UmaHistogramEnumeration(
       "PasswordManager.PresavedUpdateUIDismissalReason", reason,
       NUM_UI_RESPONSES);
+}
+
+void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,
+                                         LeakDialogDismissalReason reason) {
+  static constexpr char kHistogram[] =
+      "PasswordManager.LeakDetection.DialogDismissalReason";
+  auto GetSuffix = [type] {
+    switch (type) {
+      case LeakDialogType::kCheckup:
+        return "Checkup";
+      case LeakDialogType::kChange:
+        return "Change";
+      case LeakDialogType::kCheckupAndChange:
+        return "CheckupAndChange";
+    }
+  };
+
+  base::UmaHistogramEnumeration(kHistogram, reason);
+  base::UmaHistogramEnumeration(base::StrCat({kHistogram, ".", GetSuffix()}),
+                                reason);
 }
 
 void LogUIDisplayDisposition(UIDisplayDisposition disposition) {

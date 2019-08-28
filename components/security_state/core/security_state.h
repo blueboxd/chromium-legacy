@@ -99,10 +99,23 @@ enum MaliciousContentStatus {
 
 // Describes whether the page triggers any safety tips or reputation
 // warnings.
-enum SafetyTipStatus {
-  SAFETY_TIP_STATUS_NONE,
-  SAFETY_TIP_STATUS_BAD_REPUTATION,
-  SAFETY_TIP_STATUS_LOOKALIKE,
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Style note: this differs from other enums in this file to follow new
+// histogram enum naming conventions
+// (https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md#usage).
+enum class SafetyTipStatus {
+  // Safety tip status is not applicable, e.g. there is no current navigation.
+  kUnknown = 0,
+  // The current page did not trigger any Safety Tip.
+  kNone = 1,
+  // The current page triggered a Safety Tip because it was bad reputation.
+  kBadReputation = 2,
+  // The current page trigged a Safety Tip because it had a lookalike URL.
+  kLookalike = 3,
+  kMaxValue = kLookalike,
 };
 
 // Contains the security state relevant to computing the SecurityLevel
@@ -114,6 +127,10 @@ struct VisibleSecurityState {
 
   MaliciousContentStatus malicious_content_status;
 
+  // What type of Safety Tip (if any) triggered on the page. Note that this
+  // field will be set even if the Safety Tip UI was not actually shown due to
+  // the feature being disabled (so that this field can be used to record
+  // metrics independent of whether the UI actually showed).
   SafetyTipStatus safety_tip_status;
 
   // CONNECTION SECURITY FIELDS

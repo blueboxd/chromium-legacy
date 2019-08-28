@@ -15,7 +15,7 @@
 <translation id="1524282610922162960">共享 Chromium 标签页</translation>
 <translation id="1668054258064581266">从Chromium移除您的帐号后，您可能需要重新加载已打开的标签页才能使其正常显示。</translation>
 <translation id="1688750314291223739">您可以设置同步以将个性化浏览器功能保存到网上，以便在任意计算机上的 Chromium 中使用这些功能。</translation>
-<translation id="1705503634486268204">Chromium 可帮助您记住密码，因此您不必记住它。</translation>
+<translation id="1705503634486268204">Chromium 可替您记住密码，因此您不必记住它。</translation>
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
 <translation id="1766096484055239003">您的管理员要求您重新启动 Chromium 以应用一项更新</translation>
 <translation id="1774152462503052664">让 Chromium 在后台运行</translation>
@@ -224,7 +224,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8417404458978023919">{0,plural, =1{请于 1 天内重新启动 Chromium}other{请于 # 天内重新启动 Chromium}}</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
 <translation id="8493179195440786826">Chromium版本太旧</translation>
-<translation id="8494843963476918365">如果此页面中未显示某项设置，您不妨试试在 <ph name="LINK_BEGIN" />Chromium 浏览器设置<ph name="LINK_END" />中查找。</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
 <translation id="8619360774459241877">正在启动 Chromium…</translation>

@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Az érték legyen kisebb vagy egyenlő, mint <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definíció</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" />. címsor</translation>
+<translation id="3670698553867754311">hétválasztó</translation>
 <translation id="3685101356851116974">Címke nélküli kép</translation>
 <translation id="3706100364254443312">váltás</translation>
 <translation id="3732799496749320381">hh</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">A leírás lekérdezése folyamatban van</translation>
 <translation id="8117451130807776954">Ezen a héten</translation>
 <translation id="8199524924445686405">éééé</translation>
+<translation id="8208673686607688524">helyi dátum- és időválasztó</translation>
 <translation id="8261464734335370856">Helyesírási hiba</translation>
 <translation id="8284326494547611709">Feliratok</translation>
 <translation id="835897206747267392">Érvénytelen érték.</translation>

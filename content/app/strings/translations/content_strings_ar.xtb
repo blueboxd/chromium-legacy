@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">يجب أن تكون القيمة أقل من أو تساوي <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">تعريف</translation>
 <translation id="3557673793733683882">عنوان <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">منتقي الأسبوع</translation>
 <translation id="3685101356851116974">صورة غير مُصنَّفة</translation>
 <translation id="3706100364254443312">تبديل</translation>
 <translation id="3732799496749320381">شهر</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">جارٍ الحصول على وصف...</translation>
 <translation id="8117451130807776954">هذا الأسبوع</translation>
 <translation id="8199524924445686405">سنة</translation>
+<translation id="8208673686607688524">التاريخ المحلي ومنتقي الوقت</translation>
 <translation id="8261464734335370856">تدقيق إملائي غير صالح</translation>
 <translation id="8284326494547611709">الترجمة والشرح</translation>
 <translation id="835897206747267392">قيمة غير صحيحة</translation>

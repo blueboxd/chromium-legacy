@@ -218,7 +218,6 @@
 <translation id="8417404458978023919">{0,plural, =1{Reiniciar o Chromium em 1 dia}one{Reiniciar o Chromium em # dia}other{Reiniciar o Chromium em # dias}}</translation>
 <translation id="8453117565092476964">O arquivo de instalação está corrompido ou não é válido. Faça o download do Chromium novamente.</translation>
 <translation id="8493179195440786826">O Chromium está desatualizado</translation>
-<translation id="8494843963476918365">Se uma configuração não for exibida nesta página, tente acessar as <ph name="LINK_BEGIN" />configurações do navegador Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Obter ajuda para usar o Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8619360774459241877">Iniciando o Chromium…</translation>

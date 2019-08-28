@@ -32,6 +32,8 @@ namespace media {
 
 namespace {
 
+constexpr uint32_t KSAUDIO_SPEAKER_UNSUPPORTED = 0;
+
 // Errors when initializing the audio client related to the audio format. Split
 // by whether we're using format conversion or not. Used for reporting stats -
 // do not renumber entries.
@@ -67,6 +69,25 @@ bool IsSupportedFormatForConversion(WAVEFORMATEXTENSIBLE* format_ex) {
   return true;
 }
 
+// Converts ChannelLayout to Microsoft's channel configuration but only discrete
+// and up to stereo is supported currently. All other multi-channel layouts
+// return KSAUDIO_SPEAKER_UNSUPPORTED.
+ChannelConfig ChannelLayoutToChannelConfig(ChannelLayout layout) {
+  switch (layout) {
+    case CHANNEL_LAYOUT_DISCRETE:
+      return KSAUDIO_SPEAKER_DIRECTOUT;
+    case CHANNEL_LAYOUT_MONO:
+      return KSAUDIO_SPEAKER_MONO;
+    case CHANNEL_LAYOUT_STEREO:
+      return KSAUDIO_SPEAKER_STEREO;
+    default:
+      LOG(WARNING) << "Unsupported channel layout: " << layout;
+      // KSAUDIO_SPEAKER_UNSUPPORTED equals 0 and corresponds to "no specific
+      // channel order".
+      return KSAUDIO_SPEAKER_UNSUPPORTED;
+  }
+}
+
 }  // namespace
 
 WASAPIAudioInputStream::WASAPIAudioInputStream(
@@ -78,6 +99,10 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   DCHECK(manager_);
   DCHECK(!device_id_.empty());
   DCHECK(!log_callback_.is_null());
+  DCHECK_LE(params.channels(), 2);
+  DCHECK(params.channel_layout() == CHANNEL_LAYOUT_MONO ||
+         params.channel_layout() == CHANNEL_LAYOUT_STEREO ||
+         params.channel_layout() == CHANNEL_LAYOUT_DISCRETE);
 
   // Load the Avrt DLL if not already loaded. Required to support MMCSS.
   bool avrt_init = avrt::Initialize();
@@ -106,7 +131,7 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
   format->cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
   input_format_.Samples.wValidBitsPerSample = format->wBitsPerSample;
   input_format_.dwChannelMask =
-      CoreAudioUtil::GetChannelConfig(device_id, eCapture);
+      ChannelLayoutToChannelConfig(params.channel_layout());
   input_format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
   DVLOG(1) << "Input: " << CoreAudioUtil::WaveFormatToString(&input_format_);
 
@@ -676,7 +701,7 @@ HRESULT WASAPIAudioInputStream::GetAudioEngineStreamFormat() {
   hr = audio_client_->GetMixFormat(&format);
   if (FAILED(hr))
     return hr;
-  DVLOG(2) << CoreAudioUtil::WaveFormatToString(format.get());
+  DVLOG(1) << CoreAudioUtil::WaveFormatToString(format.get());
 #endif
   return hr;
 }
@@ -803,6 +828,8 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   // however cases when there are glitches anyway and it's avoided by setting a
   // larger buffer size. The larger size does not create higher latency for
   // properly implemented drivers.
+  DVLOG(1) << "Audio format used in IAudioClient::Initialize: "
+           << CoreAudioUtil::WaveFormatToString(&input_format_);
   HRESULT hr = audio_client_->Initialize(
       AUDCLNT_SHAREMODE_SHARED, flags,
       100 * 1000 * 10,  // Buffer duration, 100 ms expressed in 100-ns units.

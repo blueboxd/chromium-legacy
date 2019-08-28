@@ -73,7 +73,7 @@ class AppShimInteractiveTest : public extensions::PlatformAppBrowserTest {
 };
 
 // Watches for an app shim to connect.
-class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
+class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
  public:
   WindowedAppShimLaunchObserver(const std::string& app_id)
       : app_mode_id_(app_id),
@@ -83,7 +83,6 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
 
   void StartObserving() {
     observed_ = false;
-    default_app_shim_handler_ = apps::AppShimHandler::Get();
     apps::AppShimHandler::Set(this);
   }
 
@@ -95,26 +94,24 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
     run_loop_->Run();
   }
 
-  // AppShimHandler overrides:
+  // AppShimHandler:
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
+    ExtensionAppShimHandler::OnShimProcessConnected(std::move(bootstrap));
+    observed_ = true;
+    if (run_loop_.get())
+      run_loop_->Quit();
+  }
+
+  // AppShimHost::Client:
   void OnShimLaunchRequested(
       AppShimHost* host,
       bool recreate_shims,
       apps::ShimLaunchedCallback launch_callback,
       apps::ShimTerminatedCallback terminated_callback) override {
-    apps::AppShimHandler::Set(default_app_shim_handler_);
-    apps::AppShimHandler::Get()->OnShimLaunchRequested(
+    ExtensionAppShimHandler::OnShimLaunchRequested(
         host, recreate_shims, std::move(launch_callback),
         std::move(terminated_callback));
-    apps::AppShimHandler::Set(this);
-  }
-  void OnShimProcessConnected(
-      std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
-    // Remove self and pass through to the default handler.
-    apps::AppShimHandler::Set(default_app_shim_handler_);
-    apps::AppShimHandler::Get()->OnShimProcessConnected(std::move(bootstrap));
-    observed_ = true;
-    if (run_loop_.get())
-      run_loop_->Quit();
   }
   void OnShimProcessDisconnected(AppShimHost* host) override {}
   void OnShimFocus(AppShimHost* host,
@@ -122,9 +119,7 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
                    const std::vector<base::FilePath>& files) override {}
   void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
   void OnShimQuit(AppShimHost* host) override {
-    // Remove self and pass through to the default handler.
-    apps::AppShimHandler::Set(default_app_shim_handler_);
-    apps::AppShimHandler::Get()->OnShimQuit(host);
+    ExtensionAppShimHandler::OnShimQuit(host);
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();
@@ -134,7 +129,6 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   std::string app_mode_id_;
   bool observed_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  apps::AppShimHandler* default_app_shim_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedAppShimLaunchObserver);
 };

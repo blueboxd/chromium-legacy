@@ -291,7 +291,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
         default_factory_receiver =
             factory_bundle_for_browser_info->pending_default_factory()
                 .InitWithNewPipeAndPassReceiver();
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+        default_header_client;
     bool bypass_redirect_checks = false;
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         storage_partition->browser_context(), creator_render_frame_host,

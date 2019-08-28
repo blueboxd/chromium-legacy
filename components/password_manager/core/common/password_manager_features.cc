@@ -20,6 +20,11 @@ const base::Feature kEditPasswordsInDesktopSettings = {
 const base::Feature kDeleteCorruptedPasswords = {
     "DeleteCorruptedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a second, Gaia-account-scoped password store for users who are signed
+// in but not syncing.
+const base::Feature kEnablePasswordsAccountStorage = {
+    "EnablePasswordsAccountStorage", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",

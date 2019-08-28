@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Προστέθηκε στη λίστα ανάγνωσης</translation>
 <translation id="1828824471510190776">Πρόταση κωδ. πρόσβ…</translation>
 <translation id="1870148520156231997">Αποκάλυψη κωδικού πρόσβασης</translation>
+<translation id="1872096359983322073">Φακός</translation>
 <translation id="1876721852596493031">Αποστ. δεδομ. χρήσης</translation>
 <translation id="1911619930368729126">Μεταφόρ.στο Google Drive</translation>
 <translation id="1923342640370224680">Τελευταία ώρα</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">ΕΕ</translation>
 <translation id="6066301408025741299">Πατήστε για ακύρωση.</translation>
 <translation id="6108923351542677676">Ρύθμιση σε εξέλιξη…</translation>
+<translation id="6119050551270742952">Ιστοσελίδα σε ανώνυμη περιήγηση</translation>
 <translation id="6122191549521593678">Συνδεδεμένο</translation>
 <translation id="6127379762771434464">Το στοιχείο καταργήθηκε</translation>
 <translation id="6136914049981179737">Δευτ.πριν</translation>
@@ -412,6 +414,9 @@
 <translation id="6807889908376551050">Εμφάνιση όλων…</translation>
 <translation id="681368974849482173">Δημιουργήθηκε ένα στοιχείο</translation>
 <translation id="6851516051005285358">Αίτημα ιστοτόπου για υπολογιστή</translation>
+<translation id="6858855187367714033">Σαρώθηκε</translation>
+<translation id="6859944681507688231">Για να σαρώσετε έναν κώδικα QR, ή μια πιστωτική κάρτα, ενεργοποιήστε την κάμερα από τις ρυθμίσεις.</translation>
+<translation id="6873263987691478642">Προβολή διαχωρισμού οθόνης</translation>
 <translation id="6896758677409633944">Αντιγραφή</translation>
 <translation id="6903907808598579934">Ενεργοποίηση συγχρονισμού</translation>
 <translation id="6914583639806229067">Αναζήτηση της εικόνας που αντιγράψατε</translation>
@@ -510,6 +515,7 @@
 <translation id="8428045167754449968">Πόλη / Κωμόπολη</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8458397775385147834">Διαγράφηκε 1 στοιχείο</translation>
+<translation id="8487667956631253959">Ενεργοποίηση</translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8490978609246021741">Αποθήκευση αλλαγών</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
@@ -520,6 +526,7 @@
 <translation id="8532105204136943229">Έτος λήξης</translation>
 <translation id="8534481786647257214">Η ανάρτηση Google+ ολοκληρώθηκε.</translation>
 <translation id="8548878600947630424">Εύρεση στη σελίδα...</translation>
+<translation id="8588404856427128947">Ανενεργό</translation>
 <translation id="8605219856220328675">Κλείσιμο καρτέλας.</translation>
 <translation id="8620640915598389714">Επεξεργασία</translation>
 <translation id="8636825310635137004">Για να εμφανίζονται οι καρτέλες από τις άλλες συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>
@@ -560,6 +567,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Η αναφορά σφάλματος εστάλη.</translation>
 <translation id="935490618240037774">Οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλες ρυθμίσεις σας θα συγχρονιστούν στον Λογαριασμό σας Google, ώστε η χρήση τους να είναι δυνατή σε όλες τις συσκευές σας.</translation>
+<translation id="952704832371081537">Ακύρωση</translation>
 <translation id="976982866697960176">Διαχείριση συγχρονισμένων δεδομένων…</translation>
 <translation id="988141524645182168">Άλλες συσκευές</translation>
 <translation id="989988560359834682">Επεξεργασία διεύθυνσης</translation>

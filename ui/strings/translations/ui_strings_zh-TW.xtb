@@ -49,7 +49,6 @@
 <translation id="2388990488038464401">要透過你的手機撥打這個號碼嗎？</translation>
 <translation id="24452542372838207">展開通知</translation>
 <translation id="2445449901874883781">使用高密度模式</translation>
-<translation id="2451871130406122810">已傳送到裝置</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2497284189126895209">所有檔案</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -96,7 +95,7 @@
 <translation id="3990502903496589789">右邊緣</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 則未讀取的通知}other{# 則未讀取的通知}}</translation>
 <translation id="4202807286478387388">跳至另一頁</translation>
-<translation id="4250229828105606438">螢幕擷取畫面</translation>
+<translation id="4250229828105606438">螢幕截圖</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 個月前}other{# 個月前}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">所有應用程式</translation>
@@ -217,6 +216,7 @@
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" />資料夾</translation>
 <translation id="883911313571074303">為圖片加註</translation>
 <translation id="8841375032071747811">返回按鈕</translation>
+<translation id="8867568208303837180">傳送中… </translation>
 <translation id="8876215549894133151">格式：</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">一律隱藏檔案櫃</translation>

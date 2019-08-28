@@ -37,13 +37,17 @@ BackgroundFetchContext::BackgroundFetchContext(
     const scoped_refptr<CacheStorageContextImpl>& cache_storage_context,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
-    : browser_context_(browser_context),
+    : base::RefCountedDeleteOnSequence<BackgroundFetchContext>(
+          base::CreateSequencedTaskRunner(
+              {ServiceWorkerContext::GetCoreThreadId()})),
+      browser_context_(browser_context),
       service_worker_context_(service_worker_context),
       devtools_context_(std::move(devtools_context)),
       registration_notifier_(
           std::make_unique<BackgroundFetchRegistrationNotifier>()),
       delegate_proxy_(browser_context_) {
-  // Although this lives only on the IO thread, it is constructed on UI thread.
+  // Although this lives only on the service worker core thread, it is
+  // constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(service_worker_context_);
 
@@ -56,18 +60,18 @@ BackgroundFetchContext::BackgroundFetchContext(
 }
 
 BackgroundFetchContext::~BackgroundFetchContext() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   service_worker_context_->RemoveObserver(scheduler_.get());
   data_manager_->RemoveObserver(scheduler_.get());
 }
 
-void BackgroundFetchContext::InitializeOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void BackgroundFetchContext::InitializeOnCoreThread() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   service_worker_context_->AddObserver(scheduler_.get());
 
   data_manager_->AddObserver(scheduler_.get());
-  data_manager_->InitializeOnIOThread();
+  data_manager_->InitializeOnCoreThread();
   data_manager_->GetInitializationData(
       base::BindOnce(&BackgroundFetchContext::DidGetInitializationData,
                      weak_factory_.GetWeakPtr()));
@@ -97,7 +101,7 @@ void BackgroundFetchContext::GetRegistration(
     const url::Origin& origin,
     const std::string& developer_id,
     blink::mojom::BackgroundFetchService::GetRegistrationCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   data_manager_->GetRegistration(
       service_worker_registration_id, origin, developer_id,
@@ -109,7 +113,7 @@ void BackgroundFetchContext::GetDeveloperIdsForServiceWorker(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   data_manager_->GetDeveloperIdsForServiceWorker(service_worker_registration_id,
                                                  origin, std::move(callback));
@@ -120,7 +124,7 @@ void BackgroundFetchContext::DidGetRegistration(
     blink::mojom::BackgroundFetchError error,
     BackgroundFetchRegistrationId registration_id,
     blink::mojom::BackgroundFetchRegistrationDataPtr registration_data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
     std::move(callback).Run(
@@ -147,7 +151,7 @@ void BackgroundFetchContext::StartFetch(
     int render_frame_tree_node_id,
     const WebContents::Getter& wc_getter,
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // |registration_id| should be unique even if developer id has been
   // duplicated, because the caller of this function generates a new unique_id
@@ -172,10 +176,10 @@ void BackgroundFetchContext::DidGetPermission(
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     int frame_tree_node_id,
     BackgroundFetchPermission permission) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
       base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
                      registration_id.origin(), requests.size(), options.Clone(),
                      icon, std::move(ukm_data), frame_tree_node_id,
@@ -198,7 +202,7 @@ void BackgroundFetchContext::DidGetPermission(
 
 void BackgroundFetchContext::GetIconDisplaySize(
     blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   delegate_proxy_.GetIconDisplaySize(std::move(callback));
 }
 
@@ -206,7 +210,7 @@ void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     blink::mojom::BackgroundFetchError error,
     blink::mojom::BackgroundFetchRegistrationDataPtr registration_data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   auto iter = fetch_callbacks_.find(registration_id);
 
@@ -241,7 +245,7 @@ void BackgroundFetchContext::UpdateUI(
     const base::Optional<SkBitmap>& icon,
     blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback
         callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   delegate_proxy_.UpdateUI(registration_id.unique_id(), title, icon,
                            std::move(callback));
@@ -250,7 +254,7 @@ void BackgroundFetchContext::UpdateUI(
 void BackgroundFetchContext::Abort(
     const BackgroundFetchRegistrationId& registration_id,
     blink::mojom::BackgroundFetchRegistrationService::AbortCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   scheduler_->Abort(registration_id, FailureReason::CANCELLED_BY_DEVELOPER,
                     std::move(callback));
 }
@@ -260,7 +264,7 @@ void BackgroundFetchContext::MatchRequests(
     std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
     blink::mojom::BackgroundFetchRegistrationService::MatchRequestsCallback
         callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   data_manager_->MatchRequests(
       registration_id, std::move(match_params),
@@ -275,7 +279,7 @@ void BackgroundFetchContext::DidGetMatchingRequests(
         callback,
     blink::mojom::BackgroundFetchError error,
     std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (error != blink::mojom::BackgroundFetchError::NONE)
     DCHECK(settled_fetches.empty());
@@ -292,14 +296,15 @@ void BackgroundFetchContext::DidGetMatchingRequests(
 void BackgroundFetchContext::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&BackgroundFetchContext::ShutdownOnIO, this));
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(&BackgroundFetchContext::ShutdownOnCoreThread, this));
 }
 
-void BackgroundFetchContext::ShutdownOnIO() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void BackgroundFetchContext::ShutdownOnCoreThread() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  data_manager_->ShutdownOnIO();
+  data_manager_->ShutdownOnCoreThread();
 }
 
 void BackgroundFetchContext::SetDataManagerForTesting(

@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">Kopiér linkteksten</translation>
 <translation id="1208340532756947324">For å synkronisere og gi et personlig preg på alle enhetene, slå på synkronisering</translation>
 <translation id="1209206284964581585">Skjul for øyeblikket</translation>
+<translation id="1227058898775614466">Navigeringslogg</translation>
 <translation id="1231733316453485619">Vil du slå på synkronisering?</translation>
 <translation id="123724288017357924">Last inn siden på nytt, men ignorer bufret innhold</translation>
 <translation id="124116460088058876">Flere språk</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">Trykk for å vise</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="1291207594882862231">Slett loggoppføringer, informasjonskapsler, nettstedsdata, bufferen …</translation>
+<translation id="129382876167171263">Filer som nettsteder har lagret, vises her</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – sendt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Gruppér faner</translation>
+<translation id="1327257854815634930">Navigasjonsloggen er åpnet</translation>
 <translation id="1331212799747679585">Kan ikke oppdatere Chrome. Flere alternativer</translation>
 <translation id="1332501820983677155">Hurtigtaster for funksjoner i Google Chrome.</translation>
 <translation id="1360432990279830238">Vil du logge av og slå av synkronisering?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">Full kontroll over MIDI-enheter</translation>
 <translation id="145097072038377568">Slått av i Android-innstillingene</translation>
 <translation id="1477626028522505441">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av tjenerproblemer.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 til)}other{ (+ # til)}}</translation>
 <translation id="1501480321619201731">Slett gruppen</translation>
 <translation id="1506061864768559482">Søkemotor</translation>
 <translation id="1513352483775369820">Bokmerker og nettlogg</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2323763861024343754">Nettstedslagring</translation>
 <translation id="2328985652426384049">Kan ikke logge på</translation>
-<translation id="2334057574886324800">En SMS er mottatt</translation>
 <translation id="2349710944427398404">Total datamengde som brukes av Chrome, deriblant kontoer, bokmerker og lagrede innstillinger</translation>
 <translation id="2353636109065292463">Sjekker internettilkoblingen din</translation>
 <translation id="2359808026110333948">Fortsett</translation>
@@ -417,12 +418,6 @@ Hvis du vil endre søkeordet, kan du trykke og holde inne for å merke. Hvis du 
 <translation id="4226663524361240545">Varsler kan gjøre at enheten vibrerer</translation>
 <translation id="423219824432660969">Kryptér synkroniserte data med Google-passord fra og med <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Åpne innstillingene</translation>
-<translation id="4247274662191902962">Sensordata deles bare mens du er i denne VR-opplevelsen. Nettstedet kan kanskje finne ut ting om deg ved å bruke visse opplysninger, for eksempel
-    - posisjonen din
-    - fysiske kjennetegn, som plassering av øyne
-    - bevegelsene dine, for eksempel måten du går på
-
-    Forsikre deg om at du stoler på dette nettstedet før du gir tilgang.</translation>
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
 <translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
@@ -554,8 +549,8 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5170568018924773124">Vis i mappen</translation>
 <translation id="5184329579814168207">Åpne i Chrome</translation>
 <translation id="5193988420012215838">Kopiert til utklippstavlen</translation>
+<translation id="5197729504361054390">Kontaktene du velger, deles med <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5199929503336119739">Jobbprofil</translation>
-<translation id="5202089186707505116">Vil du gi dette nettstedet tilgang til VR-sensorene dine?</translation>
 <translation id="5210286577605176222">Gå til den forrige fanen</translation>
 <translation id="5210365745912300556">Lukk fanen</translation>
 <translation id="5224771365102442243">Med video</translation>
@@ -568,6 +563,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5301954838959518834">Greit</translation>
 <translation id="5304593522240415983">Dette feltet må fylles ut</translation>
+<translation id="5307446750509046227">Slett nettstedslagring</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5313967007315987356">Legg til et nettsted</translation>
 <translation id="5317780077021120954">Lagre</translation>
@@ -631,7 +627,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Sted</translation>
 <translation id="569536719314091526">Oversett denne siden til hvilket som helst språk via Flere alternativer-knappen</translation>
-<translation id="5719150327511160085">Venter på SMS</translation>
 <translation id="572328651809341494">Nylige faner</translation>
 <translation id="5726692708398506830">Gjør alt på siden større</translation>
 <translation id="5748802427693696783">Byttet til standardfaner</translation>
@@ -702,7 +697,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg annonser som ikke er basert på andre nettsteder du har besøkt. Mange nettsteder samler likevel inn og bruker nettlesingsdataene dine – for eksempel for å forbedre sikkerheten, for å levere innhold, annonser og anbefalinger og for å generere rapporteringsstatistikk.</translation>
 <translation id="624789221780392884">Oppdateringen er klar</translation>
 <translation id="6255999984061454636">Innholdsforslag</translation>
-<translation id="6264430811215618931"><ph name="ORIGIN" /> har sendt en tekstmelding til telefonnummeret ditt. Hvis du bekrefter, kommer nettstedet til å vite at det er deg.</translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
 <translation id="6295158916970320988">Alle nettsteder</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -805,6 +799,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6989267951144302301">Kunne ikke laste ned</translation>
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
+<translation id="7015203776128479407">Innledende synkroniseringsoppsett ble ikke fullført. Synkronisering er slått av.</translation>
 <translation id="7016516562562142042">tillatt for den aktive søkemotoren</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> er lastet ned</translation>
 <translation id="7022756207310403729">Åpne i nettleseren</translation>
@@ -836,11 +831,11 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7274013316676448362">Blokkert nettsted</translation>
 <translation id="7290209999329137901">Du kan ikke endre navn</translation>
 <translation id="7291387454912369099">Assistent-aktivert betaling</translation>
+<translation id="7293171162284876153">For å starte synkronisering, slå på «Synkroniser Chrome-dataene dine».</translation>
 <translation id="729975465115245577">Enheten din har ingen app som kan lagre passordfilen.</translation>
 <translation id="7302081693174882195">Informasjon: Sortert etter mengden data som er lagret</translation>
 <translation id="7328017930301109123">I forenklet modus laster Chrome inn sider raskere og bruker opptil 60 prosent mindre data.</translation>
 <translation id="7333031090786104871">Holder fortsatt på å legge til det forrige nettstedet</translation>
-<translation id="7352651011704765696">Noe gikk galt</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}other{Del # valgte elementer}}</translation>
 <translation id="7359002509206457351">Gå til betalingsmåter</translation>
@@ -904,6 +899,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="773466115871691567">Oversett alltid sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">For å oppdage farlige apper og nettsteder sender Chrome nettadressene til noen av sidene du besøker, begrenset systeminformasjon og noe sideinnhold til Google.</translation>
+<translation id="7757787379047923882">Tekst delt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD-kort <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Legg til adresse</translation>
 <translation id="7769602470925380267">Godta og logg av</translation>
@@ -1043,6 +1039,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8748850008226585750">Innholdet er skjult</translation>
 <translation id="8751914237388039244">Velg et bilde</translation>
+<translation id="8788265440806329501">Navigasjonsloggen er lukket</translation>
 <translation id="8788968922598763114">Åpne den sist lukkede fanen på nytt</translation>
 <translation id="8801436777607969138">Blokkér JavaScript for et bestemt nettsted.</translation>
 <translation id="8812260976093120287">På noen nettsteder kan du betale med de støttede betalingsappene ovenfor på enheten din.</translation>

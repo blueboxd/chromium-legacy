@@ -84,7 +84,8 @@
 <translation id="1942765061641586207">ಚಿತ್ರದ ರೆಸಲ್ಯೂಷನ್‌‌</translation>
 <translation id="1943097386230153518">ಹೊಸ ಸೇವೆಯನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="1947424002851288782">ಜರ್ಮನ್ ಕೀಬೋರ್ಡ್</translation>
-<translation id="197560921582345123">ಸಂಪಾದಿಸಬಹುದು</translation>
+<translation id="1972984168337863910">ಫೈಲ್‌ಗಳ ಪ್ರತಿಕ್ರಿಯೆ ಫಲಕಗಳನ್ನು ವಿಸ್ತರಿಸಿ</translation>
+<translation id="197560921582345123">ಎಡಿಟ್ ಮಾಡಬಹುದು</translation>
 <translation id="1984603991036629094">ಅರ್ಮೇನಿಯನ್ ಫೋನೆಟಿಕ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="2001796770603320721">ಡ್ರೈವ್‌ನಲ್ಲಿ ನಿರ್ವಹಿಸಿ</translation>
 <translation id="2009067268969781306">ಡ್ರೈವ್ ಅನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡುವುದರಿಂದ, ಅದರಲ್ಲಿ ಸಂಗ್ರಣೆಯಾಗಿರುವ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಪಡಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
@@ -220,13 +221,13 @@
 <translation id="3644896802912593514">ಅಗಲ</translation>
 <translation id="3645531960514756307">ಫೋಲ್ಡರ್ ಅನ್ನು ಅನ್‌ಪಿನ್ ಮಾಡಿ</translation>
 <translation id="3678559383040232393">ಮಾಲ್ಟೀಸ್ ಕೀಬೋರ್ಡ್</translation>
-<translation id="3685122418104378273">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಬಳಸುತ್ತಿರುವಾಗ, Google ಡ್ರೈವ್ ಸಿಂಕ್ ಅನ್ನು ಡಿಫಾಲ್ಟ್ ಮೂಲಕ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
+<translation id="3685122418104378273">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಬಳಸುತ್ತಿರುವಾಗ, Google ಡ್ರೈವ್ ಸಿಂಕ್ ಅನ್ನು ಡೀಫಾಲ್ಟ್ ಮೂಲಕ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3726463242007121105">ಇದರ ಫೈಲ್‌ಸಿಸ್ಟಂ ಅನ್ನು ಬೆಂಬಲಿಸದ ಕಾರಣ ಈ ಸಾಧನವನ್ನು ತೆರೆಯಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="3741243925913727067">ನಿಮ್ಮ ಮಾಧ್ಯಮ ಸಾಧನದ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು Google ಡ್ರೈವ್‌ಗೆ ಬ್ಯಾಕಪ್ ಮಾಡಿ.</translation>
 <translation id="3749289110408117711">ಫೈಲ್ ಹೆಸರು</translation>
 <translation id="3780536599611287598">ಫೈಲ್‌ಗಳನ್ನು '<ph name="FOLDER_NAME" />' ಗೆ ಸರಿಸಲು ನಿಮಗೆ ಅನುಮತಿಯಿಲ್ಲ.</translation>
 <translation id="3786301125658655746">ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಿರಿ</translation>
-<translation id="3789841737615482174">ಸ್ಥಾಪಿಸು</translation>
+<translation id="3789841737615482174">ಇನ್‌ಸ್ಟಾಲ್</translation>
 <translation id="3798449238516105146">ಆವೃತ್ತಿ</translation>
 <translation id="3801082500826908679">ಫರೋಸೆ</translation>
 <translation id="3809272675881623365">ಮೊಲ</translation>
@@ -407,7 +408,7 @@
 <translation id="5691596662111998220">ಓಹ್, <ph name="FILE_NAME" /> ಇನ್ನು ಮುಂದೆ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವುದಿಲ್ಲ.</translation>
 <translation id="5700087501958648444">ಆಡಿಯೊ ಮಾಹಿತಿ</translation>
 <translation id="5731409020711461763">1 ಹೊಸ ಫೋಟೋ</translation>
-<translation id="5752453871435543420">Chrome OS ಮೇಘ ಬ್ಯಾಕಪ್</translation>
+<translation id="5752453871435543420">Chrome OS ಕ್ಲೌಡ್ ಬ್ಯಾಕಪ್</translation>
 <translation id="5756666464756035725">ಹಂಗೇರಿಯನ್ QWERTY</translation>
 <translation id="5771585441665576801">ಲಿಪ್ಯಂತರಣ (geia → γεια)</translation>
 <translation id="5776325638577448643">ಅಳಿಸಿ ಮತ್ತು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಿ</translation>
@@ -439,7 +440,7 @@
 <translation id="6012987430370760224">ಮರಾಠಿ ಕೀಬೋರ್ಡ್ (ಫೋನೆಟಿಕ್)</translation>
 <translation id="6019169947004469866">ಕ್ರಾಪ್</translation>
 <translation id="60357267506638014">ಜೆಕ್ QWERTY</translation>
-<translation id="604001903249547235">ಮೇಘ ಬ್ಯಾಕಪ್</translation>
+<translation id="604001903249547235">ಕ್ಲೌಡ್ ಬ್ಯಾಕಪ್</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6054173164583630569">ಫ್ರೆಂಚ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="6074825444536523002">Google ಫಾರ್ಮ್</translation>
@@ -478,7 +479,7 @@
 <translation id="6527303717912515753">ಹಂಚಿಕೊಳ್ಳು</translation>
 <translation id="653019979737152879"><ph name="FILE_NAME" /> ಸಿಂಕ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6549689063733911810">ಇತ್ತೀಚಿನದು</translation>
-<translation id="6556866813142980365">ಮತ್ತೆಮಾಡು</translation>
+<translation id="6556866813142980365">ಪುನಃ ಮಾಡು</translation>
 <translation id="6558280019477628686">ದೋಷ ಸಂಭವಿಸಿದೆ. ಕೆಲವು ಐಟಂಗಳನ್ನು ಅಳಿಸಲು ಸಾಧ್ಯವಾಗದಿರಬಹುದು.</translation>
 <translation id="656398493051028875">"<ph name="FILENAME" />" ಅಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6581162200855843583">Google ಡ್ರೈವ್ ಲಿಂಕ್</translation>
@@ -496,7 +497,7 @@
 <translation id="6808193438228982088">ನರಿ</translation>
 <translation id="6820687829547641339">Gzip ಸಂಕ್ಷೇಪಿಸಿದ tar ಆರ್ಕೈವ್</translation>
 <translation id="6825883775269213504">ರಷ್ಯನ್</translation>
-<translation id="6827236167376090743">ಈ ವೀಡಿಯೊ ಸತತವಾಗಿ ಪ್ಲೇ ಆಗುತ್ತಲೇ ಇರುತ್ತದೆ.</translation>
+<translation id="6827236167376090743">ಈ ವೀಡಿಯೊ ಸಂಜೆಯವರೆಗೆ ಸತತವಾಗಿ ಪ್ಲೇ ಆಗುತ್ತಲೇ ಇರುತ್ತದೆ.</translation>
 <translation id="6847101934483209767">ಆಯ್ಕೆಯಿಂದ <ph name="ENTRY_NAME" /> ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ.</translation>
 <translation id="6862635236584086457">ಈ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಉಳಿಸಲಾದ ಎಲ್ಲಾ ಫೈಲ್‌ಗಳನ್ನು ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6870130893560916279">ಉಕ್ರೇನಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
@@ -514,7 +515,7 @@
 <translation id="696203921837389374">ಮೊಬೈಲ್ ಡೇಟಾ ಮೂಲಕ ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="6970230597523682626">ಬಲ್ಗೇರಿಯನ್</translation>
-<translation id="6978611942794658017">ಈ ಫೈಲನ್ನು Windows ಸಾಫ್ಟ್‌ವೇರ್ ಬಳಸಿಕೊಂಡು ಪಿಸಿಗೆ ವಿನ್ಯಾಸಗೊಳಿಸಲಾಗಿದೆ. Chrome OS ನಲ್ಲಿ ರನ್ ಆಗುವ ನಿಮ್ಮ ಸಾಧನದ ಜೊತೆಗೆ ಇದು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಸೂಕ್ತವಾದ ಬದಲಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ Chrome ವೆಬ್ ಸ್ಟೋರ್‌ ಅನ್ನು ಹುಡುಕಿ.</translation>
+<translation id="6978611942794658017">ಈ ಫೈಲ್ ಅನ್ನು Windows ಸಾಫ್ಟ್‌ವೇರ್ ಬಳಸಿಕೊಂಡು ಒಂದು ಪಿಸಿಗಾಗಿ ವಿನ್ಯಾಸಗೊಳಿಸಲಾಗಿದೆ. Chrome OS ನಲ್ಲಿ ರನ್ ಆಗುವ ನಿಮ್ಮ ಸಾಧನದ ಜೊತೆಗೆ ಇದು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಸೂಕ್ತವಾದ ಬದಲಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ Chrome ವೆಬ್‌ ಸ್ಟೋರ್‌ನಲ್ಲಿ ಹುಡುಕಿ.</translation>
 <translation id="6979158407327259162">Google ಡ್ರೈವ್‌‌</translation>
 <translation id="6990081529015358884">ನಿಮ್ಮ ಬಳಿ ಇದ್ದ ಸ್ಥಳ ಖಾಲಿಯಾಗಿದೆ</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ಫೋಲ್ಡರ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
@@ -566,7 +567,7 @@
 <translation id="7706319470528945664">ಪೋರ್ಚುಗೀಸ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7711920809702896782">ಚಿತ್ರ ಮಾಹಿತಿ</translation>
 <translation id="7724603315864178912">ಕತ್ತರಿಸು</translation>
-<translation id="7730494089396812859">ಮೇಘ ಬ್ಯಾಕಪ್ ವಿವರಗಳನ್ನು ತೋರಿಸು</translation>
+<translation id="7730494089396812859">ಕ್ಲೌಡ್ ಬ್ಯಾಕಪ್ ವಿವರಗಳನ್ನು ತೋರಿಸು</translation>
 <translation id="7748626145866214022">ಕ್ರಿಯೆಯ ಬಾರ್‌ನಲ್ಲಿ ಹೆಚ್ಚಿನ ಆಯ್ಕೆಗಳು ಲಭ್ಯವಿವೆ. ಕ್ರಿಯೆಯ ಬಾರ್ ಅನ್ನು ಫೋಕಸ್ ಮಾಡಲು Alt + A ಒತ್ತಿರಿ.</translation>
 <translation id="7765158879357617694">ಸರಿಸು</translation>
 <translation id="7774365994322694683">ಪಕ್ಷಿ</translation>
@@ -626,6 +627,7 @@
 <translation id="8223479393428528563">ಆಫ್‌‌ಲೈನ್ ಬಳಕೆಗಾಗಿ ಈ ಫೈಲ್ ಗಳನ್ನು ಉಳಿಸಲು, ಆನ್‌ಲೈನ್‌ಗೆ ಹಿಂತಿರುಗಲು, ಫೈಲ್‌ಗಳ ಮೇಲೆ ಬಲ ಕ್ಲಿಕ್ ಮಾಡಿ, ಮತ್ತು <ph name="OFFLINE_CHECKBOX_NAME" /> ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ.</translation>
 <translation id="8249296373107784235">ನಿಷ್ಫಲಗೊಳಿಸು</translation>
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
+<translation id="8269755669432358899">ಫೈಲ್‌ಗಳ ಪ್ರತಿಕ್ರಿಯೆ ಫಲಕಗಳನ್ನು ಕುಗ್ಗಿಸಿ</translation>
 <translation id="8279388322240498158">ಸೊರಾನಿ ಕುರ್ದಿಶ್ ಇಂಗ್ಲಿಷ್-ಮೂಲದ ಕೀಬೋರ್ಡ್</translation>
 <translation id="8280151743281770066">ಅರ್ಮೇನಿಯನ್ ಫೊನೆಟಿಕ್</translation>
 <translation id="8294431847097064396">ಮೂಲ</translation>
@@ -685,13 +687,13 @@
 <translation id="9064939804718829769">ವರ್ಗಾಯಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="9065203028668620118">ಎಡಿಟ್</translation>
 <translation id="9099674669267916096">ಪುಟ ಎಣಿಕೆ</translation>
-<translation id="9110990317705400362">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು ನಾವು ನಿರಂತರವಾಗಿ ಪ್ರಯತ್ನಿಸುತ್ತಿರುತ್ತೇವೆ. ಹಿಂದೆ, ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ವಿಸ್ತರಣೆಯನ್ನು ಸೇರಿಸಲು ನಿಮಗೆ ಯಾವುದೇ ವೆಬ್‌ಸೈಟ್‌‌ ಕಾರ್ಯನಿರ್ವಹಿಸಿರಬಹುದು. ಇತ್ತೀಚಿನ Google Chrome ಆವೃತ್ತಿಗಳಲ್ಲಿ, ವಿಸ್ತರಣೆಗಳ ಪುಟದಿಂದ ಅವುಗಳನ್ನು ಸೇರಿಸುವ ಮೂಲಕ ಈ ವಿಸ್ತರಣೆಗಳನ್ನು ಸ್ಥಾಪಿಸಲು ಬಯಸುವುದಾಗಿ ನೀವು Chrome ಗೆ ಸ್ಪಷ್ಟವಾಗಿ ತಿಳಿಸಬೇಕು. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
+<translation id="9110990317705400362">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು ನಾವು ನಿರಂತರವಾಗಿ ಪ್ರಯತ್ನಿಸುತ್ತಿರುತ್ತೇವೆ. ಹಿಂದೆ, ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ವಿಸ್ತರಣೆಯನ್ನು ಸೇರಿಸಲು ನಿಮಗೆ ಯಾವುದೇ ವೆಬ್‌ಸೈಟ್‌‌ ಕಾರ್ಯನಿರ್ವಹಿಸಿರಬಹುದು. ಇತ್ತೀಚಿನ Google Chrome ಆವೃತ್ತಿಗಳಲ್ಲಿ, ವಿಸ್ತರಣೆಗಳ ಪುಟದಿಂದ ಅವುಗಳನ್ನು ಸೇರಿಸುವ ಮೂಲಕ ಈ ವಿಸ್ತರಣೆಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಬಯಸುವುದಾಗಿ ನೀವು Chrome ಗೆ ಸ್ಪಷ್ಟವಾಗಿ ತಿಳಿಸಬೇಕು. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">ಕೋಡೆಕ್</translation>
 <translation id="9129931661813833980">ಫೋಲ್ಡರ್ ಅನ್ನು ಪಿನ್ ಮಾಡಿ</translation>
 <translation id="9130775360844693113">ಈ ಐಟಂಗಳಿಗೆ '<ph name="DESTINATION_NAME" />' ನ ಸದಸ್ಯರು ಪ್ರವೇಶ ಪಡೆದುಕೊಳ್ಳುವರು.</translation>
 <translation id="9131598836763251128">ಒಂದು ಅಥವಾ ಹೆಚ್ಚು ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="9133055936679483811">ಜಿಪ್ ಮಾಡುವಿಕೆಯು ವಿಫಲವಾಗಿದೆ. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">Macintosh ಸಾಫ್ಟ್‌ವೇರ್ ಬಳಸುವ ಕಂಪ್ಯೂಟರ್‌ಗಾಗಿ ಈ ಫೈಲ್ ವಿನ್ಯಾಸಗೊಳಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಸಾಧನವು Chrome OS ನೊಂದಿಗೆ ರನ್ ಆಗುವುದರಿಂದಾಗಿ ಇದು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ಸೂಕ್ತವಾದ ಬದಲಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ ದಯವಿಟ್ಟು Chrome ವೆಬ್ ಸ್ಟೋರ್‌ ಅನ್ನು ಹುಡುಕಿ.</translation>
+<translation id="9134524245363717059">Macintosh ಸಾಫ್ಟ್‌ವೇರ್ ಬಳಸುವ ಕಂಪ್ಯೂಟರ್‌ಗಾಗಿ ಈ ಫೈಲ್ ವಿನ್ಯಾಸಗೊಳಿಸಲಾಗಿದೆ. ನಿಮ್ಮ ಸಾಧನವು Chrome OS ನೊಂದಿಗೆ ರನ್ ಆಗುವುದರಿಂದಾಗಿ ಇದು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ಸೂಕ್ತವಾದ ಬದಲಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ ದಯವಿಟ್ಟು Chrome ವೆಬ್ ‌ಸ್ಟೋರ್‌ ಅನ್ನು ಹುಡುಕಿ.</translation>
 <translation id="913758436357682283">ಮ್ಯಾನ್ಮಾರ್ ಮ್ಯಾನ್‌ಸಾನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="9148058034647219655">ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="9153744823707037316">Array ಇನ್‌ಪುಟ್ ವಿಧಾನ</translation>

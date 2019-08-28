@@ -74,8 +74,6 @@ void SharingDeviceRegistration::OnFCMTokenReceived(
     InstanceID::Result result) {
   switch (result) {
     case InstanceID::SUCCESS:
-      sharing_sync_preference_->SetFCMRegistration(
-          {authorized_entity, fcm_registration_token, base::Time::Now()});
       RetrieveEncryptionInfo(std::move(callback), authorized_entity,
                              fcm_registration_token);
       break;
@@ -102,14 +100,20 @@ void SharingDeviceRegistration::RetrieveEncryptionInfo(
           authorized_entity,
           base::BindOnce(&SharingDeviceRegistration::OnEncryptionInfoReceived,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         fcm_registration_token));
+                         authorized_entity, fcm_registration_token));
 }
 
 void SharingDeviceRegistration::OnEncryptionInfoReceived(
     RegistrationCallback callback,
+    const std::string& authorized_entity,
     const std::string& fcm_registration_token,
     std::string p256dh,
     std::string auth_secret) {
+  sharing_sync_preference_->SetFCMRegistration(
+      SharingSyncPreference::FCMRegistration(authorized_entity,
+                                             fcm_registration_token, p256dh,
+                                             auth_secret, base::Time::Now()));
+
   const syncer::DeviceInfo* local_device_info =
       local_device_info_provider_->GetLocalDeviceInfo();
   if (!local_device_info) {

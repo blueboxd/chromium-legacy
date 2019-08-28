@@ -271,6 +271,7 @@ void PasswordGenerationState::CommitGeneratedPassword(
     const base::string16& old_password) {
   DCHECK(presaved_);
   generated.preferred = true;
+  generated.date_last_used = clock_->Now();
   generated.date_created = clock_->Now();
   form_saver_->UpdateReplace(generated, matches, old_password,
                              presaved_.value() /* old_primary_key */);

@@ -54,12 +54,12 @@ bool SVGAnimationElement::ParseValues(const String& value,
   value.Split(';', true, parse_list);
   unsigned last = parse_list.size() - 1;
   for (unsigned i = 0; i <= last; ++i) {
+    parse_list[i] = parse_list[i].StripWhiteSpace(IsHTMLSpace<UChar>);
     if (parse_list[i].IsEmpty()) {
       // Tolerate trailing ';'
       if (i < last)
         goto fail;
     } else {
-      parse_list[i] = parse_list[i].StripWhiteSpace(IsHTMLSpace<UChar>);
       result.push_back(parse_list[i]);
     }
   }

@@ -47,7 +47,7 @@
 <translation id="6391538222494443604">इनपुट निर्देशिका मौजूद होनी चाहिए.</translation>
 <translation id="641087317769093025">एक्सटेंशन को अनज़िप नहीं किया जा सका</translation>
 <translation id="6413453408918378296">आइकॉन पूरी तरह दिखाई नहीं दे रहा है '<ph name="ICON" />'.</translation>
-<translation id="6542618148162044354">"<ph name="APP_NAME" />" आपके एक या ज़्यादा डिवाइस के ऐक्‍सेस मांग रहा है:</translation>
+<translation id="6542618148162044354">"<ph name="APP_NAME" />" आपके एक या ज़्यादा डिवाइस के एक्‍सेस मांग रहा है:</translation>
 <translation id="657064425229075395">पृष्ठभूमि स्क्रिप्ट '<ph name="BACKGROUND_SCRIPT" />' लोड नहीं की जा सकी.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> का <ph name="PRODUCT_NAME" /> (सीरियल नंबर <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">अनज़िप करने के लिए निर्देशिका नहीं बनाई जा सकी: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -64,7 +64,7 @@
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> की ओर से <ph name="PRODUCT_NAME" /></translation>
 <translation id="8517576857589387417">मेनिफ़ेस्ट फ़ाइल नहीं मिल रही है या पढ़ने के लिए उपलब्ध नहीं है</translation>
 <translation id="8636666366616799973">पैकेज अमान्य है. ब्यौरा: '<ph name="ERROR_MESSAGE" />'.</translation>
-<translation id="8761756413268424715">"<ph name="APP_NAME" />" आपके किसी एक डिवाइस का ऐक्‍सेस मांग रहा है:</translation>
+<translation id="8761756413268424715">"<ph name="APP_NAME" />" आपके किसी एक डिवाइस का एक्‍सेस मांग रहा है:</translation>
 <translation id="8885905466771744233">तय किए गए एक्सटेंशन के लिए कोई 'निजी की' पहले से मौजूद है. उस की का फिर से इस्तेमाल करें या पहले उसे मिटाएं.</translation>
 <translation id="907841381057066561">पैकेजिंग के दौरान अस्थायी ज़िप फ़ाइल बनाने में विफल.</translation>
 <translation id="941543339607623937">गलत निजी कुंजी.</translation>

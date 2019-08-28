@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Chromium の使い方のヒント: タブのオプションをさらに表示するには、画面の下部または上部のツールバーにある [タブを表示] を押し続けます。</translation>
 <translation id="4241912885070669028"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトしようとしています。ログアウトすると、Chromium データはこのデバイスから削除されますが、Google アカウントには残ります。</translation>
 <translation id="4555020257205549924">この機能を有効にすると、外国語のページを開いたときに翻訳ツールが表示されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Chromium のスキャナをオンにしてください</translation>
 <translation id="4787850887676698916">他のデバイスの Chromium で開いているタブがここに表示されます。</translation>
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトするにあたり、Chromium データはこのデバイスから削除されます（ただし Google アカウントには残ります）。</translation>
 <translation id="5231355151045086930">Chromium からのログアウト</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">[設定] &gt; [プライバシー] &gt; [カメラ] &gt; [Chromium] の順に選択し、カメラをオンにします。</translation>
 <translation id="7746854981345936341">Chromium の使い方のヒント: 戻る、進む、検索など一部のボタンは画面の下部に表示されるようになりました。</translation>
 <translation id="786327964234957808">同期アカウントを <ph name="USER_EMAIL1" /> から <ph name="USER_EMAIL2" /> に切り替えようとしています。既存の Chromium データは <ph name="DOMAIN" /> で管理されています。この操作を行うと、データはこのデバイスから削除されますが、<ph name="USER_EMAIL1" /> には残ります。</translation>
+<translation id="7890287942691234100">Chromium のスキャナの使用開始</translation>
 <translation id="8073677936375100957">Chromium データをこのデバイスから削除しますか？</translation>
 <translation id="8175055321229419309">ヒント: <ph name="BEGIN_LINK" />Chromium を Dock に移動<ph name="END_LINK" />するとアクセスしやすくなります</translation>
 <translation id="8252885722420466166">ユーザーの現在時に基づいて Chromium で Google を使いやすくします。</translation>

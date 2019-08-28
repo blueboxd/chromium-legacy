@@ -209,7 +209,8 @@ class ExceptionToAbortStreamingScope {
   DISALLOW_COPY_AND_ASSIGN(ExceptionToAbortStreamingScope);
 };
 
-RawResource* GetRawResource(ScriptState* script_state, const KURL& url) {
+RawResource* GetRawResource(ScriptState* script_state,
+                            const String& url_string) {
   if (!RuntimeEnabledFeatures::WasmCodeCacheEnabled())
     return nullptr;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
@@ -218,6 +219,7 @@ RawResource* GetRawResource(ScriptState* script_state, const KURL& url) {
   ResourceFetcher* fetcher = execution_context->Fetcher();
   if (!fetcher)
     return nullptr;
+  KURL url(url_string);
   if (!url.IsValid())
     return nullptr;
   Resource* resource = fetcher->CachedResource(url);
@@ -231,11 +233,11 @@ RawResource* GetRawResource(ScriptState* script_state, const KURL& url) {
 
 class WasmStreamingClient : public v8::WasmStreaming::Client {
  public:
-  WasmStreamingClient(const KURL& response_url,
+  WasmStreamingClient(const String& response_url,
                       const base::Time& response_time,
                       v8::Isolate* isolate,
                       v8::Local<v8::Context> context)
-      : response_url_(response_url),
+      : response_url_(response_url.IsolatedCopy()),
         response_time_(response_time),
         context_(isolate, context) {
     context_.SetWeak();
@@ -244,7 +246,7 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
   void OnModuleCompiled(v8::CompiledWasmModule compiled_module) override {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                          "v8.wasm.compiledModule", TRACE_EVENT_SCOPE_THREAD,
-                         "url", response_url_.GetString().Utf8());
+                         "url", response_url_.Utf8());
 
     // Don't cache if Context has been destroyed.
     if (context_.IsEmpty())
@@ -279,12 +281,12 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
       return;
 
     Platform::Current()->CacheMetadata(
-        mojom::CodeCacheType::kWebAssembly, response_url_,
-        response_time_, serialized_data.data(), serialized_data.size());
+        mojom::CodeCacheType::kWebAssembly, KURL(response_url_), response_time_,
+        serialized_data.data(), serialized_data.size());
   }
 
  private:
-  KURL response_url_;
+  String response_url_;
   base::Time response_time_;
   v8::Global<v8::Context> context_;
 
@@ -351,7 +353,7 @@ void StreamFromResponseCallback(
     return;
   }
 
-  KURL url(response->url());
+  String url = response->url();
   RawResource* raw_resource = GetRawResource(script_state, url);
   if (raw_resource) {
     SingleCachedMetadataHandler* cache_handler =
@@ -365,7 +367,7 @@ void StreamFromResponseCallback(
       if (cached_module) {
         TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                              "v8.wasm.moduleCacheHit", TRACE_EVENT_SCOPE_THREAD,
-                             "url", url.GetString().Utf8(), "consumedCacheSize",
+                             "url", url.Utf8(), "consumedCacheSize",
                              cached_module->size());
         bool is_valid = streaming->SetCompiledModuleBytes(
             reinterpret_cast<const uint8_t*>(cached_module->Data()),

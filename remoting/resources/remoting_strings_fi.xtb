@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Isäntään ei saatu yhteyttä. Tämä johtuu luultavasti käyttämäsi verkon määrityksistä.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Havaittiin verkossa viimeksi <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Tätä sovellusta ei enää tueta. Varmista, että saat uusimmat ominaisuudet ja tietoturvapäivitykset, käyttämällä <ph name="LINK_BEGIN" />Chrome-etäkäyttö-verkkosovellusta<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Sinun on suoritettava lisämääritysvaihe ennen kuin tämän koneen <ph name="PRODUCT_NAME" /> ‑etäkäyttö on mahdollista.
-
-Ota ominaisuus käyttöön valitsemalla ensin <ph name="BUTTON_NAME" />, jolloin tietosuoja- ja yksityisyysvalinnat avataan, ja valitsemalla ruutu kohdasta <ph name="SERVICE_SCRIPT_NAME" />.
-
-Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo lisätty ja tarkistettu, sinun on ehkä poistettava se ja lisättävä se sitten uudelleen.</translation>
 <translation id="2499160551253595098">Auta meitä parantamaan Chrome-etäkäyttöä antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
 <translation id="2509394361235492552">Yhdistetty isäntään <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Huomaa: voit varmistaa kaikkien pikanäppäinten käytettävyyden, kun määrität Chrome-etäkäytön avautumaan ikkunassa.</translation>
@@ -317,6 +312,11 @@ Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo lisätty ja tarkistettu, sinun on eh
 <translation id="8804164990146287819">Tietosuojakäytäntö</translation>
 <translation id="894763922177556086">Hyvä</translation>
 <translation id="895780780740011433">Windows 7 ja uudemmat</translation>
+<translation id="8963047137585288214">Sinun on suoritettava lisämääritysvaihe ennen kuin tämän koneen <ph name="PRODUCT_NAME" /> ‑etäkäyttö on mahdollista.
+
+Ota ominaisuus käyttöön valitsemalla ensin <ph name="BUTTON_NAME" />, jolloin tietosuoja- ja yksityisyysvalinnat avataan, ja valitsemalla ruutu <ph name="SERVICE_SCRIPT_NAME" />.
+
+Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo lisätty ja valittu, sinun on ehkä poistettava valinta ja valittava se sitten uudelleen.</translation>
 <translation id="897805526397249209">Ota etäyhteys käyttöön asentamalla toiselle tietokoneelle Chromoting ja valitsemalla <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Chrome-etäkäytön isännän hallinta</translation>
 <translation id="9016232822027372900">Yhdistä silti</translation>

@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -40,7 +41,9 @@ CooperativeSchedulingManager::AllowedStackScope::~AllowedStackScope() {
 }
 
 CooperativeSchedulingManager::CooperativeSchedulingManager()
-    : clock_(base::DefaultTickClock::GetInstance()) {}
+    : clock_(base::DefaultTickClock::GetInstance()),
+      feature_enabled_(RuntimeEnabledFeatures::CooperativeSchedulingEnabled()) {
+}
 
 void CooperativeSchedulingManager::EnterAllowedStackScope() {
   TRACE_EVENT_ASYNC_BEGIN0("renderer.scheduler", "PreemptionAllowedStackScope",
@@ -59,6 +62,9 @@ void CooperativeSchedulingManager::LeaveAllowedStackScope() {
 void CooperativeSchedulingManager::SafepointSlow() {
   // Avoid nesting more than two levels.
   if (running_nested_loop_ || base::RunLoop::IsNestedOnCurrentThread())
+    return;
+
+  if (!feature_enabled_)
     return;
 
   // TODO(keishi): Also bail if V8 EnteredContextCount is more than 1

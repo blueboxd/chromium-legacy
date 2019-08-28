@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">リーディング リストに追加しました</translation>
 <translation id="1828824471510190776">パスワードを自動生成...</translation>
 <translation id="1870148520156231997">パスワードを表示します</translation>
+<translation id="1872096359983322073">照明</translation>
 <translation id="1876721852596493031">使用状況データ送信</translation>
 <translation id="1911619930368729126">ドライブにアップロード</translation>
 <translation id="1923342640370224680">1 時間以内</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">タップしてキャンセルします。</translation>
 <translation id="6108923351542677676">設定しています...</translation>
+<translation id="6119050551270742952">現在シークレット モードです</translation>
 <translation id="6122191549521593678">オンライン</translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6136914049981179737">数秒前</translation>
@@ -411,6 +413,9 @@
 <translation id="6807889908376551050">すべて表示...</translation>
 <translation id="681368974849482173">作成済みのアイテム</translation>
 <translation id="6851516051005285358">PC 版サイトを見る</translation>
+<translation id="6858855187367714033">スキャンされました</translation>
+<translation id="6859944681507688231">QR コードまたはクレジット カードをスキャンするには、設定でカメラを有効にしてください。</translation>
+<translation id="6873263987691478642">分割表示</translation>
 <translation id="6896758677409633944">コピー</translation>
 <translation id="6903907808598579934">同期を有効にする</translation>
 <translation id="6914583639806229067">コピーした画像を検索</translation>
@@ -509,6 +514,7 @@
 <translation id="8428045167754449968">市区町村</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8458397775385147834">1件の項目を削除しました</translation>
+<translation id="8487667956631253959">オン</translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8490978609246021741">変更を保存</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
@@ -519,6 +525,7 @@
 <translation id="8532105204136943229">有効期限（年）</translation>
 <translation id="8534481786647257214">Google+への投稿が完了しました。</translation>
 <translation id="8548878600947630424">ページ内を検索...</translation>
+<translation id="8588404856427128947">オフ</translation>
 <translation id="8605219856220328675">タブを閉じる。</translation>
 <translation id="8620640915598389714">編集</translation>
 <translation id="8636825310635137004">他のデバイスと同じタブを使用するには、同期を有効にします。</translation>
@@ -559,6 +566,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">クラッシュレポートを送信しました。</translation>
 <translation id="935490618240037774">ブックマーク、履歴、パスワード、その他の設定が Google アカウントに同期され、どのデバイスでも利用できるようになります。</translation>
+<translation id="952704832371081537">キャンセル</translation>
 <translation id="976982866697960176">同期データを管理...</translation>
 <translation id="988141524645182168">他のデバイス</translation>
 <translation id="989988560359834682">住所の編集</translation>

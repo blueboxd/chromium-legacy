@@ -19,14 +19,14 @@
         transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
       }
 
-      :host([closed]) #wrapper {
+      :host([closed_]) #wrapper {
         /* 132px roughly flips the location of the button across the right edge
          * of the page. */
         transform: translateX(var(--translate-x-distance));
         transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
       }
 
-      :host([show-on-left][closed]) #wrapper {
+      :host([show-on-left][closed_]) #wrapper {
         transform: translateX(calc(-1 * var(--translate-x-distance)));
       }
 
@@ -76,7 +76,7 @@
       }
     </style>
     <div id="wrapper">
-      <cr-icon-button iron-icon="[[visibleIcon_]]" on-click="fireClick"
+      <cr-icon-button iron-icon="[[visibleIcon_]]" on-click="fireClick_"
           aria-label$="[[visibleTooltip_]]" title="[[visibleTooltip_]]">
       </cr-icon-button>
     </div>

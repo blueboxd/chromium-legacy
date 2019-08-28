@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">இணைப்பு உரையை நகலெடு</translation>
 <translation id="1208340532756947324">அனைத்துச் சாதனங்களுக்கு இடையிலும் ஒத்திசைக்க மற்றும் தனிப்பயனாக்க, ஒத்திசைவை இயக்கவும்</translation>
 <translation id="1209206284964581585">இப்போதைக்கு மறை</translation>
+<translation id="1227058898775614466">வழிசெலுத்துதல் வரலாறு</translation>
 <translation id="1231733316453485619">ஒத்திசைவை இயக்கவா?</translation>
 <translation id="123724288017357924">தற்காலிக சேமிப்பைப் புறக்கணித்து, நடப்புப் பக்கத்தை மீண்டும் ஏற்றும்</translation>
 <translation id="124116460088058876">மேலும் மொழிகள்</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">விரிவாக்க, தட்டவும்</translation>
 <translation id="1285320974508926690">இந்த தளத்தை எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
 <translation id="1291207594882862231">வரலாறு, குக்கீகள், தளத் தரவு, தற்காலிகச் சேமிப்பை அழி…</translation>
+<translation id="129382876167171263">இணையதளங்கள் சேமித்த கோப்புகள் இங்கே தோன்றும்</translation>
 <translation id="129553762522093515">சமீபத்தில் மூடியவை</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> சாதனத்திலிருந்து அனுப்பப்பட்டது</translation>
 <translation id="1310482092992808703">தாவல்களைக் குழுவாக்கு</translation>
+<translation id="1327257854815634930">வழிசெலுத்தல் வரலாறு திறக்கப்பட்டுள்ளது</translation>
 <translation id="1331212799747679585">Chromeமைப் புதுப்பிக்க முடியாது. கூடுதல் விருப்பங்கள்</translation>
 <translation id="1332501820983677155">Google Chrome அம்சத்திற்கான ஷார்ட்கட்கள்</translation>
 <translation id="1360432990279830238">வெளியேறி, ஒத்திசைவை முடக்கவா?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">MIDI சாதனங்களுக்கு முழுக் கட்டுப்பாட்டை அனுமதி</translation>
 <translation id="145097072038377568">Android அமைப்புகளில் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="1477626028522505441">சேவையகச் சிக்கல்களால் <ph name="FILE_NAME" />ஐப் பதிவிறக்க முடியவில்லை.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ மேலும் 1)}other{ (+ மேலும் #)}}</translation>
 <translation id="1501480321619201731">குழுவை நீக்கு</translation>
 <translation id="1506061864768559482">தேடல் இன்ஜின்</translation>
 <translation id="1513352483775369820">புத்தகக்குறிகளும் இணைய வரலாறும்</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">இதை வசதியாக படிப்பதற்கு, ஸ்லைடரை இழுக்கவும். பத்தியில் இரு முறை தட்டிய பிறகு, உரையானது குறைந்தது இந்த அளவு பெரியதாக தோன்ற வேண்டும்.</translation>
 <translation id="2323763861024343754">தளச் சேமிப்பகம்</translation>
 <translation id="2328985652426384049">உள்நுழைய முடியவில்லை</translation>
-<translation id="2334057574886324800">மெசேஜ் வந்துள்ளது</translation>
 <translation id="2349710944427398404">கணக்குகள், புக்மார்க்குகள், சேமித்த அமைப்புகள் உள்பட Chrome பயன்படுத்தும் மொத்தத் தரவு</translation>
 <translation id="2353636109065292463">உங்கள் இணைய இணைப்பைச் சரிபார்க்கிறது</translation>
 <translation id="2359808026110333948">தொடர்க</translation>
@@ -269,6 +270,7 @@
 <translation id="2962095958535813455">மறைநிலைத் தாவல்களுக்கு மாற்றப்பட்டது</translation>
 <translation id="2968755619301702150">சான்றிதழ் வியூவர்</translation>
 <translation id="2979025552038692506">தேர்ந்தெடுத்த மறைநிலைத் தாவல்</translation>
+<translation id="2987620471460279764">பிற சாதனத்திலிருந்து உரை பகிரப்பட்டது</translation>
 <translation id="2989523299700148168">சமீபத்தில் பார்த்தவை</translation>
 <translation id="2996291259634659425">கடவுச்சொற்றொடரை உருவாக்கு</translation>
 <translation id="2996809686854298943">URL தேவை</translation>
@@ -416,12 +418,6 @@
 <translation id="4226663524361240545">அறிவிப்புகள் வரும் போது சாதனம் அதிர்வுறக்கூடும்</translation>
 <translation id="423219824432660969"><ph name="TIME" /> அன்றைக்கான Google கடவுச்சொல்லைப் பயன்படுத்தி  ஒத்திசைக்கப்பட்ட தரவை என்க்ரிப்ட் செய்</translation>
 <translation id="4242533952199664413">அமைப்புகளைத் திற</translation>
-<translation id="4247274662191902962">இந்த VR அனுபவத்தில் இருக்கும்போது மட்டுமே சென்சார் தரவு பகிரப்படும். கீழுள்ளவை போன்ற குறிப்பிட்ட தகவல் மூலம் இந்தத் தளத்தால் உங்களைக் கண்டறிய முடியும்:
-    - இருப்பிடம்
-    - கண்ணின் அமைப்பு போன்ற அங்க அடையாளங்கள்
-    - நடக்கும் விதம் போன்ற அசைவுகள்
-
-    இந்தத் தளம் நம்பத்தகுந்தது எனக் கருதினால் மட்டுமே அணுகல் வழங்கவும்.</translation>
 <translation id="4256782883801055595">ஓப்பன் சோர்ஸ் உரிமங்கள்</translation>
 <translation id="4259722352634471385">செல்வது தடுக்கப்பட்டது: <ph name="URL" /></translation>
 <translation id="4269820728363426813">இணைப்பு முகவரியை நகலெடு</translation>
@@ -552,8 +548,9 @@
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{ஒரு பதிவிறக்கம் தோல்வியடைந்தது.}other{# பதிவிறக்கங்கள் தோல்வியடைந்தன.}}</translation>
 <translation id="5170568018924773124">கோப்புறையில் காண்பி</translation>
 <translation id="5184329579814168207">Chrome இல் திற</translation>
+<translation id="5193988420012215838">கிளிப்போர்டுக்கு நகலெடுக்கப்பட்டது</translation>
+<translation id="5197729504361054390">நீங்கள் தேர்ந்தெடுக்கும் தொடர்புகள் <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> உடன் பகிரப்படும்.</translation>
 <translation id="5199929503336119739">பணி சுயவிவரம்</translation>
-<translation id="5202089186707505116">உங்கள் VR சென்சார்களைப் பயன்படுத்த இந்த இணையதளத்தை அனுமதிக்கவா?</translation>
 <translation id="5210286577605176222">முந்தைய தாவலுக்குச் செல்லும்</translation>
 <translation id="5210365745912300556">தாவலை மூடுக</translation>
 <translation id="5224771365102442243">வீடியோவுடன்</translation>
@@ -566,6 +563,7 @@
 <translation id="5300589172476337783">காண்பி</translation>
 <translation id="5301954838959518834">சரி, புரிந்தது</translation>
 <translation id="5304593522240415983">இந்தப் புலம் காலியாக இருக்கக் கூடாது</translation>
+<translation id="5307446750509046227">தள சேமிப்பகத்தை அழி</translation>
 <translation id="5308380583665731573">இணை</translation>
 <translation id="5313967007315987356">தளத்தைச் சேர்</translation>
 <translation id="5317780077021120954">சேமி</translation>
@@ -629,7 +627,6 @@
 <translation id="5686790454216892815">கோப்பின் பெயர் நீளமாக உள்ளது</translation>
 <translation id="5689516760719285838">இருப்பிடம்</translation>
 <translation id="569536719314091526">’மேலும் விருப்பத்தேர்வுகள்’ பட்டனை அழுத்தி, இந்தப் பக்கத்தை எந்தவொரு மொழியிலும் மொழிபெயர்க்கலாம்</translation>
-<translation id="5719150327511160085">மெசேஜுக்காகக் காத்திருக்கிறது</translation>
 <translation id="572328651809341494">சமீபத்திய தாவல்கள்</translation>
 <translation id="5726692708398506830">பக்கத்திலுள்ள அனைத்தையும் பெரிதாக்கும்</translation>
 <translation id="5748802427693696783">இயல்பான தாவல்களுக்கு மாற்றப்பட்டது</translation>
@@ -802,6 +799,7 @@
 <translation id="6989267951144302301">பதிவிறக்க முடியவில்லை</translation>
 <translation id="6990079615885386641">Google Play Store இலிருந்து பயன்பாட்டைப் பெறவும்: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">எனது மைக்ரோஃபோனைப் பயன்படுத்தத் தளங்களை அனுமதிக்கும் முன் கேள் (பரிந்துரைக்கப்படுகிறது)</translation>
+<translation id="7015203776128479407">ஒத்திசைப்பதற்கான துவக்க அமைவு முடியவில்லை. ஒத்திசைவு முடக்கப்பட்டுள்ளது.</translation>
 <translation id="7016516562562142042">நடப்புத் தேடல் இன்ஜினுக்கு அனுமதிக்கப்பட்டுள்ளது</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> பதிவிறக்கப்பட்டது</translation>
 <translation id="7022756207310403729">உலாவியில் திற</translation>
@@ -833,11 +831,11 @@
 <translation id="7274013316676448362">தடுக்கப்பட்ட தளம்</translation>
 <translation id="7290209999329137901">இதை மறுபெயரிட இயலாது</translation>
 <translation id="7291387454912369099">அசிஸ்டண்ட் மூலம் செக்அவுட்</translation>
+<translation id="7293171162284876153">ஒத்திசைவைத் தொடங்க "Chrome தரவை ஒத்திசை" என்பதை இயக்கவும்.</translation>
 <translation id="729975465115245577">கடவுச்சொற்கள் கோப்பைச் சேமிக்க, உங்கள் சாதனத்தில் ஆப்ஸ் எதுவும் இல்லை.</translation>
 <translation id="7302081693174882195">விவரங்கள்: சேமிக்கப்பட்ட டேட்டா அளவின்படி வரிசைப்படுத்தப்பட்டுள்ளன</translation>
 <translation id="7328017930301109123">’லைட்’ பயன்முறையில், பக்கங்களை Chrome வேகமாக ஏற்றுவதோடு, டேட்டாவை 60 சதவீதம் குறைவாகவும் பயன்படுத்தும்.</translation>
 <translation id="7333031090786104871">முந்தைய தளத்தை இன்னும் சேர்க்கிறது</translation>
-<translation id="7352651011704765696">ஏதோ தவறு ஏற்பட்டது</translation>
 <translation id="7352939065658542140">வீடியோ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{தேர்ந்தெடுத்த 1 உருப்படியைப் பகிரும்}other{தேர்ந்தெடுத்த # உருப்படிகளைப் பகிரும்}}</translation>
 <translation id="7359002509206457351">கட்டண முறைகளை அணுகுவதற்கான அனுமதி</translation>
@@ -901,6 +899,7 @@
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> மொழியில் உள்ள பக்கங்களை எப்போதும் மொழிபெயர்</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">ஆபத்தான ஆப்ஸையும் தளங்களையும் கண்டறிய நீங்கள் பார்வையிட்ட சில பக்கங்களின் URLகளையும், வரம்பிற்குட்பட்ட சிஸ்டம் தகவல்களையும், சில பக்கங்களின் உள்ளடக்கத்தையும் Googleளுக்கு Chrome அனுப்பும்</translation>
+<translation id="7757787379047923882">உரை <ph name="DEVICE_NAME" /> இலிருந்து பகிரப்பட்டுள்ளது</translation>
 <translation id="7762668264895820836">SD கார்டு <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">முகவரியைச் சேர்</translation>
 <translation id="7769602470925380267">சரி, வெளியேறு</translation>
@@ -1040,6 +1039,7 @@
 <translation id="8730621377337864115">முடிந்தது</translation>
 <translation id="8748850008226585750">மறைந்துள்ள உள்ளடக்கம்</translation>
 <translation id="8751914237388039244">படத்தைத் தேர்ந்தெடுக்கவும்</translation>
+<translation id="8788265440806329501">வழிசெலுத்தல் வரலாறு மூடப்பட்டுள்ளது</translation>
 <translation id="8788968922598763114">கடைசியாக மூடிய தாவலைத் திறக்கும்</translation>
 <translation id="8801436777607969138">குறிப்பிட்ட தளத்திற்கு JavaScriptடைத் தடுக்கும்.</translation>
 <translation id="8812260976093120287">உங்கள் சாதனத்தில் ஆதரிக்கப்படும் கட்டணம் செலுத்துவதற்கான பயன்பாடுகளைப் (மேலே குறிப்பிட்டவை) பயன்படுத்தி, சில இணையதளங்களின் மூலம் பணம் செலுத்தலாம்.</translation>

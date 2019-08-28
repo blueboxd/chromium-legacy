@@ -22,6 +22,7 @@
 <translation id="1086953900555227778">Index-5x8</translation>
 <translation id="1088860948719068836">Añade el nombre de la tarjeta</translation>
 <translation id="1089439967362294234">Cambiar contraseña</translation>
+<translation id="1096545575934602868">Este campo no debe tener más de <ph name="MAX_ITEMS_LIMIT" /> entradas. Las entradas adicionales se descartarán.</translation>
 <translation id="109743633954054152">Gestiona contraseñas en la configuración de Chrome</translation>
 <translation id="1103523840287552314">Traducir siempre del <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si se selecciona, Chrome almacenará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
@@ -179,6 +180,7 @@
 <translation id="1822540298136254167">Sitios web que visitas y el tiempo que pasas en ellos</translation>
 <translation id="1826516787628120939">Comprobando</translation>
 <translation id="1834321415901700177">Este sitio web contiene programas dañinos</translation>
+<translation id="1838374766361614909">Borrar búsqueda</translation>
 <translation id="1839551713262164453">No se ha podido hacer la validación de los valores de la política porque se han producido errores</translation>
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1871208020102129563">Se ha configurado el proxy de forma que use servidores proxy fijos, en lugar de una URL de secuencia de comandos .pac.</translation>
@@ -189,6 +191,7 @@
 <translation id="1883255238294161206">Contraer lista</translation>
 <translation id="1898423065542865115">Filtrado</translation>
 <translation id="1914326953223720820">Servicio de descompresión</translation>
+<translation id="1915697529809968049">¿Usar Touch ID en lugar de CVC?</translation>
 <translation id="1916770123977586577">Vuelve a cargar esta página para aplicar la configuración actualizada a este sitio web</translation>
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919367280705858090">Solucionar un error específico</translation>
@@ -248,6 +251,7 @@
 <translation id="2224337661447660594">Sin conexión a Internet</translation>
 <translation id="2230458221926704099">Soluciona los problemas de tu conexión con la <ph name="BEGIN_LINK" />aplicación de diagnóstico<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Enviar ahora</translation>
+<translation id="2248949050832152960">Usar WebAuthn</translation>
 <translation id="225207911366869382">Este valor ya no se utiliza para esta política.</translation>
 <translation id="2257315177824333709">En estos momentos no se puede guardar tu tarjeta</translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
@@ -295,7 +299,6 @@
 <translation id="2485387744899240041">Nombres de usuario de tu dispositivo y navegador</translation>
 <translation id="2491120439723279231">El certificado del servidor contiene errores.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
-<translation id="2494497504885199552">Normalmente sueles visitar &lt;a href="#" id="dont-proceed-link2"&gt;<ph name="DOMAIN" />&lt;/a&gt;. El sitio web al que acabas de intentar acceder tiene un aspecto parecido, pero no coincide exactamente con el que hay en tu historial. Los atacantes a veces usan esta técnica para intentar engañarte o estafarte.</translation>
 <translation id="2495083838625180221">Analizador de archivos JSON</translation>
 <translation id="2495093607237746763">Si se activa esta opción, Chromium guardará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
 <translation id="2498091847651709837">Escanear nueva tarjeta</translation>
@@ -360,7 +363,6 @@
 <translation id="2826760142808435982">La conexión se ha encriptado y autenticado con <ph name="CIPHER" />, y utiliza <ph name="KX" /> como el mecanismo de intercambio clave.</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
 <translation id="2847118875340931228">Abrir una ventana de incógnito</translation>
-<translation id="2849445596171421624">Si haces clic en Continuar, accederás al sitio web más popular &lt;a href="#" id="dont-proceed-link3"&gt;<ph name="DOMAIN" />&lt;/a&gt;.</translation>
 <translation id="2850739647070081192">Invite (sobre)</translation>
 <translation id="2856444702002559011">Es posible que los atacantes estén intentando robar tu información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por ejemplo, contraseñas, mensajes o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878424575911748999">A1</translation>
@@ -396,6 +398,7 @@
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
 <translation id="3037605927509011580">¡Vaya!</translation>
 <translation id="3041612393474885105">Datos del certificado</translation>
+<translation id="3057676462092457419">El modo DnsOverHttps <ph name="SECURE_DNS_MODE_SECURE" /> aún no está disponible. El valor que se le ha asignado es <ph name="SECURE_DNS_MODE_OFF" />.</translation>
 <translation id="3060227939791841287">C9 (sobre)</translation>
 <translation id="3061707000357573562">Aplicar parche a servicio</translation>
 <translation id="3064966200440839136">Saldrás del modo de incógnito para realizar un pago en una aplicación externa. ¿Quieres continuar?</translation>
@@ -429,7 +432,6 @@
 <translation id="3229041911291329567">Información de la versión del dispositivo y del navegador</translation>
 <translation id="323107829343500871">Introduce el código CVC de la tarjeta <ph name="CREDIT_CARD" /></translation>
 <translation id="3234666976984236645">Detectar siempre contenido importante en este sitio</translation>
-<translation id="3254409185687681395">Añadir esta página a marcadores</translation>
 <translation id="3270847123878663523">&amp;Deshacer reorganización</translation>
 <translation id="3274521967729236597">Pa-Kai</translation>
 <translation id="3282497668470633863">Añadir un nombre de la tarjeta</translation>
@@ -524,6 +526,7 @@
 <translation id="3748148204939282805">Es posible que los atacantes que se encuentren en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> intenten engañarte para que realices una acción peligrosa, como instalar software o revelar tu información personal (por ejemplo, contraseñas, números de teléfono o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">Se ha producido un error de traducción debido a un problema con el servidor.</translation>
 <translation id="3759461132968374835">No se ha notificado ningún fallo recientemente. Los fallos que se hayan producido cuando la función de notificación de fallos estaba inhabilitada no aparecerán en esta página.</translation>
+<translation id="3760561303380396507">¿Usar Windows Hello en lugar de CVC?</translation>
 <translation id="3761718714832595332">Ocultar estado</translation>
 <translation id="3765032636089507299">La página Navegación Segura está en construcción.</translation>
 <translation id="3778403066972421603">¿Quieres guardar esta tarjeta en tu cuenta de Google y en este dispositivo?</translation>
@@ -533,6 +536,7 @@
 <translation id="3789155188480882154">Tamaño 16</translation>
 <translation id="3797522431967816232">Prc3 (sobre)</translation>
 <translation id="3807873520724684969">Contenido dañino bloqueado.</translation>
+<translation id="3808375843007691220">Advertencia: Se han detectado funciones experimentales.</translation>
 <translation id="3810973564298564668">Gestionar</translation>
 <translation id="382518646247711829">Si utilizas un servidor proxy...</translation>
 <translation id="3828924085048779000">La frase de contraseña no puede estar vacía.</translation>
@@ -545,6 +549,7 @@
 <translation id="3901925938762663762">La tarjeta ha caducado</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
+<translation id="3939773374150895049">¿Usar WebAuthn en lugar de CVC?</translation>
 <translation id="3946209740501886391">Preguntar siempre en este sitio web</translation>
 <translation id="3949571496842715403">Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad no especifica nombres alternativos del sujeto. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión.</translation>
 <translation id="3949601375789751990">Tu historial de navegación aparece aquí</translation>
@@ -559,7 +564,6 @@
 <translation id="40103911065039147">{URL_count,plural, =1{ 1 página web cercana}other{ # páginas web cercanas}}</translation>
 <translation id="4030383055268325496">&amp;Deshacer acción de añadir</translation>
 <translation id="4032320456957708163">El navegador lo administra <ph name="ENROLLMENT_DOMAIN" /></translation>
-<translation id="4034375457890803692">El enlace que has abierto lleva a un sitio web que no sueles visitar. Podría intentar confundirte.</translation>
 <translation id="4058922952496707368">Clave "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (sobre)</translation>
 <translation id="4067947977115446013">Añade una dirección válida</translation>
@@ -586,6 +590,7 @@
 <translation id="4171400957073367226">La firma de verificación no es válida</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> elemento más}other{<ph name="ITEM_COUNT" /> elementos más}}</translation>
+<translation id="4176463684765177261">Inhabilitado</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4193750898749511769">Para pagar más rápido la próxima vez, añade tu tarjeta y tu dirección de facturación a tu cuenta de Google.</translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
@@ -674,7 +679,6 @@
 <translation id="4582204425268416675">Eliminar tarjeta</translation>
 <translation id="4587425331216688090">¿Eliminar dirección de Chrome?</translation>
 <translation id="4592951414987517459">Tu conexión con <ph name="DOMAIN" /> está cifrada con un conjunto de cifrado moderno.</translation>
-<translation id="4594047029158047642">El enlace que has abierto te lleva a un sitio web poco popular. Puede que intenten engañarte.</translation>
 <translation id="4594403342090139922">&amp;Deshacer eliminación</translation>
 <translation id="4597348597567598915">Tamaño 8</translation>
 <translation id="4600854749408232102">C6/C5 (sobre)</translation>
@@ -736,6 +740,7 @@
 <translation id="4974590756084640048">Volver a habilitar advertencias</translation>
 <translation id="4984339528288761049">Prc5 (sobre)</translation>
 <translation id="4989163558385430922">Ver todo</translation>
+<translation id="4989542687859782284">No disponibles</translation>
 <translation id="4989809363548539747">Este complemento no es compatible</translation>
 <translation id="4995216769782533993">Confirma el código de seguridad para compartir la información de tu tarjeta con este sitio web</translation>
 <translation id="5002932099480077015">Si se habilita esta opción, Chrome guardará una copia de tu tarjeta en este dispositivo para rellenar la información más rápido.</translation>
@@ -777,7 +782,6 @@
 <translation id="5169827969064885044">Podrías perder el acceso a la cuenta de tu organización o tener problemas de suplantación de identidad. Chrome te recomienda que cambies tu contraseña ahora.</translation>
 <translation id="5171045022955879922">Busca o escribe una URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
-<translation id="5172068981283436906">Normalmente sueles visitar &lt;a href="#" id="dont-proceed-link2"&gt;<ph name="DOMAIN" />&lt;/a&gt;. La URL a la que acabas de intentar acceder tiene un aspecto parecido, pero no coincide exactamente con el sitio web de tu historial. Los atacantes a veces usan esta técnica para intentar engañarte o estafarte.</translation>
 <translation id="5172758083709347301">Equipo</translation>
 <translation id="5179510805599951267">¿Esta página no está escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa de este error.</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
@@ -909,9 +913,11 @@
 <translation id="5869522115854928033">Contraseñas guardadas</translation>
 <translation id="5887400589839399685">Tarjeta guardada</translation>
 <translation id="5893752035575986141">Se aceptan tarjetas de crédito.</translation>
+<translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
 <translation id="5916664084637901428">Activado</translation>
+<translation id="59174027418879706">Habilitado</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">¿Quieres guardar la tarjeta en tu cuenta de Google?</translation>
 <translation id="5922853866070715753">Casi hemos acabado</translation>
@@ -945,6 +951,7 @@
 <translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">¿Quieres usar las tarjetas en todos tus dispositivos?</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
+<translation id="6060009363608157444">Modo DnsOverHttps no válido.</translation>
 <translation id="6080696365213338172">Has accedido al contenido mediante un certificado proporcionado por el administrador. Los datos que proporciones a <ph name="DOMAIN" /> pueden ser interceptados por tu administrador.</translation>
 <translation id="6094273045989040137">Anotar</translation>
 <translation id="610911394827799129">Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en la página <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -1037,6 +1044,7 @@
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ninguno}=1{De 1 sitio web (no se cerrará la sesión en tu cuenta de Google)}other{De # sitios web (no se cerrará la sesión en tu cuenta de Google)}}</translation>
+<translation id="6652101503459149953">Usar Windows Hello</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6670613747977017428">Volver para estar a salvo.</translation>
 <translation id="6671697161687535275">¿Quitar sugerencia de formulario de Chromium?</translation>
@@ -1066,6 +1074,7 @@
 <translation id="6868206169573555318">Reinicia para actualizar</translation>
 <translation id="6874604403660855544">&amp;Rehacer acción de añadir</translation>
 <translation id="6884662655240309489">Tamaño 1</translation>
+<translation id="6884796835813057577">¿Quieres ir a &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">No se admite el nivel de la política.</translation>
 <translation id="6895330447102777224">Tu tarjeta se ha confirmado</translation>
@@ -1137,7 +1146,6 @@ Más información:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu ordenador (<ph name="DATE_AND_TIME" />) no son correctas.</translation>
 <translation id="7260504762447901703">Revoca el acceso</translation>
-<translation id="726226871651201355">¿Quieres ir a &lt;a href="#" id="dont-proceed-link1"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="7271803869921933038">Tarjetas prepago aceptadas</translation>
 <translation id="7275334191706090484">Marcadores administrados</translation>
 <translation id="7298195798382681320">Recomendada</translation>
@@ -1150,6 +1158,7 @@ Más información:
 <translation id="7320336641823683070">Ayuda de conexión</translation>
 <translation id="733354035281974745">Anulación de la cuenta local del dispositivo</translation>
 <translation id="7334320624316649418">&amp;Rehacer reorganización</translation>
+<translation id="7337706099755338005">No está disponible en esta plataforma.</translation>
 <translation id="733923710415886693">El certificado del servidor no se ha revelado a través de la Transparencia en los Certificados.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Se ha afiliado:</translation>
@@ -1297,6 +1306,7 @@ Más información:
 <translation id="8041940743680923270">Utilizar valor predeterminado global (Preguntar)</translation>
 <translation id="8042918947222776840">Seleccionar método de recogida</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" no se ha configurado correctamente. Normalmente, el problema se soluciona al desinstalar "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8062224330780487419">A partir de ahora, no tendrás que introducir el código de seguridad de la tarjeta.</translation>
 <translation id="8066955247577885446">Se ha producido un error.</translation>
 <translation id="8074253406171541171">10x13 (sobre)</translation>
 <translation id="8078141288243656252">No se pueden añadir anotaciones a los documentos girados</translation>
@@ -1394,9 +1404,11 @@ Más información:
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Guardar esta tarjeta en el dispositivo</translation>
 <translation id="8626112503828625890">¿Quieres almacenar los detalles de facturación en tu cuenta de Google?</translation>
+<translation id="8647750283161643317">Restablecer todo a su estado predeterminado</translation>
 <translation id="8663226718884576429">Resumen del pedido: <ph name="TOTAL_LABEL" /> (más detalles)</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, respuesta: <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
+<translation id="8688672835843460752">Disponible</translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
 <translation id="8718314106902482036">El pago no se ha completado</translation>
 <translation id="8719263113926255150">Sugerencia de búsqueda: <ph name="ENTITY" />, <ph name="DESCRIPTION" /></translation>
@@ -1459,6 +1471,7 @@ Más información:
 <translation id="9035022520814077154">Error de seguridad</translation>
 <translation id="9038649477754266430">Utilizar un servicio de predicciones para que las páginas se carguen más rápido</translation>
 <translation id="9039213469156557790">Además, esta página incluye otros recursos que no son seguros. Otros usuarios pueden acceder a estos recursos mientras están en circulación y un atacante puede modificarlos para cambiar el comportamiento de la página.</translation>
+<translation id="9044359186343685026">Usar Touch ID</translation>
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" />: <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado no válido.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>

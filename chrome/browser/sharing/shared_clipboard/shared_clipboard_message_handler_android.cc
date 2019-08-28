@@ -7,15 +7,12 @@
 #include <memory>
 #include <string>
 
-#include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/android/chrome_jni_headers/SharedClipboardMessageHandler_jni.h"
 #include "chrome/browser/sharing/proto/shared_clipboard_message.pb.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
-#include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -45,28 +42,3 @@ void SharedClipboardMessageHandler::OnMessage(
       env, base::android::ConvertUTF8ToJavaString(env, device_name));
 }
 
-void SharedClipboardMessageHandler::SendMessageToDevice(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& j_guid,
-    const base::android::JavaParamRef<jstring>& j_message,
-    const base::android::JavaParamRef<jobject>& j_runnable) {
-  std::string guid = base::android::ConvertJavaStringToUTF8(env, j_guid);
-  DCHECK(!guid.empty());
-
-  std::string message = base::android::ConvertJavaStringToUTF8(env, j_message);
-  chrome_browser_sharing::SharingMessage sharing_message;
-  sharing_message.mutable_shared_clipboard_message()->set_text(
-      std::move(message));
-
-  auto callback =
-      base::BindOnce(base::android::RunIntCallbackAndroid,
-                     base::android::ScopedJavaGlobalRef<jobject>(j_runnable));
-  sharing_service_->SendMessageToDevice(
-      guid, kSendMessageTimeout, std::move(sharing_message),
-      base::BindOnce(
-          [](base::OnceCallback<void(int)> callback,
-             SharingSendMessageResult result) {
-            std::move(callback).Run(static_cast<int>(result));
-          },
-          std::move(callback)));
-}

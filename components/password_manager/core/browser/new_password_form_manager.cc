@@ -315,6 +315,7 @@ void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   pending_credentials_.password_value = password_to_save;
   pending_credentials_.skip_zero_click = skip_zero_click;
   pending_credentials_.preferred = true;
+  pending_credentials_.date_last_used = base::Time::Now();
   is_new_login_ = false;
   ProcessUpdate();
   SavePendingToStore(true /*update*/);
@@ -958,6 +959,7 @@ void NewPasswordFormManager::CreatePendingCredentials() {
       HasGeneratedPassword() ? generation_state_->generated_password()
                              : password_to_save.first;
   pending_credentials_.preferred = true;
+  pending_credentials_.date_last_used = base::Time::Now();
   pending_credentials_.form_has_autofilled_value =
       parsed_submitted_form_->form_has_autofilled_value;
   pending_credentials_.all_possible_passwords =

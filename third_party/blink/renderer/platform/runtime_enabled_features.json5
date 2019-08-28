@@ -121,6 +121,10 @@
       status: "experimental",
     },
     {
+      name: "AOMPhase1",
+      status: "experimental",
+    },
+    {
       name: "AsyncClipboard",
       status: "stable",
     },
@@ -318,6 +322,9 @@
     {
       name: "CookiesWithoutSameSiteMustBeSecure",
       status: "experimental",
+    },
+    {
+      name: "CooperativeScheduling"
     },
     {
       name: "CorsRFC1918",

@@ -32,7 +32,8 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   void GetParameterOverrides(BackgroundSyncParameters* parameters) override;
   base::TimeDelta GetNextEventDelay(
       const BackgroundSyncRegistration& registration,
-      BackgroundSyncParameters* parameters) override;
+      BackgroundSyncParameters* parameters,
+      base::TimeDelta time_till_soonest_scheduled_event_for_origin) override;
   std::unique_ptr<BackgroundSyncController::BackgroundSyncEventKeepAlive>
   CreateBackgroundSyncEventKeepAlive() override;
   void NoteSuspendedPeriodicSyncOrigins(

@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Zwiń menu</translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1419738280318246476">Odblokuj urządzenie, by zareagować na powiadomienie</translation>
+<translation id="1420408895951708260">Włącz lub wyłącz Podświetlenie nocne. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1455242230282523554">Pokaż ustawienia języka</translation>
 <translation id="1460620680449458626">Dźwięk jest wyciszony.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">Funkcja <ph name="FEATURE_NAME" /> została wyłączona zgodnie z zasadą stosowaną na tym urządzeniu. Skontaktuj się z administratorem, by poprosić o zmianę zasad.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asystent (ładuję…)</translation>
+<translation id="1838895407229022812">Podświetlenie nocne jest wyłączone.</translation>
 <translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
 <translation id="1864454756846565995">Urządzenie USB-C (tylny port)</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">Klawisze trwałe</translation>
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
 <translation id="2532589005999780174">Tryb wysokiego kontrastu</translation>
+<translation id="2542089167727451762">Kliknij swoje zdjęcie profilowe</translation>
 <translation id="255671100581129685">Asystent Google jest niedostępny w sesji publicznej.</translation>
 <translation id="2575685495496069081">Wielokrotne logowanie jest wyłączone</translation>
 <translation id="2582112259361606227">Uruchom ponownie, by zaktualizować</translation>
 <translation id="2617342710774726426">Karta SIM jest zablokowana</translation>
-<translation id="2651765386227849097">Asystent Google jest wyłączony na tym urządzeniu.</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2658778018866295321">Kliknij i przeciągnij</translation>
 <translation id="2700493154570097719">Ustaw klawiaturę</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Trwa ładowanie Asystenta…</translation>
-<translation id="435527878592612277">Wybierz swoje zdjęcie</translation>
 <translation id="4378551569595875038">Łączę...</translation>
 <translation id="4379531060876907730">To są Twoje narzędzia rysika</translation>
 <translation id="4389184120735010762">Naciśnięto skrót klawiszowy lupy zadokowanej. Czy chcesz ją włączyć?</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">Średni</translation>
 <translation id="5744083938413354016">Przeciąganie dotykiem</translation>
 <translation id="5750765938512549687">Bluetooth jest wyłączony</translation>
+<translation id="576453121877257266">Podświetlenie nocne jest włączone.</translation>
 <translation id="5777841717266010279">Zakończyć udostępnianie ekranu?</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
 <translation id="5837036133683224804">Zatrzymaj usługę <ph name="ROUTE_TITLE" /> na urządzeniu <ph name="RECEIVER_NAME" /></translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">Rozdzielczość została zmieniona</translation>
 <translation id="6297287540776456956">Zaznacz obszar rysikiem</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME" /> został obrócony na <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">Włącz lub wyłącz Podświetlenie nocne</translation>
 <translation id="6376931439017688372">Bluetooth jest włączony</translation>
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
 <translation id="6406704438230478924">altgr</translation>

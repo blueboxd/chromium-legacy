@@ -417,6 +417,12 @@
 
       Waarschuwing: Het wordt niet aanbevolen het beheer van de <ph name="PRODUCT_OS_NAME" />-versie te delegeren aan een kiosk-app, omdat het apparaat hierdoor mogelijk geen software-updates en essentiële beveiligingsoplossingen ontvangt. Als je het beheer van de <ph name="PRODUCT_OS_NAME" />-versie delegeert, kunnen gebruikers gevaar lopen.</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
+<translation id="1695708467571967752">Dit beleid bepaalt of gebruikers media kunnen afspelen wanneer het apparaat vergrendeld is.
+
+      Als dit beleid is ingesteld op False, zijn bedieningsopties voor media op het vergrendelingsscherm uitgeschakeld.
+
+      Als dit beleid is ingesteld op True of niet is ingesteld, worden bedieningsopties voor media op het vergrendelingsscherm weergegeven als de gebruiker het apparaat vergrendelt terwijl er media wordt afgespeeld.
+      </translation>
 <translation id="1700811900332333712">Geef het apparaat toestemming om Powerwash te activeren</translation>
 <translation id="1708496595873025510">De beperking voor het ophalen van de seed voor varianten instellen</translation>
 <translation id="1717817358640580294">Als deze optie niet is ingesteld en er ongewenste software door Chrome Cleanup wordt gedetecteerd, worden er mogelijk metadata over de scan naar Google verzonden, overeenkomstig het beleid dat is ingesteld met SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker vervolgens of de ongewenste software moet worden opgeschoond. De gebruiker kan ervoor kiezen om de resultaten van de opschoonbewerking met Google te delen en bij te dragen aan de toekomstige detectie van ongewenste software. Deze resultaten bevatten metadata van bestanden, automatisch geïnstalleerde extensies en registersleutels zoals beschreven in de whitepaper over het privacybeleid voor Chrome.
@@ -2973,6 +2979,7 @@
 
           Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Je kunt Android-apps niet dwingen een proxy te gebruiken. Er is een subset met proxyinstellingen beschikbaar voor Android-apps. Deze kunnen ze op vrijwillige basis respecteren:
 
           Als je ervoor kiest nooit een proxyserver te gebruiken, wordt aan de Android-apps gemeld dat er geen proxy is geconfigureerd.
@@ -3125,15 +3132,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6731757988219967594">Sites op hoofdniveau (maar geen ingesloten iframes) filteren op content voor volwassenen</translation>
 <translation id="6734521799274931721">Beheert netwerkfileshares voor Chrome OS-beschikbaarheid</translation>
 <translation id="6735701345096330595">Inschakelen van spellingcontrole voor talen afdwingen</translation>
-<translation id="673699536430961464">Deze instelling biedt gebruikers de mogelijkheid om in het contentgedeelte van hun browservenster tussen Google-accounts te schakelen nadat ze zijn ingelogd op hun <ph name="PRODUCT_OS_NAME" />-apparaat.
-
-      Als dit beleid is ingesteld op 'False', is het niet mogelijk om vanuit het contentgedeelte van een niet-incognito browservenster in te loggen op een ander account.
-
-      Als dit beleid niet is ingesteld of is ingesteld op 'True', wordt het standaardgedrag gebruikt. Het is dan wel toegestaan om vanuit het contentgedeelte van de browser in te loggen op een ander account, met uitzondering van onderliggende accounts. Hiervoor geldt dat er niet vanuit het contentgedeelte van een niet-incognito browservenster kan worden ingelogd op een ander account.
-
-      Als je niet wilt dat er in de incognitomodus kan worden ingelogd op een ander account, kun je deze modus eventueel blokkeren met het beleid IncognitoModeAvailability.
-
-      Gebruikers met een niet-bevoegde status kunnen toegang krijgen tot Google-services door cookies te blokkeren.</translation>
 <translation id="6757438632136860443">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de <ph name="FLASH_PLUGIN_NAME" />-plug-in mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
@@ -3990,6 +3988,7 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8312129124898414409">Hiermee kun je instellen of websites sleutels mogen genereren. Het genereren van sleutels kan ofwel worden toegestaan voor alle websites ofwel worden geweigerd voor alle websites.
 
           Als dit beleid niet wordt ingesteld, wordt 'BlockKeygen' gebruikt en kan de gebruiker dit wijzigen.</translation>
+<translation id="8314214821702356835">Hiermee kunnen gebruikers media afspelen wanneer het apparaat vergrendeld is</translation>
 <translation id="8320149248919453401">Batterijoplaadmodus</translation>
 <translation id="8329984337216493753">Dit beleid is alleen ingeschakeld in de winkelmodus.
 
@@ -4433,7 +4432,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="9152473318295429890">Contextuele suggesties van gerelateerde webpagina's inschakelen</translation>
 <translation id="9153446010242995516">Herstel en blijf op de doelversie als de OS-versie nieuwer is dan de doelversie. Probeer indien mogelijk de instellingen op apparaatniveau (inclusief de inloggegevens voor het netwerk) over te dragen via het rollbackproces, maar voer de rollback uit met een volledige powerwash, zelfs wanneer de gegevens niet kunnen worden hersteld (omdat de doelversie geen ondersteuning biedt om gegevens te herstellen of omdat de wijziging niet werkt met eerdere versies).
           Wordt ondersteund door <ph name="PRODUCT_OS_NAME" /> versie 75 en hoger. Voor oudere clients betekent deze waarde dat rollback is uitgeschakeld.</translation>
-<translation id="9158929520101169054">Toegang tot meerdere accounts toestaan in de browser</translation>
 <translation id="9159126470527871268">Hiermee laat je gebruikers weten dat <ph name="PRODUCT_NAME" /> of <ph name="PRODUCT_OS_NAME" /> opnieuw moet worden opgestart om een beschikbare update toe te passen.
 
       Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker wordt gevraagd of aangeraden om de browser of het apparaat opnieuw op te starten. Als dit beleid niet is ingesteld, laat <ph name="PRODUCT_NAME" /> de gebruiker via kleine wijzigingen in het menu weten dat opnieuw moet worden opgestart. Voor <ph name="PRODUCT_OS_NAME" /> wordt deze melding weergegeven in het systeemvak. Als dit beleid is ingesteld op Aanbevolen, wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat opnieuw opstarten wordt aanbevolen. De gebruiker kan deze waarschuwing negeren om de actie uit te stellen. Als dit is ingesteld op Vereist, wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat de browser automatisch opnieuw wordt opgestart zodra de meldingsperiode is verstreken. De standaardperiode is zeven dagen voor <ph name="PRODUCT_NAME" /> en vier dagen voor <ph name="PRODUCT_OS_NAME" /> en kan worden aangepast via de beleidsinstelling <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.

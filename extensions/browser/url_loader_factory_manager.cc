@@ -341,7 +341,8 @@ bool IsSpecialURLLoaderFactoryRequired(const Extension& extension,
 network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
     const Extension& extension) {
   // Compute relaxed CORB config to be used by |extension|.
   network::mojom::URLLoaderFactoryParamsPtr params =
@@ -546,7 +547,8 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
 network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
     const url::Origin& initiator_origin) {
   content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);

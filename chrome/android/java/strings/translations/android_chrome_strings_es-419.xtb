@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">Copiar texto del vínculo</translation>
 <translation id="1208340532756947324">Para sincronizar diferentes dispositivos y personalizar tu experiencia, activa la sincronización</translation>
 <translation id="1209206284964581585">Ocultar por el momento</translation>
+<translation id="1227058898775614466">Historial de navegación</translation>
 <translation id="1231733316453485619">¿Quieres activar la sincronización?</translation>
 <translation id="123724288017357924">Volver a cargar página actual; ignorar contenido en caché</translation>
 <translation id="124116460088058876">Más idiomas</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">Presiona para expandir</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="1291207594882862231">Borra el historial, las cookies, los datos del sitio, la caché…</translation>
+<translation id="129382876167171263">Aquí se mostrarán los archivos que guarden los sitios web</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - Enviado desde <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Agrupar pestañas</translation>
+<translation id="1327257854815634930">Está abierto el Historial de navegación</translation>
 <translation id="1331212799747679585">No se puede actualizar Chrome. Más opciones</translation>
 <translation id="1332501820983677155">Accesos directos a las funciones de Google Chrome</translation>
 <translation id="1360432990279830238">¿Salir y desactivar la sincronización?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">Control de dispositivos MIDI</translation>
 <translation id="145097072038377568">Desactivado en la configuración de Android</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> no se pudo descargar debido a problemas del servidor.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (1 más)}other{ (# más)}}</translation>
 <translation id="1501480321619201731">Borrar grupo</translation>
 <translation id="1506061864768559482">Motor de búsqueda</translation>
 <translation id="1513352483775369820">Favoritos e historial web</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer esto cómodamente. El texto debería verse, al menos, de este tamaño al tocar dos veces un párrafo.</translation>
 <translation id="2323763861024343754">Almacenamiento del sitio</translation>
 <translation id="2328985652426384049">No puedes acceder</translation>
-<translation id="2334057574886324800">Se recibió el mensaje de texto</translation>
 <translation id="2349710944427398404">Cantidad total de datos que usa Chrome, lo que incluye las cuentas, favoritos y opciones de configuración guardadas</translation>
 <translation id="2353636109065292463">Revisando tu conexión a Internet</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -417,12 +418,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4226663524361240545">Es posible que las notificaciones hagan vibrar el dispositivo</translation>
 <translation id="423219824432660969">Encriptar los datos sincronizados con la contraseña de Google a partir del <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
-<translation id="4247274662191902962">Los datos del sensor solo se compartirán cuando estés disfrutando de esta experiencia en RV. Es posible que el sitio te reconozca con cierta información, por ejemplo:
-    - Tu ubicación
-    - Tus características físicas, como la posición de los ojos
-    - Tus movimientos, como la manera de caminar
-
-    Antes de permitir el acceso, asegúrate de que confías en este sitio.</translation>
 <translation id="4256782883801055595">Licencias de código abierto</translation>
 <translation id="4259722352634471385">Navegación bloqueada: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiar dirección del vínculo</translation>
@@ -554,8 +549,8 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
 <translation id="5184329579814168207">Abrir en Chrome</translation>
 <translation id="5193988420012215838">Se copió en tu portapapeles</translation>
+<translation id="5197729504361054390">Los contactos que selecciones se compartirán con <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5199929503336119739">Perfil de trabajo</translation>
-<translation id="5202089186707505116">¿Quieres permitir que este sitio tenga acceso a tus sensores de RV?</translation>
 <translation id="5210286577605176222">Ir a la pestaña anterior</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
 <translation id="5224771365102442243">Con video</translation>
@@ -568,6 +563,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Entendido</translation>
 <translation id="5304593522240415983">Este campo no puede quedar en blanco.</translation>
+<translation id="5307446750509046227">Borrar el almacenamiento de sitios</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="5313967007315987356">Agregar sitio</translation>
 <translation id="5317780077021120954">Guardar</translation>
@@ -631,7 +627,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="569536719314091526">Traduce esta página a cualquier idioma desde el botón Más opciones</translation>
-<translation id="5719150327511160085">Esperando el mensaje de texto</translation>
 <translation id="572328651809341494">Pestañas recientes</translation>
 <translation id="5726692708398506830">Agrandar todos los elementos de la página</translation>
 <translation id="5748802427693696783">Se seleccionaron las pestañas estándar</translation>
@@ -702,7 +697,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncios que no están basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación, por ejemplo, para mejorar la seguridad, proporcionar contenido, anuncios y recomendaciones, y generar estadísticas de informes.</translation>
 <translation id="624789221780392884">Actualización lista</translation>
 <translation id="6255999984061454636">Sugerencias de contenido</translation>
-<translation id="6264430811215618931"><ph name="ORIGIN" /> envió un mensaje de texto a tu número de teléfono. Si confirmas esta acción, el sitio podrá determinar que eres tú.</translation>
 <translation id="6277522088822131679">Se produjo un error al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="629730747756840877">Cuenta</translation>
@@ -805,6 +799,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6989267951144302301">No se pudo descargar</translation>
 <translation id="6990079615885386641">Descargar la aplicación desde Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Preguntar primero antes de permitir que los sitios usen tu micrófono (recomendado)</translation>
+<translation id="7015203776128479407">No se completó la configuración de la sincronización inicial. La sincronización está desactivada.</translation>
 <translation id="7016516562562142042">Se habilitó para el motor de búsqueda actual</translation>
 <translation id="7021515813996758557">Se descargó <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Abrir en el navegador</translation>
@@ -836,11 +831,11 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7274013316676448362">Sitio bloqueado</translation>
 <translation id="7290209999329137901">No se puede renombrar el elemento porque no está disponible</translation>
 <translation id="7291387454912369099">Confirmación de compra activada</translation>
+<translation id="7293171162284876153">Para comenzar la sincronización, activa "Sincroniza tus datos de Chrome".</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene una app que pueda almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: Ordenados por cantidad de datos ahorrados</translation>
 <translation id="7328017930301109123">En el modo lite, Chrome carga las páginas más rápido y usa hasta un 60 por ciento menos de datos.</translation>
 <translation id="7333031090786104871">Aún se está agregando el sitio anterior</translation>
-<translation id="7352651011704765696">Se produjo un error</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparte 1 elemento seleccionado}other{Comparte # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceder a formas de pago</translation>
@@ -904,6 +899,7 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="773466115871691567">Traducir siempre las páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">Para detectar apps y sitios peligrosos, Chrome envía a Google URL de algunas páginas que visitas, información limitada sobre el sistema y contenido de algunas páginas</translation>
+<translation id="7757787379047923882">Texto compartido de <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Tarjeta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Agregar dirección</translation>
 <translation id="7769602470925380267">Aceptar y salir</translation>
@@ -1043,6 +1039,7 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="8730621377337864115">Listo</translation>
 <translation id="8748850008226585750">Contenidos ocultos</translation>
 <translation id="8751914237388039244">Seleccionar una imagen</translation>
+<translation id="8788265440806329501">Se cerró el Historial de navegación</translation>
 <translation id="8788968922598763114">Volver a abrir la última pestaña cerrada</translation>
 <translation id="8801436777607969138">Bloquea JavaScript para un sitio específico.</translation>
 <translation id="8812260976093120287">En algunos sitios web, puedes usar las apps compatibles que se enumeran anteriormente para hacer pagos en tu dispositivo.</translation>

@@ -227,8 +227,6 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium znova zaženite v enem dnevu}one{Chromium znova zaženite v # dnevu}two{Chromium znova zaženite v # dnevih}few{Chromium znova zaženite v # dnevih}other{Chromium znova zaženite v # dnevih}}</translation>
 <translation id="8453117565092476964">Arhiv namestitvenega programa je poškodovan ali neveljaven. Znova prenesite Chromium.</translation>
 <translation id="8493179195440786826">Chromium je zastarel</translation>
-<translation id="8494843963476918365">Če nastavitev ni prikazana na tej strani, poskusite <ph name="LINK_BEGIN" />
-    nastavitve brskalnika Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Pomoč pri uporabi Chromiuma</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="8619360774459241877">Zagon Chromiuma …</translation>

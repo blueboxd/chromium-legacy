@@ -116,8 +116,6 @@
         <include name="IDR_PDF_ICONS_HTML" file="pdf/elements/icons.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_HTML" file="pdf/elements/viewer-bookmark/viewer-bookmark.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="pdf/elements/viewer-bookmark/viewer-bookmark.js" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_BOOKMARKS_CONTENT_HTML" file="pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.html" type="BINDATA" />
-        <include name="IDR_PDF_VIEWER_BOOKMARKS_CONTENT_JS" file="pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ERROR_SCREEN_HTML" file="pdf/elements/viewer-error-screen/viewer-error-screen.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ERROR_SCREEN_JS" file="pdf/elements/viewer-error-screen/viewer-error-screen.js" type="BINDATA" />
         <if expr="chromeos">

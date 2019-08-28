@@ -575,9 +575,6 @@ scoped_refptr<syncer::ModelSafeWorker>
 ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (group) {
-    case syncer::GROUP_DB:
-      return new syncer::SequencedModelWorker(web_data_service_thread_,
-                                              syncer::GROUP_DB);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
           base::CreateSingleThreadTaskRunner({BrowserThread::UI}));

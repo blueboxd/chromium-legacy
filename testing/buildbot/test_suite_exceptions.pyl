@@ -1425,9 +1425,6 @@
           'shards': 2,
         },
       },
-      'Win10 Tests x64': {
-        'experiment_percentage': 100, # https://crbug.com/933356
-      },
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100, # https://crbug.com/840369
       },

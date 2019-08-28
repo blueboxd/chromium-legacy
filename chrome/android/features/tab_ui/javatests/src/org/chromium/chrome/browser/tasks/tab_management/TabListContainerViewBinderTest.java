@@ -54,7 +54,6 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
     public TestRule mProcessor = new Features.JUnitProcessor();
 
     private static final int CONTAINER_HEIGHT = 56;
-    private TabListContainerViewBinder mTabListContainerViewHolder;
     private PropertyModel mContainerModel;
     private PropertyModelChangeProcessor mMCP;
     private TabListRecyclerView mRecyclerView;

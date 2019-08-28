@@ -12,8 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
-#include "gpu/config/gpu_preferences.h"
-#include "gpu/ipc/service/image_transport_surface_delegate.h"
 
 class GrContext;
 
@@ -34,8 +32,7 @@ class FeatureInfo;
 
 namespace viz {
 
-class SkiaOutputDeviceGL final : public SkiaOutputDevice,
-                                 public gpu::ImageTransportSurfaceDelegate {
+class SkiaOutputDeviceGL final : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceGL(
       scoped_refptr<gl::GLSurface> gl_surface,
@@ -43,7 +40,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceGL() override;
 
-  scoped_refptr<gl::GLSurface> gl_surface();
   void Initialize(GrContext* gr_context, gl::GLContext* gl_context);
   bool supports_alpha() {
     DCHECK(gr_context_);
@@ -67,22 +63,7 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice,
   SkSurface* BeginPaint() override;
   void EndPaint(const GrBackendSemaphore& semaphore) override;
 
-  // gpu::ImageTransportSurfaceDelegate implementation:
-#if defined(OS_WIN)
-  void DidCreateAcceleratedSurfaceChildWindow(
-      gpu::SurfaceHandle parent_window,
-      gpu::SurfaceHandle child_window) override;
-#endif
-  const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
-  const gpu::GpuPreferences& GetGpuPreferences() const override;
-  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
-  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
-  GpuVSyncCallback GetGpuVSyncCallback() override;
-
  private:
-  scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
-  gpu::GpuPreferences gpu_preferences_;
-
   scoped_refptr<gl::GLSurface> gl_surface_;
   GrContext* gr_context_ = nullptr;
 

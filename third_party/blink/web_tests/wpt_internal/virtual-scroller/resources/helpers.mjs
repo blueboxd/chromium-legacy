@@ -7,6 +7,8 @@
  * @package
  */
 
+const ONE_SECOND_MS = 1000;
+
 /**
  * Creates a DIV with id and textContent set to |id|.
  */
@@ -44,9 +46,14 @@ export function withElement(name, callback) {
 
 /**
  * Remove the reftest-wait class from the HTML element.
+ *
+ * This includes a hack to wait 1s to give the virtual-scroller
+ * elements time to settle.
 */
 export function stopWaiting() {
-  document.documentElement.classList.remove('reftest-wait');
+  setTimeout(() => {
+    document.documentElement.classList.remove('reftest-wait');
+  }, ONE_SECOND_MS);
 }
 
 /**

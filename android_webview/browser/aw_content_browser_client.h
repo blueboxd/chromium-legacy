@@ -197,7 +197,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
       bool* bypass_redirect_checks) override;
   void WillCreateURLLoaderFactoryForAppCacheSubresource(
       int render_process_id,

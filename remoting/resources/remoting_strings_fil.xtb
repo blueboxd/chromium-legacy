@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Hindi maabot ang host. Malamang na dahil ito sa configuration ng network na iyong ginagamit.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Huling nakitang naka-online noong <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Hindi na sinusuportahan ang app na ito. Upang matiyak na makukuha mo ang mga pinakabagong feature at update sa seguridad, pakigamit ang <ph name="LINK_BEGIN" />web app na Remote na Desktop ng Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">May karagdagang hakbang sa configuration na kinakailangan bago mo makontrol nang malayuan ang computer na ito gamit ang <ph name="PRODUCT_NAME" />.
-
-Para i-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' para ipakita ang pane ng mga kagustuhan sa Seguridad at Privacy, pagkatapos ay lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />.'
-
-Kung mayroon nang '<ph name="SERVICE_SCRIPT_NAME" />' at may nakalagay nang check, puwede mo itong alisin, at pagkatapos ay idagdag ito ulit.</translation>
 <translation id="2499160551253595098">Tumulong sa amin na pahusayin ang Remote na Desktop ng Chrome sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
 <translation id="2509394361235492552">Nakakonekta sa <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">TANDAAN: Upang matiyak na available ang lahat ng keyboard shortcut, maaari mong i-configure ang Remote na Desktop ng Chrome sa ‘Buksan bilang window’.</translation>
@@ -317,6 +312,11 @@ Kung mayroon nang '<ph name="SERVICE_SCRIPT_NAME" />' at may nakalagay nang chec
 <translation id="8804164990146287819">Patakaran sa Privacy</translation>
 <translation id="894763922177556086">Malakas</translation>
 <translation id="895780780740011433">Para sa Windows 7 at mas bago</translation>
+<translation id="8963047137585288214">May karagdagang hakbang sa configuration na kinakailangan bago mo makontrol nang malayuan ang computer na ito gamit ang <ph name="PRODUCT_NAME" />.
+
+Para i-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' para ipakita ang pane ng mga kagustuhan sa Seguridad at Privacy, pagkatapos ay lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />.'
+
+Kung mayroon nang '<ph name="SERVICE_SCRIPT_NAME" />' at may nakalagay nang check, puwedeng kailangan mo itong i-uncheck at pagkatapos ay muling lagyan ng check.</translation>
 <translation id="897805526397249209">Upang paganahin ang mga malayuang koneksyon sa ibang computer, i-install ang Chromoting doon at i-click ang “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Controller ng Host ng Remote na Desktop ng Chrome</translation>
 <translation id="9016232822027372900">Kumonekta pa rin</translation>

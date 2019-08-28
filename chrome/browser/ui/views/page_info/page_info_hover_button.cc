@@ -80,7 +80,8 @@ PageInfoHoverButton::PageInfoHoverButton(views::ButtonListener* listener,
   if (!subtitle_text.empty()) {
     grid_layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
     auto subtitle_label = std::make_unique<views::Label>(
-        subtitle_text, views::style::CONTEXT_LABEL, STYLE_SECONDARY);
+        subtitle_text, views::style::CONTEXT_LABEL,
+        views::style::STYLE_SECONDARY);
     subtitle_label->SetMultiLine(true);
     subtitle_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     subtitle_label->SetAutoColorReadabilityEnabled(false);
@@ -114,7 +115,7 @@ void PageInfoHoverButton::SetTitleText(int title_resource_id,
         l10n_util::GetStringFUTF16(title_resource_id, secondary_text, &offset);
     title_->SetText(title_text);
     views::StyledLabel::RangeStyleInfo style_info;
-    style_info.text_style = STYLE_SECONDARY;
+    style_info.text_style = views::style::STYLE_SECONDARY;
     title_->AddStyleRange(gfx::Range(offset, offset + secondary_text.length()),
                           style_info);
   }

@@ -30,7 +30,6 @@
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_stats.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
@@ -945,7 +944,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
-  WhitelistStatsForTesting(webrtc::RTCTestStats::kType);
+  blink::WhitelistStatsForTesting(webrtc::RTCTestStats::kType);
 
   rtc::scoped_refptr<webrtc::RTCStatsReport> report =
       webrtc::RTCStatsReport::Create();

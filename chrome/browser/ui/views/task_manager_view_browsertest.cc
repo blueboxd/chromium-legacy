@@ -242,7 +242,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, InitialSelection) {
             FindRowForTab(browser()->tab_strip_model()->GetWebContentsAt(0)));
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, SelectionConsistency) {
+// Test is flaky. https://crbug.com/998403
+IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, DISABLED_SelectionConsistency) {
   ASSERT_NO_FATAL_FAILURE(ClearStoredColumnSettings());
 
   chrome::ShowTaskManager(browser());

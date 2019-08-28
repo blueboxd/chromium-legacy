@@ -65,10 +65,13 @@ void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
            net::URLRequest::
                CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) &&
       request.referrer.SchemeIsCryptographic() &&
+      !url::Origin::Create(request.url).opaque() &&
       !IsOriginSecure(request.url)) {
     LOG(FATAL) << "Trying to send secure referrer for insecure request "
                << "without an appropriate referrer policy.\n"
                << "URL = " << request.url << "\n"
+               << "URL's Origin = "
+               << url::Origin::Create(request.url).Serialize() << "\n"
                << "Referrer = " << request.referrer;
   }
 }

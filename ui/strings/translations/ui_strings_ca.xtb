@@ -49,7 +49,6 @@
 <translation id="2388990488038464401">Vols trucar a aquest número des del telèfon?</translation>
 <translation id="24452542372838207">Desplega la notificació</translation>
 <translation id="2445449901874883781">Utilitza una densitat alta</translation>
-<translation id="2451871130406122810">S'ha enviat al dispositiu</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2497284189126895209">Tots els fitxers</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -217,6 +216,7 @@
 <translation id="8806053966018712535">Carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Afegeix una anotació a la imatge</translation>
 <translation id="8841375032071747811">Botó Enrere</translation>
+<translation id="8867568208303837180">S'està enviant...</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">El prestatge està sempre amagat</translation>

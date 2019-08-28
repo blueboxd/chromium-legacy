@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,6 +26,8 @@
 @end
 
 @implementation KeyboardObserverHelper
+
+#pragma mark - Public
 
 - (instancetype)init {
   self = [super init];
@@ -53,54 +56,7 @@
   return self;
 }
 
-- (void)keyboardWillDidChangeFrame:(NSNotification*)notification {
-  [self updateKeyboardState];
-}
-
-- (void)keyboardWillShow:(NSNotification*)notification {
-  self.keyboardOnScreen = YES;
-}
-
-- (void)keyboardWillHide:(NSNotification*)notification {
-  self.keyboardOnScreen = NO;
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self.keyboardOnScreen) {
-      [self.consumer keyboardDidStayOnScreen];
-    }
-  });
-}
-
-#pragma mark - keyboard state detection
-
-// Update keyboard state by looking at keyboard frame and the existence of some
-// classes to detect split view or pickers.
-- (void)updateKeyboardState {
-  UIView* keyboardView = [self keyboardView];
-
-  CGFloat windowHeight = [UIScreen mainScreen].bounds.size.height;
-  CGRect keyboardFrame = keyboardView.frame;
-  BOOL isVisible = CGRectGetMinY(keyboardFrame) < windowHeight;
-  BOOL isUndocked = CGRectGetMaxY(keyboardFrame) < windowHeight;
-  BOOL isHardware = isVisible && CGRectGetMaxY(keyboardFrame) > windowHeight;
-  BOOL isSplit = [self viewIsSplit:keyboardView];
-  BOOL isPicker = [self containsPickerView:keyboardView];
-
-  // Only notify if a change is detected.
-  if (isVisible != self.keyboardState.isVisible ||
-      isUndocked != self.keyboardState.isUndocked ||
-      isSplit != self.keyboardState.isSplit ||
-      isHardware != self.keyboardState.isHardware ||
-      isPicker != self.keyboardState.isPicker) {
-    self.keyboardState = {isVisible, isUndocked, isSplit, isHardware, isPicker};
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self.consumer keyboardWillChangeToState:self.keyboardState];
-    });
-  }
-}
-
-// Finds the keyboard UIView based on some known, undocumented classes.
-// This can break on any iOS update to keyboard architecture.
-- (UIView*)keyboardView {
++ (UIView*)keyboardView {
   NSArray* windows = [UIApplication sharedApplication].windows;
   NSUInteger expectedMinWindows = IsIPadIdiom() ? 2 : 3;
   if (windows.count < expectedMinWindows)
@@ -125,6 +81,79 @@
   }
 
   return nil;
+}
+
++ (id<LayoutGuideProvider>)keyboardLayoutGuide {
+  return [self keyboardLayoutGuideInHostView:self.keyboardView];
+}
+
+#pragma mark - Keyboard Notifications
+
+- (void)keyboardWillDidChangeFrame:(NSNotification*)notification {
+  [self updateKeyboardState];
+}
+
+- (void)keyboardWillShow:(NSNotification*)notification {
+  self.keyboardOnScreen = YES;
+}
+
+- (void)keyboardWillHide:(NSNotification*)notification {
+  self.keyboardOnScreen = NO;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (self.keyboardOnScreen) {
+      [self.consumer keyboardDidStayOnScreen];
+    }
+  });
+}
+
+#pragma mark - Private
+
+// This searches in the passed view hierarchy for the best Layout Guide for the
+// keyboard.
++ (id<LayoutGuideProvider>)keyboardLayoutGuideInHostView:(UIView*)hostView {
+  for (UIView* subview in hostView.subviews) {
+    // Currently only tested on X-iOS12, 6+-iOS11 and 7+-iOS10. iPhoneX, iOS 11
+    // and 12 uses "Dock" and iOS 10 uses "Backdrop". iPhone6+, iOS 11 uses
+    // "Dock".
+    if ([NSStringFromClass([subview class]) containsString:@"Dock"] ||
+        [NSStringFromClass([subview class]) containsString:@"Backdrop"]) {
+      return subview;
+    }
+    id<LayoutGuideProvider> found =
+        [self keyboardLayoutGuideInHostView:subview];
+    if (found) {
+      return found;
+    }
+  }
+  return nil;
+}
+
+#pragma mark Keyboard State Detection
+
+// Update keyboard state by looking at keyboard frame and the existence of some
+// classes to detect split view or pickers.
+- (void)updateKeyboardState {
+  UIView* keyboardView = KeyboardObserverHelper.keyboardView;
+
+  CGFloat windowHeight = [UIScreen mainScreen].bounds.size.height;
+  CGRect keyboardFrame = keyboardView.frame;
+  BOOL isVisible = CGRectGetMinY(keyboardFrame) < windowHeight;
+  BOOL isUndocked = CGRectGetMaxY(keyboardFrame) < windowHeight;
+  BOOL isHardware = isVisible && CGRectGetMaxY(keyboardFrame) > windowHeight;
+  BOOL isSplit = [self viewIsSplit:keyboardView];
+  BOOL isPicker = [self containsPickerView:keyboardView];
+
+  // Only notify if a change is detected.
+  if (isVisible != self.keyboardState.isVisible ||
+      isUndocked != self.keyboardState.isUndocked ||
+      isSplit != self.keyboardState.isSplit ||
+      isHardware != self.keyboardState.isHardware ||
+      isPicker != self.keyboardState.isPicker) {
+    self.keyboardState = {isVisible, isUndocked, isSplit, isHardware, isPicker};
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self.consumer keyboardWillChangeToState:self.keyboardState];
+    });
+  }
 }
 
 // Checks for a picker UIView* under the given |view|.

@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1828824471510190776">Sugerir palavra-passe…</translation>
 <translation id="1870148520156231997">Mostrar palavra-passe</translation>
+<translation id="1872096359983322073">Lanterna</translation>
 <translation id="1876721852596493031">Enviar Dados de Uso</translation>
 <translation id="1911619930368729126">Carregar p/ Google Drive</translation>
 <translation id="1923342640370224680">Última Hora</translation>
@@ -355,6 +356,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toque para cancelar.</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
+<translation id="6119050551270742952">Página Web atual – Nav. anónima</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Item removido</translation>
 <translation id="6136914049981179737">Há segundos</translation>
@@ -411,6 +413,9 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Item criado</translation>
 <translation id="6851516051005285358">Pedir site para computador</translation>
+<translation id="6858855187367714033">Lido</translation>
+<translation id="6859944681507688231">Para ler um código QR ou um cartão de crédito, ative a câmara nas definições.</translation>
+<translation id="6873263987691478642">Vista dividida</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6914583639806229067">Pesquisar imagem que copiou</translation>
@@ -509,6 +514,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8428045167754449968">Cidade/Localidade</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8458397775385147834">1 item eliminado</translation>
+<translation id="8487667956631253959">Ativada</translation>
 <translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8490978609246021741">Guardar alterações</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
@@ -519,6 +525,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8532105204136943229">Ano de validade</translation>
 <translation id="8534481786647257214">Publicação no Google+ concluído.</translation>
 <translation id="8548878600947630424">Localizar na página...</translation>
+<translation id="8588404856427128947">Desativada</translation>
 <translation id="8605219856220328675">Fechar separador.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Para obter os separadores dos seus outros dispositivos, ative a sincronização.</translation>
@@ -559,6 +566,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="9203116392574189331">Entrega</translation>
 <translation id="9223358826628549784">Relatório de falha enviado.</translation>
 <translation id="935490618240037774">Os marcadores, o histórico, as palavras-passe e outras definições são sincronizados com a sua Conta Google para que os possa utilizar em todos os dispositivos.</translation>
+<translation id="952704832371081537">Cancelar</translation>
 <translation id="976982866697960176">Gerir dados sincronizados...</translation>
 <translation id="988141524645182168">Outros Dispositivos</translation>
 <translation id="989988560359834682">Editar endereço</translation>

@@ -151,35 +151,36 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
+  const time_t last_usage_time = 1546300800;  // 00:00 Jan 1 2019 UTC
   static const PasswordFormData form_data[] = {
       // A form on https://www.google.com/ older than the cutoff. Will be
       // ignored.
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_1", L"", true, cutoff - 1},
+       L"username_value_1", L"", true, last_usage_time, cutoff - 1},
       // A form on https://www.google.com/ older than the cutoff. Will be
       // ignored.
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_2", L"", true, cutoff - 1},
+       L"username_value_2", L"", true, last_usage_time, cutoff - 1},
       // A form on https://www.google.com/ newer than the cutoff.
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_3", L"", true, cutoff + 1},
+       L"username_value_3", L"", true, last_usage_time, cutoff + 1},
       // A form on https://accounts.google.com/ older than the cutoff.
       {PasswordForm::Scheme::kHtml, "https://accounts.google.com",
        "https://accounts.google.com/origin",
        "https://accounts.google.com/action", L"submit_element",
        L"username_element", L"password_element", L"username_value", L"", true,
-       cutoff - 1},
+       last_usage_time, cutoff - 1},
       // A form on http://bar.example.com/ older than the cutoff.
       {PasswordForm::Scheme::kHtml, "http://bar.example.com",
        "http://bar.example.com/origin", "http://bar.example.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value", L"", true, cutoff - 1},
+       L"username_value", L"", true, last_usage_time, cutoff - 1},
   };
 
   // Build the forms vector and add the forms to the store.
@@ -545,6 +546,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
   const wchar_t kTestOldPassword[] = L"old_password_value";
   const wchar_t kTestNewPassword[] = L"new_password_value";
   const wchar_t kTestOtherPassword[] = L"other_password_value";
+  const time_t last_usage_time = 1546300800;  // 00:00 Jan 1 2019 UTC
 
   /* clang-format off */
   static const PasswordFormData kTestCredentials[] = {
@@ -555,7 +557,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestAndroidRealm1,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true, 2},
+       kTestOldPassword, true, last_usage_time, 2},
 
       // --- Positive samples --- Credentials that the password update should be
       // automatically propagated to.
@@ -566,7 +568,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin1,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true, last_usage_time, 1},
       // Credential for another affiliated web site with the same username.
       // Although the password is different than the current/old password for
       // the Android application, it should be updated regardless.
@@ -575,7 +577,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin2,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOtherPassword, true, 1},
+       kTestOtherPassword, true,last_usage_time,  1},
 
       // --- Negative samples --- Credentials that the password update should
       // not be propagated to.
@@ -587,21 +589,21 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin3,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestNewPassword, true, 1},
+       kTestNewPassword, true, last_usage_time, 1},
       // Credential for the HTTP version of an affiliated web site.
       {PasswordForm::Scheme::kHtml,
        kTestInsecureWebRealm,
        kTestInsecureWebOrigin,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true, last_usage_time, 1},
       // Credential for an affiliated web site, but with a different username.
       {PasswordForm::Scheme::kHtml,
        kTestWebRealm1,
        kTestWebOrigin1,
        "", L"", L"",  L"",
        kTestOtherUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for a web site that is a PSL match to a web sites affiliated
       // with the Android application.
       {PasswordForm::Scheme::kHtml,
@@ -609,26 +611,26 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestPSLMatchingWebOrigin,
        "poisoned", L"poisoned", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for an unrelated web site.
       {PasswordForm::Scheme::kHtml,
        kTestUnrelatedWebRealm,
        kTestUnrelatedWebOrigin,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for an affiliated Android application.
       {PasswordForm::Scheme::kHtml,
        kTestAndroidRealm2,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for an unrelated Android application.
       {PasswordForm::Scheme::kHtml,
        kTestUnrelatedAndroidRealm,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for an affiliated web site with the same username, but one
       // that was updated at the same time via Sync as the Android credential.
       {PasswordForm::Scheme::kHtml,
@@ -636,7 +638,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin5,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOtherPassword, true, 2}};
+       kTestOtherPassword, true, last_usage_time, 2}};
   /* clang-format on */
 
   // The number of positive samples in |kTestCredentials|.

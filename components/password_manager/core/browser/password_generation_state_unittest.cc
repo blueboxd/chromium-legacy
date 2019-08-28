@@ -387,6 +387,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenSaveAsNew) {
   pending.username_value = ASCIIToUTF16("edited_username");
   PasswordForm generated_with_date = pending;
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
+  generated_with_date.date_last_used = base::Time::FromTimeT(kTime);
   EXPECT_CALL(store(), UpdateLoginWithPrimaryKey(generated_with_date,
                                                  FormHasUniqueKey(generated)));
   state().CommitGeneratedPassword(pending, {} /* matches */,
@@ -428,6 +429,7 @@ TEST_F(PasswordGenerationStateTest, PresaveGeneratedPassword_ThenUpdate) {
   generated.username_value = ASCIIToUTF16("username");
   PasswordForm generated_with_date = generated;
   generated_with_date.date_created = base::Time::FromTimeT(kTime);
+  generated_with_date.date_last_used = base::Time::FromTimeT(kTime);
 
   EXPECT_CALL(store(),
               UpdateLoginWithPrimaryKey(generated_with_date,

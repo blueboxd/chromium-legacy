@@ -220,8 +220,6 @@
 <translation id="8417404458978023919">{0,plural, =1{Перезапустите Chromium в течение дня}one{Перезапустите Chromium в течение # дня}few{Перезапустите Chromium в течение # дней}many{Перезапустите Chromium в течение # дней}other{Перезапустите Chromium в течение # дня}}</translation>
 <translation id="8453117565092476964">Установочный архив поврежден. Скачайте Chromium ещё раз.</translation>
 <translation id="8493179195440786826">Версия Chromium устарела</translation>
-<translation id="8494843963476918365">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
-    настройки браузера Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Помощь по использованию Chromium</translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR" /> . Все права защищены.</translation>
 <translation id="8619360774459241877">Запуск Chromium...</translation>

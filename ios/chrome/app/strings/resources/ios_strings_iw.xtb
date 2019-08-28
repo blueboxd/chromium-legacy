@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">נוסף לרשימת הקריאה</translation>
 <translation id="1828824471510190776">הצעת סיסמה…</translation>
 <translation id="1870148520156231997">הצגת הסיסמה</translation>
+<translation id="1872096359983322073">פנס</translation>
 <translation id="1876721852596493031">שלח נתוני שימוש</translation>
 <translation id="1911619930368729126">‏העלה אל Google Drive</translation>
 <translation id="1923342640370224680">בשעה האחרונה</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">הקש כדי לבטל.</translation>
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
+<translation id="6119050551270742952">דף האינטרנט הנוכחי מוצג במצב גלישה בסתר</translation>
 <translation id="6122191549521593678">מקוון</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
 <translation id="6136914049981179737">שניות</translation>
@@ -411,6 +413,9 @@
 <translation id="6807889908376551050">הצג הכל...</translation>
 <translation id="681368974849482173">הפריט נוצר</translation>
 <translation id="6851516051005285358">בקשת אתר למחשב</translation>
+<translation id="6858855187367714033">נסרק</translation>
+<translation id="6859944681507688231">‏כדי לסרוק קוד QR או כרטיס אשראי, יש להפעיל את המצלמה דרך ההגדרות.</translation>
+<translation id="6873263987691478642">תצוגה מפוצלת</translation>
 <translation id="6896758677409633944">העתק</translation>
 <translation id="6903907808598579934">הפעל סנכרון</translation>
 <translation id="6914583639806229067">חיפוש תמונה שהעתקת</translation>
@@ -509,6 +514,7 @@
 <translation id="8428045167754449968">עיר / יישוב</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8458397775385147834">פריט אחד נמחק</translation>
+<translation id="8487667956631253959">מופעל</translation>
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
 <translation id="8490978609246021741">שמירת השינויים</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
@@ -519,6 +525,7 @@
 <translation id="8532105204136943229">שנת פקיעת התוקף</translation>
 <translation id="8534481786647257214">‏הפרסום ב-‏Google+‎ בוצע.</translation>
 <translation id="8548878600947630424">חיפוש בדף...</translation>
+<translation id="8588404856427128947">כבוי</translation>
 <translation id="8605219856220328675">סגור כרטיסייה.</translation>
 <translation id="8620640915598389714">עריכה</translation>
 <translation id="8636825310635137004">כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את הסנכרון.</translation>
@@ -559,6 +566,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">דוח הקריסה נשלח.</translation>
 <translation id="935490618240037774">‏הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות יסונכרנו עם חשבון Google, כך שתוכל להשתמש בהן בכל המכשירים שלך.</translation>
+<translation id="952704832371081537">ביטול</translation>
 <translation id="976982866697960176">ניהול נתונים מסונכרנים…</translation>
 <translation id="988141524645182168">מכשירים אחרים</translation>
 <translation id="989988560359834682">ערוך כתובת</translation>

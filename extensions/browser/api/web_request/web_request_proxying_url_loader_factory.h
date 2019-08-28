@@ -17,7 +17,6 @@
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/completion_once_callback.h"
@@ -193,7 +192,8 @@ class WebRequestProxyingURLLoaderFactory
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request,
+      mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client_receiver,
       WebRequestAPI::ProxySet* proxies);
 
   ~WebRequestProxyingURLLoaderFactory() override;
@@ -206,7 +206,8 @@ class WebRequestProxyingURLLoaderFactory
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request,
+      mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client_receiver,
       WebRequestAPI::ProxySet* proxies);
 
   // network::mojom::URLLoaderFactory:
@@ -246,8 +247,8 @@ class WebRequestProxyingURLLoaderFactory
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
-  mojo::Binding<network::mojom::TrustedURLLoaderHeaderClient>
-      url_loader_header_client_binding_;
+  mojo::Receiver<network::mojom::TrustedURLLoaderHeaderClient>
+      url_loader_header_client_receiver_{this};
   // Owns |this|.
   WebRequestAPI::ProxySet* const proxies_;
 

@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Hozzáadva az olvasási listához</translation>
 <translation id="1828824471510190776">Jelszó ajánlása…</translation>
 <translation id="1870148520156231997">Jelszó megjelenítése</translation>
+<translation id="1872096359983322073">Vaku</translation>
 <translation id="1876721852596493031">Használati adatok küldése</translation>
 <translation id="1911619930368729126">Feltöltés Google Drive-ba</translation>
 <translation id="1923342640370224680">Az elmúlt óra</translation>
@@ -355,6 +356,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="605721222689873409">ÉÉ</translation>
 <translation id="6066301408025741299">Érintse meg a visszavonáshoz</translation>
 <translation id="6108923351542677676">A telepítés folyamatban...</translation>
+<translation id="6119050551270742952">Ez a weboldal inkognitómódban van megnyitva</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elem eltávolítva</translation>
 <translation id="6136914049981179737">Néhány másodperce</translation>
@@ -411,6 +413,9 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6807889908376551050">Összes megjelenítése...</translation>
 <translation id="681368974849482173">Elem létrehozva</translation>
 <translation id="6851516051005285358">Asztali webhely kérése</translation>
+<translation id="6858855187367714033">Beolvasva</translation>
+<translation id="6859944681507688231">QR-kód vagy hitelkártya beolvasásához engedélyezze a kamerát a beállítások között</translation>
+<translation id="6873263987691478642">Osztott nézet</translation>
 <translation id="6896758677409633944">Másolás</translation>
 <translation id="6903907808598579934">Szinkronizálás bekapcsolása</translation>
 <translation id="6914583639806229067">Vágólapra másolt kép keresése</translation>
@@ -509,6 +514,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8428045167754449968">Város/helység</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8458397775385147834">1 elem törölve</translation>
+<translation id="8487667956631253959">Bekapcsolva</translation>
 <translation id="8487700953926739672">Offline elérhető</translation>
 <translation id="8490978609246021741">Módosítások mentése</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
@@ -519,6 +525,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8532105204136943229">Lejárat éve</translation>
 <translation id="8534481786647257214">A Google+-bejegyzés kész.</translation>
 <translation id="8548878600947630424">Keresés az oldalon...</translation>
+<translation id="8588404856427128947">Kikapcsolva</translation>
 <translation id="8605219856220328675">Lap bezárása.</translation>
 <translation id="8620640915598389714">Szerkesztés</translation>
 <translation id="8636825310635137004">Ha a többi eszközén is szeretné elérni lapjait, kapcsolja be a szinkronizálást</translation>
@@ -559,6 +566,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="9203116392574189331">Átadás</translation>
 <translation id="9223358826628549784">Hibajelentés elküldve.</translation>
 <translation id="935490618240037774">A böngésző szinkronizálni fogja a könyvjelzőket, az előzményeket, a jelszavakat és az egyéb beállításokat Google-fiókjával, hogy bármelyik eszközén hozzájuk férjen.</translation>
+<translation id="952704832371081537">Mégse</translation>
 <translation id="976982866697960176">Szinkronizált adatok kezelése...</translation>
 <translation id="988141524645182168">Egyéb eszközök</translation>
 <translation id="989988560359834682">Cím szerkesztése</translation>

@@ -19,6 +19,7 @@ class GCMDriver;
 }
 
 class SharingMessageHandler;
+class SharingSyncPreference;
 
 // SharingFCMHandler is responsible for receiving SharingMessage from GCMDriver
 // and delegate it to the payload specific handler.
@@ -27,7 +28,8 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
 
  public:
   SharingFCMHandler(gcm::GCMDriver* gcm_driver,
-                    SharingFCMSender* sharing_fcm_sender);
+                    SharingFCMSender* sharing_fcm_sender,
+                    SharingSyncPreference* sync_preference);
   ~SharingFCMHandler() override;
 
   // Registers itself as app handler for sharing messages.
@@ -65,7 +67,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
 
  private:
   // Ack message sent back to the original sender of message.
-  void SendAckMessage(const std::string& original_sender_guid,
+  void SendAckMessage(const SharingMessage& original_message,
                       const std::string& original_message_id);
 
   void OnAckMessageSent(const std::string& original_message_id,
@@ -74,6 +76,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
 
   gcm::GCMDriver* const gcm_driver_;
   SharingFCMSender* sharing_fcm_sender_;
+  SharingSyncPreference* sync_preference_;
 
   std::map<SharingMessage::PayloadCase, SharingMessageHandler*>
       sharing_handlers_;

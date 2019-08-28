@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Aggiunta all'elenco di lettura</translation>
 <translation id="1828824471510190776">Suggerisci password...</translation>
 <translation id="1870148520156231997">Mostra password</translation>
+<translation id="1872096359983322073">Torcia</translation>
 <translation id="1876721852596493031">Invia dati di utilizzo</translation>
 <translation id="1911619930368729126">Carica su Google Drive</translation>
 <translation id="1923342640370224680">Ultima ora</translation>
@@ -355,6 +356,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Tocca per annullare.</translation>
 <translation id="6108923351542677676">Configurazione in corso…</translation>
+<translation id="6119050551270742952">Pagina web corrente in incognito</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
 <translation id="6136914049981179737">Secondi fa</translation>
@@ -411,6 +413,9 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6807889908376551050">Mostra tutte...</translation>
 <translation id="681368974849482173">Elemento creato</translation>
 <translation id="6851516051005285358">Richiedi sito desktop</translation>
+<translation id="6858855187367714033">Scansione eseguita</translation>
+<translation id="6859944681507688231">Per eseguire la scansione di un codice QR o di una carta di credito, attiva la fotocamera dalle impostazioni.</translation>
+<translation id="6873263987691478642">Visualizzazione divisa</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6914583639806229067">Cerca l'immagine copiata</translation>
@@ -509,6 +514,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8428045167754449968">Città/località</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8458397775385147834">1 elemento eliminato</translation>
+<translation id="8487667956631253959">Attiva</translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="8490978609246021741">Salva modifiche</translation>
 <translation id="8503813439785031346">Nome utente</translation>
@@ -519,6 +525,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8532105204136943229">Anno di scadenza</translation>
 <translation id="8534481786647257214">Pubblicazione su Google+ completata.</translation>
 <translation id="8548878600947630424">Trova nella pagina...</translation>
+<translation id="8588404856427128947">Non attiva</translation>
 <translation id="8605219856220328675">Chiudi la scheda.</translation>
 <translation id="8620640915598389714">Modifica</translation>
 <translation id="8636825310635137004">Attiva la sincronizzazione per trovare le tue schede degli altri dispositivi.</translation>
@@ -559,6 +566,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Rapporto sugli arresti anomali inviato.</translation>
 <translation id="935490618240037774">I tuoi preferiti, la cronologia, le password e altre impostazioni verranno sincronizzati con il tuo Account Google per consentirti di utilizzarli su tutti i tuoi dispositivi.</translation>
+<translation id="952704832371081537">Annulla</translation>
 <translation id="976982866697960176">Gestisci dati sincronizzati…</translation>
 <translation id="988141524645182168">Altri dispositivi</translation>
 <translation id="989988560359834682">Modifica indirizzo</translation>

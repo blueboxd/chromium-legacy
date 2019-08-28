@@ -55,7 +55,7 @@ bool SharingIconView::Update() {
 
   // To ensure that we reset error icon badge.
   if (!GetVisible()) {
-    set_should_show_error(controller->send_failed());
+    should_show_error_ = controller->HasSendFailed();
     UpdateIconImage();
   }
 
@@ -111,8 +111,8 @@ void SharingIconView::AnimationEnded(const gfx::Animation* animation) {
   UpdateOpacity();
 
   auto* controller = GetController();
-  if (controller && should_show_error() != controller->send_failed()) {
-    set_should_show_error(controller->send_failed());
+  if (controller && should_show_error_ != controller->HasSendFailed()) {
+    should_show_error_ = controller->HasSendFailed();
     UpdateIconImage();
     controller->MaybeShowErrorDialog();
   }

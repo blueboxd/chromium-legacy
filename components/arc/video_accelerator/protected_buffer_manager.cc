@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/logging.h"
+#include "base/memory/shared_memory.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/video_accelerator/protected_buffer_allocator.h"
@@ -42,9 +43,8 @@ class ProtectedBufferManager::ProtectedBuffer {
   // Downcasting methods to return duplicated handles to the underlying
   // protected buffers for each buffer type, or empty/null handles if not
   // applicable.
-  virtual base::subtle::PlatformSharedMemoryRegion
-  DuplicatePlatformSharedMemoryRegion() const {
-    return {};
+  virtual base::SharedMemoryHandle DuplicateSharedMemoryHandle() const {
+    return base::SharedMemoryHandle();
   }
   virtual gfx::NativePixmapHandle DuplicateNativePixmapHandle() const {
     return gfx::NativePixmapHandle();
@@ -76,15 +76,14 @@ class ProtectedBufferManager::ProtectedSharedMemory
       scoped_refptr<gfx::NativePixmap> dummy_handle,
       size_t size);
 
-  base::subtle::PlatformSharedMemoryRegion DuplicatePlatformSharedMemoryRegion()
-      const override {
-    return region_.Duplicate();
+  base::SharedMemoryHandle DuplicateSharedMemoryHandle() const override {
+    return base::SharedMemory::DuplicateHandle(shmem_->handle());
   }
 
  private:
   explicit ProtectedSharedMemory(scoped_refptr<gfx::NativePixmap> dummy_handle);
 
-  base::subtle::PlatformSharedMemoryRegion region_;
+  std::unique_ptr<base::SharedMemory> shmem_;
 };
 
 ProtectedBufferManager::ProtectedSharedMemory::ProtectedSharedMemory(
@@ -104,12 +103,23 @@ ProtectedBufferManager::ProtectedSharedMemory::Create(
   size_t aligned_size =
       base::bits::Align(size, base::SysInfo::VMAllocationGranularity());
 
-  protected_shmem->region_ =
-      base::subtle::PlatformSharedMemoryRegion::CreateUnsafe(aligned_size);
-  if (!protected_shmem->region_.IsValid()) {
+  mojo::ScopedSharedBufferHandle mojo_shared_buffer =
+      mojo::SharedBufferHandle::Create(aligned_size);
+  if (!mojo_shared_buffer->is_valid()) {
     VLOGF(1) << "Failed to allocate shared memory";
     return nullptr;
   }
+
+  base::SharedMemoryHandle shm_handle;
+  MojoResult mojo_result = mojo::UnwrapSharedMemoryHandle(
+      std::move(mojo_shared_buffer), &shm_handle, nullptr, nullptr);
+  if (mojo_result != MOJO_RESULT_OK) {
+    VLOGF(1) << "Failed to unwrap a mojo shared memory handle";
+    return nullptr;
+  }
+
+  protected_shmem->shmem_ =
+      std::make_unique<base::SharedMemory>(shm_handle, false);
   return protected_shmem;
 }
 
@@ -385,8 +395,8 @@ void ProtectedBufferManager::ReleaseAllProtectedBuffers(uint64_t allocator_id) {
   allocator_to_buffers_map_.erase(allocator_id);
 }
 
-base::subtle::PlatformSharedMemoryRegion
-ProtectedBufferManager::GetProtectedSharedMemoryRegionFor(
+base::SharedMemoryHandle
+ProtectedBufferManager::GetProtectedSharedMemoryHandleFor(
     base::ScopedFD dummy_fd) {
   uint32_t id = 0;
   auto pixmap = ImportDummyFd(std::move(dummy_fd), &id);
@@ -394,9 +404,9 @@ ProtectedBufferManager::GetProtectedSharedMemoryRegionFor(
   base::AutoLock lock(buffer_map_lock_);
   const auto& iter = buffer_map_.find(id);
   if (iter == buffer_map_.end())
-    return {};
+    return base::SharedMemoryHandle();
 
-  return iter->second->DuplicatePlatformSharedMemoryRegion();
+  return iter->second->DuplicateSharedMemoryHandle();
 }
 
 gfx::NativePixmapHandle

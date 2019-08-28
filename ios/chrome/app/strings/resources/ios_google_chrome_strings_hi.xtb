@@ -23,7 +23,7 @@
 <translation id="3345341804167540816">Chrome का सभी जगह उपयोग करना</translation>
 <translation id="384394811301901750">Google Chrome इस समय आपके कैमरे का उपयोग नहीं कर सकता</translation>
 <translation id="3980220367029651214">आप सिंक खातों को <ph name="USER_EMAIL1" /> से <ph name="USER_EMAIL2" /> में बदल रहे हैं. आपका मौजूदा Chrome डेटा <ph name="DOMAIN" /> से प्रबंधित किया जाता है. इससे आपका डेटा इस सेवा से मिट जाएगा, लेकिन आपका डेटा <ph name="USER_EMAIL1" /> में बना रहेगा.</translation>
-<translation id="3988789688219830639">Google Chrome के पास आपकी फ़ोटो या वीडियो का ऐक्सेस नहीं है. iOS सेटिंग &gt; गोपनीयता &gt; फ़ोटो में ऐक्सेस चालू करें.</translation>
+<translation id="3988789688219830639">Google Chrome के पास आपकी फ़ोटो या वीडियो का एक्सेस नहीं है. iOS सेटिंग &gt; निजता &gt; फ़ोटो में जाकर एक्सेस चालू करें.</translation>
 <translation id="4099578267706723511">Google को इस्तेमाल के आंकड़े और खराबी रिपोर्ट भेजकर Chrome को बेहतर बनाने में मदद करें.</translation>
 <translation id="415767770115540173">अपने स्थान के आधार पर Chrome में एक बेहतर Google अनुभव पाएं.</translation>
 <translation id="424864128008805179">Chrome से साइन आउट करें?</translation>
@@ -44,11 +44,12 @@
 <translation id="7165736900384873061">Google Chrome QR स्कैनर उपयोग शुरू करें</translation>
 <translation id="7172660552945675509">सलाह: <ph name="BEGIN_LINK" />Chrome को अपने डॉक में ले जाएं<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">आपके पासवर्ड का अधिकृत ऐक्सेस पक्का करने के लिए, Chrome 'फ़ेस आईडी' यानी चेहरा पहचान का इस्तेमाल करता है.</translation>
-<translation id="7265369419224458312">अपने कंप्यूटर पर खोले गए टैब सीधे यहां से ऐक्सेस करें. बस अपने कंप्यूटर पर Chrome खोलें, मेन्यू पर जाएं और “Chrome में साइन इन करें…” चुनें</translation>
+<translation id="7265369419224458312">अपने कंप्यूटर पर खोले गए टैब सीधे यहां से एक्सेस करें. बस अपने कंप्यूटर पर Chrome खोलें, मेन्यू पर जाएं और “Chrome में साइन इन करें…” चुनें</translation>
 <translation id="7400722733683201933">Google Chrome के बारे में</translation>
 <translation id="7437998757836447326">Chrome से साइन आउट करें</translation>
 <translation id="756809126120519699">साफ़ किया गया Chrome डेटा</translation>
 <translation id="7626032353295482388">Chrome में आपका स्वागत है</translation>
+<translation id="7698568245838009292">Chrome आपका कैमरा ऐक्सेस करना चाहता है</translation>
 <translation id="8370517070665726704">कॉपीराइट <ph name="YEAR" /> Google LLC. सर्वाधिकार सुरक्षित.</translation>
 <translation id="840168496893712993">कुछ ऐड-ऑन के कारण Chrome क्रैश हो जाता है. कृपया उन्हें अनइंस्टॉल करके देखें.</translation>
 <translation id="8459495907675268833">चयनित डेटा Chrome और समन्वयित डिवाइस से निकाल दिया गया है. हो सकता है कि आपके Google खाते में अन्य प्रकार के ब्राउज़िंग इतिहास जैसे खोज और history.google.com पर अन्य Google सेवाओं की गतिविधि हो.</translation>

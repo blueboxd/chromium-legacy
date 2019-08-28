@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Hostitele nelze nalézt. Pravděpodobnou příčinou je aktuální konfigurace sítě.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Naposledy online: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Tato aplikace již není podporována. Chcete-li dostávat nejnovější funkce a aktualizace zabezpečení, používejte <ph name="LINK_BEGIN" />webovou aplikaci Vzdálená plocha Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Abyste tento počítač mohli ovládat vzdáleně pomocí aplikace <ph name="PRODUCT_NAME" />, je potřeba provést další konfigurační krok.
-
-Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME" /> zobrazte panel nastavení zabezpečení a ochrany soukromí a poté zaškrtněte políčko vedle položky <ph name="SERVICE_SCRIPT_NAME" />.
-
-Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již přítomná a zaškrtnutá, pravděpodobně ji bude potřeba odstranit a přidat znovu.</translation>
 <translation id="2499160551253595098">Pomozte nám Vzdálenou plochu Chrome vylepšit tím, že nám povolíte shromažďovat statistiky využití a zprávy o selhání.</translation>
 <translation id="2509394361235492552">Připojeno k zařízení <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">POZNÁMKA: Pokud chcete mít k dispozici všechny klávesové zkratky, povolte v konfiguraci Vzdálené plochy Google možnost Otevřít jako okno.</translation>
@@ -317,6 +312,11 @@ Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již přítomná a zaškrtn
 <translation id="8804164990146287819">Zásady ochrany soukromí</translation>
 <translation id="894763922177556086">Dobrá</translation>
 <translation id="895780780740011433">Pro Windows 7 a novější</translation>
+<translation id="8963047137585288214">Abyste tento počítač mohli ovládat vzdáleně pomocí aplikace <ph name="PRODUCT_NAME" />, je potřeba provést další konfigurační krok.
+
+Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME" /> zobrazte panel nastavení zabezpečení a ochrany soukromí a poté zaškrtněte políčko vedle položky <ph name="SERVICE_SCRIPT_NAME" />.
+
+Pokud je položka <ph name="SERVICE_SCRIPT_NAME" /> již přítomná a zaškrtnutá, pravděpodobně bude třeba zaškrtnutí zrušit a poté ji zaškrtnout znovu.</translation>
 <translation id="897805526397249209">Chcete-li umožnit vzdálené připojení k jinému počítači, nainstalujte do něj aplikaci Chromoting a poté klikněte na tlačítko <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Hostitelský kontroler Vzdálené plochy Chrome</translation>
 <translation id="9016232822027372900">Přesto připojit</translation>

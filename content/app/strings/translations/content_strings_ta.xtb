@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">மதிப்பானது <ph name="MINIMUM_DATE_OR_TIME" /> அல்லது அதற்குப் பின்பு இருக்க வேண்டும்.</translation>
 <translation id="2759744352195237655">பாப் அப் பொத்தான்</translation>
 <translation id="2761667185364618470">தொடர விரும்பினால், இந்தப் பெட்டியைத் தேர்ந்தெடுங்கள்.</translation>
+<translation id="2844350028562914727">விவரங்கள்</translation>
 <translation id="2896972712917208084">ரேடியோ குழு</translation>
 <translation id="2908441821576996758">காற்புள்ளியால் பிரிக்கப்பட்ட மின்னஞ்சல் முகவரிகளின் பட்டியலை உள்ளிடுக.</translation>
 <translation id="2940813599313844715">பொருள்</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">மதிப்பானது கண்டிப்பாக <ph name="MAXIMUM" /> ஐ விடக்குறைவாக அல்லது அதற்குச் சமமாக இருக்க வேண்டும்.</translation>
 <translation id="3486220673238053218">விளக்கம்</translation>
 <translation id="3557673793733683882">தலைப்பு <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">வாரத் தேர்வி</translation>
 <translation id="3685101356851116974">லேபிளிடப்படாத படம்</translation>
 <translation id="3706100364254443312">ஸ்விட்ச்</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -154,6 +156,7 @@
 <translation id="6166809985690652833">பின்னுரை</translation>
 <translation id="6209276755895393898"><ph name="DESCRIPTION" /> போலத் தோன்றுகிறது.</translation>
 <translation id="6213469881011901533">அருஞ்சொல் திரட்டு</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">பிக்ச்சர்-இன்-பிக்ச்சர் பயன்முறையிலிருந்து வெளியேறு</translation>
 <translation id="6398862346408813489">மாதம் தேர்ந்தெடுப்புப் பலகத்தைக் காட்டு</translation>
 <translation id="6404546809543547843">ஆடியோ நேர ஸ்கிரப்பர்</translation>
@@ -216,6 +219,7 @@
 <translation id="811583516810654505">விளக்கத்தைப் பெறுகிறது...</translation>
 <translation id="8117451130807776954">இந்த வாரம்</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8208673686607688524">உள்ளூர் தேதியும் நேரத் தேர்வியும்</translation>
 <translation id="8261464734335370856">எழுத்துப்பிழை</translation>
 <translation id="8284326494547611709">வசனங்கள்</translation>
 <translation id="835897206747267392">செல்லாத மதிப்பு.</translation>
@@ -236,6 +240,7 @@
 <translation id="860475260694818407">உள்ளடக்க அட்டவணை</translation>
 <translation id="8613126697340063924">தொலைநிலை இயக்கத்தைக் கட்டுப்படுத்தவும்</translation>
 <translation id="862370744433916922">துணை தலைப்பு</translation>
+<translation id="8711688047404765493">வெளியீடு</translation>
 <translation id="8750798805984357768">தயவுசெய்து இந்த விருப்பங்களில் ஒன்றைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="8808573423886751634">அத்தியாயம்</translation>
 <translation id="8845239796550121995">டிவிக்கு அனுப்புகிறது</translation>

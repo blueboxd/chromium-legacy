@@ -43,17 +43,6 @@ class SharingSyncPreferenceTest : public testing::Test {
                                       kDeviceAuthToken, kCapabilities));
   }
 
-  base::Optional<SharingSyncPreference::Device> GetDevice(
-      const std::string& guid) {
-    std::map<std::string, SharingSyncPreference::Device> synced_devices =
-        sharing_sync_preference_.GetSyncedDevices();
-    auto it = synced_devices.find(guid);
-    if (it == synced_devices.end())
-      return base::nullopt;
-    else
-      return std::move(it->second);
-  }
-
   static base::Value CreateRandomDevice(base::Time timestamp) {
     return SharingSyncPreference::DeviceToValue(
         {base::GenerateGUID(), kDeviceP256dh, kDeviceAuthToken, kCapabilities},
@@ -72,21 +61,33 @@ TEST_F(SharingSyncPreferenceTest, UpdateVapidKeys) {
 
 TEST_F(SharingSyncPreferenceTest, RemoveDevice) {
   SyncDefaultDevice();
-  EXPECT_NE(base::nullopt, GetDevice(kDeviceGuid));
+  EXPECT_NE(base::nullopt,
+            sharing_sync_preference_.GetSyncedDevice(kDeviceGuid));
   sharing_sync_preference_.RemoveDevice(kDeviceGuid);
-  EXPECT_EQ(base::nullopt, GetDevice(kDeviceGuid));
+  EXPECT_EQ(base::nullopt,
+            sharing_sync_preference_.GetSyncedDevice(kDeviceGuid));
 }
 
 TEST_F(SharingSyncPreferenceTest, SyncDevice) {
-  EXPECT_EQ(base::nullopt, GetDevice(kDeviceGuid));
+  EXPECT_EQ(base::nullopt,
+            sharing_sync_preference_.GetSyncedDevice(kDeviceGuid));
   SyncDefaultDevice();
-  base::Optional<SharingSyncPreference::Device> device = GetDevice(kDeviceGuid);
+  base::Optional<SharingSyncPreference::Device> device =
+      sharing_sync_preference_.GetSyncedDevice(kDeviceGuid);
 
   EXPECT_NE(base::nullopt, device);
   EXPECT_EQ(kDeviceFcmToken, device->fcm_token);
   EXPECT_EQ(kDeviceP256dh, device->p256dh);
   EXPECT_EQ(kDeviceAuthToken, device->auth_secret);
   EXPECT_EQ(kCapabilities, device->capabilities);
+
+  auto synced_devices = sharing_sync_preference_.GetSyncedDevices();
+  auto it = synced_devices.find(kDeviceGuid);
+  EXPECT_NE(synced_devices.end(), it);
+  EXPECT_EQ(device->fcm_token, it->second.fcm_token);
+  EXPECT_EQ(device->p256dh, it->second.p256dh);
+  EXPECT_EQ(device->auth_secret, it->second.auth_secret);
+  EXPECT_EQ(device->capabilities, it->second.capabilities);
 }
 
 TEST_F(SharingSyncPreferenceTest, FCMRegistrationGetSet) {
@@ -94,12 +95,16 @@ TEST_F(SharingSyncPreferenceTest, FCMRegistrationGetSet) {
 
   base::Time time_now = base::Time::Now();
   sharing_sync_preference_.SetFCMRegistration(
-      {kAuthorizedEntity, kDeviceFcmToken, time_now});
+      SharingSyncPreference::FCMRegistration(kAuthorizedEntity, kDeviceFcmToken,
+                                             kDeviceP256dh, kDeviceAuthToken,
+                                             time_now));
 
   auto fcm_registration = sharing_sync_preference_.GetFCMRegistration();
   EXPECT_TRUE(fcm_registration);
   EXPECT_EQ(kAuthorizedEntity, fcm_registration->authorized_entity);
   EXPECT_EQ(kDeviceFcmToken, fcm_registration->fcm_token);
+  EXPECT_EQ(kDeviceP256dh, fcm_registration->p256dh);
+  EXPECT_EQ(kDeviceAuthToken, fcm_registration->auth_secret);
   EXPECT_EQ(time_now, fcm_registration->timestamp);
 
   sharing_sync_preference_.ClearFCMRegistration();

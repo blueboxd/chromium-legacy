@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">વાંચન સૂચિમાં ઉમેર્યું</translation>
 <translation id="1828824471510190776">પાસવર્ડ સૂચવો...</translation>
 <translation id="1870148520156231997">પાસવર્ડ જણાવો</translation>
+<translation id="1872096359983322073">ટોર્ચ</translation>
 <translation id="1876721852596493031">ઉપયોગ ડેટા મોકલો</translation>
 <translation id="1911619930368729126">Google ડ્રાઇવ પર અપલોડ કરો</translation>
 <translation id="1923342640370224680">છેલ્લી કલાક</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">રદ કરવા માટે ટેપ કરો.</translation>
 <translation id="6108923351542677676">સેટઅપની પ્રક્રિયા ચાલુ છે...</translation>
+<translation id="6119050551270742952">વર્તમાન વેબપેજ છૂપા મોડમાં છે</translation>
 <translation id="6122191549521593678">ઓનલાઇન</translation>
 <translation id="6127379762771434464">આઇટમ દૂર કરી</translation>
 <translation id="6136914049981179737">સેકંડ પહેલાં</translation>
@@ -411,6 +413,9 @@
 <translation id="6807889908376551050">બધું બતાવો...</translation>
 <translation id="681368974849482173">આઇટમ બનાવી</translation>
 <translation id="6851516051005285358">ડેસ્કટૉપ સાઇટની વિનંતી કરો</translation>
+<translation id="6858855187367714033">સ્કૅન કર્યો</translation>
+<translation id="6859944681507688231">QR કોડ અથવા ક્રેડિટ કાર્ડ સ્કૅન કરવા માટે, સેટિંગમાં કૅમેરા ચાલુ કરો.</translation>
+<translation id="6873263987691478642">વિભાજિત દૃશ્ય</translation>
 <translation id="6896758677409633944">કૉપિ કરો</translation>
 <translation id="6903907808598579934">સમન્વયન ચાલુ કરો</translation>
 <translation id="6914583639806229067">તમે કૉપિ કરેલી છબી માટે શોધ કરો</translation>
@@ -509,6 +514,7 @@
 <translation id="8428045167754449968">શહેર/નગર</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8458397775385147834">1 આઇટમ કાઢી નાખી</translation>
+<translation id="8487667956631253959">ચાલુ</translation>
 <translation id="8487700953926739672">ઑફલાઇન ઉપલબ્ધ</translation>
 <translation id="8490978609246021741">ફેરફારો સાચવો</translation>
 <translation id="8503813439785031346">વપરાશકર્તાનામ</translation>
@@ -519,6 +525,7 @@
 <translation id="8532105204136943229">સમય સમાપ્તિ વર્ષ</translation>
 <translation id="8534481786647257214">Google+ પોસ્ટ પૂર્ણ કરેલ છે.</translation>
 <translation id="8548878600947630424">પૃષ્ઠમાં શોધો...</translation>
+<translation id="8588404856427128947">બંધ</translation>
 <translation id="8605219856220328675">ટૅબ બંધ કરો.</translation>
 <translation id="8620640915598389714">ફેરફાર કરો</translation>
 <translation id="8636825310635137004">તમારા અન્ય ઉપકરણો પરથી તમારા ટૅબ્સ મેળવવા માટે, સમન્વયન ચાલુ કરો.</translation>
@@ -559,6 +566,7 @@
 <translation id="9203116392574189331">હેન્ડઓફ</translation>
 <translation id="9223358826628549784">ક્રૅશ રિપોર્ટ મોકલ્યો.</translation>
 <translation id="935490618240037774">તમારા Google એકાઉન્ટ પર તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગ સિંક કરવામાં આવશે જેથી કરીને તમે તમારા બધા ડિવાઇસ પર એનો ઉપયોગ કરી શકો</translation>
+<translation id="952704832371081537">રદ કરો</translation>
 <translation id="976982866697960176">સમન્વયિત ડેટા સંચાલિત કરો…</translation>
 <translation id="988141524645182168">અન્ય ઉપકરણો</translation>
 <translation id="989988560359834682">ઍડ્રેસમાં ફેરફાર કરો</translation>

@@ -231,7 +231,7 @@ std::unique_ptr<views::View> CardUnmaskPromptViews::CreateFootnoteView() {
   storage_checkbox->SetChecked(controller_->GetStoreLocallyStartState());
   storage_checkbox->SetEnabledTextColors(views::style::GetColor(
       *storage_checkbox.get(), ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      STYLE_SECONDARY));
+      views::style::STYLE_SECONDARY));
   storage_checkbox_ = storage_checkbox.get();
 
   return storage_checkbox;
@@ -386,7 +386,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       std::make_unique<views::Label>(controller_->GetInstructionsMessage());
   instructions->SetEnabledColor(views::style::GetColor(
       *instructions.get(), ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-      STYLE_SECONDARY));
+      views::style::STYLE_SECONDARY));
   instructions->SetMultiLine(true);
   instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   instructions_ = controls_container_->AddChildView(std::move(instructions));

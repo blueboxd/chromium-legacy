@@ -107,6 +107,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
     host_for_create_ = std::move(host_for_create);
   }
   std::unique_ptr<AppShimHost> CreateHost(
+      AppShimHost::Client* client,
       Profile* profile,
       const extensions::Extension* extension) override {
     DCHECK(host_for_create_);
@@ -221,13 +222,12 @@ class TestHost : public AppShimHost {
   TestHost(const base::FilePath& profile_path,
            const std::string& app_id,
            TestingExtensionAppShimHandler* handler)
-      : AppShimHost(app_id, profile_path, false /* uses_remote_views */),
-        handler_(handler),
+      : AppShimHost(handler,
+                    app_id,
+                    profile_path,
+                    false /* uses_remote_views */),
         test_weak_factory_(this) {}
   ~TestHost() override {}
-
-  // Override the GetAppShimHandler for testing.
-  apps::AppShimHandler* GetAppShimHandler() const override { return handler_; }
 
   // Record whether or not OnBootstrapConnected has been called.
   void OnBootstrapConnected(
@@ -243,7 +243,6 @@ class TestHost : public AppShimHost {
   }
 
  private:
-  TestingExtensionAppShimHandler* handler_;
   bool did_connect_to_host_ = false;
 
   base::WeakPtrFactory<TestHost> test_weak_factory_;

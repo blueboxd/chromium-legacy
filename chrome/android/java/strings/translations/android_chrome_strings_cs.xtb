@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">Zkopírovat text odkazu</translation>
 <translation id="1208340532756947324">Chcete-li synchronizovat a přizpůsobit různá zařízení, zapněte synchronizaci</translation>
 <translation id="1209206284964581585">Prozatím skrýt</translation>
+<translation id="1227058898775614466">Historie navigace</translation>
 <translation id="1231733316453485619">Zapnout synchronizaci?</translation>
 <translation id="123724288017357924">Obnovit stránku a ignorovat obsah v mezipaměti</translation>
 <translation id="124116460088058876">Další jazyky</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">Klepnutím rozbalíte</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1291207594882862231">Vymazat historii, soubory cookie, data webů, mezipaměť…</translation>
+<translation id="129382876167171263">Zde se budou zobrazovat soubory uložené webovými stránkami</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – odesláno ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Seskupit karty</translation>
+<translation id="1327257854815634930">Historie navigace je otevřená</translation>
 <translation id="1331212799747679585">Chrome nelze aktualizovat. Další možnosti</translation>
 <translation id="1332501820983677155">Zkratky funkcí prohlížeče Google Chrome</translation>
 <translation id="1360432990279830238">Odhlásit se a vypnout synchronizaci?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">Povolit úplné ovládání zařízení MIDI</translation>
 <translation id="145097072038377568">Vypnuto v Nastavení pro Android</translation>
 <translation id="1477626028522505441">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu problémů se serverem.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 další)}few{ (+ # další)}many{ (+ # dalších)}other{ (+ # dalších)}}</translation>
 <translation id="1501480321619201731">Smazat skupinu</translation>
 <translation id="1506061864768559482">Vyhledávač</translation>
 <translation id="1513352483775369820">Záložky a webová historie</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">Přetahujte posuvník tak dlouho, dokud nebudete moci pohodlně přečíst tento text. Po dvojitém klepnutí na odstavec by měl být text alespoň takto velký.</translation>
 <translation id="2323763861024343754">Úložiště webů</translation>
 <translation id="2328985652426384049">Přihlášení se nezdařilo</translation>
-<translation id="2334057574886324800">Byla přijata textová zpráva</translation>
 <translation id="2349710944427398404">Celkové množství dat využívané prohlížečem Chrome, včetně účtů, záložek a uložených nastavení</translation>
 <translation id="2353636109065292463">Kontrola připojení k internetu</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
@@ -417,12 +418,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4226663524361240545">Oznámení mohou aktivovat vibraci</translation>
 <translation id="423219824432660969">Zašifrovat synchronizovaná data pomocí hesla Google z <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otevřít Nastavení</translation>
-<translation id="4247274662191902962">Data ze senzorů se budou sdílet, pouze dokud budete v této virtuální realitě. Z některých údajů si o vás web může udělat určitou představu. Příklady takových údajů:
-    – poloha,
-    – fyzické znaky, např. pozice očí,
-    – pohyby, například způsob chůze.
-
-    Přístup webu povolte pouze v případě, že mu důvěřujete.</translation>
 <translation id="4256782883801055595">Licence open source</translation>
 <translation id="4259722352634471385">Navigace je blokována: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Zkopírovat adresu odkazu</translation>
@@ -554,8 +549,8 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5170568018924773124">Zobrazit ve složce</translation>
 <translation id="5184329579814168207">Otevřít v Chromu</translation>
 <translation id="5193988420012215838">Zkopírováno do schránky</translation>
+<translation id="5197729504361054390">Vybrané kontakty budou sdíleny s webem <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5199929503336119739">Pracovní profil</translation>
-<translation id="5202089186707505116">Povolit tomuto webu přístup k senzorům pro virtuální realitu?</translation>
 <translation id="5210286577605176222">Přejít na předchozí kartu</translation>
 <translation id="5210365745912300556">Zavřít kartu</translation>
 <translation id="5224771365102442243">S videem</translation>
@@ -568,6 +563,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5301954838959518834">Dobře, rozumím</translation>
 <translation id="5304593522240415983">Toto pole nesmí být prázdné</translation>
+<translation id="5307446750509046227">Vymazat úložiště webů</translation>
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="5313967007315987356">Přidat web</translation>
 <translation id="5317780077021120954">Uložit</translation>
@@ -631,7 +627,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5686790454216892815">Název souboru je příliš dlouhý</translation>
 <translation id="5689516760719285838">Poloha</translation>
 <translation id="569536719314091526">Pomocí tlačítka Další možnosti můžete tuto stránku přeložit do libovolného jazyka.</translation>
-<translation id="5719150327511160085">Čeká se na textovou zprávu</translation>
 <translation id="572328651809341494">Nedávno použité karty</translation>
 <translation id="5726692708398506830">Zvětšit veškerý obsah stránky</translation>
 <translation id="5748802427693696783">Přepnuto na standardní karty</translation>
@@ -702,7 +697,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 Některé weby mohou například na tento požadavek reagovat tak, že vám zobrazí reklamy, které nejsou založeny na ostatních navštívených webových stránkách. Řada webů bude i nadále shromažďovat vaše údaje o prohlížení a používat je například ke zlepšení zabezpečení, poskytování obsahu, reklam a doporučení a ke generování statistik pro přehledy.</translation>
 <translation id="624789221780392884">Je připravena aktualizace</translation>
 <translation id="6255999984061454636">Návrhy obsahu</translation>
-<translation id="6264430811215618931"><ph name="ORIGIN" /> na vaše telefonní číslo odeslal textovou zprávu. Pokud ji potvrdíte, web vás dokáže rozpoznávat.</translation>
 <translation id="6277522088822131679">Při tištění stránky došlo k problému. Zkuste to prosím znovu.</translation>
 <translation id="6295158916970320988">Všechny weby</translation>
 <translation id="629730747756840877">Účet</translation>
@@ -805,6 +799,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6989267951144302301">Stažení se nezdařilo</translation>
 <translation id="6990079615885386641">Získat aplikaci z Obchodu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pokud web bude chtít použít váš mikrofon, zobrazit dotaz (doporučeno)</translation>
+<translation id="7015203776128479407">Počáteční nastavení synchronizace nebylo dokončeno. Synchronizace je vypnutá.</translation>
 <translation id="7016516562562142042">Pro aktuální vyhledávač povoleno</translation>
 <translation id="7021515813996758557">Soubor <ph name="FILE_NAME" /> byl stažen</translation>
 <translation id="7022756207310403729">Otevřít v prohlížeči</translation>
@@ -836,11 +831,11 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7274013316676448362">Blokovaný web</translation>
 <translation id="7290209999329137901">Přejmenování není k dispozici</translation>
 <translation id="7291387454912369099">Platba aktivovaná Asistentem</translation>
+<translation id="7293171162284876153">Chcete-li synchronizaci spustit, zapněte přepínač Synchronizovat data prohlížeče Chrome.</translation>
 <translation id="729975465115245577">V zařízení není žádná aplikace, pomocí které by soubor s hesly bylo možné uložit.</translation>
 <translation id="7302081693174882195">Podrobnosti: Seřazeno podle množství uspořených dat</translation>
 <translation id="7328017930301109123">Ve zjednodušeném režimu načítá Chrome stránky rychleji a používá až o 60 procent méně dat.</translation>
 <translation id="7333031090786104871">Předchozí web se stále přidává</translation>
-<translation id="7352651011704765696">Něco se pokazilo</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Sdílet 1 vybranou položku}few{Sdílet # vybrané položky}many{Sdílet # vybrané položky}other{Sdílet # vybraných položek}}</translation>
 <translation id="7359002509206457351">Poskytnout přístup k platební metodám</translation>
@@ -904,6 +899,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="773466115871691567">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> vždy překládat</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">Kvůli detekci nebezpečných aplikací a webů odesílá Chrome do Googlu adresy URL některých navštívených stránek, omezené informace o systému a část obsahu stránek</translation>
+<translation id="7757787379047923882">Text sdílený ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD karta <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Přidat adresu</translation>
 <translation id="7769602470925380267">Přijmout a odhlásit se</translation>
@@ -1043,6 +1039,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8748850008226585750">Skrytý obsah</translation>
 <translation id="8751914237388039244">Vybrat obrázek</translation>
+<translation id="8788265440806329501">Historie navigace je zavřená</translation>
 <translation id="8788968922598763114">Znovu otevřít naposledy zavřenou kartu</translation>
 <translation id="8801436777607969138">Blokovat JavaScript na konkrétním webu.</translation>
 <translation id="8812260976093120287">Na některých webech můžete platit pomocí výše uvedených podporovaných platebních aplikací v zařízení.</translation>

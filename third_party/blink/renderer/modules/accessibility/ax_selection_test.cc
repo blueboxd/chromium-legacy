@@ -1604,6 +1604,17 @@ TEST_F(AccessibilitySelectionTest,
   }
 }
 
+TEST_F(AccessibilitySelectionTest, SelectionWithEqualBaseAndExtent) {
+  SetBodyInnerHTML(R"HTML(
+      <select id="sel"><option>1</option></select>
+      )HTML");
+  AXObject* ax_sel = GetAXObjectByElementId("sel")->FirstChild();
+  AXPosition ax_position = AXPosition::CreatePositionBeforeObject(*ax_sel);
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(ax_position).SetExtent(ax_position).Build();
+}
+
 //
 // Declarative tests.
 //

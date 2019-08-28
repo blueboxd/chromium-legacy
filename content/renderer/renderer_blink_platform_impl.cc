@@ -112,6 +112,10 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
@@ -691,6 +695,22 @@ void RendererBlinkPlatformImpl::TrackGetUserMedia(
     const blink::WebUserMediaRequest& web_request) {
   RenderThreadImpl::current()->peer_connection_tracker()->TrackGetUserMedia(
       web_request);
+}
+
+bool RendererBlinkPlatformImpl::IsWebRtcHWH264DecodingEnabled(
+    webrtc::VideoCodecType video_codec_type) {
+#if defined(OS_WIN)
+  // Do not use hardware decoding for H.264 on Win7, due to high latency.
+  // See https://crbug.com/webrtc/5717.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWin7WebRtcHWH264Decoding) &&
+      video_codec_type == webrtc::kVideoCodecH264 &&
+      base::win::GetVersion() == base::win::Version::WIN7) {
+    DVLOG(1) << "H.264 HW decoding is not supported on Win7";
+    return false;
+  }
+#endif  // defined(OS_WIN)
+  return true;
 }
 
 blink::WebVideoCaptureImplManager*

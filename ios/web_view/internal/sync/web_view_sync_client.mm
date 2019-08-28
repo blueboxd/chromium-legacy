@@ -197,8 +197,6 @@ scoped_refptr<syncer::ModelSafeWorker>
 WebViewSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   switch (group) {
-    case syncer::GROUP_DB:
-      return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
           base::CreateSingleThreadTaskRunner({web::WebThread::UI}));

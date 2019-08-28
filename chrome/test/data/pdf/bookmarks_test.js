@@ -51,10 +51,8 @@ var tests = [
    * Test that a bookmark is followed when clicked in test-bookmarks.pdf.
    */
   function testFollowBookmark() {
-    var bookmarkContent = Polymer.Base.create('viewer-bookmarks-content', {
-      bookmarks: viewer.bookmarks,
-      depth: 1
-    });
+    var bookmarkContent = createBookmarksForTest();
+    bookmarkContent.bookmarks = viewer.bookmarks;
     document.body.appendChild(bookmarkContent);
 
     Polymer.dom.flush();

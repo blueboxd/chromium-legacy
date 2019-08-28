@@ -17,6 +17,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * This class is the Java counterpart to the C++ GCMDriverAndroid class.
@@ -72,17 +73,20 @@ public class GCMDriver {
 
     @CalledByNative
     private void replayPersistedMessages(final String appId) {
-        if (!LazySubscriptionsManager.hasPersistedMessagesForSubscription(appId)) {
+        Set<String> subscriptionsWithPersistedMessagesForAppId =
+                LazySubscriptionsManager.getSubscriptionIdsWithPersistedMessages(appId);
+        if (subscriptionsWithPersistedMessagesForAppId.isEmpty()) {
             return;
         }
 
         long time = SystemClock.elapsedRealtime();
-        GCMMessage[] messages = LazySubscriptionsManager.readMessages(appId);
-        for (GCMMessage message : messages) {
-            dispatchMessage(message);
+        for (String id : subscriptionsWithPersistedMessagesForAppId) {
+            GCMMessage[] messages = LazySubscriptionsManager.readMessages(id);
+            for (GCMMessage message : messages) {
+                dispatchMessage(message);
+            }
+            LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(id);
         }
-        LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(appId);
-
         long duration = SystemClock.elapsedRealtime() - time;
         // Call RecordHistogram.recordTimesHistogram() on a background thread to avoid
         // expensive JNI calls in the critical path.

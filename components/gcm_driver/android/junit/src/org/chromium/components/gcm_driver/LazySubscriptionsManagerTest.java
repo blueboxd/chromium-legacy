@@ -44,14 +44,18 @@ public class LazySubscriptionsManagerTest {
     @Test
     public void testHasPersistedMessages() {
         final String subscriptionId = "subscription_id";
-        // Default is false.
-        assertFalse(LazySubscriptionsManager.hasPersistedMessagesForSubscription(subscriptionId));
+        // By default there is no persisted messages.
+        assertTrue(LazySubscriptionsManager.getSubscriptionIdsWithPersistedMessages(subscriptionId)
+                           .isEmpty());
 
         LazySubscriptionsManager.storeHasPersistedMessagesForSubscription(subscriptionId, true);
-        assertTrue(LazySubscriptionsManager.hasPersistedMessagesForSubscription(subscriptionId));
+        assertEquals(1,
+                LazySubscriptionsManager.getSubscriptionIdsWithPersistedMessages(subscriptionId)
+                        .size());
 
         LazySubscriptionsManager.storeHasPersistedMessagesForSubscription(subscriptionId, false);
-        assertFalse(LazySubscriptionsManager.hasPersistedMessagesForSubscription(subscriptionId));
+        assertTrue(LazySubscriptionsManager.getSubscriptionIdsWithPersistedMessages(subscriptionId)
+                           .isEmpty());
     }
 
     /**
@@ -71,16 +75,22 @@ public class LazySubscriptionsManagerTest {
                 .apply();
         LazySubscriptionsManager.migrateHasPersistedMessagesPref();
 
-        assertFalse(LazySubscriptionsManager.hasPersistedMessagesForSubscription(subscriptionId1));
-        assertFalse(LazySubscriptionsManager.hasPersistedMessagesForSubscription(subscriptionId2));
+        assertTrue(LazySubscriptionsManager.getSubscriptionIdsWithPersistedMessages(subscriptionId1)
+                           .isEmpty());
+        assertTrue(LazySubscriptionsManager.getSubscriptionIdsWithPersistedMessages(subscriptionId2)
+                           .isEmpty());
 
         sharedPrefs.edit()
                 .putBoolean(LazySubscriptionsManager.LEGACY_HAS_PERSISTED_MESSAGES_KEY, true)
                 .apply();
         LazySubscriptionsManager.migrateHasPersistedMessagesPref();
 
-        assertTrue(LazySubscriptionsManager.hasPersistedMessagesForSubscription(subscriptionId1));
-        assertTrue(LazySubscriptionsManager.hasPersistedMessagesForSubscription(subscriptionId2));
+        assertEquals(1,
+                LazySubscriptionsManager.getSubscriptionIdsWithPersistedMessages(subscriptionId1)
+                        .size());
+        assertEquals(1,
+                LazySubscriptionsManager.getSubscriptionIdsWithPersistedMessages(subscriptionId2)
+                        .size());
     }
 
     /**

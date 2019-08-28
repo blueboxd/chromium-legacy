@@ -84,10 +84,13 @@ class CONTENT_EXPORT BackgroundSyncController {
 
   // Calculates the delay after which the next sync event should be fired
   // for a BackgroundSync registration. The delay is based on the sync_type of
-  // the |registration|.
+  // the |registration|, the |parameters| for the feature, the soonest time
+  // a (periodic)sync event is scheduled to fire for this origin, and other
+  // browser-specific considerations.
   virtual base::TimeDelta GetNextEventDelay(
       const BackgroundSyncRegistration& registration,
-      content::BackgroundSyncParameters* parameters) = 0;
+      content::BackgroundSyncParameters* parameters,
+      base::TimeDelta time_till_soonest_scheduled_event_for_origin) = 0;
 
   // Keeps the browser alive to allow a one-shot Background Sync registration
   // to finish firing one sync event.

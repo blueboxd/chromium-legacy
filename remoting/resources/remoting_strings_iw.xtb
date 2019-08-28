@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
 <translation id="2370754117186920852">המארח <ph name="OPTIONAL_OFFLINE_REASON" />  נראה לאחרונה במצב מקוון <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">‏האפליקציה הזו כבר לא נתמכת. כדי לוודא שיש לך גישה לתכונות ולעדכוני האבטחה העדכניים ביותר, יש להשתמש ב<ph name="LINK_BEGIN" />אפליקציית האינטרנט Chrome Remote Desktop<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">יש לבצע שלב הגדרה נוסף כדי לשלוט במחשב מרחוק באמצעות <ph name="PRODUCT_NAME" />.
-
-להפעלת הפונקציונליות הזו, בוחרים '<ph name="BUTTON_NAME" />' כדי להציג את חלונית העדפות האבטחה והפרטיות, ואז מסמנים את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-אם '<ph name="SERVICE_SCRIPT_NAME" />' כבר מוצג ומסומן, ייתכן שצריך להסיר אותו ואז להוסיף אותו מחדש.</translation>
 <translation id="2499160551253595098">‏רוצה לעזור לנו לשפר את Chrome Remote Desktop? אנחנו זקוקים לאישורך כדי לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
 <translation id="2509394361235492552">בוצעה התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏הערה: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chrome Remote Desktop ל'פתח כחלון'.</translation>
@@ -317,6 +312,11 @@
 <translation id="8804164990146287819">מדיניות פרטיות</translation>
 <translation id="894763922177556086">איכות טובה</translation>
 <translation id="895780780740011433">‏ל-Windows מגירסה 7 ואילך</translation>
+<translation id="8963047137585288214">יש לבצע שלב הגדרה נוסף כדי לשלוט במחשב מרחוק באמצעות <ph name="PRODUCT_NAME" />.
+
+כדי להפעיל את הפונקציונליות הזו, יש ללחוץ על '<ph name="BUTTON_NAME" />' כדי להציג את החלונית של העדפות האבטחה והפרטיות, ולאחר מכן לסמן את התיבה ליד <ph name="SERVICE_SCRIPT_NAME" />.
+
+אם האפשרות '<ph name="SERVICE_SCRIPT_NAME" />' כבר מוצגת ומסומנת, ייתכן שצריך לבטל את הסימון ולאחר מכן לסמן מחדש.</translation>
 <translation id="897805526397249209">‏כדי להפעיל חיבורים מרוחקים למחשב אחר, התקן את Chromoting במחשב האחר ולחץ על '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="8998327464021325874">‏בקר מארח של Chrome Remote Desktop</translation>
 <translation id="9016232822027372900">התחבר בכל זאת</translation>

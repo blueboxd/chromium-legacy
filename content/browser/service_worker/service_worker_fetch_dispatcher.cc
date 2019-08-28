@@ -308,7 +308,8 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   bool bypass_redirect_checks_unused;
 
   // Consult the embedder.
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
+  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+      header_client;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       partition->browser_context(), frame_tree_node->current_frame_host(),
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),

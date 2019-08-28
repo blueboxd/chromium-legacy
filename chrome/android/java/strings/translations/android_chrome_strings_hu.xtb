@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">Link szövegének másolása</translation>
 <translation id="1208340532756947324">Az eszközök közötti szinkronizáláshoz és személyre szabáshoz kapcsolja be a szinkronizálást</translation>
 <translation id="1209206284964581585">Elrejtés most</translation>
+<translation id="1227058898775614466">Navigációs előzmények</translation>
 <translation id="1231733316453485619">Bekapcsolja a szinkronizálást?</translation>
 <translation id="123724288017357924">Oldal újratöltése a gyorsítótárat figyelmen kívül hagyva</translation>
 <translation id="124116460088058876">További nyelvek…</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">Koppintson a kibontáshoz</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="1291207594882862231">Előzmények, cookie-k, webhelyadatok és a gyorsítótár törlése…</translation>
+<translation id="129382876167171263">A webhelyek által elmentett fájlok itt jelennek meg</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – A(z) <ph name="DEVICE_NAME" /> eszközről</translation>
 <translation id="1310482092992808703">Lapok csoportosítása</translation>
+<translation id="1327257854815634930">Megnyitotta a navigációs előzményeket</translation>
 <translation id="1331212799747679585">A Chrome frissítése nem lehetséges. További lehetőségek</translation>
 <translation id="1332501820983677155">A Google Chrome-funkciók billentyűparancsai</translation>
 <translation id="1360432990279830238">Kijelentkezik, és kikapcsolja a szinkronizálást?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">MIDI-eszközök teljes vezérlése</translation>
 <translation id="145097072038377568">Kikapcsolva az Android beállításaiban</translation>
 <translation id="1477626028522505441">A következő fájl letöltése szerverproblémák miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 további)}other{ (+ # további)}}</translation>
 <translation id="1501480321619201731">Csoport törlése</translation>
 <translation id="1506061864768559482">Keresőmotor</translation>
 <translation id="1513352483775369820">Könyvjelzők és webes előzmények</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">Húzza a csúszkát, amíg kényelmesen nem tudja olvasni a szöveget. A szövegnek legalább ekkorának kell lennie, miután duplán koppint egy bekezdésre.</translation>
 <translation id="2323763861024343754">Webhely tárhelye</translation>
 <translation id="2328985652426384049">Nem sikerült a bejelentkezés</translation>
-<translation id="2334057574886324800">Megkapta az SMS-t</translation>
 <translation id="2349710944427398404">A Chrome által használt teljes adatmennyiség, beleértve a fiókokat, könyvjelzőket és mentett beállításokat is</translation>
 <translation id="2353636109065292463">Az internetkapcsolat ellenőrzése</translation>
 <translation id="2359808026110333948">Tovább</translation>
@@ -417,12 +418,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4226663524361240545">Az értesítések miatt rezeghet az eszköz</translation>
 <translation id="423219824432660969">A szinkronizált adatok titkosítása Google-jelszóval ekkortól: <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Beállítások megnyitása</translation>
-<translation id="4247274662191902962">A szenzoradatok megosztására csak addig kerül sor, amíg fut ez a VR-élmény. A webhely tanulhat Önről bizonyos információk, például a következők alapján:
-    – tartózkodási hely;
-    – fizikai jellemzők (például a szemei elhelyezkedése);
-    – mozgás (például a járásmódja).
-
-    A hozzáférés engedélyezése előtt bizonyosodjon meg arról, hogy a webhely megbízható.</translation>
 <translation id="4256782883801055595">Nyílt forráskódú licencek</translation>
 <translation id="4259722352634471385">Le van tiltva az ide vezető navigáció: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Link másolása</translation>
@@ -554,8 +549,8 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5170568018924773124">Megjelenítés mappában</translation>
 <translation id="5184329579814168207">Megnyitás Chrome-ban</translation>
 <translation id="5193988420012215838">Vágólapra másolva</translation>
+<translation id="5197729504361054390">A kiválasztott névjegyeket megosztjuk a következő webhellyel: <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5199929503336119739">Munkaprofil</translation>
-<translation id="5202089186707505116">Engedélyezi a webhely számára a VR-érzékelőkhöz való hozzáférést?</translation>
 <translation id="5210286577605176222">Ugrás az előző lapra</translation>
 <translation id="5210365745912300556">Lap bezárása</translation>
 <translation id="5224771365102442243">Videóval</translation>
@@ -568,6 +563,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5301954838959518834">Rendben, értem</translation>
 <translation id="5304593522240415983">Ez a mező nem lehet üres</translation>
+<translation id="5307446750509046227">Webhelytárhely törlése</translation>
 <translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="5313967007315987356">Webhely hozzáadása</translation>
 <translation id="5317780077021120954">Mentés</translation>
@@ -631,7 +627,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5686790454216892815">A fájl neve túl hosszú</translation>
 <translation id="5689516760719285838">Tartózkodási hely</translation>
 <translation id="569536719314091526">Bármely nyelvre lefordíthatja ezt az oldalt a További lehetőségek gomb segítségével</translation>
-<translation id="5719150327511160085">Várakozás az SMS-re…</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
 <translation id="5726692708398506830">Minden nagyítása az oldalon</translation>
 <translation id="5748802427693696783">Szabványos lapokra váltva</translation>
@@ -702,7 +697,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jelenítenek meg, amelyek nem a már felkeresett egyéb webhelyeken alapulnak. Számos webhely ilyenkor is gyűjti és felhasználja a böngészési adatokat (például a biztonság növelése, továbbá tartalom, hirdetések és ajánlatok biztosítása, valamint jelentésekhez használt statisztika előállítása céljából).</translation>
 <translation id="624789221780392884">A frissítés készen áll</translation>
 <translation id="6255999984061454636">Javasolt tartalmak</translation>
-<translation id="6264430811215618931">A(z) <ph name="ORIGIN" /> szöveges üzenetet küldött a telefonszámára. Ha fogadja az üzenetet, a webhely igazolni tudja az Ön személyazonosságát.</translation>
 <translation id="6277522088822131679">Hiba történt az oldal nyomtatásakor. Próbálja újra.</translation>
 <translation id="6295158916970320988">Az összes webhely</translation>
 <translation id="629730747756840877">Fiók</translation>
@@ -805,6 +799,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6989267951144302301">A letöltés sikertelen</translation>
 <translation id="6990079615885386641">Alkalmazás beszerzése a Google Play Áruházból: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára a mikrofon használatát (ajánlott)</translation>
+<translation id="7015203776128479407">A szinkronizálás kezdeti beállítása nem fejeződött be. A szinkronizálás ki van kapcsolva.</translation>
 <translation id="7016516562562142042">Engedélyezett a jelenlegi keresőmotor számára</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> letöltve</translation>
 <translation id="7022756207310403729">Megnyitás böngészőben</translation>
@@ -836,11 +831,11 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7274013316676448362">Letiltott oldal</translation>
 <translation id="7290209999329137901">Nem lehetséges az átnevezés</translation>
 <translation id="7291387454912369099">Segéd által aktivált fizetés</translation>
+<translation id="7293171162284876153">A szinkronizálás megkezdéséhez kapcsolja be a „Chrome-adatok szinkronizálása” beállítást.</translation>
 <translation id="729975465115245577">Az eszközön nincs olyan alkalmazás, amely tárolni tudja a jelszavakat tartalmazó fájlt.</translation>
 <translation id="7302081693174882195">Részletek: Megtakarított adatmennyiség szerinti rendezés</translation>
 <translation id="7328017930301109123">Lite módban a Chrome gyorsabban betölti az oldalakat, és akár 60 százalékkal kisebb adatforgalmat generál.</translation>
 <translation id="7333031090786104871">Az előző webhely hozzáadása még folyamatban van</translation>
-<translation id="7352651011704765696">Valami nem működik</translation>
 <translation id="7352939065658542140">VIDEÓ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 kijelölt elem megosztása}other{# kijelölt elem megosztása}}</translation>
 <translation id="7359002509206457351">Hozzáférés a fizetési módokhoz</translation>
@@ -904,6 +899,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="773466115871691567">Mindig fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">A veszélyes alkalmazások és webhelyek észlelésének érdekében a Chrome az egyes felkeresett oldalak URL-jét, valamint korlátozott rendszer-információkat és bizonyos oldaltartalmakat továbbít a Google-nak.</translation>
+<translation id="7757787379047923882">Szöveg megosztva a következő eszközről: <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD-kártya (<ph name="SD_CARD_NUMBER" />)</translation>
 <translation id="7764225426217299476">Cím hozzáadása</translation>
 <translation id="7769602470925380267">Elfogadás és kijelentkezés</translation>
@@ -1043,6 +1039,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8730621377337864115">Kész</translation>
 <translation id="8748850008226585750">Tartalom elrejtve</translation>
 <translation id="8751914237388039244">Válasszon képet</translation>
+<translation id="8788265440806329501">Bezárta a navigációs előzményeket</translation>
 <translation id="8788968922598763114">A legutóbb bezárt lap újranyitása</translation>
 <translation id="8801436777607969138">JavaScript letiltása adott webhelynél.</translation>
 <translation id="8812260976093120287">Bizonyos webhelyeken fizethet eszközén a fenti támogatott fizetési alkalmazásokkal.</translation>

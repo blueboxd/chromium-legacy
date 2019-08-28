@@ -136,7 +136,6 @@ ContentTranslateDriver::CreateURLLoaderFactory() {
   // returned by GetTranslateSecurityOrigin.
   network::mojom::URLLoaderFactoryPtr factory;
   url::Origin origin = url::Origin::Create(GetTranslateSecurityOrigin());
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo null_header_client;
 
   // TODO(crbug.com/940068): Since this factory will be removed, sending an
   // empty network isolation key for now.
@@ -144,7 +143,7 @@ ContentTranslateDriver::CreateURLLoaderFactory() {
       web_contents()->GetRenderViewHost()->GetWebkitPreferences();
   process->CreateURLLoaderFactory(
       origin, network::mojom::CrossOriginEmbedderPolicy::kNone, &preferences,
-      net::NetworkIsolationKey(), std::move(null_header_client),
+      net::NetworkIsolationKey(), mojo::NullRemote(),
       mojo::MakeRequest(&factory));
   return factory;
 }

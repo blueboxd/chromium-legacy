@@ -932,6 +932,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   signin_form.origin = embedded_test_server()->base_url();
   signin_form.skip_zero_click = true;
   signin_form.preferred = true;
+  // Set an old value for the |date_last_used| to make sure it gets updated.
+  signin_form.date_last_used = base::Time::UnixEpoch();
   password_store->AddLogin(signin_form);
 
   NavigateToFile("/password/password_form.html");
@@ -966,6 +968,13 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   password_manager::TestPasswordStore::PasswordMap stored =
       password_store->stored_passwords();
   ASSERT_EQ(1u, stored.size());
+  // Upon an update, the |date_last_used| should be updated to the current
+  // timestamp.
+  EXPECT_GT(stored[signin_form.signon_realm][0].date_last_used,
+            signin_form.date_last_used);
+  // Now make them equal to be able to check the equality of other fields.
+  signin_form.date_last_used =
+      stored[signin_form.signon_realm][0].date_last_used;
   EXPECT_EQ(signin_form, stored[signin_form.signon_realm][0]);
 }
 

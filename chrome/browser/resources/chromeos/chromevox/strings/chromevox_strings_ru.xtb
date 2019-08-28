@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1385214448885562192">Нажмите ВВОД, чтобы принять, или ОТМЕНА, чтобы отменить изменения. Для перехода к следующему или предыдущему элементу используйте стрелки вниз и вверх.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Озвучивать атрибуты форматированного текста</translation>
 <translation id="1405567553485452995">Светло-зеленый</translation>
 <translation id="1417889266572670458">Военно-морской синий</translation>
 <translation id="1431911867058218151">Сливовый</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">Тусклый серый</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списка}one{# маркер списка}few{# маркера списка}many{# маркеров списка}other{# маркера списка}}</translation>
 <translation id="6355910664415701303">Предыдущего пункта списка нет.</translation>
-<translation id="6360318852623800555">Атрибуты форматированного текста</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Перейти к предыдущему заголовку</translation>
 <translation id="6376999910001533545">Красно-коричневый</translation>

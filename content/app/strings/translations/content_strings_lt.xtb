@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Vertė turi būti <ph name="MAXIMUM" /> arba mažesnė.</translation>
 <translation id="3486220673238053218">apibrėžimas</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" /> antraštė</translation>
+<translation id="3670698553867754311">savaitės rinkiklis</translation>
 <translation id="3685101356851116974">Nepažymėtas vaizdas</translation>
 <translation id="3706100364254443312">jungiklis</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Gaunamas aprašas...</translation>
 <translation id="8117451130807776954">Ši savaitė</translation>
 <translation id="8199524924445686405">mmmm</translation>
+<translation id="8208673686607688524">vietos datos ir laiko rinkiklis</translation>
 <translation id="8261464734335370856">Netinkama rašyba</translation>
 <translation id="8284326494547611709">Subtitrai</translation>
 <translation id="835897206747267392">Neteisinga vertė.</translation>

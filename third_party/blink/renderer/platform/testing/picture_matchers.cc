@@ -31,7 +31,7 @@ class DrawsRectangleCanvas : public SkCanvas {
     getTotalMatrix().mapRectToQuad(quad, rect);
 
     SkRect device_rect;
-    device_rect.set(quad, 4);
+    device_rect.setBounds(quad, 4);
     SkIRect device_clip_bounds;
     FloatRect clipped_rect;
     if (getDeviceClipBounds(&device_clip_bounds) &&

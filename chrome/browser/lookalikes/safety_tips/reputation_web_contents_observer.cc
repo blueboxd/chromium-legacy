@@ -7,19 +7,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/browser/navigation_entry.h"
 
 namespace safety_tips {
 
 ReputationWebContentsObserver::~ReputationWebContentsObserver() {}
-
-void ReputationWebContentsObserver::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-  last_shown_safety_tip_type_ = SafetyTipType::kNone;
-}
 
 void ReputationWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -29,12 +21,26 @@ void ReputationWebContentsObserver::DidFinishNavigation(
     return;
   }
 
+  last_navigation_safety_tip_type_ = SafetyTipType::kNone;
+  last_safety_tip_navigation_entry_id_ = 0;
+
   MaybeShowSafetyTip();
 }
 
 void ReputationWebContentsObserver::OnVisibilityChanged(
     content::Visibility visibility) {
   MaybeShowSafetyTip();
+}
+
+SafetyTipType
+ReputationWebContentsObserver::GetSafetyTipTypeForVisibleNavigation() const {
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  if (!entry)
+    return SafetyTipType::kNone;
+  return last_safety_tip_navigation_entry_id_ == entry->GetUniqueID()
+             ? last_navigation_safety_tip_type_
+             : SafetyTipType::kNone;
 }
 
 ReputationWebContentsObserver::ReputationWebContentsObserver(
@@ -71,11 +77,21 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
 
   // TODO(crbug/987754): Record metrics here.
 
-  if (user_ignored || !base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
+  if (user_ignored) {
     return;
   }
+  // Set this field independent of whether the feature to show the UI is
+  // enabled/disabled. Metrics code uses this field and we want to record
+  // metrics regardless of the feature being enabled/disabled.
+  last_navigation_safety_tip_type_ = type;
+  // A navigation entry should always exist because reputation checks are only
+  // triggered when a committed navigation finishes.
+  last_safety_tip_navigation_entry_id_ =
+      web_contents()->GetController().GetLastCommittedEntry()->GetUniqueID();
 
-  last_shown_safety_tip_type_ = type;
+  if (!base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
+    return;
+  }
   ShowSafetyTipDialog(web_contents(), type, url);
 }
 

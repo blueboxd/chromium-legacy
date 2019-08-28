@@ -360,8 +360,8 @@ void Path::AddEllipse(const FloatPoint& p,
   SkScalar radius_y_scalar = WebCoreFloatToSkScalar(radius_y);
 
   SkRect oval;
-  oval.set(cx - radius_x_scalar, cy - radius_y_scalar, cx + radius_x_scalar,
-           cy + radius_y_scalar);
+  oval.setLTRB(cx - radius_x_scalar, cy - radius_y_scalar, cx + radius_x_scalar,
+               cy + radius_y_scalar);
 
   float sweep = end_angle - start_angle;
   SkScalar start_degrees = WebCoreFloatToSkScalar(start_angle * 180 / kPiFloat);

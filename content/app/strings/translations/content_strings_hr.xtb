@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Vrijednost mora biti <ph name="MAXIMUM" /> ili manja.</translation>
 <translation id="3486220673238053218">definicija</translation>
 <translation id="3557673793733683882">naslov <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">alat za odabir tjedna</translation>
 <translation id="3685101356851116974">Neoznačena slika</translation>
 <translation id="3706100364254443312">prebaci</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">U tijeku je dohvaćanje opisa...</translation>
 <translation id="8117451130807776954">Ovaj tjedan</translation>
 <translation id="8199524924445686405">gggg</translation>
+<translation id="8208673686607688524">alat za odabir lokalnog datuma i vremena</translation>
 <translation id="8261464734335370856">Netočan pravopis</translation>
 <translation id="8284326494547611709">Titlovi</translation>
 <translation id="835897206747267392">Nevažeća vrijednost.</translation>

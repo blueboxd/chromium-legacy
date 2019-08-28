@@ -18,8 +18,23 @@ namespace cors {
 namespace {
 
 constexpr size_t kMaxCacheEntries = 1024u;
-constexpr size_t kMaxKeyLength = 512u;
+constexpr size_t kMaxKeyLength = 1024u;
 constexpr size_t kPurgeUnit = 10u;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CacheMetric {
+  kHitAndPass = 0,
+  kHitAndFail = 1,
+  kMiss = 2,
+  kStale = 3,
+
+  kMaxValue = kStale,
+};
+
+void ReportCacheMetric(CacheMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCacheResult", metric);
+}
 
 }  // namespace
 
@@ -45,6 +60,8 @@ void PreflightCache::AppendEntry(
     // kMaxCacheEntries at maximum.
     MayPurge(kMaxCacheEntries - 1, kPurgeUnit);
   }
+  UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheKeySize",
+                             url_spec.length());
 
   cache_[key] = std::move(preflight_result);
 }
@@ -59,8 +76,10 @@ bool PreflightCache::CheckIfRequestCanSkipPreflight(
   // Check if the entry exists in the cache.
   auto key = std::make_pair(origin, url.spec());
   auto cache_entry = cache_.find(key);
-  if (cache_entry == cache_.end())
+  if (cache_entry == cache_.end()) {
+    ReportCacheMetric(CacheMetric::kMiss);
     return false;
+  }
 
   // Check if the entry is still valid.
   if (!cache_entry->second->IsExpired()) {
@@ -68,8 +87,12 @@ bool PreflightCache::CheckIfRequestCanSkipPreflight(
     // skip CORS-preflight.
     if (cache_entry->second->EnsureAllowedRequest(
             credentials_mode, method, request_headers, is_revalidating)) {
+      ReportCacheMetric(CacheMetric::kHitAndPass);
       return true;
     }
+    ReportCacheMetric(CacheMetric::kHitAndFail);
+  } else {
+    ReportCacheMetric(CacheMetric::kStale);
   }
 
   // The cache entry is either stale or not sufficient. Remove the item from the

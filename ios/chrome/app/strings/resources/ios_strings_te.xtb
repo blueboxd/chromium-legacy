@@ -4,7 +4,7 @@
 <translation id="1005230401424685968">YYYY</translation>
 <translation id="1016495303386450659">అంశం నవీకరించబడింది</translation>
 <translation id="1047726139967079566">ఈ పేజీని బుక్‌మార్క్ చేయండి...</translation>
-<translation id="1049743911850919806">అజ్ఞాత</translation>
+<translation id="1049743911850919806">అజ్ఞాత మోడ్</translation>
 <translation id="1063454504051558093">వేరే పాస్‌వర్డ్ ఉపయోగించండి...</translation>
 <translation id="1066060668811609597">సింక్‌ను నిర్వహించండి</translation>
 <translation id="1076421457278169141">కోడ్ స్కాన్ చేయబడింది</translation>
@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">పఠన జాబితాకు జోడించబడింది</translation>
 <translation id="1828824471510190776">పాస్‌వర్డ్‌ను సూచించండి...</translation>
 <translation id="1870148520156231997">పాస్‌వర్డ్‌ను చూపండి</translation>
+<translation id="1872096359983322073">టార్చ్</translation>
 <translation id="1876721852596493031">వినియోగ డేటాను పంపు</translation>
 <translation id="1911619930368729126">Google డిస్క్‌కి అప్‌. చే.</translation>
 <translation id="1923342640370224680">గత గంట</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">రద్దు చేయడానికి నొక్కండి.</translation>
 <translation id="6108923351542677676">సెటప్ ప్రోగ్రెస్‌లో ఉంది...</translation>
+<translation id="6119050551270742952">ప్రస్తుత వెబ్‌పేజీ అజ్ఞాత మోడ్‌లో ఉంది</translation>
 <translation id="6122191549521593678">ఆన్‌లైన్</translation>
 <translation id="6127379762771434464">అంశాన్ని తీసివేసారు</translation>
 <translation id="6136914049981179737">సెకన్ల క్రితం</translation>
@@ -411,6 +413,9 @@
 <translation id="6807889908376551050">అన్నీ చూపు...</translation>
 <translation id="681368974849482173">అంశం సృష్టించబడింది</translation>
 <translation id="6851516051005285358">డెస్క్‌టాప్ సైట్‌ను అభ్యర్థించు</translation>
+<translation id="6858855187367714033">స్కాన్ చేయబడింది</translation>
+<translation id="6859944681507688231">QR కోడ్ లేదా క్రెడిట్ కార్డ్‌ను స్కాన్ చేయడానికి, సెట్టింగ్‌లలో కెమెరాను ప్రారంభించండి.</translation>
+<translation id="6873263987691478642">విభజన వీక్షణ</translation>
 <translation id="6896758677409633944">కాపీ చేయి</translation>
 <translation id="6903907808598579934">సమకాలీకరణను ఆన్ చేయి</translation>
 <translation id="6914583639806229067">మీరు కాపీ చేసిన చిత్రాన్ని వెతకండి</translation>
@@ -509,6 +514,7 @@
 <translation id="8428045167754449968">నగరం / పట్టణం</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8458397775385147834">1 అంశం తొలగించబడింది</translation>
+<translation id="8487667956631253959">ఆన్‌లో ఉంది</translation>
 <translation id="8487700953926739672">ఆఫ్‌లైన్‌లో అందుబాటు</translation>
 <translation id="8490978609246021741">మార్పులను సేవ్ చేయి</translation>
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
@@ -519,6 +525,7 @@
 <translation id="8532105204136943229">గడువు ముగింపు సంవత్సరం</translation>
 <translation id="8534481786647257214">Google+ పోస్ట్ పూర్తయింది.</translation>
 <translation id="8548878600947630424">పేజీలో కనుగొను...</translation>
+<translation id="8588404856427128947">ఆఫ్ చేయబడి ఉంది</translation>
 <translation id="8605219856220328675">ట్యాబ్‌ను మూసివేయండి.</translation>
 <translation id="8620640915598389714">సవరించు</translation>
 <translation id="8636825310635137004">మీ ఇతర పరికరాల నుండి మీ ట్యాబ్‌లను పొందడానికి, సమకాలీకరణను ఆన్ చేయండి</translation>
@@ -559,6 +566,7 @@
 <translation id="9203116392574189331">హ్యాండ్ఆఫ్</translation>
 <translation id="9223358826628549784">క్రాష్ నివేదిక పంపబడింది.</translation>
 <translation id="935490618240037774">మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు, ఇతర సెట్టింగ్‌లు మీ Google ఖాతాకు సింక్ చేయ‌బడతాయి. కాబ‌ట్టి మీరు వీటిని మీ అన్ని పరికరాల్లో ఉపయోగించవచ్చు.</translation>
+<translation id="952704832371081537">రద్దు చేయి</translation>
 <translation id="976982866697960176">సమకాలీకరించిన డేటాను నిర్వహించండి…</translation>
 <translation id="988141524645182168">ఇతర పరికరాలు</translation>
 <translation id="989988560359834682">చిరునామాను సవరించు</translation>

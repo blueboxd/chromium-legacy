@@ -164,7 +164,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // values.
   net::CertStatus cert_status;
 
-  // Only provided if kURLLoadOptionsSendSSLInfoWithResponse was specified to
+  // Only provided if kURLLoadOptionSendSSLInfoWithResponse was specified to
   // the URLLoaderFactory::CreateLoaderAndStart option or
   // if ResourceRequest::report_raw_headers is set. When set via
   // |report_raw_headers|, the SSLInfo is not guaranteed to be fully populated

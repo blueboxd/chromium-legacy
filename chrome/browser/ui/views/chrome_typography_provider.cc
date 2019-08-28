@@ -207,7 +207,7 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
   // Use the secondary style instead of primary for message box body text.
   if (context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT) {
     if (style == views::style::STYLE_PRIMARY) {
-      style = STYLE_SECONDARY;
+      style = views::style::STYLE_SECONDARY;
     } else if (style == STYLE_PRIMARY_MONOSPACED) {
       style = STYLE_SECONDARY_MONOSPACED;
     }
@@ -222,7 +222,7 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
                  : SkColorSetRGB(0x9e, 0x9e, 0x9e);
     case views::style::STYLE_LINK:
       return gfx::kGoogleBlue700;
-    case STYLE_SECONDARY:
+    case views::style::STYLE_SECONDARY:
     case STYLE_SECONDARY_MONOSPACED:
     case STYLE_HINT:
       return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGrey500

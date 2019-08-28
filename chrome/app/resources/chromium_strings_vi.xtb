@@ -224,8 +224,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Khởi động lại Chromium trong vòng một ngày}other{Khởi động lại Chromium trong vòng # ngày}}</translation>
 <translation id="8453117565092476964">Tệp lưu trữ trình cài đặt bị hỏng hoặc không hợp lệ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8493179195440786826">Chromium đã lỗi thời</translation>
-<translation id="8494843963476918365">Nếu một tùy chọn cài đặt không hiển thị trên trang này, hãy thử <ph name="LINK_BEGIN" />
-    các tùy chọn cài đặt trên trình duyệt Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Nhận trợ giúp về cách sử dụng Chromium</translation>
 <translation id="8586442755830160949">Bản quyền <ph name="YEAR" /> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="8619360774459241877">Đang khởi động Chromium...</translation>

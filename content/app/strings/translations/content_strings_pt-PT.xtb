@@ -56,7 +56,7 @@
 <translation id="2723001399770238859">áudio</translation>
 <translation id="2746543609216772311">O valor tem de ser <ph name="MINIMUM_DATE_OR_TIME" /> ou posterior.</translation>
 <translation id="2759744352195237655">botão pop-up</translation>
-<translation id="2761667185364618470">Seleccione esta caixa se pretender continuar.</translation>
+<translation id="2761667185364618470">Selecione esta caixa se pretender continuar.</translation>
 <translation id="2844350028562914727">detalhes</translation>
 <translation id="2896972712917208084">grupo de botões de opção</translation>
 <translation id="2908441821576996758">Introduza uma lista de endereços de email separados por vírgula.</translation>
@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">O valor tem de ser inferior ou igual a <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definição</translation>
 <translation id="3557673793733683882">título <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">selecionador de semanas</translation>
 <translation id="3685101356851116974">Imagem sem etiqueta</translation>
 <translation id="3706100364254443312">alternar</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -128,7 +129,7 @@
 <translation id="5334352251556557839">Não é possível reproduzir multimédia.</translation>
 <translation id="5406322316791861025">figura</translation>
 <translation id="5453733299334684579">item de árvore</translation>
-<translation id="5466621249238537318">Seleccione um ou mais ficheiros.</translation>
+<translation id="5466621249238537318">Selecione um ou mais ficheiros.</translation>
 <translation id="5468998798572797635">sair do modo de ecrã inteiro</translation>
 <translation id="5516424706154626233">selecionador de data</translation>
 <translation id="5537725057119320332">Transmitir</translation>
@@ -155,7 +156,7 @@
 <translation id="6166809985690652833">posfácio</translation>
 <translation id="6209276755895393898">Parece ser: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossário</translation>
-<translation id="6281763101136022427">url</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Sair do modo ecrã no ecrã</translation>
 <translation id="6398862346408813489">Mostrar painel de seleção do mês</translation>
 <translation id="6404546809543547843">controlo de arrasto do tempo do áudio</translation>
@@ -186,7 +187,7 @@
 <translation id="709897737746224366">Faça corresponder o formato pedido.</translation>
 <translation id="7118469954320184356">Nenhuma descrição disponível.</translation>
 <translation id="7139483182332611405">prefácio</translation>
-<translation id="7263440858009898357">Seleccione um item na lista.</translation>
+<translation id="7263440858009898357">Selecione um item na lista.</translation>
 <translation id="727747134524199931">cabeçalho da coluna</translation>
 <translation id="7320576522385648310">colocação no buffer</translation>
 <translation id="7353453495576941748">crédito</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">A obter descrição…</translation>
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8208673686607688524">selecionador de data e hora locais</translation>
 <translation id="8261464734335370856">Ortografia inválida.</translation>
 <translation id="8284326494547611709">Legendas</translation>
 <translation id="835897206747267392">Valor inválido.</translation>
@@ -225,7 +227,7 @@
 <translation id="8415319359811155763">parte</translation>
 <translation id="8433900881053900389">barra de ferramentas</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ficheiros</translation>
-<translation id="8451268428117625855">Seleccione um ficheiro.</translation>
+<translation id="8451268428117625855">Selecione um ficheiro.</translation>
 <translation id="8461852803063341183">botão de opção</translation>
 <translation id="8474886197722836894">dedicatória</translation>
 <translation id="8531739829932800271">errata</translation>
@@ -239,7 +241,7 @@
 <translation id="8613126697340063924">controlar a reprodução remota</translation>
 <translation id="862370744433916922">legenda</translation>
 <translation id="8711688047404765493">saída</translation>
-<translation id="8750798805984357768">Seleccione uma destas opções.</translation>
+<translation id="8750798805984357768">Selecione uma destas opções.</translation>
 <translation id="8808573423886751634">capítulo</translation>
 <translation id="8845239796550121995">A transmitir na sua TV…</translation>
 <translation id="8851136666856101339">main</translation>

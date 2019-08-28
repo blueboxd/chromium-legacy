@@ -204,7 +204,7 @@ class BackgroundFetchDataManagerTest
             embedded_worker_test_helper()->context_wrapper());
 
     background_fetch_data_manager_->AddObserver(this);
-    background_fetch_data_manager_->InitializeOnIOThread();
+    background_fetch_data_manager_->InitializeOnCoreThread();
   }
 
   // Synchronous version of BackgroundFetchDataManager::GetInitializationData().

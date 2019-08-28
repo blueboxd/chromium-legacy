@@ -407,6 +407,12 @@
 
       警告：我們不建議將對 <ph name="PRODUCT_OS_NAME" /> 版本的控制權委派給資訊站應用程式，因為這可能導致裝置無法接收軟體更新，且無法修正重大的安全性問題。委派 <ph name="PRODUCT_OS_NAME" /> 版本的控制權可能讓使用者面臨風險。</translation>
 <translation id="1675002386741412210">支援環境：</translation>
+<translation id="1695708467571967752">這項政策可控管使用者是否能夠在裝置鎖定的情況下播放媒體。
+
+      如果將這項政策設為 False，系統會停用鎖定畫面上的媒體控制項。
+
+      如果將這項政策設為 True 或不予設定，當使用者在播放媒體時鎖定裝置，鎖定畫面上會顯示媒體控制項。
+      </translation>
 <translation id="1700811900332333712">允許裝置要求執行 Powerwash</translation>
 <translation id="1708496595873025510">設定變異版本種子的擷取限制</translation>
 <translation id="1717817358640580294">如未設定這項政策，當 Chrome 清理功能偵測到垃圾軟體時，可能會根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。回報完畢後，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。使用者可以選擇將清理作業的執行結果分享給 Google，讓日後的垃圾軟體偵測作業更精確。分享的結果包括檔案中繼資料、自動安裝的擴充功能和登錄機碼，詳情請見《Chrome 隱私權白皮書》。
@@ -2866,6 +2872,7 @@
 
           這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" />：</translation>
 <translation id="6426205278746959912">你無法強制 Android 應用程式使用 Proxy。有一部分 Proxy 設定可供 Android 應用程式使用，Android 應用程式可以選擇是否使用：
 
           如果選擇一律不使用 Proxy 伺服器，系統會告知 Android 應用程式未設定 Proxy。
@@ -3017,15 +3024,6 @@
 <translation id="6731757988219967594">針對成人內容篩選頂層網站 (但不篩選嵌入的 iframe)</translation>
 <translation id="6734521799274931721">控管是否允許在 Chrome 作業系統使用網路檔案共用功能</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
-<translation id="673699536430961464">如果啟用這項設定，使用者在登入 <ph name="PRODUCT_OS_NAME" />裝置後，將可在瀏覽器視窗的內容區域中切換 Google 帳戶。
-
-      如果將這項政策設為 false，就無法透過非無痕式瀏覽器內容區域登入其他帳戶。
-
-      如果將這項政策設為 true 或不予設定，就會採用預設行為：使用者可透過瀏覽器內容區域登入其他帳戶，但無法透過非無痕式內容區域登入子帳戶。
-
-      如要禁止透過無痕模式登入其他帳戶，建議你使用 IncognitoModeAvailability 政策封鎖該模式。
-
-      請注意，使用者只要封鎖 Google 服務的 Cookie，即可在未經驗證狀態下存取 Google 服務。</translation>
 <translation id="6757438632136860443">允許你設定網址模式清單，指定允許執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
 
           如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
@@ -3849,6 +3847,7 @@
 <translation id="8312129124898414409">允許您設定網站是否可以使用金鑰產生功能。您可以允許或禁止所有網站使用金鑰產生功能。
 
           如果未設定這項政策，系統會使用「BlockKeygen」，不過使用者可以變更此設定。</translation>
+<translation id="8314214821702356835">允許使用者在裝置鎖定時播放媒體</translation>
 <translation id="8320149248919453401">充電模式</translation>
 <translation id="8329984337216493753">這項政策只會在零售模式下啟用。
 
@@ -4268,7 +4267,6 @@
 <translation id="9152473318295429890">允許根據目前網頁內容建議相關的網頁</translation>
 <translation id="9153446010242995516">如果 OS 版本比目標版本還新，則復原並維持在目標版本。系統會在版本復原過程中儘可能嘗試沿用網路憑證等裝置層級設定，但即使因故無法還原資料 (例如目標版本不支援還原資料，或變更內容與舊版不相容)，系統仍會復原至目標版本，並執行完整的 Powerwash。
           支援 <ph name="PRODUCT_OS_NAME" /> 75 以上版本。如果用戶端版本較舊，則這個值代表復原功能已停用。</translation>
-<translation id="9158929520101169054">允許在瀏覽器中使用多帳戶登入功能</translation>
 <translation id="9159126470527871268">通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />才能套用未安裝的更新。
 
       這項政策可啟用通知，藉此建議或要求使用者重新啟動瀏覽器或裝置。如果不予設定，<ph name="PRODUCT_NAME" /> 會以細微的選單變更讓使用者知道瀏覽器需要重新啟動，<ph name="PRODUCT_OS_NAME" />則會在系統匣中顯示這類通知。如果設為「Recommended」(建議)，瀏覽器會定期顯示警告，建議使用者重新啟動。如果使用者不想立即重新啟動，可以自行關閉這項警告。如果設為「Required」(必要)，瀏覽器會定期顯示警告，告知使用者瀏覽器將於通知期過後強制重新啟動。<ph name="PRODUCT_NAME" /> 的通知期預設為七天，<ph name="PRODUCT_OS_NAME" />的通知期則預設為四天，可透過 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策設定加以設定。

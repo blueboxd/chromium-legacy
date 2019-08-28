@@ -200,6 +200,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
             device.capabilities);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken, fcm_registration_->fcm_token);
+  EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);
+  EXPECT_EQ(kDeviceAuthSecret, fcm_registration_->auth_secret);
 
   // Remove VAPID key to force a re-register, which will return a different FCM
   // token.
@@ -216,6 +218,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   EXPECT_EQ(kFCMToken2, it->second.fcm_token);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken2, fcm_registration_->fcm_token);
+  EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);
+  EXPECT_EQ(kDeviceAuthSecret, fcm_registration_->auth_secret);
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
@@ -272,6 +276,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
   EXPECT_EQ(kFCMToken2, it->second.fcm_token);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken2, fcm_registration_->fcm_token);
+  EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);
+  EXPECT_EQ(kDeviceAuthSecret, fcm_registration_->auth_secret);
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_NetworkError) {
@@ -330,4 +336,6 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
   EXPECT_EQ(kFCMToken2, it->second.fcm_token);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken2, fcm_registration_->fcm_token);
+  EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);
+  EXPECT_EQ(kDeviceAuthSecret, fcm_registration_->auth_secret);
 }

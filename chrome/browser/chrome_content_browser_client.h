@@ -155,7 +155,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
       const url::Origin& request_initiator) override;
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
@@ -468,7 +469,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
       bool* bypass_redirect_checks) override;
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
   WillCreateURLLoaderRequestInterceptors(

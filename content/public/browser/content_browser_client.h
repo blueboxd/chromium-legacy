@@ -347,7 +347,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   CreateURLLoaderFactoryForNetworkRequests(
       RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
       const url::Origin& request_initiator);
 
   // Returns a list additional WebUI schemes, if any.  These additional schemes
@@ -1243,7 +1244,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
       bool* bypass_redirect_checks);
 
 #if defined(OS_ANDROID)

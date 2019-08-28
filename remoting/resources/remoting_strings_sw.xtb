@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Haiwezi kufikia seva pangishi. Labda hii ni kwa sababu ya usanidi wa mtandao unaotumia.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Mara ya mwisho alionekana mtandaoni <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Programu hii haitumiki tena. Ili upate vipengele vipya zaidi na masasisho ya usalama, tafadhali tumia <ph name="LINK_BEGIN" />programu ya wavuti ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Hatua ya ziada ya kuweka mipangilio inahitajika kabla ya kudhibiti mashine hii kutoka mbali ukitumia <ph name="PRODUCT_NAME" />.
-
-Ili uwashe utendaji huu, chagua '<ph name="BUTTON_NAME" />' ili uonyeshe kidirisha cha mapendeleo ya Usalama na Faragha, kisha uchague kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari ipo na imechaguliwa, huenda utahitaji kuiondoa kisha uiweke tena.</translation>
 <translation id="2499160551253595098">Tusaidie kuboresha Eneo-kazi la Mbali la Chrome kwa kuturuhusu tukusanye takwimu za matumizi na ripoti za hitilafu.</translation>
 <translation id="2509394361235492552">Imeunganisha kwenye <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">KUMBUKA: Ili kuhakikisha kuwa mikato yote ya kibodi inapatikana, unaweza kusanidi Kompyuta ya Mbali ya Chrome ili "Ifungue kama dirisha'’.</translation>
@@ -317,6 +312,11 @@ Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari ipo na imechaguliwa, huenda uta
 <translation id="8804164990146287819">Sera ya Faragha</translation>
 <translation id="894763922177556086">Mzuri</translation>
 <translation id="895780780740011433">Kwa Windows 7 na matoleo ya baadaye</translation>
+<translation id="8963047137585288214">Hatua ya ziada ya kuweka mipangilio inahitajika kabla ya kudhibiti mashine hii kutoka mbali ukitumia <ph name="PRODUCT_NAME" />.
+
+Ili uwashe utendaji huu, chagua '<ph name="BUTTON_NAME" />' uonyeshe kidirisha cha mapendeleo ya Usalama na Faragha, kisha uteue kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari ipo na imechaguliwa, huenda utahitaji kubatilisha uteuzi kisha uichague upya.</translation>
 <translation id="897805526397249209">Ili uwashe miunganisho ya mbali kwenye kompyuta tofauti, sakinisha Chromoting hapo na ubofye “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Kidhibiti cha Seva Pangishi ya Kompyuta ya Mbali ya Chrome</translation>
 <translation id="9016232822027372900">Hata hivyo unganisha</translation>

@@ -147,7 +147,7 @@ LegalMessageView::CreateLegalMessageLineLabel(
   std::unique_ptr<views::StyledLabel> label =
       std::make_unique<views::StyledLabel>(line.text(), listener);
   label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
-  label->SetDefaultTextStyle(ChromeTextStyle::STYLE_SECONDARY);
+  label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   for (const LegalMessageLine::Link& link : line.links()) {
     label->AddStyleRange(link.range,
                          views::StyledLabel::RangeStyleInfo::CreateForLink());

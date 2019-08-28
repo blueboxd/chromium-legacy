@@ -168,7 +168,7 @@
 <translation id="5906655207909574370">即将更新到最新版本！重新启动您的设备即可完成更新。</translation>
 <translation id="5940385492829620908">您的上网记录、书签和其他Chrome资料和数据都保存在此处。</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
-<translation id="5977372243443849142">Chrome 可帮助您记住密码，因此您不必记住它。</translation>
+<translation id="5977372243443849142">Chrome 可替您记住密码，因此您不必记住它。</translation>
 <translation id="6014844626092547096">您现在已登录 Chrome！不过，管理员已停用同步功能。</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6070348360322141662">为了提高安全性，Google Chrome 将对您的数据进行加密</translation>
@@ -181,7 +181,6 @@
 <translation id="6291549208091401781">已为您计算机上的所有用户安装 Google Chrome。</translation>
 <translation id="6338556085225130112">正在更新 Google Chrome</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功劳。</translation>
-<translation id="6400930858680434649">如果此页面中未显示某项设置，您不妨试试在 <ph name="LINK_BEGIN" />Chrome 浏览器设置<ph name="LINK_END" />中查找。</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome 开发者版</translation>
 <translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chrome资料和数据。要更新您的同步偏好设置或在不登录Google帐号的情况下使用Chrome，请前往<ph name="SETTINGS_LINK" />部分。</translation>

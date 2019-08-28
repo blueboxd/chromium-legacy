@@ -69,7 +69,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1385214448885562192">Klávesom Enter položku prijmete, klávesom Escape zrušíte akciu, šípkou dole prejdete na ďalšiu položku a šípkou hore na predchádzajúcu položku.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Oznamovať atribúty formátovaného textu</translation>
 <translation id="1405567553485452995">Svetlozelená</translation>
 <translation id="1417889266572670458">Námornícka modrá</translation>
 <translation id="1431911867058218151">Slivková</translation>
@@ -760,7 +759,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="6348869651006731065">Tmavosivá</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{bod}few{# body}many{# bodu}other{# bodov}}</translation>
 <translation id="6355910664415701303">Žiadna predchádzajúca položka zoznamu</translation>
-<translation id="6360318852623800555">Atribúty formátovaného textu</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Predchádzajúci nadpis</translation>
 <translation id="6376999910001533545">Gaštanovohnedá</translation>

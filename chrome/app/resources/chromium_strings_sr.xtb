@@ -226,8 +226,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Поново покрените Chromium за један дан}one{Поново покрените Chromium за # дан}few{Поново покрените Chromium за # дана}other{Поново покрените Chromium за # дана}}</translation>
 <translation id="8453117565092476964">Архива програма за инсталацију је оштећена или неважећа. Преузмите Chromium поново.</translation>
 <translation id="8493179195440786826">Chromium је застарео</translation>
-<translation id="8494843963476918365">Ако се подешавање не приказује на овој страници, погледајте <ph name="LINK_BEGIN" />
-    подешавања Chromium прегледача<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Пронађи помоћ за коришћење Chromium-а</translation>
 <translation id="8586442755830160949">Ауторска права <ph name="YEAR" />. Аутори Chromium-а. Сва права задржана.</translation>
 <translation id="8619360774459241877">Покреће се Chromium...</translation>

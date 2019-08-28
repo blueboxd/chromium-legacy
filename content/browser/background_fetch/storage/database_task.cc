@@ -16,6 +16,7 @@
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/service_worker_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
@@ -53,7 +54,7 @@ base::WeakPtr<DatabaseTaskHost> DatabaseTask::GetWeakPtr() {
 }
 
 void DatabaseTask::Finished() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   // Post the OnTaskFinished callback to the same thread, to allow the the
   // DatabaseTask to finish execution before deallocating it.
   base::ThreadTaskRunnerHandle::Get()->PostTask(

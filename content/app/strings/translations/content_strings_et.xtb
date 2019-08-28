@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Väärtus peab olema väiksem või võrdne <ph name="MAXIMUM" />-ga.</translation>
 <translation id="3486220673238053218">definitsioon</translation>
 <translation id="3557673793733683882">päis <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">nädala valija</translation>
 <translation id="3685101356851116974">Sildita pilt</translation>
 <translation id="3706100364254443312">lüliti</translation>
 <translation id="3732799496749320381">kk</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Kirjelduse hankimine …</translation>
 <translation id="8117451130807776954">See nädal</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8208673686607688524">kohaliku kuupäeva ja kellaaja valija</translation>
 <translation id="8261464734335370856">Õigekirjavead</translation>
 <translation id="8284326494547611709">Subtiitrid</translation>
 <translation id="835897206747267392">Kehtetu väärtus.</translation>

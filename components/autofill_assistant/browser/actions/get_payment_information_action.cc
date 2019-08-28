@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
@@ -31,17 +32,20 @@
 namespace autofill_assistant {
 
 GetPaymentInformationAction::LoginDetails::LoginDetails(
-    bool _hide_if_no_other_choice,
+    bool _choose_automatically_if_no_other_options,
     const std::string& _payload,
     const WebsiteLoginFetcher::Login& _login)
-    : hide_if_no_other_choice(_hide_if_no_other_choice),
+    : choose_automatically_if_no_other_options(
+          _choose_automatically_if_no_other_options),
       payload(_payload),
       login(_login) {}
 
 GetPaymentInformationAction::LoginDetails::LoginDetails(
-    bool _hide_if_no_other_choice,
+    bool _choose_automatically_if_no_other_options,
     const std::string& _payload)
-    : hide_if_no_other_choice(_hide_if_no_other_choice), payload(_payload) {}
+    : choose_automatically_if_no_other_options(
+          _choose_automatically_if_no_other_options),
+      payload(_payload) {}
 
 GetPaymentInformationAction::LoginDetails::~LoginDetails() = default;
 
@@ -69,9 +73,7 @@ void GetPaymentInformationAction::InternalProcessAction(
   callback_ = std::move(callback);
   auto payment_options = CreateOptionsFromProto();
   if (!payment_options) {
-    UpdateProcessedAction(INVALID_ACTION);
-    action_successful_ = false;
-    std::move(callback).Run(std::move(processed_action_proto_));
+    EndAction(ClientStatus(INVALID_ACTION));
     return;
   }
 
@@ -109,6 +111,12 @@ void GetPaymentInformationAction::InternalProcessAction(
   }
 }
 
+void GetPaymentInformationAction::EndAction(const ClientStatus& status) {
+  action_successful_ = status.ok();
+  UpdateProcessedAction(status);
+  std::move(callback_).Run(std::move(processed_action_proto_));
+}
+
 void GetPaymentInformationAction::OnGetLogins(
     const LoginDetailsProto::LoginOptionProto& login_option,
     std::unique_ptr<PaymentRequestOptions> payment_options,
@@ -120,8 +128,9 @@ void GetPaymentInformationAction::OnGetLogins(
     payment_options->login_choices.emplace_back(std::move(choice));
     login_details_map_.emplace(
         choice.identifier,
-        std::make_unique<LoginDetails>(login_option.hide_if_no_other_options(),
-                                       login_option.payload(), login));
+        std::make_unique<LoginDetails>(
+            login_option.choose_automatically_if_no_other_options(),
+            login_option.payload(), login));
   }
   ShowToUser(std::move(payment_options));
 }
@@ -143,8 +152,15 @@ void GetPaymentInformationAction::ShowToUser(
       break;
   }
 
+  if (payment_options->request_login_choice &&
+      payment_options->login_choices.empty()) {
+    EndAction(ClientStatus(PAYMENT_REQUEST_ERROR));
+    return;
+  }
+
   // Special case: if the only available login option has
-  // |hide_if_no_other_options=true|, the section will not be shown.
+  // |choose_automatically_if_no_other_options=true|, the section will not be
+  // shown.
   bool only_login_requested =
       payment_options->request_login_choice &&
       !payment_options->request_payer_name &&
@@ -156,7 +172,7 @@ void GetPaymentInformationAction::ShowToUser(
 
   if (payment_options->login_choices.size() == 1 &&
       login_details_map_.at(payment_options->login_choices.at(0).identifier)
-          ->hide_if_no_other_choice) {
+          ->choose_automatically_if_no_other_options) {
     payment_options->request_login_choice = false;
     payment_information->login_choice_identifier.assign(
         payment_options->login_choices[0].identifier);
@@ -269,30 +285,25 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
         payment_information->payer_email);
   }
 
-  UpdateProcessedAction(succeed ? ACTION_APPLIED : PAYMENT_REQUEST_ERROR);
-  action_successful_ = succeed;
-  std::move(callback_).Run(std::move(processed_action_proto_));
+  EndAction(succeed ? ClientStatus(ACTION_APPLIED)
+                    : ClientStatus(PAYMENT_REQUEST_ERROR));
 }
 
 void GetPaymentInformationAction::OnAdditionalActionTriggered(int index) {
   if (!callback_)
     return;
 
-  UpdateProcessedAction(ACTION_APPLIED);
   processed_action_proto_->mutable_payment_details()
       ->set_additional_action_index(index);
-  action_successful_ = true;
-  std::move(callback_).Run(std::move(processed_action_proto_));
+  EndAction(ClientStatus(ACTION_APPLIED));
 }
 
 void GetPaymentInformationAction::OnTermsAndConditionsLinkClicked(int link) {
   if (!callback_)
     return;
 
-  UpdateProcessedAction(ACTION_APPLIED);
   processed_action_proto_->mutable_payment_details()->set_terms_link(link);
-  action_successful_ = true;
-  std::move(callback_).Run(std::move(processed_action_proto_));
+  EndAction(ClientStatus(ACTION_APPLIED));
 }
 
 std::unique_ptr<PaymentRequestOptions>
@@ -342,10 +353,11 @@ GetPaymentInformationAction::CreateOptionsFromProto() {
                 ? login_option.preselection_priority()
                 : -1};
         payment_options->login_choices.emplace_back(std::move(choice));
-        login_details_map_.emplace(choice.identifier,
-                                   std::make_unique<LoginDetails>(
-                                       login_option.hide_if_no_other_options(),
-                                       login_option.payload()));
+        login_details_map_.emplace(
+            choice.identifier,
+            std::make_unique<LoginDetails>(
+                login_option.choose_automatically_if_no_other_options(),
+                login_option.payload()));
         break;
       }
       case LoginDetailsProto::LoginOptionProto::kPasswordManager: {

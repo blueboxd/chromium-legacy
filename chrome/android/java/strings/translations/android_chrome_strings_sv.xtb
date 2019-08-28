@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">Kopiera länktext</translation>
 <translation id="1208340532756947324">Aktivera synkronisering om du vill synkronisera och anpassa alla dina enheter</translation>
 <translation id="1209206284964581585">Dölj för tillfället</translation>
+<translation id="1227058898775614466">Navigeringshistorik</translation>
 <translation id="1231733316453485619">Vill du aktivera synkronisering?</translation>
 <translation id="123724288017357924">Läs in den aktuella sidan igen och ignorera cachelagrat innehåll</translation>
 <translation id="124116460088058876">Fler språk</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">Tryck och utöka</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
+<translation id="129382876167171263">Filer som webbplatser har sparat visas här</translation>
 <translation id="129553762522093515">Nyligen stängda</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – Skickades från <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Gruppera flikar</translation>
+<translation id="1327257854815634930">Navigeringshistoriken har öppnats</translation>
 <translation id="1331212799747679585">Det går inte att uppdatera Chrome. Fler alternativ</translation>
 <translation id="1332501820983677155">Kortkommandon för funktioner i Google Chrome</translation>
 <translation id="1360432990279830238">Logga ut och inaktivera synkronisering?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
 <translation id="145097072038377568">Inaktiverad i Android-inställningarna</translation>
 <translation id="1477626028522505441">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av serverfel.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 till)}other{ (+ # till)}}</translation>
 <translation id="1501480321619201731">Ta bort grupp</translation>
 <translation id="1506061864768559482">Sökmotor</translation>
 <translation id="1513352483775369820">Bokmärken och webbhistorik</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="2323763861024343754">Webbplatslagring</translation>
 <translation id="2328985652426384049">Det gick inte att logga in</translation>
-<translation id="2334057574886324800">Sms mottaget</translation>
 <translation id="2349710944427398404">Total data som används av Chrome, inklusive konton, bokmärken och sparade inställningar</translation>
 <translation id="2353636109065292463">Kontrollera internetanslutningen</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
@@ -417,12 +418,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4226663524361240545">Aviseringar kan göra att enheten vibrerar</translation>
 <translation id="423219824432660969">Kryptera synkroniserad data med Google-lösenordet från <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
-<translation id="4247274662191902962">Sensordata delas bara så länge VR-upplevelsen pågår. Webbplatsen kan ta reda på mer om dig utifrån vissa uppgifter, till exempel:
-    – din plats
-    – dina fysiska egenskaper, som ögonens placering
-    – dina rörelser, som hur du går.
-
-    Tänk efter om du litar på webbplatsen innan du ger den åtkomst.</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
@@ -554,8 +549,8 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5170568018924773124">Visa i mapp</translation>
 <translation id="5184329579814168207">Öppna i Chrome</translation>
 <translation id="5193988420012215838">Kopierat till urklipp</translation>
+<translation id="5197729504361054390">Kontakterna du väljer delas med <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5199929503336119739">Jobbprofil</translation>
-<translation id="5202089186707505116">Vill du ge webbplatsen åtkomst till VR-sensorer?</translation>
 <translation id="5210286577605176222">Hoppa till föregående flik</translation>
 <translation id="5210365745912300556">Stäng flik</translation>
 <translation id="5224771365102442243">Med video</translation>
@@ -568,6 +563,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5300589172476337783">Visa</translation>
 <translation id="5301954838959518834">Ok, jag förstår</translation>
 <translation id="5304593522240415983">Fältet får inte vara tomt</translation>
+<translation id="5307446750509046227">Rensa webbplatslagring</translation>
 <translation id="5308380583665731573">Ansluta</translation>
 <translation id="5313967007315987356">Lägg till webbplats</translation>
 <translation id="5317780077021120954">Spara</translation>
@@ -631,7 +627,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5686790454216892815">Filnamnet är för långt</translation>
 <translation id="5689516760719285838">Plats</translation>
 <translation id="569536719314091526">Översätt den här sidan till vilket språk som helst via knappen Fler alternativ</translation>
-<translation id="5719150327511160085">Väntar på sms</translation>
 <translation id="572328651809341494">Senaste flikarna</translation>
 <translation id="5726692708398506830">Gör allt på sidan större</translation>
 <translation id="5748802427693696783">Bytte till standardflikar</translation>
@@ -702,7 +697,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 Vissa webbplatser kan till exempel svara på begäran genom att visa annonser som inte baseras på andra webbplatser du har besökt. Många webbplatser samlar ändå in och använder din webbinformation – till exempel för att förbättra säkerheten, tillhandahålla innehåll, annonser och rekommendationer samt generera rapportstatistik.</translation>
 <translation id="624789221780392884">Uppdateringen är klar</translation>
 <translation id="6255999984061454636">Förslag på innehåll</translation>
-<translation id="6264430811215618931"><ph name="ORIGIN" /> skickade ett sms till ditt telefonnummer. Om du bekräftar vet webbplatsen att det är du.</translation>
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -805,6 +799,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6989267951144302301">Nedladdning misslyckades</translation>
 <translation id="6990079615885386641">Hämta appen från Google Play Butik: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Fråga innan webbplatser tillåts att använda mikrofonen (rekommenderas)</translation>
+<translation id="7015203776128479407">Den initiala synkroniseringskonfigureringen avslutades inte. Synkroniseringen är inaktiverad.</translation>
 <translation id="7016516562562142042">Tillåt för den nuvarande sökmotorn</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> har laddats ned</translation>
 <translation id="7022756207310403729">Öppna i webbläsaren</translation>
@@ -836,11 +831,11 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7274013316676448362">Blockerad webbplats</translation>
 <translation id="7290209999329137901">Det går inte att byta namn</translation>
 <translation id="7291387454912369099">Betalning med assistenten</translation>
+<translation id="7293171162284876153">Starta synkroniseringen genom att aktivera Synkronisera data i Chrome.</translation>
 <translation id="729975465115245577">Det finns ingen app som kan spara lösenordsfilen på enheten.</translation>
 <translation id="7302081693174882195">Mer information: Sorterad efter databesparing</translation>
 <translation id="7328017930301109123">I begränsat läge läses sidorna in snabbare och dataförbrukningen minskar med upp till 60 procent.</translation>
 <translation id="7333031090786104871">Processen pågår fortfarande för den förra webbplatsen</translation>
-<translation id="7352651011704765696">Något gick fel</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
 <translation id="7359002509206457351">Åtkomst till betalningsmetoder</translation>
@@ -904,6 +899,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="773466115871691567">Översätt alltid sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">För att kunna upptäcka farliga appar och webbplatser skickar Chrome webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll till Google</translation>
+<translation id="7757787379047923882">Texten delades från <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD-kort <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="7769602470925380267">Godkänn och logga ut</translation>
@@ -1043,6 +1039,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8730621377337864115">Klart</translation>
 <translation id="8748850008226585750">Innehållet har dolts</translation>
 <translation id="8751914237388039244">Välj en bild</translation>
+<translation id="8788265440806329501">Navigeringshistoriken har stängts</translation>
 <translation id="8788968922598763114">Öppna den senast stängda fliken igen</translation>
 <translation id="8801436777607969138">Blockera JavaScript på en enskild webbplats.</translation>
 <translation id="8812260976093120287">På vissa webbplatser kan du betala med ovanstående betalningsappar som stöds på enheten.</translation>

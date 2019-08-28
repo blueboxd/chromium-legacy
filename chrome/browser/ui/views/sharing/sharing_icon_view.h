@@ -34,10 +34,6 @@ class SharingIconView : public PageActionIconView {
   void UpdateInkDrop(bool activate);
   void UpdateOpacity();
   bool IsLoadingAnimationVisible();
-  bool should_show_error() { return should_show_error_; }
-  void set_should_show_error(bool should_show_error) {
-    should_show_error_ = should_show_error;
-  }
 
   // Get the supporting controller for this icon view.
   virtual SharingUiController* GetController() const = 0;

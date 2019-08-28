@@ -351,7 +351,7 @@ views::StyledLabel* ProfileMenuViewBase::CreateAndAddLabelWithLink(
     gfx::Range link_range,
     base::RepeatingClosure action) {
   auto label_with_link = std::make_unique<views::StyledLabel>(text, this);
-  label_with_link->SetDefaultTextStyle(STYLE_SECONDARY);
+  label_with_link->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   label_with_link->AddStyleRange(
       link_range, views::StyledLabel::RangeStyleInfo::CreateForLink());
 

@@ -352,7 +352,7 @@ PageInfo::PageInfo(
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status_(SAFE_BROWSING_STATUS_NONE),
-      safety_tip_status_(security_state::SAFETY_TIP_STATUS_NONE),
+      safety_tip_status_(security_state::SafetyTipStatus::kUnknown),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button_(false),
       content_settings_(HostContentSettingsMapFactory::GetForProfile(profile)),
@@ -803,7 +803,10 @@ void PageInfo::ComputeUIInputs(
   }
 
   if (visible_security_state.safety_tip_status !=
-      security_state::SAFETY_TIP_STATUS_NONE) {
+          security_state::SafetyTipStatus::kNone &&
+      visible_security_state.safety_tip_status !=
+          security_state::SafetyTipStatus::kUnknown &&
+      base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
     site_details_message_ = l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
     safety_tip_status_ = visible_security_state.safety_tip_status;

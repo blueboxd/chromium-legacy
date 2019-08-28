@@ -48,16 +48,10 @@ static bool UseMockTheme() {
   return WebTestSupport::IsMockThemeEnabledForTest();
 }
 
-unsigned LayoutThemeDefault::active_selection_background_color_ = 0xff1e90ff;
-unsigned LayoutThemeDefault::active_selection_foreground_color_ = Color::kBlack;
-unsigned LayoutThemeDefault::inactive_selection_background_color_ = 0xffc8c8c8;
-unsigned LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
-
-base::TimeDelta LayoutThemeDefault::caret_blink_interval_;
-
-LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
-  caret_blink_interval_ = LayoutTheme::CaretBlinkInterval();
-}
+LayoutThemeDefault::LayoutThemeDefault()
+    : LayoutTheme(),
+      caret_blink_interval_(LayoutTheme::CaretBlinkInterval()),
+      painter_(*this) {}
 
 LayoutThemeDefault::~LayoutThemeDefault() = default;
 
@@ -194,11 +188,10 @@ void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
   }
 }
 
-void LayoutThemeDefault::SetSelectionColors(
-    unsigned active_background_color,
-    unsigned active_foreground_color,
-    unsigned inactive_background_color,
-    unsigned inactive_foreground_color) {
+void LayoutThemeDefault::SetSelectionColors(Color active_background_color,
+                                            Color active_foreground_color,
+                                            Color inactive_background_color,
+                                            Color inactive_foreground_color) {
   active_selection_background_color_ = active_background_color;
   active_selection_foreground_color_ = active_foreground_color;
   inactive_selection_background_color_ = inactive_background_color;

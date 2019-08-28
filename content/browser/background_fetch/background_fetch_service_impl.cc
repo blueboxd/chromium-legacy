@@ -43,10 +43,10 @@ void BackgroundFetchServiceImpl::CreateForWorker(
   if (!render_process_host)
     return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(
-          BackgroundFetchServiceImpl::CreateOnIoThread,
+          BackgroundFetchServiceImpl::CreateOnCoreThread,
           WrapRefCounted(static_cast<StoragePartitionImpl*>(
                              render_process_host->GetStoragePartition())
                              ->GetBackgroundFetchContext()),
@@ -73,10 +73,10 @@ void BackgroundFetchServiceImpl::CreateForFrame(
                                     render_frame_host->GetFrameTreeNodeId());
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
       base::BindOnce(
-          BackgroundFetchServiceImpl::CreateOnIoThread,
+          BackgroundFetchServiceImpl::CreateOnCoreThread,
           WrapRefCounted(static_cast<StoragePartitionImpl*>(
                              render_process_host->GetStoragePartition())
                              ->GetBackgroundFetchContext()),
@@ -86,13 +86,13 @@ void BackgroundFetchServiceImpl::CreateForFrame(
 }
 
 // static
-void BackgroundFetchServiceImpl::CreateOnIoThread(
+void BackgroundFetchServiceImpl::CreateOnCoreThread(
     scoped_refptr<BackgroundFetchContext> background_fetch_context,
     url::Origin origin,
     int render_frame_tree_node_id,
     WebContents::Getter wc_getter,
     mojo::PendingReceiver<blink::mojom::BackgroundFetchService> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<BackgroundFetchServiceImpl>(
@@ -114,7 +114,7 @@ BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
 }
 
 BackgroundFetchServiceImpl::~BackgroundFetchServiceImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
 void BackgroundFetchServiceImpl::Fetch(
@@ -125,7 +125,7 @@ void BackgroundFetchServiceImpl::Fetch(
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     FetchCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (!ValidateDeveloperId(developer_id) || !ValidateRequests(requests)) {
     std::move(callback).Run(
@@ -148,7 +148,7 @@ void BackgroundFetchServiceImpl::Fetch(
 
 void BackgroundFetchServiceImpl::GetIconDisplaySize(
     blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   background_fetch_context_->GetIconDisplaySize(std::move(callback));
 }
 
@@ -156,7 +156,7 @@ void BackgroundFetchServiceImpl::GetRegistration(
     int64_t service_worker_registration_id,
     const std::string& developer_id,
     GetRegistrationCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (!ValidateDeveloperId(developer_id)) {
     std::move(callback).Run(
         blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
@@ -172,7 +172,7 @@ void BackgroundFetchServiceImpl::GetRegistration(
 void BackgroundFetchServiceImpl::GetDeveloperIds(
     int64_t service_worker_registration_id,
     GetDeveloperIdsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   background_fetch_context_->GetDeveloperIdsForServiceWorker(
       service_worker_registration_id, origin_, std::move(callback));
 }

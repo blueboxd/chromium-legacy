@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Hostiteľa sa nepodarilo nájsť. Pravdepodobne je to spôsobené konfiguráciou siete, ktorú používate.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Naposledy bol(a) online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Táto aplikácia už nie je podporovaná. Použite <ph name="LINK_BEGIN" />webovú aplikáciu Vzdialená plocha Chrome<ph name="LINK_END" />, čím zaistíte, že budete získavať najnovšie funkcie aj bezpečnostné aktualizácie.</translation>
-<translation id="2431841749166974386">Skôr ako budete môcť vzdialene ovládať tento počítač pomocou prehliadača <ph name="PRODUCT_NAME" />, musíte vykonať dodatočný konfiguračný krok.
-
-Túto funkciu povolíte tak, že si tlačidlom <ph name="BUTTON_NAME" /> zobrazíte okno s predvoľbami zabezpečenia a ochrany súkromia a potom začiarknete políčko <ph name="SERVICE_SCRIPT_NAME" />.
-
-Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už uvedené a začiarknuté, zrejme ho budete musieť odstrániť a následne znova pridať.</translation>
 <translation id="2499160551253595098">Pomôžte nám vylepšiť službu Vzdialená plocha Chrome tým, že nám umožníte zhromažďovať štatistiky používania a správy o zlyhaní.</translation>
 <translation id="2509394361235492552">Pripojené k zariadeniu <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">POZNÁMKA: Ak chcete mať k dispozícii všetky klávesové skratky, povoľte v konfigurácii Vzdialenej plochy Chrome možnosť Otvoriť ako okno.</translation>
@@ -317,6 +312,11 @@ Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už uvedené a začiarknuté,
 <translation id="8804164990146287819">Pravidlá ochrany súkromia</translation>
 <translation id="894763922177556086">Dobré</translation>
 <translation id="895780780740011433">Pre systém Windows 7 a vyšší</translation>
+<translation id="8963047137585288214">Skôr ako budete môcť vzdialene ovládať tento počítač pomocou prehliadača <ph name="PRODUCT_NAME" />, musíte vykonať dodatočný konfiguračný krok.
+
+Túto funkciu povolíte tak, že tlačidlom <ph name="BUTTON_NAME" /> zobrazíte okno s predvoľbami zabezpečenia a ochrany súkromia a potom začiarknete políčko <ph name="SERVICE_SCRIPT_NAME" />.
+
+Ak je políčko <ph name="SERVICE_SCRIPT_NAME" /> už uvedené a začiarknuté, zrejme budete musieť zrušiť začiarknutie a následne ho znova začiarknuť.</translation>
 <translation id="897805526397249209">Ak chcete povoliť vzdialené pripojenie k inému počítaču, nainštalujte na ňom aplikáciu Chromoting a potom kliknite na tlačidlo <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Ovládač hostiteľa Vzdialenej plochy Chrome</translation>
 <translation id="9016232822027372900">Pripojiť</translation>

@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1828824471510190776">Sugerir senha…</translation>
 <translation id="1870148520156231997">Mostrar senha</translation>
+<translation id="1872096359983322073">Lanterna</translation>
 <translation id="1876721852596493031">Enviar dados de uso</translation>
 <translation id="1911619930368729126">Enviar para o Google Drive</translation>
 <translation id="1923342640370224680">Última hora</translation>
@@ -355,6 +356,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toque para cancelar.</translation>
 <translation id="6108923351542677676">Configuração em andamento...</translation>
+<translation id="6119050551270742952">Esta pág. está no modo anônimo</translation>
 <translation id="6122191549521593678">On-line</translation>
 <translation id="6127379762771434464">Item removido</translation>
 <translation id="6136914049981179737">Segundos atrás</translation>
@@ -411,6 +413,9 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Item criado</translation>
 <translation id="6851516051005285358">Solicitar site para computador</translation>
+<translation id="6858855187367714033">Lido</translation>
+<translation id="6859944681507688231">Para ler um código QR ou cartão de crédito, ative a câmera nas configurações.</translation>
+<translation id="6873263987691478642">Visualização dividida</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar a sincronização</translation>
 <translation id="6914583639806229067">Pesquisar imagem que você copiou</translation>
@@ -509,6 +514,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8428045167754449968">Cidade</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
+<translation id="8487667956631253959">Ativada</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8490978609246021741">Salvar alterações</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
@@ -519,6 +525,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8532105204136943229">Ano de vencimento</translation>
 <translation id="8534481786647257214">A postagem no Google+ foi concluída.</translation>
 <translation id="8548878600947630424">Encontrar na página...</translation>
+<translation id="8588404856427128947">Desativada</translation>
 <translation id="8605219856220328675">Fechar guia.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Para ver suas guias abertas em outros dispositivos, ative a sincronização.</translation>
@@ -559,6 +566,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="9203116392574189331">Transição</translation>
 <translation id="9223358826628549784">Relatórios de erros enviados.</translation>
 <translation id="935490618240037774">Seus favoritos, histórico, senhas e outras configurações serão sincronizados com sua Conta do Google para que seja possível usá-los em todos os seus dispositivos.</translation>
+<translation id="952704832371081537">Cancelar</translation>
 <translation id="976982866697960176">Gerenciar dados sincronizados…</translation>
 <translation id="988141524645182168">Outros dispositivos</translation>
 <translation id="989988560359834682">Editar endereço</translation>

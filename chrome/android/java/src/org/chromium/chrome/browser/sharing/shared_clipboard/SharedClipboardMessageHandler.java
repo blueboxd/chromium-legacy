@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.text.TextUtils;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -55,14 +54,4 @@ public class SharedClipboardMessageHandler {
                 notificationTitle, resources.getString(R.string.shared_clipboard_notification_text),
                 R.drawable.ic_devices_16dp, R.drawable.shared_clipboard_40dp);
     }
-
-    /**
-     * Sends a message to the device specified by GUID.
-     * @param guid The guid of the device on the receiving end.
-     * @param message The payload to send.
-     * @param callback The result of the operation. Runs |callback| with a
-     *         org.chromium.chrome.browser.sharing.SharingSendMessageResult enum value.
-     */
-    public static native void sendMessageToDevice(
-            String guid, String message, Callback<Integer> callback);
 }

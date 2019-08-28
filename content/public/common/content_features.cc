@@ -112,6 +112,10 @@ const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",
 const base::Feature kCookieDeprecationMessages{
     "CookieDeprecationMessages", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Blink cooperative scheduling.
+const base::Feature kCooperativeScheduling{"CooperativeScheduling",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables crash reporting via Reporting API.
 // https://www.w3.org/TR/reporting/#crash-report
 const base::Feature kCrashReporting{"CrashReporting",
@@ -173,7 +177,7 @@ const base::Feature kHistoryManipulationIntervention{
 // outside their subttree, if they are restricted from doing top-level
 // navigations.
 const base::Feature kHistoryPreventSandboxedNavigation{
-    "HistoryPreventSandboxedNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HistoryPreventSandboxedNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This is intended as a kill switch for the Idle Detection feature. To enable
 // this feature, the experimental web platform features flag should be set,

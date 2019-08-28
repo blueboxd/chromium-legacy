@@ -57,7 +57,7 @@ BackgroundFetchTestDataManager::BackgroundFetchTestDataManager(
       browser_context_(browser_context),
       storage_partition_(storage_partition) {}
 
-void BackgroundFetchTestDataManager::InitializeOnIOThread() {
+void BackgroundFetchTestDataManager::InitializeOnCoreThread() {
   blob_storage_context_ = ChromeBlobStorageContext::GetFor(browser_context_);
   // Wait for ChromeBlobStorageContext to finish initializing.
   base::RunLoop().RunUntilIdle();

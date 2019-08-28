@@ -127,7 +127,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   const int num_labels = subtitle.empty() ? 1 : 2;
   const int combined_line_height =
       views::style::GetLineHeight(views::style::CONTEXT_LABEL,
-                                  STYLE_SECONDARY) *
+                                  views::style::STYLE_SECONDARY) *
       num_labels;
   if (combined_line_height > icon_height)
     remaining_vert_spacing = (total_height - combined_line_height) / 2;
@@ -214,7 +214,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
     grid_layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId,
                           row_height);
     auto subtitle_label = std::make_unique<views::Label>(
-        subtitle, views::style::CONTEXT_BUTTON, STYLE_SECONDARY);
+        subtitle, views::style::CONTEXT_BUTTON, views::style::STYLE_SECONDARY);
     subtitle_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     subtitle_label->SetAutoColorReadabilityEnabled(false);
     grid_layout->SkipColumns(1);
@@ -258,7 +258,7 @@ void HoverButton::SetTitleTextWithHintRange(const base::string16& title_text,
 
   if (range.IsValid()) {
     views::StyledLabel::RangeStyleInfo style_info;
-    style_info.text_style = STYLE_SECONDARY;
+    style_info.text_style = views::style::STYLE_SECONDARY;
     title_->AddStyleRange(range, style_info);
   }
   title_->SizeToFit(0);
@@ -292,7 +292,7 @@ void HoverButton::StateChanged(ButtonState old_state) {
 
 SkColor HoverButton::GetInkDropBaseColor() const {
   return views::style::GetColor(*this, views::style::CONTEXT_BUTTON,
-                                STYLE_SECONDARY);
+                                views::style::STYLE_SECONDARY);
 }
 
 std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {

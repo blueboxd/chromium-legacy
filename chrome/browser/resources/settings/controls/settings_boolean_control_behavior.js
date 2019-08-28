@@ -64,6 +64,15 @@ const SettingsBooleanControlBehaviorImpl = {
     numericUncheckedValue: {
       type: Number,
       value: 0,
+    },
+
+    /**
+     * For numeric prefs only. The integer value sent to prefs when the user
+     * checks the control.
+     */
+    numericCheckedValue: {
+      type: Number,
+      value: 1,
     }
   },
 
@@ -91,7 +100,9 @@ const SettingsBooleanControlBehaviorImpl = {
     // a boolean or a number.
     if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
       assert(!this.inverted);
-      this.set('pref.value', this.checked ? 1 : this.numericUncheckedValue);
+      this.set(
+          'pref.value',
+          this.checked ? this.numericCheckedValue : this.numericUncheckedValue);
       return;
     }
     this.set('pref.value', this.inverted ? !this.checked : this.checked);

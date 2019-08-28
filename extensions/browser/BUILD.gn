@@ -414,6 +414,11 @@ jumbo_source_set("browser_sources") {
     "//ipc",
   ]
 
+  if (is_mac) {
+    # For LSCopyDisplayNameForURL, path_util.cc.
+    libs = [ "CoreServices.framework" ]
+  }
+
   configs += [
     "//build/config:precompiled_headers",
 

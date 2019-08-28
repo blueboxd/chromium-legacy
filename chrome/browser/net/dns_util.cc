@@ -10,10 +10,6 @@
 #include "net/third_party/uri_template/uri_template.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
-#include "base/enterprise_util.h"
-#endif
-
 namespace chrome_browser_net {
 
 bool IsValidDohTemplate(const std::string& server_template,
@@ -47,12 +43,8 @@ bool IsValidDohTemplate(const std::string& server_template,
 
 bool ShouldDisableDohForManaged() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  if (g_browser_process->browser_policy_connector()->HasMachineLevelPolicies())
-    return true;
-#endif
-#if defined(OS_WIN)
-  if (base::IsMachineExternallyManaged())
-    return true;
+  return g_browser_process->browser_policy_connector()
+      ->HasMachineLevelPolicies();
 #endif
   return false;
 }

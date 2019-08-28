@@ -68,7 +68,7 @@
 <translation id="174173592514158117">Play के सभी फ़ोल्डर दिखाएं</translation>
 <translation id="174937106936716857">फ़ाइलों की कुल संख्या</translation>
 <translation id="1775381402323441512">वीडियो की जानकारी</translation>
-<translation id="180035236176489073">इन फ़ाइलों को ऐक्सेस करने के लिए आपका ऑनलाइन होना ज़रूरी है.</translation>
+<translation id="180035236176489073">इन फ़ाइलों को एक्सेस करने के लिए आपका ऑनलाइन होना ज़रूरी है.</translation>
 <translation id="1807938677607439181">सभी फ़ाइलें</translation>
 <translation id="1810764548349082891">कोई झलक उपलब्ध नहीं है</translation>
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />चेतावनी:<ph name="END_BOLD" />  ये फ़ाइलें अस्‍थायी हैं और डि‍स्‍क का स्थान खाली करने के लि‍ए अपने आप हटाई जा सकती हैं.  <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">इमेज रिज़ॉल्यूशन</translation>
 <translation id="1943097386230153518">नई सेवा इंस्टॉल करें</translation>
 <translation id="1947424002851288782">जर्मन कीबोर्ड</translation>
+<translation id="1972984168337863910">फ़ाइल के लिए सुझाव पैनल को बड़ा करें</translation>
 <translation id="197560921582345123">बदलाव कर सकते हैं</translation>
 <translation id="1984603991036629094">आर्मेनियाई फ़ोनेटिक कीबोर्ड</translation>
 <translation id="2001796770603320721">डिस्क में प्रबंधित करें</translation>
@@ -263,7 +264,7 @@
 <translation id="4193154014135846272">Google दस्‍तावेज़</translation>
 <translation id="4195249722193633765">Linux (बीटा) वाला ऐप्लिकेशन इंस्टॉल करें</translation>
 <translation id="4197674956721858839">ज़िप चुनें</translation>
-<translation id="421017592316736757">इस फ़ाइल को ऐक्सेस करने के लिए आपका ऑनलाइन होना ज़रूरी है.</translation>
+<translation id="421017592316736757">इस फ़ाइल को एक्सेस करने के लिए आपका ऑनलाइन होना ज़रूरी है.</translation>
 <translation id="4212740939091998969">"<ph name="FOLDER_NAME" />" नाम का फ़ोल्डर पहले से मौजूद है. कृपया कोई अलग नाम चुनें.</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> का बैक अप लिया जा रहा है</translation>
 <translation id="4242533952199664413">सेटिंग खोलें</translation>
@@ -366,11 +367,11 @@
 <translation id="5241298539944515331">वियतनामी कीबोर्ड (VIQR)</translation>
 <translation id="5253070652067921974">निर्माता</translation>
 <translation id="5257456363153333584">ड्रेगनफ़्लाय</translation>
-<translation id="5262311848634918433"><ph name="MARKUP_1" />फ़ाइलें हर कहीं से ऐक्सेस करें, यहां तक कि ऑफ़लाइन भी.<ph name="MARKUP_2" />
-    Google डिस्क में रखी फ़ाइलें अप टू डेट रहती हैं और किसी भी डिवाइस से उपलब्ध होती हैं.<ph name="MARKUP_3" />
+<translation id="5262311848634918433"><ph name="MARKUP_1" />फ़ाइलें कहीं से भी एक्सेस करें, यहां तक कि ऑफ़लाइन भी.<ph name="MARKUP_2" />
+    Google डिस्क में रखी फ़ाइलें अप टू डेट रहती हैं और किसी भी डिवाइस से मिल जाती हैं.<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />अपनी फ़ाइलें सुरक्षित रखें.<ph name="MARKUP_5" />
-    चाहे आपके डिवाइस को कुछ भी हो जाए, आपकी फ़ाइलें Google डिस्क में सुरक्षित रूप से संग्रहित रहती हैं.<ph name="MARKUP_6" />
-    अन्य लोगों के साथ एक ही स्थान पर फ़ाइलें
+    चाहे आपके डिवाइस को कुछ भी हो जाए, आपकी फ़ाइलें Google डिस्क में सुरक्षित रूप से स्टोर रहती हैं.<ph name="MARKUP_6" />
+    दूसरे लोगों के साथ एक ही स्थान पर फ़ाइलें
 <ph name="MARKUP_7" />शेयर करें, बनाएं और सहयोग करें<ph name="MARKUP_8" />.<ph name="MARKUP_9" /></translation>
 <translation id="5275973617553375938">Google डिस्क से पुनर्प्राप्त की गई फ़ाइलें</translation>
 <translation id="5288481194217812690"><ph name="FILENAME" /></translation>
@@ -466,7 +467,7 @@
 <translation id="6305012486838822927">लाओ कीबोर्ड</translation>
 <translation id="6339034549827494595">रूसी फ़ोनेटिक (AATSEEL) कीबोर्ड</translation>
 <translation id="6339145975392024142">यू.एस. अंतर्राष्ट्रीय (पीसी)</translation>
-<translation id="6346310558342052870">ऐक्सेस पर रोक लगी है</translation>
+<translation id="6346310558342052870">एक्सेस पर रोक लगी है</translation>
 <translation id="6353618411602605519">क्रोएशियाई कीबोर्ड</translation>
 <translation id="6358884629796491903">ड्रैगन</translation>
 <translation id="637062427944097960">यह फ़ाइल किसी अलग डेस्कटॉप पर खुली है. उसे देखने के लिए <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) पर जाएं.</translation>
@@ -638,6 +639,7 @@
 <translation id="8223479393428528563">इन फ़ाइलों को ऑफ़लाइन देखने को सेव करने के लिए, फिर से ऑनलाइन होकर, फ़ाइलों पर राइट-क्‍लिक करें और <ph name="OFFLINE_CHECKBOX_NAME" /> विकल्‍प चुनें.</translation>
 <translation id="8249296373107784235">रद्द करें</translation>
 <translation id="8261506727792406068">मिटाएं</translation>
+<translation id="8269755669432358899">फ़ाइल के लिए सुझाव पैनल को छोटा करें</translation>
 <translation id="8279388322240498158">सोरानी कुर्दिश अंग्रेज़ी-आधारित कीबोर्ड</translation>
 <translation id="8280151743281770066">आर्मेनियाई फ़ोनेटिक</translation>
 <translation id="8294431847097064396">स्रोत</translation>
@@ -700,7 +702,7 @@
 <translation id="9110990317705400362">हम आपकी ब्राउज़िंग को सुरक्षित रखने के तरीकों पर लगातार काम कर रहे हैं. पूर्व में, कोई भी वेबसाइट आपको अपने ब्राउज़र में एक्सटेंशन जोड़ने के लिए संकेत दे सकती थी. Google Chrome के नवीनतम संस्करणों में, आपको एक्सटेंशन पेज के माध्यम से इन एक्सटेंशन को जोड़कर Chrome को स्पष्ट रूप से बताना होगा कि आप इन्हें इंस्टॉल करना चाहते हैं. <ph name="BEGIN_LINK" />और जानें<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">कोडेक</translation>
 <translation id="9129931661813833980">फ़ोल्डर को पिन करें</translation>
-<translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' के सदस्यों को इन आइटम का ऐक्सेस मिल जाएगा.</translation>
+<translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' के सदस्यों को इन आइटम का एक्सेस मिल जाएगा.</translation>
 <translation id="9131598836763251128">एक या ज़्यादा फ़ाइल को चुनें</translation>
 <translation id="9133055936679483811">ज़िप करना विफल रहा. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="9134524245363717059">यह फ़ाइल Macintosh सॉफ़्टवेयर का उपयोग करने वाले कंप्‍यूटर के लिए बनाई गई है. यह Chrome OS चलाने वाले आपके डिवाइस से संगत नहीं है. कृपया Chrome वेब स्टोर पर इसके बदले कोई उचित ऐप्लिकेशन खोजें.</translation>

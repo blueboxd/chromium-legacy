@@ -1065,6 +1065,10 @@ PhysicalRect Node::BoundingBox() const {
   return PhysicalRect();
 }
 
+IntRect Node::PixelSnappedBoundingBox() const {
+  return PixelSnappedIntRect(BoundingBox());
+}
+
 PhysicalRect Node::BoundingBoxForScrollIntoView() const {
   if (GetLayoutObject()) {
     return GetLayoutObject()->AbsoluteBoundingBoxRectForScrollIntoView();

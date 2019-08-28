@@ -95,15 +95,16 @@ var tests = [
     });
     document.body.appendChild(dropdown);
 
+    const button = dropdown.$.button;
     chrome.test.assertFalse(dropdown.dropdownOpen);
-    chrome.test.assertEq('closedIcon', dropdown.dropdownIcon);
+    chrome.test.assertEq('closedIcon,cr:arrow-drop-down', button.ironIcon);
 
-    MockInteractions.tap(dropdown.$.button);
+    MockInteractions.tap(button);
 
     chrome.test.assertTrue(dropdown.dropdownOpen);
-    chrome.test.assertEq('openIcon', dropdown.dropdownIcon);
+    chrome.test.assertEq('openIcon,cr:arrow-drop-down', button.ironIcon);
 
-    MockInteractions.tap(dropdown.$.button);
+    MockInteractions.tap(button);
 
     chrome.test.assertFalse(dropdown.dropdownOpen);
 
@@ -115,23 +116,15 @@ var tests = [
    * structure and behaviour.
    */
   function testBookmarkStructure() {
-    var bookmarkContent = Polymer.Base.create('viewer-bookmarks-content', {
-      bookmarks: [{
-        title: 'Test 1',
-        page: 1,
-        children: [{
-          title: 'Test 1a',
-          page: 2,
-          children: []
-        },
-        {
-          title: 'Test 1b',
-          page: 3,
-          children: []
-        }]
-      }],
-      depth: 1
-    });
+    var bookmarkContent = createBookmarksForTest();
+    bookmarkContent.bookmarks = [{
+      title: 'Test 1',
+      page: 1,
+      children: [
+        {title: 'Test 1a', page: 2, children: []},
+        {title: 'Test 1b', page: 3, children: []}
+      ]
+    }];
     document.body.appendChild(bookmarkContent);
 
     // Force templates to render.

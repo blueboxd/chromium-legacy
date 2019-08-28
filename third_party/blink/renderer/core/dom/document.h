@@ -120,6 +120,7 @@ class DocumentState;
 class DocumentTimeline;
 class DocumentType;
 class DOMFeaturePolicy;
+class DoubleSize;
 class Element;
 class ElementDataCache;
 class ElementRegistrationOptions;
@@ -238,6 +239,16 @@ enum ShadowCascadeOrder {
 enum class SecureContextState { kUnknown, kNonSecure, kSecure };
 
 using DocumentClassFlags = unsigned char;
+
+// A map of IDL attribute name to Element value, for one particular element.
+// For example,
+//   el1.ariaActiveDescendant = el2
+// would add the following pair to the ExplicitlySetAttrElementMap for el1:
+//   ("ariaActiveDescendant", el2)
+// This represents 'explicitly set attr-element' in the HTML specification.
+// https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:element-2
+using ExplicitlySetAttrElementMap =
+    HeapHashMap<QualifiedName, WeakMember<Element>>;
 
 // A document (https://dom.spec.whatwg.org/#concept-document) is the root node
 // of a tree of DOM nodes, generally resulting from the parsing of an markup
@@ -800,6 +811,9 @@ class CORE_EXPORT Document : public ContainerNode,
   const UserActionElementSet& UserActionElements() const {
     return user_action_elements_;
   }
+
+  ExplicitlySetAttrElementMap* GetExplicitlySetAttrElementMap(Element* index);
+
   // Returns false if the function fails.  e.g. |pseudo| is not supported.
   bool SetPseudoStateForTesting(Element& element,
                                 const String& pseudo,
@@ -2101,6 +2115,9 @@ class CORE_EXPORT Document : public ContainerNode,
   std::unique_ptr<FrameOrWorkerScheduler> detached_scheduler_;
 
   bool toggle_during_parsing_ = false;
+
+  HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementMap>>
+      element_explicitly_set_attr_element_map_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

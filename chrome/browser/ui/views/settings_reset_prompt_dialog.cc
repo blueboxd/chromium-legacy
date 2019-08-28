@@ -44,7 +44,7 @@ SettingsResetPromptDialog::SettingsResetPromptDialog(
   views::StyledLabel* dialog_label =
       new views::StyledLabel(controller_->GetMainText(), /*listener=*/nullptr);
   dialog_label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
-  dialog_label->SetDefaultTextStyle(STYLE_SECONDARY);
+  dialog_label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   views::StyledLabel::RangeStyleInfo url_style;
   url_style.text_style = STYLE_EMPHASIZED_SECONDARY;
   dialog_label->AddStyleRange(controller_->GetMainTextUrlRange(), url_style);

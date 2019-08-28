@@ -190,6 +190,9 @@ extern const char kDnsOverHttpsDescription[];
 extern const char kDrawVerticallyEdgeToEdgeName[];
 extern const char kDrawVerticallyEdgeToEdgeDescription[];
 
+extern const char kEnablePasswordsAccountStorageName[];
+extern const char kEnablePasswordsAccountStorageDescription[];
+
 extern const char kExperimentalAccessibilityFeaturesName[];
 extern const char kExperimentalAccessibilityFeaturesDescription[];
 
@@ -219,6 +222,9 @@ extern const char kCookieDeprecationMessagesDescription[];
 
 extern const char kCookiesWithoutSameSiteMustBeSecureName[];
 extern const char kCookiesWithoutSameSiteMustBeSecureDescription[];
+
+extern const char kCooperativeSchedulingName[];
+extern const char kCooperativeSchedulingDescription[];
 
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];

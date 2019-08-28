@@ -218,8 +218,6 @@
 <translation id="8417404458978023919">{0,plural, =1{Повторно стартиране на Chromium до 1 ден}other{Повторно стартиране на Chromium до # дни}}</translation>
 <translation id="8453117565092476964">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете отново Chromium.</translation>
 <translation id="8493179195440786826">Chromium не е актуален</translation>
-<translation id="8494843963476918365">Ако дадена настройка не се показва на тази страница, опитайте в <ph name="LINK_BEGIN" />
-    настройките на браузъра Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Получаване на помощ за използването на Chromium</translation>
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> Авторите на Chromium. Всички права запазени.</translation>
 <translation id="8619360774459241877">Chromium стартира…</translation>

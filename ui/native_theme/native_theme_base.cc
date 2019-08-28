@@ -308,8 +308,7 @@ void NativeThemeBase::PaintArrowButton(
   }
 
   SkIRect skrect;
-  skrect.set(rect.x(), rect.y(), rect.x() + rect.width(), rect.y()
-      + rect.height());
+  skrect.setXYWH(rect.x(), rect.y(), rect.width(), rect.height());
   // Paint the background (the area visible behind the rounded corners).
   flags.setColor(backgroundColor);
   canvas->drawIRect(skrect, flags);
@@ -435,7 +434,7 @@ void NativeThemeBase::PaintScrollbarTrack(
   cc::PaintFlags flags;
   SkIRect skrect;
 
-  skrect.set(rect.x(), rect.y(), rect.right(), rect.bottom());
+  skrect.setLTRB(rect.x(), rect.y(), rect.right(), rect.bottom());
   SkScalar track_hsv[3];
   SkColorToHSV(kTrackColor, track_hsv);
   flags.setColor(SaturateAndBrighten(track_hsv, 0, 0));
@@ -467,20 +466,20 @@ void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
 
   SkIRect skrect;
   if (vertical)
-    skrect.set(rect.x(), rect.y(), midx + 1, rect.y() + rect.height());
+    skrect.setLTRB(rect.x(), rect.y(), midx + 1, rect.y() + rect.height());
   else
-    skrect.set(rect.x(), rect.y(), rect.x() + rect.width(), midy + 1);
+    skrect.setLTRB(rect.x(), rect.y(), rect.x() + rect.width(), midy + 1);
 
   canvas->drawIRect(skrect, flags);
 
   flags.setColor(SaturateAndBrighten(thumb, 0, -0.02f));
 
   if (vertical) {
-    skrect.set(
-        midx + 1, rect.y(), rect.x() + rect.width(), rect.y() + rect.height());
+    skrect.setLTRB(midx + 1, rect.y(), rect.x() + rect.width(),
+                   rect.y() + rect.height());
   } else {
-    skrect.set(
-        rect.x(), midy + 1, rect.x() + rect.width(), rect.y() + rect.height());
+    skrect.setLTRB(rect.x(), midy + 1, rect.x() + rect.width(),
+                   rect.y() + rect.height());
   }
 
   canvas->drawIRect(skrect, flags);
@@ -729,7 +728,7 @@ void NativeThemeBase::PaintTextField(cc::PaintCanvas* canvas,
                                      const TextFieldExtraParams& text,
                                      ColorScheme color_scheme) const {
   SkRect bounds;
-  bounds.set(rect.x(), rect.y(), rect.right() - 1, rect.bottom() - 1);
+  bounds.setLTRB(rect.x(), rect.y(), rect.right() - 1, rect.bottom() - 1);
 
   cc::PaintFlags fill_flags;
   fill_flags.setStyle(cc::PaintFlags::kFill_Style);
@@ -823,15 +822,11 @@ void NativeThemeBase::PaintSliderTrack(cc::PaintCanvas* canvas,
 
   SkRect skrect;
   if (slider.vertical) {
-    skrect.set(std::max(rect.x(), kMidX - 2),
-               rect.y(),
-               std::min(rect.right(), kMidX + 2),
-               rect.bottom());
+    skrect.setLTRB(std::max(rect.x(), kMidX - 2), rect.y(),
+                   std::min(rect.right(), kMidX + 2), rect.bottom());
   } else {
-    skrect.set(rect.x(),
-               std::max(rect.y(), kMidY - 2),
-               rect.right(),
-               std::min(rect.bottom(), kMidY + 2));
+    skrect.setLTRB(rect.x(), std::max(rect.y(), kMidY - 2), rect.right(),
+                   std::min(rect.bottom(), kMidY + 2));
   }
   canvas->drawRect(skrect, flags);
 }
@@ -850,18 +845,18 @@ void NativeThemeBase::PaintSliderThumb(cc::PaintCanvas* canvas,
 
   SkIRect skrect;
   if (slider.vertical)
-    skrect.set(rect.x(), rect.y(), kMidX + 1, rect.bottom());
+    skrect.setLTRB(rect.x(), rect.y(), kMidX + 1, rect.bottom());
   else
-    skrect.set(rect.x(), rect.y(), rect.right(), kMidY + 1);
+    skrect.setLTRB(rect.x(), rect.y(), rect.right(), kMidY + 1);
 
   canvas->drawIRect(skrect, flags);
 
   flags.setColor(hovered ? kSliderThumbLightGrey : kSliderThumbDarkGrey);
 
   if (slider.vertical)
-    skrect.set(kMidX + 1, rect.y(), rect.right(), rect.bottom());
+    skrect.setLTRB(kMidX + 1, rect.y(), rect.right(), rect.bottom());
   else
-    skrect.set(rect.x(), kMidY + 1, rect.right(), rect.bottom());
+    skrect.setLTRB(rect.x(), kMidY + 1, rect.right(), rect.bottom());
 
   canvas->drawIRect(skrect, flags);
 
@@ -959,7 +954,9 @@ void NativeThemeBase::PaintFrameTopArea(
 
 void NativeThemeBase::AdjustCheckboxRadioRectForPadding(SkRect* rect) const {
   // By default we only take 1px from right and bottom for the drop shadow.
-  rect->iset(rect->x(), rect->y(), rect->right() - 1, rect->bottom() - 1);
+  rect->setLTRB(static_cast<int>(rect->x()), static_cast<int>(rect->y()),
+                static_cast<int>(rect->right()) - 1,
+                static_cast<int>(rect->bottom()) - 1);
 }
 
 SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
@@ -990,7 +987,7 @@ void NativeThemeBase::DrawVertLine(cc::PaintCanvas* canvas,
                                    int y2,
                                    const cc::PaintFlags& flags) const {
   SkIRect skrect;
-  skrect.set(x, y1, x + 1, y2 + 1);
+  skrect.setLTRB(x, y1, x + 1, y2 + 1);
   canvas->drawIRect(skrect, flags);
 }
 
@@ -1000,7 +997,7 @@ void NativeThemeBase::DrawHorizLine(cc::PaintCanvas* canvas,
                                     int y,
                                     const cc::PaintFlags& flags) const {
   SkIRect skrect;
-  skrect.set(x1, y, x2 + 1, y + 1);
+  skrect.setLTRB(x1, y, x2 + 1, y + 1);
   canvas->drawIRect(skrect, flags);
 }
 

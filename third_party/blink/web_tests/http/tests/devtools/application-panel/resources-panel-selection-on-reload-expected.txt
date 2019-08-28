@@ -23,6 +23,7 @@ Background Services
   Background Fetch
   Background Sync
   Notifications
+  Payment Handler
   Push Messaging
 Frames
   top
@@ -51,6 +52,7 @@ Background Services
   Background Fetch
   Background Sync
   Notifications
+  Payment Handler
   Push Messaging
 Frames
   top

@@ -401,6 +401,12 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Peringatan: Sebaiknya jangan mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> ke aplikasi kios karena tindakan tersebut dapat mencegah perangkat dari menerima update software dan perbaikan keamanan penting. Mendelegasikan kontrol versi <ph name="PRODUCT_OS_NAME" /> dapat menimbulkan risiko terhadap pengguna.</translation>
 <translation id="1675002386741412210">Didukung di:</translation>
+<translation id="1695708467571967752">Kebijakan ini mengendalikan apakah pengguna dapat memutar media saat perangkat terkunci.
+
+      Jika kebijakan ini ditetapkan ke False, kontrol media pada layar kunci akan dinonaktifkan.
+
+      Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, kontrol media akan ditampilkan pada layar kunci ketika pengguna mengunci perangkat saat media diputar.
+      </translation>
 <translation id="1700811900332333712">Izinkan perangkat untuk meminta powerwash</translation>
 <translation id="1708496595873025510">Setel batasan pada pengambilan bibit Varietas</translation>
 <translation id="1717817358640580294">Jika tidak disetel, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome dapat melaporkan metadata tentang pemindaian ke Google sesuai kebijakan yang disetel oleh SafeBrowsingExtendedReportingEnabled. Selanjutnya, Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak. Pengguna dapat membagikan hasil pembersihan ke Google untuk membantu mendeteksi software yang tidak diinginkan di masa mendatang. Hasil ini memuat metadata file, ekstensi yang diinstal otomatis, dan kunci registry seperti dijelaskan dalam Lembar Informasi Privasi Chrome.
@@ -670,7 +676,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Jika kebijakan SystemTimezone disetel, kebijakan tersebut akan mengganti kebijakan ini. Dalam kasus ini, deteksi zona waktu otomatis akan dinonaktifkan sepenuhnya.</translation>
 <translation id="2178899310296064282">Terapkan setidaknya Mode Terbatas Menengah di YouTube</translation>
-<translation id="2182291258410176649">Pengguna memutuskan apakah akan mengaktifkan opsi backup dan pemulihan</translation>
+<translation id="2182291258410176649">Pengguna memutuskan apakah akan mengaktifkan opsi pencadangan dan pemulihan</translation>
 <translation id="2183294522275408937">Setelan ini mengontrol seberapa sering layar kunci akan meminta sandi dimasukkan guna melanjutkan penggunaan buka kunci cepat. Setiap kali masuk ke layar kunci, jika entri sandi terakhir melebihi setelan ini, buka kunci cepat tidak akan tersedia untuk masuk ke layar kunci. Jika pengguna membiarkan layar kunci melewati periode ini, sandi akan diminta lagi nantinya apabila pengguna salah memasukkan kode, atau masuk ke layar kunci lagi, mana saja yang muncul terlebih dahulu.
 
           Jika setelan ini dikonfigurasi, pengguna yang menggunakan buka kunci cepat akan diminta untuk memasukkan sandi pada layar kunci, bergantung pada setelan ini.
@@ -1540,15 +1546,15 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="382476126209906314">Mengonfigurasi awalan TalkGadget untuk hosting akses jarak jauh</translation>
 <translation id="3824972131618513497">Mengontrol setelan yang terkait dengan pengelolaan daya dan reboot.</translation>
 <translation id="3826475866868158882">Layanan lokasi Google diaktifkan</translation>
-<translation id="3831054243924627613">Kebijakan ini mengontrol status awal backup dan pemulihan Android.
+<translation id="3831054243924627613">Kebijakan ini mengontrol status awal pencadangan dan pemulihan Android.
 
-      Jika kebijakan ini tidak dikonfigurasi atau ditetapkan ke <ph name="BR_DISABLED" />, status awal backup dan pemulihan Android adalah dinonaktifkan.
+      Jika kebijakan ini tidak dikonfigurasi atau ditetapkan ke <ph name="BR_DISABLED" />, status awal pencadangan dan pemulihan Android adalah dinonaktifkan.
 
-      Jika kebijakan ini ditetapkan ke <ph name="BR_ENABLED" />, status awal backup dan pemulihan Android adalah diaktifkan.
+      Jika kebijakan ini ditetapkan ke <ph name="BR_ENABLED" />, status awal pencadangan dan pemulihan Android adalah diaktifkan.
 
-      Jika kebijakan ini ditetapkan ke <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan diminta memilih apakah mereka ingin menggunakan backup dan pemulihan Android atau tidak. Jika pengguna mengaktifkan backup dan pemulihan, data aplikasi Android akan diupload ke server backup Android dan dipulihkan dari server tersebut setelah penginstalan ulang untuk aplikasi yang kompatibel.
+      Jika kebijakan ini ditetapkan ke <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan diminta memilih apakah mereka ingin menggunakan pencadangan dan pemulihan Android atau tidak. Jika pengguna mengaktifkan pencadangan dan pemulihan, data aplikasi Android akan diupload ke server backup Android dan dipulihkan dari server tersebut setelah penginstalan ulang untuk aplikasi yang kompatibel.
 
-      Perhatikan bahwa kebijakan ini mengontrol status backup dan pemulihan Android selama penyiapan awal saja. Pengguna dapat membuka setelan Android setelahnya dan mengaktifkan/menonaktifkan backup dan pemulihan Android.</translation>
+      Perhatikan bahwa kebijakan ini mengontrol status pencadangan dan pemulihan Android selama penyiapan awal saja. Pengguna dapat membuka setelan Android setelahnya dan mengaktifkan/menonaktifkan pencadangan dan pemulihan Android.</translation>
 <translation id="3831376478177535007">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan mengizinkan sertifikat yang dikeluarkan oleh operasi Symantec Corporation's Legacy PKI untuk dipercaya jika tidak berhasil memvalidasi dan menjangkau Sertifikat CA yang dikenal.
 
       Perlu diketahui bahwa kebijakan ini bergantung pada sistem operasi untuk tetap mengenali sertifikat dari infrastruktur lama milik Symantec. Jika update OS mengubah penanganan OS terhadap sertifikat tersebut, kebijakan ini tidak akan berlaku lagi.  Selain itu, kebijakan ini dimaksudkan sebagai solusi sementara guna memberikan perusahaan lebih banyak waktu untuk beralih dari sertifikat Symantec yang lama.  Kebijakan ini akan dihapus pada atau sekitar tanggal 1 Januari 2019.
@@ -2877,6 +2883,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="6417265370957905582">Asisten Google</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Anda tidak dapat memaksa aplikasi Android untuk menggunakan proxy. Bagian setelan proxy disediakan untuk aplikasi Android, yang dapat dipilih untuk dipatuhi secara sukarela:
 
           Jika Anda memilih untuk tidak pernah menggunakan server proxy, aplikasi Android akan diberi tahu bahwa tidak ada proxy yang dikonfigurasi.
@@ -2888,7 +2895,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Jika Anda memilih untuk menggunakan skrip proxy .pac, URL skrip akan diberikan pada aplikasi Android.</translation>
 <translation id="6430366557948788869">Ekstensi Pelaporan Chrome</translation>
 <translation id="6440051664870270040">Izinkan situs menavigasi dan membuka (jendela) pop-up sekaligus</translation>
-<translation id="6447948611083700881">Opsi backup dan pemulihan dinonaktifkan</translation>
+<translation id="6447948611083700881">Opsi pencadangan dan pemulihan dinonaktifkan</translation>
 <translation id="6449476513004303784">Jangan izinkan pengguna mengelola sertifikat</translation>
 <translation id="645425387487868471">Aktifkan login paksa untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Mengaktifkan IsiOtomatis untuk alamat</translation>
@@ -3030,19 +3037,10 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6731757988219967594">Filter konten khusus dewasa dari situs level teratas (namun bukan iframe yang tersemat)</translation>
 <translation id="6734521799274931721">Mengontrol fitur Berbagi File Jaringan untuk ketersediaan ChromeOS</translation>
 <translation id="6735701345096330595">Mengaktifkan paksa pemeriksaan ejaan bahasa</translation>
-<translation id="673699536430961464">Setelan ini memungkinkan pengguna beralih ke akun Google lain di dalam area konten jendela browser setelah mereka login ke perangkat <ph name="PRODUCT_OS_NAME" />.
-
-      Jika kebijakan ini disetel ke false, pengguna tidak diizinkan untuk login ke akun lain dari area konten browser non-Samaran.
-
-      Jika kebijakan ini tidak disetel atau disetel ke true, perilaku default akan digunakan: pengguna diizinkan untuk login ke akun lain dari area konten browser, kecuali untuk akun anak, karena akun anak akan diblokir untuk area konten non-Samaran.
-
-      Jika tidak diizinkan untuk login ke akun lain melalui Mode samaran, blokir mode tersebut menggunakan kebijakan IncognitoModeAvailability.
-
-      Perhatikan bahwa pengguna akan dapat mengakses layanan Google dalam kondisi tidak terautentikasi dengan memblokir cookienya.</translation>
 <translation id="6757438632136860443">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika kebijakan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
-<translation id="6757613329154374267">Backup dan pemulihan diaktifkan</translation>
+<translation id="6757613329154374267">Pencadangan dan pemulihan diaktifkan</translation>
 <translation id="6762235610019366960">Memungkinkan Anda mengontrol penyajian konten promosi dan/atau edukasi tab penuh di <ph name="PRODUCT_NAME" />.
 
       Jika tidak dikonfigurasi atau diaktifkan (disetel ke true), <ph name="PRODUCT_NAME" /> dapat menampilkan konten tab penuh kepada pengguna untuk memberikan informasi produk.
@@ -3197,7 +3195,7 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 
       Kebijakan ini memungkinkan Anda mengonfigurasi cara <ph name="PRODUCT_OS_NAME" /> berperilaku saat pengguna tetap menganggur dalam beberapa waktu.</translation>
 <translation id="7040229947030068419">Nilai contoh:</translation>
-<translation id="7044883996351280650">Mengontrol layanan backup dan pemulihan Android</translation>
+<translation id="7044883996351280650">Mengontrol layanan pencadangan dan pemulihan Android</translation>
 <translation id="7049373494483449255">Mengizinkan <ph name="PRODUCT_NAME" /> mengirimkan dokumen ke <ph name="CLOUD_PRINT_NAME" /> untuk pencetakan. CATATAN: Setelan ini hanya memengaruhi dukungan <ph name="CLOUD_PRINT_NAME" /> dalam <ph name="PRODUCT_NAME" />. Setelan ini tidak mencegah pengguna mengirimkan pekerjaan cetak di situs web. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog cetak <ph name="PRODUCT_NAME" />. Jika setelan ini dinonaktifkan, pengguna tidak dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog pencetakan <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Kebijakan ini memaksa bookmark diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada bookmark yang diimpor. Jika tidak disetel, pengguna mungkin akan diminta untuk mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="7063895219334505671">Izinkan pop-up di situs ini</translation>
@@ -3670,7 +3668,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="7882585827992171421">Kebijakan ini hanya aktif dalam mode ritel.
 
       Menentukan id ekstensi untuk digunakan sebagai tirai layar pada layar masuk. Ekstensi haruslah bagian dari AppPack yang dikonfigurasi untuk domain ini melalui kebijakan DeviceAppPack.</translation>
-<translation id="7882857838942884046">Menonaktifkan Google Sync akan menyebabkan Backup dan Pemulihan Android tidak berfungsi dengan benar.</translation>
+<translation id="7882857838942884046">Menonaktifkan Google Sync akan menyebabkan Pencadangan dan Pemulihan Android tidak berfungsi dengan benar.</translation>
 <translation id="7882890448959833986">Sembunyikan peringatan OS tidak didukung</translation>
 <translation id="7889788745439330797">Mengontrol apakah pengguna dapat menambahkan akun Kerberos.
 
@@ -3870,6 +3868,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8312129124898414409">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menggunakan pembuatan kunci atau tidak. Penggunaan pembuatan kunci dapat diizinkan atau ditolak untuk semua situs web.
 
           Jika kebijakan ini tidak disetel, 'BlockKeygen' akan digunakan dan pengguna dapat mengubahnya.</translation>
+<translation id="8314214821702356835">Memungkinkan pengguna memutar media saat perangkat terkunci</translation>
 <translation id="8320149248919453401">Mode pengisian daya baterai</translation>
 <translation id="8329984337216493753">Kebijakan ini aktif dalam mode eceran saja.
 
@@ -4288,7 +4287,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="9152473318295429890">Aktifkan saran kontekstual halaman terkait</translation>
 <translation id="9153446010242995516">Roll back dan tetap menggunakan versi target jika versi OS lebih baru dari. Mencoba untuk menerapkan konfigurasi tingkat perangkat (termasuk kredensial jaringan) melalui proses rollback, jika memungkinkan, tetapi melakukan rollback dengan powerwash penuh meskipun pemulihan data tidak memungkinkan (karena versi target tidak mendukung pemulihan data atau karena perubahan tidak kompatibel untuk dikembalikan).
           Didukung pada <ph name="PRODUCT_OS_NAME" /> versi 75 dan yang lebih baru. Untuk klien yang lebih lama, nilai ini berarti rollback dinonaktifkan.</translation>
-<translation id="9158929520101169054">Izinkan Login Multipel Dalam Browser</translation>
 <translation id="9159126470527871268">Beri tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang atau <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
 
       Setelan kebijakan ini mengaktifkan notifikasi untuk memberi tahu pengguna bahwa meluncurkan ulang browser atau memulai ulang perangkat direkomendasikan atau diperlukan. Jika tidak disetel, <ph name="PRODUCT_NAME" /> menunjukkan kepada pengguna bahwa peluncuran ulang diperlukan melalui sedikit perubahan pada menunya, sementara <ph name="PRODUCT_OS_NAME" /> menunjukkan hal tersebut melalui notifikasi di baki sistem. Jika disetel ke 'Recommended', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang direkomendasikan. Pengguna dapat menutup peringatan ini untuk menunda peluncuran ulang. Jika disetel ke 'Required', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang browser akan dilakukan secara paksa setelah periode notifikasi terlampaui. Periode ini akan disetel secara default menjadi tujuh hari untuk <ph name="PRODUCT_NAME" /> dan empat hari untuk <ph name="PRODUCT_OS_NAME" />, serta dapat dikonfigurasi melalui setelan kebijakan <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.

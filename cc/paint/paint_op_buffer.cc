@@ -1991,7 +1991,7 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
     }
     case PaintOpType::DrawLine: {
       auto* line_op = static_cast<const DrawLineOp*>(op);
-      rect->set(line_op->x0, line_op->y0, line_op->x1, line_op->y1);
+      rect->setLTRB(line_op->x0, line_op->y0, line_op->x1, line_op->y1);
       rect->sort();
       return true;
     }

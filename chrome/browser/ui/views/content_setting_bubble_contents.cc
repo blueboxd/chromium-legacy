@@ -475,7 +475,8 @@ void ContentSettingBubbleContents::Init() {
 
   if (!bubble_content.message.empty()) {
     auto message_label = std::make_unique<views::Label>(
-        bubble_content.message, views::style::CONTEXT_LABEL, STYLE_SECONDARY);
+        bubble_content.message, views::style::CONTEXT_LABEL,
+        views::style::STYLE_SECONDARY);
     message_label->SetMultiLine(true);
     message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     rows.push_back({std::move(message_label), LayoutRowType::DEFAULT});

@@ -377,6 +377,7 @@ jumbo_component("base") {
     "mac/os_crash_dumps.h",
     "mac/scoped_aedesc.h",
     "mac/scoped_authorizationref.h",
+    "mac/scoped_authorizationref.mm",
     "mac/scoped_block.h",
     "mac/scoped_cffiledescriptorref.h",
     "mac/scoped_cftyperef.h",
@@ -1968,6 +1969,7 @@ jumbo_component("base") {
       "task/thread_pool/thread_group_native_mac.mm",
       "threading/platform_thread_mac.mm",
       "time/time_conversion_posix.cc",
+      "time/time_exploded_posix.cc",
       "time/time_mac.cc",
     ]
 

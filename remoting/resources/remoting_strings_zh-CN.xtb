@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">无法连接到主机，这可能是由您所使用网络的配置导致的。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次在线时间：<ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2405928220797050937">此应用已不再受支持。为确保您能获得最新的功能和安全更新，请使用新版<ph name="LINK_BEGIN" />“Chrome 远程桌面”网络应用<ph name="LINK_END" />。</translation>
-<translation id="2431841749166974386">要使用<ph name="PRODUCT_NAME" />远程控制此机器，您必须执行一个额外的配置步骤。
-
-要启用此功能，请选择“<ph name="BUTTON_NAME" />“以显示“安全性与隐私”偏好设置窗格，然后勾选”<ph name="SERVICE_SCRIPT_NAME" />“旁边的方框。
-
-如果”<ph name="SERVICE_SCRIPT_NAME" />“已经显示并勾选，您可能需要先将其移除，然后再次添加。</translation>
 <translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
 <translation id="2509394361235492552">已连接到“<ph name="HOSTNAME" />”</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
@@ -317,6 +312,11 @@
 <translation id="8804164990146287819">隐私权政策</translation>
 <translation id="894763922177556086">良好</translation>
 <translation id="895780780740011433">适用于 Windows 7 及更高版本</translation>
+<translation id="8963047137585288214">要使用 <ph name="PRODUCT_NAME" />远程控制此机器，您必须执行一个额外的配置步骤。
+
+要启用此功能，请选择“<ph name="BUTTON_NAME" />”以显示“安全性与隐私”偏好设置窗格，然后勾选“<ph name="SERVICE_SCRIPT_NAME" />”旁边的方框。
+
+如果“<ph name="SERVICE_SCRIPT_NAME" />”已经显示并被勾选，您可能需要先取消勾选，然后再重新勾选。</translation>
 <translation id="897805526397249209">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程访问并点击“<ph name="BUTTON_NAME" />”。</translation>
 <translation id="8998327464021325874">Chrome 远程桌面主机控制器</translation>
 <translation id="9016232822027372900">仍然连接</translation>

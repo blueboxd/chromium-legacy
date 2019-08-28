@@ -419,7 +419,7 @@ void WebSocketChannelImpl::ApplyBackpressure() {
 
 void WebSocketChannelImpl::RemoveBackpressure() {
   backpressure_ = false;
-  AddReceiveFlowControlIfNecessary();
+  handle_->ConsumePendingDataFrames();
 }
 
 WebSocketChannelImpl::Message::Message(const std::string& text,
@@ -548,23 +548,6 @@ void WebSocketChannelImpl::ProcessSendQueue() {
     client_->DidConsumeBufferedAmount(consumed_buffered_amount);
 }
 
-void WebSocketChannelImpl::AddReceiveFlowControlIfNecessary() {
-  DCHECK(receive_quota_threshold_.has_value());
-  if (!handle_ ||
-      received_data_size_for_flow_control_ < receive_quota_threshold_.value()) {
-    return;
-  }
-  handle_->AddReceiveFlowControlQuota(received_data_size_for_flow_control_);
-  received_data_size_for_flow_control_ = 0;
-}
-
-void WebSocketChannelImpl::InitialReceiveFlowControl() {
-  DCHECK(receive_quota_threshold_.has_value());
-  DCHECK_EQ(received_data_size_for_flow_control_, 0u);
-  DCHECK(handle_);
-  handle_->AddReceiveFlowControlQuota(receive_quota_threshold_.value() * 2);
-}
-
 void WebSocketChannelImpl::AbortAsyncOperations() {
   if (blob_loader_) {
     blob_loader_->Cancel();
@@ -577,7 +560,6 @@ void WebSocketChannelImpl::HandleDidClose(bool was_clean,
                                           const String& reason) {
   handshake_throttle_.reset();
   handle_.reset();
-  receive_quota_threshold_.reset();
   AbortAsyncOperations();
   if (!client_) {
     return;
@@ -592,17 +574,14 @@ void WebSocketChannelImpl::HandleDidClose(bool was_clean,
 
 void WebSocketChannelImpl::DidConnect(WebSocketHandle* handle,
                                       const String& selected_protocol,
-                                      const String& extensions,
-                                      uint64_t receive_quota_threshold) {
+                                      const String& extensions) {
   NETWORK_DVLOG(1) << this << " DidConnect(" << handle << ", "
                    << String(selected_protocol) << ", " << String(extensions)
-                   << ", " << receive_quota_threshold << ")";
+                   << "), throttle_passed_?" << throttle_passed_;
 
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
   DCHECK(client_);
-
-  receive_quota_threshold_ = receive_quota_threshold;
 
   if (!throttle_passed_) {
     connect_info_ =
@@ -610,7 +589,7 @@ void WebSocketChannelImpl::DidConnect(WebSocketHandle* handle,
     return;
   }
 
-  InitialReceiveFlowControl();
+  handle_->StartReceiving();
 
   handshake_throttle_.reset();
 
@@ -676,7 +655,7 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
   NETWORK_DVLOG(1) << this << " DidReceiveData(" << handle << ", " << fin
                    << ", " << type << ", (" << static_cast<const void*>(data)
                    << ", " << size << "))";
-
+  DCHECK(!backpressure_);
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
   DCHECK(client_);
@@ -695,10 +674,6 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
     case WebSocketHandle::kMessageTypeContinuation:
       break;
   }
-
-  received_data_size_for_flow_control_ += size;
-  if (!backpressure_)
-    AddReceiveFlowControlIfNecessary();
 
   const size_t message_size_so_far = message_chunks_.GetSize();
   if (message_size_so_far > std::numeric_limits<wtf_size_t>::max()) {
@@ -810,10 +785,7 @@ void WebSocketChannelImpl::OnCompletion(
 
   throttle_passed_ = true;
   if (connect_info_) {
-    // No flow control quota is supplied to the browser until we are ready to
-    // receive messages. This fixes crbug.com/786776.
-    InitialReceiveFlowControl();
-
+    handle_->StartReceiving();
     client_->DidConnect(std::move(connect_info_->selected_protocol),
                         std::move(connect_info_->extensions));
     connect_info_.reset();

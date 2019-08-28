@@ -68,7 +68,8 @@ class WebSocketHandle {
                        const String& user_agent_override,
                        WebSocketChannelImpl*) = 0;
   virtual void Send(bool fin, MessageType, const char* data, wtf_size_t) = 0;
-  virtual void AddReceiveFlowControlQuota(int64_t quota) = 0;
+  virtual void StartReceiving() = 0;
+  virtual void ConsumePendingDataFrames() = 0;
   virtual void Close(uint16_t code, const String& reason) = 0;
 };
 

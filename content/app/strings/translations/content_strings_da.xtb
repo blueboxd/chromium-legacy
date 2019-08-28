@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Værdien skal være mindre end eller lig med <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3557673793733683882">overskrift <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">ugevælger</translation>
 <translation id="3685101356851116974">Billedet har ingen etiket</translation>
 <translation id="3706100364254443312">kontakt</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Henter beskrivelsen...</translation>
 <translation id="8117451130807776954">Denne uge</translation>
 <translation id="8199524924445686405">åååå</translation>
+<translation id="8208673686607688524">lokal dato- og tidsvælger</translation>
 <translation id="8261464734335370856">Ugyldig stavning</translation>
 <translation id="8284326494547611709">Undertekster</translation>
 <translation id="835897206747267392">Ugyldig værdi.</translation>

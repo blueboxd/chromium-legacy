@@ -37,7 +37,8 @@ class MarkRequestCompleteTask : public DatabaseTask {
  private:
   void StoreResponse(base::OnceClosure done_closure);
 
-  void PopulateResponseBody(blink::mojom::FetchAPIResponse* response);
+  void DidMakeBlob(base::OnceClosure done_closure,
+                   blink::mojom::SerializedBlobPtr blob);
 
   void DidGetIsQuotaAvailable(base::OnceClosure done_closure,
                               bool is_available);

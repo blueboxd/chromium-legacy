@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Савет за Chromium. Ако желите више опција за картице, притисните и задржите дугме Прикажи картице на траци с алаткама, која се налази у дну или у врху екрана.</translation>
 <translation id="4241912885070669028">Одјављујете се са налога којим управља <ph name="SIGNOUT_MANAGED_DOMAIN" />. То ће избрисати Chromium податке са овог уређаја, али ће подаци остати на Google налогу.</translation>
 <translation id="4555020257205549924">Када је ова функција укључена, Chromium ће нудити да преводи странице написане на другим језицима помоћу Google преводиоца. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Укључите Chromium скенер</translation>
 <translation id="4787850887676698916">Овде ће се приказати картице које сте отворили у Chromium-у на другим уређајима.</translation>
 <translation id="4999538639245140991">Одјављујете се са налога којим управља <ph name="SIGNOUT_MANAGED_DOMAIN" />, што ће избрисати Chromium податке са овог уређаја. Подаци ће остати на Google налогу.</translation>
 <translation id="5231355151045086930">Одјавите се из Chromium-а</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Отворите Подешавања &gt; Приватност &gt; Камера &gt; Chromium и укључите камеру.</translation>
 <translation id="7746854981345936341">Савет за Chromium. Нека дугмад се сада налазе у дну екрана, попут дугмади Назад, Напред и Претражи.</translation>
 <translation id="786327964234957808">Мењате налог за синхронизацију из <ph name="USER_EMAIL1" /> у <ph name="USER_EMAIL2" />. Постојећим Chromium подацима управља <ph name="DOMAIN" />. На овај начин бришете податке са овог уређаја, али подаци остају на <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Почните да користите Chromium скенер</translation>
 <translation id="8073677936375100957">Желите ли да обришете Chromium податке са овог уређаја?</translation>
 <translation id="8175055321229419309">Савет: <ph name="BEGIN_LINK" />Преместите Chromium на док<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Побољшајте Google доживљај у Chromium-у на основу локације.</translation>

@@ -19,7 +19,6 @@ SyncBackendRegistrar::SyncBackendRegistrar(
     ModelSafeWorkerFactory worker_factory)
     : name_(name) {
   DCHECK(!worker_factory.is_null());
-  MaybeAddWorker(worker_factory, GROUP_DB);
   MaybeAddWorker(worker_factory, GROUP_UI);
   MaybeAddWorker(worker_factory, GROUP_PASSIVE);
   MaybeAddWorker(worker_factory, GROUP_PASSWORD);

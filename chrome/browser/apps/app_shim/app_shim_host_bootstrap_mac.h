@@ -18,6 +18,10 @@
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
+namespace apps {
+class AppShimHandler;
+}  // namespace apps
+
 class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
  public:
   // Creates a new server-side mojo channel at |endpoint|, which contains a

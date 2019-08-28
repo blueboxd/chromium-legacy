@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
+#import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -80,14 +81,10 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 // Returns YES if the keyboard constraint view is present. This view is the one
-// used to constraint any presented view.
+// used to constraint any presented view. iPad always presents in a separate
+// popover.
 - (BOOL)canPresentView {
-  if (IsIPadIdiom()) {
-    // iPad always presents in a separate popover.
-    return YES;
-  }
-  UIView* keyboardView = [self getKeyboardView];
-  return [self recursiveGetKeyboardConstraintView:keyboardView];
+  return KeyboardObserverHelper.keyboardLayoutGuide || IsIPadIdiom();
 }
 
 #pragma mark - Public
@@ -98,13 +95,11 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
   DCHECK(view);
   DCHECK(!view.superview);
-  UIView* keyboardView = [self getKeyboardView];
+  UIView* keyboardView = KeyboardObserverHelper.keyboardView;
   view.accessibilityViewIsModal = YES;
   [keyboardView.superview addSubview:view];
-  UIView* constrainingView =
-      [self recursiveGetKeyboardConstraintView:keyboardView];
   view.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(view, constrainingView);
+  AddSameConstraints(view, KeyboardObserverHelper.keyboardLayoutGuide);
   self.keyboardReplacementView = view;
   UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
                                   view);
@@ -287,53 +282,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   [self.inputAccessoryView removeFromSuperview];
 }
 
-// This searches in a keyboard view hierarchy for the best candidate to
-// constrain a view to the keyboard.
-- (UIView*)recursiveGetKeyboardConstraintView:(UIView*)view {
-  for (UIView* subview in view.subviews) {
-    // TODO(crbug.com/845472): verify this on iOS 10-12 and all devices.
-    // Currently only tested on X-iOS12, 6+-iOS11 and 7+-iOS10. iPhoneX, iOS 11
-    // and 12 uses "Dock" and iOS 10 uses "Backdrop". iPhone6+, iOS 11 uses
-    // "Dock".
-    if ([NSStringFromClass([subview class]) containsString:@"Dock"] ||
-        [NSStringFromClass([subview class]) containsString:@"Backdrop"]) {
-      return subview;
-    }
-    UIView* found = [self recursiveGetKeyboardConstraintView:subview];
-    if (found) {
-      return found;
-    }
-  }
-  return nil;
-}
-
-- (UIView*)getKeyboardView {
-  NSArray* windows = [UIApplication sharedApplication].windows;
-  NSUInteger expectedMinWindows = IsIPadIdiom() ? 2 : 3;
-  if (windows.count < expectedMinWindows)
-    return nil;
-
-  UIWindow* window = windows.lastObject;
-
-  for (UIView* subview in window.subviews) {
-    if ([NSStringFromClass([subview class]) rangeOfString:@"PeripheralHost"]
-            .location != NSNotFound) {
-      return subview;
-    }
-    if ([NSStringFromClass([subview class]) rangeOfString:@"SetContainer"]
-            .location != NSNotFound) {
-      for (UIView* subsubview in subview.subviews) {
-        if ([NSStringFromClass([subsubview class]) rangeOfString:@"SetHost"]
-                .location != NSNotFound) {
-          return subsubview;
-        }
-      }
-    }
-  }
-
-  return nil;
-}
-
 - (void)addCustomKeyboardViewIfNeeded {
   if (self.isPaused) {
     return;
@@ -352,7 +300,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   if (self.inputAccessoryView) {
     if (IsIPadIdiom()) {
       // On iPad the keyboard view can change so this updates it when needed.
-      UIView* keyboardView = [self getKeyboardView];
+      UIView* keyboardView = KeyboardObserverHelper.keyboardView;
       if (!keyboardView) {
         return;
       }

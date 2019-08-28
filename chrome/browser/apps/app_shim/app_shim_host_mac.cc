@@ -9,18 +9,20 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "components/remote_cocoa/browser/application_host.h"
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/ui_base_features.h"
 
-AppShimHost::AppShimHost(const std::string& app_id,
+AppShimHost::AppShimHost(AppShimHost::Client* client,
+                         const std::string& app_id,
                          const base::FilePath& profile_path,
                          bool uses_remote_views)
-    : host_binding_(this),
+    : client_(client),
+      host_binding_(this),
       app_shim_request_(mojo::MakeRequest(&app_shim_)),
       launch_shim_has_been_called_(false),
       app_id_(app_id),
@@ -51,22 +53,14 @@ void AppShimHost::ChannelError(uint32_t custom_reason,
              << " description: " << description;
 
   // OnShimProcessDisconnected will delete |this|.
-  if (apps::AppShimHandler* handler = GetAppShimHandler())
-    handler->OnShimProcessDisconnected(this);
-}
-
-apps::AppShimHandler* AppShimHost::GetAppShimHandler() const {
-  return apps::AppShimHandler::Get();
+  client_->OnShimProcessDisconnected(this);
 }
 
 void AppShimHost::LaunchShimInternal(bool recreate_shims) {
   DCHECK(launch_shim_has_been_called_);
   DCHECK(!bootstrap_);
-  apps::AppShimHandler* handler = GetAppShimHandler();
-  if (!handler)
-    return;
   launch_weak_factory_.InvalidateWeakPtrs();
-  handler->OnShimLaunchRequested(
+  client_->OnShimLaunchRequested(
       this, recreate_shims,
       base::BindOnce(&AppShimHost::OnShimProcessLaunched,
                      launch_weak_factory_.GetWeakPtr(), recreate_shims),
@@ -110,8 +104,7 @@ void AppShimHost::OnShimProcessTerminated(bool recreate_shims_requested) {
   DLOG(ERROR) << "Failed to launch recreated shim, giving up.";
 
   // OnShimProcessDisconnected will delete |this|.
-  if (apps::AppShimHandler* handler = GetAppShimHandler())
-    handler->OnShimProcessDisconnected(this);
+  client_->OnShimProcessDisconnected(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -142,12 +135,9 @@ void AppShimHost::LaunchShim() {
     return;
   launch_shim_has_been_called_ = true;
 
-  apps::AppShimHandler* handler = GetAppShimHandler();
-  if (!handler)
-    return;
   if (bootstrap_) {
     // If there is a connected app shim process, focus the app windows.
-    handler->OnShimFocus(this, apps::APP_SHIM_FOCUS_NORMAL,
+    client_->OnShimFocus(this, apps::APP_SHIM_FOCUS_NORMAL,
                          std::vector<base::FilePath>());
   } else {
     // Otherwise, attempt to launch whatever app shims we find.
@@ -158,23 +148,17 @@ void AppShimHost::LaunchShim() {
 void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
                            const std::vector<base::FilePath>& files) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  apps::AppShimHandler* handler = GetAppShimHandler();
-  if (handler)
-    handler->OnShimFocus(this, focus_type, files);
+  client_->OnShimFocus(this, focus_type, files);
 }
 
 void AppShimHost::SetAppHidden(bool hidden) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  apps::AppShimHandler* handler = GetAppShimHandler();
-  if (handler)
-    handler->OnShimSetHidden(this, hidden);
+  client_->OnShimSetHidden(this, hidden);
 }
 
 void AppShimHost::QuitApp() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  apps::AppShimHandler* handler = GetAppShimHandler();
-  if (handler)
-    handler->OnShimQuit(this);
+  client_->OnShimQuit(this);
 }
 
 void AppShimHost::OnAppHide() {

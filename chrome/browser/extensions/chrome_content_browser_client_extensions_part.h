@@ -103,7 +103,8 @@ class ChromeContentBrowserClientExtensionsPart
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
       const url::Origin& request_initiator);
 
   static bool IsBuiltinComponent(content::BrowserContext* browser_context,

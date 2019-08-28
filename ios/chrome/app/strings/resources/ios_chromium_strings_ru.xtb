@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Совет для Chromium. Чтобы открыть дополнительные настройки вкладок, нажмите и удерживайте кнопку "Показать вкладки" на панели инструментов в нижней или верхней части экрана.</translation>
 <translation id="4241912885070669028">Вы выходите из аккаунта, которым управляет администратор домена <ph name="SIGNOUT_MANAGED_DOMAIN" />. Обратите внимание, что данные Chromium будут удалены с устройства, но сохранятся в аккаунте Google.</translation>
 <translation id="4555020257205549924">Когда эта функция включена, Chrome предлагает перевести страницы с помощью Google Переводчика. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Включить сканер в Chromium</translation>
 <translation id="4787850887676698916">Здесь появятся вкладки, открытые в Chromium на других устройствах.</translation>
 <translation id="4999538639245140991">Вы выходите из аккаунта, которым управляет администратор домена <ph name="SIGNOUT_MANAGED_DOMAIN" />. Обратите внимание, что данные Chromium будут удалены с устройства, но останутся в вашем аккаунте Google.</translation>
 <translation id="5231355151045086930">Выйти из Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Откройте "Настройки &gt; Конфиденциальность &gt; Камера &gt; Chromium" и включите камеру.</translation>
 <translation id="7746854981345936341">Совет для Chromium. Некоторые кнопки, например "Назад", "Вперед" и "Поиск", теперь расположены в нижней части экрана.</translation>
 <translation id="786327964234957808">Вы переходите из аккаунта <ph name="USER_EMAIL1" /> в <ph name="USER_EMAIL2" />. Данными Chromium управляет администратор домена <ph name="DOMAIN" />. Обратите внимание, что данные будут удалены с устройства, но сохранятся в аккаунте <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Используйте сканер в Chromium</translation>
 <translation id="8073677936375100957">Удалить данные Chromium с этого устройства?</translation>
 <translation id="8175055321229419309">Совет. <ph name="BEGIN_LINK" />Добавьте Chromium в Dock<ph name="END_LINK" />.</translation>
 <translation id="8252885722420466166">Используйте дополнительные возможности Google в Chrome, сообщив свое местоположение.</translation>

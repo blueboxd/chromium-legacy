@@ -68,14 +68,14 @@ security_state::SafetyTipStatus GetSecurityStateSafetyTipType(
     safety_tips::SafetyTipType type) {
   switch (type) {
     case safety_tips::SafetyTipType::kNone:
-      return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_NONE;
+      return security_state::SafetyTipStatus::kNone;
     case safety_tips::SafetyTipType::kBadReputation:
-      return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_BAD_REPUTATION;
+      return security_state::SafetyTipStatus::kBadReputation;
     case safety_tips::SafetyTipType::kLookalikeUrl:
-      return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_LOOKALIKE;
+      return security_state::SafetyTipStatus::kLookalike;
     default:
       NOTREACHED();
-      return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_NONE;
+      return security_state::SafetyTipStatus::kUnknown;
   }
 }
 
@@ -110,8 +110,9 @@ SecurityStateTabHelper::GetVisibleSecurityState() const {
   state->safety_tip_status =
       reputation_web_contents_observer
           ? GetSecurityStateSafetyTipType(
-                reputation_web_contents_observer->last_shown_safety_tip_type())
-          : security_state::SafetyTipStatus::SAFETY_TIP_STATUS_NONE;
+                reputation_web_contents_observer
+                    ->GetSafetyTipTypeForVisibleNavigation())
+          : security_state::SafetyTipStatus::kUnknown;
   return state;
 }
 

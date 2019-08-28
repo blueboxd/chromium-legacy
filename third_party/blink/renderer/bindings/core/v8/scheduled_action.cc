@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -132,6 +133,7 @@ void ScheduledAction::Execute(ExecutionContext* context) {
     DVLOG(1) << "ScheduledAction::execute " << this << ": context is empty";
     return;
   }
+
   // ExecutionContext::CanExecuteScripts() relies on the current context to
   // determine if it is allowed. Enter the scope here.
   ScriptState::Scope scope(script_state_->Get());
@@ -147,6 +149,9 @@ void ScheduledAction::Execute(ExecutionContext* context) {
                << ": frame can not execute scripts";
       return;
     }
+    scheduler::CooperativeSchedulingManager::AllowedStackScope
+        allowed_stack_scope(
+            scheduler::CooperativeSchedulingManager::Instance());
     Execute(frame);
   } else {
     DVLOG(1) << "ScheduledAction::execute " << this << ": worker scope";

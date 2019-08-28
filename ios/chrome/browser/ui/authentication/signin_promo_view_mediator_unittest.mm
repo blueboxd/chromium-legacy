@@ -8,6 +8,7 @@
 #import "base/test/ios/wait_util.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/unified_consent/feature.h"
+#include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
@@ -22,6 +23,9 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+
 namespace {
 
 class SigninPromoViewMediatorTest : public PlatformTest {
@@ -32,6 +36,12 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   }
 
   void TearDown() override {
+    // All callbacks should be triggered to make sure tests are working
+    // correctly. If this test fails,
+    // |WaitUntilFakeChromeIdentityServiceCallbackCompleted| should be called
+    // in the test.
+    EXPECT_FALSE(ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                     ->HasPendingCallback());
     [mediator_ signinPromoViewRemoved];
     EXPECT_EQ(ios::SigninPromoViewState::Invalid,
               mediator_.signinPromoViewState);
@@ -85,6 +95,8 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     CheckWarmStateConfigurator(configurator_);
     // Check a new created configurator.
     CheckWarmStateConfigurator([mediator_ createConfigurator]);
+    // The consumer should receive a notification related to the image.
+    CheckForImageNotification();
   }
 
   // Expects a notification on the consumer for an identity update, and stores
@@ -168,6 +180,27 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     }
   }
 
+  // Checks to receive a notification for the image upate of the current
+  // identity.
+  void CheckForImageNotification() {
+    configurator_ = nil;
+    ExpectConfiguratorNotification(NO /* identity changed */);
+    WaitUntilFakeChromeIdentityServiceCallbackCompleted();
+    // Check the configurator received by the consumer.
+    CheckWarmStateConfigurator(configurator_);
+  }
+
+  // Runs the runloop until all callback from FakeChromeIdentityService are
+  // called.
+  void WaitUntilFakeChromeIdentityServiceCallbackCompleted() {
+    ConditionBlock condition = ^() {
+      return !ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+                  ->HasPendingCallback();
+    };
+    EXPECT_TRUE(
+        WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition));
+  }
+
   // Mediator used for the tests.
   SigninPromoViewMediator* mediator_;
 
@@ -223,15 +256,6 @@ TEST_F(SigninPromoViewMediatorTest,
   user_full_name_ = nil;
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
   TestWarmState();
-}
-
-TEST_F(SigninPromoViewMediatorTest,
-       WarmStateConfigureSigninPromoViewWithImage) {
-  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
-  TestWarmState();
-  ExpectConfiguratorNotification(NO /* no identity changed */);
-  base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(0.1));
-  CheckWarmStateConfigurator(configurator_);
 }
 
 // Tests the scenario with the sign-in promo in cold state, and then adding an
@@ -298,6 +322,69 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
   EXPECT_FALSE(mediator_.isSigninInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
             mediator_.signinPromoViewState);
+}
+
+// Tests that no update notification is sent by the mediator to its consumer,
+// while the sign-in is in progress, when an identity is added.
+TEST_F(SigninPromoViewMediatorTest,
+       SigninPromoViewNoUpdateNotificationWhileSignin) {
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  [mediator_ signinPromoViewVisible];
+  __block ShowSigninCommandCompletionCallback completion;
+  ShowSigninCommandCompletionCallback completion_arg =
+      [OCMArg checkWithBlock:^BOOL(ShowSigninCommandCompletionCallback value) {
+        completion = value;
+        return YES;
+      }];
+  OCMExpect([consumer_
+           signinPromoViewMediator:mediator_
+      shouldOpenSigninWithIdentity:nil
+                       promoAction:
+                           signin_metrics::PromoAction::
+                               PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT
+                        completion:completion_arg]);
+  // Starts sign-in without identity.
+  [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
+  // Adds an identity while doing sign-in.
+  AddDefaultIdentity();
+  // No consumer notification should be expected.
+  WaitUntilFakeChromeIdentityServiceCallbackCompleted();
+  // Finishs the sign-in.
+  OCMExpect([consumer_ signinDidFinish]);
+  completion(YES);
+}
+
+// Tests that no update notification is sent by the mediator to its consumer,
+// while the sign-in is in progress.
+TEST_F(SigninPromoViewMediatorTest,
+       SigninPromoViewNoUpdateNotificationWhileSignin2) {
+  AddDefaultIdentity();
+  CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
+  [mediator_ signinPromoViewVisible];
+  __block ShowSigninCommandCompletionCallback completion;
+  ShowSigninCommandCompletionCallback completion_arg =
+      [OCMArg checkWithBlock:^BOOL(ShowSigninCommandCompletionCallback value) {
+        completion = value;
+        return YES;
+      }];
+  OCMExpect([consumer_ signinPromoViewMediator:mediator_
+                  shouldOpenSigninWithIdentity:expected_default_identity_
+                                   promoAction:signin_metrics::PromoAction::
+                                                   PROMO_ACTION_WITH_DEFAULT
+                                    completion:completion_arg]);
+  // Starts sign-in with an identity.
+  [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
+  EXPECT_TRUE(
+      [mediator_ conformsToProtocol:@protocol(ChromeIdentityServiceObserver)]);
+  id<ChromeIdentityServiceObserver> chromeIdentityServiceObserver =
+      (id<ChromeIdentityServiceObserver>)mediator_;
+  // Simulates an identity update.
+  [chromeIdentityServiceObserver profileUpdate:expected_default_identity_];
+  // Spins the run loop to wait for the profile image update.
+  WaitUntilFakeChromeIdentityServiceCallbackCompleted();
+  // Finishs the sign-in.
+  OCMExpect([consumer_ signinDidFinish]);
+  completion(YES);
 }
 
 }  // namespace

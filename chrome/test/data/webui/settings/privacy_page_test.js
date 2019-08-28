@@ -130,6 +130,10 @@ cr.define('settings_privacy_page', function() {
             allowed_on_next_startup:
                 {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
           },
+          profile: {
+            cookie_controls_mode:
+                {type: chrome.settingsPrivate.PrefType.NUMBER, value: 2}
+          },
         };
         document.body.appendChild(page);
       });
@@ -151,6 +155,22 @@ cr.define('settings_privacy_page', function() {
         // errors.
         return test_util.whenAttributeIs(
             dialog.$$('#clearBrowsingDataDialog'), 'open', '');
+      });
+
+      test('cookieControlsToggle', function() {
+        assertTrue(loadTimeData.getBoolean('improvedCookieControlsEnabled'));
+        Polymer.dom.flush();
+        const toggle = page.$$('#cookieControls');
+        assertTrue(toggle.checked);
+        assertEquals(2, page.prefs.profile.cookie_controls_mode.value);
+
+        toggle.click();
+        assertFalse(toggle.checked);
+        assertEquals(0, page.prefs.profile.cookie_controls_mode.value);
+
+        toggle.click();
+        assertTrue(toggle.checked);
+        assertEquals(2, page.prefs.profile.cookie_controls_mode.value);
       });
 
       if (!cr.isChromeOS) {

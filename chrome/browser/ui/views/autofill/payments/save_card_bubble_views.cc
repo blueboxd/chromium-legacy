@@ -164,7 +164,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   base::string16 explanation = controller_->GetExplanatoryMessage();
   if (!explanation.empty()) {
     auto* explanation_label = new views::Label(
-        explanation, CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+        explanation, CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
     explanation_label->SetMultiLine(true);
     explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     view->AddChildView(explanation_label);
@@ -201,7 +201,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 
     auto* expiration_date_label = new views::Label(
         card.AbbreviatedExpirationDateForDisplay(false),
-        CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+        CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
     expiration_date_label->SetID(DialogViewId::EXPIRATION_DATE_LABEL);
     description_view->AddChildView(expiration_date_label);
   }

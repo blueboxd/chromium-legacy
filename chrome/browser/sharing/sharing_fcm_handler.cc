@@ -11,6 +11,7 @@
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
+#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -45,8 +46,11 @@ std::string GetStrippedMessageId(const std::string& message_id) {
 }  // namespace
 
 SharingFCMHandler::SharingFCMHandler(gcm::GCMDriver* gcm_driver,
-                                     SharingFCMSender* sharing_fcm_sender)
-    : gcm_driver_(gcm_driver), sharing_fcm_sender_(sharing_fcm_sender) {}
+                                     SharingFCMSender* sharing_fcm_sender,
+                                     SharingSyncPreference* sync_preference)
+    : gcm_driver_(gcm_driver),
+      sharing_fcm_sender_(sharing_fcm_sender),
+      sync_preference_(sync_preference) {}
 
 SharingFCMHandler::~SharingFCMHandler() {
   StopListening();
@@ -111,7 +115,7 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
     it->second->OnMessage(sharing_message);
 
     if (sharing_message.payload_case() != SharingMessage::kAckMessage)
-      SendAckMessage(sharing_message.sender_guid(), message_id);
+      SendAckMessage(sharing_message, message_id);
   }
 }
 
@@ -130,13 +134,29 @@ void SharingFCMHandler::OnStoreReset() {
   // TODO: Handle GCM store reset.
 }
 
-void SharingFCMHandler::SendAckMessage(const std::string& original_sender_guid,
+void SharingFCMHandler::SendAckMessage(const SharingMessage& original_message,
                                        const std::string& original_message_id) {
   SharingMessage ack_message;
   ack_message.mutable_ack_message()->set_original_message_id(
       original_message_id);
+
+  base::Optional<SharingSyncPreference::Device> target;
+  if (original_message.has_sender_info()) {
+    auto& sender_info = original_message.sender_info();
+    target.emplace(sender_info.fcm_token(), sender_info.p256dh(),
+                   sender_info.auth_secret(),
+                   /*capabilities=*/0);
+  } else {
+    target = sync_preference_->GetSyncedDevice(original_message.sender_guid());
+    if (!target) {
+      LOG(ERROR) << "Unable to find device in preference";
+      LogSendSharingAckMessageResult(SharingSendMessageResult::kDeviceNotFound);
+      return;
+    }
+  }
+
   sharing_fcm_sender_->SendMessageToDevice(
-      original_sender_guid, kAckTimeToLive, std::move(ack_message),
+      std::move(*target), kAckTimeToLive, std::move(ack_message),
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), original_message_id));
 }

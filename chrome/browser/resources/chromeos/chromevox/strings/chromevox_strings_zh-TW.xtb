@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1385214448885562192">按 Enter 鍵接受或 Esc 鍵取消；按向下鍵可移至下一個搜尋結果，按向上鍵可移至上一個搜尋結果。</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">朗讀 RTF 格式屬性</translation>
 <translation id="1405567553485452995">淺綠色</translation>
 <translation id="1417889266572670458">海軍藍</translation>
 <translation id="1431911867058218151">梅紅</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">暗灰</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{項目符號}other{# 個項目符號}}</translation>
 <translation id="6355910664415701303">沒有上一個清單項目。</translation>
-<translation id="6360318852623800555">RTF 格式屬性</translation>
 <translation id="6364795331201459219">第 6 階</translation>
 <translation id="6368143427468974988">上一個標題</translation>
 <translation id="6376999910001533545">栗色</translation>

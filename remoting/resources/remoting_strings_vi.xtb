@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Không thể kết nối với máy chủ. Điều này có thể do cấu hình của mạng bạn đang sử dụng.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Nhìn thấy trực tuyến lần cuối <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ứng dụng này không được hỗ trợ nữa. Để đảm bảo bạn sẽ nhận được các tính năng và bản cập nhật bảo mật mới nhất, hãy sử dụng <ph name="LINK_BEGIN" />ứng dụng web Chrome Remote Desktop<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Bạn cần thực hiện một bước cấu hình bổ sung để có thể điều khiển máy này từ xa bằng <ph name="PRODUCT_NAME" />.
-
-Để bật chức năng này, hãy chọn '<ph name="BUTTON_NAME" />' để hiển thị ngăn tùy chọn Bảo mật và quyền riêng tư. Sau đó, chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Nếu '<ph name="SERVICE_SCRIPT_NAME" />' đã tồn tại và được chọn, thì bạn có thể phải xóa đi và thêm lại.</translation>
 <translation id="2499160551253595098">Giúp chúng tôi cải tiến Chrome Remote Desktop bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="2509394361235492552">Đã kết nối với <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">LƯU Ý: Nhằm đảm bảo rằng tất cả các phím tắt đều khả dụng, bạn có thể định cấu hình Chrome Remote Desktop để ‘Mở dưới dạng cửa sổ’.</translation>
@@ -317,6 +312,11 @@ Nếu '<ph name="SERVICE_SCRIPT_NAME" />' đã tồn tại và được chọn, 
 <translation id="8804164990146287819">Chính sách quyền riêng tư</translation>
 <translation id="894763922177556086">Tốt</translation>
 <translation id="895780780740011433">Dành cho Windows 7 trở lên</translation>
+<translation id="8963047137585288214">Bạn cần thực hiện một bước cấu hình bổ sung để có thể điều khiển máy này từ xa bằng <ph name="PRODUCT_NAME" />.
+
+Để bật chức năng này, hãy chọn '<ph name="BUTTON_NAME" />' để hiển thị ngăn tùy chọn Bảo mật và quyền riêng tư. Sau đó, chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Nếu '<ph name="SERVICE_SCRIPT_NAME" />' đã tồn tại và được chọn, thì bạn có thể phải bỏ rồi chọn lại.</translation>
 <translation id="897805526397249209">Để bật kết nối từ xa với một máy tính khác, hãy cài đặt Kết nối từ xa trên Chrome trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Trình điều khiển máy chủ Chrome Remote Desktop</translation>
 <translation id="9016232822027372900">Vẫn tiếp tục kết nối</translation>

@@ -309,7 +309,8 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
     bool* bypass_redirect_checks) {
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
@@ -338,7 +339,8 @@ network::mojom::URLLoaderFactoryPtrInfo
 ShellContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
     const url::Origin& request_initiator) {
   return URLLoaderFactoryManager::CreateFactory(
       process, network_context, header_client, request_initiator);

@@ -29,11 +29,6 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
  public:
   ~ClipboardHostImpl() override;
 
-  // TODO(https://crbug.com/955171): Remove this and use Create directly once
-  // RenderProcessHostImpl uses service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  static void CreateForRequest(blink::mojom::ClipboardHostRequest request);
-
   static void Create(
       mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
 

@@ -86,8 +86,7 @@ blink::WebSize MockWebThemeEngine::GetSize(WebThemeEngine::Part part) {
 
 static SkIRect webRectToSkIRect(const WebRect& webRect) {
   SkIRect irect;
-  irect.set(webRect.x, webRect.y, webRect.x + webRect.width - 1,
-            webRect.y + webRect.height - 1);
+  irect.setXYWH(webRect.x, webRect.y, webRect.width - 1, webRect.height - 1);
   return irect;
 }
 
@@ -229,8 +228,8 @@ void nestedBoxes(cc::PaintCanvas* canvas,
                  SkColor innerColor) {
   SkIRect lirect;
   box(canvas, irect, outerColor);
-  lirect.set(irect.fLeft + indentLeft, irect.fTop + indentTop,
-             irect.fRight - indentRight, irect.fBottom - indentBottom);
+  lirect.setLTRB(irect.fLeft + indentLeft, irect.fTop + indentTop,
+                 irect.fRight - indentRight, irect.fBottom - indentBottom);
   box(canvas, lirect, innerColor);
 }
 
@@ -242,8 +241,8 @@ void insetBox(cc::PaintCanvas* canvas,
               int indentBottom,
               SkColor color) {
   SkIRect lirect;
-  lirect.set(irect.fLeft + indentLeft, irect.fTop + indentTop,
-             irect.fRight - indentRight, irect.fBottom - indentBottom);
+  lirect.setLTRB(irect.fLeft + indentLeft, irect.fTop + indentTop,
+                 irect.fRight - indentRight, irect.fBottom - indentBottom);
   box(canvas, lirect, color);
 }
 
@@ -552,8 +551,8 @@ void MockWebThemeEngine::Paint(cc::PaintCanvas* canvas,
       if (extraParams->inner_spin.read_only)
         state = blink::WebThemeEngine::kStateDisabled;
 
-      lirect.set(rect.x, rect.y, rect.x + rect.width - 1,
-                 rect.y + halfHeight - 1);
+      lirect.setLTRB(rect.x, rect.y, rect.x + rect.width - 1,
+                     rect.y + halfHeight - 1);
       box(canvas, lirect, bgColors(state));
       bottom = lirect.fBottom;
       quarterHeight = lirect.height() / 4;
@@ -561,8 +560,8 @@ void MockWebThemeEngine::Paint(cc::PaintCanvas* canvas,
                right - quarterWidth, bottom - quarterHeight, left + halfWidth,
                top + quarterHeight, edgeColor);
 
-      lirect.set(rect.x, rect.y + halfHeight, rect.x + rect.width - 1,
-                 rect.y + 2 * halfHeight - 1);
+      lirect.setLTRB(rect.x, rect.y + halfHeight, rect.x + rect.width - 1,
+                     rect.y + 2 * halfHeight - 1);
       top = lirect.fTop;
       bottom = lirect.fBottom;
       quarterHeight = lirect.height() / 4;
@@ -581,11 +580,9 @@ void MockWebThemeEngine::Paint(cc::PaintCanvas* canvas,
       // Emulate clipping
       SkIRect tofill = irect;
       if (extraParams->progress_bar.determinate) {
-        tofill.set(extraParams->progress_bar.value_rect_x,
-                   extraParams->progress_bar.value_rect_y,
-                   extraParams->progress_bar.value_rect_x +
+        tofill.setXYWH(extraParams->progress_bar.value_rect_x,
+                       extraParams->progress_bar.value_rect_y,
                        extraParams->progress_bar.value_rect_width - 1,
-                   extraParams->progress_bar.value_rect_y +
                        extraParams->progress_bar.value_rect_height);
       }
 

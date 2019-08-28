@@ -157,6 +157,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   base::Optional<int> GetAgcStartupMinimumVolume() override;
   void TrackGetUserMedia(
       const blink::WebUserMediaRequest& web_request) override;
+  bool IsWebRtcHWH264DecodingEnabled(
+      webrtc::VideoCodecType video_coded_type) override;
   blink::WebVideoCaptureImplManager* GetVideoCaptureImplManager() override;
 
   std::unique_ptr<blink::WebGraphicsContext3DProvider>

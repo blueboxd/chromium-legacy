@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1385214448885562192">Натисніть клавішу Enter, щоб прийняти, клавішу Escape, щоб скасувати, стрілку вниз, щоб перейти далі, стрілку вгору, щоб перейти назад.</translation>
 <translation id="1396114365388024581">список вкладок</translation>
-<translation id="139902759009894363">Озвучувати атрибути форматованого тексту</translation>
 <translation id="1405567553485452995">Світло-зелений</translation>
 <translation id="1417889266572670458">Темно-синій</translation>
 <translation id="1431911867058218151">Сливовий</translation>
@@ -760,7 +759,6 @@
 <translation id="6348869651006731065">Тьмяно-сірий</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списку}one{# маркер списку}few{# маркери списку}many{# маркерів списку}other{# маркера списку}}</translation>
 <translation id="6355910664415701303">Немає попереднього пункту списку.</translation>
-<translation id="6360318852623800555">Атрибути форматованого тексту</translation>
 <translation id="6364795331201459219">заголовок 6</translation>
 <translation id="6368143427468974988">Попередній заголовок</translation>
 <translation id="6376999910001533545">Темно-бордовий</translation>

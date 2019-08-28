@@ -70,6 +70,8 @@ crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/element_click/scroll_int
 crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/element_click/scroll_into_view.py>>test_partially_visible_does_not_scroll[9] [ Failure Pass ]
 crbug.com/977228 [ Linux ] external/wpt/webdriver/tests/element_click/scroll_into_view.py>>test_scroll_into_view [ Failure Pass ]
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_source_origin[cross_origin] [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_screenshot/iframe.py>>test_source_origin[cross_origin] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/switch_to_frame/cross_origin.py>>test_nested_cross_origin_iframe [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/switch_to_frame/cross_origin.py>>test_cross_origin_iframe [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/switch_to_window/alerts.py>>test_retain_tab_modal_status [ Failure ]

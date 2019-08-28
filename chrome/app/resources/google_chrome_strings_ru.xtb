@@ -181,8 +181,6 @@
 <translation id="6291549208091401781">Google Chrome уже установлен для всех пользователей вашего компьютера</translation>
 <translation id="6338556085225130112">Обновление Google Chrome…</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6400930858680434649">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
-    настройки браузера Chrome<ph name="LINK_END" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
 <translation id="6566149418543181476">Обновление Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="6598387184982954187">Для синхронизации данных Chrome используется аккаунт <ph name="PROFILE_EMAIL" />. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK" />.</translation>

@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Hodnota musí byť menšia alebo rovná hodnote <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definícia</translation>
 <translation id="3557673793733683882">nadpis <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">výber týždňa</translation>
 <translation id="3685101356851116974">Neoznačený obrázok</translation>
 <translation id="3706100364254443312">prepínač</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Načítava sa popis…</translation>
 <translation id="8117451130807776954">Tento týždeň</translation>
 <translation id="8199524924445686405">rrrr</translation>
+<translation id="8208673686607688524">výber miestneho dátumu a času</translation>
 <translation id="8261464734335370856">Neplatný pravopis</translation>
 <translation id="8284326494547611709">Titulky</translation>
 <translation id="835897206747267392">Neplatná hodnota.</translation>

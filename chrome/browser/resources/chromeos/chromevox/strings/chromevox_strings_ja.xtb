@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">検索</translation>
 <translation id="1385214448885562192">確定するには Enter キー、キャンセルするには Esc キー、次へ進むには下矢印キー、前へ戻るには上矢印キーを押してください。</translation>
 <translation id="1396114365388024581">タブリスト</translation>
-<translation id="139902759009894363">リッチテキスト属性を読み上げる</translation>
 <translation id="1405567553485452995">ライトグリーン</translation>
 <translation id="1417889266572670458">ネイビー</translation>
 <translation id="1431911867058218151">プラム</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">ディムグレー</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{箇条書き}other{# 件の箇条書き}}</translation>
 <translation id="6355910664415701303">前のリスト項目はありません。</translation>
-<translation id="6360318852623800555">リッチテキスト属性</translation>
 <translation id="6364795331201459219">見出し 6</translation>
 <translation id="6368143427468974988">前の見出し</translation>
 <translation id="6376999910001533545">マルーン</translation>

@@ -5,9 +5,10 @@
 // ARIA reflection
 // https://w3c.github.io/aria/#idl-interface
 [
-    RuntimeEnabled=AccessibilityObjectModel
+    RuntimeEnabled=AOMPhase1
 ] interface mixin AriaAttributes {
     [CEReactions, Reflect=aria_activedescendant] attribute DOMString? ariaActiveDescendant;
+    [CEReactions, Reflect=aria_activedescendant] attribute Element? ariaActiveDescendantElement;
     [CEReactions, Reflect=aria_atomic] attribute DOMString? ariaAtomic;
     [CEReactions, Reflect=aria_autocomplete] attribute DOMString? ariaAutoComplete;
     [CEReactions, Reflect=aria_busy] attribute DOMString? ariaBusy;
@@ -19,8 +20,10 @@
     [CEReactions, Reflect=aria_current] attribute DOMString? ariaCurrent;
     [CEReactions, Reflect=aria_describedby] attribute DOMString? ariaDescribedBy;
     [CEReactions, Reflect=aria_details] attribute DOMString? ariaDetails;
+    [CEReactions, Reflect=aria_details] attribute Element? ariaDetailsElement;
     [CEReactions, Reflect=aria_disabled] attribute DOMString? ariaDisabled;
     [CEReactions, Reflect=aria_errormessage] attribute DOMString? ariaErrorMessage;
+    [CEReactions, Reflect=aria_errormessage] attribute Element? ariaErrorMessageElement;
     [CEReactions, Reflect=aria_expanded] attribute DOMString? ariaExpanded;
     [CEReactions, Reflect=aria_flowto] attribute DOMString? ariaFlowTo;
     [CEReactions, Reflect=aria_haspopup] attribute DOMString? ariaHasPopup;

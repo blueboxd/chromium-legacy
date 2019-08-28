@@ -132,3 +132,27 @@ async function testAsync(f) {
     chrome.test.fail(e);
   }
 }
+
+/**
+ * @return {!HTMLElement} An element containing a dom-repeat of bookmarks, for
+ *     testing the bookmarks outside of the toolbar.
+ */
+function createBookmarksForTest() {
+  const module = document.createElement('dom-module');
+  module.id = 'test-bookmarks';
+  module.innerHTML = `
+      <template>
+        <template is="dom-repeat" items="[[bookmarks]]">
+          <viewer-bookmark bookmark="[[item]]" depth="0"></viewer-bookmark>
+        </template>
+      </template>
+  `;
+  document.body.appendChild(module);
+  Polymer({
+    is: 'test-bookmarks',
+    properties: {
+      bookmarks: Array,
+    },
+  });
+  return document.createElement('test-bookmarks');
+}

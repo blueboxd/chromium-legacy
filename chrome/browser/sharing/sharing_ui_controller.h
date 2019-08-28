@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "components/sync_device_info/device_info.h"
@@ -72,11 +73,20 @@ class SharingUiController {
 
   void UpdateDevices();
 
+  // Returns the message to be shown as title in error dialog.
+  base::string16 GetErrorDialogTitle() const;
+
+  // Returns the message to be shown in the body of error dialog.
+  base::string16 GetErrorDialogText() const;
+
   // Returns the currently open SharingDialog or nullptr if there is no
   // dialog open.
   SharingDialog* dialog() const { return dialog_; }
   bool is_loading() const { return is_loading_; }
-  bool send_failed() const { return send_failed_; }
+  SharingSendMessageResult send_result() const { return send_result_; }
+
+  bool HasSendFailed() const;
+
   content::WebContents* web_contents() const { return web_contents_; }
   const std::vector<App>& apps() const { return apps_; }
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices() const {
@@ -119,7 +129,7 @@ class SharingUiController {
   SharingService* sharing_service_ = nullptr;
 
   bool is_loading_ = false;
-  bool send_failed_ = false;
+  SharingSendMessageResult send_result_ = SharingSendMessageResult::kSuccessful;
 
   // Currently used apps and devices since the last call to UpdateAndShowDialog.
   std::vector<App> apps_;

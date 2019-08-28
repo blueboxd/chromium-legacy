@@ -69,7 +69,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1385214448885562192">Tryck Retur om du vill godkänna, Esc om du vill avbryta, ned för nästa och upp för föregående.</translation>
 <translation id="1396114365388024581">fliklista</translation>
-<translation id="139902759009894363">Läs upp rich text-attribut</translation>
 <translation id="1405567553485452995">Ljusgrön</translation>
 <translation id="1417889266572670458">Marinblå</translation>
 <translation id="1431911867058218151">Plommonlila</translation>
@@ -761,7 +760,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="6348869651006731065">Dimgrå</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punkt}other{# punkter}}</translation>
 <translation id="6355910664415701303">Det finns ingen föregående post i listan.</translation>
-<translation id="6360318852623800555">Rich text-attribut</translation>
 <translation id="6364795331201459219">rubr6</translation>
 <translation id="6368143427468974988">Föregående rubrik</translation>
 <translation id="6376999910001533545">Rödbrun</translation>

@@ -31,10 +31,8 @@ class ModelTypeRegistryTest : public ::testing::Test {
     scoped_refptr<ModelSafeWorker> passive_worker(
         new FakeModelWorker(GROUP_PASSIVE));
     scoped_refptr<ModelSafeWorker> ui_worker(new FakeModelWorker(GROUP_UI));
-    scoped_refptr<ModelSafeWorker> db_worker(new FakeModelWorker(GROUP_DB));
     workers_.push_back(passive_worker);
     workers_.push_back(ui_worker);
-    workers_.push_back(db_worker);
 
     registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
@@ -121,7 +119,7 @@ TEST_F(ModelTypeRegistryTest, DirectoryTypes) {
   UpdateHandlerMap* update_handler_map = registry()->update_handler_map();
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
-  registry()->RegisterDirectoryType(AUTOFILL, GROUP_DB);
+  registry()->RegisterDirectoryType(AUTOFILL, GROUP_UI);
   EXPECT_EQ(ModelTypeSet(AUTOFILL), registry()->GetEnabledTypes());
 
   registry()->RegisterDirectoryType(BOOKMARKS, GROUP_UI);

@@ -3423,9 +3423,11 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
   }
 
   if (!in_back_forward_cache) {
-    // TODO(hajimehoshi): A document is evicted from the BackForwardCache, but
-    // it has already been restored. This race condition can be resolved by
-    // reloading the current document to avoid stale state. (crbug.com/989392)
+    // A document is evicted from the BackForwardCache, but it has already been
+    // restored. The current document should be reloaded, because it is not
+    // salvageable.
+    frame_tree_node_->navigator()->GetController()->Reload(ReloadType::NORMAL,
+                                                           false);
     return;
   }
 
@@ -5922,7 +5924,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   auto* context = GetSiteInstance()->GetBrowserContext();
   bool bypass_redirect_checks = false;
 
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
+  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+      header_client;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       context, this, GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,

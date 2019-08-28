@@ -26,6 +26,8 @@ const char kDeviceLastUpdated[] = "device_last_updated";
 
 const char kRegistrationAuthorizedEntity[] = "registration_authorized_entity";
 const char kRegistrationFcmToken[] = "registration_fcm_token";
+const char kRegistrationP256dh[] = "registration_p256dh";
+const char kRegistrationAuthSecret[] = "registration_auth_secret";
 const char kRegistrationTimestamp[] = "registration_timestamp";
 
 }  // namespace
@@ -41,7 +43,30 @@ SharingSyncPreference::Device::Device(std::string fcm_token,
 
 SharingSyncPreference::Device::Device(Device&& other) = default;
 
+SharingSyncPreference::Device& SharingSyncPreference::Device::operator=(
+    Device&& other) = default;
+
 SharingSyncPreference::Device::~Device() = default;
+
+SharingSyncPreference::FCMRegistration::FCMRegistration(
+    std::string authorized_entity,
+    std::string fcm_token,
+    std::string p256dh,
+    std::string auth_secret,
+    base::Time timestamp)
+    : authorized_entity(std::move(authorized_entity)),
+      fcm_token(std::move(fcm_token)),
+      p256dh(std::move(p256dh)),
+      auth_secret(std::move(auth_secret)),
+      timestamp(timestamp) {}
+
+SharingSyncPreference::FCMRegistration::FCMRegistration(
+    FCMRegistration&& other) = default;
+
+SharingSyncPreference::FCMRegistration& SharingSyncPreference::FCMRegistration::
+operator=(FCMRegistration&& other) = default;
+
+SharingSyncPreference::FCMRegistration::~FCMRegistration() = default;
 
 SharingSyncPreference::SharingSyncPreference(PrefService* prefs)
     : prefs_(prefs) {
@@ -114,6 +139,17 @@ SharingSyncPreference::GetSyncedDevices() const {
   return synced_devices;
 }
 
+base::Optional<SharingSyncPreference::Device>
+SharingSyncPreference::GetSyncedDevice(const std::string& guid) const {
+  const base::DictionaryValue* devices_preferences =
+      prefs_->GetDictionary(prefs::kSharingSyncedDevices);
+  const base::Value* value = devices_preferences->FindKey(guid);
+  if (!value)
+    return base::nullopt;
+
+  return ValueToDevice(*value);
+}
+
 void SharingSyncPreference::SetSyncDevice(const std::string& guid,
                                           const Device& device) {
   DictionaryPrefUpdate update(prefs_, prefs::kSharingSyncedDevices);
@@ -134,27 +170,44 @@ SharingSyncPreference::GetFCMRegistration() const {
   const base::DictionaryValue* registration =
       prefs_->GetDictionary(prefs::kSharingFCMRegistration);
   const std::string* authorized_entity =
-      registration->FindStringPath(kRegistrationAuthorizedEntity);
+      registration->FindStringKey(kRegistrationAuthorizedEntity);
   const std::string* fcm_token =
-      registration->FindStringPath(kRegistrationFcmToken);
+      registration->FindStringKey(kRegistrationFcmToken);
+  const std::string* base64_p256dh =
+      registration->FindStringKey(kRegistrationP256dh);
+  const std::string* base64_auth_secret =
+      registration->FindStringKey(kRegistrationAuthSecret);
   const base::Value* timestamp_value =
-      registration->FindPath(kRegistrationTimestamp);
-  if (!authorized_entity || !fcm_token || !timestamp_value)
+      registration->FindKey(kRegistrationTimestamp);
+  if (!authorized_entity || !fcm_token || !base64_p256dh ||
+      !base64_auth_secret || !timestamp_value) {
     return base::nullopt;
+  }
 
+  std::string p256dh, auth_secret;
   base::Time timestamp;
-  if (!base::GetValueAsTime(*timestamp_value, &timestamp))
+  if (!base::Base64Decode(*base64_p256dh, &p256dh) ||
+      !base::Base64Decode(*base64_auth_secret, &auth_secret) ||
+      !base::GetValueAsTime(*timestamp_value, &timestamp)) {
     return base::nullopt;
+  }
 
-  return FCMRegistration{*authorized_entity, *fcm_token, timestamp};
+  return FCMRegistration(*authorized_entity, *fcm_token, p256dh, auth_secret,
+                         timestamp);
 }
 
 void SharingSyncPreference::SetFCMRegistration(FCMRegistration registration) {
+  std::string base64_p256dh, base64_auth_secret;
+  base::Base64Encode(registration.p256dh, &base64_p256dh);
+  base::Base64Encode(registration.auth_secret, &base64_auth_secret);
+
   DictionaryPrefUpdate update(prefs_, prefs::kSharingFCMRegistration);
   update->SetStringKey(kRegistrationAuthorizedEntity,
                        std::move(registration.authorized_entity));
   update->SetStringKey(kRegistrationFcmToken,
                        std::move(registration.fcm_token));
+  update->SetStringKey(kRegistrationP256dh, std::move(base64_p256dh));
+  update->SetStringKey(kRegistrationAuthSecret, std::move(base64_auth_secret));
   update->SetKey(kRegistrationTimestamp,
                  base::CreateTimeValue(registration.timestamp));
 }

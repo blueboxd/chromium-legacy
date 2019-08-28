@@ -226,8 +226,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8417404458978023919">{0,plural, =1{„Chromium“ paleidimas iš naujo po dienos}one{„Chromium“ paleidimas iš naujo po # dienos}few{„Chromium“ paleidimas iš naujo po # dienų}many{„Chromium“ paleidimas iš naujo po # dienos}other{„Chromium“ paleidimas iš naujo po # dienų}}</translation>
 <translation id="8453117565092476964">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="8493179195440786826">„Chromium“ versija yra pasenusi</translation>
-<translation id="8494843963476918365">Jei nustatymai šiame puslapyje nerodomi, išbandykite <ph name="LINK_BEGIN" />
-    naršyklės „Chromium“ nustatymus<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Gauti su „Chromium“ naudojimu susijusios pagalbos</translation>
 <translation id="8586442755830160949">Autorių teisės priklauso „Chromium“ autoriams, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="8619360774459241877">Pristatoma „Chromium“...</translation>

@@ -35,18 +35,20 @@ class GetPaymentInformationAction
 
  private:
   struct LoginDetails {
-    LoginDetails(bool hide_if_no_other_choice, const std::string& payload);
-    LoginDetails(bool hide_if_no_other_choice,
+    LoginDetails(bool choose_automatically_if_no_other_options,
+                 const std::string& payload);
+    LoginDetails(bool choose_automatically_if_no_other_options,
                  const std::string& payload,
                  const WebsiteLoginFetcher::Login& login);
     ~LoginDetails();
-    bool hide_if_no_other_choice;
+    bool choose_automatically_if_no_other_options;
     std::string payload;
     // Only for Chrome PWM login details.
     base::Optional<WebsiteLoginFetcher::Login> login;
   };
 
   void InternalProcessAction(ProcessActionCallback callback) override;
+  void EndAction(const ClientStatus& status);
 
   void OnGetPaymentInformation(
       const GetPaymentInformationProto& get_payment_information,

@@ -31,11 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
-#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -44,6 +42,8 @@ class ExceptionState;
 class Element;
 class KeyframeEffectModelBase;
 class ScriptState;
+class ScriptValue;
+class UnrestrictedDoubleOrKeyframeAnimationOptions;
 struct Timing;
 
 // https://drafts.csswg.org/web-animations-1/#the-animatable-interface-mixin
@@ -55,7 +55,7 @@ class CORE_EXPORT Animatable {
 
   Animation* animate(ScriptState*,
                      const ScriptValue&,
-                     UnrestrictedDoubleOrKeyframeAnimationOptions,
+                     const UnrestrictedDoubleOrKeyframeAnimationOptions&,
                      ExceptionState&);
 
   Animation* animate(ScriptState*, const ScriptValue&, ExceptionState&);

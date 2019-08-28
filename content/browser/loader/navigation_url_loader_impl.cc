@@ -1257,7 +1257,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info;
   network::mojom::URLLoaderFactoryRequest proxied_factory_request;
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
+  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+      header_client;
   bool bypass_redirect_checks = false;
   if (frame_tree_node) {
     // |frame_tree_node| may be null in some unit test environments.
@@ -1428,7 +1429,8 @@ void NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
 
 // static
 void NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+        header_client,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
     StoragePartitionImpl* partition) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

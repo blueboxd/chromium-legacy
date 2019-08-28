@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">পড়ার তালিকায় যোগ করা হয়েছে</translation>
 <translation id="1828824471510190776">পাসওয়ার্ড সাজেস্ট করুন…</translation>
 <translation id="1870148520156231997">পাসওয়ার্ড দেখুন</translation>
+<translation id="1872096359983322073">টর্চ</translation>
 <translation id="1876721852596493031">ব্যবহারের ডেটা পাঠান</translation>
 <translation id="1911619930368729126">Google ড্রাইভে আপলোড করুন</translation>
 <translation id="1923342640370224680">শেষ ঘণ্টা</translation>
@@ -356,6 +357,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">বাতিল করতে আলতো চাপুন৷</translation>
 <translation id="6108923351542677676">সেটআপ চলছে...</translation>
+<translation id="6119050551270742952">বর্তমান ওয়েবপেজটি ছদ্মবেশী মোডে আছে</translation>
 <translation id="6122191549521593678">অনলাইন</translation>
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
 <translation id="6136914049981179737">সেকেন্ড আগে</translation>
@@ -412,6 +414,9 @@
 <translation id="6807889908376551050">সমস্ত দেখান...</translation>
 <translation id="681368974849482173">আইটেম তৈরি করা হয়েছে</translation>
 <translation id="6851516051005285358">ডেস্কটপ সাইটের জন্য অনুরোধ করুন</translation>
+<translation id="6858855187367714033">স্ক্যান করা হয়েছে</translation>
+<translation id="6859944681507688231">কোনও QR কোড বা ক্রেডিট কার্ড স্ক্যান করতে সেটিংস থেকে ক্যামেরা চালু করুন।</translation>
+<translation id="6873263987691478642">স্প্লিট ভিউ</translation>
 <translation id="6896758677409633944">কপি</translation>
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
 <translation id="6914583639806229067">আপনার কপি করা ছবি সার্চ করুন</translation>
@@ -510,6 +515,7 @@
 <translation id="8428045167754449968">নগর / ছোট শহর</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8458397775385147834">১টি আইটেম মোছা হয়েছে</translation>
+<translation id="8487667956631253959">চালু করা আছে</translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8490978609246021741">পরিবর্তনগুলি সেভ করুন</translation>
 <translation id="8503813439785031346">ইউজারনেম</translation>
@@ -520,6 +526,7 @@
 <translation id="8532105204136943229">মেয়াদপূর্তির বছর</translation>
 <translation id="8534481786647257214">Google+ পোষ্ট সম্পূর্ণ হয়েছে৷</translation>
 <translation id="8548878600947630424">পৃষ্ঠাটি খুঁজুন...</translation>
+<translation id="8588404856427128947">বন্ধ করা আছে</translation>
 <translation id="8605219856220328675">ট্যাব বন্ধ করুন।</translation>
 <translation id="8620640915598389714">সম্পাদনা করুন</translation>
 <translation id="8636825310635137004">আপনার অন্য ডিভাইসগুলি থেকে আপনার ট্যাবগুলি পেতে, সিঙ্ক চালু করুন।</translation>
@@ -560,6 +567,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">ক্র্যাশ রিপোর্ট পাঠানো হয়েছে৷</translation>
 <translation id="935490618240037774">আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক হবে যাতে আপনি আপনার সমস্ত ডিভাইসে সেগুলি ব্যবহার করতে পারেন।</translation>
+<translation id="952704832371081537">বাতিল করুন</translation>
 <translation id="976982866697960176">সিঙ্ক হওয়া ডেটা পরিচালনা করুন...</translation>
 <translation id="988141524645182168">অন্যান্য ডিভাইস</translation>
 <translation id="989988560359834682">ঠিকানা সম্পাদনা করুন</translation>

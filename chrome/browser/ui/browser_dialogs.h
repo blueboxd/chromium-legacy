@@ -246,6 +246,7 @@ enum class DialogIdentifier {
   INCOGNITO_WINDOW_COUNT = 92,
   CROSTINI_APP_UNINSTALLER = 93,
   CROSTINI_CONTAINER_UPGRADE = 94,
+  COOKIE_CONTROLS = 95,
   // Add values above this line with a corresponding label in
   // tools/metrics/histograms/enums.xml
   MAX_VALUE

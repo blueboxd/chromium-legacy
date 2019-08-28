@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">ወደ የንባብ ዝርዝር ታክሏል</translation>
 <translation id="1828824471510190776">የይለፍ ቃልን ጠቁም...</translation>
 <translation id="1870148520156231997">ይለፍ ቃልን አሳይ</translation>
+<translation id="1872096359983322073">የባትሪ ብርሃን</translation>
 <translation id="1876721852596493031">የጥቅመት ብዛትን ላክ</translation>
 <translation id="1911619930368729126">ወደ Google Drive ስቀል</translation>
 <translation id="1923342640370224680">የመጨረሻው ሰዓት</translation>
@@ -355,6 +356,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="605721222689873409">ዓዓ</translation>
 <translation id="6066301408025741299">ይቅር ለማለት መታ ያድርጉ።</translation>
 <translation id="6108923351542677676">ማዋቀር በሂደት ላይ…</translation>
+<translation id="6119050551270742952">የአሁኑ ድረ-ገጽ ማንነት በማያሳውቅ ላይ ነው</translation>
 <translation id="6122191549521593678">መስመር ላይ</translation>
 <translation id="6127379762771434464">ንጥል ተወግዷል</translation>
 <translation id="6136914049981179737">ከሰከንዶች በፊት</translation>
@@ -411,6 +413,9 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6807889908376551050">ሁሉንም አሳይ...</translation>
 <translation id="681368974849482173">ንጥል ተፈጥሯል</translation>
 <translation id="6851516051005285358">የዴስክቶፕ ጣቢያን ጠይቅ</translation>
+<translation id="6858855187367714033">ተቃኝቷል</translation>
+<translation id="6859944681507688231">አንድ QR ኮድ ወይም ክሬዲት ካርድ ለመቃኘት ከቅንብሮች ሆነው ካሜራውን ያንቁት።</translation>
+<translation id="6873263987691478642">የተከፈለ ዕይታ</translation>
 <translation id="6896758677409633944">ቅዳ</translation>
 <translation id="6903907808598579934">ስምረትን አብራ</translation>
 <translation id="6914583639806229067">የቀዱትን ምስል ይፈልጉ</translation>
@@ -509,6 +514,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8428045167754449968">ከተማ / መለስተኛ ከተማ</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8458397775385147834">1 ንጥል ተሰርዟል</translation>
+<translation id="8487667956631253959">አብራ</translation>
 <translation id="8487700953926739672">ከመስመር ውጪ ይገኛል</translation>
 <translation id="8490978609246021741">ለውጦችን አስቀምጥ</translation>
 <translation id="8503813439785031346">የተጣቃሚ ስም</translation>
@@ -519,6 +525,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8532105204136943229">ጊዜው የሚያልፍበት ዓመት</translation>
 <translation id="8534481786647257214">የGoogle+ ልጥፍ ተጠናቅቋል።</translation>
 <translation id="8548878600947630424">በዚህ ገጽ ውስጥ አግኝ...</translation>
+<translation id="8588404856427128947">ጠፍቷል</translation>
 <translation id="8605219856220328675">ትር ዝጋ።</translation>
 <translation id="8620640915598389714">አርትዕ</translation>
 <translation id="8636825310635137004">ትሮችዎን ከሌሎች መሣሪያዎችዎ ለማግኘት ስምረትን ያብሩ።</translation>
@@ -559,6 +566,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">የብልሽት ሪፖርት ተልኳል።</translation>
 <translation id="935490618240037774">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ መጠቀም እንዲችሉ ከGoogle መለያዎ ጋር ይሰምራሉ።</translation>
+<translation id="952704832371081537">ይቅር</translation>
 <translation id="976982866697960176">የሠመረ ውሂብን ያቀናብሩ…</translation>
 <translation id="988141524645182168">ሌሎች መሣሪያዎች</translation>
 <translation id="989988560359834682">አድራሻ ያርትዑ</translation>

@@ -226,8 +226,6 @@ Chromium no puede recuperar tu configuración.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Reiniciar Chromium en el transcurso de 1 día}other{Reiniciar Chromium en el transcurso de # días}}</translation>
 <translation id="8453117565092476964">El archivo de instalación está dañado o no es válido. Vuelve a descargar Chromium.</translation>
 <translation id="8493179195440786826">Chromium no está actualizado</translation>
-<translation id="8494843963476918365">Si no se muestra algún ajuste en esta página, consulta la <ph name="LINK_BEGIN" />
-    configuración del navegador Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Obtener ayuda de Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Los creadores de Chromium. Todos los derechos reservados.</translation>
 <translation id="8619360774459241877">Iniciando Chromium...</translation>

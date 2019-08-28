@@ -150,8 +150,9 @@ namespace {
 
 class MockAppShimHost : public AppShimHost {
  public:
-  MockAppShimHost()
-      : AppShimHost("app",
+  MockAppShimHost(AppShimHost::Client* client)
+      : AppShimHost(client,
+                    "app",
                     base::FilePath("Profile"),
                     false /* uses_remote_views */) {}
   ~MockAppShimHost() override {}
@@ -184,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest,
       std::unique_ptr<apps::ExtensionAppShimHandler>(
           mock));  // Takes ownership.
   std::unique_ptr<MockAppShimHost> mock_host =
-      std::make_unique<MockAppShimHost>();
+      std::make_unique<MockAppShimHost>(mock);
 
   SetUpAppWithWindows(1);
   extensions::AppWindowRegistry::AppWindowList windows =

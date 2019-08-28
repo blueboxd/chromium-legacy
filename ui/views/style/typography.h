@@ -71,6 +71,9 @@ enum TextStyle {
   // contexts (e.g. BUTTON_TEXT, FIELD).
   STYLE_PRIMARY = VIEWS_TEXT_STYLE_START,
 
+  // Secondary text: Appears near the primary text.
+  STYLE_SECONDARY,
+
   // Style for the default button on a dialog.
   STYLE_DIALOG_BUTTON_DEFAULT,
 

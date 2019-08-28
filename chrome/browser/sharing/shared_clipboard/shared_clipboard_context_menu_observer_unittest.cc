@@ -87,7 +87,7 @@ class SharedClipboardContextMenuObserverTest : public testing::Test {
         base::BindRepeating([](content::BrowserContext* context)
                                 -> std::unique_ptr<KeyedService> {
           return std::make_unique<NiceMock<MockSharingService>>(
-              std::make_unique<SharingFCMHandler>(nullptr, nullptr));
+              std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
         }));
     observer_ = std::make_unique<SharedClipboardContextMenuObserver>(&menu_);
     menu_.SetObserver(observer_.get());

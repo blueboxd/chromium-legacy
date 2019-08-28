@@ -279,24 +279,24 @@ const SelectionInDOMTree AXSelection::AsSelection(
     return {};
 
   AXPositionAdjustmentBehavior base_adjustment =
-      AXPositionAdjustmentBehavior::kMoveRight;
+      AXPositionAdjustmentBehavior::kMoveLeft;
   AXPositionAdjustmentBehavior extent_adjustment =
-      AXPositionAdjustmentBehavior::kMoveRight;
+      AXPositionAdjustmentBehavior::kMoveLeft;
   switch (selection_behavior) {
     case AXSelectionBehavior::kShrinkToValidDOMRange:
-      if (base_ <= extent_) {
+      if (base_ < extent_) {
         base_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
         extent_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
-      } else {
+      } else if (base_ > extent_) {
         base_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
         extent_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
       }
       break;
     case AXSelectionBehavior::kExtendToValidDOMRange:
-      if (base_ <= extent_) {
+      if (base_ < extent_) {
         base_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
         extent_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
-      } else {
+      } else if (base_ > extent_) {
         base_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
         extent_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
       }

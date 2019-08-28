@@ -285,7 +285,6 @@ WebSocketChannel::WebSocketChannel(
       send_quota_low_water_mark_(kDefaultSendQuotaLowWaterMark),
       send_quota_high_water_mark_(kDefaultSendQuotaHighWaterMark),
       current_send_quota_(0),
-      current_receive_quota_(0),
       closing_handshake_timeout_(
           base::TimeDelta::FromSeconds(kClosingHandshakeTimeoutSeconds)),
       underlying_connection_close_timeout_(base::TimeDelta::FromSeconds(
@@ -390,61 +389,6 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
 // deleted later on.
 const char kWebSocketReceiveQuotaThreshold[] =
     "websocket-renderer-receive-quota-max";
-
-ChannelState WebSocketChannel::AddReceiveFlowControlQuota(int64_t quota) {
-  DCHECK(state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
-  // TODO(ricea): Kill the renderer if it tries to send us a negative quota
-  // value or > INT_MAX.
-  DCHECK_GE(quota, 0);
-  DCHECK_LE(quota, INT_MAX);
-  if (!pending_received_frames_.empty()) {
-    DCHECK_EQ(0u, current_receive_quota_);
-  }
-  while (!pending_received_frames_.empty() && quota > 0) {
-    PendingReceivedFrame& front = pending_received_frames_.front();
-    const uint64_t data_size = front.size() - front.offset();
-    const uint64_t bytes_to_send =
-        std::min(base::checked_cast<uint64_t>(quota), data_size);
-    const bool final = front.final() && data_size == bytes_to_send;
-    scoped_refptr<IOBuffer> buffer_to_pass;
-    if (front.data()) {
-      buffer_to_pass =
-          base::MakeRefCounted<DependentIOBuffer>(front.data(), front.offset());
-    } else {
-      DCHECK(!bytes_to_send) << "Non empty data should not be null.";
-    }
-    DVLOG(3) << "Sending frame previously split due to quota to the "
-             << "renderer: quota=" << quota << " data_size=" << data_size
-             << " bytes_to_send=" << bytes_to_send;
-    event_interface_->OnDataFrame(final, front.opcode(),
-                                  std::move(buffer_to_pass), bytes_to_send);
-    if (bytes_to_send < data_size) {
-      front.DidConsume(bytes_to_send);
-      front.ResetOpcode();
-      return CHANNEL_ALIVE;
-    }
-    quota -= bytes_to_send;
-
-    pending_received_frames_.pop();
-  }
-  if (!InClosingState() && pending_received_frames_.empty() &&
-      has_received_close_frame_) {
-    // We've been waiting for the client to consume the frames before
-    // responding to the closing handshake initiated by the server.
-    return RespondToClosingHandshake();
-  }
-
-  // If current_receive_quota_ == 0 then there is no pending ReadFrames()
-  // operation.
-  const bool start_read =
-      current_receive_quota_ == 0 && quota > 0 &&
-      (state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
-  current_receive_quota_ += quota;
-  if (start_read) {
-    return ReadFrames();
-  }
-  return CHANNEL_ALIVE;
-}
 
 ChannelState WebSocketChannel::StartClosingHandshake(
     uint16_t code,
@@ -575,7 +519,6 @@ void WebSocketChannel::OnConnectSuccess(
   // |stream_request_| is not used once the connection has succeeded.
   stream_request_.reset();
 
-  ignore_result(ReadFrames());
   // |this| may have been deleted.
 }
 
@@ -690,7 +633,21 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
 ChannelState WebSocketChannel::ReadFrames() {
   // TODO(crbug.com/994000) Remove this CHECK.
   CHECK(stream_);
-  while (current_receive_quota_ > 0) {
+  DCHECK(state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
+  DCHECK(read_frames_.empty());
+  if (is_reading_) {
+    return CHANNEL_ALIVE;
+  }
+
+  // TODO(yoichio): Add test for this case.
+  if (!InClosingState() && has_received_close_frame_) {
+    DCHECK(!event_interface_->HasPendingDataFrames());
+    // We've been waiting for the client to consume the frames before
+    // responding to the closing handshake initiated by the server.
+    ignore_result(RespondToClosingHandshake());
+  }
+
+  while (!event_interface_->HasPendingDataFrames()) {
     // TODO(crbug.com/994000) Remove this CHECK.
     CHECK(stream_);
     // This use of base::Unretained is safe because this object owns the
@@ -701,6 +658,7 @@ ChannelState WebSocketChannel::ReadFrames() {
         base::Bind(base::IgnoreResult(&WebSocketChannel::OnReadDone),
                    base::Unretained(this), false));
     if (result == ERR_IO_PENDING) {
+      is_reading_ = true;
       return CHANNEL_ALIVE;
     }
     if (OnReadDone(true, result) == CHANNEL_DELETED) {
@@ -714,6 +672,9 @@ ChannelState WebSocketChannel::ReadFrames() {
 }
 
 ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
+  DVLOG(3) << "WebSocketChannel::OnReadDone synchronous?" << synchronous
+           << ", result=" << result
+           << ", read_frames_.size=" << read_frames_.size();
   DCHECK_NE(FRESHLY_CONSTRUCTED, state_);
   DCHECK_NE(CONNECTING, state_);
   DCHECK_NE(ERR_IO_PENDING, result);
@@ -728,11 +689,13 @@ ChannelState WebSocketChannel::OnReadDone(bool synchronous, int result) {
           return CHANNEL_DELETED;
       }
       read_frames_.clear();
-      // There should always be a call to ReadFrames pending.
-      // TODO(ricea): Unless we are out of quota.
       DCHECK_NE(CLOSED, state_);
-      if (!synchronous)
-        return ReadFrames();
+      if (!synchronous) {
+        is_reading_ = false;
+        if (!event_interface_->HasPendingDataFrames()) {
+          return ReadFrames();
+        }
+      }
       return CHANNEL_ALIVE;
 
     case ERR_WS_PROTOCOL_ERROR:
@@ -842,7 +805,6 @@ ChannelState WebSocketChannel::HandleFrameByState(
       }
       // TODO(ricea): Find a way to safely log the message from the close
       // message (escape control codes and so on).
-      DVLOG(1) << "Got Close with code " << code;
       return HandleCloseFrame(code, reason);
     }
 
@@ -858,6 +820,9 @@ ChannelState WebSocketChannel::HandleDataFrame(
     bool final,
     scoped_refptr<IOBuffer> data_buffer,
     uint64_t size) {
+  DVLOG(3) << "WebSocketChannel::HandleDataFrame opcode=" << opcode
+           << ", final?" << final
+           << ", data_buffer=" << (void*)data_buffer.get() << ", size=" << size;
   if (state_ != CONNECTED) {
     DVLOG(3) << "Ignored data packet received in state " << state_;
     return CHANNEL_ALIVE;
@@ -909,23 +874,6 @@ ChannelState WebSocketChannel::HandleDataFrame(
     return CHANNEL_ALIVE;
 
   initial_frame_forwarded_ = !final;
-  if (size > current_receive_quota_ || !pending_received_frames_.empty()) {
-    const bool no_quota = (current_receive_quota_ == 0);
-    DCHECK(no_quota || pending_received_frames_.empty());
-    DVLOG(3) << "Queueing frame to renderer due to quota. quota="
-             << current_receive_quota_ << " size=" << size;
-    WebSocketFrameHeader::OpCode opcode_to_queue =
-        no_quota ? opcode_to_send : WebSocketFrameHeader::kOpCodeContinuation;
-    pending_received_frames_.push(PendingReceivedFrame(
-        final, opcode_to_queue, data_buffer, current_receive_quota_, size));
-    if (no_quota)
-      return CHANNEL_ALIVE;
-    size = current_receive_quota_;
-    final = false;
-  }
-
-  current_receive_quota_ -= size;
-
   // Sends the received frame to the renderer process.
   event_interface_->OnDataFrame(final, opcode_to_send, std::move(data_buffer),
                                 size);
@@ -940,7 +888,7 @@ ChannelState WebSocketChannel::HandleCloseFrame(uint16_t code,
       has_received_close_frame_ = true;
       received_close_code_ = code;
       received_close_reason_ = reason;
-      if (!pending_received_frames_.empty()) {
+      if (event_interface_->HasPendingDataFrames()) {
         // We have some data to be sent to the renderer before sending this
         // frame.
         return CHANNEL_ALIVE;

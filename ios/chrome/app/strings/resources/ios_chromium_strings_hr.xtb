@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Savjet za Chromium. Za više opcija kartice pritisnite i držite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
 <translation id="4241912885070669028">Odjavljujete se s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. Vaši podaci na Chromiumu izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
 <translation id="4555020257205549924">Kada je ta značajka uključena, Chromium će ponuditi prijevod stranica napisanih na drugim jezicima pomoću Google prevoditelja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Uključite Chromiumov skener</translation>
 <translation id="4787850887676698916">Ovdje će se prikazati kartice koje ste otvorili u Chromiumu na svojim ostalim uređajima.</translation>
 <translation id="4999538639245140991">Budući da se odjavljujete s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaši podaci iz Chromiuma izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
 <translation id="5231355151045086930">Odjava s Chromiuma</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Otvorite Postavke &gt; Privatnost &gt; Fotoaparat &gt; Chromium i uključite fotoaparat.</translation>
 <translation id="7746854981345936341">Savjet za Chromium. Neki se gumbi sada nalaze pri dnu zaslona, primjerice za natrag, naprijed i pretraživanje.</translation>
 <translation id="786327964234957808">Prebacujete sinkronizirane račune s korisnika <ph name="USER_EMAIL1" /> na korisnika <ph name="USER_EMAIL2" />. Vašim postojećim podacima na Chromiumu upravlja <ph name="DOMAIN" />. Ovime će se izbrisati vaši podaci s vašeg uređaja, no oni će ostati na računu <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Počnite koristiti Chromiumov skener</translation>
 <translation id="8073677936375100957">Želite li izbrisati svoje podatke iz Chromiuma s ovog uređaja?</translation>
 <translation id="8175055321229419309">Savjet: <ph name="BEGIN_LINK" />premjestite Chromium na priključnu stanicu<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Doživite Google na bolji način u Chromiumu na temelju svoje lokacije.</translation>

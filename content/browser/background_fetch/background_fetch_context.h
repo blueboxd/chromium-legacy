@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
@@ -41,9 +41,12 @@ class ServiceWorkerContextWrapper;
 // fetch requests from the Mojo service and from other callers.
 // Background Fetch requests function similarly to normal fetches except that
 // they are persistent across Chromium or service worker shutdown.
+//
+// Deleted on the service worker core thread.
+// TODO(crbug.com/824858): Make this single-threaded after the service worker
+// core thread moves to the UI thread.
 class CONTENT_EXPORT BackgroundFetchContext
-    : public base::RefCountedThreadSafe<BackgroundFetchContext,
-                                        BrowserThread::DeleteOnIOThread> {
+    : public base::RefCountedDeleteOnSequence<BackgroundFetchContext> {
  public:
   // The BackgroundFetchContext will watch the ServiceWorkerContextWrapper so
   // that it can respond to service worker events such as unregister.
@@ -54,7 +57,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context);
 
-  void InitializeOnIOThread();
+  void InitializeOnCoreThread();
 
   // Called by the StoragePartitionImpl destructor.
   void Shutdown();
@@ -139,13 +142,11 @@ class CONTENT_EXPORT BackgroundFetchContext
   friend class BackgroundFetchServiceTest;
   friend class BackgroundFetchJobControllerTest;
   friend class base::DeleteHelper<BackgroundFetchContext>;
-  friend class base::RefCountedThreadSafe<BackgroundFetchContext,
-                                          BrowserThread::DeleteOnIOThread>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class base::RefCountedDeleteOnSequence<BackgroundFetchContext>;
 
   ~BackgroundFetchContext();
 
-  void ShutdownOnIO();
+  void ShutdownOnCoreThread();
 
   // Called when an existing registration has been retrieved from the data
   // manager. If the registration does not exist then |registration| is nullptr.

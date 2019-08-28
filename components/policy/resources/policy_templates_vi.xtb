@@ -421,6 +421,12 @@
 
       Cảnh báo: Không nên ủy quyền kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> cho ứng dụng kiosk vì điều này có thể khiến thiết bị không thể nhận được các bản cập nhật phần mềm và các bản vá bảo mật tối quan trọng. Việc ủy quyền kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> có thể khiến người dùng gặp rủi ro.</translation>
 <translation id="1675002386741412210">Hỗ trợ trên:</translation>
+<translation id="1695708467571967752">Chính sách này kiểm soát việc người dùng có thể phát nội dung nghe nhìn khi thiết bị đang khóa hay không.
+
+      Nếu bạn đặt chính sách này thành False, thì các chức năng điều khiển nội dung nghe nhìn trên màn hình khóa sẽ bị tắt.
+
+      Trong trường hợp bạn không đặt hoặc đặt chính sách này thành True, thì các chức năng điều khiển nội dung nghe nhìn sẽ hiển thị trên màn hình khóa nếu người dùng khóa thiết bị khi nội dung nghe nhìn đang phát.
+      </translation>
 <translation id="1700811900332333712">Cho phép thiết bị yêu cầu chức năng Powerwash</translation>
 <translation id="1708496595873025510">Đặt giới hạn cho quá trình tìm nạp khởi đầu Biến thể</translation>
 <translation id="1717817358640580294">Nếu bạn không đặt chính sách này và tính năng Làm sạch Chrome phát hiện phần mềm không mong muốn, thì tính năng này có thể báo cáo siêu dữ liệu về lần quét đó cho Google theo chính sách do SafeBrowsingExtendedReportingEnabled đặt. Sau đó, tính năng Làm sạch Chrome sẽ hỏi người dùng xem họ có muốn xóa phần mềm không mong muốn hay không. Người dùng có thể chọn chia sẻ kết quả của quá trình làm sạch với Google để hỗ trợ việc phát hiện phần mềm không mong muốn trong tương lai. Những kết quả này chứa siêu dữ liệu tệp, tiện ích tự động cài đặt và khóa sổ đăng ký như mô tả trong Báo cáo chính thức về quyền riêng tư của Chrome.
@@ -2990,6 +2996,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="6417265370957905582">Trợ lý Google</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">Bạn không thể buộc ứng dụng Android sử dụng proxy. Tập hợp con của cài đặt proxy được cung cấp cho ứng dụng Android. Cài đặt mà ứng dụng có thể tự nguyện chọn để thực hiện:
 
           Nếu bạn chọn không bao giờ sử dụng máy chủ proxy, ứng dụng Android được thông báo rằng không có proxy nào được định cấu hình.
@@ -3142,15 +3149,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6731757988219967594">Lọc các trang web cấp cao nhất (không phải iframe được nhúng) có nội dung người lớn</translation>
 <translation id="6734521799274931721">Kiểm soát khả năng sử dụng của ứng dụng Chia sẻ tệp trong mạng trên Chrome OS</translation>
 <translation id="6735701345096330595">Buộc bật tính năng kiểm tra chính tả ngôn ngữ</translation>
-<translation id="673699536430961464">Cài đặt này cho phép người dùng chuyển đổi giữa các tài khoản Google trong vùng nội dung của cửa sổ trình duyệt sau khi họ đăng nhập vào thiết bị <ph name="PRODUCT_OS_NAME" /> của mình.
-
-      Nếu bạn đặt chính sách này là false thì sẽ không cho phép đăng nhập vào một tài khoản khác từ vùng nội dung trình duyệt không Ẩn danh.
-
-      Nếu bạn không đặt hoặc đặt chính sách này là true thì hành vi mặc định sẽ được sử dụng: cho phép đăng nhập vào một tài khoản khác từ vùng nội dung trình duyệt, ngoại trừ tài khoản của con sẽ bị chặn đối với vùng nội dung không Ẩn danh.
-
-      Trong trường hợp không được phép đăng nhập vào một tài khoản khác qua chế độ Ẩn danh thì hãy cân nhắc chặn chế độ đó bằng chính sách IncognitoModeAvailability.
-
-      Xin lưu ý rằng người dùng sẽ có thể truy cập vào các dịch vụ của Google ở trạng thái chưa được xác thực bằng cách chặn cookie của họ.</translation>
 <translation id="6757438632136860443">Cho phép bạn đặt danh sách mẫu url chỉ định các trang web được phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>
@@ -4006,6 +4004,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8312129124898414409">Cho phép bạn đặt liệu các trang web có được phép sử dụng tạo khóa hay không. Bạn có thể cho phép hoặc từ chối sử dụng tạo khóa đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockKeygen' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="8314214821702356835">Cho phép người dùng phát nội dung nghe nhìn khi thiết bị đang khóa</translation>
 <translation id="8320149248919453401">Chế độ sạc pin</translation>
 <translation id="8329984337216493753">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
@@ -4464,7 +4463,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9152473318295429890">Bật nội dung đề xuất theo ngữ cảnh của các trang web liên quan</translation>
 <translation id="9153446010242995516">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Hãy tìm cách chuyển sang cấu hình cấp thiết bị (bao gồm cả thông tin truy cập mạng) thông qua quá trình hạ cấp nếu có thể, nhưng hãy thực hiện quá trình hạ cấp bằng chức năng powerwash đầy đủ ngay cả khi không thể khôi phục dữ liệu (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do một sự thay đổi không tương thích ngược).
           Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 75 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị tắt.</translation>
-<translation id="9158929520101169054">Cho phép đăng nhập nhiều tài khoản trong trình duyệt</translation>
 <translation id="9159126470527871268">Thông báo cho người dùng biết phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
 
       Tùy chọn cài đặt chính sách này sẽ bật thông báo nhắc nhở người dùng rằng họ cần hoặc bắt buộc phải chạy lại trình duyệt hoặc khởi động lại thiết bị. Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cho người dùng biết rằng họ cần chạy lại thông qua các thay đổi nhỏ đối với menu của sản phẩm, trong khi <ph name="PRODUCT_OS_NAME" /> cho biết điều đó thông qua thông báo trong khay hệ thống. Nếu bạn đặt chính sách thành 'Đề xuất', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ nên chạy lại. Người dùng có thể bỏ qua cảnh báo này để hoãn việc chạy lại. Nếu bạn đặt chính sách thành 'Bắt buộc', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ bắt buộc phải chạy lại trình duyệt sau khi hết khoảng thời gian thông báo. Khoảng thời gian này mặc định là 7 ngày đối với <ph name="PRODUCT_NAME" /> và 4 ngày đối với <ph name="PRODUCT_OS_NAME" /> và có thể định cấu hình thông qua phần cài đặt chính sách <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.

@@ -23,6 +23,8 @@ class MockPersonalDataManager : public autofill::PersonalDataManager {
                std::string(const autofill::AutofillProfile&));
   MOCK_METHOD1(GetProfileByGUID,
                autofill::AutofillProfile*(const std::string&));
+  MOCK_CONST_METHOD0(GetProfiles, std::vector<autofill::AutofillProfile*>());
+  MOCK_CONST_METHOD0(GetCreditCards, std::vector<autofill::CreditCard*>());
 };
 
 }  // namespace autofill_assistant

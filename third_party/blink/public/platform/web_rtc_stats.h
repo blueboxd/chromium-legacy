@@ -10,6 +10,19 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
+
+namespace webrtc {
+class RTCStats;
+class RTCStatsCollectorCallback;
+class RTCStatsMemberInterface;
+class RTCStatsReport;
+enum class NonStandardGroupId;
+}  // namespace webrtc
 
 namespace blink {
 
@@ -50,6 +63,11 @@ class BLINK_PLATFORM_EXPORT WebRTCStatsReport {
   virtual size_t Size() const = 0;
 };
 
+BLINK_PLATFORM_EXPORT
+std::unique_ptr<WebRTCStatsReport> CreateRTCStatsReport(
+    const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
+    const WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
+
 class BLINK_PLATFORM_EXPORT WebRTCStats {
  public:
   virtual ~WebRTCStats();
@@ -61,6 +79,12 @@ class BLINK_PLATFORM_EXPORT WebRTCStats {
   virtual size_t MembersCount() const = 0;
   virtual std::unique_ptr<WebRTCStatsMember> GetMember(size_t) const = 0;
 };
+
+BLINK_PLATFORM_EXPORT
+std::unique_ptr<WebRTCStats> CreateRTCStats(
+    const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
+    const webrtc::RTCStats* stats,
+    const WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
 
 class BLINK_PLATFORM_EXPORT WebRTCStatsMember {
  public:
@@ -89,8 +113,22 @@ class BLINK_PLATFORM_EXPORT WebRTCStatsMember {
   virtual WebVector<WebString> ValueSequenceString() const = 0;
 };
 
+BLINK_PLATFORM_EXPORT
+std::unique_ptr<WebRTCStatsMember> CreateRTCStatsMember(
+    const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
+    const webrtc::RTCStatsMemberInterface* member);
+
 using WebRTCStatsReportCallback =
     base::OnceCallback<void(std::unique_ptr<WebRTCStatsReport>)>;
+
+BLINK_PLATFORM_EXPORT
+rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback>
+CreateRTCStatsCollectorCallback(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+    WebRTCStatsReportCallback callback,
+    const WebVector<webrtc::NonStandardGroupId>& exposed_group_ids);
+
+BLINK_PLATFORM_EXPORT void WhitelistStatsForTesting(const char* type);
 
 }  // namespace blink
 

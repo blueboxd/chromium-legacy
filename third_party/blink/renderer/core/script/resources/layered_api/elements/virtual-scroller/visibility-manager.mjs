@@ -215,27 +215,35 @@ export class VisibilityManager {
    * Searches within the managed elements and returns an ElementBounds
    * object. This object may represent an empty range or a range whose low
    * element contains or is lower than |low| (or the lowest element
-   * possible). Similarly for |high|.
+   * possible). Similarly for |high|. If the bounds do not intersect with any
+   * elements then an EMPTY_ELEMENT_BOUNDS is returned, otherwise, if the
+   * |low| (|high|) is entirely outside the area of the managed elements
+   * then the low (high) part of the ElementBounds will be snapped to the
+   * lowest (highest) element.
    *
    * @param {!number} low The lower bound to locate.
    * @param {!number} high The upper bound to locate.
    */
   #findElementBounds =
       (low, high) => {
-        const lowElement =
+        const lastIndex = this.#elements.length - 1;
+        const lowest = this.#elements[0].getBoundingClientRect().top;
+        const highest =
+            this.#elements[lastIndex].getBoundingClientRect().bottom;
+        if (highest < low || lowest > high) {
+          return EMPTY_ELEMENT_BOUNDS;
+        }
+
+        let lowElement =
             findElement.findElement(this.#elements, low, findElement.BIAS_LOW);
-        const highElement = findElement.findElement(
+        let highElement = findElement.findElement(
             this.#elements, high, findElement.BIAS_HIGH);
 
         if (lowElement === null) {
-          if (highElement === null) {
-            return EMPTY_ELEMENT_BOUNDS;
-          } else {
-            return new ElementBounds(this.#elements[0], highElement);
-          }
-        } else if (highElement === null) {
-          return new ElementBounds(
-              lowElement, this.#elements[this.#elements.length - 1]);
+          lowElement = this.#elements[0];
+        }
+        if (highElement === null) {
+          highElement = this.#elements[lastIndex];
         }
         return new ElementBounds(lowElement, highElement);
       }

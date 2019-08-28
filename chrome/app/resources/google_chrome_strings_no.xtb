@@ -181,8 +181,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="6291549208091401781">Google Chrome er allerede installert for alle brukerne på datamaskinen din.</translation>
 <translation id="6338556085225130112">Oppdaterer Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS" />tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6400930858680434649">Hvis noen innstillinger ikke vises på denne siden, prøv <ph name="LINK_BEGIN" />
-    Chrome-nettleserinnstillingene<ph name="LINK_END" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome for utviklere</translation>
 <translation id="6566149418543181476">Oppdaterer Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du bruker <ph name="PROFILE_EMAIL" /> for synkronisering av Chrome-tingene dine. For å oppdatere alternativene for synkronisering eller bruke Chrome uten Google-konto, kan du gå til <ph name="SETTINGS_LINK" />.</translation>

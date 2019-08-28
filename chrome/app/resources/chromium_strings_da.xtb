@@ -224,8 +224,6 @@ Chromium kan ikke gendanne dine præferencer.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Genstart Chromium inden for en dag}one{Genstart Chromium inden for # dag}other{Genstart Chromium inden for # dag}}</translation>
 <translation id="8453117565092476964">Installationsarkivet er beskadiget eller ugyldigt. Download Chromium igen.</translation>
 <translation id="8493179195440786826">Chromium er forældet</translation>
-<translation id="8494843963476918365">Hvis en indstilling ikke vises på denne side, kan du prøve at gå til <ph name="LINK_BEGIN" />
-    indstillingerne i din Chromium-browser<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Få hjælp til at bruge Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Forfatterne bag Chromium. Alle rettigheder forbeholdes.</translation>
 <translation id="8619360774459241877">Starter Chromium...</translation>

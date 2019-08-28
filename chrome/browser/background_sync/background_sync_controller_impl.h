@@ -92,9 +92,12 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       int max_attempts) override;
   void ScheduleBrowserWakeUp(
       blink::mojom::BackgroundSyncType sync_type) override;
+
   base::TimeDelta GetNextEventDelay(
       const content::BackgroundSyncRegistration& registration,
-      content::BackgroundSyncParameters* parameters) override;
+      content::BackgroundSyncParameters* parameters,
+      base::TimeDelta time_till_soonest_scheduled_event_for_origin) override;
+
   std::unique_ptr<BackgroundSyncEventKeepAlive>
   CreateBackgroundSyncEventKeepAlive() override;
   void NoteSuspendedPeriodicSyncOrigins(
@@ -120,6 +123,13 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   // multiple of the same.
   base::TimeDelta SnapToMaxOriginFrequency(int64_t min_interval,
                                            int64_t min_gap_for_origin);
+
+  // Returns an updated delay for a Periodic Background Sync registration -- one
+  // that ensures the |min_gap_for_origin|.
+  base::TimeDelta ApplyMinGapForOrigin(
+      base::TimeDelta delay,
+      base::TimeDelta time_till_next_scheduled_event_for_origin,
+      base::TimeDelta min_gap_for_origin);
 
   Profile* profile_;  // This object is owned by profile_.
 

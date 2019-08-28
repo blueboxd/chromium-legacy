@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">ಮೌಲ್ಯವು <ph name="MAXIMUM" /> ಕ್ಕೆ ಸಮನಾಗಿರಬಹುದು ಅಥವಾ ಅದಕ್ಕಿಂತಲೂ ಕಡಿಮೆ ಆಗಿರಬಹುದು.</translation>
 <translation id="3486220673238053218">ವಿವರಣೆ</translation>
 <translation id="3557673793733683882">ಶಿರೋನಾಮೆ <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">ವಾರದ ಆಯ್ಕೆ</translation>
 <translation id="3685101356851116974">ಲೇಬಲ್ ಮಾಡಿಲ್ಲದ ಚಿತ್ರ</translation>
 <translation id="3706100364254443312">ಸ್ವಿಚ್</translation>
 <translation id="3732799496749320381">ಮಿಮೀ</translation>
@@ -110,7 +111,7 @@
 <translation id="4748357248530471599">ಡಿಸ್‌ಪ್ಲೇ ಕಟ್‌ಔಟ್ ಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="4757246831282535685">ಟ್ಯಾಬ್ ಫಲಕ</translation>
 <translation id="4763480195061959176">ವೀಡಿಯೊ</translation>
-<translation id="479989351350248267">search</translation>
+<translation id="479989351350248267">ಹುಡುಕಾಡಿ</translation>
 <translation id="4812940957355064477">ದಯವಿಟ್ಟು ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="4912536737030637138">ಗ್ರಂಥಸೂಚಿ ನಮೂದು</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
@@ -212,12 +213,13 @@
 <translation id="7888071071722539607">ಇಮೇಲ್ ವಿಳಾಸದಲ್ಲಿ ಒಂದು '<ph name="ATSIGN" />' ಅನ್ನು ಸೇರಿಸಿ. '<ph name="ATSIGN" />' ನಲ್ಲಿ '<ph name="INVALIDADDRESS" />' ಕಾಣೆಯಾಗಿದೆ.</translation>
 <translation id="7891486169920085145">ಛೇದಕ</translation>
 <translation id="795667975304826397">ಯಾವುದೇ ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ</translation>
-<translation id="8053789581856978548">ಪಠ್ಯ ಕ್ಷೇತ್ರವನ್ನು ಹುಡುಕಿ</translation>
+<translation id="8053789581856978548">ಪಠ್ಯ ಹುಡುಕಾಟದ ಫೀಲ್ಡ್</translation>
 <translation id="8057695513531652401">ಸೂಚನೆ</translation>
 <translation id="8105797009065549151">ಸೂಚನೆ ಉಲ್ಲೇಖ</translation>
 <translation id="811583516810654505">ವಿವರಣೆಯನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8117451130807776954">ಈ ವಾರ</translation>
 <translation id="8199524924445686405">ವವವವ</translation>
+<translation id="8208673686607688524">ಸ್ಥಳೀಯ ದಿನಾಂಕ ಮತ್ತು ಸಮಯದ ಆಯ್ಕೆ</translation>
 <translation id="8261464734335370856">ಅಮಾನ್ಯ ಕಾಗುಣಿತ</translation>
 <translation id="8284326494547611709">ಶೀರ್ಷಿಕೆಗಳು</translation>
 <translation id="835897206747267392">ಅಮಾನ್ಯ ಮೌಲ್ಯ.</translation>

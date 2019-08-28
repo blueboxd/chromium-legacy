@@ -222,8 +222,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="8417404458978023919">{0,plural, =1{Restartējiet pārlūku Chromium vienas dienas laikā}zero{Restartējiet pārlūku Chromium # dienu laikā}one{Restartējiet pārlūku Chromium # dienas laikā}other{Restartējiet pārlūku Chromium # dienu laikā}}</translation>
 <translation id="8453117565092476964">Instalēšanas programmas arhīvs ir bojāts vai nav derīgs. Lejupielādējiet Chromium vēlreiz.</translation>
 <translation id="8493179195440786826">Chromium versija ir novecojusi</translation>
-<translation id="8494843963476918365">Ja kāds iestatījums šajā lapā nav redzams, pārejiet uz <ph name="LINK_BEGIN" />
-    pārlūkprogrammas Chromium iestatījumiem<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Saņemt palīdzību par Chromium izmantošanu</translation>
 <translation id="8586442755830160949">Autortiesības <ph name="YEAR" /> Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="8619360774459241877">Notiek Chromium palaišana...</translation>

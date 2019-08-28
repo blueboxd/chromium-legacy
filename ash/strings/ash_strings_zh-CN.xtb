@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">收起菜单</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1419738280318246476">解锁设备即可执行通知操作</translation>
+<translation id="1420408895951708260">开启/关闭护眼模式。<ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1455242230282523554">显示语言设置</translation>
 <translation id="1460620680449458626">当前处于静音状态。</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526"><ph name="FEATURE_NAME" />已由应用于此设备的某个政策停用。如要更改，请与您的管理员联系。</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">智能助理（正在加载中…）</translation>
+<translation id="1838895407229022812">当前已关闭护眼模式。</translation>
 <translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
 <translation id="1864454756846565995">USB-C 设备（背面端口）</translation>
 <translation id="1882897271359938046">正在镜像到<ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">粘滞键</translation>
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
 <translation id="2532589005999780174">高反差模式</translation>
+<translation id="2542089167727451762">请点按您的个人资料图片</translation>
 <translation id="255671100581129685">无法在公用自助终端使用 Google 助理。</translation>
 <translation id="2575685495496069081">多帐号登录已被停用</translation>
 <translation id="2582112259361606227">重启以进行更新</translation>
 <translation id="2617342710774726426">SIM 卡已被锁定</translation>
-<translation id="2651765386227849097">此设备已停用 Google 助理。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2658778018866295321">点击并拖动</translation>
 <translation id="2700493154570097719">设置键盘</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome 操作系统</translation>
 <translation id="4338109981321384717">放大镜</translation>
 <translation id="4351433414020964307">智能助理正在加载中…</translation>
-<translation id="435527878592612277">选择您的照片</translation>
 <translation id="4378551569595875038">正在连接…</translation>
 <translation id="4379531060876907730">这些是您的触控笔工具</translation>
 <translation id="4389184120735010762">您按下了停靠放大镜的键盘快捷键。要开启这项功能吗？</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">点按拖动</translation>
 <translation id="5750765938512549687">蓝牙已关闭</translation>
+<translation id="576453121877257266">当前已开启护眼模式。</translation>
 <translation id="5777841717266010279">要停止屏幕共享吗？</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5837036133683224804">停止将“<ph name="ROUTE_TITLE" />”投射至“<ph name="RECEIVER_NAME" />”</translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">分辨率已更改</translation>
 <translation id="6297287540776456956">使用触控笔选择一个区域</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />已旋转为<ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">开启/关闭夜间模式</translation>
 <translation id="6376931439017688372">蓝牙已开启</translation>
 <translation id="639644700271529076">CAPS LOCK 已关闭</translation>
 <translation id="6406704438230478924">altgr</translation>

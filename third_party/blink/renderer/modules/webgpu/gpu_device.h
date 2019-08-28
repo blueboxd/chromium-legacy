@@ -94,11 +94,14 @@ class GPUDevice final : public DawnObject<DawnDevice> {
   GPUQueue* getQueue();
 
  private:
-  void OnError(ExecutionContext* execution_context, const char* message);
+  void OnUncapturedError(ExecutionContext* execution_context,
+                         DawnErrorType errorType,
+                         const char* message);
 
   Member<GPUAdapter> adapter_;
   Member<GPUQueue> queue_;
-  std::unique_ptr<DawnCallback<base::RepeatingCallback<void(const char*)>>>
+  std::unique_ptr<
+      DawnCallback<base::RepeatingCallback<void(DawnErrorType, const char*)>>>
       error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUDevice);

@@ -224,7 +224,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8417404458978023919">{0,plural, =1{Перезапустіть Chromium упродовж дня}one{Перезапустіть Chromium упродовж # дня}few{Перезапустіть Chromium упродовж # днів}many{Перезапустіть Chromium упродовж # днів}other{Перезапустіть Chromium упродовж # дня}}</translation>
 <translation id="8453117565092476964">Архів програми встановлення пошкоджений або недійсний. Завантажте Chromium ще раз.</translation>
 <translation id="8493179195440786826">Версія Chromium застаріла</translation>
-<translation id="8494843963476918365">Якщо параметри не з'являться на цій сторінці, відкрийте <ph name="LINK_BEGIN" />налаштування веб-переглядача Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Отримати довідку щодо користування Chromium</translation>
 <translation id="8586442755830160949">Авторське право <ph name="YEAR" /> Автори Chromium. Усі права захищено.</translation>
 <translation id="8619360774459241877">Запускається Chromium…</translation>

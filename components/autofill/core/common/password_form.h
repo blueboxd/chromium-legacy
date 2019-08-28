@@ -209,6 +209,14 @@ struct PasswordForm {
   // When parsing an HTML form, this is not used.
   bool preferred = false;
 
+  // When the login was last used by the user to login to the site. Defaults to
+  // |date_created|, except for passwords that were migrated from the
+  // |preferred| flag. Their default is set when migrating the login database to
+  // have the "date_last_used" column.
+  //
+  // When parsing an HTML form, this is not used.
+  base::Time date_last_used;
+
   // When the login was saved (by chrome).
   //
   // When parsing an HTML form, this is not used.

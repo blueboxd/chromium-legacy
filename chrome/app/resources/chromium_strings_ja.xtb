@@ -224,8 +224,6 @@
 <translation id="8417404458978023919">{0,plural, =1{1 日以内に Chromium を再起動してください}other{# 日以内に Chromium を再起動してください}}</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>
-<translation id="8494843963476918365">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />
-    Chromium ブラウザの設定<ph name="LINK_END" />を試してみてください。</translation>
 <translation id="85843667276690461">Chromium の使用に関するアドバイス</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Chromium を起動しています...</translation>

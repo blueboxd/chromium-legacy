@@ -96,14 +96,10 @@ class NET_EXPORT WebSocketChannel {
                          scoped_refptr<IOBuffer> buffer,
                          size_t buffer_size);
 
-  // Sends |quota| units of flow control to the remote side. If the underlying
-  // transport has a concept of |quota|, then it permits the remote server to
-  // send up to |quota| units of data.
-  //
-  // Calling this function may result in synchronous calls to |event_interface_|
-  // which may result in this object being deleted. In that case, the return
-  // value will be CHANNEL_DELETED.
-  ChannelState AddReceiveFlowControlQuota(int64_t quota) WARN_UNUSED_RESULT;
+  // Calls WebSocketStream::ReadFrames() with the appropriate arguments. Stops
+  // calling ReadFrames if no writable buffer in dataframe or WebSocketStream
+  // starts async read.
+  ChannelState ReadFrames() WARN_UNUSED_RESULT;
 
   // Starts the closing handshake for a client-initiated shutdown of the
   // connection. There is no API to close the connection without a closing
@@ -241,10 +237,6 @@ class NET_EXPORT WebSocketChannel {
   // WriteFrames() itself.
   ChannelState OnWriteDone(bool synchronous, int result) WARN_UNUSED_RESULT;
 
-  // Calls WebSocketStream::ReadFrames() with the appropriate arguments. Stops
-  // calling ReadFrames if current_receive_quota_ is 0.
-  ChannelState ReadFrames() WARN_UNUSED_RESULT;
-
   // Callback from WebSocketStream::ReadFrames. Handles any errors and processes
   // the returned chunks appropriately to their type. |result| is a net error
   // code. If |synchronous| is true, then OnReadDone() is being called from
@@ -357,10 +349,6 @@ class NET_EXPORT WebSocketChannel {
   // Destination for the current call to WebSocketStream::ReadFrames
   std::vector<std::unique_ptr<WebSocketFrame>> read_frames_;
 
-  // Frames that have been read but not yet forwarded to the renderer due to
-  // lack of quota.
-  base::queue<PendingReceivedFrame> pending_received_frames_;
-
   // Handle to an in-progress WebSocketStream creation request. Only non-NULL
   // during the connection process.
   std::unique_ptr<WebSocketStreamRequest> stream_request_;
@@ -375,9 +363,6 @@ class NET_EXPORT WebSocketChannel {
   // The current amount of quota that the renderer has available for sending
   // on this logical channel (quota units).
   int current_send_quota_;
-  // The remaining amount of quota that the renderer will allow us to send on
-  // this logical channel (quota units).
-  uint64_t current_receive_quota_;
 
   // Timer for the closing handshake.
   base::OneShotTimer close_timer_;
@@ -414,6 +399,9 @@ class NET_EXPORT WebSocketChannel {
   // True if we have already sent the type (Text or Binary) of the current
   // message to the renderer. This can be false if the message is empty so far.
   bool initial_frame_forwarded_;
+
+  // True if we're waiting for OnReadDone() callback.
+  bool is_reading_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };

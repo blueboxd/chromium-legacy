@@ -52,7 +52,7 @@ SaveCardManageCardsBubbleViews::CreateFootnoteView() {
   params.dice_accounts_promo_message_resource_id =
       IDS_AUTOFILL_SYNC_PROMO_MESSAGE;
   params.dice_signin_button_prominent = false;
-  params.dice_text_style = ChromeTextStyle::STYLE_SECONDARY;
+  params.dice_text_style = views::style::STYLE_SECONDARY;
 
   auto promo_view = CreateBubbleSyncPromoView(
       controller()->GetProfile(), sync_promo_delegate_.get(),

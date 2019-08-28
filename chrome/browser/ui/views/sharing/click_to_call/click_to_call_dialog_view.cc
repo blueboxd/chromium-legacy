@@ -91,7 +91,7 @@ ClickToCallDialogView::ClickToCallDialogView(
     ClickToCallUiController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller),
-      send_failed_(controller->send_failed()) {}
+      send_failed_(controller->HasSendFailed()) {}
 
 ClickToCallDialogView::~ClickToCallDialogView() = default;
 
@@ -247,10 +247,9 @@ void ClickToCallDialogView::InitEmptyView() {
 }
 
 void ClickToCallDialogView::InitErrorView() {
-  auto label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(
-          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE),
-      views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
+  auto label = std::make_unique<views::Label>(controller_->GetErrorDialogText(),
+                                              views::style::CONTEXT_LABEL,
+                                              views::style::STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(std::move(label));
 }
@@ -268,8 +267,7 @@ bool ClickToCallDialogView::ShouldShowCloseButton() const {
 base::string16 ClickToCallDialogView::GetWindowTitle() const {
   switch (GetDialogType()) {
     case SharingClickToCallDialogType::kErrorDialog:
-      return l10n_util::GetStringUTF16(
-          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_FAILED_TO_SEND);
+      return controller_->GetErrorDialogTitle();
     case SharingClickToCallDialogType::kEducationalDialog:
       return l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES);

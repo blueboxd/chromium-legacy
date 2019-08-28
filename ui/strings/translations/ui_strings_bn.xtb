@@ -49,7 +49,6 @@
 <translation id="2388990488038464401">আপনার ফোন থেকে এই নম্বরে কল করতে চান?</translation>
 <translation id="24452542372838207">বিজ্ঞপ্তি প্রসারিত করুন</translation>
 <translation id="2445449901874883781">উচ্চ রেজোলিউশন ব্যবহার করুন</translation>
-<translation id="2451871130406122810">ডিভাইসে পাঠানো হয়েছে</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2497284189126895209">সব ফাইল</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -217,6 +216,7 @@
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> ফোল্ডার</translation>
 <translation id="883911313571074303">ইমেজ ব্যাখ্যা করুন</translation>
 <translation id="8841375032071747811">ফিরে যাওয়ার বোতাম</translation>
+<translation id="8867568208303837180">পাঠানো হচ্ছে…</translation>
 <translation id="8876215549894133151">ফর্ম্যাট:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> কেবি</translation>
 <translation id="8926951137623668982">শেল্ফ সবসময় লুকানো থাকবে</translation>

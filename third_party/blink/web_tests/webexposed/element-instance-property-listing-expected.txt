@@ -31,6 +31,7 @@ namespace http://www.w3.org/1999/xhtml
     property append
     property appendChild
     property ariaActiveDescendant
+    property ariaActiveDescendantElement
     property ariaAtomic
     property ariaAutoComplete
     property ariaBusy
@@ -42,8 +43,10 @@ namespace http://www.w3.org/1999/xhtml
     property ariaCurrent
     property ariaDescribedBy
     property ariaDetails
+    property ariaDetailsElement
     property ariaDisabled
     property ariaErrorMessage
+    property ariaErrorMessageElement
     property ariaExpanded
     property ariaFlowTo
     property ariaHasPopup
@@ -1226,6 +1229,7 @@ namespace http://www.w3.org/2000/svg
     property append
     property appendChild
     property ariaActiveDescendant
+    property ariaActiveDescendantElement
     property ariaAtomic
     property ariaAutoComplete
     property ariaBusy
@@ -1237,8 +1241,10 @@ namespace http://www.w3.org/2000/svg
     property ariaCurrent
     property ariaDescribedBy
     property ariaDetails
+    property ariaDetailsElement
     property ariaDisabled
     property ariaErrorMessage
+    property ariaErrorMessageElement
     property ariaExpanded
     property ariaFlowTo
     property ariaHasPopup

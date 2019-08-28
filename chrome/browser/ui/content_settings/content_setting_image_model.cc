@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -24,7 +25,11 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/features.h"
+#include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "services/device/public/cpp/device_features.h"
@@ -335,13 +340,20 @@ bool ContentSettingBlockedImageModel::UpdateAndGetVisibility(
   if (!is_blocked && !is_allowed)
     return false;
 
-  HostContentSettingsMap* map = HostContentSettingsMapFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile);
 
   // For allowed cookies, don't show the cookie page action unless cookies are
   // blocked by default.
   if (!is_blocked && type == CONTENT_SETTINGS_TYPE_COOKIES &&
       map->GetDefaultContentSetting(type, nullptr) != CONTENT_SETTING_BLOCK) {
+    return false;
+  }
+
+  if (type == CONTENT_SETTINGS_TYPE_COOKIES &&
+      CookieSettingsFactory::GetForProfile(profile)
+          ->IsCookieControlsEnabled()) {
     return false;
   }
 

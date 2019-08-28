@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Skjul menu</translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1419738280318246476">Lås enheden op for at udføre notifikationshandlingen</translation>
+<translation id="1420408895951708260">Slå Nattelys til/fra. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1455242230282523554">Vis sprogindstillinger</translation>
 <translation id="1460620680449458626">Lyden er slået fra.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526"><ph name="FEATURE_NAME" /> er blevet deaktiveret af en politik, der gælder for denne enhed. Kontakt din administrator for at anmode om ændringer.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (indlæser...)</translation>
+<translation id="1838895407229022812">Nattelys er slået fra.</translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
 <translation id="1864454756846565995">USB-C-enhed (port bagpå)</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">Træge taster</translation>
 <translation id="2509468283778169019">CAPS LOCK er slået til</translation>
 <translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
+<translation id="2542089167727451762">Tryk på dit profilbillede</translation>
 <translation id="255671100581129685">Google Assistent er ikke tilgængelig i en offentlig session.</translation>
 <translation id="2575685495496069081">Samlet login fra flere konti er deaktiveret</translation>
 <translation id="2582112259361606227">Genstart for at opdatere</translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
-<translation id="2651765386227849097">Google Assistent er deaktiveret på denne enhed.</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2658778018866295321">Klik og træk</translation>
 <translation id="2700493154570097719">Angiv dit tastatur</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Forstørrelsesglas</translation>
 <translation id="4351433414020964307">Assistenten indlæses...</translation>
-<translation id="435527878592612277">Vælg dit billede</translation>
 <translation id="4378551569595875038">Opretter forbindelse...</translation>
 <translation id="4379531060876907730">Dette er dine styluspenværktøjer</translation>
 <translation id="4389184120735010762">Du trykkede på tastaturgenvejen for det fastgjorte lupvindue. Vil du aktivere indstillingen?</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">Mellem</translation>
 <translation id="5744083938413354016">Tryk og træk</translation>
 <translation id="5750765938512549687">Bluetooth er slået fra</translation>
+<translation id="576453121877257266">Nattelys er slået til.</translation>
 <translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Stop <ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
@@ -350,7 +352,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6284232397434400372">Opløsningen blev ændret</translation>
 <translation id="6297287540776456956">Brug styluspennen til at vælge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> er roteret til <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">Slå Nattelys til/fra</translation>
 <translation id="6376931439017688372">Bluetooth er slået til</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
 <translation id="6406704438230478924">altgr</translation>

@@ -7,6 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
@@ -17,15 +18,36 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/fetch/fetch_api_request_proto.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 
 namespace content {
 namespace background_fetch {
 
 namespace {
+
+blink::mojom::SerializedBlobPtr MakeBlob(
+    scoped_refptr<BackgroundFetchRequestInfo> info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  std::unique_ptr<storage::BlobDataHandle> response_blob_handle =
+      info->TakeResponseBlobDataHandleOnIO();
+
+  if (!response_blob_handle)
+    return nullptr;
+
+  auto blob = blink::mojom::SerializedBlob::New();
+  blob->uuid = response_blob_handle->uuid();
+  blob->size = response_blob_handle->size();
+
+  storage::BlobImpl::Create(std::move(response_blob_handle),
+                            MakeRequest(&blob->blob));
+  return blob;
+}
 
 // Returns whether the response contained in the Background Fetch |request| is
 // considered OK. See https://fetch.spec.whatwg.org/#ok-status aka a successful
@@ -87,7 +109,28 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
     return;
   }
 
-  PopulateResponseBody(response_.get());
+  // Include the status code, status text and the response's body as a blob
+  // when this is allowed by the CORS protocol.
+  response_->status_code = request_info_->GetResponseCode();
+  response_->status_text = request_info_->GetResponseText();
+  response_->headers.insert(request_info_->GetResponseHeaders().begin(),
+                            request_info_->GetResponseHeaders().end());
+
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&MakeBlob, request_info_),
+        base::BindOnce(&MarkRequestCompleteTask::DidMakeBlob,
+                       weak_factory_.GetWeakPtr(), std::move(done_closure)));
+  } else {
+    DidMakeBlob(std::move(done_closure), MakeBlob(request_info_));
+  }
+}
+
+void MarkRequestCompleteTask::DidMakeBlob(
+    base::OnceClosure done_closure,
+    blink::mojom::SerializedBlobPtr blob) {
+  response_->blob = std::move(blob);
   if (!IsOK(*request_info_))
     failure_reason_ = proto::BackgroundFetchRegistration::BAD_STATUS;
 
@@ -123,29 +166,6 @@ void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
       base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,
                      weak_factory_.GetWeakPtr(), std::move(done_closure),
                      trace_id));
-}
-
-void MarkRequestCompleteTask::PopulateResponseBody(
-    blink::mojom::FetchAPIResponse* response) {
-  // Include the status code, status text and the response's body as a blob
-  // when this is allowed by the CORS protocol.
-  response->status_code = request_info_->GetResponseCode();
-  response->status_text = request_info_->GetResponseText();
-  response->headers.insert(request_info_->GetResponseHeaders().begin(),
-                           request_info_->GetResponseHeaders().end());
-
-  storage::BlobDataHandle* response_blob_handle =
-      request_info_->GetResponseBlobDataHandle();
-
-  if (!response_blob_handle)
-    return;
-
-  response->blob = blink::mojom::SerializedBlob::New();
-  response->blob->uuid = response_blob_handle->uuid();
-  response->blob->size = response_blob_handle->size();
-
-  storage::BlobImpl::Create(request_info_->TakeResponseBlobDataHandle(),
-                            MakeRequest(&response->blob->blob));
 }
 
 void MarkRequestCompleteTask::DidOpenCache(

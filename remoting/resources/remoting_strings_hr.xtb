@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Nije moguće pristupiti hostu. To je vjerojatno zbog konfiguracije mreže koju upotrebljavate.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Posljednji put viđen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ta aplikacija više nije podržana. Da biste dobili najnovije značajke i sigurnosna ažuriranja, upotrijebite <ph name="LINK_BEGIN" />web-aplikaciju Udaljena radna površina Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Potreban je dodatni konfiguracijski korak prije nego što daljinski možete upravljati ovim računalom putem usluge <ph name="PRODUCT_NAME" />.
-
-Da biste omogućili ovu funkciju, odaberite '<ph name="BUTTON_NAME" />' za prikaz okna s postavkama za Sigurnost i Privatnost, a zatim potvrdite okvir opcije "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Ako opcija "<ph name="SERVICE_SCRIPT_NAME" />" već postoji i okvir je potvrđen, možda ćete je trebati ukloniti i ponovo dodati.</translation>
 <translation id="2499160551253595098">Pomognite nam poboljšati Udaljenu radnu površinu Chrome, dopustite nam prikupljanje statistike upotrebe i izvješća o padu programa.</translation>
 <translation id="2509394361235492552">Povezano s računalom <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati udaljenu radnu površinu Chrome da se otvara kao prozor.</translation>
@@ -317,6 +312,11 @@ Ako opcija "<ph name="SERVICE_SCRIPT_NAME" />" već postoji i okvir je potvrđen
 <translation id="8804164990146287819">Pravila o privatnosti</translation>
 <translation id="894763922177556086">Dobra</translation>
 <translation id="895780780740011433">Za Windows 7 i novije verzije</translation>
+<translation id="8963047137585288214">Da biste mogli daljinski upravljati ovim računalom putem usluge <ph name="PRODUCT_NAME" />, morate izvršiti još jedan korak u konfiguraciji.
+
+Da biste omogućili tu funkciju, odaberite "<ph name="BUTTON_NAME" />" kako bi se prikazalo okno s postavkama za sigurnost i privatnost, a zatim potvrdite okvir opcije "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Ako opcija "<ph name="SERVICE_SCRIPT_NAME" />" već postoji i potvrđena je, možda ćete je trebati poništiti pa ponovo potvrditi.</translation>
 <translation id="897805526397249209">Da biste omogućili daljinsko povezivanje s drugim računalom, instalirajte na njega Chromoting i kliknite "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Kontroler Udaljene radne površine Chrome</translation>
 <translation id="9016232822027372900">Svejedno poveži</translation>

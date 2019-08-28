@@ -45,6 +45,8 @@ sync_pb::PasswordSpecifics SpecificsFromPassword(
   password_data->set_password_value(
       base::UTF16ToUTF8(password_form.password_value));
   password_data->set_preferred(password_form.preferred);
+  password_data->set_date_last_used(
+      password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_data->set_date_created(
       password_form.date_created.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_data->set_blacklisted(password_form.blacklisted_by_user);
@@ -80,6 +82,15 @@ autofill::PasswordForm PasswordFromEntityChange(
   password.username_value = base::UTF8ToUTF16(password_data.username_value());
   password.password_value = base::UTF8ToUTF16(password_data.password_value());
   password.preferred = password_data.preferred();
+  if (password_data.has_date_last_used()) {
+    password.date_last_used = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(password_data.date_last_used()));
+  } else if (password_data.preferred()) {
+    // For legacy passwords that don't have the |date_last_used| field set, we
+    // should it similar to the logic in login database migration.
+    password.date_last_used =
+        base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromDays(1));
+  }
   password.date_created = base::Time::FromDeltaSinceWindowsEpoch(
       // Use FromDeltaSinceWindowsEpoch because create_time_us has
       // always used the Windows epoch.
@@ -133,6 +144,10 @@ bool AreLocalAndRemotePasswordsEqual(
       base::UTF16ToUTF8(password_form.password_value) ==
           password_specifics.password_value() &&
       password_form.preferred == password_specifics.preferred() &&
+      password_form.date_last_used ==
+          base::Time::FromDeltaSinceWindowsEpoch(
+              base::TimeDelta::FromMicroseconds(
+                  password_specifics.date_last_used())) &&
       password_form.date_created ==
           base::Time::FromDeltaSinceWindowsEpoch(
               base::TimeDelta::FromMicroseconds(

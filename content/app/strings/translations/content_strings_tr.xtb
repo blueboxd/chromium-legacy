@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Değer <ph name="MAXIMUM" /> veya daha küçük olmalıdır.</translation>
 <translation id="3486220673238053218">tanım</translation>
 <translation id="3557673793733683882">başlık <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">hafta seçici</translation>
 <translation id="3685101356851116974">Etiketsiz resim</translation>
 <translation id="3706100364254443312">anahtar</translation>
 <translation id="3732799496749320381">aa</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Açıklama alınıyor...</translation>
 <translation id="8117451130807776954">Bu hafta</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8208673686607688524">yerel tarih ve zaman seçici</translation>
 <translation id="8261464734335370856">Geçersiz yazım</translation>
 <translation id="8284326494547611709">Altyazılar</translation>
 <translation id="835897206747267392">Geçersiz değer.</translation>

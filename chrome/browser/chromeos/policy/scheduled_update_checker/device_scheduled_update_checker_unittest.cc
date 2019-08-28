@@ -597,14 +597,13 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
   chromeos::ScopedTestingCrosSettings cros_settings_;
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
   std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
+  service_manager::TestConnectorFactory connector_factory_;
+  device::TestWakeLockProvider wake_lock_provider_;
 
  private:
   chromeos::ScopedStubInstallAttributes test_install_attributes_{
       chromeos::StubInstallAttributes::CreateCloudManaged("fake-domain",
                                                           "fake-id")};
-
-  service_manager::TestConnectorFactory connector_factory_;
-  device::TestWakeLockProvider wake_lock_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceScheduledUpdateCheckerTest);
 };
@@ -1177,6 +1176,46 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkDelayScenario) {
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
+}
+
+// Checks if only one wake lock is acquired when the update check timer fires
+// and released when an update check and policy refresh is completed.
+TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
+  base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
+  auto policy_and_next_update_check_time = CreatePolicy(
+      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+
+  // Fast forward to update check timer expiration. This should result in a wake
+  // lock being acquired.
+  cros_settings_.device_settings()->Set(
+      chromeos::kDeviceScheduledUpdateCheck,
+      std::move(policy_and_next_update_check_time.first));
+  task_environment_.FastForwardBy(delay_from_now);
+
+  base::Optional<int> active_wake_locks_before_update_check;
+  wake_lock_provider_.GetActiveWakeLocksForTests(
+      device::mojom::WakeLockType::kPreventAppSuspension,
+      base::BindOnce([](base::Optional<int>* result,
+                        int32_t wake_lock_count) { *result = wake_lock_count; },
+                     &active_wake_locks_before_update_check));
+  EXPECT_TRUE(active_wake_locks_before_update_check);
+  EXPECT_EQ(active_wake_locks_before_update_check.value(), 1);
+  // Run until idle to run the wake lock count callback.
+  task_environment_.RunUntilIdle();
+
+  // Simulate update check succeeding.
+  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
+                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+
+  base::Optional<int> active_wake_locks_after_update_check;
+  wake_lock_provider_.GetActiveWakeLocksForTests(
+      device::mojom::WakeLockType::kPreventAppSuspension,
+      base::BindOnce([](base::Optional<int>* result,
+                        int32_t wake_lock_count) { *result = wake_lock_count; },
+                     &active_wake_locks_after_update_check));
+  // After all steps are completed the wake lock should be released.
+  EXPECT_TRUE(active_wake_locks_after_update_check);
+  EXPECT_EQ(active_wake_locks_after_update_check.value(), 0);
 }
 
 }  // namespace policy

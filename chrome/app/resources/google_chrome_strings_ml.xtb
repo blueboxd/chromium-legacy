@@ -176,7 +176,7 @@
 <translation id="5906655207909574370">എകദേശം അപ് റ്റു ഡേറ്റാണ്! അപ്‌ഡേറ്റ് ചെയ്യൽ പൂർത്തിയാക്കാൻ ഉപകരണം പുനരാരംഭിക്കുക.</translation>
 <translation id="5940385492829620908">നിങ്ങളുടെ വെബും ബുക്ക്മാർക്കുകളും മറ്റ് Chrome ഫയലും ഇവിടെ തത്സമയമാണ്.</translation>
 <translation id="5941830788786076944">Google Chrome-നെ ഡിഫോൾട്ട് ബ്രൗസർ ആക്കുക</translation>
-<translation id="5977372243443849142">പാസ്‌വേഡുകൾ ഓർമ്മിക്കാൻ Chrome നിങ്ങളെ സഹായിക്കുന്നതിനാൽ നിങ്ങൾ അത് ഓർമ്മിച്ച് വയ്‌ക്കേണ്ടതില്ല.</translation>
+<translation id="5977372243443849142">പാസ്‌വേഡുകൾ ഓർത്ത് വെയ്ക്കാൻ Chromium-ത്തിനാകും, നിങ്ങളത് ചെയ്യേണ്ടതില്ല.</translation>
 <translation id="6014844626092547096">നിങ്ങൾ ഇപ്പോൾ Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്‌തു! നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ സമന്വയം പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6070348360322141662">കൂടുതൽ സുരക്ഷ ലഭ്യമാക്കാൻ, Google Chrome നിങ്ങളുടെ ഡാറ്റ എന്‍‌ക്രിപ്‌റ്റുചെയ്യും</translation>
@@ -189,8 +189,6 @@
 <translation id="6291549208091401781">നിങ്ങളുടെ കമ്പ്യൂട്ടറിലെ എല്ലാ ഉപയോക്താക്കൾക്കുമായി Google Chrome നിലവിൽ ഇൻസ്റ്റാൾ ചെയ്‌തിരിക്കുന്നു.</translation>
 <translation id="6338556085225130112">Google Chrome അപ്‌ഡേറ്റുചെയ്യുന്നു</translation>
 <translation id="6368958679917195344">അനുബന്ധ <ph name="BEGIN_LINK_CROS_OSS" />ഓപ്പണ്‍ ഉറവിട സോഫ്റ്റ്‍‌വെയർ<ph name="END_LINK_CROS_OSS" /> ഉപയോഗിച്ചാണ് Chrome OS നിര്‍മ്മിച്ചിരിക്കുന്നത്.</translation>
-<translation id="6400930858680434649">ഈ പേജിൽ ഒരു ക്രമീകരണം കാണിക്കുന്നില്ലെങ്കിൽ <ph name="LINK_BEGIN" />
-    Chrome ബ്രൗസർ ക്രമീകരണം<ph name="LINK_END" /> ഉപയോഗിക്കാൻ ശ്രമിക്കൂ.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome അപ്‌ഡേറ്റുചെയ്യുന്നു, (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Chrome ഫയൽ സമന്വയിപ്പിക്കാൻ നിങ്ങൾ <ph name="PROFILE_EMAIL" /> ഉപയോഗിക്കുന്നു. നിങ്ങളുടെ സമന്വയ മുൻഗണന അപ്‌ഡേറ്റ് ചെയ്യാനോ ഒരു Google അക്കൗണ്ട് കൂടാതെ Chrome ഉപയോഗിക്കാനോ <ph name="SETTINGS_LINK" /> സന്ദർശിക്കുക.</translation>

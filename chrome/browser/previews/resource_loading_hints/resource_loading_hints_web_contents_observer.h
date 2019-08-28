@@ -33,22 +33,16 @@ class ResourceLoadingHintsWebContentsObserver
   explicit ResourceLoadingHintsWebContentsObserver(
       content::WebContents* web_contents);
 
-  // content::WebContentsObserver:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-
   // Overridden from content::WebContentsObserver. If the navigation is of type
   // resource loading hints preview, then this method sends the resource loading
   // hints mojo message to the renderer before the commit occurs. This ensures
   // that the hints will be available to the renderer as soon as the document
   // starts rendering.
-  // content::WebContentsObserver:
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
 
   // TODO(https://crbug.com/891328): Clean up older interfaces once
   // kUseRenderFrameObserverForPreviewsLoadingHints is enabled by default.
-  // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
@@ -62,10 +56,6 @@ class ResourceLoadingHintsWebContentsObserver
   // beginning and end).
   const std::vector<std::string> GetResourceLoadingHintsResourcePatternsToBlock(
       const GURL& document_gurl) const;
-
-  // Reports the start URL and the end URL in the current redirect chain to
-  // previews service.
-  void ReportRedirects(content::NavigationHandle* navigation_handle);
 
   // Set in constructor.
   Profile* profile_ = nullptr;

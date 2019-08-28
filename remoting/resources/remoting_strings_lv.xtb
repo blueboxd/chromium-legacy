@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Nevar sasniegt saimniekdatoru. Iespējamais iemesls var būt tīkla konfigurācija, kuru izmantojat.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Pēdējo reizi redzēts tiešsaistē <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Šī lietotne vairs netiek atbalstīta. Lai saņemtu jaunākās funkcijas un drošības atjauninājumus, lūdzu, izmantojiet <ph name="LINK_BEGIN" />Chrome attālās darbvirsmas tīmekļa lietotni<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Lai varētu kontrolēt šo iekārtu attāli, izmantojot <ph name="PRODUCT_NAME" />, ir jāveic papildu konfigurēšanas darbība.
-
-Šīs funkcionalitātes iespējošanai atlasiet “<ph name="BUTTON_NAME" />”, lai tiktu parādīta preferenču rūts “Drošība un konfidencialitāte”, pēc tam atzīmējiet izvēles rūtiņu blakus “<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Ja pakalpojums “<ph name="SERVICE_SCRIPT_NAME" />” jau ir pievienots un pārbaudīts, iespējams, jums tas būs jānoņem un pēc tam vēlreiz jāpievieno.</translation>
 <translation id="2499160551253595098">Palīdziet mums uzlabot Chrome attālo darbvirsmu, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="2509394361235492552">Izveidots savienojums ar “<ph name="HOSTNAME" />”</translation>
 <translation id="2512228156274966424">PIEZĪME. Lai būtu pieejami visi īsinājumtaustiņi, Chrome attālo darbvirsmu varat konfigurēt šādi: “Atvērt kā logu”.</translation>
@@ -317,6 +312,11 @@ Ja pakalpojums “<ph name="SERVICE_SCRIPT_NAME" />” jau ir pievienots un pār
 <translation id="8804164990146287819">Konfidencialitātes politika</translation>
 <translation id="894763922177556086">labs</translation>
 <translation id="895780780740011433">Operētājsistēmai Windows 7 un jaunākām versijām</translation>
+<translation id="8963047137585288214">Lai varētu attālināti kontrolēt šo iekārtu, izmantojot <ph name="PRODUCT_NAME" />, ir jāveic papildu konfigurēšanas darbība.
+
+Šīs funkcionalitātes iespējošanai atlasiet “<ph name="BUTTON_NAME" />”, lai tiktu parādīta preferenču rūts “Drošība un konfidencialitāte”, un pēc tam atzīmējiet izvēles rūtiņu blakus “<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Ja pakalpojums “<ph name="SERVICE_SCRIPT_NAME" />” jau ir pievienots un atzīmēts, iespējams, jums būs jānoņem atzīme un pēc tam atkārtoti jāatzīmē šis pakalpojums.</translation>
 <translation id="897805526397249209">Lai iespējotu attālus savienojumus ar citu datoru, instalējiet Chrome saiti attiecīgajā datorā un noklikšķiniet uz <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Chrome attālās darbvirsmas saimniekdatora kontrolleris</translation>
 <translation id="9016232822027372900">Izveidot savienojumu jebkurā gadījumā</translation>

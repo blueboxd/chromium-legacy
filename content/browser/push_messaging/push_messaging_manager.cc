@@ -286,12 +286,6 @@ void PushMessagingManager::AddPushMessagingReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
-void PushMessagingManager::BindRequest(
-    blink::mojom::PushMessagingRequest request) {
-  // Implicit conversion to mojo::PendingReceiver<blink::mojom::PushMessaging>.
-  AddPushMessagingReceiver(std::move(request));
-}
-
 // Subscribe methods on both IO and UI threads, merged in order of use from
 // PushMessagingManager and Core.
 // -----------------------------------------------------------------------------

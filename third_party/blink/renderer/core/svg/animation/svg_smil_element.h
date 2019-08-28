@@ -84,14 +84,13 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime PreviousIntervalBegin() const { return previous_interval_begin_; }
   SMILTime SimpleDuration() const;
 
-  void SeekToIntervalCorrespondingToTime(double elapsed);
-
   bool NeedsToProgress(double elapsed);
-  void Progress(double elapsed, bool seek_to_time);
+  void Progress(double elapsed);
   void TriggerPendingEvents(double elapsed);
   void UpdateSyncBases();
   void UpdateNextProgressTime(double elapsed);
 
+  SMILTime NextInterestingTime(SMILTime) const;
   SMILTime NextProgressTime() const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
     UpdateAnimation(last_percent_, last_repeat_, result_element);
@@ -287,8 +286,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   unsigned fill_ : 1;
   float last_percent_;
   unsigned last_repeat_;
-  // The latest syncbase repeat that has been handled.
-  unsigned last_syncbase_repeat_;
 
   SMILTime next_progress_time_;
 

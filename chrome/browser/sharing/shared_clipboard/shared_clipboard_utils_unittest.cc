@@ -72,7 +72,7 @@ class SharedClipboardUtilsTest : public testing::Test {
       return nullptr;
 
     return std::make_unique<NiceMock<MockSharingService>>(
-        std::make_unique<SharingFCMHandler>(nullptr, nullptr));
+        std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

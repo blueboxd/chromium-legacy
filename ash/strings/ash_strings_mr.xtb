@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">मेनू कोलॅप्स करा</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1419738280318246476">सूचनेशी संबंधित क्रिया पार पाडण्यासाठी डिव्हाइस अनलॉक करा</translation>
+<translation id="1420408895951708260">रात्रीचा प्रकाश टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">होय</translation>
 <translation id="1455242230282523554">भाषा सेटिंग्ज दर्शवा</translation>
 <translation id="1460620680449458626">व्हॉल्यूम म्यूट केलेला आहे.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">या डिव्हाइसवर लागू केलेल्या धोरणाने <ph name="FEATURE_NAME" /> बंद केले आहे. कृपया बदलण्याची विनंती करण्यासाठी तुमच्या अॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
 <translation id="1823873187264960516">इथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">साहाय्यक (लोड होत आहे...)</translation>
+<translation id="1838895407229022812">रात्रीचा प्रकाश बंद आहे.</translation>
 <translation id="1850504506766569011">वाय-फाय बंद आहे.</translation>
 <translation id="1864454756846565995">USB-C डिव्‍हाइस (मागील बाजूचे पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> वर मिरर करत आहे</translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">स्टिकी की</translation>
 <translation id="2509468283778169019">CAPS LOCK सुरु आहे</translation>
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
+<translation id="2542089167727451762">तुमच्या प्रोफाइल इमेजवर टॅप करा</translation>
 <translation id="255671100581129685">सार्वजनिक सेशनमध्ये Google असिस्टंट उपलब्ध नाही.</translation>
 <translation id="2575685495496069081">एकाहून अधिक साइन इन बंद करण्यात आले आहे</translation>
 <translation id="2582112259361606227">अपडेट करण्यासाठी रीस्टार्ट करा</translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक केले आहे</translation>
-<translation id="2651765386227849097">या डिव्हाइसवर Google असिस्टंट बंद केले आहे.</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2658778018866295321">क्लिक आणि ड्रॅग करा</translation>
 <translation id="2700493154570097719">तुमचा कीबोर्ड सेट करा</translation>
@@ -178,7 +180,7 @@
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
 <translation id="3513798432020909783">खाते <ph name="MANAGER_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
-<translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
+<translation id="3573179567135747900">"<ph name="FROM_LOCALE" />"मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
 <translation id="3576141592585647168">टाइमझोन बदला</translation>
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
 <translation id="3604801046548457007">डेस्क <ph name="DESK_TITILE" /> तयार केले</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">भिंग</translation>
 <translation id="4351433414020964307">साहाय्यक लोड होत आहे...</translation>
-<translation id="435527878592612277">तुमचा फोटो निवडा</translation>
 <translation id="4378551569595875038">कनेक्ट करीत आहे...</translation>
 <translation id="4379531060876907730">ही तुमची स्टायलस टूल आहेत</translation>
 <translation id="4389184120735010762">तुम्ही डॉक मॅग्निफायरसाठी कीबोर्ड शॉर्टकट दाबला आहे. तुम्हाला ते सुरू करायचे आहे का?</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">मध्यम</translation>
 <translation id="5744083938413354016">टॅप ड्रॅगिंग</translation>
 <translation id="5750765938512549687">ब्लूटूथ बंद आहे</translation>
+<translation id="576453121877257266">रात्रीचा प्रकाश सुरू आहे.</translation>
 <translation id="5777841717266010279">स्क्रीन सामायिकरण थांबवायचे?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> वर <ph name="ROUTE_TITLE" /> थांबवा</translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">रीझोल्युशन बदलले</translation>
 <translation id="6297287540776456956">विभाग निवडण्यासाठी स्टायलस वापरा</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> वर फिरविले होते</translation>
-<translation id="6344698853700675736">रात्रीचा प्रकाश टॉगल करा</translation>
 <translation id="6376931439017688372">ब्लूटूथ सुरू आहे</translation>
 <translation id="639644700271529076">CAPS LOCK बंद आहे</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -429,7 +430,7 @@
 <translation id="7526573455193969409">नेटवर्कचे परीक्षण केले जाऊ शकते</translation>
 <translation id="7536035074519304529">IP पत्ता: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">झोपण्याची वेळ</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ला सपोर्ट देत नाही. रिजोल्यूशन <ph name="FALLBACK_RESOLUTION" /> मध्ये बदलले</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ला सपोर्ट करत नाही. रिझोल्युशन <ph name="FALLBACK_RESOLUTION" /> मध्ये बदलले</translation>
 <translation id="7562368315689366235">इमोजी पॅलेट</translation>
 <translation id="7564874036684306347">दुसऱ्या डेस्कटॉपवर विंडो हलवण्याने अनपेक्षित वर्तन घडू शकते. नंतर येणाऱ्या सूचना, विंडो आणि डायलॉग हे डेस्कटॉपच्या दरम्यान विभाजित केले जाऊ शकतात.</translation>
 <translation id="7568294522609223312">ऑटोमेटिक क्लिक बंद करा</translation>
@@ -445,7 +446,7 @@
 <translation id="7749443890790263709">डेस्कची कमाल मर्यादा गाठली आहे.</translation>
 <translation id="776344839111254542">अपडेट तपशील पाहण्यासाठी क्लिक करा</translation>
 <translation id="7780159184141939021">स्क्रीन फिरवा</translation>
-<translation id="7796353162336583443">नोंद करून घेण्यासाठी, स्क्रीनशॉट घेण्यासाठी, Google Assistant, लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
+<translation id="7796353162336583443">नोंद करून घेण्यासाठी, स्क्रीनशॉट घेण्यासाठी, Google असिस्टंट, लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
 <translation id="7798302898096527229">रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> आणि <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">मजबूत सिग्नल</translation>
@@ -545,7 +546,7 @@
 <translation id="9089416786594320554">इनपुट पद्धती</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> डिस्प्ले काढले</translation>
 <translation id="9151726767154816831">अपडेटासाठी रीस्टार्ट करा आणि powerwash करा</translation>
-<translation id="9179259655489829027">हे वैशिष्ट्य तुम्हाला पासवर्ड शिवाय कोणत्याही साइन-इन केलेल्या वापरकर्त्यास जलदपणे अॅक्सेस करण्याची अनुमती देते. तुमचा विश्वास असलेल्या खात्यांसाठीच फक्त या वैशिष्ट्याचा वापर करा.</translation>
+<translation id="9179259655489829027">हे वैशिष्ट्य तुम्हाला पासवर्ड शिवाय कोणत्याही साइन-इन केलेल्या वापरकर्त्यास जलदपणे अॅक्सेस करण्याची परवानगी  देते. तुमचा विश्वास असलेल्या खात्यांसाठीच फक्त या वैशिष्ट्याचा वापर करा.</translation>
 <translation id="9193626018745640770">एका अज्ञात मिळवणाऱ्यावर कास्ट करत आहे</translation>
 <translation id="9194617393863864469">दुसरा वापरकर्ता साइन इन करा...</translation>
 <translation id="9210037371811586452">एकीकृत डेस्कटॉप मोडमधून बाहेर पडत आहे</translation>

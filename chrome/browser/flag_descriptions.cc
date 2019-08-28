@@ -284,6 +284,12 @@ const char kDecodeLossyWebPImagesToYUVDescription[] =
     "Decode and render lossy WebP images from YUV instead of RGB. "
     "You must also have GPU rasterization or OOP rasterization.";
 
+const char kEnablePasswordsAccountStorageName[] =
+    "Enable the account data storage for passwords";
+const char kEnablePasswordsAccountStorageDescription[] =
+    "Enables storing passwords in a second, Gaia-account-scoped storage for "
+    "signed-in but not syncing users";
+
 const char kFocusMode[] = "Focus Mode";
 const char kFocusModeDescription[] =
     "If enabled, allows the user to switch to Focus Mode";
@@ -325,6 +331,10 @@ const char kCookiesWithoutSameSiteMustBeSecureDescription[] =
     "a cookie without SameSite restrictions is set without the Secure "
     "attribute, it will be rejected. This flag only has an effect if "
     "\"SameSite by default cookies\" is also enabled.";
+
+const char kCooperativeSchedulingName[] = "Cooperative Scheduling";
+const char kCooperativeSchedulingDescription[] =
+    "Enables cooperative scheduling in Blink.";
 
 const char kCreditCardAssistName[] = "Credit Card Assisted Filling";
 const char kCreditCardAssistDescription[] =

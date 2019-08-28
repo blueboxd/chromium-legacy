@@ -120,19 +120,8 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
   void TearDownOnMainThread() override;
 
   // AppShimHandler overrides:
-  void OnShimLaunchRequested(
-      ::AppShimHost* host,
-      bool recreate_shims,
-      apps::ShimLaunchedCallback launched_callback,
-      apps::ShimTerminatedCallback terminated_callback) override {}
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
-  void OnShimProcessDisconnected(::AppShimHost* host) override {}
-  void OnShimFocus(::AppShimHost* host,
-                   apps::AppShimFocusType focus_type,
-                   const std::vector<base::FilePath>& files) override {}
-  void OnShimSetHidden(::AppShimHost* host, bool hidden) override {}
-  void OnShimQuit(::AppShimHost* host) override {}
 
   std::unique_ptr<TestShimClient> test_client_;
   std::vector<base::FilePath> last_launch_files_;

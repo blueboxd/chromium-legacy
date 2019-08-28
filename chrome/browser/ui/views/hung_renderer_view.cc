@@ -448,7 +448,7 @@ void HungRendererDialogView::ViewHierarchyChanged(
 
 void HungRendererDialogView::Init() {
   auto info_label = std::make_unique<views::Label>(
-      base::string16(), CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+      base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
   info_label->SetMultiLine(true);
   info_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 

@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Chromium için ipucu: Sekmelerle ilgili daha fazla seçenek görmek için ekranınızın altında veya üstünde görünen araç çubuğunda Sekmeleri Göster düğmesini basılı tutun.</translation>
 <translation id="4241912885070669028"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chromium verileriniz bu cihazdan silinir, ancak Google hesabınızda kalmaya devam eder.</translation>
 <translation id="4555020257205549924">Bu özellik açık durumdayken Chromium, diğer dillerde yazılmış sayfaları Google Çeviri'yi kullanarak çevirmeyi teklif eder. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Chromium tarayıcıyı açın</translation>
 <translation id="4787850887676698916">Diğer cihazlarınızda Chromium'da açtığınız sekmeler burada görünür.</translation>
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapattığınız için Chromium verileriniz bu cihazdan silinecek. Ancak verileriniz Google Hesabınızda kalmaya devam edecek.</translation>
 <translation id="5231355151045086930">Chromium oturumunu kapatın</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Ayarlar &gt; Gizlilik &gt; Kamera &gt; Chromium'a gidin ve kamerayı açın.</translation>
 <translation id="7746854981345936341">Chromium için ipucu: Geri, İleri ve Ara gibi bazı düğmeler artık ekranınızın alt bölümünde bulunuyor.</translation>
 <translation id="786327964234957808">Senkronizasyon hesapları arasında (<ph name="USER_EMAIL1" /> hesabından <ph name="USER_EMAIL2" /> hesabına) geçiş yapıyorsunuz. Mevcut Chromium verileriniz <ph name="DOMAIN" /> tarafından yönetiliyor. Bu işlemle verileriniz bu cihazdan silinir, ancak <ph name="USER_EMAIL1" /> hesabınızda kalmaya devam eder.</translation>
+<translation id="7890287942691234100">Chromium tarayıcıyı kullanmaya başlayın</translation>
 <translation id="8073677936375100957">Chromium verileriniz bu cihazdan temizlensin mi?</translation>
 <translation id="8175055321229419309">İpucu: <ph name="BEGIN_LINK" />Chromium'u yuva bölümüne taşıyın<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Chromium'da, konumunuza dayalı olarak daha iyi bir Google deneyimi yaşayın.</translation>

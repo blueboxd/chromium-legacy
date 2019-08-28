@@ -26,19 +26,17 @@ GPURenderBundleEncoder* GPURenderBundleEncoder::Create(
   std::unique_ptr<DawnTextureFormat[]> color_formats =
       AsDawnEnum<DawnTextureFormat>(webgpu_desc->colorFormats());
 
-  DawnTextureFormat depth_stencil_format = {};
-  const DawnTextureFormat* depth_stencil_format_ptr = nullptr;
+  DawnTextureFormat depth_stencil_format = DAWN_TEXTURE_FORMAT_NONE;
   if (webgpu_desc->hasDepthStencilFormat()) {
     depth_stencil_format =
         AsDawnEnum<DawnTextureFormat>(webgpu_desc->depthStencilFormat());
-    depth_stencil_format_ptr = &depth_stencil_format;
   }
 
   DawnRenderBundleEncoderDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.colorFormatsCount = color_formats_count;
   dawn_desc.colorFormats = color_formats.get();
-  dawn_desc.depthStencilFormat = depth_stencil_format_ptr;
+  dawn_desc.depthStencilFormat = depth_stencil_format;
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
 
   return MakeGarbageCollected<GPURenderBundleEncoder>(

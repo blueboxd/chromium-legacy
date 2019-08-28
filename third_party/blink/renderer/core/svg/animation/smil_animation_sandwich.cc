@@ -50,19 +50,20 @@ void SMILAnimationSandwich::Reset() {
   }
 }
 
-void SMILAnimationSandwich::UpdateTiming(double elapsed, bool seek_to_time) {
+void SMILAnimationSandwich::UpdateTiming(double elapsed) {
   if (!std::is_sorted(sandwich_.begin(), sandwich_.end(),
                       PriorityCompare(elapsed))) {
     std::sort(sandwich_.begin(), sandwich_.end(), PriorityCompare(elapsed));
   }
 
+  active_.Shrink(0);
   active_.ReserveCapacity(sandwich_.size());
   for (const auto& it_animation : sandwich_) {
     SVGSMILElement* animation = it_animation.Get();
     DCHECK(animation->HasValidTarget());
 
     if (animation->NeedsToProgress(elapsed)) {
-      animation->Progress(elapsed, seek_to_time);
+      animation->Progress(elapsed);
       active_.push_back(animation);
     } else if (animation->IsContributing(elapsed)) {
       active_.push_back(animation);
@@ -72,7 +73,18 @@ void SMILAnimationSandwich::UpdateTiming(double elapsed, bool seek_to_time) {
   }
 }
 
-SMILTime SMILAnimationSandwich::GetNextFireTime() {
+SMILTime SMILAnimationSandwich::NextInterestingTime(
+    SMILTime document_time) const {
+  SMILTime interesting_time = SMILTime::Indefinite();
+  for (const auto& it_animation : sandwich_) {
+    SVGSMILElement* animation = it_animation.Get();
+    interesting_time = std::min(interesting_time,
+                                animation->NextInterestingTime(document_time));
+  }
+  return interesting_time;
+}
+
+SMILTime SMILAnimationSandwich::GetNextFireTime() const {
   SMILTime earliest_fire_time = SMILTime::Unresolved();
   for (const auto& it_animation : sandwich_) {
     SVGSMILElement* animation = it_animation.Get();
@@ -84,13 +96,7 @@ SMILTime SMILAnimationSandwich::GetNextFireTime() {
   return earliest_fire_time;
 }
 
-void SMILAnimationSandwich::SendEvents(double elapsed, bool seek_to_time) {
-  if (seek_to_time) {
-    for (auto& animation : active_) {
-      animation->TriggerPendingEvents(elapsed);
-    }
-  }
-
+void SMILAnimationSandwich::UpdateSyncBases(double elapsed) {
   for (auto& animation : active_) {
     animation->UpdateSyncBases();
   }

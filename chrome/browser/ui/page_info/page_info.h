@@ -278,7 +278,8 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // Safe Browsing status of the website.
   SafeBrowsingStatus safe_browsing_status_;
 
-  // Safety tip status of the website.
+  // Safety tip status of the website. Only set if the feature is enabled to
+  // show the UI.
   security_state::SafetyTipStatus safety_tip_status_;
 
   // For secure connection |certificate_| is set to the server certificate.

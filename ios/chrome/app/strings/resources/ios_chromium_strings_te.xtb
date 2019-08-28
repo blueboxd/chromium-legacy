@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Chromium చిట్కా. మరిన్ని ట్యాబ్ ఎంపికల కోసం, మీ స్క్రీన్‌లో పైన కానీ దిగువన కానీ ఉండే సాధనాల బార్‌లో ట్యాబ్‌లను చూపు బటన్‌ను నొక్కి పట్టుకోండి.</translation>
 <translation id="4241912885070669028">మీరు <ph name="SIGNOUT_MANAGED_DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ చేస్తున్నారు. దీని వలన మీ Chromium డేటా ఈ పరికరం నుండి తొలగించబడుతుంది, కానీ మీ డేటా మీ Google ఖాతాలో అలాగే ఉంటుంది.</translation>
 <translation id="4555020257205549924">ఈ లక్షణం ప్రారంభించినప్పుడు, Chromium ఇతర భాషల్లో వ్రాసిన పేజీలకు Google అనువాదం ఉపయోగించి అనువాదాన్ని ఆఫర్ చేస్తుంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Chromium స్కానర్‌ను ఆన్ చేయండి</translation>
 <translation id="4787850887676698916">మీరు మీ ఇతర పరికరాల్లోని Chromiumలో తెరిచిన ట్యాబ్‌లు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> నిర్వహిస్తున్న ఖాతా నుండి మీరు సైన్ అవుట్ చేస్తున్నారు కనుక మీ Chromium డేటా ఈ పరికరం నుండి తొలగించబడుతుంది. మీ డేటా మీ Google ఖాతాలో అలాగే ఉంటుంది.</translation>
 <translation id="5231355151045086930">Chromium నుండి సైన్ అవుట్ చేయండి</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">సెట్టింగ్‌లు &gt; గోప్యత &gt; కెమెరా &gt; Chromium తెరిచి, కెమెరాను ఆన్ చేయండి.</translation>
 <translation id="7746854981345936341">Chromium చిట్కా. వెనకకు, ముందుకు మరియు శోధన వంటి కొన్ని బటన్‌లు ఇప్పుడు మీ స్క్రీన్ దిగువన ఉన్నాయి.</translation>
 <translation id="786327964234957808">మీరు సింక్ ఖాతాలను <ph name="USER_EMAIL1" /> నుండి <ph name="USER_EMAIL2" />కు మారుస్తున్నారు. ఇప్పటికే ఉన్న మీ Chromium డేటా <ph name="DOMAIN" /> నిర్వహణలో ఉంది. దీని వలన మీ డేటా ఈ పరికరం నుండి తొలగించబడుతుంది. కానీ మీ డేటా <ph name="USER_EMAIL1" />లో అలాగే ఉంటుంది.</translation>
+<translation id="7890287942691234100">Chromium స్కానర్‌ను ఉపయోగించడం ప్రారంభించండి</translation>
 <translation id="8073677936375100957">ఈ పరికరం నుండి మీ Chromium డేటాని తీసివేయాలా?</translation>
 <translation id="8175055321229419309">చిట్కా: <ph name="BEGIN_LINK" />Chromiumను మీ డాక్‌కు తరలించండి<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">మీ స్థానం ఆధారంగా Chromiumలో మెరుగైన Google అనుభవాన్ని పొందండి.</translation>

@@ -39,6 +39,10 @@ void FakeServerInvalidationSender::OnCommit(
   // FCM network handlers get assigned in SetupInvalidations() which happens
   // after SetupSync().
   if (fcm_network_handler == nullptr) {
+    DLOG(WARNING) << "Received invalidations for the following data types in "
+                     "invalidation sender "
+                  << this << " will be dropped:"
+                  << ModelTypeSetToString(committed_model_types);
     return;
   }
   // For each of the committed model types, pass a message to the FCM Network

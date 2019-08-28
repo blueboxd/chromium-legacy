@@ -23,7 +23,7 @@
 <translation id="3345341804167540816">Chrome सर्वत्र वापरा</translation>
 <translation id="384394811301901750">Google Chrome आत्ता तुमचा कॅमेरा वापरू शकत नाही</translation>
 <translation id="3980220367029651214">तुम्ही संकालित केलेली खाती <ph name="USER_EMAIL1" /> वरून <ph name="USER_EMAIL2" /> वर स्विच करीत आहात. तुमचा विद्यमान Chrome डेटा <ph name="DOMAIN" /> द्वारे व्यवस्थापित केला आहे. हे तुमचा डेटा या डिव्हाइस वरून हटवेल परंतु तुमचा डेटा <ph name="USER_EMAIL1" /> मध्ये असेल.</translation>
-<translation id="3988789688219830639">Google Chrome ला तुमच्या फोटो आणि व्हिडिओंमध्ये अॅक्सेस नाही. iOS सेटिंग्ज &gt; गोपनीयता &gt; फोटो मध्ये अॅक्सेस सुरू करा.</translation>
+<translation id="3988789688219830639">Google Chrome ला तुमच्या फोटो आणि व्हिडिओ अॅक्सेस नाही. iOS सेटिंग्ज &gt; गोपनीयता &gt; फोटो  अॅक्सेस सक्षम करा.</translation>
 <translation id="4099578267706723511">वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chrome अधिक चांगले करण्यास मदत करा.</translation>
 <translation id="415767770115540173">आपल्या स्थानावर आधारित Chrome मध्ये उत्कृष्ट Google अनुभव मिळवा.</translation>
 <translation id="424864128008805179">Chrome मधून साइन आउट करायचे?</translation>
@@ -51,6 +51,7 @@
 <translation id="7437998757836447326">Chrome मधून साइन आउट करा</translation>
 <translation id="756809126120519699">Chrome डेटा साफ केला</translation>
 <translation id="7626032353295482388">Chrome मध्ये स्वागत आहे</translation>
+<translation id="7698568245838009292">Chrome ला कॅमेरा अॅक्सेस करायचा आहे</translation>
 <translation id="8370517070665726704">कॉपीराइट <ph name="YEAR" /> Google LLC. सर्व हक्क राखीव.</translation>
 <translation id="840168496893712993">काही ॲड-ऑनमुळे Chrome क्रॅश होऊ शकते. कृपया ते अनइंस्टॉल करून पहा.</translation>
 <translation id="8459495907675268833">निवडलेला डेटा Chrome आणि सिंक केलेल्या डिव्हाइसमधून काढला गेला आहे. तुमच्या Google खात्यामध्ये history.google.com येथे ब्राउझिंग इतिहासाची Google च्या इतर सेवांमधील शोध आणि अॅक्टिव्हिटी यासारखी इतर स्वरूपे असू शकतात.</translation>

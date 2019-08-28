@@ -36,14 +36,18 @@ void ToMockBufferMapReadCallback(DawnBufferMapAsyncStatus status,
                                       data_length, userdata);
 }
 
-class MockDeviceErrorCallback {
+class MockUncapturedErrorCallback {
  public:
-  MOCK_METHOD2(Call, void(const char* message, void* userdata));
+  MOCK_METHOD3(Call,
+               void(DawnErrorType type, const char* message, void* userdata));
 };
 
-std::unique_ptr<StrictMock<MockDeviceErrorCallback>> mock_device_error_callback;
-void ToMockDeviceErrorCallback(const char* message, void* userdata) {
-  mock_device_error_callback->Call(message, userdata);
+std::unique_ptr<StrictMock<MockUncapturedErrorCallback>>
+    mock_device_error_callback;
+void ToMockUncapturedErrorCallback(DawnErrorType type,
+                                   const char* message,
+                                   void* userdata) {
+  mock_device_error_callback->Call(type, message, userdata);
 }
 
 }  // namespace
@@ -56,7 +60,7 @@ class WebGPUMailboxTest : public WebGPUTest {
     mock_buffer_map_read_callback =
         std::make_unique<StrictMock<MockBufferMapReadCallback>>();
     mock_device_error_callback =
-        std::make_unique<StrictMock<MockDeviceErrorCallback>>();
+        std::make_unique<StrictMock<MockUncapturedErrorCallback>>();
   }
 
   void TearDown() override {
@@ -103,7 +107,7 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
 
     // Clear the texture using a render pass.
     dawn::RenderPassColorAttachmentDescriptor color_desc;
-    color_desc.attachment = texture.CreateDefaultView();
+    color_desc.attachment = texture.CreateView();
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = dawn::LoadOp::Clear;
     color_desc.storeOp = dawn::StoreOp::Store;
@@ -209,7 +213,7 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
 
   // Create the device, and expect a validation error.
   dawn::Device device = dawn::Device::Acquire(webgpu()->GetDefaultDevice());
-  device.SetErrorCallback(ToMockDeviceErrorCallback, 0);
+  device.SetUncapturedErrorCallback(ToMockUncapturedErrorCallback, 0);
 
   // Associate and immediately dissociate the image.
   gpu::webgpu::ReservedTexture reservation =
@@ -222,8 +226,10 @@ TEST_F(WebGPUMailboxTest, ErrorWhenUsingTextureAfterDissociate) {
   webgpu()->DissociateMailbox(reservation.id, reservation.generation);
 
   // Try using the texture, it should produce a validation error.
-  dawn::TextureView view = texture.CreateDefaultView();
-  EXPECT_CALL(*mock_device_error_callback, Call(_, _)).Times(1);
+  dawn::TextureView view = texture.CreateView();
+  EXPECT_CALL(*mock_device_error_callback,
+              Call(DAWN_ERROR_TYPE_VALIDATION, _, _))
+      .Times(1);
   WaitForCompletion(device);
 }
 

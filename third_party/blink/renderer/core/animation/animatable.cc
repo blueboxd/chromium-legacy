@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/animatable.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/effect_input.h"
@@ -44,7 +45,7 @@ void ReportFeaturePolicyViolationsIfNecessary(
 Animation* Animatable::animate(
     ScriptState* script_state,
     const ScriptValue& keyframes,
-    UnrestrictedDoubleOrKeyframeAnimationOptions options,
+    const UnrestrictedDoubleOrKeyframeAnimationOptions& options,
     ExceptionState& exception_state) {
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   if (options.IsKeyframeAnimationOptions()) {

@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Tidak dapat mencapai hos. Hal ini mungkin disebabkan oleh konfigurasi rangkaian yang anda gunakan.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Terakhir dilihat dalam talian <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Apl ini tidak disokong lagi. Untuk memastikan anda mendapat ciri terkini dan kemas kini keselamatan, sila gunakan <ph name="LINK_BEGIN" />apl web Desktop Jauh Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Langkah konfigurasi tambahan diperlukan sebelum anda boleh mengawal mesin ini dari jauh menggunakan <ph name="PRODUCT_NAME" />.
-
-Untuk mendayakan fungsian ini, pilih '<ph name="BUTTON_NAME" />' untuk mendapatkan anak tetingkap pilihan Keselamatan dan Privasi, kemudian tandai kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah pun ada dan ditandai, anda mungkin perlu mengalih keluar perkhidmatan ini dan kemudian menambahkannya semula.</translation>
 <translation id="2499160551253595098">Bantu kami mempertingkatkan Desktop Jauh Chrome dengan membenarkan kami mengumpulkan perangkaan penggunaan dan laporan keranapan.</translation>
 <translation id="2509394361235492552">Disambungkan ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">PERHATIAN: Untuk memastikan semua pintasan papan kekunci tersedia, anda boleh mengkonfigurasi Desktop Jauh Chrome kepada ‘Buka sebagai tetingkap’.</translation>
@@ -317,6 +312,11 @@ Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah pun ada dan ditandai, anda mungki
 <translation id="8804164990146287819">Dasar Privasi</translation>
 <translation id="894763922177556086">Bagus</translation>
 <translation id="895780780740011433">Untuk Windows 7 ke atas</translation>
+<translation id="8963047137585288214">Langkah konfigurasi tambahan diperlukan sebelum anda boleh mengawal mesin ini dari jauh menggunakan <ph name="PRODUCT_NAME" />.
+
+Untuk mendayakan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk memaparkan anak tetingkap pilihan Keselamatan dan Privasi, kemudian tandai kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah pun ada dan ditandai, anda mungkin perlu mengalih keluar perkhidmatan ini dan kemudian menambahkan perkhidmatan ini semula.</translation>
 <translation id="897805526397249209">Untuk mendayakan sambungan jauh untuk komputer yang berbeza, pasang Chromoting pada komputer tersebut dan klik “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Alat Kawalan Hos Desktop Jauh Chrome</translation>
 <translation id="9016232822027372900">Sambungkan juga</translation>

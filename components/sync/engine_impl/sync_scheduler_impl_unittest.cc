@@ -118,7 +118,6 @@ class SyncSchedulerImplTest : public testing::Test {
 
     workers_.clear();
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_UI));
-    workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_DB));
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_PASSIVE));
 
     connection_ = std::make_unique<MockConnectionManager>(directory(),
@@ -133,7 +132,7 @@ class SyncSchedulerImplTest : public testing::Test {
                                                 GROUP_UI);
     model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);
     model_type_registry_->RegisterDirectoryType(THEMES, GROUP_UI);
-    model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_DB);
+    model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_UI);
 
     context_ = std::make_unique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),

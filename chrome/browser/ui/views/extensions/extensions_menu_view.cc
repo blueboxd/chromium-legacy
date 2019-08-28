@@ -153,7 +153,7 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
         auto label = std::make_unique<views::Label>(
             l10n_util::GetStringUTF16(label_string_id),
             ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-            ChromeTextStyle::STYLE_SECONDARY);
+            views::style::STYLE_SECONDARY);
         label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
         const int horizontal_spacing =
             ChromeLayoutProvider::Get()->GetDistanceMetric(

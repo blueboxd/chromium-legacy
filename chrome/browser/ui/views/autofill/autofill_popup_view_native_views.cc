@@ -466,7 +466,7 @@ std::unique_ptr<views::Label> AutofillPopupItemView::CreateSecondaryLabel(
     const base::string16& text) const {
   return CreateLabelWithStyleAndContext(
       text, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-      ChromeTextStyle::STYLE_SECONDARY);
+      views::style::STYLE_SECONDARY);
 }
 
 std::unique_ptr<views::Label>
@@ -541,7 +541,7 @@ std::unique_ptr<views::View> AutofillPopupSuggestionView::CreateSubtextLabel() {
 
   auto label = CreateLabelWithStyleAndContext(
       label_text, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      ChromeTextStyle::STYLE_SECONDARY);
+      views::style::STYLE_SECONDARY);
   return label;
 }
 
@@ -666,7 +666,7 @@ std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
 }
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
-  return ChromeTextStyle::STYLE_SECONDARY;
+  return views::style::STYLE_SECONDARY;
 }
 
 gfx::Font::Weight AutofillPopupFooterView::GetPrimaryTextWeight() const {

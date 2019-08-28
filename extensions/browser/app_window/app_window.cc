@@ -1085,10 +1085,8 @@ SkRegion* AppWindow::RawDraggableRegionsToSkRegion(
   for (auto iter = regions.cbegin(); iter != regions.cend(); ++iter) {
     const DraggableRegion& region = *iter;
     sk_region->op(
-        region.bounds.x(),
-        region.bounds.y(),
-        region.bounds.right(),
-        region.bounds.bottom(),
+        SkIRect::MakeLTRB(region.bounds.x(), region.bounds.y(),
+                          region.bounds.right(), region.bounds.bottom()),
         region.draggable ? SkRegion::kUnion_Op : SkRegion::kDifference_Op);
   }
   return sk_region;

@@ -1456,7 +1456,7 @@ TEST_F(PasswordManagerTest,
 
 // On a successful login with an updated password,
 // CredentialsFilter::ReportFormLoginSuccess and CredentialsFilter::ShouldSave
-// should be called. The argument of ShouldSave shold be the submitted form.
+// should be called. The argument of ShouldSave should be the submitted form.
 TEST_F(PasswordManagerTest, ReportFormLoginSuccessAndShouldSaveCalled) {
   PasswordForm stored_form(MakeSimpleForm());
 
@@ -1488,6 +1488,7 @@ TEST_F(PasswordManagerTest, ReportFormLoginSuccessAndShouldSaveCalled) {
 
   PasswordForm submitted_form = observed_form;
   submitted_form.preferred = true;
+  submitted_form.date_last_used = base::Time::Now();
   EXPECT_CALL(*client_.GetStoreResultFilter(),
               ShouldSave(FormMatches(submitted_form)));
   EXPECT_CALL(*store_, UpdateLogin(_));

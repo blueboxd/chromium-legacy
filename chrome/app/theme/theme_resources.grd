@@ -275,6 +275,11 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_TAB_RECORDING_INDICATOR" file="cros/tab_recording_indicator.png" />
       </if>
+      <if expr="not is_android">
+        <structure type="chrome_scaled_image" name="IDR_COOKIE_BLOCKING_ON_HEADER" file="common/cookie_blocking_on_header.png" />
+        <structure type="chrome_scaled_image" name="IDR_COOKIE_BLOCKING_INACTIVE_HEADER" file="common/cookie_blocking_inactive_header.png" />
+        <structure type="chrome_scaled_image" name="IDR_COOKIE_BLOCKING_OFF_HEADER" file="common/cookie_blocking_off_header.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_BUTTON_BACKGROUND" file="notused.png" />

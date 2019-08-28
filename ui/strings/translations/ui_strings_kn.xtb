@@ -49,12 +49,11 @@
 <translation id="2388990488038464401">ನಿಮ್ಮ ಫೋನ್‌ನಿಂದ ಈ ಸಂಖ್ಯೆಗೆ ಕರೆ ಮಾಡಬೇಕೇ?</translation>
 <translation id="24452542372838207">ವಿಸ್ತರಿಸುವ ಅಧಿಸೂಚನೆ</translation>
 <translation id="2445449901874883781">ಅಧಿಕ ಸಾಂದ್ರತೆಯನ್ನು ಬಳಸಿ</translation>
-<translation id="2451871130406122810">ಸಾಧನಕ್ಕೆ ಕಳುಹಿಸಲಾಗಿದೆ</translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
 <translation id="2497284189126895209">ಎಲ್ಲ ಫೈಲ್‌ಗಳು</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">ಮಾಪನಾಂಕವು ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
-<translation id="252373100621549798">ಅಪರಿಚಿತ ಪ್ರದರ್ಶನ</translation>
+<translation id="252373100621549798">ಅಪರಿಚಿತ ಡಿಸ್‌ಪ್ಲೇ</translation>
 <translation id="2545651323591713692">ಸ್ನೂಜ್ ಮಾಡಿ</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1ಗಂ. ಯಲ್ಲಿ}one{#ಗಂ. ಗಳಲ್ಲಿ}other{#ಗಂ. ಗಳಲ್ಲಿ}}</translation>
 <translation id="2583543531130364912">ನಿಮ್ಮ ಟಚ್‌ಸ್ಕ್ರೀನ್ ಕ್ಯಾಲಿಬ್ರೇಟ್ ಮಾಡಿ</translation>
@@ -90,7 +89,7 @@
 <translation id="3842239759367498783">ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಾಧನ <ph name="TITLE" /> ನಿಂದ ಓದುವುದನ್ನು ಮುಂದುವರಿಸಿ</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="3889424535448813030">ಬಲ ಬಾಣದ ಗುರುತು</translation>
-<translation id="3892641579809465218">ಆಂತರಿಕ ಪ್ರದರ್ಶನ</translation>
+<translation id="3892641579809465218">ಆಂತರಿಕ ಡಿಸ್‌ಪ್ಲೇ</translation>
 <translation id="3897092660631435901">ಮೆನು</translation>
 <translation id="3909791450649380159">ಕತ್ತರಿ&amp;ಸು</translation>
 <translation id="3990502903496589789">ಬಲ ತುದಿ</translation>
@@ -217,6 +216,7 @@
 <translation id="8806053966018712535">ಫೋಲ್ಡರ್ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">ಚಿತ್ರವನ್ನು ಟಿಪ್ಪಣಿ ಮಾಡಿ</translation>
 <translation id="8841375032071747811">ಹಿಂದೆ ಬಟನ್</translation>
+<translation id="8867568208303837180">ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8876215549894133151">ಸ್ವರೂಪ:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">ಶೆಲ್ಫ್ ಯಾವಾಗಲೂ ಮರೆಯಾಗಿದೆ</translation>
@@ -227,6 +227,6 @@
 <translation id="9150735707954472829">ಟ್ಯಾಬ್</translation>
 <translation id="9161053988251441839">ಸಲಹೆ ಮಾಡಿರುವ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="9170848237812810038">&amp;ರದ್ದುಮಾಡು</translation>
-<translation id="932327136139879170">Home</translation>
+<translation id="932327136139879170">ಹೋಮ್</translation>
 <translation id="944069440740578670">ಓದದಿರುವ ಅಧಿಸೂಚನೆಗಳು</translation>
 </translationbundle>

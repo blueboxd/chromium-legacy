@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Det går inte att nå värden. Detta beror troligen på konfigurationen av nätverket som du använder.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Var senast uppe på webben <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Den här appen stöds inte längre. Använd <ph name="LINK_BEGIN" />webbappen Chrome Remote Desktop<ph name="LINK_END" /> så att du får de senaste funktionerna och säkerhetsuppdateringarna.</translation>
-<translation id="2431841749166974386">Ett konfigureringssteg återstår innan du kan fjärrstyra den här datorn med <ph name="PRODUCT_NAME" />.
-
-Du aktiverar funktionen genom att öppna inställningspanelen Säkerhet och sekretess med <ph name="BUTTON_NAME" /> och markera kryssrutan <ph name="SERVICE_SCRIPT_NAME" />.
-
-Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats kan du behöva ta bort det och lägga till det igen.</translation>
 <translation id="2499160551253595098">Hjälp oss att förbättra Chrome Remote Desktop genom att låta oss samla in användningsstatistik och felrapporter.</translation>
 <translation id="2509394361235492552">Ansluten till <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chrome Remote Desktop på Öppna som fönster.</translation>
@@ -317,6 +312,11 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats kan du behöva ta bort 
 <translation id="8804164990146287819">Sekretesspolicy</translation>
 <translation id="894763922177556086">Bra</translation>
 <translation id="895780780740011433">För Windows 7 eller senare</translation>
+<translation id="8963047137585288214">Ett konfigureringssteg återstår innan du kan fjärrstyra den här datorn med <ph name="PRODUCT_NAME" />.
+
+Du aktiverar funktionen genom att öppna inställningspanelen Säkerhet och sekretess med <ph name="BUTTON_NAME" /> och markera kryssrutan <ph name="SERVICE_SCRIPT_NAME" />.
+
+Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats kan du behöva avmarkera det och markera det på nytt.</translation>
 <translation id="897805526397249209">Om du vill aktivera fjärranslutningar till en annan dator installerar du Chromoting på datorn och klickar på <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
 <translation id="9016232822027372900">Anslut ändå</translation>

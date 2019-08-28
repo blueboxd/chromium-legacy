@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Добавихте към списъка за четене</translation>
 <translation id="1828824471510190776">Предложение за парола...</translation>
 <translation id="1870148520156231997">Показване на паролата</translation>
+<translation id="1872096359983322073">Фенерче</translation>
 <translation id="1876721852596493031">Send Usage Data</translation>
 <translation id="1911619930368729126">Качване в Google Диск</translation>
 <translation id="1923342640370224680">Последният час</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Докоснете, за да анулирате.</translation>
 <translation id="6108923351542677676">Извършва се настройване…</translation>
+<translation id="6119050551270742952">Страницата е в режим „инкогнито“</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
 <translation id="6136914049981179737">Току-що</translation>
@@ -411,6 +413,9 @@
 <translation id="6807889908376551050">Показване на всички...</translation>
 <translation id="681368974849482173">Елементът е създаден</translation>
 <translation id="6851516051005285358">Заявка за настолния сайт</translation>
+<translation id="6858855187367714033">Сканирано</translation>
+<translation id="6859944681507688231">За да сканирате код за бърза реакция или кредитна карта, активирайте камерата от настройките.</translation>
+<translation id="6873263987691478642">Разделен изглед</translation>
 <translation id="6896758677409633944">Копиране</translation>
 <translation id="6903907808598579934">Включване на синхронизирането</translation>
 <translation id="6914583639806229067">Търсене на копираното изображение</translation>
@@ -509,6 +514,7 @@
 <translation id="8428045167754449968">Град/селище</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
+<translation id="8487667956631253959">Включено</translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8490978609246021741">Запазване на промените</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
@@ -519,6 +525,7 @@
 <translation id="8532105204136943229">Година на валидност</translation>
 <translation id="8534481786647257214">Публикацията в Google+ е завършена.</translation>
 <translation id="8548878600947630424">Търсене в страницата...</translation>
+<translation id="8588404856427128947">Изключено</translation>
 <translation id="8605219856220328675">Затваряне на раздела.</translation>
 <translation id="8620640915598389714">Редактиране</translation>
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>
@@ -559,6 +566,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Сигналите за сривове са изпратени.</translation>
 <translation id="935490618240037774">Вашите отметки, история, пароли и други настройки ще се синхронизират с профила ви в Google, за да можете да ги използвате на всичките си устройства.</translation>
+<translation id="952704832371081537">Отказ</translation>
 <translation id="976982866697960176">Управление на синхронизираните данни…</translation>
 <translation id="988141524645182168">Други устройства</translation>
 <translation id="989988560359834682">Редактиране на адреса</translation>

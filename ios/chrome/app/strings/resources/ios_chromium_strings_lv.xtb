@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Chromium padoms. Lai iegūtu vairāk ciļņu iespēju, rīkjoslā, kas atrodas ekrāna apakšdaļā vai augšdaļā, nospiediet un turiet pogu Rādīt cilnes.</translation>
 <translation id="4241912885070669028">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="SIGNOUT_MANAGED_DOMAIN" />. Izrakstoties Chromium dati tiks dzēsti no šīs ierīces, taču tie paliks jūsu Google kontā.</translation>
 <translation id="4555020257205549924">Ja šī funkcija ir ieslēgta, Chromium piedāvā tulkot citās valodās rakstītas lapas, izmantojot Google tulkotāju. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
+<translation id="4681781466797808448">Ieslēgt Chromium skeneri</translation>
 <translation id="4787850887676698916">Šeit būs redzamas cilnes, kuras esat atvēris pārlūkā Chromium citās ierīcēs.</translation>
 <translation id="4999538639245140991">Jūs izrakstāties no konta, kas tiek pārvaldīts domēnā <ph name="SIGNOUT_MANAGED_DOMAIN" />, tādēļ jūsu Chromium dati tiks dzēsti no šīs ierīces. Dati joprojām būs pieejami jūsu Google kontā.</translation>
 <translation id="5231355151045086930">Izrakstīšanās no Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Atveriet sadaļu Iestatījumi &gt; Konfidencialitāte &gt; Kamera &gt; Chromium un ieslēdziet kameru.</translation>
 <translation id="7746854981345936341">Chromium padoms. Tagad dažas pogas ir ekrāna apakšdaļā, piemēram, Atpakaļ, Pārsūtīt un Meklēt.</translation>
 <translation id="786327964234957808">Jūs pārslēdzat sinhronizējamos kontus no konta <ph name="USER_EMAIL1" /> uz kontu <ph name="USER_EMAIL2" />. Jūsu pašreizējos Chromium datus pārvalda <ph name="DOMAIN" />. Šādi jūsu dati tiks dzēsti no šīs ierīces, bet dati joprojām būs pieejami kontā <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Darba sākšana ar Chromium skeneri</translation>
 <translation id="8073677936375100957">Vai dzēst jūsu Chromium datus no šīs ierīces?</translation>
 <translation id="8175055321229419309">Padoms. <ph name="BEGIN_LINK" />Pārvietojiet pārlūku Chromium uz savu doku<ph name="END_LINK" />.</translation>
 <translation id="8252885722420466166">Izmantojiet visas Google sniegtās iespējas pārlūkā Chromium, sūtot informāciju par savu atrašanās vietu.</translation>

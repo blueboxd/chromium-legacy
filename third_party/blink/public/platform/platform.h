@@ -68,6 +68,7 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
+#include "third_party/webrtc/api/video/video_codec_type.h"
 #include "ui/base/resource/scale_factor.h"
 
 namespace base {
@@ -656,6 +657,11 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual void TrackGetUserMedia(
       const blink::WebUserMediaRequest& web_request) {}
+
+  virtual bool IsWebRtcHWH264DecodingEnabled(
+      webrtc::VideoCodecType video_coded_type) {
+    return true;
+  }
 
   // VideoCapture -------------------------------------------------------
 

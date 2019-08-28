@@ -1868,6 +1868,7 @@ bool AXObject::SupportsARIAExpanded() const {
     case ax::mojom::Role::kDisclosureTriangle:
     case ax::mojom::Role::kListBox:
     case ax::mojom::Role::kLink:
+    case ax::mojom::Role::kPopUpButton:
     case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuItemCheckBox:

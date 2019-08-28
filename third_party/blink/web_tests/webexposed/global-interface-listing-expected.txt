@@ -1942,6 +1942,7 @@ interface Element : Node
     attribute @@unscopables
     getter accessibleNode
     getter ariaActiveDescendant
+    getter ariaActiveDescendantElement
     getter ariaAtomic
     getter ariaAutoComplete
     getter ariaBusy
@@ -1953,8 +1954,10 @@ interface Element : Node
     getter ariaCurrent
     getter ariaDescribedBy
     getter ariaDetails
+    getter ariaDetailsElement
     getter ariaDisabled
     getter ariaErrorMessage
+    getter ariaErrorMessageElement
     getter ariaExpanded
     getter ariaFlowTo
     getter ariaHasPopup
@@ -2084,6 +2087,7 @@ interface Element : Node
     method webkitRequestFullScreen
     method webkitRequestFullscreen
     setter ariaActiveDescendant
+    setter ariaActiveDescendantElement
     setter ariaAtomic
     setter ariaAutoComplete
     setter ariaBusy
@@ -2095,8 +2099,10 @@ interface Element : Node
     setter ariaCurrent
     setter ariaDescribedBy
     setter ariaDetails
+    setter ariaDetailsElement
     setter ariaDisabled
     setter ariaErrorMessage
+    setter ariaErrorMessageElement
     setter ariaExpanded
     setter ariaFlowTo
     setter ariaHasPopup
@@ -2151,6 +2157,7 @@ interface Element : Node
 interface ElementInternals
     attribute @@toStringTag
     getter ariaActiveDescendant
+    getter ariaActiveDescendantElement
     getter ariaAtomic
     getter ariaAutoComplete
     getter ariaBusy
@@ -2162,8 +2169,10 @@ interface ElementInternals
     getter ariaCurrent
     getter ariaDescribedBy
     getter ariaDetails
+    getter ariaDetailsElement
     getter ariaDisabled
     getter ariaErrorMessage
+    getter ariaErrorMessageElement
     getter ariaExpanded
     getter ariaFlowTo
     getter ariaHasPopup
@@ -2206,6 +2215,7 @@ interface ElementInternals
     method setFormValue
     method setValidity
     setter ariaActiveDescendant
+    setter ariaActiveDescendantElement
     setter ariaAtomic
     setter ariaAutoComplete
     setter ariaBusy
@@ -2217,8 +2227,10 @@ interface ElementInternals
     setter ariaCurrent
     setter ariaDescribedBy
     setter ariaDetails
+    setter ariaDetailsElement
     setter ariaDisabled
     setter ariaErrorMessage
+    setter ariaErrorMessageElement
     setter ariaExpanded
     setter ariaFlowTo
     setter ariaHasPopup

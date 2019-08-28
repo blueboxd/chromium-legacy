@@ -33,15 +33,16 @@ class SharingSyncPreference {
            std::string auth_secret,
            const int capabilities);
     Device(Device&& other);
+    Device& operator=(Device&& other);
     ~Device();
 
     // FCM registration token of device for sending SharingMessage.
     std::string fcm_token;
 
-    // Subscription public key required for WebPush protocol.
+    // Subscription public key required for RFC 8291.
     std::string p256dh;
 
-    // Auth secret key required for WebPush protocol.
+    // Auth secret key required for RFC 8291.
     std::string auth_secret;
 
     // Bitmask of capabilities, defined in SharingDeviceCapability enum, that
@@ -50,12 +51,29 @@ class SharingSyncPreference {
   };
 
   // FCM registration status of current device. Not synced across devices.
+  // Used as a convenient cache of FCM registration and encryption data to avoid
+  // frequent lookup.
   struct FCMRegistration {
+    FCMRegistration(std::string authorized_entity,
+                    std::string fcm_token,
+                    std::string p256dh,
+                    std::string auth_secret,
+                    base::Time timestamp);
+    FCMRegistration(FCMRegistration&& other);
+    FCMRegistration& operator=(FCMRegistration&& other);
+    ~FCMRegistration();
+
     // Authorized entity registered with FCM.
     std::string authorized_entity;
 
     // FCM registration token of the device.
     std::string fcm_token;
+
+    // Subscription public key required for RFC 8291.
+    std::string p256dh;
+
+    // Auth secret key required for RFC 8291.
+    std::string auth_secret;
 
     // Timestamp of latest registration.
     base::Time timestamp;
@@ -84,6 +102,9 @@ class SharingSyncPreference {
   // Returns the map of guid to device from sharing preferences. Guid is same
   // as sync device guid.
   std::map<std::string, Device> GetSyncedDevices() const;
+
+  // Returns the  device from sharing preferences with specified guid.
+  base::Optional<Device> GetSyncedDevice(const std::string& guid) const;
 
   // Stores |device| with key |guid| in sharing preferences.
   // |guid| is same as sync device guid.

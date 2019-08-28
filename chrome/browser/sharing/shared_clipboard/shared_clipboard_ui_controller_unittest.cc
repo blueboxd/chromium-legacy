@@ -78,7 +78,7 @@ class SharedClipboardUiControllerTest : public testing::Test {
         &profile_, base::BindRepeating([](content::BrowserContext* context)
                                            -> std::unique_ptr<KeyedService> {
           return std::make_unique<NiceMock<MockSharingService>>(
-              std::make_unique<SharingFCMHandler>(nullptr, nullptr));
+              std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
         }));
     syncer::DeviceInfo device_info(
         kReceiverGuid, kReceiverName, "chrome_version", "user_agent",

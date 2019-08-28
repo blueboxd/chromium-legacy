@@ -169,7 +169,7 @@ void GPUBuffer::OnMapAsyncCallback(ScriptPromiseResolver* resolver,
           DOMExceptionCode::kOperationError));
       break;
     case DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN:
-    case DAWN_BUFFER_MAP_ASYNC_STATUS_CONTEXT_LOST:
+    case DAWN_BUFFER_MAP_ASYNC_STATUS_DEVICE_LOST:
       resolver->Reject(
           MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
       break;

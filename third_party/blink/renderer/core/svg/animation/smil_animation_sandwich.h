@@ -62,11 +62,12 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   void Unschedule(SVGSMILElement* animation);
   void Reset();
 
-  void UpdateTiming(double elapsed, bool seek_to_time);
-  void SendEvents(double elapsed, bool seek_to_time);
+  void UpdateTiming(double elapsed);
+  void UpdateSyncBases(double elapsed);
   SVGSMILElement* ApplyAnimationValues();
 
-  SMILTime GetNextFireTime();
+  SMILTime NextInterestingTime(SMILTime) const;
+  SMILTime GetNextFireTime() const;
 
   bool IsEmpty() { return sandwich_.IsEmpty(); }
 

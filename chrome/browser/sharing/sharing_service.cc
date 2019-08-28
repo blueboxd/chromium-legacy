@@ -79,13 +79,13 @@ SharingService::SharingService(
   if (base::FeatureList::IsEnabled(kClickToCallReceiver)) {
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kClickToCallMessage,
-        &click_to_call_message_handler_);
+        sharing_service_proxy_android_.click_to_call_message_handler());
   }
 
   if (base::FeatureList::IsEnabled(kSharedClipboardReceiver)) {
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
-        &shared_clipboard_message_handler_);
+        sharing_service_proxy_android_.shared_clipboard_message_handler());
   }
 #endif  // defined(OS_ANDROID)
 
@@ -190,8 +190,16 @@ void SharingService::SendMessageToDevice(
                      SharingSendMessageResult::kAckTimeout),
       kSendMessageTimeout);
 
+  base::Optional<SharingSyncPreference::Device> target =
+      sync_prefs_->GetSyncedDevice(device_guid);
+  if (!target) {
+    InvokeSendMessageCallback(message_guid,
+                              SharingSendMessageResult::kDeviceNotFound);
+    return;
+  }
+
   fcm_sender_->SendMessageToDevice(
-      device_guid, time_to_live, std::move(message),
+      std::move(*target), time_to_live, std::move(message),
       base::BindOnce(&SharingService::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
                      message_guid));

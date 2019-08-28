@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">به فهرست خواندن اضافه شد</translation>
 <translation id="1828824471510190776">پیشنهاد گذرواژه…</translation>
 <translation id="1870148520156231997">نشان دادن گذرواژه</translation>
+<translation id="1872096359983322073">چراغ‌قوه</translation>
 <translation id="1876721852596493031">ارسال داده استفاده</translation>
 <translation id="1911619930368729126">‏بارگذاری در Google Drive</translation>
 <translation id="1923342640370224680">ساعت گذشته</translation>
@@ -355,6 +356,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="605721222689873409">سال</translation>
 <translation id="6066301408025741299">برای لغو ضربه بزنید.</translation>
 <translation id="6108923351542677676">تنظیم در حال انجام است...</translation>
+<translation id="6119050551270742952">صفحه وب کنونی در حالت ناشناس است</translation>
 <translation id="6122191549521593678">آنلاین</translation>
 <translation id="6127379762771434464">مورد برداشته شد</translation>
 <translation id="6136914049981179737">ثانیه‌هایی قبل</translation>
@@ -411,6 +413,9 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6807889908376551050">نمایش همه...</translation>
 <translation id="681368974849482173">مورد ایجاد شد</translation>
 <translation id="6851516051005285358">درخواست سایت میزکار</translation>
+<translation id="6858855187367714033">اسکن‌شده</translation>
+<translation id="6859944681507688231">‏برای اسکن کردن کد QR یا کارت اعتباری، دوربین را در تنظیمات فعال کنید.</translation>
+<translation id="6873263987691478642">نمای تقسیم</translation>
 <translation id="6896758677409633944">کپی</translation>
 <translation id="6903907808598579934">روشن کردن همگام‌سازی</translation>
 <translation id="6914583639806229067">جستجوی تصویری که کپی کرده‌اید</translation>
@@ -509,6 +514,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8428045167754449968">شهر / شهرک</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8458397775385147834">۱ مورد حذف شد</translation>
+<translation id="8487667956631253959">فعال</translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
 <translation id="8490978609246021741">ذخیره تغییرات</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
@@ -519,6 +525,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8532105204136943229">سال انقضا</translation>
 <translation id="8534481786647257214">‏پست +Google ارسال شد.</translation>
 <translation id="8548878600947630424">یافتن در صفحه…</translation>
+<translation id="8588404856427128947">خاموش</translation>
 <translation id="8605219856220328675">بستن برگه</translation>
 <translation id="8620640915598389714">ویرایش</translation>
 <translation id="8636825310635137004">برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، همگام‌سازی را روشن کنید.</translation>
@@ -559,6 +566,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">گزارش خرابی ارسال شد.</translation>
 <translation id="935490618240037774">‏نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات در حساب Google شما همگام‌سازی می‌شوند تا بتوانید از آن‌ها در همه دستگاه‌هایتان استفاده کنید.</translation>
+<translation id="952704832371081537">لغو</translation>
 <translation id="976982866697960176">مدیریت داده‌های همگام‌سازی‌شده…</translation>
 <translation id="988141524645182168">دستگاه‌های دیگر</translation>
 <translation id="989988560359834682">ویرایش آدرس</translation>

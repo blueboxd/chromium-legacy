@@ -132,24 +132,6 @@ TEST(WebSocketDeflaterTest, WindowBits10) {
       ToString(actual.get()));
 }
 
-// I add this test.
-TEST(WebSocketDeflaterTest, WindowBits11) {
-  WebSocketDeflater deflater(WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT);
-  deflater.Initialize(10);
-  // Set the head and tail of |input| so that back-reference
-  // can be used if the window size is sufficiently-large.
-  const std::string word = "Chromium";
-  std::string input = word + std::string(256, 'a') + word;
-  scoped_refptr<IOBufferWithSize> actual;
-
-  ASSERT_TRUE(deflater.AddBytes(input.data(), input.size()));
-  ASSERT_TRUE(deflater.Finish());
-  actual = deflater.GetOutput(deflater.CurrentOutputSize());
-  EXPECT_EQ(
-      std::string("r\xce(\xca\xcf\xcd,\xcdM\x1c\xe1\xc0\x19\x1a\x0e\0\0", 17),
-      ToString(actual.get()));
-}
-
 }  // namespace
 
 }  // namespace net

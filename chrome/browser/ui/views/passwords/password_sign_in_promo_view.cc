@@ -64,7 +64,7 @@ PasswordSignInPromoView::PasswordSignInPromoView(
         signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
     auto label = std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SIGNIN_PROMO_LABEL),
-        CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+        CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetMultiLine(true);
     AddChildView(label.release());

@@ -109,6 +109,14 @@
               unified-consent-enabled="[[unifiedConsentEnabled_]]">
           </settings-personalization-options>
         </template>
+        <template is="dom-if" if="[[improvedCookieControlsEnabled_]]">
+          <settings-toggle-button id="cookieControls"
+              pref="{{prefs.profile.cookie_controls_mode}}"
+              label="$i18n{cookieControls}"
+              sub-label="$i18n{cookieControlsDescription}"
+              numeric-checked-value="2">
+          </settings-toggle-button>
+        </template>
         <settings-toggle-button id="doNotTrack"
             pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
             on-settings-boolean-control-change="onDoNotTrackChange_"

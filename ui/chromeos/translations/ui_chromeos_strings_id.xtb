@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Resolusi gambar</translation>
 <translation id="1943097386230153518">Instal layanan baru</translation>
 <translation id="1947424002851288782">Keyboard untuk bahasa Jerman</translation>
+<translation id="1972984168337863910">Luaskan panel masukan file</translation>
 <translation id="197560921582345123">Dapat mengedit</translation>
 <translation id="1984603991036629094">Keyboard fonetik Armenia</translation>
 <translation id="2001796770603320721">Kelola di Drive</translation>
@@ -169,7 +170,7 @@
 <translation id="2963783323012015985">Keyboard untuk bahasa Turki</translation>
 <translation id="2966459079597787514">Keyboard untuk bahasa Swensk</translation>
 <translation id="2984337792991268709"><ph name="TODAY_DAYTIME" /> hari ini</translation>
-<translation id="2994669386200004489">Tidak dapat mem-backup <ph name="FILE_NAME" /></translation>
+<translation id="2994669386200004489">Tidak dapat mencadangkan <ph name="FILE_NAME" /></translation>
 <translation id="3003633581067744647">Beralih ke tampilan thumbnail</translation>
 <translation id="3007214526293698309">Perbaiki rasio</translation>
 <translation id="303198083543495566">Geografi</translation>
@@ -265,7 +266,7 @@
 <translation id="4197674956721858839">Pilihan file zip</translation>
 <translation id="421017592316736757">Anda harus online untuk mengakses file ini.</translation>
 <translation id="4212740939091998969">Folder bernama "<ph name="FOLDER_NAME" />" sudah ada. Harap pilih nama lain.</translation>
-<translation id="4215448920900139318">Mem-backup <ph name="FILE_COUNT" /></translation>
+<translation id="4215448920900139318">Mencadangkan <ph name="FILE_COUNT" /></translation>
 <translation id="4242533952199664413">Buka setelan</translation>
 <translation id="426015154560005552">Keyboard Arab</translation>
 <translation id="4261901459838235729">Presentasi Google</translation>
@@ -325,7 +326,7 @@
 <translation id="4880520557730313061">Perbaikan Otomatis</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4886021172213954916">Keyboard Tamil (Mesin ketik)</translation>
-<translation id="4905417359854579806">Siap untuk mem-backup <ph name="FILE_COUNT" /></translation>
+<translation id="4905417359854579806">Siap untuk mencadangkan <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Telah Diperbaiki</translation>
 <translation id="4935975195727477204">Bunga Gazania</translation>
 <translation id="4943368462779413526">Sepak bola</translation>
@@ -381,7 +382,7 @@
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5330145655348521461">File ini dibuka pada desktop yang berbeda. Pindahkan ke <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) untuk melihatnya.</translation>
 <translation id="5330512191124428349">Dapatkan info</translation>
-<translation id="5335458522276292100">Mem-backup <ph name="FILE_COUNT" /> ke <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
+<translation id="5335458522276292100">Mencadangkan <ph name="FILE_COUNT" /> ke <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="5358764674931277">Frekuensi gambar</translation>
 <translation id="5368191757080475556">Bagikan folder dengan Linux</translation>
 <translation id="5402367795255837559">Braille</translation>
@@ -557,7 +558,7 @@
 <translation id="7474889694310679759">Keyboard untuk bahasa Inggris Kanada</translation>
 <translation id="7489215562877293245"><ph name="FILE_COUNT" /> ditemukan
     <ph name="LINE_BREAK1" />
-    Siap untuk mem-backup ke <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
+    Siap untuk mencadangkan ke <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="7505167922889582512">Tampilkan file tersembunyi</translation>
 <translation id="7508545000531937079">Rangkai Slide</translation>
 <translation id="751507702149411736">Belarusian</translation>
@@ -638,6 +639,7 @@
 <translation id="8223479393428528563">Untuk menyimpan file ini agar dapat digunakan saat offline, sambungkan ke internet, klik kanan pada file, dan pilih opsi <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Batalkan</translation>
 <translation id="8261506727792406068">Hapus</translation>
+<translation id="8269755669432358899">Ciutkan panel masukan file</translation>
 <translation id="8279388322240498158">Keyboard berbasis Inggris Kurdi Sorani</translation>
 <translation id="8280151743281770066">Fonetik Armenia</translation>
 <translation id="8294431847097064396">Sumber</translation>

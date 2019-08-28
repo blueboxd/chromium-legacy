@@ -86,20 +86,6 @@ void BackgroundSyncContextImpl::Shutdown() {
       base::BindOnce(&BackgroundSyncContextImpl::ShutdownOnCoreThread, this));
 }
 
-void BackgroundSyncContextImpl::CreateOneShotSyncServiceForRequest(
-    blink::mojom::OneShotBackgroundSyncServiceRequest request) {
-  // Implicit conversion from OneShotBackgroundSyncServiceRequest to
-  // mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>.
-  CreateOneShotSyncService(std::move(request));
-}
-
-void BackgroundSyncContextImpl::CreatePeriodicSyncServiceForRequest(
-    blink::mojom::PeriodicBackgroundSyncServiceRequest request) {
-  // Implicit conversion from PeriodicBackgroundSyncServiceRequest to
-  // mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>.
-  CreatePeriodicSyncService(std::move(request));
-}
-
 void BackgroundSyncContextImpl::CreateOneShotSyncService(
     mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
         receiver) {

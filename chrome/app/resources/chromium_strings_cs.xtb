@@ -226,7 +226,6 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Do jednoho dne Chromium restartujte}few{Do # dní Chromium restartujte}many{Do # dne Chromium restartujte}other{Do # dní Chromium restartujte}}</translation>
 <translation id="8453117565092476964">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8493179195440786826">Prohlížeč Chromium je zastaralý</translation>
-<translation id="8494843963476918365">Pokud některé nastavení na této stránce není zobrazeno, zkuste <ph name="LINK_BEGIN" />nastavení prohlížeče Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Pomoc s používáním prohlížeče Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="8619360774459241877">Spouštění prohlížeče Chromium...</translation>

@@ -15,9 +15,9 @@
  * structure.
  * @typedef {{
  *   title: string,
- *   page: number,
- *   y: number,
- *   uri: string,
+ *   page: (number | undefined),
+ *   y: (number | undefined),
+ *   uri: (string | undefined),
  *   children: !Array<!Bookmark>
  * }}
  */
@@ -32,13 +32,25 @@ Polymer({
 
   properties: {
     /** @type {Bookmark} */
-    bookmark: {type: Object, observer: 'bookmarkChanged_'},
+    bookmark: {
+      type: Object,
+      observer: 'bookmarkChanged_',
+    },
 
-    depth: {type: Number, observer: 'depthChanged'},
+    depth: {
+      type: Number,
+      observer: 'depthChanged_'
+    },
 
-    childDepth: Number,
+    /** @private */
+    childDepth_: Number,
 
-    childrenShown: {type: Boolean, reflectToAttribute: true, value: false},
+    /** @private */
+    childrenShown_: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
+    },
 
     /** @type {?HTMLElement} The target for the key bindings below. */
     keyEventTarget: Object,
@@ -53,18 +65,21 @@ Polymer({
     this.keyEventTarget = this.$.item;
   },
 
+  /** @private */
   bookmarkChanged_: function() {
     this.$.expand.style.visibility =
         this.bookmark.children.length > 0 ? 'visible' : 'hidden';
   },
 
-  depthChanged: function() {
-    this.childDepth = this.depth + 1;
+  /** @private */
+  depthChanged_: function() {
+    this.childDepth_ = this.depth + 1;
     this.$.item.style.paddingInlineStart =
         (this.depth * BOOKMARK_INDENT) + 'px';
   },
 
-  onClick: function() {
+  /** @private */
+  onClick_: function() {
     if (this.bookmark.hasOwnProperty('page')) {
       if (this.bookmark.hasOwnProperty('y')) {
         this.fire('change-page-and-xy', {
@@ -82,25 +97,37 @@ Polymer({
     }
   },
 
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
   onEnter_: function(e) {
     // Don't allow events which have propagated up from the expand button to
     // trigger a click.
     if (e.detail.keyboardEvent.target != this.$.expand) {
-      this.onClick();
+      this.onClick_();
     }
   },
 
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
   onSpace_: function(e) {
     // cr-icon-button stops propagation of space events, so there's no need
     // to check the event source here.
-    this.onClick();
+    this.onClick_();
     // Prevent default space scroll behavior.
     e.detail.keyboardEvent.preventDefault();
   },
 
-  toggleChildren: function(e) {
-    this.childrenShown = !this.childrenShown;
-    e.stopPropagation();  // Prevent the above onClick handler from firing.
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  toggleChildren_: function(e) {
+    this.childrenShown_ = !this.childrenShown_;
+    e.stopPropagation();  // Prevent the above onClick_ handler from firing.
   }
 });
 })();

@@ -55,7 +55,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
                        GetDeveloperIdsCallback callback) override;
 
  private:
-  static void CreateOnIoThread(
+  static void CreateOnCoreThread(
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
       int render_frame_tree_node_id,

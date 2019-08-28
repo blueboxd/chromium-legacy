@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">เคล็ดลับสำหรับ Chromium ถ้าต้องการดูตัวเลือกแท็บเพิ่มเติม ให้กดปุ่ม "แสดงแท็บ" ค้างไว้ในแถบเครื่องมือ ซึ่งอยู่ที่ด้านล่างหรือด้านบนของหน้าจอ</translation>
 <translation id="4241912885070669028">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> การออกจากระบบจะลบข้อมูล Chromium ของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="4555020257205549924">เมื่อเปิดฟีเจอร์นี้ Chromium จะเสนอให้แปลหน้าต่างๆ ที่เขียนด้วยภาษาอื่นโดยใช้ Google แปลภาษา <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">เปิดโปรแกรมสแกนของ Chromium</translation>
 <translation id="4787850887676698916">แท็บที่คุณเปิดไว้ใน Chromium ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
 <translation id="4999538639245140991">เนื่องจากคุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> ข้อมูล Chromium ของคุณจะถูกลบออกจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="5231355151045086930">ออกจากระบบ Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">เปิดการตั้งค่า &gt; ความเป็นส่วนตัว &gt; กล้อง &gt; Chromium แล้วเปิดกล้องถ่ายรูป</translation>
 <translation id="7746854981345936341">เคล็ดลับสำหรับ Chromium ตอนนี้บางปุ่มแสดงอยู่ที่ด้านล่างของหน้าจอแล้ว เช่น ปุ่มกลับ ไปข้างหน้า และค้นหา</translation>
 <translation id="786327964234957808">คุณกำลังเปลี่ยนบัญชีในการซิงค์จาก <ph name="USER_EMAIL1" /> เป็น <ph name="USER_EMAIL2" /> ข้อมูล Chromium ที่มีอยู่ของคุณจัดการโดย <ph name="DOMAIN" /> การเปลี่ยนบัญชีจะลบข้อมูลจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ใน <ph name="USER_EMAIL1" /></translation>
+<translation id="7890287942691234100">เริ่มใช้โปรแกรมสแกนของ Chromium</translation>
 <translation id="8073677936375100957">ล้างข้อมูล Chromium ของคุณออกจากอุปกรณ์นี้ไหม</translation>
 <translation id="8175055321229419309">เคล็ดลับ: <ph name="BEGIN_LINK" />ย้าย Chromium ไปไว้ที่ Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">รับประสบการณ์การใช้งาน Google ที่ดีขึ้นใน Chromium โดยอิงจากตำแหน่งของคุณ</translation>

@@ -294,7 +294,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
         dawn_representation->BeginAccess(DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT));
 
     dawn::RenderPassColorAttachmentDescriptor color_desc;
-    color_desc.attachment = texture.CreateDefaultView();
+    color_desc.attachment = texture.CreateView();
     color_desc.resolveTarget = nullptr;
     color_desc.loadOp = dawn::LoadOp::Clear;
     color_desc.storeOp = dawn::StoreOp::Store;

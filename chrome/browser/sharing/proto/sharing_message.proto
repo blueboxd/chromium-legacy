@@ -24,6 +24,9 @@ message SharingMessage {
     ClickToCallMessage click_to_call_message = 4;
     SharedClipboardMessage shared_clipboard_message = 5;
   }
+
+  // RecipientInfo for responding an AckMessage to the sender. optional.
+  RecipientInfo sender_info = 6;
 }
 
 // Message for pinging the receiver expecting an acknowledgement.
@@ -35,4 +38,16 @@ message PingMessage {
 message AckMessage {
   // required.
   string original_message_id = 1;
+}
+
+// Message for data necessary to send an AckMessage to the sender.
+message RecipientInfo {
+  // FCM registration token of device. required.
+  string fcm_token = 1;
+
+  // Subscription public key required for RFC 8291.
+  bytes p256dh = 2;
+
+  // Auth secret key required for RFC 8291.
+  bytes auth_secret = 3;
 }

@@ -268,10 +268,13 @@ TEST_F(SubframeNavigationFilteringThrottleTest, DelayMetrics) {
   navigation_simulator()->CommitErrorPage();
 
   const char kFilterDelayDisallowed[] =
-      "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Disallowed";
+      "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Disallowed2";
+  const char kFilterDelayWouldDisallow[] =
+      "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.WouldDisallow";
   const char kFilterDelayAllowed[] =
       "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Allowed";
   histogram_tester.ExpectTotalCount(kFilterDelayDisallowed, 1);
+  histogram_tester.ExpectTotalCount(kFilterDelayWouldDisallow, 0);
   histogram_tester.ExpectTotalCount(kFilterDelayAllowed, 0);
 
   CreateTestSubframeAndInitNavigation(GURL("https://example.test/allowed.html"),
@@ -282,6 +285,44 @@ TEST_F(SubframeNavigationFilteringThrottleTest, DelayMetrics) {
             SimulateCommitAndGetResult(navigation_simulator()));
 
   histogram_tester.ExpectTotalCount(kFilterDelayDisallowed, 1);
+  histogram_tester.ExpectTotalCount(kFilterDelayWouldDisallow, 0);
+  histogram_tester.ExpectTotalCount(kFilterDelayAllowed, 1);
+}
+
+TEST_F(SubframeNavigationFilteringThrottleTest, DelayMetricsDryRun) {
+  base::HistogramTester histogram_tester;
+  InitializeDocumentSubresourceFilter(GURL("https://example.test"),
+                                      mojom::ActivationLevel::kDryRun);
+  CreateTestSubframeAndInitNavigation(GURL("https://example.test/allowed.html"),
+                                      main_rfh());
+  navigation_simulator()->SetTransition(ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            SimulateStartAndGetResult(navigation_simulator()));
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            SimulateRedirectAndGetResult(
+                navigation_simulator(),
+                GURL("https://example.test/disallowed.html")));
+  navigation_simulator()->Commit();
+
+  const char kFilterDelayDisallowed[] =
+      "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Disallowed2";
+  const char kFilterDelayWouldDisallow[] =
+      "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.WouldDisallow";
+  const char kFilterDelayAllowed[] =
+      "SubresourceFilter.DocumentLoad.SubframeFilteringDelay.Allowed";
+  histogram_tester.ExpectTotalCount(kFilterDelayDisallowed, 0);
+  histogram_tester.ExpectTotalCount(kFilterDelayWouldDisallow, 1);
+  histogram_tester.ExpectTotalCount(kFilterDelayAllowed, 0);
+
+  CreateTestSubframeAndInitNavigation(GURL("https://example.test/allowed.html"),
+                                      main_rfh());
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            SimulateStartAndGetResult(navigation_simulator()));
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            SimulateCommitAndGetResult(navigation_simulator()));
+
+  histogram_tester.ExpectTotalCount(kFilterDelayDisallowed, 0);
+  histogram_tester.ExpectTotalCount(kFilterDelayWouldDisallow, 1);
   histogram_tester.ExpectTotalCount(kFilterDelayAllowed, 1);
 }
 

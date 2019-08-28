@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/html/html_ulist_element.h"
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {

@@ -32,7 +32,7 @@ BubbleSyncPromoView::BubbleSyncPromoView(
                 views::StyledLabel::RangeStyleInfo::CreateForLink());
 
   views::StyledLabel::RangeStyleInfo promo_style;
-  promo_style.text_style = STYLE_SECONDARY;
+  promo_style.text_style = views::style::STYLE_SECONDARY;
   gfx::Range before_link_range(0, offset);
   if (!before_link_range.is_empty())
     AddStyleRange(before_link_range, promo_style);

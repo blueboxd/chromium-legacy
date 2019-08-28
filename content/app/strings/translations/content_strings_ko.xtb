@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">값은 <ph name="MAXIMUM" /> 이하여야 합니다.</translation>
 <translation id="3486220673238053218">정의</translation>
 <translation id="3557673793733683882">제목 <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">주 선택도구</translation>
 <translation id="3685101356851116974">라벨이 없는 이미지</translation>
 <translation id="3706100364254443312">전환</translation>
 <translation id="3732799496749320381">월</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">설명 가져오는 중...</translation>
 <translation id="8117451130807776954">이번 주</translation>
 <translation id="8199524924445686405">연도</translation>
+<translation id="8208673686607688524">로컬 날짜 및 시간 선택도구</translation>
 <translation id="8261464734335370856">맞춤법이 잘못되었습니다.</translation>
 <translation id="8284326494547611709">자막</translation>
 <translation id="835897206747267392">값이 잘못되었습니다.</translation>

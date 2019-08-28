@@ -40,6 +40,7 @@ class CSSStyleDeclaration;
 class ImmutableCSSPropertyValueSet;
 class MutableCSSPropertyValueSet;
 class StyleSheetContents;
+enum class CSSValueID;
 enum class SecureContextMode;
 
 class CORE_EXPORT CSSPropertyValueSet

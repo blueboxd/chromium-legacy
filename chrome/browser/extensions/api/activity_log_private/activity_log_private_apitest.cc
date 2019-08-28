@@ -57,8 +57,8 @@ class ActivityLogApiTest : public ExtensionApiTest {
   base::CommandLine saved_cmdline_;
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// TODO(crbug.com/299393): Flaky on Mac and Windows.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+// TODO(crbug.com/299393): Flaky on Mac, Windows and Linux.
 #define MAYBE_TriggerEvent DISABLED_TriggerEvent
 #else
 #define MAYBE_TriggerEvent TriggerEvent

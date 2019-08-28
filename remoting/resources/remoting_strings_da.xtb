@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Værten kunne ikke nås. Dette skyldes sandsynligvis konfigurationen af det netværk, du bruger.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Sidst set online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Denne app understøttes ikke længere. Brug <ph name="LINK_BEGIN" />webappen Chrome Fjernskrivebord<ph name="LINK_END" /> for at være sikker på, at du får de seneste funktioner og sikkerhedsopdateringer.</translation>
-<translation id="2431841749166974386">Der kræves et ekstra konfigurationstrin, før du kan fjernstyre denne maskine via <ph name="PRODUCT_NAME" />.
-
-Du kan aktivere funktionen ved at vælge "<ph name="BUTTON_NAME" />", så ruden med præferencer for Sikkerhed og privatliv vises. Markér derefter afkrydsningsfeltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er til stede og markeret, skal du muligvis fjerne det og derefter tilføje det igen.</translation>
 <translation id="2499160551253595098">Hjælp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
 <translation id="2509394361235492552">Der er oprettet forbindelse til <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">BEMÆRK! Du kan sikre, at alle tastaturgenveje er tilgængelige ved at konfigurere Chrome Fjernskrivebord til "Åbn som vindue".</translation>
@@ -317,6 +312,11 @@ Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er til stede og markeret, skal
 <translation id="8804164990146287819">Privatlivspolitik</translation>
 <translation id="894763922177556086">God</translation>
 <translation id="895780780740011433">Til Windows 7 og nyere</translation>
+<translation id="8963047137585288214">Der kræves et ekstra konfigurationstrin, før du kan fjernstyre denne maskine via <ph name="PRODUCT_NAME" />.
+
+Du kan aktivere funktionen ved at vælge "<ph name="BUTTON_NAME" />", så ruden med præferencer for Sikkerhed og privatliv vises. Markér derefter afkrydsningsfeltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er til stede og markeret, skal du muligvis fjerne markeringen og derefter markere det igen.</translation>
 <translation id="897805526397249209">Hvis du vil aktivere fjernforbindelser til en anden computer, skal du installere Chromoting på den pågældende computer og klikke på "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Administration af host for Chrome Fjernskrivebord</translation>
 <translation id="9016232822027372900">Opret forbindelse alligevel</translation>

@@ -156,7 +156,8 @@ void OutdatedUpgradeBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   auto text_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TEXT),
-      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT, STYLE_SECONDARY);
+      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+      views::style::STYLE_SECONDARY);
   text_label->SetMultiLine(true);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label->SizeToFit(

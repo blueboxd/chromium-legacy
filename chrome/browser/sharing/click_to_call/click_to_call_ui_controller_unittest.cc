@@ -78,7 +78,7 @@ class ClickToCallUiControllerTest : public testing::Test {
         &profile_, base::BindRepeating([](content::BrowserContext* context)
                                            -> std::unique_ptr<KeyedService> {
           return std::make_unique<NiceMock<MockSharingService>>(
-              std::make_unique<SharingFCMHandler>(nullptr, nullptr));
+              std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
         }));
     ClickToCallUiController::ShowDialog(
         web_contents_.get(), GURL(base::StrCat({"tel:", kPhoneNumber})), false);

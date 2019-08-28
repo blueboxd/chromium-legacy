@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -42,6 +43,7 @@ namespace apps {
 // This app shim handler that handles events for app shims that correspond to an
 // extension.
 class ExtensionAppShimHandler : public AppShimHandler,
+                                public AppShimHost::Client,
                                 public content::NotificationObserver,
                                 public AppLifetimeMonitor::Observer,
                                 public BrowserListObserver {
@@ -68,6 +70,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual bool AllowShimToConnect(Profile* profile,
                                     const extensions::Extension* extension);
     virtual std::unique_ptr<AppShimHost> CreateHost(
+        AppShimHost::Client* client,
         Profile* profile,
         const extensions::Extension* extension);
     virtual void EnableExtension(Profile* profile,
@@ -136,14 +139,16 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // Called by AppControllerMac when Chrome hides.
   void OnChromeWillHide();
 
-  // AppShimHandler overrides:
+  // AppShimHandler:
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
+
+  // AppShimHost::Client:
   void OnShimLaunchRequested(
       AppShimHost* host,
       bool recreate_shims,
       base::OnceCallback<void(base::Process)> launched_callback,
       base::OnceClosure terminated_callback) override;
-  void OnShimProcessConnected(
-      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnShimProcessDisconnected(AppShimHost* host) override;
   void OnShimFocus(AppShimHost* host,
                    AppShimFocusType focus_type,

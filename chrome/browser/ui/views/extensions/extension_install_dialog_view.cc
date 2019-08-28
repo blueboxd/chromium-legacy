@@ -134,8 +134,9 @@ class PermissionsView : public views::View {
 
   void AddItem(const base::string16& permission_text,
                const base::string16& permission_details) {
-    auto permission_label = std::make_unique<views::Label>(
-        permission_text, CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+    auto permission_label =
+        std::make_unique<views::Label>(permission_text, CONTEXT_BODY_TEXT_LARGE,
+                                       views::style::STYLE_SECONDARY);
     permission_label->SetMultiLine(true);
     permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     permission_label->SizeToFit(available_width_);
@@ -349,7 +350,8 @@ void ExtensionInstallDialogView::AddedToWidget() {
     webstore_data_container->AddChildView(std::move(rating_container));
 
     auto user_count = std::make_unique<views::Label>(
-        prompt_->GetUserCount(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
+        prompt_->GetUserCount(), CONTEXT_BODY_TEXT_SMALL,
+        views::style::STYLE_SECONDARY);
     user_count->SetAutoColorReadabilityEnabled(false);
     user_count->SetEnabledColor(SK_ColorGRAY);
     user_count->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -580,7 +582,7 @@ ExpandableContainerView::DetailsView::DetailsView(
 
   for (auto& detail : details) {
     auto detail_label = std::make_unique<views::Label>(
-        detail, CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+        detail, CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
     detail_label->SetMultiLine(true);
     detail_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(detail_label.release());

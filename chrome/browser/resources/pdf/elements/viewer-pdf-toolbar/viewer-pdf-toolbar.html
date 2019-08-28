@@ -5,7 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="../icons.html">
-<link rel="import" href="../viewer-bookmarks-content/viewer-bookmarks-content.html">
+<link rel="import" href="../viewer-bookmark/viewer-bookmark.html">
 <link rel="import" href="../viewer-page-selector/viewer-page-selector.html">
 <if expr="chromeos">
 <link rel="import" href="../viewer-pen-options/viewer-pen-options.html">
@@ -214,8 +214,9 @@
                                    open-icon="pdf:bookmark"
                                    closed-icon="pdf:bookmark-border"
                                    header="{{strings.bookmarks}}">
-            <viewer-bookmarks-content bookmarks="{{bookmarks}}">
-            </viewer-bookmarks-content>
+            <template is="dom-repeat" items="[[bookmarks]]">
+              <viewer-bookmark bookmark="[[item]]" depth="0"></viewer-bookmark>
+            </template>
           </viewer-toolbar-dropdown>
         </div>
       </div>
@@ -228,7 +229,7 @@
 
     <div id="annotations-bar" hidden>
       <viewer-toolbar-dropdown id="pen"
-          selected$="[[equal_('pen', annotationTool.tool)]]"
+          selected$="[[isAnnotationTool_('pen', annotationTool.tool)]]"
           open-after-select
           on-click="annotationToolClicked_"
           open-icon="pdf:marker"
@@ -247,7 +248,7 @@
       </viewer-toolbar-dropdown>
 
       <viewer-toolbar-dropdown id="highlighter"
-          selected$="[[equal_('highlighter', annotationTool.tool)]]"
+          selected$="[[isAnnotationTool_('highlighter', annotationTool.tool)]]"
           open-after-select
           on-click="annotationToolClicked_"
           open-icon="pdf:highlighter"
@@ -266,7 +267,7 @@
       </viewer-toolbar-dropdown>
 
       <cr-icon-button id="eraser"
-          selected$="[[equal_('eraser', annotationTool.tool)]]"
+          selected$="[[isAnnotationTool_('eraser', annotationTool.tool)]]"
           on-click="annotationToolClicked_" iron-icon="pdf:eraser"
           aria-label$="{{strings.annotationEraser}}"
           title$="{{strings.annotationEraser}}"></cr-icon-button>

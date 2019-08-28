@@ -32,9 +32,6 @@
     <color name="photo_picker_tile_bg_color">@color/modern_grey_800</color>
     <color name="photo_picker_special_tile_bg_color">@color/modern_grey_800</color>
 
-    <!-- History Navigation UI colors -->
-    <color name="navigation_bubble_background_color">@android:color/white</color>
-
     <!-- Scrollbar colors -->
     <color name="default_scroll_thumb">@color/white_alpha_20</color>
 

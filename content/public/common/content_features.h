@@ -34,6 +34,7 @@ CONTENT_EXPORT extern const base::Feature kCacheStorageParallelOps;
 CONTENT_EXPORT extern const base::Feature kCanvas2DImageChromium;
 CONTENT_EXPORT extern const base::Feature kConsolidatedMovementXY;
 CONTENT_EXPORT extern const base::Feature kCookieDeprecationMessages;
+CONTENT_EXPORT extern const base::Feature kCooperativeScheduling;
 CONTENT_EXPORT extern const base::Feature kCrashReporting;
 CONTENT_EXPORT extern const base::Feature kDataSaverHoldback;
 CONTENT_EXPORT extern const base::Feature kDesktopCaptureChangeSource;

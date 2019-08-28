@@ -49,7 +49,6 @@
 <translation id="2388990488038464401">Tawagan ang numerong ito mula sa iyong telepono?</translation>
 <translation id="24452542372838207">Palawakin ang notification</translation>
 <translation id="2445449901874883781">Gumamit ng mataas na density</translation>
-<translation id="2451871130406122810">Ipinadala sa device</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2497284189126895209">Lahat ng Mga File</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -217,6 +216,7 @@
 <translation id="8806053966018712535">Folder <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">I-annotate ang larawan</translation>
 <translation id="8841375032071747811">Button na Bumalik</translation>
+<translation id="8867568208303837180">Ipinapadala...</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Palaging nakatago ang shelf</translation>

@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Mẹo dành cho Chromium. Để xem thêm các tùy chọn về tab, hãy nhấn và giữ nút Hiển thị tab trên thanh công cụ ở đầu hoặc cuối màn hình.</translation>
 <translation id="4241912885070669028">Bạn đang đăng xuất khỏi tài khoản do <ph name="SIGNOUT_MANAGED_DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu Chromium khỏi thiết bị này nhưng dữ liệu đó sẽ vẫn còn trong tài khoản Google của bạn.</translation>
 <translation id="4555020257205549924">Khi tính năng này được bật, Chromium sẽ đề xuất sử dụng Google Dịch để dịch các trang viết bằng ngôn ngữ khác. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Bật trình quét của Chromium</translation>
 <translation id="4787850887676698916">Các tab bạn đã mở trong Chromium trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="4999538639245140991">Vì bạn đăng xuất khỏi tài khoản do <ph name="SIGNOUT_MANAGED_DOMAIN" /> quản lý, nên dữ liệu Chromium của bạn sẽ bị xóa khỏi thiết bị này. Dữ liệu của bạn sẽ vẫn còn trong Tài khoản Google của bạn.</translation>
 <translation id="5231355151045086930">Đăng xuất khỏi Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Mở Cài đặt &gt; Bảo mật &gt; Máy ảnh &gt; Chromium và bật máy ảnh.</translation>
 <translation id="7746854981345936341">Mẹo dành cho Chromium. Một số nút hiện nằm ở cuối màn hình, chẳng hạn như nút Quay lại, Tiến lên và Tìm kiếm.</translation>
 <translation id="786327964234957808">Bạn đang chuyển các tài khoản đồng bộ hóa từ <ph name="USER_EMAIL1" /> về <ph name="USER_EMAIL2" />. Dữ liệu Chromium hiện có của bạn do <ph name="DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu đó sẽ vẫn còn trong <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Bắt đầu dùng trình quét của Chromium</translation>
 <translation id="8073677936375100957">Xóa dữ liệu Chromium của bạn khỏi thiết bị này?</translation>
 <translation id="8175055321229419309">Mẹo: <ph name="BEGIN_LINK" />Di chuyển Chromium sang thanh dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Có được trải nghiệm Google tốt hơn trong Chromium dựa trên vị trí của bạn.</translation>

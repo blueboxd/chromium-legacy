@@ -41,6 +41,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
@@ -2413,6 +2414,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
       {"signinAllowedTitle", IDS_SETTINGS_SIGNIN_ALLOWED},
       {"signinAllowedDescription", IDS_SETTINGS_SIGNIN_ALLOWED_DESC},
+      {"cookieControls", IDS_SETTINGS_COOKIE_CONTROLS},
+      {"cookieControlsDescription", IDS_SETTINGS_COOKIE_CONTROLS_DESCRIPTION},
       {"doNotTrack", IDS_SETTINGS_ENABLE_DO_NOT_TRACK},
       {"doNotTrackDialogTitle", IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TITLE},
       {"enableContentProtectionAttestation",
@@ -2445,6 +2448,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
+
+  html_source->AddBoolean(
+      "improvedCookieControlsEnabled",
+      base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls));
 
   // Select strings depending on unified-consent enabledness.
   bool is_unified_consent_enabled =

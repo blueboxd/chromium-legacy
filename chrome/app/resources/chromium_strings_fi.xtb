@@ -224,8 +224,6 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Käynnistä Chromium uudelleen vuorokauden kuluessa}other{Käynnistä Chromium uudelleen # vuorokauden kuluessa}}</translation>
 <translation id="8453117565092476964">Asennusarkisto on virheellinen. Lataa Chromium uudelleen.</translation>
 <translation id="8493179195440786826">Chromium on vanhentunut</translation>
-<translation id="8494843963476918365">Jos asetus ei näy tällä sivulla, kokeile <ph name="LINK_BEGIN" />
-    Chromiumin selainasetuksia<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Apua Chromiumin käytössä</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
 <translation id="8619360774459241877">Käynnistetään Chromiumia…</translation>

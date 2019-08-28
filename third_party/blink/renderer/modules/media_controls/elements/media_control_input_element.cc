@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"

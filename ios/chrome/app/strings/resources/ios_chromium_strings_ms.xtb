@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Petua Chromium. Untuk melihat lebih banyak pilihan tab, tekan dan tahan butang Tunjukkan Tab dalam bar alat, yang terletak di bahagian bawah atau atas skrin anda.</translation>
 <translation id="4241912885070669028">Anda mengelog keluar daripada akaun yang diurus oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />. Tindakan ini akan memadamkan data Chromium anda daripada peranti ini, tetapi data anda akan kekal dalam akaun Google anda.</translation>
 <translation id="4555020257205549924">Apabila ciri ini dihidupkan, Chromium akan menawarkan untuk menterjemah halaman yang ditulis dalam bahasa lain menggunakan Terjemahan Google. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Hidupkan pengimbas Chromium</translation>
 <translation id="4787850887676698916">Tab yang telah dibuka dalam Chromium pada peranti anda yang lain akan dipaparkan di sini.</translation>
 <translation id="4999538639245140991">Oleh sebab anda log keluar daripada akaun yang diurus oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />, data Chromium anda akan dipadamkan daripada peranti ini. Data anda akan kekal dalam Akaun Google anda.</translation>
 <translation id="5231355151045086930">Log keluar daripada Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Buka Tetapan &gt; Privasi &gt; Kamera &gt; Chromium dan hidupkan kamera.</translation>
 <translation id="7746854981345936341">Petua Chromium. Sesetengah butang kini terletak di bahagian bawah skrin anda, seperti Kembali, Ke Hadapan dan Carian.</translation>
 <translation id="786327964234957808">Anda sedang menukar akaun penyegerakan daripada <ph name="USER_EMAIL1" /> kepada <ph name="USER_EMAIL2" />. Data Chromium sedia ada diurus oleh <ph name="DOMAIN" />. Tindakan ini akan memadamkan data anda daripada peranti ini, tetapi data itu akan kekal disimpan dalam <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Mula menggunakan pengimbas Chromium</translation>
 <translation id="8073677936375100957">Kosongkan data Chromium anda daripada peranti ini?</translation>
 <translation id="8175055321229419309">Petua: <ph name="BEGIN_LINK" />Alihkan Chromium ke dok anda<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Dapatkan pengalaman yang lebih baik di Chromium berdasarkan lokasi anda.</translation>

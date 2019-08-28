@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -16,9 +17,18 @@ import org.chromium.ui.base.WindowAndroid;
 public class PasswordCheckupLauncher {
     @CalledByNative
     private static void launchCheckup(String checkupUrl, WindowAndroid windowAndroid) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(checkupUrl));
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
+        if (tryLaunchingNativePasswordCheckup(activity)) return;
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(checkupUrl));
         intent.setPackage(activity.getPackageName());
         activity.startActivity(intent);
+    }
+
+    private static boolean tryLaunchingNativePasswordCheckup(ChromeActivity activity) {
+        GooglePasswordManagerUIProvider googlePasswordManagerUIProvider =
+                AppHooks.get().createGooglePasswordManagerUIProvider();
+        if (googlePasswordManagerUIProvider == null) return false;
+        // TODO(crbug.com/986317): Add check for minimum Google Play Services version.
+        return googlePasswordManagerUIProvider.launchPasswordCheckup(activity);
     }
 }

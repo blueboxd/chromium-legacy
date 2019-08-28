@@ -62,7 +62,7 @@ class SequencedModelWorkerTest : public testing::Test {
     task_runner_ =
         base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                          base::TaskPriority::BEST_EFFORT});
-    worker_ = new SequencedModelWorker(task_runner_, GROUP_DB);
+    worker_ = new SequencedModelWorker(task_runner_, GROUP_PASSWORD);
   }
 
  private:

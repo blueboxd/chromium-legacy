@@ -225,6 +225,11 @@ const base::Feature kDesktopCaptureTabSharingInfobar{
 const base::Feature kDesktopPWAsWithoutExtensions{
     "DesktopPWAsWithoutExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When installing default installed PWAs, we wait for service workers
+// to cache resources.
+const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
+    "DesktopPWAsCacheDuringDefaultInstall", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables local PWA installs to update their app manifest data if the site
 // changes its manifest.
 const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",

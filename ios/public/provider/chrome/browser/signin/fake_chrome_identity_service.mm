@@ -95,7 +95,9 @@ NSString* const kIdentityEmailFormat = @"%@@gmail.com";
 NSString* const kIdentityGaiaIDFormat = @"%@ID";
 
 FakeChromeIdentityService::FakeChromeIdentityService()
-    : identities_([[NSMutableArray alloc] init]), _fakeMDMError(false) {}
+    : identities_([[NSMutableArray alloc] init]),
+      _fakeMDMError(false),
+      _pendingCallback(0) {}
 
 FakeChromeIdentityService::~FakeChromeIdentityService() {}
 
@@ -172,7 +174,9 @@ void FakeChromeIdentityService::ForgetIdentity(
     // Forgetting an identity is normally an asynchronous operation (that
     // require some network calls), this is replicated here by dispatching
     // it.
+    ++_pendingCallback;
     dispatch_async(dispatch_get_main_queue(), ^{
+      --_pendingCallback;
       callback(nil);
     });
   }
@@ -197,7 +201,9 @@ void FakeChromeIdentityService::GetAccessToken(
   }
   // |GetAccessToken| is normally an asynchronous operation (that requires some
   // network calls), this is replicated here by dispatching it.
+  ++_pendingCallback;
   dispatch_async(dispatch_get_main_queue(), ^{
+    --_pendingCallback;
     if (user_info)
       FireAccessTokenRefreshFailed(identity, user_info);
     // Token and expiration date. It should be larger than typical test
@@ -224,7 +230,9 @@ void FakeChromeIdentityService::GetAvatarForIdentity(
   }
   // |GetAvatarForIdentity| is normally an asynchronous operation, this is
   // replicated here by dispatching it.
+  ++_pendingCallback;
   dispatch_async(dispatch_get_main_queue(), ^{
+    --_pendingCallback;
     callback(FakeGetCachedAvatarForIdentity(identity));
   });
 }
@@ -235,7 +243,9 @@ void FakeChromeIdentityService::GetHostedDomainForIdentity(
   NSString* domain = FakeGetHostedDomainForIdentity(identity);
   // |GetHostedDomainForIdentity| is normally an asynchronous operation , this
   // is replicated here by dispatching it.
+  ++_pendingCallback;
   dispatch_async(dispatch_get_main_queue(), ^{
+    --_pendingCallback;
     callback(domain, nil);
   });
 }
@@ -278,6 +288,10 @@ void FakeChromeIdentityService::RemoveIdentity(ChromeIdentity* identity) {
 
 void FakeChromeIdentityService::SetFakeMDMError(bool fakeMDMError) {
   _fakeMDMError = fakeMDMError;
+}
+
+bool FakeChromeIdentityService::HasPendingCallback() {
+  return _pendingCallback > 0;
 }
 
 }  // namespace ios

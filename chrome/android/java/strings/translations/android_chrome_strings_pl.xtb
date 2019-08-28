@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">Kopiuj tekst linku</translation>
 <translation id="1208340532756947324">Aby synchronizować i personalizować wszystkie swoje urządzenia, włącz synchronizację</translation>
 <translation id="1209206284964581585">Na razie ukryj</translation>
+<translation id="1227058898775614466">Historia nawigacji</translation>
 <translation id="1231733316453485619">Włączyć synchronizację?</translation>
 <translation id="123724288017357924">Ponowie załaduj stronę, bez pamięci podręcznej</translation>
 <translation id="124116460088058876">Więcej języków</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">Kliknij, by rozwinąć</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="1291207594882862231">Wyczyść historię, pliki cookie, dane witryn, pamięć podręczną…</translation>
+<translation id="129382876167171263">W tym miejscu pojawiają się pliki zapisane przez witryny</translation>
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – wysłane z: <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Grupuj karty</translation>
+<translation id="1327257854815634930">Historia nawigacji jest otwarta</translation>
 <translation id="1331212799747679585">Nie udało się zaktualizować Chrome. Więcej opcji</translation>
 <translation id="1332501820983677155">Skróty do funkcji Google Chrome</translation>
 <translation id="1360432990279830238">Wylogować i wyłączyć synchronizację?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">Pełne sterowanie urządzeniami MIDI</translation>
 <translation id="145097072038377568">Wyłączone w ustawieniach Androida</translation>
 <translation id="1477626028522505441">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z serwerem.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (i jeszcze 1)}few{ (i jeszcze #)}many{ (i jeszcze #)}other{ (i jeszcze #)}}</translation>
 <translation id="1501480321619201731">Usuń grupę</translation>
 <translation id="1506061864768559482">Wyszukiwarka</translation>
 <translation id="1513352483775369820">Zakładki i historia online</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="2323763861024343754">Dane witryn:</translation>
 <translation id="2328985652426384049">Nie można się zalogować</translation>
-<translation id="2334057574886324800">Odebrano SMS-a</translation>
 <translation id="2349710944427398404">Łączna ilość danych używanych przez Chrome, w tym konta, zakładki i zapisane ustawienia</translation>
 <translation id="2353636109065292463">Sprawdzanie połączenia z internetem</translation>
 <translation id="2359808026110333948">Dalej</translation>
@@ -417,12 +418,6 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4226663524361240545">Powiadomienia będą sygnalizowane wibracjami</translation>
 <translation id="423219824432660969">Zaszyfruj synchronizowane dane hasłem Google z <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Otwórz ustawienia</translation>
-<translation id="4247274662191902962">Dane z czujników będą udostępniane tylko wtedy, gdy będziesz używać tego doświadczenia związanego z VR. Strona może być w stanie poznać Cię na podstawie pewnych informacji, takich jak:
-    – Twoja lokalizacja;
-    – Twoje cechy fizyczne, na przykład położenie oczu;
-    – Twoje ruchy, na przykład sposób chodzenia.
-
-    Zanim zezwolisz stronie na dostęp, upewnij się, że możesz jej zaufać.</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
@@ -554,8 +549,8 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5170568018924773124">Pokaż w folderze</translation>
 <translation id="5184329579814168207">Otwórz w Chrome</translation>
 <translation id="5193988420012215838">Skopiowane do schowka</translation>
+<translation id="5197729504361054390">Wybrane kontakty zostaną udostępnione witrynie <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5199929503336119739">Profil służbowy</translation>
-<translation id="5202089186707505116">Zezwolić tej stronie na dostęp do czujników VR?</translation>
 <translation id="5210286577605176222">Przejdź do poprzedniej karty</translation>
 <translation id="5210365745912300556">Zamknij kartę</translation>
 <translation id="5224771365102442243">Z wideo</translation>
@@ -568,6 +563,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5301954838959518834">Rozumiem</translation>
 <translation id="5304593522240415983">To pole nie może być puste</translation>
+<translation id="5307446750509046227">Wyczyść dane witryn</translation>
 <translation id="5308380583665731573">Połącz</translation>
 <translation id="5313967007315987356">Dodaj stronę</translation>
 <translation id="5317780077021120954">Zapisz</translation>
@@ -631,7 +627,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5686790454216892815">Nazwa pliku jest za długa</translation>
 <translation id="5689516760719285838">Lokalizacja</translation>
 <translation id="569536719314091526">Możesz przetłumaczyć tę stronę na dowolny język, używając przycisku Więcej opcji</translation>
-<translation id="5719150327511160085">Czekam na SMS-a</translation>
 <translation id="572328651809341494">Ostatnie karty</translation>
 <translation id="5726692708398506830">Powiększ całą zawartość strony</translation>
 <translation id="5748802427693696783">Przełączono na karty standardowe</translation>
@@ -702,7 +697,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy bez związku ze stronami odwiedzonymi przez Ciebie wcześniej. Wiele stron będzie nadal gromadzić dane przeglądania i używać ich na przykład do poprawy bezpieczeństwa, pokazywania treści, reklam i rekomendacji oraz do generowania statystyk.</translation>
 <translation id="624789221780392884">Aktualizacja jest gotowa</translation>
 <translation id="6255999984061454636">Polecane treści</translation>
-<translation id="6264430811215618931">Na Twój numer telefonu został wysłany SMS ze strony <ph name="ORIGIN" />. Jeśli potwierdzisz, strona będzie wiedzieć, że to Ty.</translation>
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -805,6 +799,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6989267951144302301">Nie udało się pobrać</translation>
 <translation id="6990079615885386641">Pobierz aplikację ze sklepu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pytaj, zanim zezwolisz stronom na korzystanie z mikrofonu (zalecane)</translation>
+<translation id="7015203776128479407">Nie ukończono początkowej konfiguracji synchronizacji. Synchronizacja jest wyłączona.</translation>
 <translation id="7016516562562142042">Zezwolono na dostęp obecnej wyszukiwarce</translation>
 <translation id="7021515813996758557">Plik <ph name="FILE_NAME" /> został pobrany</translation>
 <translation id="7022756207310403729">Otwórz w przeglądarce</translation>
@@ -836,11 +831,11 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7274013316676448362">Zablokowana witryna</translation>
 <translation id="7290209999329137901">Nie można zmienić nazwy</translation>
 <translation id="7291387454912369099">Płatność przez Asystenta</translation>
+<translation id="7293171162284876153">Aby rozpocząć synchronizację, włącz „Synchronizuj dane Chrome”.</translation>
 <translation id="729975465115245577">Na urządzeniu nie ma aplikacji umożliwiającej zapisanie pliku z hasłami.</translation>
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
 <translation id="7328017930301109123">Chrome szybciej ładuje strony w wersji uproszczonej, przesyłając nawet o 60 procent mniej danych.</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>
-<translation id="7352651011704765696">Coś poszło nie tak</translation>
 <translation id="7352939065658542140">FILM</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Udostępnij 1 wybrany element}few{Udostępnij # wybrane elementy}many{Udostępnij # wybranych elementów}other{Udostępnij # wybranego elementu}}</translation>
 <translation id="7359002509206457351">Dostęp do form płatności</translation>
@@ -904,6 +899,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="773466115871691567">Zawsze tłumacz strony, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">Aby wykrywać niebezpieczne aplikacje i witryny, Chrome wysyła do Google adresy URL i część zawartości niektórych odwiedzanych przez Ciebie stron, a także niektóre informacje o systemie.</translation>
+<translation id="7757787379047923882">Tekst udostępniony z urządzenia <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Karta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="7769602470925380267">Zaakceptuj i wyloguj się</translation>
@@ -1043,6 +1039,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8730621377337864115">Gotowe</translation>
 <translation id="8748850008226585750">Treści ukryte</translation>
 <translation id="8751914237388039244">Wybierz obraz</translation>
+<translation id="8788265440806329501">Historia nawigacji jest zamknięta</translation>
 <translation id="8788968922598763114">Ponownie otwórz ostatnio zamknięte karty</translation>
 <translation id="8801436777607969138">Zablokuj JavaScript w określonej witrynie.</translation>
 <translation id="8812260976093120287">Używając swojego urządzenia, na niektórych stronach możesz płacić za pomocą powyższych obsługiwanych aplikacji do płatności.</translation>

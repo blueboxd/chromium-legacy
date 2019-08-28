@@ -15,7 +15,7 @@
 <translation id="1524282610922162960">Chromium sekmesini paylaşın</translation>
 <translation id="1668054258064581266">Hesabınızı Chromium'dan kaldırdıktan sonra, bu durumun etkili olması için açık sekmelerinizi yeniden yüklemeniz gerekebilir.</translation>
 <translation id="1688750314291223739">Kişiselleştirilmiş tarayıcı özelliklerinizi Web'e kaydetmek ve herhangi bir bilgisayardan Chromium ile bu özelliklere erişmek için senkronizasyonu ayarlayın.</translation>
-<translation id="1705503634486268204">Ezberlemek zorunda kalmamanız için Chromium şifrelerinizi hatırlamanıza yardımcı olabilir.</translation>
+<translation id="1705503634486268204">Ezberlemek zorunda kalmamanız için Chromium, şifrelerinizi hatırlamanıza yardımcı olabilir.</translation>
 <translation id="1708666629004767631">Chromium'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
 <translation id="1766096484055239003">Yöneticiniz bir güncellemeyi uygulamak için Chromium'u yeniden başlatmanızı gerektiriyor</translation>
 <translation id="1774152462503052664">Chromium'un arka planda çalışmasına izin ver</translation>
@@ -222,7 +222,6 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium'u bir gün içinde yeniden başlatın}other{Chromium'u # gün içinde yeniden başlatın}}</translation>
 <translation id="8453117565092476964">Yükleyici arşivi bozuk veya geçersiz. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="8493179195440786826">Chromium Sürümü Eski</translation>
-<translation id="8494843963476918365">Bir ayar bu sayfada görünmüyorsa <ph name="LINK_BEGIN" />Chromium tarayıcı ayarlarınızı<ph name="LINK_END" /> deneyin.</translation>
 <translation id="85843667276690461">Chromium'u kullanma konusunda yardım alın</translation>
 <translation id="8586442755830160949">Telif Hakkı <ph name="YEAR" /> The Chromium Authors. Tüm hakları saklıdır.</translation>
 <translation id="8619360774459241877">Chromium başlatılıyor...</translation>

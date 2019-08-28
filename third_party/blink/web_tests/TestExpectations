@@ -250,9 +250,6 @@ crbug.com/991095 wpt_internal/display-lock/rendersubtree/acquire-clone.html [ Fa
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
 
-# virtual-scroller failures
-crbug.com/986574 wpt_internal/virtual-scroller/ [ Failure ]
-
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
@@ -2227,7 +2224,7 @@ crbug.com/280342 [ Mac ] virtual/audio-service/http/tests/media/progress-events-
 crbug.com/280342 [ Linux ] virtual/audio-service/http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280342 [ Win ] virtual/audio-service/http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
-crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
+crbug.com/520736 [ Win7 Win10 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/520736 [ Linux ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/909095 [ Mac ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/909095 virtual/audio-service/media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
@@ -4748,7 +4745,6 @@ crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-in
 crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-vertical-001.html [ Failure ]
 
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
-crbug.com/997149 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Pass Failure ]
 
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
 crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
@@ -6492,7 +6488,6 @@ crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size
 
 #Sheriff 2019-08-12
 crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
-crbug.com/993238 fast/frames/frame-name-reset.html [ Pass Failure ]
 
 #Sherrif 2019-08-16
 crbug.com/994692 [ Linux Win ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]

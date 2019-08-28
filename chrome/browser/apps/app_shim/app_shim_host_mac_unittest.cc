@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "ipc/ipc_message.h"
@@ -67,9 +68,13 @@ class TestingAppShim : public chrome::mojom::AppShim {
 
 class TestingAppShimHost : public AppShimHost {
  public:
-  TestingAppShimHost(const std::string& app_id,
+  TestingAppShimHost(Client* client,
+                     const std::string& app_id,
                      const base::FilePath& profile_path)
-      : AppShimHost(app_id, profile_path, false /* uses_remote_views */) {}
+      : AppShimHost(client,
+                    app_id,
+                    profile_path,
+                    false /* uses_remote_views */) {}
   ~TestingAppShimHost() override {}
 
  private:
@@ -101,7 +106,8 @@ const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestProfileDir[] = "Profile 1";
 
 class AppShimHostTest : public testing::Test,
-                        public apps::AppShimHandler {
+                        public apps::AppShimHandler,
+                        public AppShimHost::Client {
  public:
   AppShimHostTest() { task_runner_ = base::ThreadTaskRunnerHandle::Get(); }
   ~AppShimHostTest() override {}
@@ -130,17 +136,13 @@ class AppShimHostTest : public testing::Test,
   void SimulateDisconnect() { host_ptr_.reset(); }
 
  protected:
-  void OnShimLaunchRequested(
-      AppShimHost* host,
-      bool recreate_shims,
-      apps::ShimLaunchedCallback launched_callback,
-      apps::ShimTerminatedCallback terminated_callback) override {}
+  // AppShimHandler:
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
     ++launch_count_;
     if (bootstrap->GetLaunchType() == apps::APP_SHIM_LAUNCH_NORMAL)
       ++launch_now_count_;
-    host_ = std::make_unique<TestingAppShimHost>(bootstrap->GetAppId(),
+    host_ = std::make_unique<TestingAppShimHost>(this, bootstrap->GetAppId(),
                                                  bootstrap->GetProfilePath());
     if (launch_result_ == apps::APP_SHIM_LAUNCH_SUCCESS)
       host_->OnBootstrapConnected(std::move(bootstrap));
@@ -148,20 +150,23 @@ class AppShimHostTest : public testing::Test,
       bootstrap->OnFailedToConnectToHost(launch_result_);
   }
 
+  // AppShimHost::Client:
+  void OnShimLaunchRequested(
+      AppShimHost* host,
+      bool recreate_shims,
+      apps::ShimLaunchedCallback launched_callback,
+      apps::ShimTerminatedCallback terminated_callback) override {}
   void OnShimProcessDisconnected(AppShimHost* host) override {
     DCHECK_EQ(host, host_.get());
     host_ = nullptr;
     ++close_count_;
   }
-
   void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& file) override {
     ++focus_count_;
   }
-
   void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
-
   void OnShimQuit(AppShimHost* host) override { ++quit_count_; }
 
   apps::AppShimLaunchResult launch_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
@@ -191,7 +196,6 @@ class AppShimHostTest : public testing::Test,
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
 };
-
 
 }  // namespace
 

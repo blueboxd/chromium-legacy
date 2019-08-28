@@ -31,13 +31,6 @@ ClipboardHostImpl::ClipboardHostImpl(
       clipboard_writer_(
           new ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)) {}
 
-void ClipboardHostImpl::CreateForRequest(
-    blink::mojom::ClipboardHostRequest request) {
-  // Implicit conversion from ClipboardHostRequest to
-  // mojo::PendingReceiver<blink::mojom::ClipboardHost>.
-  Create(std::move(request));
-}
-
 void ClipboardHostImpl::Create(
     mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver) {
   // Clipboard implementations do interesting things, like run nested message

@@ -21,6 +21,8 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -222,6 +224,8 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   params.types_enabled.push_back(PageActionIconType::kZoom);
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI))
     params.types_enabled.push_back(PageActionIconType::kNativeFileSystemAccess);
+  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
+    params.types_enabled.push_back(PageActionIconType::kCookieControls);
   params.icon_size = GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE);
   params.icon_color = GetCaptionColor();
   params.between_icon_spacing = HorizontalPaddingBetweenItems();

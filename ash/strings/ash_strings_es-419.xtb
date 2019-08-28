@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Contraer menú</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1419738280318246476">Desbloquea el dispositivo para llevar a cabo una acción con las notificaciones</translation>
+<translation id="1420408895951708260">Activar o desactivar la Luz nocturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1455242230282523554">Mostrar la configuración de idioma</translation>
 <translation id="1460620680449458626">El volumen está silenciado.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">Una política que se aplica en este dispositivo inhabilitó <ph name="FEATURE_NAME" />. Pídele al administrador que la modifique.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistente (cargando…)</translation>
+<translation id="1838895407229022812">La luz nocturna está apagada.</translation>
 <translation id="1850504506766569011">Wi-Fi desactivada</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">Teclas especiales</translation>
 <translation id="2509468283778169019">BLOQ MAYÚS está activado.</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
+<translation id="2542089167727451762">Presiona tu imagen de perfil</translation>
 <translation id="255671100581129685">El Asistente de Google no está disponible en una sesión pública.</translation>
 <translation id="2575685495496069081">Se inhabilitó el acceso múltiple</translation>
 <translation id="2582112259361606227">Reiniciar para actualizar</translation>
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
-<translation id="2651765386227849097">El Asistente de Google está inhabilitado en este dispositivo.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2658778018866295321">Hacer clic y arrastrar</translation>
 <translation id="2700493154570097719">Establecer el teclado</translation>
@@ -233,7 +235,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">El Asistente se está cargando…</translation>
-<translation id="435527878592612277">Seleccionar tu foto</translation>
 <translation id="4378551569595875038">Conectando…</translation>
 <translation id="4379531060876907730">Estas son las herramientas de la pluma stylus</translation>
 <translation id="4389184120735010762">Presionaste la combinación de teclas para activar la lupa con vista acoplada. ¿Quieres activarla?</translation>
@@ -311,6 +312,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="574392208103952083">Media</translation>
 <translation id="5744083938413354016">Función tocar y arrastrar</translation>
 <translation id="5750765938512549687">Se activó la conexión Bluetooth</translation>
+<translation id="576453121877257266">La luz nocturna está activada.</translation>
 <translation id="5777841717266010279">¿Dejar de compartir la pantalla?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Detener <ph name="ROUTE_TITLE" /> en <ph name="RECEIVER_NAME" /></translation>
@@ -350,7 +352,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6284232397434400372">Se cambió la resolución</translation>
 <translation id="6297287540776456956">Usa la pluma stylus para seleccionar una región</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> se giró a <ph name="ROTATION" />.</translation>
-<translation id="6344698853700675736">Activar o desactivar la Luz nocturna</translation>
 <translation id="6376931439017688372">Se activó la conexión Bluetooth</translation>
 <translation id="639644700271529076">El bloqueo de mayúsculas está desactivado.</translation>
 <translation id="6406704438230478924">altgr</translation>

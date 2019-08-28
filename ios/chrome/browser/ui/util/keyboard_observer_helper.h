@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol LayoutGuideProvider;
+
 // Struct to track the current keyboard state.
 typedef struct {
   // Is YES if the keyboard is visible or becoming visible.
@@ -38,6 +40,17 @@ typedef struct {
 
 // Helper to observe the keyboard and report updates.
 @interface KeyboardObserverHelper : NSObject
+
+// Keyboard's UIView based on some known, undocumented classes. |nil| if the
+// keyboard is not present or found.
+// This can break on any iOS update to keyboard architecture.
+@property(class, readonly, nonatomic) UIView* keyboardView;
+
+// Best layout guide for the keyboard including the prediction part of it. |nil|
+// if the keyboard is not present or found.
+// This can break on any iOS update to keyboard architecture.
+@property(class, readonly, nonatomic) id<LayoutGuideProvider>
+    keyboardLayoutGuide;
 
 // Flag that indicates if the keyboard is on screen.
 // TODO(crbug.com/974226): look into deprecating keyboardOnScreen for

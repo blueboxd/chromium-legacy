@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">A gazdagép nem érhető el. Ez valószínűleg az Ön által használt hálózat konfigurációja miatt van.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Legutóbb észlelve az interneten: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ez az alkalmazás már nem támogatott. Annak érdekében, hogy biztosan megkapja a legújabb funkciókat és biztonsági frissítéseket, használja a <ph name="LINK_BEGIN" />Chrome távoliasztal-szolgáltatás internetes alkalmazást<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Végre kell hajtania még egy konfigurációs lépést, hogy távolról vezérelhesse ezt a számítógépet a(z) <ph name="PRODUCT_NAME" /> használatával.
-
-Ha aktiválni szeretné ezt a funkciót, kattintson a(z) „<ph name="BUTTON_NAME" />” gombra a biztonsági és adatvédelmi beállítások megnyitásához, majd jelölje be a(z) „<ph name="SERVICE_SCRIPT_NAME" />” melletti jelölőnégyzetet.
-
-Ha a(z) „<ph name="SERVICE_SCRIPT_NAME" />” már jelen van, és be van jelölve, előfordulhat, hogy el kell távolítania, majd újra hozzá kell adnia.</translation>
 <translation id="2499160551253595098">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
 <translation id="2509394361235492552">Csatlakozva a következőhöz: <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
@@ -317,6 +312,11 @@ Ha a(z) „<ph name="SERVICE_SCRIPT_NAME" />” már jelen van, és be van jelö
 <translation id="8804164990146287819">Adatvédelmi irányelvek</translation>
 <translation id="894763922177556086">Jó</translation>
 <translation id="895780780740011433">Windows 7 és újabb rendszerhez</translation>
+<translation id="8963047137585288214">Végre kell hajtania még egy konfigurációs lépést, hogy távolról vezérelhesse ezt a számítógépet a(z) <ph name="PRODUCT_NAME" /> használatával.
+
+Ha aktiválni szeretné ezt a funkciót, kattintson a(z) „<ph name="BUTTON_NAME" />” gombra a biztonsági és adatvédelmi beállítások megnyitásához, majd jelölje be a(z) „<ph name="SERVICE_SCRIPT_NAME" />” melletti jelölőnégyzetet.
+
+Ha a(z) „<ph name="SERVICE_SCRIPT_NAME" />” szkript már jelen van, és be van jelölve, akkor előfordulhat, hogy törölnie, majd újra aktiválnia kell a beállítást.</translation>
 <translation id="897805526397249209">Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy másik számítógépen, telepítse a gépre a Chromoting alkalmazást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Chrome távoliasztal-szolgáltatás – gazdagépvezérlő</translation>
 <translation id="9016232822027372900">Csatlakozás mindenképp</translation>

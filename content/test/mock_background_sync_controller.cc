@@ -33,7 +33,8 @@ void MockBackgroundSyncController::GetParameterOverrides(
 
 base::TimeDelta MockBackgroundSyncController::GetNextEventDelay(
     const BackgroundSyncRegistration& registration,
-    BackgroundSyncParameters* parameters) {
+    BackgroundSyncParameters* parameters,
+    base::TimeDelta time_till_soonest_scheduled_event_for_origin) {
   DCHECK(parameters);
 
   if (suspended_periodic_sync_origins_.count(registration.origin()))

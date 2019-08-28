@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Kunne ikke nå verten. Dette er sannsynligvis på grunn av innstillingene for nettverket du bruker.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Sist pålogget <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Denne appen støttes ikke lenger. For å sikre at du får de nyeste funksjonene og sikkerhetsoppdateringene, bør du bruke <ph name="LINK_BEGIN" />Chrome Eksternt skrivebord-nettprogrammet<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Du må fullføre enda et konfigureringstrinn før du kan styre denne datamaskinen eksternt ved bruk av <ph name="PRODUCT_NAME" />.
-
-For å slå på denne funksjonaliteten, velg «<ph name="BUTTON_NAME" />» for å åpne innstillingspanelet for sikkerhet og personvern. Merk deretter av i boksen ved siden av «<ph name="SERVICE_SCRIPT_NAME" />».
-
-Hvis «<ph name="SERVICE_SCRIPT_NAME" />» allerede er til stede og merket av, må du kanskje fjerne det og deretter legge det til på nytt.</translation>
 <translation id="2499160551253595098">Hjelp oss med å forbedre Chrome Eksternt skrivebord ved å gi oss tillatelse til å samle bruksstatistikk og programstopprapporter.</translation>
 <translation id="2509394361235492552">Koblet til <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MERK: For å sikre at alle hurtigtastene er tilgjengelige, kan du konfigurere Chrome Eksternt skrivebord til «Åpne som vindu».</translation>
@@ -317,6 +312,11 @@ Hvis «<ph name="SERVICE_SCRIPT_NAME" />» allerede er til stede og merket av, m
 <translation id="8804164990146287819">Personvernregler</translation>
 <translation id="894763922177556086">God</translation>
 <translation id="895780780740011433">For Windows 7 og nyere</translation>
+<translation id="8963047137585288214">Du må fullføre enda et konfigureringstrinn før du kan styre denne datamaskinen eksternt ved bruk av <ph name="PRODUCT_NAME" />.
+
+For å slå på denne funksjonaliteten, velg «<ph name="BUTTON_NAME" />» for å åpne innstillingspanelet for sikkerhet og personvern. Merk deretter av i boksen ved siden av «<ph name="SERVICE_SCRIPT_NAME" />».
+
+Hvis «<ph name="SERVICE_SCRIPT_NAME" />» allerede er til stede og merket av, må du kanskje fjerne avmerkingen og deretter merke av på nytt.</translation>
 <translation id="897805526397249209">For å aktivere eksterne tilkoblinger til en annen datamaskin, må du installere Chromoting på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="8998327464021325874">Kontroller for Chrome Eksternt skrivebord-vert</translation>
 <translation id="9016232822027372900">Koble til likevel</translation>

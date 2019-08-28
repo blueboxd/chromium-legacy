@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">호스트에 연결할 수 없습니다. 사용 중인 네트워크의 구성 때문일 수 있습니다.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  <ph name="RELATIVE_TIMESTAMP" /> 온라인에 마지막으로 연결했습니다.</translation>
 <translation id="2405928220797050937">이 앱은 더 이상 지원되지 않습니다. 최신 기능과 보안 업데이트를 받으려면 <ph name="LINK_BEGIN" />Chrome 원격 데스크톱 웹 앱<ph name="LINK_END" />을 사용하시기 바랍니다.</translation>
-<translation id="2431841749166974386"><ph name="PRODUCT_NAME" />을(를) 사용하여 기기를 원격으로 제어하려면 추가 설정 단계를 완료해야 합니다.
-
-이 기능을 사용하려면 ‘<ph name="BUTTON_NAME" />’ 버튼을 선택하여 보안 및 개인정보 보호 환경설정 창을 열고 ‘<ph name="SERVICE_SCRIPT_NAME" />’ 옆의 체크박스를 선택하세요.
-
-‘<ph name="SERVICE_SCRIPT_NAME" />’이(가) 이미 표시 및 선택되어 있다면 이를 삭제하고 다시 추가해야 할 수도 있습니다.</translation>
 <translation id="2499160551253595098">사용 통계 및 비정상 종료 보고서 수집을 허용하여 Chrome 원격 데스크톱 개선에 참여하겠습니다.</translation>
 <translation id="2509394361235492552"><ph name="HOSTNAME" />에 연결되었습니다</translation>
 <translation id="2512228156274966424">참고: 모든 단축키를 사용하려면 Chrome 원격 데스크톱을 '창으로 열기'로 설정합니다.</translation>
@@ -317,6 +312,11 @@
 <translation id="8804164990146287819">개인정보처리방침</translation>
 <translation id="894763922177556086">좋음</translation>
 <translation id="895780780740011433">Windows 7 이상용</translation>
+<translation id="8963047137585288214"><ph name="PRODUCT_NAME" />을(를) 사용하여 기기를 원격으로 제어하려면 추가 구성 단계를 완료해야 합니다.
+
+이 기능을 사용하려면 ‘<ph name="BUTTON_NAME" />’ 버튼을 선택하여 보안 및 개인정보 보호 환경설정 창을 열고 ‘<ph name="SERVICE_SCRIPT_NAME" />’ 옆의 체크박스를 선택하세요.
+
+‘<ph name="SERVICE_SCRIPT_NAME" />’이(가) 이미 표시 및 선택되어 있다면 이를 선택 해제하고 다시 선택해야 할 수도 있습니다.</translation>
 <translation id="897805526397249209">다른 컴퓨터에 원격 연결을 사용하려면 그 컴퓨터에 Chromoting을 설치하고 '<ph name="BUTTON_NAME" />' 버튼을 클릭하세요.</translation>
 <translation id="8998327464021325874">Chrome 원격 데스크톱 호스트 컨트롤러</translation>
 <translation id="9016232822027372900">연결하기</translation>

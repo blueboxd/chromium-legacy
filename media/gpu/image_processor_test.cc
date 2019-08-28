@@ -27,21 +27,22 @@
 namespace media {
 namespace {
 
+// Files for pixel format conversion test.
 // TODO(crbug.com/944822): Use kI420Image for I420 -> NV12 test case. It is
 // currently disabled because there is currently no way of creating DMABUF I420
 // buffer by NativePixmap.
 // constexpr const base::FilePath::CharType* kI420Image =
 //     FILE_PATH_LITERAL("bear_320x192.i420.yuv");
-constexpr const base::FilePath::CharType* kNV12Image =
+const base::FilePath::CharType* kNV12Image =
     FILE_PATH_LITERAL("bear_320x192.nv12.yuv");
-constexpr const base::FilePath::CharType* kRGBAImage =
+const base::FilePath::CharType* kRGBAImage =
     FILE_PATH_LITERAL("bear_320x192.rgba");
-constexpr const base::FilePath::CharType* kBGRAImage =
+const base::FilePath::CharType* kBGRAImage =
     FILE_PATH_LITERAL("bear_320x192.bgra");
-constexpr const base::FilePath::CharType* kYV12Image =
+const base::FilePath::CharType* kYV12Image =
     FILE_PATH_LITERAL("bear_320x192.yv12.yuv");
 
-class ImageProcessorSimpleParamTest
+class ImageProcessorParamTest
     : public ::testing::Test,
       public ::testing::WithParamInterface<
           std::tuple<base::FilePath, base::FilePath>> {
@@ -83,7 +84,7 @@ class ImageProcessorSimpleParamTest
   }
 };
 
-TEST_P(ImageProcessorSimpleParamTest, ConvertOneTime_MemToMem) {
+TEST_P(ImageProcessorParamTest, ConvertOneTime_MemToMem) {
   // Load the test input image. We only need the output image's metadata so we
   // can compare checksums.
   test::Image input_image(std::get<0>(GetParam()));
@@ -106,7 +107,7 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTime_MemToMem) {
 #if defined(OS_CHROMEOS)
 // We don't yet have the function to create Dmabuf-backed VideoFrame on
 // platforms except ChromeOS. So MemToDmabuf test is limited on ChromeOS.
-TEST_P(ImageProcessorSimpleParamTest, ConvertOneTime_MemToDmabuf) {
+TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToMem) {
   // Load the test input image. We only need the output image's metadata so we
   // can compare checksums.
   test::Image input_image(std::get<0>(GetParam()));
@@ -115,7 +116,7 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTime_MemToDmabuf) {
   ASSERT_TRUE(output_image.LoadMetadata());
 
   auto ip_client = CreateImageProcessorClient(
-      input_image, {VideoFrame::STORAGE_OWNED_MEMORY}, output_image,
+      input_image, {VideoFrame::STORAGE_DMABUFS}, output_image,
       {VideoFrame::STORAGE_OWNED_MEMORY});
 
   ip_client->Process(input_image, output_image);
@@ -125,6 +126,27 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTime_MemToDmabuf) {
   EXPECT_EQ(ip_client->GetNumOfProcessedImages(), 1u);
   EXPECT_TRUE(ip_client->WaitForFrameProcessors());
 }
+
+TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToDmabuf) {
+  // Load the test input image. We only need the output image's metadata so we
+  // can compare checksums.
+  test::Image input_image(std::get<0>(GetParam()));
+  test::Image output_image(std::get<1>(GetParam()));
+  ASSERT_TRUE(input_image.Load());
+  ASSERT_TRUE(output_image.LoadMetadata());
+
+  auto ip_client =
+      CreateImageProcessorClient(input_image, {VideoFrame::STORAGE_DMABUFS},
+                                 output_image, {VideoFrame::STORAGE_DMABUFS});
+
+  ip_client->Process(input_image, output_image);
+
+  EXPECT_TRUE(ip_client->WaitUntilNumImageProcessed(1u));
+  EXPECT_EQ(ip_client->GetErrorCount(), 0u);
+  EXPECT_EQ(ip_client->GetNumOfProcessedImages(), 1u);
+  EXPECT_TRUE(ip_client->WaitForFrameProcessors());
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 // BGRA -> NV12
@@ -132,8 +154,8 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTime_MemToDmabuf) {
 // RGBA -> NV12
 // YV12 -> NV12
 INSTANTIATE_TEST_SUITE_P(
-    ConvertToNV12,
-    ImageProcessorSimpleParamTest,
+    PixelFormatConversionToNV12,
+    ImageProcessorParamTest,
     ::testing::Values(std::make_tuple(kBGRAImage, kNV12Image),
                       // TODO(crbug.com/944822): Add I420 -> NV12 test case.
                       // There is currently no way of creating DMABUF
@@ -145,7 +167,6 @@ INSTANTIATE_TEST_SUITE_P(
 #if defined(OS_CHROMEOS)
 // TODO(hiroh): Add more tests.
 // MEM->DMABUF (V4L2VideoEncodeAccelerator),
-// DMABUF->DMABUF (GpuArcVideoEncodeAccelerator),
 #endif
 
 }  // namespace

@@ -414,11 +414,6 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
   if (!GetExecutionContext())
     return;
 
-  // When promises are resolved with 'thenables', instead of the object being
-  // returned directly, the 'then' method is executed (the resolver tries to
-  // resolve the thenable). This can lead to synchronous script execution, so we
-  // post a task. This does not apply to promise rejection (i.e. a thenable
-  // would be returned as is).
   if (status_ == kLoaded || status_ == kError) {
     if (loaded_property_) {
       if (status_ == kLoaded) {
@@ -428,8 +423,14 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
                        WTF::Bind(&LoadedProperty::Resolve<FontFace*>,
                                  WrapPersistent(loaded_property_.Get()),
                                  WrapPersistent(this)));
-      } else
-        loaded_property_->Reject(error_.Get());
+      } else {
+        GetExecutionContext()
+            ->GetTaskRunner(TaskType::kDOMManipulation)
+            ->PostTask(FROM_HERE,
+                       WTF::Bind(&LoadedProperty::Reject<DOMException*>,
+                                 WrapPersistent(loaded_property_.Get()),
+                                 WrapPersistent(error_.Get())));
+      }
     }
 
     GetExecutionContext()

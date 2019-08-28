@@ -99,7 +99,8 @@ CredentialsItemView::CredentialsItemView(
   }
 
   if (!lower_text.empty()) {
-    lower_label_ = new views::Label(lower_text, kLabelContext, STYLE_SECONDARY);
+    lower_label_ = new views::Label(lower_text, kLabelContext,
+                                    views::style::STYLE_SECONDARY);
     lower_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     lower_label_->SetMultiLine(true);
     AddChildView(lower_label_);

@@ -90,6 +90,7 @@ class WebSocket::WebSocketEventHandler final
                    WebSocketMessageType type,
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t buffer_size) override;
+  bool HasPendingDataFrames() override;
   void OnClosingHandshake() override;
   void OnSendFlowControlQuotaAdded(int64_t quota) override;
   void OnDropChannel(bool was_clean,
@@ -147,8 +148,8 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
 
   mojom::WebSocketPtr websocket_to_pass;
   impl_->binding_.Bind(mojo::MakeRequest(&websocket_to_pass));
-  impl_->binding_.set_connection_error_handler(
-      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(impl_)));
+  impl_->binding_.set_connection_error_handler(base::BindOnce(
+      &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
 
   impl_->handshake_succeeded_ = true;
   impl_->pending_connection_tracker_.OnCompleteHandshake();
@@ -185,13 +186,12 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
 
   impl_->handshake_client_->OnConnectionEstablished(
       std::move(websocket_to_pass), mojo::MakeRequest(&impl_->client_),
-      selected_protocol, extensions, receive_quota_threshold,
-      std::move(readable));
+      selected_protocol, extensions, std::move(readable));
   impl_->handshake_client_.reset();
   impl_->auth_handler_ = nullptr;
   impl_->header_client_.reset();
-  impl_->client_.set_connection_error_handler(
-      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(impl_)));
+  impl_->client_.set_connection_error_handler(base::BindOnce(
+      &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
 }
 
 struct WebSocket::DataFrame {
@@ -217,6 +217,10 @@ void WebSocket::WebSocketEventHandler::OnDataFrame(
     impl_->pending_data_frames_.push(DataFrame(std::move(buffer), buffer_size));
   }
   impl_->SendPendingDataFrames();
+}
+
+bool WebSocket::WebSocketEventHandler::HasPendingDataFrames() {
+  return !impl_->pending_data_frames_.empty();
 }
 
 void WebSocket::WebSocketEventHandler::OnClosingHandshake() {
@@ -393,17 +397,17 @@ WebSocket::WebSocket(
   if (auth_handler_) {
     // Make sure the request dies if |auth_handler_| has an error, otherwise
     // requests can hang.
-    auth_handler_.set_connection_error_handler(
-        base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+    auth_handler_.set_connection_error_handler(base::BindOnce(
+        &WebSocket::OnConnectionError, base::Unretained(this), FROM_HERE));
   }
   if (header_client_) {
     // Make sure the request dies if |header_client_| has an error, otherwise
     // requests can hang.
-    header_client_.set_disconnect_handler(
-        base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+    header_client_.set_disconnect_handler(base::BindOnce(
+        &WebSocket::OnConnectionError, base::Unretained(this), FROM_HERE));
   }
-  handshake_client_.set_disconnect_handler(
-      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+  handshake_client_.set_disconnect_handler(base::BindOnce(
+      &WebSocket::OnConnectionError, base::Unretained(this), FROM_HERE));
   if (delay_ > base::TimeDelta()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -451,14 +455,9 @@ void WebSocket::SendFrame(bool fin,
                       data.size());
 }
 
-void WebSocket::AddReceiveFlowControlQuota(int64_t quota) {
-  DVLOG(3) << "WebSocket::AddReceiveFlowControlQuota @"
-           << reinterpret_cast<void*>(this) << " quota=" << quota;
-
-  DCHECK(channel_) << "WebSocket::AddReceiveFlowControlQuota is called but "
-                      "there is no active channel.";
-  DCHECK(handshake_succeeded_);
-  ignore_result(channel_->AddReceiveFlowControlQuota(quota));
+void WebSocket::StartReceiving() {
+  DCHECK(pending_data_frames_.empty());
+  ignore_result(channel_->ReadFrames());
 }
 
 void WebSocket::StartClosingHandshake(uint16_t code,
@@ -525,8 +524,9 @@ WebSocket* WebSocket::ForRequest(const net::URLRequest& request) {
   return pointer->get();
 }
 
-void WebSocket::OnConnectionError() {
-  DVLOG(3) << "WebSocket::OnConnectionError @" << reinterpret_cast<void*>(this);
+void WebSocket::OnConnectionError(const base::Location& set_from) {
+  DVLOG(3) << "WebSocket::OnConnectionError @" << reinterpret_cast<void*>(this)
+           << ", set_from=" << set_from.ToString();
 
   factory_->Remove(this);
 }
@@ -572,19 +572,28 @@ void WebSocket::OnWritable(MojoResult result,
     Reset();
     return;
   }
+  wait_for_writable_ = false;
   SendPendingDataFrames();
+  if (pending_data_frames_.empty()) {
+    ignore_result(channel_->ReadFrames());
+  }
 }
 
 void WebSocket::SendPendingDataFrames() {
   DVLOG(3) << "WebSocket::SendPendingDataFrames @"
            << reinterpret_cast<void*>(this)
-           << ", pending_data_frames_.size=" << pending_data_frames_.size();
+           << ", pending_data_frames_.size=" << pending_data_frames_.size()
+           << ", wait_for_writable_?" << wait_for_writable_;
+  if (wait_for_writable_) {
+    return;
+  }
   while (!pending_data_frames_.empty()) {
     WebSocket::DataFrame& data_frame = pending_data_frames_.front();
     SendDataFrame(&data_frame);
     if (data_frame.size > 0) {
       // Mojo doesn't have any write buffer so far.
       writable_watcher_.ArmOrNotify();
+      wait_for_writable_ = true;
       return;
     }
     pending_data_frames_.pop();
@@ -618,7 +627,7 @@ void WebSocket::SendDataFrame(DataFrame* data_frame) {
     DCHECK_EQ(begin_result, MOJO_RESULT_FAILED_PRECONDITION);
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&WebSocket::OnConnectionError,
-                                  weak_ptr_factory_.GetWeakPtr()));
+                                  weak_ptr_factory_.GetWeakPtr(), FROM_HERE));
   }
   return;
 }

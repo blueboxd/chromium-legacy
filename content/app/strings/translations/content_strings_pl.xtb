@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Wartość nie może być większa niż <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definicja</translation>
 <translation id="3557673793733683882">nagłówek <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">selektor tygodnia</translation>
 <translation id="3685101356851116974">Obraz bez etykiety</translation>
 <translation id="3706100364254443312">przełącznik</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Pobieram opis...</translation>
 <translation id="8117451130807776954">W tym tygodniu</translation>
 <translation id="8199524924445686405">rrrr</translation>
+<translation id="8208673686607688524">selektor lokalnej daty i godziny</translation>
 <translation id="8261464734335370856">Nieprawidłowa pisownia</translation>
 <translation id="8284326494547611709">Napisy</translation>
 <translation id="835897206747267392">Nieprawidłowa wartość.</translation>

@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">メニューを折りたたむ</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1419738280318246476">通知に関する操作を行うには、デバイスのロックを解除してください</translation>
+<translation id="1420408895951708260">夜間モードのオンとオフを切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1455242230282523554">言語設定を表示</translation>
 <translation id="1460620680449458626">音量はミュートされています。</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">このデバイスに適用されているポリシーにより <ph name="FEATURE_NAME" /> が無効にされています。管理者に連絡して、設定の変更をリクエストしてください。</translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">アシスタント（読み込み中...）</translation>
+<translation id="1838895407229022812">夜間モードはオフです。</translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">固定キー</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
+<translation id="2542089167727451762">プロフィール画像をタップしてください</translation>
 <translation id="255671100581129685">Google アシスタントは、公開セッションではご利用いただけません。</translation>
 <translation id="2575685495496069081">マルチログインは無効にされています</translation>
 <translation id="2582112259361606227">再起動して更新</translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
-<translation id="2651765386227849097">このデバイスでは Google アシスタントが無効にされています。</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2658778018866295321">クリックしてドラッグ</translation>
 <translation id="2700493154570097719">キーボードを設定</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">虫メガネ</translation>
 <translation id="4351433414020964307">アシスタントを読み込んでいます...</translation>
-<translation id="435527878592612277">写真を選択</translation>
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4389184120735010762">拡大鏡（ドッキング）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">タップによるドラッグ</translation>
 <translation id="5750765938512549687">Bluetooth がオフです</translation>
+<translation id="576453121877257266">夜間モードはオンです。</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> の「<ph name="ROUTE_TITLE" />」を停止します</translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">解像度が変更されました</translation>
 <translation id="6297287540776456956">タッチペンを使って部分を選択してください</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
-<translation id="6344698853700675736">夜間モードをオンまたはオフにします</translation>
 <translation id="6376931439017688372">Bluetooth がオンです</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
 <translation id="6406704438230478924">altgr</translation>

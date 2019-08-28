@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Waarde moet kleiner dan of gelijk zijn aan <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definitie</translation>
 <translation id="3557673793733683882">koptekst <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">weekkiezer</translation>
 <translation id="3685101356851116974">Ongelabelde afbeelding</translation>
 <translation id="3706100364254443312">schakelaar</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Beschrijving ophalen…</translation>
 <translation id="8117451130807776954">Deze week</translation>
 <translation id="8199524924445686405">jjjj</translation>
+<translation id="8208673686607688524">lokale datum- en tijdkiezer</translation>
 <translation id="8261464734335370856">Ongeldige spelling</translation>
 <translation id="8284326494547611709">Ondertiteling</translation>
 <translation id="835897206747267392">Ongeldige waarde.</translation>

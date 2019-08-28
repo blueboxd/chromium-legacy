@@ -52,6 +52,7 @@ Polymer({
     return this.isPrintPreview_;
   },
 
+  /** @return {boolean} */
   isVisible: function() {
     return this.visible_;
   },
@@ -94,7 +95,10 @@ Polymer({
 
   /**
    * Change button tooltips to match any changes to localized strings.
-   * @param {!Object} strings
+   * @param {!{tooltipFitToPage: string,
+   *           tooltipFitToWidth: string,
+   *           tooltipZoomIn: string,
+   *           tooltipZoomOut: string}} strings
    */
   setStrings: function(strings) {
     this.$['fit-button'].tooltips =
@@ -103,9 +107,7 @@ Polymer({
     this.$['zoom-out-button'].tooltips = [strings.tooltipZoomOut];
   },
 
-  /**
-   * Handle clicks of the fit-button.
-   */
+  /** Handle clicks of the fit-button. */
   fitToggle: function() {
     this.fireFitToChangedEvent_(
         this.$['fit-button'].activeIndex == FIT_TO_WIDTH_BUTTON_STATE ?
@@ -114,9 +116,7 @@ Polymer({
         true);
   },
 
-  /**
-   * Handle the keyboard shortcut equivalent of fit-button clicks.
-   */
+  /** Handle the keyboard shortcut equivalent of fit-button clicks. */
   fitToggleFromHotKey: function() {
     this.fitToggle();
 
@@ -130,7 +130,7 @@ Polymer({
 
   /**
    * Handle forcing zoom via scripting to a fitting type.
-   * @param {FittingType} fittingType Page fitting type to force.
+   * @param {!FittingType} fittingType Page fitting type to force.
    */
   forceFit: function(fittingType) {
     this.fireFitToChangedEvent_(fittingType, false);
@@ -143,11 +143,11 @@ Polymer({
   },
 
   /**
-   * @private
    * Fire a 'fit-to-changed' {CustomEvent} with the given FittingType as detail.
-   * @param {FittingType} fittingType to include as payload.
+   * @param {!FittingType} fittingType to include as payload.
    * @param {boolean} userInitiated whether the event was initiated by a user
    *     action.
+   * @private
    */
   fireFitToChangedEvent_: function(fittingType, userInitiated) {
     this.fire(

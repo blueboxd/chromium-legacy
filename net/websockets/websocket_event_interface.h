@@ -55,6 +55,10 @@ class NET_EXPORT WebSocketEventInterface {
                            scoped_refptr<IOBuffer> buffer,
                            size_t buffer_size) = 0;
 
+  // Returns true if data pipe is full and waiting the renderer process read
+  // out. The network service should not read more from network until that.
+  virtual bool HasPendingDataFrames() = 0;
+
   // Called to provide more send quota for this channel to the renderer
   // process.
   virtual void OnSendFlowControlQuotaAdded(int64_t quota) = 0;

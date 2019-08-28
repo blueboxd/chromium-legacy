@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_element_base.h"
 
+#include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 

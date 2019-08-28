@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
@@ -76,6 +77,11 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         zoom_view_ = new ZoomView(params.page_action_icon_delegate);
         page_action_icons_.push_back(zoom_view_);
         break;
+      case PageActionIconType::kCookieControls:
+        cookie_view_ =
+            new CookieControlsIconView(params.page_action_icon_delegate);
+        page_action_icons_.push_back(cookie_view_);
+        break;
       case PageActionIconType::kSendTabToSelf:
         send_tab_to_self_icon_view_ =
             new send_tab_to_self::SendTabToSelfIconView(
@@ -134,6 +140,8 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return translate_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
+    case PageActionIconType::kCookieControls:
+      return cookie_view_;
     case PageActionIconType::kSendTabToSelf:
       return send_tab_to_self_icon_view_;
     case PageActionIconType::kNativeFileSystemAccess:

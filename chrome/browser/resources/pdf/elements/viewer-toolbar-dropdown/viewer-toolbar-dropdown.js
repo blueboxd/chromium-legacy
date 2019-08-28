@@ -18,6 +18,23 @@ Polymer({
   is: 'viewer-toolbar-dropdown',
 
   properties: {
+    /** Icon to display when the dropdown is closed. */
+    closedIcon: String,
+
+    /** Whether the dropdown should be centered or right aligned. */
+    dropdownCentered: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
+    },
+
+    /** True if the dropdown is currently open. */
+    dropdownOpen: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
+    },
+
     /**
      * String to be displayed at the top of the dropdown and for the tooltip
      * of the button.
@@ -25,41 +42,51 @@ Polymer({
     header: String,
 
     /** Whether to hide the header at the top of the dropdown. */
-    hideHeader: {type: Boolean, value: false},
+    hideHeader: {
+      type: Boolean,
+      value: false,
+    },
 
-    /** Icon to display when the dropdown is closed. */
-    closedIcon: String,
-
-    /** Icon to display when the dropdown is open. */
-    openIcon: String,
+    /** Lowest vertical point that the dropdown should occupy (px). */
+    lowerBound: {
+      type: Number,
+      observer: 'lowerBoundChanged_',
+    },
 
     /** Unique id to identify this dropdown for metrics purposes. */
     metricsId: String,
 
-    /** True if the dropdown is currently open. */
-    dropdownOpen: {type: Boolean, reflectToAttribute: true, value: false},
-
-    /** Whether the dropdown should be centered or right aligned. */
-    dropdownCentered: {type: Boolean, reflectToAttribute: true, value: false},
-
-    /** Whether the dropdown is marked as selected. */
-    selected: {type: Boolean, reflectToAttribute: true, value: false},
-
     /** Whether the dropdown must be selected before opening. */
-    openAfterSelect: {type: Boolean, reflectToAttribute: true, value: false},
-
-    /** Toolbar icon currently being displayed. */
-    dropdownIcon: {
-      type: String,
-      computed: 'computeIcon_(dropdownOpen, closedIcon, openIcon)'
+    openAfterSelect: {
+      type: Boolean,
+      value: false,
     },
 
-    /** Lowest vertical point that the dropdown should occupy (px). */
-    lowerBound: {type: Number, observer: 'lowerBoundChanged_'},
+    /** Icon to display when the dropdown is open. */
+    openIcon: String,
 
-    /** Current animation being played, or null if there is none. */
-    animation_: Object
+    /** Whether the dropdown is marked as selected. */
+    selected: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false,
+    },
+
+    /**
+     * Toolbar icon currently being displayed.
+     * @private
+     */
+    dropdownIcon_: {
+      type: String,
+      computed: 'computeIcon_(dropdownOpen, closedIcon, openIcon)',
+    },
   },
+
+  /**
+   * Current animation being played, or null if there is none.
+   * @private {?Object}
+   */
+  animation_: null,
 
   /**
    * True if the max-height CSS property for the dropdown scroll container
@@ -69,10 +96,15 @@ Polymer({
    */
   maxHeightValid_: false,
 
+  /**
+   * @return {string} Current icon for the dropdown.
+   * @private
+   */
   computeIcon_: function(dropdownOpen, closedIcon, openIcon) {
     return dropdownOpen ? openIcon : closedIcon;
   },
 
+  /** @private */
   lowerBoundChanged_: function() {
     this.maxHeightValid_ = false;
     if (this.dropdownOpen) {
@@ -137,6 +169,10 @@ Polymer({
     };
   },
 
+  /**
+   * @return {!Object} Animation
+   * @private
+   */
   animateEntry_: function() {
     let maxHeight =
         this.$.dropdown.getBoundingClientRect().height - DROPDOWN_OUTER_PADDING;
@@ -164,6 +200,10 @@ Polymer({
         });
   },
 
+  /**
+   * @return {!Object} Animation
+   * @private
+   */
   animateExit_: function() {
     return this.$.dropdown.animate(
         [

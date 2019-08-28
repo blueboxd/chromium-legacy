@@ -14,7 +14,8 @@ namespace font_table_persistence {
 
 bool LoadFromFile(base::FilePath file_path,
                   base::MappedReadOnlyRegion* name_table_region) {
-  DCHECK(!file_path.empty());
+  if (file_path.empty())
+    return false;
 
   // Reset to empty to ensure IsValid() is false if reading fails.
   *name_table_region = base::MappedReadOnlyRegion();
@@ -74,8 +75,11 @@ bool LoadFromFile(base::FilePath file_path,
 
 bool PersistToFile(const base::MappedReadOnlyRegion& name_table_region,
                    base::FilePath file_path) {
-  DCHECK(name_table_region.mapping.IsValid() &&
-         name_table_region.mapping.size() && !file_path.empty());
+  DCHECK(name_table_region.mapping.IsValid());
+  DCHECK(name_table_region.mapping.size());
+
+  if (file_path.empty())
+    return false;
 
   base::File table_cache_file(file_path, base::File::FLAG_CREATE_ALWAYS |
                                              base::File::Flags::FLAG_WRITE);

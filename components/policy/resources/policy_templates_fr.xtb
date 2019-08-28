@@ -419,6 +419,12 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Avertissement : Il est recommandé de ne pas déléguer le contrôle de la version de <ph name="PRODUCT_OS_NAME" /> à une application kiosque, car l'appareil risque de ne pas recevoir les mises à jour logicielles et les correctifs de sécurité essentiels. La délégation du contrôle de la version de <ph name="PRODUCT_OS_NAME" /> pourrait constituer un risque pour les utilisateurs.</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
+<translation id="1695708467571967752">Cette règle détermine si les utilisateurs peuvent ou non lire des contenus multimédias lorsque l'appareil est verrouillé.
+
+      Si cette règle est définie sur "False", les commandes multimédias sont désactivées sur l'écran de verrouillage.
+
+      Si cette règle est définie sur "True" ou n'est pas configurée, les commandes multimédias restent affichées sur l'écran si l'utilisateur verrouille l'appareil en cours de lecture.
+      </translation>
 <translation id="1700811900332333712">Autoriser l'appareil à lancer Powerwash</translation>
 <translation id="1708496595873025510">Définir la restriction liée à la récupération de la valeur de départ des variantes</translation>
 <translation id="1717817358640580294">Si cette règle n'est pas configurée et si l'outil Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées concernant l'analyse, conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demande ensuite à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés. Ce dernier peut choisir de nous communiquer les résultats du nettoyage afin de nous aider à améliorer la détection de ces logiciels. Ces résultats comprennent des métadonnées de fichiers, des extensions installées automatiquement et des clés de registre, tel que décrit dans le livre blanc sur la confidentialité dans Google Chrome.
@@ -2999,6 +3005,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
           Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="6417265370957905582">Assistant Google</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" /> :</translation>
 <translation id="6426205278746959912">Vous ne pouvez pas forcer les applications Android à utiliser un proxy. Celles-ci disposent d'un sous-ensemble de paramètres proxy qu'elles peuvent choisir d'utiliser ou non :
 
           Si vous choisissez de ne jamais utiliser de serveur proxy, vous signalez aux applications Android qu'aucun proxy n'est configuré.
@@ -3151,15 +3158,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6731757988219967594">Filtrer les sites de premier niveau (mais pas les iFrame intégrés) présentant des contenus réservés aux adultes</translation>
 <translation id="6734521799274931721">Vérifie la disponibilité de la fonctionnalité Partages de fichiers en réseau pour Chrome OS</translation>
 <translation id="6735701345096330595">Forcer l'activation des langues de la vérification orthographique</translation>
-<translation id="673699536430961464">Ce paramètre permet aux utilisateurs de basculer d'un compte Google à l'autre dans la zone de contenu de la fenêtre de leur navigateur une fois qu'ils sont connectés sur leur appareil <ph name="PRODUCT_OS_NAME" />.
-
-      Si cette règle est définie sur "false", ils ne seront pas autorisés à se connecter à un autre compte depuis la zone de contenu d'un navigateur n'étant pas en mode navigation privée.
-
-      Si elle est définie sur "true" ou si elle n'est pas configurée, le comportement par défaut sera utilisé : ils pourront se connecter à un autre compte depuis la zone de contenu du navigateur, sauf pour les comptes enfant où cela sera bloqué pour la zone de contenu hors navigation privée.
-
-      Dans le cas où la connexion à un autre compte ne doit pas être autorisée par l'intermédiaire du mode navigation privée, pensez à bloquer ce mode à l'aide de la règle IncognitoModeAvailability.
-
-      Notez que les utilisateurs pourront accéder aux services Google dans un état non authentifié en bloquant leurs cookies.</translation>
 <translation id="6757438632136860443">Cette règle permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter le plug-in "<ph name="FLASH_PLUGIN_NAME" />".
 
           Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultPluginsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -4021,6 +4019,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8312129124898414409">Permet d'indiquer si des sites Web sont autorisés à utiliser la génération de clé. Celle-ci peut être autorisée ou interdite pour tous les sites.
 
           Si cette règle n'est pas définie, le paramètre "BlockKeygen" est utilisé, et l'utilisateur est en mesure de le modifier.</translation>
+<translation id="8314214821702356835">Autoriser les utilisateurs à lire des contenus multimédias lorsque l'appareil est verrouillé</translation>
 <translation id="8320149248919453401">Mode de recharge de la batterie</translation>
 <translation id="8329984337216493753">Cette règle n'est active qu'en mode Point de vente.
 
@@ -4468,7 +4467,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="9152473318295429890">Activer les suggestions contextuelles des pages Web associées</translation>
 <translation id="9153446010242995516">Effectuez un rollback et conservez la version cible si elle est antérieure à la version de l'OS. Essayez de conserver la configuration de l'appareil (y compris les identifiants réseau) lors du processus si possible, mais effectuez un Powerwash complet même s'il est impossible de restaurer les données (car la version cible n'est pas compatible avec la restauration de données ou en raison d'une modification incompatible avec la restauration).
           Compatible avec la version 75 et les versions ultérieures de <ph name="PRODUCT_OS_NAME" />. Pour les clients plus anciens, cette valeur signifie que la fonction de rollback est désactivée.</translation>
-<translation id="9158929520101169054">Autoriser la connexion multicompte dans le navigateur</translation>
 <translation id="9159126470527871268">Avertit les utilisateurs que <ph name="PRODUCT_NAME" /> doit être relancé ou que l'appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour qu'une mise à jour en cours puisse être appliquée.
 
       Cette règle active l'envoi de notifications pour avertir l'utilisateur qu'un redémarrage du navigateur ou de l'appareil est recommandé ou exigé. Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> indique à l'utilisateur, par le biais de modifications discrètes du menu, qu'un redémarrage est nécessaire. Pour l'appareil <ph name="PRODUCT_OS_NAME" />, une notification s'affiche dans la barre d'état système. Si la règle est définie sur "Recommandé", un avertissement récurrent s'affiche, indiquant qu'un redémarrage est recommandé. L'utilisateur peut ignorer cet avertissement et redémarrer le navigateur ou l'appareil plus tard. Si elle est définie sur "Requis", un avertissement récurrent s'affiche, indiquant que le redémarrage du navigateur ou de l'appareil sera forcé à l'issue de la période de notification. Par défaut, ce délai est de sept jours pour <ph name="PRODUCT_NAME" /> et de quatre jours pour l'appareil <ph name="PRODUCT_OS_NAME" />, et peut être configuré à l'aide du paramètre <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.

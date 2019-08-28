@@ -77,6 +77,7 @@ class SharingDeviceRegistration {
   // Callback function responsible for saving device registration information in
   // SharingSyncPreference.
   void OnEncryptionInfoReceived(RegistrationCallback callback,
+                                const std::string& authorized_entity,
                                 const std::string& fcm_registration_token,
                                 std::string p256dh,
                                 std::string auth_secret);

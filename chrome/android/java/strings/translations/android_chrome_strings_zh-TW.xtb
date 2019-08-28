@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">複製連結文字</translation>
 <translation id="1208340532756947324">如要進行同步處理並在所有裝置上享有個人化的體驗，請開啟同步處理功能</translation>
 <translation id="1209206284964581585">暫時隱藏</translation>
+<translation id="1227058898775614466">瀏覽記錄</translation>
 <translation id="1231733316453485619">要開啟同步處理功能嗎？</translation>
 <translation id="123724288017357924">重新載入目前的網頁，略過已快取的內容</translation>
 <translation id="124116460088058876">更多語言</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">輕觸即可展開</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="1291207594882862231">清除歷史記錄、Cookie、網站資料、快取…</translation>
+<translation id="129382876167171263">網站儲存的檔案會顯示在這裡</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - 來自 <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">將分頁加入群組</translation>
+<translation id="1327257854815634930">瀏覽記錄已開啟</translation>
 <translation id="1331212799747679585">無法更新 Chrome。更多選項</translation>
 <translation id="1332501820983677155">Google Chrome 功能快速鍵</translation>
 <translation id="1360432990279830238">要登出並關閉同步處理功能嗎？</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">允許完整控制 MIDI 裝置</translation>
 <translation id="145097072038377568">已在 Android 設定中關閉</translation>
 <translation id="1477626028522505441">伺服器發生問題，因此無法下載 <ph name="FILE_NAME" />。</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{(還有 1 個)}other{(還有 # 個)}}</translation>
 <translation id="1501480321619201731">刪除群組</translation>
 <translation id="1506061864768559482">搜尋引擎</translation>
 <translation id="1513352483775369820">書籤與網頁記錄</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">拖曳滑桿，將文字調整到適當的字體大小。當你輕觸兩下文字段落時，瀏覽器至少應呈現這樣的字體大小。</translation>
 <translation id="2323763861024343754">網站儲存資料量</translation>
 <translation id="2328985652426384049">無法登入</translation>
-<translation id="2334057574886324800">已收到簡訊</translation>
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和儲存的設定</translation>
 <translation id="2353636109065292463">檢查你的網際網路連線</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -417,12 +418,6 @@
 <translation id="4226663524361240545">收到通知時裝置會震動</translation>
 <translation id="423219824432660969">使用你在 <ph name="TIME" />設定的 Google 密碼，加密保護同步資料</translation>
 <translation id="4242533952199664413">開啟設定</translation>
-<translation id="4247274662191902962">系統只會在你進入這個 VR 時分享感應器資料。網站或許可以使用特定資訊辨識你，例如：
-    - 你的位置
-    - 你的身體特徵，例如眼睛的位置
-    - 你的動作，例如走路的方式
-
-    允許存取前，請確認你信任這個網站。</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL" /></translation>
 <translation id="4269820728363426813">複製連結網址</translation>
@@ -554,8 +549,8 @@
 <translation id="5170568018924773124">在資料夾中顯示</translation>
 <translation id="5184329579814168207">在 Chrome 中開啟</translation>
 <translation id="5193988420012215838">已複製到剪貼簿</translation>
+<translation id="5197729504361054390">系統會將你選取的聯絡人資訊提供給 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />。</translation>
 <translation id="5199929503336119739">工作資料夾</translation>
-<translation id="5202089186707505116">要允許這個網站存取你的 VR 感應器嗎？</translation>
 <translation id="5210286577605176222">跳至上一個分頁</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
 <translation id="5224771365102442243">含有影片</translation>
@@ -568,6 +563,7 @@
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5301954838959518834">好，我知道了</translation>
 <translation id="5304593522240415983">這個欄位不能留空</translation>
+<translation id="5307446750509046227">清除網站儲存的資料</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="5313967007315987356">新增網站</translation>
 <translation id="5317780077021120954">儲存</translation>
@@ -631,7 +627,6 @@
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
-<translation id="5719150327511160085">正在等待簡訊</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5726692708398506830">放大網頁上的所有內容</translation>
 <translation id="5748802427693696783">已切換成標準分頁</translation>
@@ -702,7 +697,6 @@
 舉例來說，部分網站可能會以顯示廣告的方式回應這類要求，而這些廣告並非根據您所造訪的其他網站記錄而產生。許多網站仍會收集您的瀏覽資料，並將這些資料用於下列目的：提高網站安全性、在網站上提供更相關的內容、廣告和推薦項目，以及產生報告統計資料。</translation>
 <translation id="624789221780392884">可進行更新</translation>
 <translation id="6255999984061454636">內容建議</translation>
-<translation id="6264430811215618931"><ph name="ORIGIN" /> 已將簡訊傳送至你的手機。你確認簡訊內容後，網站即可辨認你的身分。</translation>
 <translation id="6277522088822131679">列印網頁時發生問題，請再試一次。</translation>
 <translation id="6295158916970320988">所有網站</translation>
 <translation id="629730747756840877">帳戶</translation>
@@ -805,6 +799,7 @@
 <translation id="6989267951144302301">無法下載</translation>
 <translation id="6990079615885386641">從 Google Play 商店取得應用程式：<ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">允許網站使用你的麥克風前，必須先詢問你 (建議)</translation>
+<translation id="7015203776128479407">尚未完成初始同步處理設定。已關閉同步功能。</translation>
 <translation id="7016516562562142042">允許目前的搜尋引擎存取位置資訊</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 下載完成</translation>
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
@@ -836,11 +831,11 @@
 <translation id="7274013316676448362">已封鎖網站</translation>
 <translation id="7290209999329137901">無法重新命名</translation>
 <translation id="7291387454912369099">Google 助理自動填入功能</translation>
+<translation id="7293171162284876153">如要開始同步處理，請開啟「同步處理你的 Chrome 資料」。</translation>
 <translation id="729975465115245577">你的裝置沒有可儲存密碼檔案的應用程式。</translation>
 <translation id="7302081693174882195">詳細資料：依儲存資料量排序</translation>
 <translation id="7328017930301109123">使用精簡模式時，Chrome 可加快網頁載入速度，並可節省多達百分之 60 的數據用量。</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>
-<translation id="7352651011704765696">發生錯誤</translation>
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
 <translation id="7359002509206457351">存取付款方式</translation>
@@ -904,6 +899,7 @@
 <translation id="773466115871691567">一律翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">為了偵測危險的應用程式和網站，Chrome 會將你造訪的部分網頁網址、部分系統資訊以及部分網頁內容傳送給 Google</translation>
+<translation id="7757787379047923882">透過「<ph name="DEVICE_NAME" />」分享的文字</translation>
 <translation id="7762668264895820836">SD 卡 <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="7769602470925380267">接受並登出</translation>
@@ -1043,6 +1039,7 @@
 <translation id="8730621377337864115">完成</translation>
 <translation id="8748850008226585750">內容已隱藏</translation>
 <translation id="8751914237388039244">選取圖片</translation>
+<translation id="8788265440806329501">瀏覽記錄已關閉</translation>
 <translation id="8788968922598763114">重新開啟最近關閉的分頁</translation>
 <translation id="8801436777607969138">封鎖特定網站的 JavaScript。</translation>
 <translation id="8812260976093120287">在部分網站上，你可以在你的裝置上使用上述支援的付款應用程式付款。</translation>

@@ -34910,6 +34910,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
   <int value="-1373942769" label="WebAuthenticationCtap2:disabled"/>
   <int value="-1373705581" label="ManualSaving:enabled"/>
+  <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
   <int value="-1365795470"
@@ -35212,6 +35213,7 @@ from previous Chrome versions.
   <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
   <int value="-983342281" label="TabSwitcherLongpressMenu:disabled"/>
   <int value="-981237342" label="SyncUSSAutofillWalletMetadata:disabled"/>
+  <int value="-980317085" label="EnablePasswordsAccountStorage:disabled"/>
   <int value="-980260493" label="NTPSnippets:disabled"/>
   <int value="-979313250" label="enable-google-branded-context-menu"/>
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
@@ -35282,6 +35284,7 @@ from previous Chrome versions.
   <int value="-891856063" label="MidiManagerAndroid:enabled"/>
   <int value="-889670978" label="AssistantRoutines:disabled"/>
   <int value="-886912558" label="ChromeHomePromo:enabled"/>
+  <int value="-886898803" label="CooperativeScheduling:enabled"/>
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-884864731" label="WebPaymentsSingleAppUiSkip:enabled"/>
   <int value="-883694393" label="SyncPseudoUSSSupervisedUsers:disabled"/>
@@ -36940,6 +36943,7 @@ from previous Chrome versions.
   <int value="1431050645" label="PayWithGoogleV1:disabled"/>
   <int value="1434515920" label="ReaderModeInCCT:enabled"/>
   <int value="1435251818" label="AutofillNoLocalSaveOnUploadSuccess:enabled"/>
+  <int value="1437413720" label="CooperativeScheduling:disabled"/>
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
@@ -46133,6 +46137,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Boundary value"/>
 </enum>
 
+<enum name="PasswordLeakDetectionDialogDismissalReason">
+  <int value="0" label="No direct user interaction"/>
+  <int value="1" label="Clicked Close"/>
+  <int value="2" label="Clicked Check passwords"/>
+  <int value="3" label="Clicked Ok"/>
+</enum>
+
 <enum name="PasswordLeakLookupResponseResult">
   <int value="0" label="Success"/>
   <int value="1" label="Network/server error"/>
@@ -52320,6 +52331,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="BLOCKED"/>
   <int value="3" label="ABANDONED"/>
   <int value="4" label="NOT_SUPPORTED"/>
+</enum>
+
+<enum name="SafetyTipStatus">
+  <int value="0" label="Safety Tip status unknown/not applicable"/>
+  <int value="1" label="No Safety Tip"/>
+  <int value="2" label="Safety Tip for bad reputation"/>
 </enum>
 
 <enum name="SamlInSessionPasswordChangeEvent">

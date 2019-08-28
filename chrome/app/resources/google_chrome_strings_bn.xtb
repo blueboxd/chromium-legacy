@@ -172,7 +172,7 @@
 <translation id="5906655207909574370">প্রায় আপ-টু-ডেট হয়েছে! আপডেট শেষ করতে আপনার ডিভাইস আবার চালু করুন।</translation>
 <translation id="5940385492829620908">আপনার ওয়েব, বুকমার্ক এবং Chrome-এর অন্যান্য জিনিস এখানে রয়েছে৷</translation>
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
-<translation id="5977372243443849142">Chromium আপনাকে পাসওয়ার্ড মনে রাখতে সাহায্য করবে তাই আপনাকে পাসওয়ার্ড মনে রাখতে হবে না।</translation>
+<translation id="5977372243443849142">Chrome আপনাকে পাসওয়ার্ড মনে রাখতে সাহায্য করবে তাই আপনাকে পাসওয়ার্ড মনে রাখতে হবে না।</translation>
 <translation id="6014844626092547096">আপনি এখন Chrome এ প্রবেশ করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6070348360322141662">অতিরিক্ত নিরাপত্তার জন্য, Google Chrome আপনার ডেটা এনক্রিপ্ট করবে</translation>
@@ -185,8 +185,6 @@
 <translation id="6291549208091401781">Google Chrome ইতোমধ্যে আপনার কম্পিউটারের সকল ব্যবহারকারীর জন্য ইনস্টল করা হয়েছে।</translation>
 <translation id="6338556085225130112">Google Chrome আপডেট করা হচ্ছে</translation>
 <translation id="6368958679917195344">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS" /> দিয়ে তৈরি৷</translation>
-<translation id="6400930858680434649">এই পৃষ্ঠাতে কোনও একটি সেটিং দেখা না গেলে <ph name="LINK_BEGIN" />
-    Chrome ব্রাউজার সেটিংস<ph name="LINK_END" /> থেকে করে দেখুন।</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome আপডেট হচ্ছে (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">আপনার Chrome জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chrome ব্যবহার করতে <ph name="SETTINGS_LINK" />-এ যান৷</translation>

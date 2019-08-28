@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Se agregó a la lista de lectura</translation>
 <translation id="1828824471510190776">Sugerir contraseña…</translation>
 <translation id="1870148520156231997">Mostrar contraseña</translation>
+<translation id="1872096359983322073">Linterna</translation>
 <translation id="1876721852596493031">Enviar datos de uso</translation>
 <translation id="1911619930368729126">Cargar a Google Drive</translation>
 <translation id="1923342640370224680">Última hora</translation>
@@ -355,6 +356,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toca para cancelar.</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
+<translation id="6119050551270742952">Pág. incógnito</translation>
 <translation id="6122191549521593678">En línea</translation>
 <translation id="6127379762771434464">Se eliminó el elemento</translation>
 <translation id="6136914049981179737">Hace seg.</translation>
@@ -411,6 +413,9 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Elemento creado</translation>
 <translation id="6851516051005285358">Solicitar versión de escritorio</translation>
+<translation id="6858855187367714033">Escaneado</translation>
+<translation id="6859944681507688231">Para escanear un código QR o una tarjeta de crédito, habilita la cámara desde la configuración.</translation>
+<translation id="6873263987691478642">Vista dividida</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Activar la sincronización</translation>
 <translation id="6914583639806229067">Buscar la imagen que copiaste</translation>
@@ -509,6 +514,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8428045167754449968">Ciudad/pueblo</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8458397775385147834">1 elemento eliminado</translation>
+<translation id="8487667956631253959">Encendida</translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8490978609246021741">Guardar cambios</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
@@ -519,6 +525,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8532105204136943229">Año vencimiento</translation>
 <translation id="8534481786647257214">Entrada de Google+ publicada</translation>
 <translation id="8548878600947630424">Buscar en la página...</translation>
+<translation id="8588404856427128947">Apagada</translation>
 <translation id="8605219856220328675">Cierra la pestaña.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Activa la sincronización para obtener las pestañas de tus otros dispositivos.</translation>
@@ -559,6 +566,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Informe de fallos enviado.</translation>
 <translation id="935490618240037774">Tus favoritos, historial, contraseñas y otras opciones de configuración se sincronizarán con tu cuenta de Google para que puedas usarlos en todos tus dispositivos.</translation>
+<translation id="952704832371081537">Cancelar</translation>
 <translation id="976982866697960176">Administrar datos sincronizados...</translation>
 <translation id="988141524645182168">Otros dispositivos</translation>
 <translation id="989988560359834682">Modificar dirección</translation>

@@ -226,8 +226,6 @@ Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium znova spustite do jedného dňa}few{Chromium znova spustite do # dní}many{Chromium znova spustite do # dňa}other{Chromium znova spustite do # dní}}</translation>
 <translation id="8453117565092476964">Archív inštalácie je poškodený alebo neplatný. Stiahnite prehliadač Chromium znova.</translation>
 <translation id="8493179195440786826">Prehliadač Chromium je zastaraný</translation>
-<translation id="8494843963476918365">Ak sa nastavenie na tejto stránke nezobrazí, skúste <ph name="LINK_BEGIN" />
-    nastavenia prehliadača Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Získajte pomoc pri používaní prehliadača Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autori Chromium. Všetky práva vyhradené.</translation>
 <translation id="8619360774459241877">Spúšťa sa Chromium…</translation>

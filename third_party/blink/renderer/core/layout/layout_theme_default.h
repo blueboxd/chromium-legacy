@@ -80,10 +80,10 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   // when hovered.
   bool SupportsHover(const ComputedStyle&) const final;
 
-  void SetSelectionColors(unsigned active_background_color,
-                          unsigned active_foreground_color,
-                          unsigned inactive_background_color,
-                          unsigned inactive_foreground_color) override;
+  void SetSelectionColors(Color active_background_color,
+                          Color active_foreground_color,
+                          Color inactive_background_color,
+                          Color inactive_foreground_color) override;
   Color PlatformFocusRingColor() const override;
 
   // System fonts.
@@ -144,12 +144,12 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   int MenuListInternalPadding(const ComputedStyle&, int padding) const;
 
   static const RGBA32 kDefaultTapHighlightColor = 0x2e000000;  // 18% black.
-  static base::TimeDelta caret_blink_interval_;
+  base::TimeDelta caret_blink_interval_;
 
-  static unsigned active_selection_background_color_;
-  static unsigned active_selection_foreground_color_;
-  static unsigned inactive_selection_background_color_;
-  static unsigned inactive_selection_foreground_color_;
+  Color active_selection_background_color_ = 0xff1e90ff;
+  Color active_selection_foreground_color_ = Color::kBlack;
+  Color inactive_selection_background_color_ = 0xffc8c8c8;
+  Color inactive_selection_foreground_color_ = 0xff323232;
 
   ThemePainterDefault painter_;
   // Cached values for crbug.com/673754.

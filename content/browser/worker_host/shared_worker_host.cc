@@ -263,7 +263,8 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
       default_factory_receiver =
           pending_default_factory.InitWithNewPipeAndPassReceiver();
 
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
+  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+      default_header_client;
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       storage_partition_impl->browser_context(),
       /*frame=*/nullptr, worker_process_id_,

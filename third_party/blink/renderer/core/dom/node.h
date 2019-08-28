@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 
@@ -78,6 +77,7 @@ class StringOrTrustedScript;
 class StyleChangeReasonForTracing;
 class V8ScrollStateCallback;
 class WebPluginContainerImpl;
+struct PhysicalRect;
 
 const int kNodeStyleChangeShift = 18;
 const int kNodeCustomElementShift = 20;
@@ -581,9 +581,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsInert() const;
 
   virtual PhysicalRect BoundingBox() const;
-  IntRect PixelSnappedBoundingBox() const {
-    return PixelSnappedIntRect(BoundingBox());
-  }
+  IntRect PixelSnappedBoundingBox() const;
 
   // BoundingBoxForScrollIntoView() is the node's scroll snap area.
   // It is expanded from the BoundingBox() by scroll-margin.

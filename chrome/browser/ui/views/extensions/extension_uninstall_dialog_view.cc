@@ -212,7 +212,7 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
         l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PROMPT_UNINSTALL_TRIGGERED_BY_EXTENSION,
             base::UTF8ToUTF16(triggering_extension->name())),
-        CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+        CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     heading_->SetAllowCharacterBreak(true);

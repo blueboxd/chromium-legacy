@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/renderer/media/webrtc/rtc_stats.h"
 #include "content/renderer/media/webrtc/webrtc_util.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace content {
@@ -199,7 +199,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     native_peer_connection_->GetStats(
         webrtc_receiver_.get(),
-        RTCStatsCollectorCallbackImpl::Create(
+        blink::CreateRTCStatsCollectorCallback(
             main_task_runner_, std::move(callback), exposed_group_ids));
   }
 

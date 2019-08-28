@@ -69,7 +69,6 @@ class WebRequestProxyingWebSocket
       mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
       const std::string& selected_protocol,
       const std::string& extensions,
-      uint64_t receive_quota_threshold,
       mojo::ScopedDataPipeConsumerHandle readable) override;
 
   // network::mojom::AuthenticationHandler method:

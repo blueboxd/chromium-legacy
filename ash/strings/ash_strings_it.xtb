@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Comprimi il menu</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1419738280318246476">Sblocca il dispositivo per eseguire l'azione di notifica</translation>
+<translation id="1420408895951708260">Attiva/disattiva luminosità notturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1455242230282523554">Mostra impostazioni lingua</translation>
 <translation id="1460620680449458626">Il volume è disattivato.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">La funzionalità <ph name="FEATURE_NAME" /> è stata disattivata da un criterio applicato a questo dispositivo. Contatta l'amministratore per richiedere modifiche.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
+<translation id="1838895407229022812">Luminosità notturna non attiva.</translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">Tasti permanenti</translation>
 <translation id="2509468283778169019">BLOC MAIUSC è attivo</translation>
 <translation id="2532589005999780174">Modalità ad alto contrasto</translation>
+<translation id="2542089167727451762">Tocca la tua immagine del profilo</translation>
 <translation id="255671100581129685">L'Assistente Google non è disponibile in una sessione pubblica.</translation>
 <translation id="2575685495496069081">L'accesso simultaneo è stato disattivato</translation>
 <translation id="2582112259361606227">Riavvia per aggiornare</translation>
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
-<translation id="2651765386227849097">L'Assistente Google è disattivato su questo dispositivo.</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2658778018866295321">Fai clic e trascina</translation>
 <translation id="2700493154570097719">Imposta la tastiera</translation>
@@ -233,7 +235,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lente d'ingrandimento</translation>
 <translation id="4351433414020964307">L'assistente è in fase di caricamento…</translation>
-<translation id="435527878592612277">Seleziona la foto</translation>
 <translation id="4378551569595875038">Connessione...</translation>
 <translation id="4379531060876907730">Ecco gli strumenti per il tuo stilo</translation>
 <translation id="4389184120735010762">Hai premuto la scorciatoia da tastiera per la lente d'ingrandimento ancorata. Vuoi attivarla?</translation>
@@ -311,6 +312,7 @@
 <translation id="574392208103952083">Medio</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5750765938512549687">Bluetooth non attivo</translation>
+<translation id="576453121877257266">Luminosità notturna attiva.</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Interrompi <ph name="ROUTE_TITLE" /> su <ph name="RECEIVER_NAME" /></translation>
@@ -350,7 +352,6 @@
 <translation id="6284232397434400372">Risoluzione modificata</translation>
 <translation id="6297287540776456956">Utilizza lo stilo per selezionare un'area</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> è stato ruotato a <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">Attiva/disattiva luminosità notturna</translation>
 <translation id="6376931439017688372">Bluetooth attivo</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
 <translation id="6406704438230478924">altgr</translation>

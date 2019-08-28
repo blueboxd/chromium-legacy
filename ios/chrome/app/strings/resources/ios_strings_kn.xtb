@@ -63,7 +63,7 @@
 <translation id="1690731385917361335">ಯಾವುದೇ ಐಟಂಗಳಿಲ್ಲ</translation>
 <translation id="1692118695553449118">ಸಿಂಕ್‌ ಆನ್‌ ಆಗಿದೆ</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="1740468249224277719">ಸ್ಥಾಪಿಸಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
+<translation id="1740468249224277719">ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="1746815479209538200">ವೆಬ್ ಬ್ರೌಸ್ ಮಾಡಲು, ಹೊಸ ಟ್ಯಾಬ್ ಸೇರಿಸಿ.</translation>
 <translation id="1752547299766512813">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸಿ</translation>
 <translation id="1753905327828125965">ಅತಿಹೆಚ್ಚು ಬಾರಿ ಸಂದರ್ಶಿಸಿರುವುದು</translation>
@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">ಓದುವ ಪಟ್ಟಿಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="1828824471510190776">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸೂಚಿಸಿ...</translation>
 <translation id="1870148520156231997">ಪಾಸ್‌ವರ್ಡ್‌ ತೋರಿಸಿ</translation>
+<translation id="1872096359983322073">ಟಾರ್ಚ್</translation>
 <translation id="1876721852596493031">ಬಳಕೆ ಡೇಟಾ ಕಳುಹಿಸಿ</translation>
 <translation id="1911619930368729126">Google ಡ್ರೈವ್‌ಗೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="1923342640370224680">ಕೊನೆಯ ಗಂಟೆ</translation>
@@ -200,7 +201,7 @@
 <translation id="3775743491439407556">ಸಿಂಕ್ ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ</translation>
 <translation id="3779810277399252432">ಇಂಟರ್ನೆಟ್‌ ಸಂಪರ್ಕ ಇಲ್ಲ.</translation>
 <translation id="3783017676699494206">ಚಿತ್ರವನ್ನು ಉಳಿಸಿ</translation>
-<translation id="3789841737615482174">ಸ್ಥಾಪಿಸು</translation>
+<translation id="3789841737615482174">ಇನ್‌ಸ್ಟಾಲ್</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="3897092660631435901">ಮೆನು</translation>
 <translation id="3915450441834151894">ಸೈಟ್ ಮಾಹಿತಿ</translation>
@@ -284,7 +285,7 @@
 <translation id="5011684439661633295">ಹಾಯ್‌, <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">ಅನುಮತಿಸಿ</translation>
 <translation id="5059136629401106827">ಸರಿ</translation>
-<translation id="5062321486222145940">Google ಡ್ರೈವ್‌ ಸ್ಥಾಪಿಸಿ</translation>
+<translation id="5062321486222145940">Google ಡ್ರೈವ್‌ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="5083464117946352670">ಫೈಲ್‌ ಗಾತ್ರವನ್ನು ನಿರ್ಧರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5094827893301452931">Tweet ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
 <translation id="5127805178023152808">ಸಿಂಕ್‌ ಆಫ್‌ ಆಗಿದೆ</translation>
@@ -307,7 +308,7 @@
 <translation id="5407969256130905701">ಬದಲಾವಣೆಗಳನ್ನು ತ್ಯಜಿಸಿ</translation>
 <translation id="5409365236829784218">ಈ ಫೈಲ್ ಅನ್ನು ತೆರೆಯಬಹುದಾದ ಯಾವುದೇ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="5416022985862681400">ಕಳೆದ 7 ದಿನಗಳಲ್ಲಿ</translation>
-<translation id="5433691172869980887">ಬಳಕೆದಾರ ಹೆಸರನ್ನು ನಕಲಿಸಲಾಗಿದೆ</translation>
+<translation id="5433691172869980887">ಬಳಕೆದಾರರ ಹೆಸರನ್ನು ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="54401264925851789">ಪುಟ ಭದ್ರತೆಯ ಮಾಹಿತಿ</translation>
 <translation id="5443952882982198570">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು</translation>
 <translation id="5525269841082836315">ಪಾಸ್‌ಫ್ರೇಸ್ ರಚಿಸಿ</translation>
@@ -328,7 +329,7 @@
 <translation id="5737974891429562743">ಖಾತೆಯ ಸೈನ್-ಇನ್ ವಿವರಗಳು ಹಳೆಯದಾಗಿವೆ. ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ.</translation>
 <translation id="5738887413654608789">ನಿಮ್ಮ ಸುತ್ತಲಿನಲ್ಲಿರುವುದನ್ನು ಆಧರಿಸಿ, ಸಂಬಂಧಿಸಿದ ವೆಬ್ ಪುಟಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಇದು ನಿಮಗೆ ಅನುಮತಿಸುತ್ತದೆ.</translation>
 <translation id="5816228676161003208">ಇದು ನಿಮ್ಮ ಧ್ವನಿ ಬಳಸಿಕೊಂಡು ವೇಗವಾಗಿ ಹುಡುಕಲು ನಿಮ್ಮನ್ನು ಅನುಮತಿಸುತ್ತದೆ.</translation>
-<translation id="5846482154967366008">ಹುಡುಕಾಟ ಎಂಜಿನ್</translation>
+<translation id="5846482154967366008">ಹುಡುಕಾಟ ಇಂಜಿನ್</translation>
 <translation id="5854790677617711513">30 ದಿನಗಳಿಗಿಂತ ಹಳೆಯದು</translation>
 <translation id="5857090052475505287">ಹೊಸ ಫೋಲ್ಡರ್</translation>
 <translation id="5857770089550859117">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಪಾಸ್‌ಫ್ರೇಸ್ ಅಗತ್ಯವಿದೆ.</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">ರದ್ದುಮಾಡಲು ಟ್ಯಾಪ್‌ ಮಾಡಿ</translation>
 <translation id="6108923351542677676">ಸೆಟಪ್ ಪ್ರಗತಿಯಲ್ಲಿದೆ...</translation>
+<translation id="6119050551270742952">ಪ್ರಸ್ತುತ ವೆಬ್ ಪುಟವು ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿದೆ</translation>
 <translation id="6122191549521593678">ಆನ್‌ಲೈನ್</translation>
 <translation id="6127379762771434464">ಐಟಂ ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
 <translation id="6136914049981179737">ಸೆಕೆಂಡ್ ಹಿಂದೆ</translation>
@@ -411,6 +413,9 @@
 <translation id="6807889908376551050">ಎಲ್ಲಾ ತೋರಿಸಿ...</translation>
 <translation id="681368974849482173">ಐಟಂ ರಚಿಸಲಾಗಿದೆ</translation>
 <translation id="6851516051005285358">ಡೆಸ್ಕ್‌ಟಾಪ್‌ ಸೈಟ್‌ ಅನ್ನು ವಿನಂತಿಸಿ</translation>
+<translation id="6858855187367714033">ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗಿದೆ</translation>
+<translation id="6859944681507688231">QR ಕೋಡ್ ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಯಾಮರಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
+<translation id="6873263987691478642">ವಿಭಜಿತ ವೀಕ್ಷಣೆ</translation>
 <translation id="6896758677409633944">ನಕಲಿಸು</translation>
 <translation id="6903907808598579934">ಸಿಂಕ್‌ ಆನ್‌ ಮಾಡಿ</translation>
 <translation id="6914583639806229067">ನೀವು ನಕಲಿಸಿದ ಚಿತ್ರವನ್ನು ಹುಡುಕಿ</translation>
@@ -466,7 +471,7 @@
 <translation id="7638584964844754484">ತಪ್ಪಾದ ಪಾಸ್‌ಫ್ರೇಸ್</translation>
 <translation id="7658239707568436148">ರದ್ದುಮಾಡಿ</translation>
 <translation id="766891008101699113">ವೆಬ್ ಅನ್ನು ಖಾಸಗಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಲು, ಹೊಸ ಟ್ಯಾಬ್ ಸೇರಿಸಿ.</translation>
-<translation id="7671141431838911305">ಸ್ಥಾಪಿಸು</translation>
+<translation id="7671141431838911305">ಇನ್‌ಸ್ಟಾಲ್</translation>
 <translation id="7765158879357617694">ಸರಿಸು</translation>
 <translation id="7769602470925380267">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="7772032839648071052">ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ದೃಢೀಕರಿಸಿ</translation>
@@ -509,16 +514,18 @@
 <translation id="8428045167754449968">ನಗರ / ಪಟ್ಟಣ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8458397775385147834">1 ಐಟಂ ಅಳಿಸಲಾಗಿದೆ</translation>
+<translation id="8487667956631253959">ಆನ್</translation>
 <translation id="8487700953926739672">ಆಫ್‌ಲೈನ್ ಲಭ್ಯವಿದೆ</translation>
 <translation id="8490978609246021741">ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ</translation>
-<translation id="8503813439785031346">ಬಳಕೆದಾರಹೆಸರು</translation>
+<translation id="8503813439785031346">ಬಳಕೆದಾರರಹೆಸರು</translation>
 <translation id="850600235656508448">ಅದೃಶ್ಯ ಮೋಡ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
-<translation id="8517375800490286174">ಮೂಲ ಪರವಾನಗಿಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="8517375800490286174">ಓಪನ್ ಸೋರ್ಸ್ ಪರವಾನಗಿಗಳು</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> ರಲ್ಲಿ <ph name="LAST_VISIBLE_TAB" /> ಮೂಲಕ <ph name="INCOGNITO" /> ಟ್ಯಾಬ್‌ಗಳು <ph name="FIRST_VISIBLE_TAB" /></translation>
 <translation id="8529767659511976195">ಹೊಸತು</translation>
 <translation id="8532105204136943229">ಮುಕ್ತಾಯದ ವರ್ಷ</translation>
 <translation id="8534481786647257214">Google+ ಪೋಸ್ಟ್ ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
 <translation id="8548878600947630424">ಪುಟದಲ್ಲಿ ಹುಡುಕಿ...</translation>
+<translation id="8588404856427128947">ಆಫ್</translation>
 <translation id="8605219856220328675">ಟ್ಯಾಬ್ ಮುಚ್ಚಿ.</translation>
 <translation id="8620640915598389714">ಎಡಿಟ್</translation>
 <translation id="8636825310635137004">ನಿಮ್ಮ ಇತರ ಸಾಧನಗಳಿಂದ ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, ಸಿಂಕ್‌ ಆನ್‌ ಮಾಡಿ.</translation>
@@ -534,7 +541,7 @@
 <translation id="8820817407110198400">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="8840513115188359703">ನಿಮ್ಮನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಿಂದ ಸೈನ್‌ ಔಟ್‌ ಮಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="8870413625673593573">ಇತ್ತೀಚೆಗೆ ಮುಚ್ಚಿರುವುದು</translation>
-<translation id="8881801611828450202">ಈ ಚಿತ್ರಕ್ಕಾಗಿ <ph name="SEARCH_ENGINE" /> ಹುಡುಕಿ</translation>
+<translation id="8881801611828450202">ಈ ಚಿತ್ರಕ್ಕಾಗಿ <ph name="SEARCH_ENGINE" /> ನಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">ಸಮಸ್ಯೆಯನ್ನು ವರದಿಮಾಡಿ</translation>
 <translation id="8971089644512329999">ಸರಿ, ಅರ್ಥವಾಯಿತು</translation>
@@ -559,6 +566,7 @@
 <translation id="9203116392574189331">ಹ್ಯಾಂಡ್ಆಫ್</translation>
 <translation id="9223358826628549784">ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ.</translation>
 <translation id="935490618240037774">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತದೆ ಈ ಮೂಲಕ ಅವುಗಳನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ನೀವು ಬಳಸಬಹುದು.</translation>
+<translation id="952704832371081537">ರದ್ದುಮಾಡಿ</translation>
 <translation id="976982866697960176">ಸಿಂಕ್‌ ಮಾಡಲಾದ ಡೇಟಾವನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="988141524645182168">ಇತರ ಸಾಧನಗಳು</translation>
 <translation id="989988560359834682">ವಿಳಾಸವನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>

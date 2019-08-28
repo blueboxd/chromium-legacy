@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">Kopēt saites tekstu</translation>
 <translation id="1208340532756947324">Lai sinhronizētu un personalizētu saturu dažādās ierīcēs, ieslēdziet sinhronizāciju.</translation>
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
+<translation id="1227058898775614466">Navigācijas vēsture</translation>
 <translation id="1231733316453485619">Vai ieslēgt sinhronizāciju?</translation>
 <translation id="123724288017357924">Atkārtoti ielādēt lapu, ignorējot saturu kešatmiņā</translation>
 <translation id="124116460088058876">Citas valodas…</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">Pieskarties, lai izvērstu</translation>
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
 <translation id="1291207594882862231">Dzēst vēsturi, sīkfailus, vietnes datus, kešatmiņu…</translation>
+<translation id="129382876167171263">Šeit tiek rādīti tīmekļa vietņu saglabātie faili</translation>
 <translation id="129553762522093515">Nesen aizvērtas</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> — nosūtīts no ierīces <ph name="DEVICE_NAME" /></translation>
 <translation id="1310482092992808703">Grupēt cilnes</translation>
+<translation id="1327257854815634930">Navigācijas vēsture ir atvērta</translation>
 <translation id="1331212799747679585">Nevar atjaunināt Chrome — citas opcijas</translation>
 <translation id="1332501820983677155">Google Chrome funkciju īsinājumtaustiņi</translation>
 <translation id="1360432990279830238">Izrakstīties un izslēgt sinhronizēšanu?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">Pilnīga MIDI ierīču pārvaldība</translation>
 <translation id="145097072038377568">Izslēgts Android iestatījumos</translation>
 <translation id="1477626028522505441">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo radās servera problēmas.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (un vēl 1)}zero{ (un vēl #)}one{ (un vēl #)}other{ (un vēl #)}}</translation>
 <translation id="1501480321619201731">Dzēst grupu</translation>
 <translation id="1506061864768559482">Meklētājprogramma</translation>
 <translation id="1513352483775369820">Grāmatzīmes un tīmekļa vēsture</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">Velciet slīdni, kamēr varat ērti lasīt. Pēc dubultskāriena rindkopai tekstam ir jābūt vismaz šādā lielumā.</translation>
 <translation id="2323763861024343754">Vietnes krātuve</translation>
 <translation id="2328985652426384049">Nevar pierakstīties</translation>
-<translation id="2334057574886324800">Īsziņa ir saņemta</translation>
 <translation id="2349710944427398404">Kopējais pārlūkā Chrome izmantoto datu apjoms, ieskaitot kontus, grāmatzīmes un saglabātos iestatījumus</translation>
 <translation id="2353636109065292463">Notiek interneta savienojuma pārbaude</translation>
 <translation id="2359808026110333948">Turpināt</translation>
@@ -417,12 +418,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4226663524361240545">Saņemot paziņojumu, ierīce var vibrēt.</translation>
 <translation id="423219824432660969">Šifrēt sinhronizētos datus ar Google paroli, sākot no: <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Atvērt iestatījumus</translation>
-<translation id="4247274662191902962">Sensoru dati tiks kopīgoti tikai šajā VR pieredzē. Vietne var jūs atpazīt, izmantojot noteiktu informāciju, piemēram:
-    - jūsu atrašanās vietu;
-    - jūsu sejas vaibstus, piemēram, acu izvietojumu;
-    - jūsu kustības, piemēram, gaitas īpatnības.
-
-    Atļaujiet piekļuvi tikai tad, ja uzticaties šai vietnei.</translation>
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopēt saites adresi</translation>
@@ -554,8 +549,8 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5170568018924773124">Rādīt mapē</translation>
 <translation id="5184329579814168207">Atvērt pārlūkā Chrome</translation>
 <translation id="5193988420012215838">Kopēts jūsu starpliktuvē</translation>
+<translation id="5197729504361054390">Atlasīto kontaktpersonu dati tiks kopīgoti ar vietni <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5199929503336119739">Darba profils</translation>
-<translation id="5202089186707505116">Vai atļaut šai vietnei piekļūt jūsu VR sensoriem?</translation>
 <translation id="5210286577605176222">Pāriet uz iepriekšējo cilni</translation>
 <translation id="5210365745912300556">Aizvērt cilni</translation>
 <translation id="5224771365102442243">Ar video</translation>
@@ -568,6 +563,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5301954838959518834">Labi, sapratu</translation>
 <translation id="5304593522240415983">Šis lauks nevar būt tukšs.</translation>
+<translation id="5307446750509046227">Notīrīt vietnes krātuvi</translation>
 <translation id="5308380583665731573">Pievienošana</translation>
 <translation id="5313967007315987356">Pievienot vietni</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
@@ -631,7 +627,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5686790454216892815">Faila nosaukums ir pārāk garš</translation>
 <translation id="5689516760719285838">Atrašanās vieta</translation>
 <translation id="569536719314091526">Tulkojiet šīs lapas saturu jebkurā valodā, izmantojot pogu Vairāk opciju.</translation>
-<translation id="5719150327511160085">Tiek gaidīta īsziņa</translation>
 <translation id="572328651809341494">Nesen atvērtas cilnes</translation>
 <translation id="5726692708398506830">Palielināt visu lapas saturu</translation>
 <translation id="5748802427693696783">Notika pārslēgšanās uz standarta cilnēm</translation>
@@ -702,7 +697,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums reklāmas, kuru pamatā nav citas jūsu apmeklētās vietnes. Tomēr daudzas vietnes apkopos un izmantos jūsu pārlūkošanas datus, piemēram, lai uzlabotu drošību, nodrošinātu saturu, reklāmas un ieteikumus un ģenerētu pārskatu statistiku.</translation>
 <translation id="624789221780392884">Var veikt atjaunināšanu</translation>
 <translation id="6255999984061454636">Satura ieteikumi</translation>
-<translation id="6264430811215618931"><ph name="ORIGIN" /> nosūtīja īsziņu uz jūsu tālruņa numuru. Ja sniegsiet apstiprinājumu, vietne zinās, ka tas esat jūs.</translation>
 <translation id="6277522088822131679">Drukājot lapu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="6295158916970320988">Visas vietnes</translation>
 <translation id="629730747756840877">Konts</translation>
@@ -805,6 +799,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6989267951144302301">Nevarēja lejupielādēt</translation>
 <translation id="6990079615885386641">Iegūstiet lietotni Google Play veikalā: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Jautāt, pirms atļaut vietnēm izmantot jūsu mikrofonu (ieteicams)</translation>
+<translation id="7015203776128479407">Sākotnējā sinhronizācijas iestatīšana netika pabeigta. Sinhronizācija ir izslēgta.</translation>
 <translation id="7016516562562142042">Atļauta pašreizējai meklētājprogrammai</translation>
 <translation id="7021515813996758557">Fails <ph name="FILE_NAME" /> ir lejupielādēts.</translation>
 <translation id="7022756207310403729">Atvērt pārlūkā</translation>
@@ -836,11 +831,11 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7274013316676448362">Bloķēta vietne</translation>
 <translation id="7290209999329137901">Pārdēvēšana nav pieejama</translation>
 <translation id="7291387454912369099">Asistenta aktivizēta norēķināšanās</translation>
+<translation id="7293171162284876153">Lai sāktu sinhronizāciju, ieslēdziet iestatījumu “Jūsu Chrome datu sinhronizācija”.</translation>
 <translation id="729975465115245577">Ierīcē nav lietotnes, kurā uzglabāt paroļu failu.</translation>
 <translation id="7302081693174882195">Detalizēta informācija: kārtota pēc ietaupīto datu apjoma</translation>
 <translation id="7328017930301109123">Vienkāršotajā režīmā Chrome ielādē lapas ātrāk un patērē pat par 60 procentiem mazāk datu.</translation>
 <translation id="7333031090786104871">Joprojām notiek iepriekšējās vietnes pievienošana</translation>
-<translation id="7352651011704765696">Radās problēma</translation>
 <translation id="7352939065658542140">VIDEOKLIPS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kopīgot 1 atlasīto vienumu}zero{Kopīgot # atlasītos vienumus}one{Kopīgot # atlasīto vienumu}other{Kopīgot # atlasītos vienumus}}</translation>
 <translation id="7359002509206457351">Piekļuve maksājumu veidiem</translation>
@@ -904,6 +899,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="773466115871691567">Vienmēr tulkot lapas šādā valodā: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">Lai noteiktu bīstamas lietotnes un vietnes, pārlūkā Chrome dažu jūsu apmeklēto lapu saturs, ierobežots sistēmas informācijas apjoms un daļa lapu satura tiek nosūtīta uzņēmumam Google</translation>
+<translation id="7757787379047923882">Kopīgots teksts no ierīces <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD karte <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Pievienot adresi</translation>
 <translation id="7769602470925380267">Piekrist un izrakstīties</translation>
@@ -1043,6 +1039,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8730621377337864115">Gatavs</translation>
 <translation id="8748850008226585750">Saturs paslēpts</translation>
 <translation id="8751914237388039244">Attēla atlase</translation>
+<translation id="8788265440806329501">Navigācijas vēsture ir aizvērta</translation>
 <translation id="8788968922598763114">Atkārtoti atvērt pēdējo aizvērto cilni</translation>
 <translation id="8801436777607969138">Bloķēt JavaScript konkrētai vietnei.</translation>
 <translation id="8812260976093120287">Dažās vietnēs var norēķināties, ierīcē izmantojot iepriekš norādītās atbalstītās maksājumu lietotnes.</translation>

@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">ไม่สามารถเข้าถึงโฮสต์ อาจเป็นเพราะการกำหนดค่าของเครือข่ายที่คุณกำลังใช้อยู่</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  ออนไลน์ล่าสุด<ph name="RELATIVE_TIMESTAMP" /></translation>
 <translation id="2405928220797050937">แอปนี้ใช้งานไม่ได้อีกต่อไป โปรดใช้<ph name="LINK_BEGIN" />เว็บแอป Chrome Remote Desktop<ph name="LINK_END" /> เพื่อให้คุณได้รับฟีเจอร์และการอัปเดตความปลอดภัยล่าสุดอยู่เสมอ</translation>
-<translation id="2431841749166974386">คุณต้องทำขั้นตอนการกำหนดค่าเพิ่มเติมก่อนที่จะใช้ <ph name="PRODUCT_NAME" /> ควบคุมคอมพิวเตอร์เครื่องนี้จากระยะไกลได้
-
-หากต้องการเปิดใช้ฟังก์ชันการทำงานนี้ ให้เลือก "<ph name="BUTTON_NAME" />" เพื่อแสดงแผงค่ากำหนดความปลอดภัยและความเป็นส่วนตัว จากนั้นเลือกช่องถัดจาก "<ph name="SERVICE_SCRIPT_NAME" />"
-
-หาก "<ph name="SERVICE_SCRIPT_NAME" />" แสดงอยู่และช่องถูกเลือกไว้แล้ว คุณอาจต้องนำออกก่อนแล้วจึงเพิ่มเข้ามาใหม่</translation>
 <translation id="2499160551253595098">ช่วยเราปรับปรุง Chrome Remote Desktop ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
 <translation id="2509394361235492552">เชื่อมต่อกับ <ph name="HOSTNAME" /> แล้ว</translation>
 <translation id="2512228156274966424">หมายเหตุ: เพื่อให้มั่นใจว่าทุกแป้นพิมพ์ลัดพร้อมใช้งาน คุณสามารถกำหนดค่า Chrome Remote Desktop เป็น "เปิดเป็นหน้าต่าง"</translation>
@@ -317,6 +312,11 @@
 <translation id="8804164990146287819">นโยบายความเป็นส่วนตัว</translation>
 <translation id="894763922177556086">ดี</translation>
 <translation id="895780780740011433">สำหรับ Windows 7 ขึ้นไป</translation>
+<translation id="8963047137585288214">คุณต้องทำขั้นตอนการกำหนดค่าเพิ่มเติมก่อนที่จะใช้ <ph name="PRODUCT_NAME" /> ควบคุมคอมพิวเตอร์เครื่องนี้จากระยะไกลได้
+
+หากต้องการเปิดใช้ฟังก์ชันการทำงานนี้ ให้เลือก "<ph name="BUTTON_NAME" />" เพื่อแสดงแผงค่ากำหนดความปลอดภัยและความเป็นส่วนตัว จากนั้นเลือกช่องถัดจาก "<ph name="SERVICE_SCRIPT_NAME" />"
+
+หาก "<ph name="SERVICE_SCRIPT_NAME" />" แสดงอยู่และเลือกไว้แล้ว คุณอาจต้องยกเลิกการเลือกก่อนแล้วจึงเลือกใหม่</translation>
 <translation id="897805526397249209">ในการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์เครื่องอื่น ให้ติดตั้ง Chromoting ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก "<ph name="BUTTON_NAME" />"</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
 <translation id="9016232822027372900">ยังต้องการเชื่อมต่อ</translation>

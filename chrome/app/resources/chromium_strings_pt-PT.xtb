@@ -224,8 +224,6 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Reinicie o Chromium dentro de um dia}other{Reinicie o Chromium dentro de # dias}}</translation>
 <translation id="8453117565092476964">O arquivo do programa de instalação está corrompido ou não é válido. Transfira novamente o Chromium.</translation>
 <translation id="8493179195440786826">O Chromium Está Desatualizado</translation>
-<translation id="8494843963476918365">Se não encontrar uma definição nesta página, experimente aceder às <ph name="LINK_BEGIN" />
-    definições do navegador Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Obter ajuda para utilizar o Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Os autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8619360774459241877">A iniciar o Chromium…</translation>

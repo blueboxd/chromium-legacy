@@ -164,7 +164,7 @@ MigratableCardView::GetMigratableCardDescriptionView(
       std::make_unique<views::Label>(
           migratable_credit_card.credit_card()
               .AbbreviatedExpirationDateForDisplay(/*with_prefix=*/true),
-          views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
+          views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
   migratable_card_description_view->AddChildView(card_expiration.release());
 
   // If card is not successfully uploaded we show the invalid card

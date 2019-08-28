@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Pridėta prie skaitymo sąrašo</translation>
 <translation id="1828824471510190776">Siūlyti slaptažodį...</translation>
 <translation id="1870148520156231997">Rodyti slaptažodį</translation>
+<translation id="1872096359983322073">Žibintuvėlis</translation>
 <translation id="1876721852596493031">Siųsti naud. duom.</translation>
 <translation id="1911619930368729126">Įkelti į „Google“ diską</translation>
 <translation id="1923342640370224680">Pastaroji valanda</translation>
@@ -355,6 +356,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="605721222689873409">MM</translation>
 <translation id="6066301408025741299">Palieskite, jei norite atšaukti.</translation>
 <translation id="6108923351542677676">Nustatoma…</translation>
+<translation id="6119050551270742952">Dabartinė svetainė atidaryta inkognito režimu</translation>
 <translation id="6122191549521593678">Prisijungęs</translation>
 <translation id="6127379762771434464">Elementas pašalintas</translation>
 <translation id="6136914049981179737">Prieš sek.</translation>
@@ -411,6 +413,9 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6807889908376551050">Rodyti viską...</translation>
 <translation id="681368974849482173">Elementas sukurtas</translation>
 <translation id="6851516051005285358">Užklausa dėl kompiuteriui skirtos svetainės versijos</translation>
+<translation id="6858855187367714033">Nuskaityta</translation>
+<translation id="6859944681507688231">Jei norite nuskaityti QR kodą ar kredito kortelę, nustatymuose įgalinkite fotoaparatą.</translation>
+<translation id="6873263987691478642">Padalytas rodinys</translation>
 <translation id="6896758677409633944">Kopijuoti</translation>
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
 <translation id="6914583639806229067">Ieškoti nukopijuoto vaizdo</translation>
@@ -509,6 +514,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8428045167754449968">Didm. / miest.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8458397775385147834">Ištrinta elementų: 1</translation>
+<translation id="8487667956631253959">Įjungta</translation>
 <translation id="8487700953926739672">Pasiekiama neprisijungus</translation>
 <translation id="8490978609246021741">Išsaugoti pakeitimus</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>
@@ -519,6 +525,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8532105204136943229">Gal. pab. metai</translation>
 <translation id="8534481786647257214">„Google+“ įrašas paskelbtas.</translation>
 <translation id="8548878600947630424">Ieškoti puslapyje...</translation>
+<translation id="8588404856427128947">Išjungta</translation>
 <translation id="8605219856220328675">Uždaryti skirtuką.</translation>
 <translation id="8620640915598389714">Redaguoti</translation>
 <translation id="8636825310635137004">Jei norite pasiekti skirtukus iš kitų įrenginių, įjunkite sinchronizavimą.</translation>
@@ -559,6 +566,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Strigties ataskaita išsiųsta.</translation>
 <translation id="935490618240037774">Žymės, istorija, slaptažodžiai ir kiti nustatymai bus sinchronizuojami su „Google“ paskyra, kad galėtumėte juos naudoti visuose įrenginiuose.</translation>
+<translation id="952704832371081537">Atšaukti</translation>
 <translation id="976982866697960176">Tvarkyti sinchronizuotus duomenis…</translation>
 <translation id="988141524645182168">Kiti įrenginiai</translation>
 <translation id="989988560359834682">Adreso redagavimas</translation>

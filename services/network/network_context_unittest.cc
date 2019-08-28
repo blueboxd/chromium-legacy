@@ -4570,8 +4570,8 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
   };
 
   explicit TestURLLoaderHeaderClient(
-      mojom::TrustedURLLoaderHeaderClientRequest request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<mojom::TrustedURLLoaderHeaderClient> receiver)
+      : receiver_(this, std::move(receiver)) {}
 
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
@@ -4591,7 +4591,7 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
 
  private:
   TestHeaderClient header_client_;
-  mojo::Binding<mojom::TrustedURLLoaderHeaderClient> binding_;
+  mojo::Receiver<mojom::TrustedURLLoaderHeaderClient> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderHeaderClient);
 };
@@ -4613,7 +4613,7 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   TestURLLoaderHeaderClient header_client(
-      mojo::MakeRequest(&params->header_client));
+      params->header_client.InitWithNewPipeAndPassReceiver());
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                           std::move(params));
 
@@ -4680,7 +4680,7 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   TestURLLoaderHeaderClient header_client(
-      mojo::MakeRequest(&params->header_client));
+      params->header_client.InitWithNewPipeAndPassReceiver());
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                           std::move(params));
 
@@ -4776,8 +4776,8 @@ class HangingTestURLLoaderHeaderClient
   };
 
   explicit HangingTestURLLoaderHeaderClient(
-      mojom::TrustedURLLoaderHeaderClientRequest request)
-      : binding_(this, std::move(request)) {}
+      mojo::PendingReceiver<mojom::TrustedURLLoaderHeaderClient> receiver)
+      : receiver_(this, std::move(receiver)) {}
 
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
@@ -4803,7 +4803,7 @@ class HangingTestURLLoaderHeaderClient
 
  private:
   TestHeaderClient header_client_;
-  mojo::Binding<mojom::TrustedURLLoaderHeaderClient> binding_;
+  mojo::Receiver<mojom::TrustedURLLoaderHeaderClient> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(HangingTestURLLoaderHeaderClient);
 };
@@ -4828,7 +4828,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientModifiesHeadersAsynchronously) {
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   HangingTestURLLoaderHeaderClient header_client(
-      mojo::MakeRequest(&params->header_client));
+      params->header_client.InitWithNewPipeAndPassReceiver());
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                           std::move(params));
 
@@ -4879,7 +4879,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnBeforeSendHeaders) {
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   HangingTestURLLoaderHeaderClient header_client(
-      mojo::MakeRequest(&params->header_client));
+      params->header_client.InitWithNewPipeAndPassReceiver());
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                           std::move(params));
 
@@ -4929,7 +4929,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnHeadersReceived) {
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   HangingTestURLLoaderHeaderClient header_client(
-      mojo::MakeRequest(&params->header_client));
+      params->header_client.InitWithNewPipeAndPassReceiver());
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
                                           std::move(params));
 

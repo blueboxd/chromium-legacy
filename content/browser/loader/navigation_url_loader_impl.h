@@ -79,7 +79,8 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // |header_client|. This should have the same settings as the factory from the
   // URLLoaderFactoryGetter. Called on the UI thread.
   static void CreateURLLoaderFactoryWithHeaderClient(
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
       StoragePartitionImpl* partition);
 

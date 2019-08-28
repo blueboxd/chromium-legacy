@@ -168,7 +168,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="5906655207909574370">Ažuriranje će uskoro biti gotovo. Za dovršetak ponovo pokrenite uređaj.</translation>
 <translation id="5940385492829620908">Ovdje se nalaze vaš web, oznake i ostali sadržaji u Chromeu.</translation>
 <translation id="5941830788786076944">Neka Google Chrome bude zadani preglednik.</translation>
-<translation id="5977372243443849142">Chrome može zapamtiti vaše zaporke kako ih ne biste vi morali pamtiti.</translation>
+<translation id="5977372243443849142">Chrome može zapamtiti vaše zaporke kako ih ne biste morali pamtiti.</translation>
 <translation id="6014844626092547096">Sada ste prijavljeni na Chrome! Administrator je onemogućio sinkronizaciju.</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6070348360322141662">Radi dodatne sigurnosti Google Chrome kriptirat će vaše podatke</translation>
@@ -181,8 +181,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="6291549208091401781">Google Chrome već je instaliran za sve korisnike na računalu.</translation>
 <translation id="6338556085225130112">Ažuriranje Google Chromea</translation>
 <translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS" />softverom otvorenog koda<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6400930858680434649">Ako se postavka ne prikazuje na ovoj stranici, pokušajte je pronaći u <ph name="LINK_BEGIN" />
-    postavkama preglednika Chrome<ph name="LINK_END" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="6566149418543181476">Ažuriranje Google Chromea (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Upotrebljavate profil <ph name="PROFILE_EMAIL" /> za sinkronizaciju sadržaja u Chromeu. Da biste ažurirali svoje postavke sinkroniziranja ili upotrebljavali Chrome bez Google računa, posjetite <ph name="SETTINGS_LINK" />.</translation>

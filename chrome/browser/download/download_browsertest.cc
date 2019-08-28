@@ -35,6 +35,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -56,6 +57,7 @@
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
@@ -69,6 +71,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -3688,6 +3691,61 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SecurityLevels) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   histogram_tester.ExpectTotalCount("Security.SecurityLevel.DownloadStarted",
                                     2);
+}
+
+// Tests that the Safety Tip status of the initiating page is used for the
+// histogram rather than the status of the download URL, and that downloads in
+// new tabs are not tracked.
+IN_PROC_BROWSER_TEST_F(DownloadTest, SafetyTips) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  net::EmbeddedTestServer download_server;
+  download_server.ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(download_server.Start());
+  GURL download_url = download_server.GetURL("/downloads/empty.bin");
+
+  // Test that the correct histogram value is recorded for a page that does not
+  // trigger a Safety Tip.
+  {
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/simple.html"));
+    DownloadAndWait(browser(), download_url);
+    histogram_tester.ExpectUniqueSample("Security.SafetyTips.DownloadStarted",
+                                        security_state::SafetyTipStatus::kNone,
+                                        1);
+  }
+
+  // When a Safety Tip is triggered, test with the feature both enabled and
+  // disabled. The same metrics should be recorded either way.
+  SetSafetyTipBadRepPatterns(
+      {embedded_test_server()->GetURL("/").host() + "/"});
+  for (const auto& enable_feature : {true, false}) {
+    base::test::ScopedFeatureList feature_list;
+    if (enable_feature) {
+      feature_list.InitAndEnableFeature(features::kSafetyTipUI);
+    } else {
+      feature_list.InitAndDisableFeature(features::kSafetyTipUI);
+    }
+
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/simple.html"));
+    DownloadAndWait(browser(), download_url);
+    histogram_tester.ExpectUniqueSample(
+        "Security.SafetyTips.DownloadStarted",
+        security_state::SafetyTipStatus::kBadReputation, 1);
+
+    // Test that no Safety Tip status is recorded for a download in a new tab.
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/simple.html"));
+    DownloadAndWaitWithDisposition(browser(), download_url,
+                                   WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                                   ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+    histogram_tester.ExpectUniqueSample(
+        "Security.SafetyTips.DownloadStarted",
+        security_state::SafetyTipStatus::kBadReputation, 1);
+  }
 }
 
 // Tests that opening the downloads page will cause file existence check.

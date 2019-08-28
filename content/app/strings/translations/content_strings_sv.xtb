@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Värdet måste vara mindre än eller lika med <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3557673793733683882">rubrik <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">veckoväljare</translation>
 <translation id="3685101356851116974">Bild utan etikett</translation>
 <translation id="3706100364254443312">växel</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Beskrivningen hämtas …</translation>
 <translation id="8117451130807776954">Den här veckan</translation>
 <translation id="8199524924445686405">åååå</translation>
+<translation id="8208673686607688524">datum- och tidsväljare för lokal tid</translation>
 <translation id="8261464734335370856">Stavfel</translation>
 <translation id="8284326494547611709">Textning</translation>
 <translation id="835897206747267392">Ogiltigt värde.</translation>

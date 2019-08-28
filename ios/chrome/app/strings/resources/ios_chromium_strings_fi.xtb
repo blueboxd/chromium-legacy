@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Chromium-vinkki: Voit avata välilehtien lisäasetukset painamalla ylä- tai alapalkissa olevaa Näytä välilehdet ‑painiketta pitkään.</translation>
 <translation id="4241912885070669028">Olet kirjautumassa ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> hallitsemalta tililtä. Chromium-tietosi poistetaan tältä laitteelta, mutta tietosi säilyvät Google-tililläsi.</translation>
 <translation id="4555020257205549924">Kun tämä ominaisuus on käytössä, Chromium tarjoaa vierailla kielillä kirjoitettujen sivujen käännöksiä Google Kääntäjän kautta. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Ota käyttöön Chromium-lukija</translation>
 <translation id="4787850887676698916">Muilla laitteilla Chromiumissa avaamasi välilehdet näytetään täällä.</translation>
 <translation id="4999538639245140991">Koska kirjaudut ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> ylläpitämältä tililtä, Chromium-datasi poistetaan tältä laitteelta. Se säilyy edelleen Google-tililläsi.</translation>
 <translation id="5231355151045086930">Kirjaudu ulos Chromiumista</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Avaa Asetukset &gt; Tietosuoja &gt; Kamera &gt; Chromium ja ota kamera käyttöön.</translation>
 <translation id="7746854981345936341">Chromium-vinkki: Takaisin, Seuraava, Haku ja jotkin muut painikkeet löytyvät nyt näytön alareunasta.</translation>
 <translation id="786327964234957808">Muutoksen jälkeen synkronointi käyttää tilin <ph name="USER_EMAIL1" /> sijaan tiliä <ph name="USER_EMAIL2" />. <ph name="DOMAIN" /> hallitsee olemassa olevia Chromium-tietojasi. Tiedot poistetaan tältä laitteelta, mutta ne säilyvät tilillä <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Aloita Chromium-lukijan käyttö</translation>
 <translation id="8073677936375100957">Poistetaanko Chromium-data tältä laitteelta?</translation>
 <translation id="8175055321229419309">Vinkki: <ph name="BEGIN_LINK" />Siirrä Chromium Dockiin<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Saat sijaintitietojen avulla paremman Googlen käyttökokemuksen Chromiumissa.</translation>

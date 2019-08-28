@@ -224,8 +224,6 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Käivitage Chromium uuesti päeva jooksul}other{Käivitage Chromium uuesti # päeva jooksul}}</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
 <translation id="8493179195440786826">Chromium on aegunud</translation>
-<translation id="8494843963476918365">Kui seadet sellel lehel ei kuvata, proovige oma <ph name="LINK_BEGIN" />
-    Chromiumi brauseri seadeid<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Hangi abi Chromiumi kasutamise kohta</translation>
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR" /> The Chromium Authors. Kõik õigused on kaitstud.</translation>
 <translation id="8619360774459241877">Chromiumi käivitamine …</translation>

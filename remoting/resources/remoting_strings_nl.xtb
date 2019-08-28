@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Kan de host niet bereiken. Dit komt waarschijnlijk door de configuratie van het netwerk dat je gebruikt.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Laatst online gezien: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Deze app wordt niet meer ondersteund. Gebruik de <ph name="LINK_BEGIN" />Chrome Remote Desktop-webapp<ph name="LINK_END" /> om er zeker van te zijn dat je de nieuwste functies en beveiligingsupdates ontvangt.</translation>
-<translation id="2431841749166974386">Er is een aanvullende configuratiestap vereist voordat je dit apparaat extern kunt beheren met <ph name="PRODUCT_NAME" />.
-
-Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAME" />' om het deelvenster met beveiligings- en privacyvoorkeuren weer te geven en vink je vervolgens het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan.
-
-Als '<ph name="SERVICE_SCRIPT_NAME" />' al aanwezig en aangevinkt is, moet je dit item mogelijk verwijderen en opnieuw toevoegen.</translation>
 <translation id="2499160551253595098">Help ons Chrome Remote Desktop te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
 <translation id="2509394361235492552">Verbonden met <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Opmerking: als je er zeker van wilt zijn dat alle sneltoetsen beschikbaar zijn, kun je Chrome Remote Desktop configureren om de modus 'Openen als venster' te gebruiken.</translation>
@@ -317,6 +312,11 @@ Als '<ph name="SERVICE_SCRIPT_NAME" />' al aanwezig en aangevinkt is, moet je di
 <translation id="8804164990146287819">Privacybeleid</translation>
 <translation id="894763922177556086">Goed</translation>
 <translation id="895780780740011433">Voor Windows 7 en hoger</translation>
+<translation id="8963047137585288214">Er is een aanvullende configuratiestap vereist voordat je dit apparaat extern kunt beheren met <ph name="PRODUCT_NAME" />.
+
+Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAME" />' om het deelvenster met beveiligings- en privacyvoorkeuren weer te geven en vink je vervolgens het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan.
+
+Als '<ph name="SERVICE_SCRIPT_NAME" />' al aanwezig en aangevinkt is, moet je dit item mogelijk uitvinken en opnieuw aanvinken.</translation>
 <translation id="897805526397249209">Als je externe verbindingen met een andere computer mogelijk wilt maken, installeer je Chromoting en klik je op '<ph name="BUTTON_NAME" />'.</translation>
 <translation id="8998327464021325874">Controller voor Chrome Remote Desktop-host</translation>
 <translation id="9016232822027372900">Toch verbinding maken</translation>

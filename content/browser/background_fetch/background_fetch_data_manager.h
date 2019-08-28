@@ -49,10 +49,11 @@ class ServiceWorkerContextWrapper;
 // for Background Fetch.
 //
 // There must only be a single instance of this class per StoragePartition, and
-// it must only be used on the IO thread, since it relies on there being no
-// other code concurrently reading/writing the Background Fetch keys of the same
-// Service Worker database (except for deletions, e.g. it's safe for the Service
-// Worker code to remove a ServiceWorkerRegistration and all its keys).
+// it must only be used on the service worker core thread, since it relies on
+// there being no other code concurrently reading/writing the Background Fetch
+// keys of the same Service Worker database (except for deletions, e.g. it's
+// safe for the Service Worker code to remove a ServiceWorkerRegistration and
+// all its keys).
 //
 // Storage schema is documented in storage/README.md
 class CONTENT_EXPORT BackgroundFetchDataManager
@@ -92,7 +93,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   ~BackgroundFetchDataManager() override;
 
   // Grabs a reference to CacheStorageManager.
-  virtual void InitializeOnIOThread();
+  virtual void InitializeOnCoreThread();
 
   // Adds or removes the given |observer| to this data manager instance.
   void AddObserver(BackgroundFetchDataManagerObserver* observer);
@@ -100,7 +101,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   // Gets the required data to initialize BackgroundFetchContext with the
   // appropriate JobControllers. This will be called when BackgroundFetchContext
-  // is being intialized on the IO thread.
+  // is being initialized on the service worker core thread.
   void GetInitializationData(GetInitializationDataCallback callback);
 
   // Creates and stores a new registration with the given properties. Will
@@ -184,7 +185,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
     return observers_;
   }
 
-  void ShutdownOnIO();
+  void ShutdownOnCoreThread();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);

@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Não é possível acessar o host. Isso se deve, provavelmente, à configuração da rede que você está usando.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Visto on-line pela última vez <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Esse app não é mais compatível. Para receber os recursos e atualizações de segurança mais recentes, use o <ph name="LINK_BEGIN" />app da Web da Área de trabalho remota do Google Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Outra etapa de configuração é necessária para controlar este computador remotamente usando a <ph name="PRODUCT_NAME" />.
-
-Se quiser ativar essa função, selecione "<ph name="BUTTON_NAME" />" para exibir o painel de preferências de Segurança e Privacidade, depois marque a caixa ao lado de "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Se "<ph name="SERVICE_SCRIPT_NAME" />"' já estiver presente e selecionado, poderá ser necessário remover esse script e adicioná-lo novamente.</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar a Área de trabalho remota do Google Chrome por meio da coleta de estatísticas de uso e de relatórios de falhas.</translation>
 <translation id="2509394361235492552">Conectado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">OBSERVAÇÃO: para garantir que todos os atalhos do teclado estejam disponíveis, você pode configurar a Área de trabalho remota do Google Chrome para "Abrir como janela".</translation>
@@ -317,6 +312,11 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />"' já estiver presente e selecionado, pode
 <translation id="8804164990146287819">Política de Privacidade</translation>
 <translation id="894763922177556086">Boa</translation>
 <translation id="895780780740011433">Para Windows 7 e versões superiores</translation>
+<translation id="8963047137585288214">Outra etapa de configuração é necessária para controlar este computador remotamente usando a <ph name="PRODUCT_NAME" />.
+
+Se quiser ativar essa função, selecione "<ph name="BUTTON_NAME" />" para exibir o painel de preferências de Segurança e Privacidade, depois marque a caixa ao lado de "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Se "<ph name="SERVICE_SCRIPT_NAME" />"' já estiver presente e selecionado, poderá ser necessário desmarcar esse script e selecioná-lo novamente.</translation>
 <translation id="897805526397249209">Para ativar conexões remotas a um computador diferente, instale o Chromoting no computador desejado e clique em "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Controlador do host da Área de trabalho remota do Google Chrome</translation>
 <translation id="9016232822027372900">Conectar assim mesmo</translation>

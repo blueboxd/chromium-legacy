@@ -478,9 +478,18 @@ void StoragePartitionImplMap::PostCreateInitialization(
               browser_context_->GetResourceContext()));
     }
 
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&BackgroundFetchContext::InitializeOnIOThread,
-                                  partition->GetBackgroundFetchContext()));
+    // Use PostTask() instead of RunOrPostTaskOnThread() because not posting a
+    // task causes it to run before the CacheStorageManager has been
+    // initialized, and then CacheStorageContextImpl::CacheManager() ends up
+    // returning null instead of using the CrossSequenceCacheStorageManager in
+    // unit tests that don't use a real IO thread, violating the DCHECK in
+    // BackgroundFetchDataManager::InitializeOnCoreThread().
+    // TODO(crbug.com/960012): This workaround should be unnecessary after
+    // CacheStorage moves off the IO thread to the thread pool.
+    base::PostTask(
+        FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
+        base::BindOnce(&BackgroundFetchContext::InitializeOnCoreThread,
+                       partition->GetBackgroundFetchContext()));
 
     // We do not call InitializeURLRequestContext() for media contexts because,
     // other than the HTTP cache, the media contexts share the same backing

@@ -224,8 +224,6 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Start Chromium på nytt innen én dag}other{Start Chromium på nytt innen # dager}}</translation>
 <translation id="8453117565092476964">Installasjonsarkivet er skadet eller ugyldig. Last ned Chromium på nytt.</translation>
 <translation id="8493179195440786826">Chromium er utdatert</translation>
-<translation id="8494843963476918365">Hvis noen innstillinger ikke vises på denne siden, prøv <ph name="LINK_BEGIN" />
-    Chromium-nettleserinnstillingene<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Få hjelp med å bruke Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – The Chromium Authors. Med enerett.</translation>
 <translation id="8619360774459241877">Starter Chromium ...</translation>

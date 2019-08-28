@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">值必须小于或等于 <ph name="MAXIMUM" />。</translation>
 <translation id="3486220673238053218">定义</translation>
 <translation id="3557673793733683882">标题 <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">星期选择器</translation>
 <translation id="3685101356851116974">未加标签的图片</translation>
 <translation id="3706100364254443312">切换</translation>
 <translation id="3732799496749320381">月</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">正在获取说明…</translation>
 <translation id="8117451130807776954">本周</translation>
 <translation id="8199524924445686405"> 年 </translation>
+<translation id="8208673686607688524">当地日期和时间选择器</translation>
 <translation id="8261464734335370856">拼写无效</translation>
 <translation id="8284326494547611709">字幕</translation>
 <translation id="835897206747267392">值无效。</translation>

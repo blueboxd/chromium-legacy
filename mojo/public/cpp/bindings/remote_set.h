@@ -74,7 +74,7 @@ class RemoteSetImpl {
       return result;
     }
 
-    RemoteSetElementId id() const { return it_.first; }
+    RemoteSetElementId id() const { return it_->first; }
 
     reference operator*() const { return it_->second; }
     pointer operator->() const { return &it_->second; }

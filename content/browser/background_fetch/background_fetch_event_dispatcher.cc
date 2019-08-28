@@ -94,14 +94,14 @@ BackgroundFetchEventDispatcher::BackgroundFetchEventDispatcher(
     : background_fetch_context_(background_fetch_context),
       service_worker_context_(std::move(service_worker_context)),
       devtools_context_(devtools_context) {
-  // Constructed on the UI thread, then lives on the IO thread.
+  // Constructed on the UI thread, then lives on the service worker core thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(background_fetch_context_);
   DCHECK(devtools_context_);
 }
 
 BackgroundFetchEventDispatcher::~BackgroundFetchEventDispatcher() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchCompletionEvent(
@@ -149,7 +149,7 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
     const BackgroundFetchRegistrationId& registration_id,
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     base::OnceClosure finished_closure) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   LogBackgroundFetchCompletionForDevTools(
       registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_ABORT,
@@ -178,7 +178,7 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchClickEvent(
     const BackgroundFetchRegistrationId& registration_id,
     blink::mojom::BackgroundFetchRegistrationDataPtr registration_data,
     base::OnceClosure finished_closure) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(registration_data);
 
   auto registration = blink::mojom::BackgroundFetchRegistration::New(
@@ -209,7 +209,7 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchFailEvent(
     const BackgroundFetchRegistrationId& registration_id,
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     base::OnceClosure finished_closure) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   LogBackgroundFetchCompletionForDevTools(
       registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL,
@@ -238,7 +238,7 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchSuccessEvent(
     const BackgroundFetchRegistrationId& registration_id,
     blink::mojom::BackgroundFetchRegistrationPtr registration,
     base::OnceClosure finished_closure) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   LogBackgroundFetchCompletionForDevTools(
       registration_id,
@@ -353,7 +353,7 @@ void BackgroundFetchEventDispatcher::LogBackgroundFetchCompletionForDevTools(
     const BackgroundFetchRegistrationId& registration_id,
     ServiceWorkerMetrics::EventType event_type,
     blink::mojom::BackgroundFetchFailureReason failure_reason) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (!devtools_context_->IsRecording(
           DevToolsBackgroundService::kBackgroundFetch)) {

@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Die Verbindung zum Host kann nicht hergestellt werden. Das von Ihnen verwendete Netzwerk ist möglicherweise nicht korrekt konfiguriert.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Zuletzt online: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Diese App wird nicht mehr unterstützt. Damit Ihnen immer die aktuellen Funktionen und Sicherheitsupdates zur Verfügung stehen, verwenden Sie bitte die Web-App <ph name="LINK_BEGIN" />Chrome Remote Desktop<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Bevor Sie auf dieses Gerät über <ph name="PRODUCT_NAME" /> remote zugreifen können, ist ein zusätzlicher Konfigurationsschritt erforderlich.
-
-Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME" />" aus. Daraufhin öffnet sich das Sicherheits- und Datenschutzfenster. Klicken Sie dort das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.
-
-Wenn "<ph name="SERVICE_SCRIPT_NAME" />" bereits vorhanden und ausgewählt ist, müssen Sie möglicherweise das Kästchen zweimal anklicken, um das Häkchen zu entfernen und wieder einzufügen.</translation>
 <translation id="2499160551253595098">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="2509394361235492552">Verbunden mit <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">HINWEIS: Sie können in Chrome Remote Desktop die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
@@ -317,6 +312,11 @@ Wenn "<ph name="SERVICE_SCRIPT_NAME" />" bereits vorhanden und ausgewählt ist, 
 <translation id="8804164990146287819">Datenschutzerklärung</translation>
 <translation id="894763922177556086">Gut</translation>
 <translation id="895780780740011433">Für Windows 7 und höher</translation>
+<translation id="8963047137585288214">Bevor Sie auf dieses Gerät über <ph name="PRODUCT_NAME" /> remote zugreifen können, ist ein zusätzlicher Konfigurationsschritt erforderlich.
+
+Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME" />" aus. Daraufhin öffnet sich das Sicherheits- und Datenschutzfenster. Klicken Sie dort das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.
+
+Wenn "<ph name="SERVICE_SCRIPT_NAME" />" bereits vorhanden und ausgewählt ist, müssen Sie möglicherweise das Kästchen zweimal anklicken, um das Häkchen zu entfernen und wieder einzufügen.</translation>
 <translation id="897805526397249209">Um Remote-Verbindungen zu einem anderen Computer zu ermöglichen, installieren Sie Chromoting auf dem betreffenden Computer und klicken Sie auf "<ph name="BUTTON_NAME" />".</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
 <translation id="9016232822027372900">Trotzdem verbinden</translation>

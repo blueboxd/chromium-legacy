@@ -42,8 +42,6 @@ public class SideSlideLayout extends ViewGroup {
      */
     public interface OnResetListener { void onReset(); }
 
-    private static final int CIRCLE_DIAMETER_DP = 40;
-
     // Swipe offset in dips from the border of the view before applying physical tension
     // effect. The actual arrow bubble position is capped at a value three times as this
     // one, which is where navigation gets triggered.
@@ -147,8 +145,7 @@ public class SideSlideLayout extends ViewGroup {
         mDecelerateInterpolator = new DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR);
         mLinearInterpolator = new LinearInterpolator();
 
-        final float density = getResources().getDisplayMetrics().density;
-        mCircleWidth = (int) (CIRCLE_DIAMETER_DP * density);
+        mCircleWidth = (int) getResources().getDimensionPixelSize(R.dimen.navigation_bubble_size);
 
         LayoutInflater layoutInflater = LayoutInflater.from(getContext());
         mArrowView = (NavigationBubble) layoutInflater.inflate(R.layout.navigation_bubble, null);
@@ -159,7 +156,7 @@ public class SideSlideLayout extends ViewGroup {
         addView(mArrowView);
 
         // The absolute offset has to take into account that the circle starts at an offset
-        mTotalDragDistance = RAW_SWIPE_LIMIT_DP * density;
+        mTotalDragDistance = RAW_SWIPE_LIMIT_DP * getResources().getDisplayMetrics().density;
     }
 
     /**

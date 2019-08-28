@@ -225,7 +225,7 @@ cc::PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas()
 
 void OffscreenCanvasRenderingContext2D::DidDraw() {
   Host()->DidDraw();
-  dirty_rect_for_commit_.set(0, 0, Width(), Height());
+  dirty_rect_for_commit_.setWH(Width(), Height());
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {

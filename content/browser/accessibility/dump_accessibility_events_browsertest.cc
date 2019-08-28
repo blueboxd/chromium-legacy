@@ -241,6 +241,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaButtonExpand) {
+  RunEventTest(FILE_PATH_LITERAL("aria-button-expand.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaComboBoxCollapse) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-collapse.html"));
 }

@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">No es pot connectar amb l'amfitrió. Probablement, això passa a causa de la configuració de la xarxa que esteu fent servir.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> L'última connexió va ser <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Aquesta aplicació ja no s'admet. Per garantir que tens les funcions i actualitzacions de seguretat més recents, fes servir l'<ph name="LINK_BEGIN" />aplicació web Escriptori remot de Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Per poder controlar aquest ordinador de manera remota amb <ph name="PRODUCT_NAME" />, primer has de dur a terme un pas addicional de configuració.
-
-Per activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> perquè es mostri el tauler de preferències Seguretat i privadesa. Tot seguit, marca la casella <ph name="SERVICE_SCRIPT_NAME" />.
-
-Si l'script <ph name="SERVICE_SCRIPT_NAME" /> ja existeix i s'ha marcat la casella corresponent, pot ser que hagis de suprimir-lo i tornar a afegir-lo.</translation>
 <translation id="2499160551253595098">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="2509394361235492552">Connectat a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, podeu configurar l'escriptori remot de Chrome amb l'opció "Obre com a finestra".</translation>
@@ -317,6 +312,11 @@ Si l'script <ph name="SERVICE_SCRIPT_NAME" /> ja existeix i s'ha marcat la casel
 <translation id="8804164990146287819">Política de privadesa</translation>
 <translation id="894763922177556086">Bona</translation>
 <translation id="895780780740011433">Per a Windows 7 i versions posteriors</translation>
+<translation id="8963047137585288214">Per poder controlar aquest ordinador de manera remota amb <ph name="PRODUCT_NAME" />, primer has de dur a terme un pas addicional de configuració.
+
+Per activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> perquè es mostri el tauler de preferències Seguretat i privadesa. Tot seguit, marca la casella que hi ha al costat de <ph name="SERVICE_SCRIPT_NAME" />.
+
+Si es mostra <ph name="SERVICE_SCRIPT_NAME" /> i s'ha marcat la casella corresponent, pot ser que hagis de desmarcar-la i tornar-la a marcar.</translation>
 <translation id="897805526397249209">Per activar les connexions remotes a un altre ordinador, instal·leu-hi Chromoting i feu clic a <ph name="BUTTON_NAME" />.</translation>
 <translation id="8998327464021325874">Controlador de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="9016232822027372900">Connecta't de totes maneres</translation>

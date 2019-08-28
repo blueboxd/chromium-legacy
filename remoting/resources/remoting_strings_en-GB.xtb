@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Unable to reach the host. This is probably due to the configuration of the network you are using.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Last seen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">This app is no longer supported. To ensure that you're getting the latest features and security updates, please use the <ph name="LINK_BEGIN" />Chrome Remote Desktop web app<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">An additional configuration step is required before you can control this machine remotely using <ph name="PRODUCT_NAME" />.
-
-To enable this functionality, select '<ph name="BUTTON_NAME" />' to display the Security and Privacy preferences pane, then tick the box next to '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-If '<ph name="SERVICE_SCRIPT_NAME" />' is already present and ticked, you may need to remove it and then add it again.</translation>
 <translation id="2499160551253595098">Help us to improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.</translation>
 <translation id="2509394361235492552">Connected to <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.</translation>
@@ -317,6 +312,11 @@ If '<ph name="SERVICE_SCRIPT_NAME" />' is already present and ticked, you may ne
 <translation id="8804164990146287819">Privacy Policy</translation>
 <translation id="894763922177556086">Good</translation>
 <translation id="895780780740011433">For Windows 7 and above</translation>
+<translation id="8963047137585288214">An additional configuration step is required before you can control this machine remotely using <ph name="PRODUCT_NAME" />.
+
+To enable this functionality, select '<ph name="BUTTON_NAME" />' to display the Security and Privacy preferences pane, then tick the box next to '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+If '<ph name="SERVICE_SCRIPT_NAME" />' is already present and ticked, you may need to untick and then tick the box again.</translation>
 <translation id="897805526397249209">To enable remote connections to a different computer, install Chromoting there and click “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
 <translation id="9016232822027372900">Connect anyway</translation>

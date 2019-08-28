@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "components/sync_device_info/device_info.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace {
 
@@ -88,7 +90,7 @@ void SharingUiController::OnDialogClosed(SharingDialog* dialog) {
 }
 
 void SharingUiController::MaybeShowErrorDialog() {
-  if (send_failed_ && web_contents_ == GetCurrentWebContents(web_contents_))
+  if (HasSendFailed() && web_contents_ == GetCurrentWebContents(web_contents_))
     ShowNewDialog();
 }
 
@@ -97,7 +99,7 @@ void SharingUiController::SendMessageToDevice(
     chrome_browser_sharing::SharingMessage sharing_message) {
   last_dialog_id_++;
   is_loading_ = true;
-  send_failed_ = false;
+  send_result_ = SharingSendMessageResult::kSuccessful;
   UpdateIcon();
 
   sharing_service_->SendMessageToDevice(
@@ -113,14 +115,14 @@ void SharingUiController::OnMessageSentToDevice(
     return;
 
   is_loading_ = false;
-  send_failed_ = result != SharingSendMessageResult::kSuccessful;
+  send_result_ = result;
   UpdateIcon();
 }
 
 void SharingUiController::UpdateAndShowDialog() {
   last_dialog_id_++;
   is_loading_ = false;
-  send_failed_ = false;
+  send_result_ = SharingSendMessageResult::kSuccessful;
 
   CloseDialog();
   UpdateIcon();
@@ -133,6 +135,20 @@ void SharingUiController::UpdateDevices() {
       sharing_service_->GetDeviceCandidates(GetRequiredDeviceCapabilities());
 }
 
+// TODO(himanshujaju): Return different title based on |send_result_|.
+base::string16 SharingUiController::GetErrorDialogTitle() const {
+  DCHECK(HasSendFailed());
+  return l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_FAILED_TO_SEND);
+}
+
+// TODO(himanshujaju): Return different text based on |send_result_|.
+base::string16 SharingUiController::GetErrorDialogText() const {
+  DCHECK(HasSendFailed());
+  return l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE);
+}
+
 void SharingUiController::OnAppsReceived(int dialog_id, std::vector<App> apps) {
   if (dialog_id != last_dialog_id_)
     return;
@@ -141,4 +157,8 @@ void SharingUiController::OnAppsReceived(int dialog_id, std::vector<App> apps) {
   UpdateDevices();
 
   ShowNewDialog();
+}
+
+bool SharingUiController::HasSendFailed() const {
+  return send_result_ != SharingSendMessageResult::kSuccessful;
 }

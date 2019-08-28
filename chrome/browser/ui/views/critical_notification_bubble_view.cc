@@ -129,7 +129,8 @@ void CriticalNotificationBubbleView::Init() {
 
   auto message = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_TEXT),
-      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT, STYLE_SECONDARY);
+      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+      views::style::STYLE_SECONDARY);
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SizeToFit(

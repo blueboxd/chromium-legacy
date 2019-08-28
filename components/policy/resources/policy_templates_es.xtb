@@ -412,6 +412,12 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
       Advertencia: No se recomienda delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> a una aplicación de kiosco porque puede evitar que el dispositivo reciba actualizaciones de software y correcciones de seguridad muy importantes. Delegar el control de la versión de <ph name="PRODUCT_OS_NAME" /> podría suponer un riesgo para los usuarios.</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
+<translation id="1695708467571967752">Esta política controla si el usuario puede reproducir contenido multimedia cuando el dispositivo está bloqueado.
+
+      Si se le asigna el valor False, se inhabilitarán los controles multimedia en la pantalla de bloqueo.
+
+      Si se le asigna el valor True o no se le asigna ninguno, se mostrarán los controles multimedia en la pantalla de bloqueo cuando el usuario bloquee el dispositivo mientras se está reproduciendo algún contenido multimedia.
+      </translation>
 <translation id="1700811900332333712">Permite el uso de Powerwash en el dispositivo</translation>
 <translation id="1708496595873025510">Establecer restricción en obtención de base de variaciones</translation>
 <translation id="1717817358640580294">Si no se define esta política, cuando Limpiador de Chrome detecte software no deseado, podrá enviar metadatos sobre el análisis a Google, según la política definida por SafeBrowsingExtendedReportingEnabled. Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. El usuario tendrá la opción de compartir los resultados de la limpieza con Google para ayudar a detectar software no deseado en el futuro. Estos resultados contienen metadatos de archivos, extensiones instaladas de forma automática y claves de registro, tal como se describe en la página de información sobre privacidad de Chrome.
@@ -2997,6 +3003,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
           Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
+<translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6426205278746959912">No puedes forzar a las aplicaciones de Android para que utilicen un proxy. Hay un subconjunto de opciones de proxy disponibles para las aplicaciones de Android y estas pueden aceptarlas voluntariamente:
 
           Si decides no utilizar nunca un servidor proxy, se notificará a las aplicaciones de Android que no se ha configurado ningún proxy.
@@ -3150,15 +3157,6 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 <translation id="6731757988219967594">Filtrar contenido para adultos de sitios web de nivel superior (y no de los iframes insertados)</translation>
 <translation id="6734521799274931721">Controlar si el uso compartido de archivos del sistema estará disponible en Chrome OS</translation>
 <translation id="6735701345096330595">Forzar que se habilite el corrector ortográfico de idiomas</translation>
-<translation id="673699536430961464">Esta opción permite que los usuarios cambien de una cuenta de Google a otra en el área de contenido de la ventana de su navegador después de haber iniciado sesión en su dispositivo <ph name="PRODUCT_OS_NAME" />.
-
-      Si se le asigna el valor "False" a esta política, los usuarios no podrán iniciar sesión en otra cuenta desde el área de contenido de un navegador que no esté en modo de incógnito.
-
-      Si no se asigna ningún valor a esta política o se le asigna el valor "True", se utilizará el comportamiento predeterminado: los usuarios podrán iniciar sesión en otra cuenta desde el área de contenido del navegador, excepto en el caso de cuentas secundarias, en las que se bloqueará esta política en el área de contenido de los navegadores que no estén en modo de incógnito.
-
-      En caso de que no deba permitirse iniciar sesión en otra cuenta a través del modo de incógnito, este se puede bloquear con la política IncognitoModeAvailability.
-
-      Ten en cuenta que los usuarios podrán acceder a los servicios de Google sin tener que identificarse bloqueando las cookies.</translation>
 <translation id="6757438632136860443">Permite configurar una lista de patrones de URL que especifican los sitios web que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se configura, se usará para todos los sitios web el valor general predeterminado que se indique en la política "DefaultPluginsSetting" (si se ha configurado) o las preferencias personales del usuario (en caso contrario).</translation>
@@ -4020,6 +4018,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8312129124898414409">Permite establecer si los sitios web tienen permiso para utilizar la generación de claves. El uso de la generación de claves se puede permitir o rechazar en todos los sitios web.
 
           Si no se establece esta política, se utilizará BlockKeygen y el usuario podrá modificarla.</translation>
+<translation id="8314214821702356835">Permite a los usuarios reproducir contenido multimedia cuando el dispositivo está bloqueado</translation>
 <translation id="8320149248919453401">Modo de carga de la batería</translation>
 <translation id="8329984337216493753">Esta política solo se encuentra activa en el modo de venta.
 
@@ -4464,7 +4463,6 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="9152473318295429890">Habilitar las sugerencias contextuales de páginas web relacionadas</translation>
 <translation id="9153446010242995516">Vuelve a instalar la versión anterior de destino si la versión del SO es más reciente y se puede conservar la configuración de nivel de dispositivo durante el proceso, incluidas las credenciales de red. Sin embargo, instala la versión anterior con un Powerwash completo, aunque no se puedan restaurar los datos, ya sea porque la versión de destino no admite restaurar datos o por cambios incompatibles con la versión anterior.
           Compatible con <ph name="PRODUCT_OS_NAME" /> 75 y versiones superiores, lo que significa que los clientes más antiguos no pueden instalar versiones anteriores.</translation>
-<translation id="9158929520101169054">Permitir inicio de sesión múltiple en el navegador</translation>
 <translation id="9159126470527871268">Informar a los usuarios de que deben reiniciar <ph name="PRODUCT_NAME" /> o <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
 
       Este ajuste de la política habilita las notificaciones para informar al usuario de que es necesario o recomendable reiniciar el navegador o el dispositivo. Si no se define, <ph name="PRODUCT_NAME" /> indica al usuario que es necesario reiniciarlo mediante pequeños cambios en el menú, mientras que <ph name="PRODUCT_OS_NAME" /> lo indica mediante una notificación en la bandeja del sistema. Si se le asigna el valor "Recomendada", se muestra una advertencia al usuario de forma periódica indicando que se recomienda reiniciar, aunque el usuario puede ignorarla y reiniciar más tarde. Si se le asigna el valor "Obligatoria", se muestra una advertencia al usuario de forma periódica indicando que se reiniciará el navegador cuando haya transcurrido el periodo de notificación. De forma predeterminada, este periodo dura siete días para <ph name="PRODUCT_NAME" /> y cuatro días para <ph name="PRODUCT_OS_NAME" />, pero se puede cambiar mediante el ajuste <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> de la política.

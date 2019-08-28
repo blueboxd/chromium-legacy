@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Додато је на листу за читање</translation>
 <translation id="1828824471510190776">Предложи лозинку...</translation>
 <translation id="1870148520156231997">Прикажите лозинку</translation>
+<translation id="1872096359983322073">Блиц</translation>
 <translation id="1876721852596493031">Шаљи подат. о кориш.</translation>
 <translation id="1911619930368729126">Отпреми у Google диск</translation>
 <translation id="1923342640370224680">Претходни сат</translation>
@@ -355,6 +356,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Додирните да бисте отказали.</translation>
 <translation id="6108923351542677676">Подешавање је у току...</translation>
+<translation id="6119050551270742952">Актуелна веб-страница је у режиму без архивирања</translation>
 <translation id="6122191549521593678">Онлајн</translation>
 <translation id="6127379762771434464">Уклонили сте ставку</translation>
 <translation id="6136914049981179737">Малопре</translation>
@@ -411,6 +413,9 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6807889908376551050">Прикажи све...</translation>
 <translation id="681368974849482173">Ставка је направљена</translation>
 <translation id="6851516051005285358">Захтевај сајт за рачунар</translation>
+<translation id="6858855187367714033">Скенирано</translation>
+<translation id="6859944681507688231">Да бисте скенирали QR кôд или кредитну картицу, омогућите камеру у подешавањима.</translation>
+<translation id="6873263987691478642">Подељени приказ</translation>
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="6903907808598579934">Укључи синхронизацију</translation>
 <translation id="6914583639806229067">Потражите слику коју сте копирали</translation>
@@ -509,6 +514,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8428045167754449968">Град/место</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8458397775385147834">1 ставка је избрисана</translation>
+<translation id="8487667956631253959">Укључено</translation>
 <translation id="8487700953926739672">Доступно ван мреже</translation>
 <translation id="8490978609246021741">Сачувај промене</translation>
 <translation id="8503813439785031346">Корисничко име</translation>
@@ -519,6 +525,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8532105204136943229">Година истека</translation>
 <translation id="8534481786647257214">Google+ пост је довршен.</translation>
 <translation id="8548878600947630424">Пронађи на страници...</translation>
+<translation id="8588404856427128947">Искључено</translation>
 <translation id="8605219856220328675">Затвори картицу.</translation>
 <translation id="8620640915598389714">Измени</translation>
 <translation id="8636825310635137004">Да би вам картице биле доступне на другим уређајима, укључите синхронизацију.</translation>
@@ -559,6 +566,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Извештај о отказивању је послат.</translation>
 <translation id="935490618240037774">Обележивачи, историја, лозинке и друга подешавања ће се синхронизовати са Google налогом да бисте могли да их користите на свим уређајима.</translation>
+<translation id="952704832371081537">Откажи</translation>
 <translation id="976982866697960176">Управљајте синхронизованим подацима…</translation>
 <translation id="988141524645182168">Други уређаји</translation>
 <translation id="989988560359834682">Измена адресе</translation>

@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Съвет за Chromium. За да видите още опции за разделите, натиснете и задръжте бутона „Показване на разделите“ в лентата с инструменти в долната или горната част на екрана.</translation>
 <translation id="4241912885070669028">Излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />. Данните ви в Chromium ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>
 <translation id="4555020257205549924">Когато тази функция е включена, Chromium ще предлага да преведе страниците, написани на други езици, посредством Google Преводач. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Включване на скенера в Chromium</translation>
 <translation id="4787850887676698916">Тук ще се показват разделите, които сте отворили в Chromium на другите си устройства.</translation>
 <translation id="4999538639245140991">Тъй като излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />, данните ви в Chromium ще бъдат изтрити от това устройство, но ще останат в профила ви в Google.</translation>
 <translation id="5231355151045086930">Изход от Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Отворете „Settings“ &gt; „Privacy“ &gt; „Camera“ &gt; „Chromium“ и включете камерата.</translation>
 <translation id="7746854981345936341">Съвет за Chromium. Някои бутони, например тези за връщане назад, преминаване напред и търсене, вече са в долната част на екрана.</translation>
 <translation id="786327964234957808">Заменяте настоящия профил за синхронизиране (<ph name="USER_EMAIL1" />) с друг (<ph name="USER_EMAIL2" />). Съществуващите ви данни в Chromium се управляват от <ph name="DOMAIN" />. Те ще се изтрият от това устройство, но ще останат в профила <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Използване на скенера в Chromium</translation>
 <translation id="8073677936375100957">Искате ли данните ви в Chromium да бъдат изчистени от устройството?</translation>
 <translation id="8175055321229419309">Съвет: <ph name="BEGIN_LINK" />Преместете Chromium в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Подобрете работата си с Google в Chromium въз основа на местоположението си.</translation>

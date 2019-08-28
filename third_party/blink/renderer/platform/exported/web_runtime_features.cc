@@ -690,6 +690,10 @@ void WebRuntimeFeatures::EnableConsolidatedMovementXY(bool enable) {
   RuntimeEnabledFeatures::SetConsolidatedMovementXYEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableCooperativeScheduling(bool enable) {
+  RuntimeEnabledFeatures::SetCooperativeSchedulingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableStreamsNative(bool enable) {
   RuntimeEnabledFeatures::SetStreamsNativeEnabled(enable);
 }

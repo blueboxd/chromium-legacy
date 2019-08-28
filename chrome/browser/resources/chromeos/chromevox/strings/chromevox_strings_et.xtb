@@ -69,7 +69,6 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1385214448885562192">Nõustumiseks vajutage sisestusklahvi Enter, tühistamiseks paoklahvi Escape, järgmise juurde liikumiseks vajutage alla ja eelmise juurde liikumiseks üles.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Loe rikasteksti atribuudid ette</translation>
 <translation id="1405567553485452995">Heleroheline</translation>
 <translation id="1417889266572670458">Meresinine</translation>
 <translation id="1431911867058218151">Ploomililla</translation>
@@ -761,7 +760,6 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="6348869651006731065">Tuhmhall</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punkt}other{# punkti}}</translation>
 <translation id="6355910664415701303">Eelmist loendiüksust ei ole.</translation>
-<translation id="6360318852623800555">Rikasteksti atribuudid</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Eelmine pealkiri</translation>
 <translation id="6376999910001533545">Kastanpruun</translation>

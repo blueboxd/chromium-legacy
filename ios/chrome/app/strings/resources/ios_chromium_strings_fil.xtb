@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Tip sa Chromium. Para sa higit pang opsyon sa tab, pindutin nang matagal ang button na Ipakita ang Mga Tab sa toolbar, na nasa ibaba o itaas ng iyong screen.</translation>
 <translation id="4241912885070669028">Nagsa-sign out ka sa account na pinamamahalaan ng <ph name="SIGNOUT_MANAGED_DOMAIN" />. Ide-delete nito ang data mo sa Chromium sa device na ito, ngunit mananatili ang data mo sa iyong Google account.</translation>
 <translation id="4555020257205549924">Kapag naka-on ang feature na ito, mag-aalok ang Chromium na magsalin ng mga page na nakasulat sa ibang mga wika gamit ang Google Translate. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">I-on ang scanner ng Chromium</translation>
 <translation id="4787850887676698916">Dito lalabas ang mga nabuksan mong tab sa Chromium sa iba mo pang mga device.</translation>
 <translation id="4999538639245140991">Dahil magsa-sign out ka sa account na pinapamahalaan ng <ph name="SIGNOUT_MANAGED_DOMAIN" />, made-delete ang iyong data sa Chromium sa device na ito. Mananatili ang data mo sa iyong Google Account.</translation>
 <translation id="5231355151045086930">Mag-sign out sa Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Buksan ang Settings &gt; Privacy &gt; Camera &gt; Chromium at i-on ang camera.</translation>
 <translation id="7746854981345936341">Tip sa Chromium. Nasa ibaba na ng iyong screen ang ilang button, tulad ng Bumalik, Susunod, at Maghanap.</translation>
 <translation id="786327964234957808">Pinapalitan mo ang mga sync account mula sa <ph name="USER_EMAIL1" /> patungo sa <ph name="USER_EMAIL2" />. Ang iyong data ng Chromium ay pinamamahalaan ng <ph name="DOMAIN" />. Ide-delete nito ang iyong data mula sa device na ito, ngunit mananatili ang iyong data sa <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Simulang gamitin ang scanner ng Chromium</translation>
 <translation id="8073677936375100957">I-clear ang iyong data sa Chromium sa device na ito?</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Ilipat ang Chromium sa iyong dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Magkaroon ng mas mahusay na karanasan sa Google sa Chromium batay sa iyong lokasyon.</translation>

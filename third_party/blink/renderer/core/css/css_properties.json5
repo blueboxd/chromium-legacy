@@ -4222,6 +4222,7 @@
     },
     {
       name: "margin-inline-start",
+      layout_dependent: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         resolver: "inline-start",
@@ -4232,6 +4233,7 @@
     },
     {
       name: "margin-inline-end",
+      layout_dependent: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         resolver: "inline-end",
@@ -4242,6 +4244,7 @@
     },
     {
       name: "margin-block-start",
+      layout_dependent: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         resolver: "block-start",
@@ -4252,6 +4255,7 @@
     },
     {
       name: "margin-block-end",
+      layout_dependent: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         resolver: "block-end",
@@ -4262,6 +4266,7 @@
     },
     {
       name: "padding-inline-start",
+      layout_dependent: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         resolver: "inline-start",
@@ -4271,6 +4276,7 @@
     },
     {
       name: "padding-inline-end",
+      layout_dependent: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         resolver: "inline-end",
@@ -4280,6 +4286,7 @@
     },
     {
       name: "padding-block-start",
+      layout_dependent: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         resolver: "block-start",
@@ -4289,6 +4296,7 @@
     },
     {
       name: "padding-block-end",
+      layout_dependent: true,
       property_methods: ["ParseSingleValue"],
       direction_aware_options: {
         resolver: "block-end",

@@ -222,7 +222,6 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="8417404458978023919">{0,plural, =1{A Chromiumot 1 napon belül újra kell indítani}other{A Chromiumot # napon belül újra kell indítani}}</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="8493179195440786826">A Chromium elavult</translation>
-<translation id="8494843963476918365">Ha valamelyik beállítás nem jelenik meg ezen az oldalon, próbálkozzon <ph name="LINK_BEGIN" />a Chromium böngésző beállításainál<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Segítséget kaphat a Chromium használatával kapcsolatban</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – A Chromium szerzői. Minden jog fenntartva.</translation>
 <translation id="8619360774459241877">Chromium indítása…</translation>

@@ -19,22 +19,24 @@ from telemetry.core import util
 from py_utils import cloud_storage
 
 
-SUPPORTED_FORMATS = set(['none'])
-ALL_SUPPORTED_FORMATS = sorted(
-    SUPPORTED_FORMATS.union(command_line.LEGACY_OUTPUT_FORMATS))
+SUPPORTED_FORMATS = {
+    'none': NotImplemented
+}
 
 
 def ArgumentParser():
   """Create an ArgumentParser defining options required by the processor."""
+  all_output_formats = sorted(
+      set(SUPPORTED_FORMATS).union(command_line.LEGACY_OUTPUT_FORMATS))
   parser = argparse.ArgumentParser(add_help=False)
   group = parser.add_argument_group(title='Result processor options')
   group.add_argument(
       '--output-format', action='append', dest='output_formats',
-      metavar='FORMAT', choices=ALL_SUPPORTED_FORMATS,
+      metavar='FORMAT', choices=all_output_formats,
       help=' '.join([
           'Output format to produce.',
           'May be used multiple times to produce multiple outputs.',
-          'Avaliable formats: %s.' % ', '.join(ALL_SUPPORTED_FORMATS),
+          'Avaliable formats: %s.' % ', '.join(all_output_formats),
           'Defaults to: html.']))
   group.add_argument(
       '--output-dir', default=util.GetBaseDir(), metavar='DIR_PATH',
@@ -82,12 +84,20 @@ def ProcessOptions(options):
   Args:
     options: An options object with values parsed from the command line.
   """
-  if not hasattr(options, 'output_formats'):
+  # The output_dir option is None or missing if the selected Telemetry command
+  # does not involve output generation, e.g. "run_benchmark list", and the
+  # argument parser defined above was not invoked.
+  if getattr(options, 'output_dir', None) is None:
     return
 
-  options.output_dir = os.path.expanduser(options.output_dir)
+  def resolve_dir(path):
+    return os.path.abspath(os.path.expanduser(path))
 
-  if not options.intermediate_dir:
+  options.output_dir = resolve_dir(options.output_dir)
+
+  if options.intermediate_dir:
+    options.intermediate_dir = resolve_dir(options.intermediate_dir)
+  else:
     if options.results_label:
       filesafe_label = re.sub(r'\W+', '_', options.results_label)
     else:

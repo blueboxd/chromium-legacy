@@ -286,7 +286,7 @@ class BackgroundFetchServiceTest
     embedded_worker_test_helper()->context_wrapper()->AddObserver(this);
     devtools_context()->AddObserver(this);
 
-    context_->InitializeOnIOThread();
+    context_->InitializeOnCoreThread();
     service_ = std::make_unique<BackgroundFetchServiceImpl>(
         context_, origin(),
         /* render_frame_tree_node_id= */ 0,

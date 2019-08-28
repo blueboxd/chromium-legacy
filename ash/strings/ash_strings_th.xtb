@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">ยุบเมนู</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1419738280318246476">ปลดล็อกอุปกรณ์เพื่อดำเนินการแจ้งเตือน</translation>
+<translation id="1420408895951708260">เปิด/ปิดแสงตอนกลางคืน <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">ยอมรับ</translation>
 <translation id="1455242230282523554">แสดงการตั้งค่าภาษา</translation>
 <translation id="1460620680449458626">ระดับเสียงปิดเสียงอยู่</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526"><ph name="FEATURE_NAME" />ปิดใช้โดยนโยบายที่ใช้กับอุปกรณ์นี้ โปรดติดต่อผู้ดูแลระบบเพื่อขอให้เปลี่ยนแปลง</translation>
 <translation id="1823873187264960516">อีเทอร์เน็ต: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (กำลังโหลด...)</translation>
+<translation id="1838895407229022812">แสงตอนกลางคืนปิดอยู่</translation>
 <translation id="1850504506766569011">WiFi ปิดอยู่</translation>
 <translation id="1864454756846565995">อุปกรณ์ USB-C (พอร์ตด้านหลัง)</translation>
 <translation id="1882897271359938046">กำลังแสดงผลไปที่ <ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">คีย์ติดหนึบ</translation>
 <translation id="2509468283778169019">Caps Lock เปิดอยู่</translation>
 <translation id="2532589005999780174">โหมดคอนทราสต์สูง</translation>
+<translation id="2542089167727451762">แตะรูปโปรไฟล์</translation>
 <translation id="255671100581129685">Google Assistant ไม่พร้อมใช้งานในเซสชันสาธารณะ</translation>
 <translation id="2575685495496069081">ปิดใช้การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชีอยู่</translation>
 <translation id="2582112259361606227">รีสตาร์ทเพื่ออัปเดต</translation>
 <translation id="2617342710774726426">ซิมการ์ดถูกล็อก</translation>
-<translation id="2651765386227849097">มีการปิดใช้ Google Assistant ในอุปกรณ์นี้</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2658778018866295321">คลิกแล้วลาก</translation>
 <translation id="2700493154570097719">ตั้งค่าแป้นพิมพ์</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">แว่นขยาย</translation>
 <translation id="4351433414020964307">Assistant กำลังโหลด...</translation>
-<translation id="435527878592612277">เลือกรูปภาพของคุณ</translation>
 <translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
 <translation id="4379531060876907730">นี่คือเครื่องมือสไตลัส</translation>
 <translation id="4389184120735010762">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายหน้าจอบางส่วน จะเปิดแว่นขยายไหม</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">ขนาดกลาง</translation>
 <translation id="5744083938413354016">การแตะลาก</translation>
 <translation id="5750765938512549687">ปิดบลูทูธแล้ว</translation>
+<translation id="576453121877257266">แสงตอนกลางคืนเปิดอยู่</translation>
 <translation id="5777841717266010279">ต้องการหยุดแชร์หน้าจอไหม</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">หยุด <ph name="ROUTE_TITLE" /> ใน<ph name="RECEIVER_NAME" /></translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">เปลี่ยนความละเอียดแล้ว</translation>
 <translation id="6297287540776456956">ใช้สไตลัสเพื่อเลือกพื้นที่</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> หมุนเวียนเป็น <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">เปิด/ปิดแสงตอนกลางคืน</translation>
 <translation id="6376931439017688372">บลูทูธเปิดอยู่</translation>
 <translation id="639644700271529076">CAPS LOCK ปิดอยู่</translation>
 <translation id="6406704438230478924">altgr</translation>

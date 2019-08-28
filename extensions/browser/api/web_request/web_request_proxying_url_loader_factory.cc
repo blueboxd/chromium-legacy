@@ -134,7 +134,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       !(options_ & network::mojom::kURLLoadOptionSynchronous)));
 
   current_request_uses_header_client_ =
-      factory_->url_loader_header_client_binding_ &&
+      factory_->url_loader_header_client_receiver_.is_bound() &&
       request_.url.SchemeIsHTTPOrHTTPS() && network_service_request_id_ != 0 &&
       ExtensionWebRequestEventRouter::GetInstance()
           ->HasExtraHeadersListenerForRequest(factory_->browser_context_,
@@ -844,14 +844,14 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request,
+    mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
+        header_client_receiver,
     WebRequestAPI::ProxySet* proxies)
     : browser_context_(browser_context),
       render_process_id_(render_process_id),
       is_download_(is_download),
       request_id_generator_(std::move(request_id_generator)),
       navigation_ui_data_(std::move(navigation_ui_data)),
-      url_loader_header_client_binding_(this),
       proxies_(proxies) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // base::Unretained is safe here because the callback will be canceled when
@@ -871,8 +871,8 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
       &WebRequestProxyingURLLoaderFactory::OnProxyBindingError,
       base::Unretained(this)));
 
-  if (header_client_request)
-    url_loader_header_client_binding_.Bind(std::move(header_client_request));
+  if (header_client_receiver)
+    url_loader_header_client_receiver_.Bind(std::move(header_client_receiver));
 }
 
 void WebRequestProxyingURLLoaderFactory::StartProxying(
@@ -883,7 +883,8 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request,
+    mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
+        header_client_receiver,
     WebRequestAPI::ProxySet* proxies) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -891,7 +892,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
       browser_context, render_process_id, is_download,
       std::move(request_id_generator), std::move(navigation_ui_data),
       std::move(loader_request), std::move(target_factory_info),
-      std::move(header_client_request), proxies);
+      std::move(header_client_receiver), proxies);
 
   proxies->AddProxy(std::move(proxy));
 }

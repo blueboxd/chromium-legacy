@@ -70,6 +70,9 @@ class SMILTimeWithOrigin {
 
   const SMILTime& Time() const { return time_; }
   bool OriginIsScript() const { return origin_ == kScriptOrigin; }
+  bool HasSameOrigin(SMILTimeWithOrigin other) const {
+    return origin_ == other.origin_;
+  }
 
  private:
   SMILTime time_;

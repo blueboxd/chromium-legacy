@@ -16,8 +16,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -106,12 +104,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
     https_url_ = https_server_->GetURL("/defer_all_script_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
     client_redirect_url_ = https_server_->GetURL("/client_redirect_base.html");
-    client_redirect_url_target_url_ = https_server_->GetURL(
-        "/client_redirect_loop_with_defer_all_script.html");
-    server_redirect_url_ = https_server_->GetURL("/server_redirect_base.html");
-    server_redirect_base_redirect_to_final_server_redirect_url_ =
-        https_server_->GetURL(
-            "/server_redirect_base_redirect_to_final_server_redirect.html");
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -172,16 +164,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
 
   const GURL& client_redirect_url() const { return client_redirect_url_; }
 
-  const GURL& client_redirect_url_target_url() const {
-    return client_redirect_url_target_url_;
-  }
-
-  const GURL& server_redirect_url() const { return server_redirect_url_; }
-
-  const GURL& server_redirect_base_redirect_to_final_server_redirect() const {
-    return server_redirect_base_redirect_to_final_server_redirect_url_;
-  }
-
   std::string GetScriptLog() {
     std::string script_log;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
@@ -207,10 +189,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   GURL https_url_;
   GURL client_redirect_url_;
-  GURL client_redirect_url_target_url_;
-  GURL server_redirect_url_;
-
-  GURL server_redirect_base_redirect_to_final_server_redirect_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DeferAllScriptBrowserTest);
 };
@@ -350,146 +328,30 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(
-    // The client_redirect_url (/client_redirect_base.html) performs a client
-    // redirect to "/client_redirect_loop_with_defer_all_script.html" which
-    // peforms a client redirect back to the initial client_redirect_url if
-    // and only if script execution is deferred. This emulates the navigation
-    // pattern seen in crbug.com/987062
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptClientRedirectLoopStopped)) {
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(browser()
-                                      ->tab_strip_model()
-                                      ->GetActiveWebContents()
-                                      ->GetBrowserContext()));
-  EXPECT_TRUE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      client_redirect_url()));
-  EXPECT_TRUE(
-      previews_service->IsUrlEligibleForDeferAllScriptPreview(https_url()));
+  GURL url = https_url();
 
   // Whitelist DeferAllScript for any path for the url's host.
-  SetDeferAllScriptHintWithPageWithPattern(https_url(), "*");
+  SetDeferAllScriptHintWithPageWithPattern(url, "*");
 
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
+  // The client_redirect_url (/client_redirect_base.html) performs a client
+  // redirect to "/client_redirect_loop_with_defer_all_script.html" which
+  // peforms a client redirect back to the initial client_redirect_url if
+  // and only if script execution is deferred. This emulates the navigation
+  // pattern seen in crbug.com/987062
   ui_test_utils::NavigateToURL(browser(), client_redirect_url());
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "Navigation.ClientRedirectCycle.RedirectToReferrer",
       2);
 
-  // If there is a redirect loop, call to NavigateToURL() would never finish.
-  // The checks belows are additional checks to ensure that the logic to detect
-  // redirect loops is being called.
-  //
   // Client redirect loop is broken on 2nd pass around the loop so expect 3
   // previews before previews turned off to stop loop.
   histogram_tester.ExpectTotalCount(
       "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
-  EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      client_redirect_url()));
-  EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      client_redirect_url_target_url()));
-  // https_url() is not in redirect chain and should still be eligible for the
-  // preview.
-  EXPECT_TRUE(
-      previews_service->IsUrlEligibleForDeferAllScriptPreview(https_url()));
-}
-
-// The server_redirect_url (/server_redirect_url.html) performs a server
-// rediect to client_redirect_url() which redirects to
-// client_redirect_url_target_url(). Finally,
-// client_redirect_url_target_url() performs a client redirect back to
-// client_redirect_url() only if script execution is deferred.
-IN_PROC_BROWSER_TEST_P(DeferAllScriptBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(
-                           DeferAllScriptServerClientRedirectLoopStopped)) {
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(browser()
-                                      ->tab_strip_model()
-                                      ->GetActiveWebContents()
-                                      ->GetBrowserContext()));
-  EXPECT_TRUE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      server_redirect_url()));
-  EXPECT_TRUE(
-      previews_service->IsUrlEligibleForDeferAllScriptPreview(https_url()));
-
-  // Whitelist DeferAllScript for any path for the url's host.
-  SetDeferAllScriptHintWithPageWithPattern(https_url(), "*");
-
-  base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-
-  ui_test_utils::NavigateToURL(browser(), server_redirect_url());
-
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      1);
-
-  // If there is a redirect loop, call to NavigateToURL() would never finish.
-  // The checks belows are additional checks to ensure that the logic to detect
-  // redirect loops is being called.
-  //
-  // Client redirect loop is broken on 2nd pass around the loop so expect 3
-  // previews before previews turned off to stop loop.
-  histogram_tester.ExpectTotalCount(
-      "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
-  histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
-  EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      server_redirect_url()));
-  EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      client_redirect_url()));
-  EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      client_redirect_url_target_url()));
-  // https_url() is not in redirect chain and should still be eligible for the
-  // preview.
-  EXPECT_TRUE(
-      previews_service->IsUrlEligibleForDeferAllScriptPreview(https_url()));
-}
-
-// server_redirect_base_redirect_to_final_server_redirect()
-// performs a server redirect which does a client redirect followed
-// by another client redirect (only when defer is enabled) to
-// server_redirect_base_redirect_to_final_server_redirect().
-IN_PROC_BROWSER_TEST_P(
-    DeferAllScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
-        DeferAllScriptServerClientServerClientServerRedirectLoopStopped)) {
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(browser()
-                                      ->tab_strip_model()
-                                      ->GetActiveWebContents()
-                                      ->GetBrowserContext()));
-  EXPECT_TRUE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      server_redirect_base_redirect_to_final_server_redirect()));
-  EXPECT_TRUE(
-      previews_service->IsUrlEligibleForDeferAllScriptPreview(https_url()));
-
-  // Whitelist DeferAllScript for any path for the url's host.
-  SetDeferAllScriptHintWithPageWithPattern(https_url(), "*");
-
-  base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-
-  ui_test_utils::NavigateToURL(
-      browser(), server_redirect_base_redirect_to_final_server_redirect());
-
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      1);
-
-  // If there is a redirect loop, call to NavigateToURL() would never finish.
-  // The checks belows are additional checks to ensure that the logic to detect
-  // redirect loops is being called.
-  histogram_tester.ExpectTotalCount(
-      "Navigation.ClientRedirectCycle.RedirectToReferrer", 1);
-  histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
-  EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
-      server_redirect_base_redirect_to_final_server_redirect()));
-  // https_url() is not in redirect chain and should still be eligible for the
-  // preview.
-  EXPECT_TRUE(
-      previews_service->IsUrlEligibleForDeferAllScriptPreview(https_url()));
 }

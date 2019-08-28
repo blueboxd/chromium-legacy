@@ -73,13 +73,13 @@ void SharedClipboardContextMenuObserver::InitMenu(
     proxy_->AddMenuItem(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
-            IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+            IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
             base::UTF8ToUTF16(devices[0]->client_name())));
 #else
     proxy_->AddMenuItemWithIcon(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
-            IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+            IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
             base::UTF8ToUTF16(devices[0]->client_name())),
         GetContextMenuIcon());
 #endif
@@ -88,13 +88,14 @@ void SharedClipboardContextMenuObserver::InitMenu(
 #if defined(OS_MACOSX)
     proxy_->AddSubMenu(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
-        l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF),
+        l10n_util::GetStringUTF16(
+            IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES),
         sub_menu_model_.get());
 #else
     proxy_->AddSubMenuWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
-        IDS_CONTEXT_MENU_SEND_TAB_TO_SELF, sub_menu_model_.get(),
-        GetContextMenuIcon());
+        IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
+        sub_menu_model_.get(), GetContextMenuIcon());
 #endif
   }
 }

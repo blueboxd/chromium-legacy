@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/websockets/websocket_handle_impl.h"
 
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -56,8 +57,9 @@ void WebSocketHandleImpl::Connect(
   connector->Connect(
       url, protocols, site_for_cookies, user_agent_override,
       handshake_client_receiver_.BindNewPipeAndPassRemote(task_runner_));
-  handshake_client_receiver_.set_disconnect_with_reason_handler(WTF::Bind(
-      &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
+  handshake_client_receiver_.set_disconnect_with_reason_handler(
+      WTF::Bind(&WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this),
+                FROM_HERE));
 }
 
 void WebSocketHandleImpl::Send(bool fin,
@@ -92,12 +94,8 @@ void WebSocketHandleImpl::Send(bool fin,
   websocket_->SendFrame(fin, type_to_pass, data_to_pass);
 }
 
-void WebSocketHandleImpl::AddReceiveFlowControlQuota(int64_t quota) {
-  DCHECK(websocket_);
-
-  NETWORK_DVLOG(1) << this << " flowControl(" << quota << ")";
-
-  websocket_->AddReceiveFlowControlQuota(quota);
+void WebSocketHandleImpl::StartReceiving() {
+  websocket_->StartReceiving();
 }
 
 void WebSocketHandleImpl::Close(uint16_t code, const String& reason) {
@@ -114,10 +112,13 @@ void WebSocketHandleImpl::Disconnect() {
   channel_ = nullptr;
 }
 
-void WebSocketHandleImpl::OnConnectionError(uint32_t custom_reason,
+void WebSocketHandleImpl::OnConnectionError(const base::Location& set_from,
+                                            uint32_t custom_reason,
                                             const std::string& description) {
-  NETWORK_DVLOG(1) << " OnConnectionError( reason: " << custom_reason
-                   << ", description:" << description;
+  NETWORK_DVLOG(1) << " OnConnectionError("
+                   << " reason: " << custom_reason
+                   << ", description:" << description
+                   << "), set_from:" << set_from.ToString();
   String message = "Unknown reason";
   if (custom_reason == network::mojom::blink::WebSocket::kInternalFailure) {
     message = String::FromUTF8(description.c_str(), description.size());
@@ -152,10 +153,9 @@ void WebSocketHandleImpl::OnConnectionEstablished(
         client_receiver,
     const String& protocol,
     const String& extensions,
-    uint64_t receive_quota_threshold,
     mojo::ScopedDataPipeConsumerHandle readable) {
   NETWORK_DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
-                   << extensions << ", " << receive_quota_threshold << ")";
+                   << extensions << ")";
 
   if (!channel_)
     return;
@@ -163,8 +163,9 @@ void WebSocketHandleImpl::OnConnectionEstablished(
   // From now on, we will detect mojo errors via |client_binding_|.
   handshake_client_receiver_.reset();
   client_binding_.Bind(std::move(client_receiver), task_runner_);
-  client_binding_.set_connection_error_with_reason_handler(WTF::Bind(
-      &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
+  client_binding_.set_connection_error_with_reason_handler(
+      WTF::Bind(&WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this),
+                FROM_HERE));
 
   DCHECK(!websocket_);
   websocket_ = std::move(websocket);
@@ -175,7 +176,7 @@ void WebSocketHandleImpl::OnConnectionEstablished(
       WTF::BindRepeating(&WebSocketHandleImpl::OnReadable,
                          WTF::Unretained(this)));
   DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
-  channel_->DidConnect(this, protocol, extensions, receive_quota_threshold);
+  channel_->DidConnect(this, protocol, extensions);
   // |this| can be deleted here.
 }
 
@@ -206,7 +207,10 @@ void WebSocketHandleImpl::OnDataFrame(
 
 void WebSocketHandleImpl::ConsumePendingDataFrames() {
   DCHECK(channel_);
-  while (!pending_data_frames_.empty()) {
+  if (channel_->HasBackPressureToReceiveData())
+    return;
+  while (!pending_data_frames_.empty() &&
+         !channel_->HasBackPressureToReceiveData()) {
     DataFrame& data_frame = pending_data_frames_.front();
     NETWORK_DVLOG(2) << " ConsumePendingDataFrame frame=(" << data_frame.fin
                      << ", " << data_frame.type

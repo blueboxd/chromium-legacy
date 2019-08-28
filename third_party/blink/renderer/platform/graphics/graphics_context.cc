@@ -640,13 +640,14 @@ static void EnforceDotsAtEndpoints(GraphicsContext& context,
     if (use_start_dot) {
       SkRect start_dot;
       if (is_vertical_line) {
-        start_dot.set(p1.X() - width / 2, p1.Y(), p1.X() + width - width / 2,
-                      p1.Y() + width + start_dot_growth);
+        start_dot.setLTRB(p1.X() - width / 2, p1.Y(),
+                          p1.X() + width - width / 2,
+                          p1.Y() + width + start_dot_growth);
         p1.SetY(p1.Y() + (2 * width + start_line_offset));
       } else {
-        start_dot.set(p1.X(), p1.Y() - width / 2,
-                      p1.X() + width + start_dot_growth,
-                      p1.Y() + width - width / 2);
+        start_dot.setLTRB(p1.X(), p1.Y() - width / 2,
+                          p1.X() + width + start_dot_growth,
+                          p1.Y() + width - width / 2);
         p1.SetX(p1.X() + (2 * width + start_line_offset));
       }
       context.DrawRect(start_dot, fill_flags);
@@ -654,13 +655,13 @@ static void EnforceDotsAtEndpoints(GraphicsContext& context,
     if (use_end_dot) {
       SkRect end_dot;
       if (is_vertical_line) {
-        end_dot.set(p2.X() - width / 2, p2.Y() - width - end_dot_growth,
-                    p2.X() + width - width / 2, p2.Y());
+        end_dot.setLTRB(p2.X() - width / 2, p2.Y() - width - end_dot_growth,
+                        p2.X() + width - width / 2, p2.Y());
         // Be sure to stop drawing before we get to the last dot
         p2.SetY(p2.Y() - (width + end_dot_growth + 1));
       } else {
-        end_dot.set(p2.X() - width - end_dot_growth, p2.Y() - width / 2, p2.X(),
-                    p2.Y() + width - width / 2);
+        end_dot.setLTRB(p2.X() - width - end_dot_growth, p2.Y() - width / 2,
+                        p2.X(), p2.Y() + width - width / 2);
         // Be sure to stop drawing before we get to the last dot
         p2.SetX(p2.X() - (width + end_dot_growth + 1));
       }

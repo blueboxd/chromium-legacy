@@ -73,16 +73,6 @@ class SyncBackendRegistrarTest : public testing::Test {
     return workers.size();
   }
 
-  // Part of the ActivateDeactivateNonUIDataType test below.
-  void TestNonUIDataTypeActivationAsync(ChangeProcessor* processor,
-                                        base::WaitableEvent* done) {
-    registrar_->ActivateDataType(AUTOFILL, GROUP_DB, processor, user_share());
-    ExpectRoutingInfo({{AUTOFILL, GROUP_DB}});
-    ExpectHasProcessorsForTypes(ModelTypeSet(AUTOFILL));
-    TriggerChanges(AUTOFILL);
-    done->Signal();
-  }
-
   SyncBackendRegistrar* registrar() { return registrar_.get(); }
   UserShare* user_share() { return test_user_share_.user_share(); }
   scoped_refptr<base::SequencedTaskRunner> db_task_runner() {
@@ -96,8 +86,6 @@ class SyncBackendRegistrarTest : public testing::Test {
       case GROUP_UI:
         return new SequencedModelWorker(
             task_environment_.GetMainThreadTaskRunner(), group);
-      case GROUP_DB:
-        return new SequencedModelWorker(db_thread_.task_runner(), group);
       case GROUP_PASSIVE:
         return new PassiveModelWorker();
       default:
@@ -116,7 +104,7 @@ class SyncBackendRegistrarTest : public testing::Test {
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   registrar()->SetInitialTypes(ModelTypeSet());
   EXPECT_FALSE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(3u, GetWorkersSize());
+  EXPECT_EQ(2u, GetWorkersSize());
   ExpectRoutingInfo(ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(ModelTypeSet());
 }
@@ -125,7 +113,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   registrar()->RegisterNonBlockingType(BOOKMARKS);
   registrar()->SetInitialTypes(ModelTypeSet(BOOKMARKS, NIGORI, PASSWORDS));
   EXPECT_TRUE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(3u, GetWorkersSize());
+  EXPECT_EQ(2u, GetWorkersSize());
   EXPECT_EQ(ModelTypeSet(NIGORI), registrar()->GetLastConfiguredTypes());
   // Bookmarks dropped because it is nonblocking.
   // Passwords dropped because of no password store.
@@ -138,7 +126,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmptyReversedInitialization) {
   registrar()->SetInitialTypes(ModelTypeSet(BOOKMARKS, NIGORI, PASSWORDS));
   registrar()->RegisterNonBlockingType(BOOKMARKS);
   EXPECT_TRUE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(3u, GetWorkersSize());
+  EXPECT_EQ(2u, GetWorkersSize());
   EXPECT_EQ(ModelTypeSet(NIGORI), registrar()->GetLastConfiguredTypes());
   // Bookmarks dropped because it is nonblocking.
   // Passwords dropped because of no password store.
@@ -204,41 +192,6 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
 
   // Should do nothing.
   TriggerChanges(BOOKMARKS);
-}
-
-TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
-  InSequence in_sequence;
-  registrar()->SetInitialTypes(ModelTypeSet());
-
-  // Should do nothing.
-  TriggerChanges(AUTOFILL);
-
-  StrictMock<ChangeProcessorMock> change_processor_mock;
-  EXPECT_CALL(change_processor_mock, StartImpl());
-  EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(true));
-  EXPECT_CALL(change_processor_mock, ApplyChangesFromSyncModel(nullptr, _, _));
-  EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(true));
-  EXPECT_CALL(change_processor_mock, CommitChangesFromSyncModel());
-  EXPECT_CALL(change_processor_mock, IsRunning()).WillRepeatedly(Return(false));
-
-  const ModelTypeSet types(AUTOFILL);
-  EXPECT_EQ(types, registrar()->ConfigureDataTypes(types, ModelTypeSet()));
-
-  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                           base::WaitableEvent::InitialState::NOT_SIGNALED);
-  db_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &SyncBackendRegistrarTest::TestNonUIDataTypeActivationAsync,
-          base::Unretained(this), &change_processor_mock, &done));
-  done.Wait();
-
-  registrar()->DeactivateDataType(AUTOFILL);
-  ExpectRoutingInfo(ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(ModelTypeSet());
-
-  // Should do nothing.
-  TriggerChanges(AUTOFILL);
 }
 
 // Tests that registration and configuration of non-blocking data types is

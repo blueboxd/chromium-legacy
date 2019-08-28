@@ -66,6 +66,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -251,6 +252,11 @@ void LocationBarView::Init() {
             switches::kEnableDomDistiller) &&
         browser_->is_type_normal()) {
       params.types_enabled.push_back(PageActionIconType::kReaderMode);
+    }
+
+    if (base::FeatureList::IsEnabled(
+            content_settings::kImprovedCookieControls)) {
+      params.types_enabled.push_back(PageActionIconType::kCookieControls);
     }
   }
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);

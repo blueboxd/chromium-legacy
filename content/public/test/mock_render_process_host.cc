@@ -402,7 +402,8 @@ void MockRenderProcessHost::CreateURLLoaderFactory(
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     const net::NetworkIsolationKey& network_isolation_key,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+        header_client,
     network::mojom::URLLoaderFactoryRequest request) {
   url_loader_factory_->Clone(std::move(request));
 }

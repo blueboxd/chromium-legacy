@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">வாசிப்புப் பட்டியலில் சேர்க்கப்பட்டது</translation>
 <translation id="1828824471510190776">கடவுச்சொல் பரிந்துரை...</translation>
 <translation id="1870148520156231997">கடவுச்சொல்லைக் காட்டும்</translation>
+<translation id="1872096359983322073">டார்ச்</translation>
 <translation id="1876721852596493031">பயன்பாடு தரவு அனுப்பு</translation>
 <translation id="1911619930368729126">Google இயக்ககத்தில் பதிவேற்றுக</translation>
 <translation id="1923342640370224680">கடந்த மணிநேரம்</translation>
@@ -304,6 +305,7 @@
 <translation id="5317780077021120954">சேமி</translation>
 <translation id="5327248766486351172">பெயர்</translation>
 <translation id="5388358297987318779">படத்தைத் திற</translation>
+<translation id="5407969256130905701">மாற்றங்களை நிராகரி</translation>
 <translation id="5409365236829784218">இந்தக் கோப்பைத் திறக்கக்கூடிய பயன்பாடுகள் எதுவும் நிறுவப்படவில்லை.</translation>
 <translation id="5416022985862681400">கடந்த 7 நாட்கள்</translation>
 <translation id="5433691172869980887">பயனர்பெயர் நகலெடுக்கப்பட்டது</translation>
@@ -354,6 +356,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">ரத்துசெய்ய தட்டவும்.</translation>
 <translation id="6108923351542677676">அமைவு செயலிலுள்ளது...</translation>
+<translation id="6119050551270742952">இந்த இணையப் பக்கம் மறைநிலையில் உள்ளது</translation>
 <translation id="6122191549521593678">ஆன்லைன்</translation>
 <translation id="6127379762771434464">உருப்படி அகற்றப்பட்டது</translation>
 <translation id="6136914049981179737">வினாடிகள் முன்பு</translation>
@@ -410,6 +413,9 @@
 <translation id="6807889908376551050">எல்லாவற்றையும் காட்டு...</translation>
 <translation id="681368974849482173">புத்தகக்குறி உருவாக்கப்பட்டது</translation>
 <translation id="6851516051005285358">டெஸ்க்டாப் தளத்தைக் கோரு</translation>
+<translation id="6858855187367714033">ஸ்கேன் செய்யப்பட்டது</translation>
+<translation id="6859944681507688231">QR குறியீட்டையோ கிரெடிட் கார்டையோ ஸ்கேன் செய்ய அமைப்புகளில் கேமராவை இயக்கவும்.</translation>
+<translation id="6873263987691478642">காட்சிப் பிரிப்பு</translation>
 <translation id="6896758677409633944">நகலெடு</translation>
 <translation id="6903907808598579934">ஒத்திசைவை இயக்கு</translation>
 <translation id="6914583639806229067">நீங்கள் நகலெடுத்த படத்தைத் தேடுக</translation>
@@ -508,7 +514,9 @@
 <translation id="8428045167754449968">மாநகரம் / நகரம்</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
 <translation id="8458397775385147834">1 உருப்படி நீக்கப்பட்டது</translation>
+<translation id="8487667956631253959">ஆன்</translation>
 <translation id="8487700953926739672">ஆஃப்லைனில் இருக்கிறது</translation>
+<translation id="8490978609246021741">மாற்றங்களைச் சேமி</translation>
 <translation id="8503813439785031346">பயனர்பெயர்</translation>
 <translation id="850600235656508448">மறைநிலையில் திற</translation>
 <translation id="8517375800490286174">ஓப்பன் சோர்ஸ் உரிமங்கள்</translation>
@@ -517,6 +525,7 @@
 <translation id="8532105204136943229">காலாவதியாகும் ஆண்டு</translation>
 <translation id="8534481786647257214">Google+ இடுகை நிறைவுபெற்றது.</translation>
 <translation id="8548878600947630424">பக்கத்தில் கண்டறி</translation>
+<translation id="8588404856427128947">ஆஃப்</translation>
 <translation id="8605219856220328675">தாவலை மூடு.</translation>
 <translation id="8620640915598389714">மாற்று</translation>
 <translation id="8636825310635137004">உங்கள் பிற சாதனங்களிலிருந்து தாவல்களைப் பெற, ஒத்திசைவை இயக்கவும்.</translation>
@@ -557,6 +566,7 @@
 <translation id="9203116392574189331">ஹேண்ட்ஆஃப்</translation>
 <translation id="9223358826628549784">சிதைவு அறிக்கை அனுப்பப்பட்டது.</translation>
 <translation id="935490618240037774">புத்தகக்குறிகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகள் உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படும் என்பதால் அவற்றை எல்லா சாதனங்களிலும் பயன்படுத்தலாம்.</translation>
+<translation id="952704832371081537">ரத்துசெய்</translation>
 <translation id="976982866697960176">ஒத்திசைத்த தரவை நிர்வகித்தல்...</translation>
 <translation id="988141524645182168">பிற சாதனங்கள்</translation>
 <translation id="989988560359834682">முகவரியைத் திருத்து</translation>

@@ -1044,7 +1044,8 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
       default_factory_receiver = factory_bundle->pending_default_factory()
                                      .InitWithNewPipeAndPassReceiver();
-  network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
+  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+      default_header_client;
   bool bypass_redirect_checks = false;
 
   // See if the default factory needs to be tweaked by the embedder.

@@ -28,8 +28,13 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
-      feature_info_(feature_info),
-      gl_surface_(gl_surface) {}
+      gl_surface_(gl_surface) {
+  capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
+  capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
+  if (feature_info->workarounds()
+          .disable_post_sub_buffers_for_onscreen_surfaces)
+    capabilities_.supports_post_sub_buffer = false;
+}
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
                                     gl::GLContext* gl_context) {
@@ -54,19 +59,9 @@ void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
   }
   CHECK_GL_ERROR();
   supports_alpha_ = alpha_bits > 0;
-
-  capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
-  capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
-  if (feature_info_->workarounds()
-          .disable_post_sub_buffers_for_onscreen_surfaces)
-    capabilities_.supports_post_sub_buffer = false;
 }
 
 SkiaOutputDeviceGL::~SkiaOutputDeviceGL() {}
-
-scoped_refptr<gl::GLSurface> SkiaOutputDeviceGL::gl_surface() {
-  return gl_surface_;
-}
 
 void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  float device_scale_factor,
@@ -171,37 +166,5 @@ SkSurface* SkiaOutputDeviceGL::BeginPaint() {
 }
 
 void SkiaOutputDeviceGL::EndPaint(const GrBackendSemaphore& semaphore) {}
-
-#if defined(OS_WIN)
-void SkiaOutputDeviceGL::DidCreateAcceleratedSurfaceChildWindow(
-    gpu::SurfaceHandle parent_window,
-    gpu::SurfaceHandle child_window) {
-  NOTREACHED();
-}
-#endif
-
-const gpu::gles2::FeatureInfo* SkiaOutputDeviceGL::GetFeatureInfo() const {
-  return feature_info_.get();
-}
-
-const gpu::GpuPreferences& SkiaOutputDeviceGL::GetGpuPreferences() const {
-  return gpu_preferences_;
-}
-
-void SkiaOutputDeviceGL::DidSwapBuffersComplete(
-    gpu::SwapBuffersCompleteParams params) {
-  // TODO(kylechar): Check if this is necessary.
-}
-
-void SkiaOutputDeviceGL::BufferPresented(
-    const gfx::PresentationFeedback& feedback) {
-  // TODO(kylechar): Check if this is necessary.
-}
-
-GpuVSyncCallback SkiaOutputDeviceGL::GetGpuVSyncCallback() {
-  // TODO(sunnyps): Implement GpuVSync with SkiaRenderer.
-  NOTIMPLEMENTED();
-  return base::DoNothing::Repeatedly<base::TimeTicks, base::TimeDelta>();
-}
 
 }  // namespace viz

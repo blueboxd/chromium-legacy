@@ -14,13 +14,9 @@
 #include "base/process/process.h"
 #include "chrome/common/mac/app_shim_launch.h"
 
-class AppShimHost;
 class AppShimHostBootstrap;
 
 namespace apps {
-
-using ShimLaunchedCallback = base::OnceCallback<void(base::Process)>;
-using ShimTerminatedCallback = base::OnceClosure;
 
 // Registrar, and interface for services that can handle interactions with OSX
 // shim processes.
@@ -31,36 +27,12 @@ class AppShimHandler {
   // Set or un-set the default handler.
   static void Set(AppShimHandler* handler);
 
-  // Request that the handler launch the app shim process.
-  virtual void OnShimLaunchRequested(
-      AppShimHost* host,
-      bool recreate_shims,
-      apps::ShimLaunchedCallback launched_callback,
-      apps::ShimTerminatedCallback terminated_callback) = 0;
-
   // Invoked by the AppShimHostBootstrap when a shim process has connected to
   // the browser process. This will connect to (creating, if needed) an
   // AppShimHost. |bootstrap| must have OnConnectedToHost or
   // OnFailedToConnectToHost called on it to inform the shim of the result.
   virtual void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) = 0;
-
-  // Invoked by the shim host when the connection to the shim process is closed.
-  // This is also called when we give up on trying to get a shim to connect.
-  virtual void OnShimProcessDisconnected(AppShimHost* host) = 0;
-
-  // Invoked by the shim host when the shim process receives a focus event.
-  // |files|, if non-empty, holds an array of files dragged onto the app bundle
-  // or dock icon.
-  virtual void OnShimFocus(AppShimHost* host,
-                           AppShimFocusType focus_type,
-                           const std::vector<base::FilePath>& files) = 0;
-
-  // Invoked by the shim host when the shim process is hidden or shown.
-  virtual void OnShimSetHidden(AppShimHost* host, bool hidden) = 0;
-
-  // Invoked by the shim host when the shim process receives a quit event.
-  virtual void OnShimQuit(AppShimHost* host) = 0;
 
  protected:
   AppShimHandler() {}

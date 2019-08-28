@@ -235,7 +235,7 @@ PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 PageInfoUI::IdentityInfo::IdentityInfo()
     : identity_status(PageInfo::SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status(PageInfo::SAFE_BROWSING_STATUS_NONE),
-      safety_tip_status(security_state::SAFETY_TIP_STATUS_NONE),
+      safety_tip_status(security_state::SafetyTipStatus::kUnknown),
       connection_status(PageInfo::SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button(false),
       show_change_password_buttons(false) {}
@@ -292,14 +292,15 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
   }
 
   switch (identity_info.safety_tip_status) {
-    case security_state::SAFETY_TIP_STATUS_BAD_REPUTATION:
-    case security_state::SAFETY_TIP_STATUS_LOOKALIKE:
+    case security_state::SafetyTipStatus::kBadReputation:
+    case security_state::SafetyTipStatus::kLookalike:
       // TODO(jdeblasio): The BAD_REPUTATION string is generic enough to use for
       // lookalikes too, but it probably deserves its own string.
       return CreateSecurityDescription(
           SecuritySummaryColor::RED, IDS_PAGE_INFO_SAFETY_TIP_SUMMARY,
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
-    case security_state::SAFETY_TIP_STATUS_NONE:
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
       break;
   }
 

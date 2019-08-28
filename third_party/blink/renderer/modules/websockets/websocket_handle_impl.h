@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace base {
+class Location;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -61,7 +62,8 @@ class WebSocketHandleImpl
                const String& user_agent_override,
                WebSocketChannelImpl*) override;
   void Send(bool fin, MessageType, const char* data, wtf_size_t) override;
-  void AddReceiveFlowControlQuota(int64_t quota) override;
+  void StartReceiving() override;
+  void ConsumePendingDataFrames() override;
   void Close(uint16_t code, const String& reason) override;
 
  private:
@@ -77,7 +79,8 @@ class WebSocketHandleImpl
   };
 
   void Disconnect();
-  void OnConnectionError(uint32_t custom_reason,
+  void OnConnectionError(const base::Location& set_from,
+                         uint32_t custom_reason,
                          const std::string& description);
 
   // network::mojom::blink::WebSocketHandshakeClient methods:
@@ -91,7 +94,6 @@ class WebSocketHandleImpl
           client_receiver,
       const String& selected_protocol,
       const String& extensions,
-      uint64_t receive_quota_threshold,
       mojo::ScopedDataPipeConsumerHandle readable) override;
 
   // network::mojom::blink::WebSocketClient methods:
@@ -106,7 +108,6 @@ class WebSocketHandleImpl
 
   // Datapipe functions to receive.
   void OnReadable(MojoResult result, const mojo::HandleSignalsState& state);
-  void ConsumePendingDataFrames();
   // Returns false if |this| is deleted.
   bool ConsumeDataFrame(bool fin,
                         network::mojom::blink::WebSocketMessageType type,

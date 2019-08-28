@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">Replega el menú</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1419738280318246476">Desbloqueja el dispositiu per dur a terme l'acció que indica la notificació</translation>
+<translation id="1420408895951708260">Activa o desactiva la funció Llum nocturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1455242230282523554">Mostra la configuració d'idioma</translation>
 <translation id="1460620680449458626">El volum està silenciat.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">Una política aplicada a aquest dispositiu ha desactivat <ph name="FEATURE_NAME" />. Demana-li a l'administrador que faci els canvis pertinents.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (s'està carregant...)</translation>
+<translation id="1838895407229022812">La funció Llum nocturna està desactivada.</translation>
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">Tecles permanents</translation>
 <translation id="2509468283778169019">BLOQ MAJ està activat.</translation>
 <translation id="2532589005999780174">Mode d'alt contrast</translation>
+<translation id="2542089167727451762">Toca la teva imatge de perfil</translation>
 <translation id="255671100581129685">L'Assistent de Google no està disponible a les sessions públiques.</translation>
 <translation id="2575685495496069081">L'inici de sessió múltiple s'ha desactivat</translation>
 <translation id="2582112259361606227">Reinicia per actualitzar</translation>
 <translation id="2617342710774726426">La targeta SIM està bloquejada</translation>
-<translation id="2651765386227849097">L'Assistent de Google està desactivat en aquest dispositiu.</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2658778018866295321">Fes clic i arrossega</translation>
 <translation id="2700493154570097719">Defineix el teu teclat</translation>
@@ -232,7 +234,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">L'Assistent s'està carregant...</translation>
-<translation id="435527878592612277">Selecciona la teva foto</translation>
 <translation id="4378551569595875038">S'està connectant...</translation>
 <translation id="4379531060876907730">Aquestes són les eines del llapis òptic</translation>
 <translation id="4389184120735010762">Has premut la tecla de drecera de la lupa acoblada. Vols activar-la?</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">Mitjà</translation>
 <translation id="5744083938413354016">Tocar i arrossegar</translation>
 <translation id="5750765938512549687">El Bluetooth està desactivat</translation>
+<translation id="576453121877257266">La funció Llum nocturna està activada.</translation>
 <translation id="5777841717266010279">Vols aturar la compartició de pantalla?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Atura <ph name="ROUTE_TITLE" /> a <ph name="RECEIVER_NAME" /></translation>
@@ -349,7 +351,6 @@
 <translation id="6284232397434400372">S'ha canviat la resolució</translation>
 <translation id="6297287540776456956">Utilitza el llapis òptic per seleccionar una part</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> s'ha canviat a <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">Activa o desactiva la funció Llum nocturna</translation>
 <translation id="6376931439017688372">El Bluetooth està activat</translation>
 <translation id="639644700271529076">Bloq Maj està desactivat</translation>
 <translation id="6406704438230478924">AltGr</translation>

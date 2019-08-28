@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">검색</translation>
 <translation id="1385214448885562192">동의하려면 Enter를 누르고 취소하려면 Esc를 누르세요. 다음으로 이동하려면 아래를 누르고 이전으로 이동하려면 위를 누르세요.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">서식 있는 텍스트 속성을 음성으로 안내</translation>
 <translation id="1405567553485452995">연한 녹색</translation>
 <translation id="1417889266572670458">네이비</translation>
 <translation id="1431911867058218151">플럼</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">딤 그레이</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{글머리 기호}other{글머리 기호 #개}}</translation>
 <translation id="6355910664415701303">이전 목록 항목이 없습니다.</translation>
-<translation id="6360318852623800555">서식 있는 텍스트 속성</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">이전 제목</translation>
 <translation id="6376999910001533545">마룬</translation>

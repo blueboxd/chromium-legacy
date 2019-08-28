@@ -24,7 +24,7 @@ std::unique_ptr<views::View> CreateOriginLabel(int message_id,
       l10n_util::GetStringFUTF16(message_id, formatted_origin, &offset),
       nullptr);
   label->SetTextContext(text_context);
-  label->SetDefaultTextStyle(show_emphasis ? STYLE_SECONDARY
+  label->SetDefaultTextStyle(show_emphasis ? views::style::STYLE_SECONDARY
                                            : views::style::STYLE_PRIMARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
@@ -54,7 +54,7 @@ std::unique_ptr<views::View> CreateOriginPathLabel(int message_id,
   DCHECK_EQ(2U, offsets.size());
 
   label->SetTextContext(text_context);
-  label->SetDefaultTextStyle(show_emphasis ? STYLE_SECONDARY
+  label->SetDefaultTextStyle(show_emphasis ? views::style::STYLE_SECONDARY
                                            : views::style::STYLE_PRIMARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 

@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">ಮೆನುವನ್ನು ಕುಗ್ಗಿಸಿ</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="1419738280318246476">ಅಧಿಸೂಚನೆ ಕ್ರಿಯೆಯನ್ನು ನಿರ್ವಹಿಸಲು ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
+<translation id="1420408895951708260">ನೈಟ್ ಲೈಟ್ ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">ಹೌದು</translation>
 <translation id="1455242230282523554">ಭಾಷೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1460620680449458626">ವಾಲ್ಯೂಮ್ ಅನ್ನು ಮ್ಯೂಟ್ ಮಾಡಲಾಗಿದೆ.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">ಈ ಸಾಧನಕ್ಕೆ ಅನ್ವಯಿಸಲಾದ ಕಾರ್ಯನೀತಿಯಿಂದಾಗಿ <ph name="FEATURE_NAME" /> ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಬದಲಾವಣೆಗಳ ವಿನಂತಿಗಾಗಿ ನಿಮ್ಮ ನಿರ್ವಾಹಕರೊಂದಿಗೆ ಮಾತನಾಡಿ.</translation>
 <translation id="1823873187264960516">ಇಥರ್ನೆಟ್: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">ಸಹಾಯಕ (ಲೋಡ್ ಆಗುತ್ತಿದೆ...)</translation>
+<translation id="1838895407229022812">ನೈಟ್ ಲೈಟ್ ಆಫ್ ಆಗಿದೆ.</translation>
 <translation id="1850504506766569011">ವೈ-ಫೈ ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1864454756846565995">USB-C ಸಾಧನ (ಹಿಂದಿನ ಪೋರ್ಟ್)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> ಗೆ ಪ್ರತಿಬಿಂಬಿಸುತ್ತಿದೆ</translation>
@@ -78,7 +80,7 @@
 <translation id="1995660704900986789">ಪವರ್ ಆಫ್</translation>
 <translation id="2012624427112548395">Ctrl+ಹುಡುಕಾಟ+H</translation>
 <translation id="2016340657076538683">ಸಂದೇಶವನ್ನು ಟೈಪ್‌ ಮಾಡಿ</translation>
-<translation id="2050339315714019657">ಪೋಟ್ರೇಟ್</translation>
+<translation id="2050339315714019657">ಪೋರ್ಟ್ರೇಟ್</translation>
 <translation id="2067602449040652523">ಕೀಬೋರ್ಡ್ ಪ್ರಖರತೆ</translation>
 <translation id="209965399369889474">ನೆಟ್‌ವರ್ಕ್‌‍ಗೆ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ</translation>
 <translation id="2126242104232412123">ಹೊಸ ಡೆಸ್ಕ್</translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">ಸ್ಟಿಕಿ ಕೀಗಳು</translation>
 <translation id="2509468283778169019">CAPS LOCK ಆನ್ ಆಗಿದೆ</translation>
 <translation id="2532589005999780174">ಹೆಚ್ಚಿನ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್</translation>
+<translation id="2542089167727451762">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಚಿತ್ರದ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="255671100581129685">Google ಅಸಿಸ್ಟೆಂಟ್‌ ಸಾರ್ವಜನಿಕ ಸೆಶನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="2575685495496069081">ಬಹು ಸೈನ್-ಇನ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2582112259361606227">ಅಪ್‌ಡೇಟ್ ಮಾಡಲು, ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="2617342710774726426">ಸಿಮ್‌ ಕಾರ್ಡ್ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="2651765386227849097">ಈ ಸಾಧನದಲ್ಲಿ Google ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
 <translation id="2658778018866295321">ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
 <translation id="2700493154570097719">ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಅನ್ನು ಹೊಂದಿಸಿ</translation>
@@ -182,7 +184,7 @@
 <translation id="3576141592585647168">ಸಮಯವಲಯವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ಡೆಸ್ಕ್ ಅನ್ನು ರಚಿಸಲಾಗಿದೆ</translation>
-<translation id="3606978283550408104">ಬ್ರೇಲ್ ಪ್ರದರ್ಶನವನ್ನು ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
+<translation id="3606978283550408104">ಬ್ರೈಲ್‌ ಡಿಸ್‌ಪ್ಲೇ ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3621202678540785336">ಇನ್‌ಪುಟ್</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
 <translation id="3631369015426612114">ಕೆಳಗಿನವುಗಳಿಂದ ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
@@ -230,9 +232,8 @@
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">ನೀವು ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್‌ನ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
-<translation id="4338109981321384717">ವರ್ಧಕ ಮಸೂರ</translation>
+<translation id="4338109981321384717">ಭೂತಕನ್ನಡಿ</translation>
 <translation id="4351433414020964307">ಸಹಾಯಕವು ಲೋಡ್ ಆಗುತ್ತಿದೆ...</translation>
-<translation id="435527878592612277">ನಿಮ್ಮ ಫೋಟೋ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="4378551569595875038">ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4379531060876907730">ಇವುಗಳು ನಿಮ್ಮ ಸ್ಟೈಲಸ್ ಪರಿಕರಗಳಾಗಿವೆ</translation>
 <translation id="4389184120735010762">ನೀವು ಡಾಕ್ ಮಾಡಿದ ವರ್ಧಕದ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
@@ -256,7 +257,7 @@
 <translation id="4774338217796918551">ನಾಳೆ <ph name="COME_BACK_TIME" /> ಸಮಯಕ್ಕೆ ಹಿಂತಿರುಗಿ.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="4778095205580009397">Google ಅಸಿಸ್ಟೆಂಟ್‌ ಡೆಮೊ ಸೆಶನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
-<translation id="479989351350248267">search</translation>
+<translation id="479989351350248267">ಹುಡುಕಾಡಿ</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
 <translation id="4831034276697007977">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳನ್ನು ಖಚಿತವಾಗಿಯೂ ಆಫ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="4849058404725798627">ಕೀಬೋರ್ಡ್‌ ಫೋಕಸ್‌ ಮೂಲಕ ವಿಷಯವನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
@@ -310,6 +311,7 @@
 <translation id="574392208103952083">ಮಧ್ಯಮ</translation>
 <translation id="5744083938413354016">ಟ್ಯಾಪ್ ಎಳೆಯುವಿಕೆ</translation>
 <translation id="5750765938512549687">ಬ್ಲೂಟೂತ್ ಆಫ್ ಆಗಿದೆ</translation>
+<translation id="576453121877257266">ನೈಟ್ ಲೈಟ್ ಆನ್ ಆಗಿದೆ.</translation>
 <translation id="5777841717266010279">ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ನಿಲ್ಲಿಸುವುದೇ?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> ನಲ್ಲಿ <ph name="ROUTE_TITLE" /> ನಿಲ್ಲಿಸಿ</translation>
@@ -350,7 +352,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6284232397434400372">ರೆಸಲ್ಯೂಷನ್ ಬದಲಾಗಿದೆ</translation>
 <translation id="6297287540776456956">ಪ್ರದೇಶವನ್ನು ಆಯ್ಕೆಮಾಡಲು ಸ್ಟೈಲಸ್ ಬಳಸಿ</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ಅನ್ನು <ph name="ROTATION" /> ಗೆ ತಿರುಗಿಸಲಾಗಿದೆ</translation>
-<translation id="6344698853700675736">ನೈಟ್ ಲೈಟ್ ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="6376931439017688372">ಬ್ಲೂಟೂತ್ ಆನ್ ಆಗಿದೆ</translation>
 <translation id="639644700271529076">CAPS LOCK ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -388,7 +389,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6790428901817661496">ಪ್ಲೇ ಮಾಡು</translation>
 <translation id="6803622936009808957">ಯಾವುದೇ ಬೆಂಬಲಿತ ಪರಿಹಾರಗಳು ಕಂಡುಬರದ ಕಾರಣ ಪ್ರದರ್ಶನಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗಲಿಲ್ಲ. ಬದಲಿಗೆ ವಿಸ್ತರಿತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="6820676911989879663">ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳಿ!</translation>
-<translation id="683971173229319003">Search+L</translation>
+<translation id="683971173229319003">ಹುಡುಕಾಟ+L</translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">ಈ ಅಪ್‌ಡೇಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಸಾಧನವನ್ನು ಪವರ್‌ವಾಷ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ. ಇತ್ತೀಚಿನ <ph name="SYSTEM_APP_NAME" /> ಅಪ್‌ಡೇಟ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಿ.</translation>
 <translation id="6911468394164995108">ಇತರರನ್ನು ಸೇರಿ...</translation>
@@ -446,7 +447,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7749443890790263709">ಗರಿಷ್ಠ ಸಂಖ್ಯೆಯ ಡೆಸ್ಕ್‌ಗಳನ್ನು ತಲುಪಲಾಗಿದೆ.</translation>
 <translation id="776344839111254542">ಅಪ್‌ಡೇಟ್‌ ವಿವರಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="7780159184141939021">ಪರದೆಯನ್ನು ತಿರುಗಿಸಿ</translation>
-<translation id="7796353162336583443">ಟಿಪ್ಪಣಿ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳುವಾಗ, Google ಸಹಾಯಕ, ಲೇಸರ್‌ ಪಾಯಿಂಟರ್ ಅಥವಾ ಭೂತಗನ್ನಡಿ ಬಳಸಲು ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಸ್ಟೈಲಸ್ ಬಟನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
+<translation id="7796353162336583443">ಟಿಪ್ಪಣಿ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳುವಾಗ, Google ಅಸಿಸ್ಟೆಂಟ್, ಲೇಸರ್‌ ಪಾಯಿಂಟರ್ ಅಥವಾ ಭೂತಗನ್ನಡಿ ಬಳಸಲು ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಸ್ಟೈಲಸ್ ಬಟನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="7798302898096527229">ರದ್ದುಗೊಳಿಸಲು 'ಹುಡುಕಾಟ' ಅಥವಾ Shift ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ಮತ್ತು <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">ಪ್ರಬಲ ಸಿಗ್ನಲ್</translation>
@@ -499,7 +500,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8444246603146515890"><ph name="DESK_TITILE" /> ಡೆಸ್ಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="8452135315243592079">ಕಾಣೆಯಾಗಿರುವ ಸಿಮ್ ಕಾರ್ಡ್</translation>
 <translation id="8454013096329229812">ವೈ-ಫೈ ಆನ್ ಮಾಡಲಾಗಿದೆ.</translation>
-<translation id="847056008324733326">ಪ್ರದರ್ಶನ ಮಾಪಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="847056008324733326">ಮಾಪಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="8477270416194247200">ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="8513108775083588393">ಸ್ವಯಂ-ತಿರುಗುವಿಕೆ</translation>
 <translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
@@ -519,7 +520,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8814190375133053267">ವೈ-ಫೈ</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">ಪರದೆ ತಿರುಗಿಸುವಿಕೆಯ ಲಾಕ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
-<translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8850991929411075241">ಹುಡುಕಾಟ+Esc</translation>
 <translation id="8870509716567206129">ಅಪ್ಲಿಕೇಶನ್ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="8874184842967597500">ಸಂಪರ್ಕಗೊಳಿಸಿಲ್ಲ</translation>
 <translation id="8877788021141246043">ಜ್ಞಾಪನೆಯನ್ನು ಹೊಂದಿಸಿ</translation>
@@ -544,7 +545,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="9080206825613744995">ಮೈಕ್ರೊಫೋನ್ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
 <translation id="9084606467167974638">ಮೆನುವಿನ ಸ್ಥಾನವನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="9089416786594320554">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳು</translation>
-<translation id="9091626656156419976">ಪ್ರದರ್ಶನ <ph name="DISPLAY_NAME" /> ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
+<translation id="9091626656156419976">ಡಿಸ್‌ಪ್ಲೇ <ph name="DISPLAY_NAME" /> ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
 <translation id="9151726767154816831">ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ಮರುಪ್ರಾರಂಭಿಸಿ ಮತ್ತು ಪವರ್‌ವಾಶ್ ಮಾಡಿ</translation>
 <translation id="9179259655489829027">ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಯಾವುದೇ ಬಳಕೆದಾರರನ್ನು, ಪಾಸ್‌ವರ್ಡ್ ಇಲ್ಲದೆಯೇ ಪ್ರವೇಶಿಸಲು ಈ ವೈಶಿಷ್ಟ್ಯವು ಅವಕಾಶ ನೀಡುತ್ತದೆ. ನಿಮಗೆ ವಿಶ್ವಾಸವಿರುವ ಖಾತೆಗಳೊಂದಿಗೆ ಮಾತ್ರ ಈ ವೈಶಿಷ್ಟ್ಯವನ್ನು ಬಳಸಿ.</translation>
 <translation id="9193626018745640770">"ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರು" ನಲ್ಲಿ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 // static

@@ -18,6 +18,7 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/service_worker_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
@@ -70,8 +71,9 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
     job_id_to_client_[job_unique_id]->OnDownloadStarted(job_unique_id, guid,
                                                         std::move(response));
     if (complete_downloads_) {
+      // Post a task so that Abort() can cancel this download before completing.
       base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+          FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
           base::BindOnce(&FakeBackgroundFetchDelegate::CompleteDownload,
                          base::Unretained(this), job_unique_id, guid));
     }

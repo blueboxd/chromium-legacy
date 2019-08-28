@@ -103,9 +103,10 @@ struct FormFieldData {
   // TODO(crbug.com/896689): Expand the logic/application of this to other
   // platforms and/or merge this concept with |unique_renderer_id|.
   base::string16 unique_id;
-#define EXPECT_EQ_UNIQUE_ID() EXPECT_EQ(expected.unique_id, actual.unique_id)
+#define EXPECT_EQ_UNIQUE_ID(expected, actual) \
+  EXPECT_EQ((expected).unique_id, (actual).unique_id)
 #else
-#define EXPECT_EQ_UNIQUE_ID()
+#define EXPECT_EQ_UNIQUE_ID(expected, actual)
 #endif
 
   // The name by which autofill knows this field. This is generally either the
@@ -184,7 +185,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 // |FormFieldData|s in test code.
 #define EXPECT_FORM_FIELD_DATA_EQUALS(expected, actual)                        \
   do {                                                                         \
-    EXPECT_EQ_UNIQUE_ID();                                                     \
+    EXPECT_EQ_UNIQUE_ID(expected, actual);                                     \
     EXPECT_EQ(expected.label, actual.label);                                   \
     EXPECT_EQ(expected.name, actual.name);                                     \
     EXPECT_EQ(expected.value, actual.value);                                   \

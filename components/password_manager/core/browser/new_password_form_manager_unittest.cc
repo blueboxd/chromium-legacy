@@ -653,9 +653,14 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsEmptyStore) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   fetcher_->NotifyFetchCompleted();
 
+  const base::Time kNow = base::Time::Now();
+
   EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_));
-  CheckPendingCredentials(parsed_submitted_form_,
-                          form_manager_->GetPendingCredentials());
+
+  const PasswordForm& pending_credentials =
+      form_manager_->GetPendingCredentials();
+  CheckPendingCredentials(parsed_submitted_form_, pending_credentials);
+  EXPECT_GE(pending_credentials.date_last_used, kNow);
   EXPECT_EQ(UserAction::kOverrideUsernameAndPassword,
             form_manager_->GetMetricsRecorder()->GetUserAction());
 }
@@ -1724,11 +1729,13 @@ TEST_F(NewPasswordFormManagerTest, Update) {
       .WillOnce(SaveArg<0>(&updated_form));
   EXPECT_CALL(client_, UpdateFormManagers());
 
+  const base::Time kNow = base::Time::Now();
   form_manager_->Update(saved_match_);
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
   EXPECT_TRUE(updated_form.preferred);
   EXPECT_EQ(new_password, updated_form.password_value);
+  EXPECT_GE(updated_form.date_last_used, kNow);
 }
 
 // TODO(https://crbug.com/918846): implement FillingAssistance metric on iOS.

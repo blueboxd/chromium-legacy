@@ -22,6 +22,7 @@
 <translation id="1086953900555227778">సూచిక-5x8</translation>
 <translation id="1088860948719068836">కార్డ్‌లో పేరుని జోడించండి</translation>
 <translation id="1089439967362294234">పాస్‌వర్డ్‌ని మార్చు</translation>
+<translation id="1096545575934602868">ఈ ఫీల్డ్‌లో <ph name="MAX_ITEMS_LIMIT" /> కంటే ఎక్కువ నమోదులు ఉండకూడదు. తదుపరి అన్ని నమోదులు విస్మరించబడతాయి.</translation>
 <translation id="109743633954054152">Chrome సెట్టింగ్‌లలో పాస్‌వర్డ్‌లను నిర్వహించండి</translation>
 <translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE" />ను అనువదించు</translation>
 <translation id="1107591249535594099">ఎంచుకున్నట్లయితే, Chrome వేగవంతమైన ఫారమ్ పూరింపు కోసం ఈ పరికరంలో మీ కార్డ్ కాపీని నిల్వ చేస్తుంది.</translation>
@@ -181,6 +182,7 @@
 <translation id="1822540298136254167">మీరు సందర్శించిన వెబ్‌సైట్‌లు, వాటిపై వెచ్చించిన సమయం</translation>
 <translation id="1826516787628120939">తనిఖీ చేస్తోంది</translation>
 <translation id="1834321415901700177">ఈ సైట్‌లో హానికరమైన ప్రోగ్రామ్‌లు ఉన్నాయి</translation>
+<translation id="1838374766361614909">శోధనను తీసివేయి</translation>
 <translation id="1839551713262164453">విధాన విలువల క్రమబద్ధీకరణ ఎర్రర్‌లతో విఫలమైంది</translation>
 <translation id="1842969606798536927">చెల్లింపు</translation>
 <translation id="1871208020102129563">.pac స్క్రిప్ట్ URLను కాకుండా, స్థిరమైన ప్రాక్సీ సర్వర్‌లను ఉపయోగించేలా ప్రాక్సీ సెట్ చేయబడింది.</translation>
@@ -191,6 +193,7 @@
 <translation id="1883255238294161206">జాబితాను కుదించు</translation>
 <translation id="1898423065542865115">ఫిల్టరింగ్</translation>
 <translation id="1914326953223720820">సేవను అన్‌జిప్ చేయండి</translation>
+<translation id="1915697529809968049">CVCకి బదులుగా Touch IDని ఉపయోగించాలా?</translation>
 <translation id="1916770123977586577">ఈ సైట్ విషయంలో మీరు అప్‌డేట్ చేసిన సెట్టింగ్‌లను వర్తింపజేయడానికి, ఈ పేజీని మళ్లీ లోడ్ చేయండి</translation>
 <translation id="1919345977826869612">ప్రకటనలు</translation>
 <translation id="1919367280705858090">నిర్దిష్ట ఎర్రర్ సందేశానికి సంబంధించిన సహాయం పొందండి</translation>
@@ -250,6 +253,7 @@
 <translation id="2224337661447660594">ఇంటర్నెట్ లేదు</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />విశ్లేషణల యాప్‌<ph name="END_LINK" />ను ఉపయోగించి మీ కనెక్షన్‌ను సరి చేయండి</translation>
 <translation id="2239100178324503013">ఇప్పుడే పంపండి</translation>
+<translation id="2248949050832152960">WebAuthnను ఉపయోగించండి</translation>
 <translation id="225207911366869382">ఈ విధానం కోసం ఈ విలువ విస్మరించబడింది.</translation>
 <translation id="2257315177824333709">క్షమించండి, మీ కార్డ్‌ను ప్రస్తుతం సేవ్ చేయలేకపోయాము</translation>
 <translation id="2262243747453050782">HTTP ఎర్రర్</translation>
@@ -297,7 +301,6 @@
 <translation id="2485387744899240041">మీ పరికరం, బ్రౌజర్‌ల వినియోగదారు పేర్లు</translation>
 <translation id="2491120439723279231">సర్వర్ యొక్క ప్రమాణపత్రంలో లోపాలు ఉన్నాయి.</translation>
 <translation id="2493640343870896922">లెటర్-ప్లస్</translation>
-<translation id="2494497504885199552">మీరు సాధారణంగా &lt;a href="#" id="dont-proceed-link2"&gt;<ph name="DOMAIN" />&lt;/a&gt;ను సందర్శిస్తారు.ఇప్పుడు సందర్శించాలని ప్రయత్నించిన సైట్, మీ బ్రౌజర్ చరిత్రలోని సైట్‌తో ఇంచుమించుగా సరిపోలుతోంది, కానీ ఖచ్చితమైన రీతిలో సరిపోలట్లేదు. హ్యాకర్‌లు మిమ్మల్ని మాయ చేయడానికి లేదా మోసగించడానికి కొన్నిసార్లు ఇలాంటి ఉచ్చు పన్నుతారు.</translation>
 <translation id="2495083838625180221">JSON పార్సర్</translation>
 <translation id="2495093607237746763">ఎంచుకుంటే, Chromium వేగవంతమైన ఫారమ్ పూరింపు కోసం ఈ పరికరంలో మీ కార్డ్ కాపీని నిల్వ చేస్తుంది.</translation>
 <translation id="2498091847651709837">కొత్త కార్డ్‌ను స్కాన్ చేయండి</translation>
@@ -362,7 +365,6 @@
 <translation id="2826760142808435982"><ph name="CIPHER" />ను ఉపయోగించి కనెక్షన్ ఎన్‌క్రిప్ట్ చేయ‌బ‌డింది, ప్రామాణీకరించబడింది మరియు <ph name="KX" />ను కీలకమైన పరివర్తన విధానంగా ఉపయోగిస్తుంది.</translation>
 <translation id="2835170189407361413">ఫారమ్‌ను క్లియర్ చేయి</translation>
 <translation id="2847118875340931228">అజ్ఞాత విండోని తెరువు</translation>
-<translation id="2849445596171421624">కొనసాగించు క్లిక్ చేయడం వలన మీరు మరింత సాధారణమైన సైట్ &lt;a href="#" id="dont-proceed-link3"&gt;<ph name="DOMAIN" />&lt;/a&gt;కు పంపబడతారు.</translation>
 <translation id="2850739647070081192">ఆహ్వానం (ఎన్వలప్)</translation>
 <translation id="2856444702002559011">హ్యాకర్‌లు <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> నుండి మీ సమాచారాన్ని దొంగిలించడానికి ప్రయత్నిస్తూ ఉండవచ్చు (ఉదాహరణకు, పాస్‌వర్డ్‌లు, సందేశాలు లేదా క్రెడిట్ కార్డ్‌లు). <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878424575911748999">A1</translation>
@@ -398,6 +400,7 @@
 <translation id="3024663005179499861">చెల్లని విధాన రకం</translation>
 <translation id="3037605927509011580">ఆవ్, స్నాప్!</translation>
 <translation id="3041612393474885105">సర్టిఫికెట్ సమాచారం</translation>
+<translation id="3057676462092457419">DnsOverHttps మోడ్ <ph name="SECURE_DNS_MODE_SECURE" />కు ఇంకా మద్దతు లేదు, ఆ మోడ్ <ph name="SECURE_DNS_MODE_OFF" />కు సెట్ చేయబడింది.</translation>
 <translation id="3060227939791841287">C9 (ఎన్వలప్)</translation>
 <translation id="3061707000357573562">ప్యాచ్ సేవ</translation>
 <translation id="3064966200440839136">బాహ్య అప్లికేషన్‌ ద్వారా చెల్లించడానికి అజ్ఞాత మోడ్ నుండి నిష్క్రమిస్తోంది. కొనసాగించాలా?</translation>
@@ -431,7 +434,6 @@
 <translation id="3229041911291329567">మీ పరికరం, బ్రౌజర్‌ల వెర్షన్ సమాచారం</translation>
 <translation id="323107829343500871"><ph name="CREDIT_CARD" /> కార్డ్ CVCని నమోదు చేయండి</translation>
 <translation id="3234666976984236645">ఈ సైట్‌లో ఎప్పుడూ ముఖ్యమైన కంటెంట్‌ను గుర్తించు</translation>
-<translation id="3254409185687681395">ఈ పేజీని బుక్‌మార్క్ చేయి</translation>
 <translation id="3270847123878663523">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
 <translation id="3274521967729236597">పా-కాయ్</translation>
 <translation id="3282497668470633863">కార్డ్‌లో పేరుని జోడించండి</translation>
@@ -526,6 +528,7 @@
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />లోని హ్యాకర్‌లు మిమ్మల్ని సాఫ్ట్‌వేర్ ఇన్‌స్టాల్ చేసే విధంగా లేదా మీ వ్యక్తిగత సమాచారాన్ని (ఉదాహరణకు, పాస్‌వర్డ్‌లు, ఫోన్ నంబర్‌లు లేదా క్రెడిట్ కార్డ్‌లు) బహిర్గతం చేసే విధంగా మిమ్మల్ని మాయ చేయవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">సర్వర్ లోపం వల్ల అనువాదం విఫలమైంది.</translation>
 <translation id="3759461132968374835">మీకు ఇటీవల నివేదించిన క్రాష్‌లు లేవు. క్రాష్‌ నివేదన నిలిపివేసినపుడు ఏర్పడే క్రాష్‌లు ఇక్కడ కనిపించవు.</translation>
+<translation id="3760561303380396507">CVCకి బదులుగా Windows Helloను ఉపయోగించాలా?</translation>
 <translation id="3761718714832595332">స్థితిని దాచు</translation>
 <translation id="3765032636089507299">సురక్షిత బ్రౌజింగ్ పేజీ నిర్మాణంలో ఉంది.</translation>
 <translation id="3778403066972421603">ఈ కార్డ్‌ను మీ Google ఖాతాకు మరియు ఈ పరికరంలో సేవ్ చేయాలని అనుకుంటున్నారా?</translation>
@@ -535,6 +538,7 @@
 <translation id="3789155188480882154">పరిమాణం 16</translation>
 <translation id="3797522431967816232">Prc3 (ఎన్వలప్)</translation>
 <translation id="3807873520724684969">హానికర కంటెంట్ బ్లాక్ చేయబడింది.</translation>
+<translation id="3808375843007691220">హెచ్చరిక: ప్రయోగాత్మక ఫీచర్‌లు ముందున్నాయి!</translation>
 <translation id="3810973564298564668">నిర్వహించు</translation>
 <translation id="382518646247711829">మీరు ప్రాక్సీ సర్వర్‌ను ఉపయోగిస్తే...</translation>
 <translation id="3828924085048779000">ఖాళీ రహస్య పదబంధం అనుమతించబడదు.</translation>
@@ -547,6 +551,7 @@
 <translation id="3901925938762663762">కార్డ్ గడువు సమయం ముగిసింది</translation>
 <translation id="3906600011954732550">B5-అదనం</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
+<translation id="3939773374150895049">CVCకి బదులుగా WebAuthnను ఉపయోగించాలా?</translation>
 <translation id="3946209740501886391">ఈ సైట్‌లో ఎల్లప్పుడూ అడగాలి</translation>
 <translation id="3949571496842715403">ఈ సర్వర్ తను <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రంలో విషయ ప్రత్యామ్నాయ పేర్లు పేర్కొనబడలేదు. తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా హ్యాకర్ మీ కనెక్షన్‌కు అంతరాయం కలిగించడం వలన ఇలా జరిగి ఉండవచ్చు.</translation>
 <translation id="3949601375789751990">మీ బ్రౌజింగ్ చరిత్ర ఇక్కడ కనిపిస్తుంది</translation>
@@ -561,7 +566,6 @@
 <translation id="40103911065039147">{URL_count,plural, =1{1 వెబ్ పేజీ సమీపంలో ఉంది}other{# వెబ్ పేజీలు సమీపంలో ఉన్నాయి}}</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="4032320456957708163">మీ బ్రౌజర్ <ph name="ENROLLMENT_DOMAIN" /> ద్వారా నిర్వహించబడుతోంది</translation>
-<translation id="4034375457890803692">మీరు క్లిక్ చేసిన లింక్‌ సాధారణంగా మీరు సందర్శించని సైట్‌కు తీసుకెళుతోంది. మిమ్మల్ని తికమక పెట్టడానికి ఇది ప్రయత్నిస్తుండవచ్చు.</translation>
 <translation id="4058922952496707368">కీ "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
 <translation id="4067263367174615723">C1 (ఎన్వలప్)</translation>
 <translation id="4067947977115446013">చెల్లుబాటు అయ్యే చిరునామాను జోడించండి</translation>
@@ -588,6 +592,7 @@
 <translation id="4171400957073367226">ధృవీకరణ సంతకం చెల్లదు</translation>
 <translation id="4173315687471669144">ఫుల్‌స్కేప్</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{మరో <ph name="ITEM_COUNT" /> అంశం}other{మరో <ph name="ITEM_COUNT" /> అంశాలు}}</translation>
+<translation id="4176463684765177261">ఆపివేయబడింది</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4193750898749511769">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, బిల్లింగ్ చిరునామాలను మీ Google ఖాతాకు జోడించండి.</translation>
 <translation id="4196861286325780578">&amp;తరలించడాన్ని పునరావృతం చేయి</translation>
@@ -676,7 +681,6 @@
 <translation id="4582204425268416675">కార్డ్‌ని తీసివేయండి</translation>
 <translation id="4587425331216688090">Chrome నుండి చిరునామాను తీసివేయాలా?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" />కు గల మీ కనెక్షన్ ఆధునిక సైఫర్ సూట్ ఉపయోగించి ఎన్‌క్రిప్ట్ చేయ‌బ‌డింది.</translation>
-<translation id="4594047029158047642">మీరు తెరిచిన లింక్ ఒక అసాధారణ సైట్‌కు తీసుకెళ్తుంది. ఇది మిమ్మల్ని అయోమయంలో పడేయడానికి చేసిన మోసం కావచ్చు.</translation>
 <translation id="4594403342090139922">&amp;తొలగించడాన్ని రద్దు చేయి</translation>
 <translation id="4597348597567598915">పరిమాణం 8</translation>
 <translation id="4600854749408232102">C6/C5 (ఎన్వలప్)</translation>
@@ -738,6 +742,7 @@
 <translation id="4974590756084640048">హెచ్చరికలను మళ్లీ ప్రారంభించు</translation>
 <translation id="4984339528288761049">Prc5 (ఎన్వలప్)</translation>
 <translation id="4989163558385430922">అన్నీ చూడండి</translation>
+<translation id="4989542687859782284">అందుబాటులో లేనివి</translation>
 <translation id="4989809363548539747">ఈ ప్లగ్ఇన్‌‌కు మద్దతు లేదు</translation>
 <translation id="4995216769782533993">మీ కార్డ్ వివరాలను ఈ సైట్‌తో షేర్ చేయడానికి, సెక్యూరిటీ కోడ్‌ను ధృవీకరించండి</translation>
 <translation id="5002932099480077015">ప్రారంభిస్తే, వేగవంతమైన ఫారమ్ పూరింపు కోసం ఈ పరికరంలో మీ కార్డ్ కాపీని నిల్వ చేస్తుంది.</translation>
@@ -779,7 +784,6 @@
 <translation id="5169827969064885044">మీరు మీ సంస్థ ఖాతాకు యాక్సెస్‌ను కోల్పోవచ్చు. లేదా గుర్తింపు స‌మాచారం చౌర్యానికి గురికావచ్చు. మీరు ఇప్పుడే మీ పాస్‌వర్డ్‌ను మార్చాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>
 <translation id="5171045022955879922">URLను వెతకండి లేదా టైప్ చేయండి</translation>
 <translation id="5171689220826475070">ఫ్యాన్‌ఫోల్డ్-యూరోపియన్</translation>
-<translation id="5172068981283436906">మీరు సాధారణంగా &lt;a href="#" id="dont-proceed-link2"&gt;<ph name="DOMAIN" />&lt;/a&gt;ను సందర్శిస్తారు.ఇప్పుడు సందర్శించాలని ప్రయత్నించిన  URL , మీ బ్రౌజర్ చరిత్రలోని సైట్‌తో ఇంచుమించుగా సరిపోలుతోంది, కానీ ఖచ్చితమైన రీతిలో సరిపోలట్లేదు. హ్యాకర్‌లు మిమ్మల్ని మాయ చేయడానికి లేదా మోసగించడానికి కొన్నిసార్లు ఇలాంటి ఉచ్చు పన్నుతారు.</translation>
 <translation id="5172758083709347301">మెషీన్</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />లో లేదా? ఈ ఎర్రర్‌ను నివేదించండి</translation>
 <translation id="5190835502935405962">బుక్‌మార్క్‌ల బార్</translation>
@@ -911,9 +915,11 @@
 <translation id="5869522115854928033">సేవ్  చేసిన పాస్‌వర్డ్‌లు</translation>
 <translation id="5887400589839399685">కార్డ్ సేవ్ చేయబడింది</translation>
 <translation id="5893752035575986141">క్రెడిట్ కార్డ్‌లు ఆమోదించబడతాయి.</translation>
+<translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="5901630391730855834">పసుపు</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (సమకాలీకరించబడింది)</translation>
 <translation id="5916664084637901428">ఆన్ చేయి</translation>
+<translation id="59174027418879706">ప్రారంభించబడింది</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Google ఖాతాకు కార్డ్‌ను సేవ్ చేయాలా?</translation>
 <translation id="5922853866070715753">దాదాపు పూర్తయింది</translation>
@@ -947,6 +953,7 @@
 <translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">మీ కార్డ్‌లను మీ అన్ని పరికరాలలో ఉపయోగించాలా?</translation>
 <translation id="6059925163896151826">USB పరికరాలు</translation>
+<translation id="6060009363608157444">చెల్లని DnsOverHttps మోడ్.</translation>
 <translation id="6080696365213338172">మీరు నిర్వాహకుని ద్వారా అందించబడిన ప్రమాణపత్రాన్ని ఉపయోగించి కంటెంట్‌ను యాక్సెస్ చేసారు. మీరు <ph name="DOMAIN" />కు అందించే డేటాకు మీ నిర్వాహకుని ద్వారా అంతరాయం ఏర్పడవచ్చు.</translation>
 <translation id="6094273045989040137">అదనపు గమనికను జోడించండి</translation>
 <translation id="610911394827799129">మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు</translation>
@@ -1039,6 +1046,7 @@
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="6644283850729428850">ఈ విధానం విస్మరించబడింది.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{ఏవీ లేవు}=1{1 సైట్ నుండి (మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు)}other{# సైట్‌ల నుండి (మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు)}}</translation>
+<translation id="6652101503459149953">Windows Helloను ఉపయోగించండి</translation>
 <translation id="6657585470893396449">పాస్‌వర్డ్</translation>
 <translation id="6670613747977017428">భద్రతకు తిరిగి వెళ్ళు.</translation>
 <translation id="6671697161687535275">Chromium నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
@@ -1068,6 +1076,7 @@
 <translation id="6868206169573555318">అప్‌డేట్ చేయడానికి తిరిగి తెరవండి</translation>
 <translation id="6874604403660855544">&amp;జోడించడాన్ని పునరావృతం చేయి</translation>
 <translation id="6884662655240309489">పరిమాణం 1</translation>
+<translation id="6884796835813057577">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;కు కొనసాగించాలా?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">విధాన స్థాయికి మద్దతు లేదు.</translation>
 <translation id="6895330447102777224">మీ కార్డ్ నిర్ధారించబడింది</translation>
@@ -1139,7 +1148,6 @@
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">మీ కంప్యూటర్ తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కు ఒక ప్రైవేట్ కనెక్షన్‌ను ఏర్పాటు చేయడం వీలుకాలేదు.</translation>
 <translation id="7260504762447901703">యాక్సెస్‌ను ఉపసంహరించు</translation>
-<translation id="726226871651201355">&lt;a href="#" id="dont-proceed-link1"&gt;<ph name="DOMAIN" />&lt;/a&gt;కు కొనసాగించాలా?</translation>
 <translation id="7271803869921933038">ఆమోదించే ప్రీపెయిడ్ కార్డ్‌లు</translation>
 <translation id="7275334191706090484">నిర్వహించబడిన బుక్‌మార్క్‌లు</translation>
 <translation id="7298195798382681320">సిఫార్సు చేయబడినవి</translation>
@@ -1152,6 +1160,7 @@
 <translation id="7320336641823683070">కనెక్షన్ సహాయం</translation>
 <translation id="733354035281974745">పరికర స్థానిక ఖాతా భర్తీ</translation>
 <translation id="7334320624316649418">&amp;మళ్లీ క్రమం చేయడాన్ని పునరావృతం చేయి</translation>
+<translation id="7337706099755338005">మీ ప్లాట్‌ఫారమ్‌లో అందుబాటులో లేదు.</translation>
 <translation id="733923710415886693">సర్వర్ ప్రమాణపత్రాన్ని ప్రమాణపత్రం పారదర్శకత ద్వారా బహిరంగపరచలేదు.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">అనుబంధితం:</translation>
@@ -1299,6 +1308,7 @@
 <translation id="8041940743680923270">సార్వజనీన డిఫాల్ట్‌ను ఉపయోగించు (అడుగు)</translation>
 <translation id="8042918947222776840">పికప్ పద్ధతిని ఎంచుకోండి</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />"ని సరిగ్గా కాన్ఫిగర్ చేయలేదు. సాధారణంగా "<ph name="SOFTWARE_NAME" />"ని అన్ఇన్‌స్టాల్ చేయడం ద్వారా సమస్య పరిష్కారం కావచ్చు. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8062224330780487419">ఇప్పటి నుండి మీరు కార్డ్ సెక్యూరిటీ కోడ్‌ను నమోదు చేయనవసరం లేదు</translation>
 <translation id="8066955247577885446">క్షమించండి, ఏదో తప్పు జరిగింది.</translation>
 <translation id="8074253406171541171">10x13 (ఎన్వలప్)</translation>
 <translation id="8078141288243656252">తిప్పినప్పుడు అదనపు గమనికలను అందించడం సాధ్యపడదు</translation>
@@ -1396,9 +1406,11 @@
 <translation id="8622948367223941507">చట్ట సంబంధితం-అదనం</translation>
 <translation id="8625384913736129811">ఈ కార్డ్‌ను ఈ పరికరానికి సేవ్ చేయి</translation>
 <translation id="8626112503828625890">బిల్లింగ్ వివరాలను Google ఖాతాలో నిల్వ చేయాలా?</translation>
+<translation id="8647750283161643317">అన్నింటినీ డిఫాల్ట్‌కు రీసెట్ చేయి</translation>
 <translation id="8663226718884576429">ఆర్డర్ సారాంశం, <ph name="TOTAL_LABEL" />, మరిన్ని వివరాలు</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, సమాధానం, <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>
+<translation id="8688672835843460752">అందుబాటులో ఉంది</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />కు మీ కనెక్షన్ ఎన్‌క్రిప్ట్ చేయ‌బ‌డ‌లేదు.</translation>
 <translation id="8718314106902482036">చెల్లింపు పూర్తి కాలేదు</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, శోధన సూచన</translation>
@@ -1461,6 +1473,7 @@
 <translation id="9035022520814077154">భద్రతా ఎర్రర్</translation>
 <translation id="9038649477754266430">పేజీలను మరింత త్వరగా లోడ్ చేయడానికి సూచన సేవను ఉపయోగించండి</translation>
 <translation id="9039213469156557790">అలాగే, ఈ పేజీలో సురక్షితం కాని ఇతర వనరులు ఉన్నాయి. ఈ వనరులను బదిలీ చేస్తున్నప్పుడు ఇతరులు చూడగలరు మరియు దాడికి పాల్పడేవారు పేజీ ప్రవర్తనను మార్చేలా వీటిని సవరించగలరు.</translation>
+<translation id="9044359186343685026">Touch IDని ఉపయోగించు</translation>
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">మీరు <ph name="DOMAIN" />ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ ఒక చెల్లుబాటులో లేని ప్రమాణపత్రంను అందించింది.</translation>
 <translation id="9050666287014529139">రహస్య పదబంధం</translation>

@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">Gazda nu poate fi accesată. Acest lucru este cauzat, probabil, de configurația rețelei pe care o utilizați.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Ultima dată online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Această aplicație nu mai este acceptată. Pentru a te asigura că beneficiezi de cele mai recente funcții și actualizări de securitate, folosește <ph name="LINK_BEGIN" />aplicația web Desktop la distanță Chrome<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Este necesar încă un pas de configurare înainte să poți controla acest dispozitiv de la distanță folosind <ph name="PRODUCT_NAME" />.
-
-Pentru a activa această funcție, selectează „<ph name="BUTTON_NAME" />” ca să afișezi panoul de preferințe pentru securitate și confidențialitate, apoi bifează căsuța de lângă „<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Dacă „<ph name="SERVICE_SCRIPT_NAME" />” este deja disponibil și bifat, poate fi necesar să-l elimini și să-l adaugi din nou.</translation>
 <translation id="2499160551253595098">Ajutați-ne să îmbunătățim Desktop la distanță Chrome, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>
 <translation id="2509394361235492552">Conectat la <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTĂ: pentru a vă asigura că toate comenzile rapide de la tastatură sunt disponibile, puteți seta Desktop la distanță Chrome în modul „Deschideți ca fereastră”.</translation>
@@ -317,6 +312,11 @@ Dacă „<ph name="SERVICE_SCRIPT_NAME" />” este deja disponibil și bifat, po
 <translation id="8804164990146287819">Politica de confidențialitate</translation>
 <translation id="894763922177556086">Bună</translation>
 <translation id="895780780740011433">Pentru Windows 7 și versiuni ulterioare</translation>
+<translation id="8963047137585288214">Este necesar încă un pas de configurare înainte să poți controla acest dispozitiv de la distanță folosind <ph name="PRODUCT_NAME" />.
+
+Pentru a activa această funcție, selectează „<ph name="BUTTON_NAME" />” ca să afișezi panoul de preferințe pentru securitate și confidențialitate, apoi bifează căsuța de lângă „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Dacă „<ph name="SERVICE_SCRIPT_NAME" />” este deja disponibil și bifat, poate fi necesar să-l debifezi și să-l bifezi din nou.</translation>
 <translation id="897805526397249209">Pentru a activa conexiunile la distanță pentru un alt computer, instalați Chromoting pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Controler gazdă pentru Desktop la distanță Chrome</translation>
 <translation id="9016232822027372900">Conectați oricum</translation>

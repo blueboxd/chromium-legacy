@@ -51,14 +51,6 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   // Shutdown must be called before deleting this. Call on the UI thread.
   void Shutdown();
 
-  // TODO(https://crbug.com/955171): Remove these methods and use
-  // CreateOneShotSyncService and CreatePeriodicSyncService directly once
-  // RenderProcessHostImpl uses service_manager::BinderMap.
-  void CreateOneShotSyncServiceForRequest(
-      blink::mojom::OneShotBackgroundSyncServiceRequest request);
-  void CreatePeriodicSyncServiceForRequest(
-      blink::mojom::PeriodicBackgroundSyncServiceRequest request);
-
   // Create a OneShotBackgroundSyncServiceImpl that is owned by this. Call on
   // the UI thread.
   void CreateOneShotSyncService(

@@ -558,7 +558,8 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
   }
 
   SkRect dest;
-  dest.set(dest_rect.x(), dest_rect.y(), dest_rect.right(), dest_rect.bottom());
+  dest.setLTRB(dest_rect.x(), dest_rect.y(), dest_rect.right(),
+               dest_rect.bottom());
 
   // Paint black rectangle if there isn't a frame available or the
   // frame has an unexpected format.

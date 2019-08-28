@@ -27,6 +27,7 @@
 <translation id="4157467675761413638">Wskazówka dla użytkowników Chromium. Aby zobaczyć więcej opcji kart, naciśnij i przytrzymaj przycisk Pokaż karty na pasku narzędzi, który znajduje się na dole lub na górze ekranu.</translation>
 <translation id="4241912885070669028">Wylogowujesz się z konta, którym zarządza <ph name="SIGNOUT_MANAGED_DOMAIN" />. Spowoduje to usunięcie danych Chromium z tego urządzenia, ale pozostaną one na koncie Google.</translation>
 <translation id="4555020257205549924">Gdy ta funkcja jest włączona, Chromium oferuje tłumaczenie stron w innych językach przy użyciu Tłumacza Google. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Włącz skaner Chromium</translation>
 <translation id="4787850887676698916">Tutaj wyświetlą się karty otwarte w Chromium na innych urządzeniach.</translation>
 <translation id="4999538639245140991">Wylogowujesz się z konta, którym zarządza <ph name="SIGNOUT_MANAGED_DOMAIN" />. Spowoduje to usunięcie danych Chromium z tego urządzenia, ale pozostaną one na koncie Google.</translation>
 <translation id="5231355151045086930">Wylogowanie z Chromium</translation>
@@ -46,6 +47,7 @@
 <translation id="7674213385180944843">Wybierz Ustawienia &gt; Prywatność &gt; Aparat &gt; Chromium i włącz aparat.</translation>
 <translation id="7746854981345936341">Wskazówka dla użytkowników Chromium. Niektóre przyciski (na przykład Wstecz, Dalej i Szukaj) znajdują się teraz na dole ekranu.</translation>
 <translation id="786327964234957808">Przełączasz synchronizację kont z <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Twoimi istniejącymi danymi Chromium zarządza <ph name="DOMAIN" />. Dane zostaną usunięte z tego urządzenia, ale pozostaną na koncie <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Zacznij używać skanera Chromium</translation>
 <translation id="8073677936375100957">Usunąć dane Chromium z tego urządzenia?</translation>
 <translation id="8175055321229419309">Wskazówka: <ph name="BEGIN_LINK" />przenieś Chromium do Docka<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Włączenie udostępniania lokalizacji w Chromium pozwala w pełni korzystać z usług Google.</translation>

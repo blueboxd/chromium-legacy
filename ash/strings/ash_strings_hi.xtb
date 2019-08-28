@@ -35,6 +35,7 @@
 <translation id="1351937230027495976">मेन्यू छोटा करें</translation>
 <translation id="1383876407941801731">खोजें</translation>
 <translation id="1419738280318246476">सूचना से जुड़ी कार्रवाई करने के लिए डिवाइस को अनलॉक करें</translation>
+<translation id="1420408895951708260">नाइट लाइट को टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">हां</translation>
 <translation id="1455242230282523554">भाषा सेटिंग दिखाएं</translation>
 <translation id="1460620680449458626">आवाज़ को म्यूट किया गया है.</translation>
@@ -62,6 +63,7 @@
 <translation id="1820355135508821526">इस डिवाइस पर लागू की गई किसी नीति ने <ph name="FEATURE_NAME" /> की सुविधा बंद कर दी है. कृपया अपने एडमिन से बात करके बदलावों का अनुरोध करें.</translation>
 <translation id="1823873187264960516">ईथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (सेवा लोड हो रही है...)</translation>
+<translation id="1838895407229022812">नाइट लाइट बंद है.</translation>
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर स्क्रीन शेयर कर रहा है</translation>
@@ -111,11 +113,11 @@
 <translation id="2501920221385095727">रोचक कुंजियां</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
 <translation id="2532589005999780174">उच्च कंट्रास्ट मोड</translation>
+<translation id="2542089167727451762">अपनी प्रोफ़ाइल फ़ोटो पर टैप करें</translation>
 <translation id="255671100581129685">सार्वजनिक सत्र में Google Assistant उपलब्ध नहीं है.</translation>
 <translation id="2575685495496069081">एक से ज़्यादा 'साइन इन' को बंद कर दिया गया है</translation>
 <translation id="2582112259361606227">अपडेट करने के लिए रीस्टार्ट करें</translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक है</translation>
-<translation id="2651765386227849097">इस डिवाइस पर Google Assistant की सुविधा बंद है.</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2658778018866295321">क्लिक करके खींचें और छोड़ें</translation>
 <translation id="2700493154570097719">अपना कीबोर्ड सेट करें</translation>
@@ -153,7 +155,7 @@
 <translation id="315116470104423982">मोबाइल डेटा</translation>
 <translation id="3151786313568798007">अभिविन्‍यास</translation>
 <translation id="3152934361839663679">आपका डिवाइस काम कर सकने वाले ज़्यादा से ज़्यादा मॉनीटर से कनेक्ट है, इसलिए उनमें से कोई एक स्क्रीन डिसकनेक्ट कर दी गई है.</translation>
-<translation id="3153444934357957346">एक से ज़्यादा साइन इन की सुविधा होने पर आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
+<translation id="3153444934357957346">एक से ज़्यादा साइन-इन की सुविधा के लिए आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
 <translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{किसी डिवाइस से कनेक्ट है}one{# डिवाइस से कनेक्ट है}other{# डिवाइस से कनेक्ट है}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> और</translation>
@@ -190,8 +192,8 @@
 <translation id="3712407551474845318">क्षेत्र कैप्‍चर करें</translation>
 <translation id="371370241367527062">सामने वाला माइक्रोफ़ोन</translation>
 <translation id="3771549900096082774">उच्च कंट्रास्ट मोड</translation>
-<translation id="3773700760453577392">किसी एडमिन ने <ph name="USER_EMAIL" /> के लिए एक से ज़्यादा साइन इन की अनुमति नहीं दी है.
-जारी रखने के लिए सभी उपयोगकर्ताओं को साइन आउट करना ज़रूरी है.</translation>
+<translation id="3773700760453577392">किसी एडमिन ने <ph name="USER_EMAIL" /> के लिए एक से ज़्यादा 'साइन इन' नामंज़ूर कर दिए हैं.
+जारी रखने के लिए सभी उपयोगकर्ताओं को साइन आउट करना होगा.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">लॉक करें</translation>
 <translation id="3798670284305777884">स्पीकर (आंतरिक)</translation>
@@ -233,7 +235,6 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">आवर्धक ग्लास</translation>
 <translation id="4351433414020964307">Assistant सेवा लोड हो रही है...</translation>
-<translation id="435527878592612277">अपनी फ़ोटो चुनें</translation>
 <translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
 <translation id="4379531060876907730">ये आपके स्टाइलस टूल हैं</translation>
 <translation id="4389184120735010762">आपने 'सामग्री को बड़ा दिखाने वाली डॉक की गई सेवा' का कीबोर्ड शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
@@ -280,7 +281,7 @@
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
 <translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
-<translation id="523505283826916779">पहुंच-योग्यता विकल्प</translation>
+<translation id="523505283826916779">सुलभता सेटिंग</translation>
 <translation id="5260676007519551770">डेस्क 4</translation>
 <translation id="5283198616748585639">एक मिनट जोड़ें</translation>
 <translation id="5302048478445481009">भाषा</translation>
@@ -311,6 +312,7 @@
 <translation id="574392208103952083">मध्यम</translation>
 <translation id="5744083938413354016">टैप करके खींचना</translation>
 <translation id="5750765938512549687">ब्लूटूथ बंद है</translation>
+<translation id="576453121877257266">नाइट लाइट चालू है.</translation>
 <translation id="5777841717266010279">स्‍क्रीन साझाकरण बंद करें?</translation>
 <translation id="5820394555380036790">क्रोमियम OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> पर <ph name="ROUTE_TITLE" /> बंद करें</translation>
@@ -350,7 +352,6 @@
 <translation id="6284232397434400372">रिज़ॉल्यूशन बदला गया</translation>
 <translation id="6297287540776456956">कोई क्षेत्र चुनने के लिए स्टाइलस का उपयोग करें</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> को <ph name="ROTATION" /> पर घुमाया गया</translation>
-<translation id="6344698853700675736">नाइट लाइट को टॉगल करें</translation>
 <translation id="6376931439017688372">ब्लूटूथ चालू है</translation>
 <translation id="639644700271529076">CAPS LOCK बंद है</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -546,7 +547,7 @@
 <translation id="9089416786594320554">इनपुट पद्धतियां</translation>
 <translation id="9091626656156419976">डिसप्ले <ph name="DISPLAY_NAME" /> हटा दिया गया</translation>
 <translation id="9151726767154816831">अपडेट करने के लिए रीस्टार्ट और पावरवॉश करें</translation>
-<translation id="9179259655489829027">यह फ़ीचर आपको पासवर्ड के बिना किसी भी साइन इन किए हुए उपयोगकर्ता को जल्दी से ऐक्सेस करने देता है. इस फ़ीचर का इस्तेमाल सिर्फ़ अपने भरोसेमंद खातों के साथ करें.</translation>
+<translation id="9179259655489829027">यह फ़ीचर आपको पासवर्ड के बिना किसी भी साइन इन किए हुए उपयोगकर्ता को जल्दी से एक्सेस करने देता है. इस फ़ीचर का इस्तेमाल सिर्फ़ अपने भरोसेमंद खातों के साथ करें.</translation>
 <translation id="9193626018745640770">ऐसे रिसीवर पर कास्ट किया जा रहा है जिसकी जानकारी नहीं है</translation>
 <translation id="9194617393863864469">किसी दूसरे उपयोगकर्ता के रूप में साइन इन करें...</translation>
 <translation id="9210037371811586452">संयुक्त डेस्कटॉप मोड से बाहर निकाला जा रहा है</translation>

@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Valoarea trebuie să fie mai mică sau egală cu <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definiție</translation>
 <translation id="3557673793733683882">titlu <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">selector pentru săptămână</translation>
 <translation id="3685101356851116974">Imagine neetichetată</translation>
 <translation id="3706100364254443312">comutator</translation>
 <translation id="3732799496749320381">ll</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Se așteaptă descrierea…</translation>
 <translation id="8117451130807776954">Săptămâna aceasta</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8208673686607688524">selector pentru data și ora locală</translation>
 <translation id="8261464734335370856">Ortografie nevalidă</translation>
 <translation id="8284326494547611709">Subtitrări</translation>
 <translation id="835897206747267392">Valoare nevalidă.</translation>

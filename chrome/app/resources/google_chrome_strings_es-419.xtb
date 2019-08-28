@@ -168,7 +168,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="5906655207909574370">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
 <translation id="5940385492829620908">Aquí puedes encontrar tus páginas web, favoritos y otros contenidos de Chrome.</translation>
 <translation id="5941830788786076944">Haga de Google Chrome su navegador predeterminado</translation>
-<translation id="5977372243443849142">Chrome puede ayudarte a recordar tus contraseñas por ti.</translation>
+<translation id="5977372243443849142">Chrome puede ayudarte a recordar tus contraseñas para que no tengas que hacerlo tú.</translation>
 <translation id="6014844626092547096">Accediste a Chrome. El administrador inhabilitó la sincronización.</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6070348360322141662">Para mejorar la seguridad, Google Chrome encriptará los datos</translation>
@@ -181,8 +181,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios en tu computadora.</translation>
 <translation id="6338556085225130112">Actualizando Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS es posible gracias al <ph name="BEGIN_LINK_CROS_OSS" />software de código abierto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
-<translation id="6400930858680434649">Si no ves una opción de configuración en esta página consulta la <ph name="LINK_BEGIN" />
-    configuración del navegador Chrome<ph name="LINK_END" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" />: Versión para desarrolladores de Google Chrome</translation>
 <translation id="6566149418543181476">Actualizando Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Estás utilizando <ph name="PROFILE_EMAIL" /> para sincronizar los datos de Chrome. Si quieres actualizar las preferencias de sincronización o utilizar Chrome sin una cuenta de Google, accede a <ph name="SETTINGS_LINK" />.</translation>

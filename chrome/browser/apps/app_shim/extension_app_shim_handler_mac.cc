@@ -315,10 +315,11 @@ bool ExtensionAppShimHandler::Delegate::AllowShimToConnect(
 }
 
 std::unique_ptr<AppShimHost> ExtensionAppShimHandler::Delegate::CreateHost(
+    AppShimHost::Client* client,
     Profile* profile,
     const extensions::Extension* extension) {
-  return std::make_unique<AppShimHost>(extension->id(), profile->GetPath(),
-                                       UsesRemoteViews(extension));
+  return std::make_unique<AppShimHost>(
+      client, extension->id(), profile->GetPath(), UsesRemoteViews(extension));
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -427,7 +428,7 @@ AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
     return nullptr;
   ProfileState& profile_state = apps_[extension->id()].profiles[profile];
   if (!profile_state.host)
-    profile_state.host = delegate_->CreateHost(profile, extension);
+    profile_state.host = delegate_->CreateHost(this, profile, extension);
   return profile_state.host.get();
 }
 

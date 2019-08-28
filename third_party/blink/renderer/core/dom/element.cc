@@ -377,6 +377,36 @@ bool HasUpwardDirection(const Element& element) {
          (!is_rtl && writing_mode == WritingMode::kSidewaysLr);
 }
 
+// TODO(meredithl): Automatically generate this method once the IDL compiler has
+// been refactored. See http://crbug.com/839389 for details.
+bool IsElementReflectionAttribute(const QualifiedName& name) {
+  if (name == html_names::kAriaActivedescendantAttr)
+    return true;
+  if (name == html_names::kAriaErrormessageAttr)
+    return true;
+  if (name == html_names::kAriaDetailsAttr)
+    return true;
+  return false;
+}
+
+// Checks that the given element |candidate| is a descendant of
+// |attribute_element|'s  shadow including ancestors.
+bool ElementIsDescendantOfShadowIncludingAncestor(
+    const Element& attribute_element,
+    const Element& candidate) {
+  ShadowRoot* nearest_root = attribute_element.ContainingShadowRoot();
+  const Element* shadow_host = &attribute_element;
+  while (nearest_root) {
+    shadow_host = &nearest_root->host();
+    if (candidate.IsDescendantOf(nearest_root))
+      return true;
+    nearest_root = shadow_host->ContainingShadowRoot();
+  }
+
+  Element* document_element = shadow_host->GetDocument().documentElement();
+  return candidate.IsDescendantOf(document_element);
+}
+
 }  // namespace
 
 Element* Element::Create(const QualifiedName& tag_name, Document* document) {
@@ -548,6 +578,67 @@ void Element::SetBooleanAttribute(const QualifiedName& name, bool value) {
     setAttribute(name, g_empty_atom);
   else
     removeAttribute(name);
+}
+
+void Element::SynchronizeContentAttributeAndElementReference(
+    const QualifiedName& name) {
+  ExplicitlySetAttrElementMap* element_attribute_data =
+      GetDocument().GetExplicitlySetAttrElementMap(this);
+  element_attribute_data->erase(name);
+}
+
+void Element::SetElementAttribute(const QualifiedName& name, Element* element) {
+  ExplicitlySetAttrElementMap* element_attribute_data =
+      GetDocument().GetExplicitlySetAttrElementMap(this);
+
+  // If the reflected element is explicitly null, or is not a member of this
+  // elements shadow including ancestor tree, then we remove the content
+  // attribute and the explicitly set attr-element.
+  // Note this means that explicitly set elements can cross ancestral shadow
+  // boundaries, but not descendant ones. See the spec for more details:
+  // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:concept-shadow-including-ancestor
+  if (!element ||
+      !ElementIsDescendantOfShadowIncludingAncestor(*this, *element)) {
+    element_attribute_data->erase(name);
+    removeAttribute(name);
+    return;
+  }
+
+  const AtomicString id = element->GetIdAttribute();
+
+  // Explicitly set attr-elements must have a valid id attribute, and also
+  // refer to the first element in tree order of |this| elements node tree in
+  // order for the content attribute to reflect the ID. Where these conditions
+  // aren't met, the content attribute should reflect the empty string. Note
+  // that the explicitly set attr-element is still set. See the spec for more
+  // details:
+  // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:root-2
+  if (id.IsNull() || GetTreeScope() != element->GetTreeScope() ||
+      GetTreeScope().getElementById(id) != element)
+    setAttribute(name, g_empty_atom);
+  else
+    setAttribute(name, id);
+
+  element_attribute_data->Set(name, element);
+}
+
+Element* Element::GetElementAttribute(const QualifiedName& name) {
+  ExplicitlySetAttrElementMap* element_attribute_data =
+      GetDocument().GetExplicitlySetAttrElementMap(this);
+
+  Element* explicitly_set_element = element_attribute_data->at(name);
+  // Only return the explicit element if it still exists in the same scope.
+  if (explicitly_set_element && ElementIsDescendantOfShadowIncludingAncestor(
+                                    *this, *explicitly_set_element))
+    return explicitly_set_element;
+
+  // Compute the attr-associated element, this can be null.
+  AtomicString id = getAttribute(name);
+  if (id.IsNull())
+    return nullptr;
+
+  // Will return null if the id is empty.
+  return GetTreeScope().getElementById(id);
 }
 
 NamedNodeMap* Element::attributesForBindings() const {
@@ -2013,6 +2104,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   } else if (name == html_names::kExportpartsAttr) {
     EnsureElementRareData().SetPartNamesMap(params.new_value);
     GetDocument().GetStyleEngine().ExportpartsChangedForElement(*this);
+  } else if (IsElementReflectionAttribute(name)) {
+    SynchronizeContentAttributeAndElementReference(name);
   } else if (IsStyledElement()) {
     if (name == kStyleAttr) {
       StyleAttributeChanged(params.new_value, params.reason);

@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "build/build_config.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "components/safe_browsing/buildflags.h"
@@ -65,9 +64,7 @@ namespace safe_browsing {
 class PingManager;
 class VerdictCacheManager;
 class ClientSideDetectionService;
-#if !defined(OS_ANDROID)
 class DownloadProtectionService;
-#endif
 class PasswordProtectionService;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingNavigationObserverManager;
@@ -121,11 +118,10 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // The DownloadProtectionService is not valid after the SafeBrowsingService
   // is destroyed.
-#if !defined(OS_ANDROID)
   DownloadProtectionService* download_protection_service() const {
     return services_delegate_->GetDownloadService();
   }
-#endif
+
   // NetworkContext and URLLoaderFactory used for safe browsing requests.
   // Called on UI thread.
   network::mojom::NetworkContext* GetNetworkContext();

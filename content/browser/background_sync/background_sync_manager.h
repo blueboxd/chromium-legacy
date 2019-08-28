@@ -173,18 +173,14 @@ class CONTENT_EXPORT BackgroundSyncManager
       base::TimeDelta wakeup_delta,
       base::Time last_browser_wakeup_time);
 
-  // Each origin has a max_frequency decided by the browser. This picks the
-  // correct starting point to add to |delay| to so that the resulting
-  // |delay_until| for the |registration| ensures the minimum gap between
-  // periodicsync events fired for the origin.
-  // |delay| is only updated if |sync_type| is periodic.
-  base::Time GetDelayUntilAfterApplyingMinGapForOrigin(
-      blink::mojom::BackgroundSyncType sync_type,
+  // Finds all periodicsync registrations for the |origin|, and returns the time
+  // till the soonest scheduled periodicsync event for this origin, skipping
+  // over the registration with tag |tag_to_skip|. If there's
+  // none, it returns base::TimeDelta::Max(). If the soonest such event is
+  // scheduled to be fired in the past, returns base::TimeDelta().
+  base::TimeDelta GetSmallestPeriodicSyncEventDelayForOrigin(
       const url::Origin& origin,
-      base::TimeDelta delay) const;
-
-  base::Time GetSoonestPeriodicSyncEventTimeForOrigin(
-      const url::Origin& origin) const;
+      const std::string& tag_to_skip) const;
 
   // Revive any pending periodic Background Sync registrations for |origin|.
   void RevivePeriodicSyncRegistrations(url::Origin origin);

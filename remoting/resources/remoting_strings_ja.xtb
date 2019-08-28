@@ -54,11 +54,6 @@
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />最終オンライン: <ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2405928220797050937">このアプリのサポートは終了しました。最新の機能とセキュリティ アップデートを反映した <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />をご利用ください。</translation>
-<translation id="2431841749166974386"><ph name="PRODUCT_NAME" /> を使用してこのパソコンをリモートで管理するには、追加の設定が必要です。
-
-この機能を有効にするには、[<ph name="BUTTON_NAME" />] を選択して [セキュリティとプライバシー] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。
-
-[<ph name="SERVICE_SCRIPT_NAME" />] がすでに追加されてチェックボックスがオンになっている場合は、削除して追加し直す必要がある可能性があります。</translation>
 <translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> に接続されました</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
@@ -317,6 +312,11 @@
 <translation id="8804164990146287819">プライバシー ポリシー</translation>
 <translation id="894763922177556086">良い</translation>
 <translation id="895780780740011433">Windows 版（7 以上）</translation>
+<translation id="8963047137585288214"><ph name="PRODUCT_NAME" /> を使用してこのパソコンをリモートで管理するには、追加の設定が必要です。
+
+この機能を有効にするには、[<ph name="BUTTON_NAME" />] を選択して [セキュリティとプライバシー] 設定パネルを開き、「<ph name="SERVICE_SCRIPT_NAME" />」の横にあるチェックボックスをオンにします。
+
+「<ph name="SERVICE_SCRIPT_NAME" />」がすでに追加されてチェックボックスがオンになっている場合は、念のためチェックボックスをオフにしてオンにし直してください。</translation>
 <translation id="897805526397249209">別のパソコンへのリモート接続を有効にするには、対象となるパソコンに Chromoting をインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="8998327464021325874">Chrome リモート デスクトップ ホスト コントローラ</translation>
 <translation id="9016232822027372900">このまま接続する</translation>

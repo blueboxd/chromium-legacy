@@ -87,11 +87,9 @@ void TestSafeBrowsingService::SetV4ProtocolConfig(
 bool TestSafeBrowsingService::CanCreateDatabaseManager() {
   return !use_v4_local_db_manager_;
 }
-#if !defined(OS_ANDROID)
 bool TestSafeBrowsingService::CanCreateDownloadProtectionService() {
   return false;
 }
-#endif
 bool TestSafeBrowsingService::CanCreateIncidentReportingService() {
   return true;
 }
@@ -109,13 +107,11 @@ SafeBrowsingDatabaseManager* TestSafeBrowsingService::CreateDatabaseManager() {
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 }
 
-#if !defined(OS_ANDROID)
 DownloadProtectionService*
 TestSafeBrowsingService::CreateDownloadProtectionService() {
   NOTIMPLEMENTED();
   return nullptr;
 }
-#endif
 IncidentReportingService*
 TestSafeBrowsingService::CreateIncidentReportingService() {
 #if BUILDFLAG(FULL_SAFE_BROWSING)

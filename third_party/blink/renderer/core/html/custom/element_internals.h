@@ -56,6 +56,9 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   const AtomicString& FastGetAttribute(const QualifiedName&) const;
   void setAttribute(const QualifiedName& attribute, const AtomicString& value);
 
+  // TODO(meredithl): Fill these in.
+  void SetElementAttribute(const QualifiedName& name, Element* element);
+  Element* GetElementAttribute(const QualifiedName& name);
   bool HasAttribute(const QualifiedName& attribute) const;
   const HashMap<QualifiedName, AtomicString>& GetAttributes() const;
 
@@ -95,6 +98,11 @@ class CORE_EXPORT ElementInternals : public ScriptWrappable,
   Member<ValidityStateFlags> validity_flags_;
   Member<Element> validation_anchor_;
   HashMap<QualifiedName, AtomicString> accessibility_semantics_map_;
+
+  // See
+  // https://whatpr.org/html/3917/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:element
+  HeapHashMap<QualifiedName, WeakMember<Element>>
+      explicitly_set_attr_element_map;
 
   DISALLOW_COPY_AND_ASSIGN(ElementInternals);
 };

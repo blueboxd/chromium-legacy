@@ -226,7 +226,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;
@@ -268,7 +269,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const base::Optional<url::Origin>& origin,
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request);
 
   // Call this function when it is evident that the child process is actively
@@ -580,10 +582,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateStoragePartitionService(
       mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
   void CreateBroadcastChannelProvider(
-      blink::mojom::BroadcastChannelProviderRequest request);
+      mojo::PendingReceiver<blink::mojom::BroadcastChannelProvider> receiver);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
   void BindVideoDecoderService(media::mojom::InterfaceFactoryRequest request);
-  void BindWebDatabaseHostImpl(blink::mojom::WebDatabaseHostRequest request);
+  void BindWebDatabaseHostImpl(
+      mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver);
 
   // Control message handlers.
   void OnUserMetricsRecordAction(const std::string& action);
@@ -659,6 +662,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   using AddInterfaceCallback =
       base::Callback<void(mojo::InterfaceRequest<InterfaceType>)>;
 
+  template <typename InterfaceType>
+  using AddReceiverCallback =
+      base::Callback<void(mojo::PendingReceiver<InterfaceType>)>;
+
   template <typename CallbackType>
   struct InterfaceGetter;
 
@@ -671,6 +678,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
       if (!weak_host)
         return;
       callback.Run(std::move(request));
+    }
+  };
+
+  template <typename InterfaceType>
+  struct InterfaceGetter<AddReceiverCallback<InterfaceType>> {
+    static void GetInterfaceOnUIThread(
+        base::WeakPtr<RenderProcessHostImpl> weak_host,
+        const AddReceiverCallback<InterfaceType>& callback,
+        mojo::PendingReceiver<InterfaceType> receiver) {
+      if (!weak_host)
+        return;
+      callback.Run(std::move(receiver));
     }
   };
 
@@ -708,7 +727,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       base::Optional<net::NetworkIsolationKey> network_isolation_key,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request,
       bool is_trusted);
 

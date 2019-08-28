@@ -101,7 +101,7 @@ class MockSharingFCMHandler : public SharingFCMHandler {
   using SharingMessage = chrome_browser_sharing::SharingMessage;
 
  public:
-  MockSharingFCMHandler() : SharingFCMHandler(nullptr, nullptr) {}
+  MockSharingFCMHandler() : SharingFCMHandler(nullptr, nullptr, nullptr) {}
   ~MockSharingFCMHandler() = default;
 
   MOCK_METHOD0(StartListening, void());
@@ -350,7 +350,8 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
-  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
+  sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
+      kAuthorizedEntity, kFcmToken, kP256dh, kAuthSecret, base::Time::Now()));
 
   GetSharingService()->SendMessageToDevice(
       id, kTtl, chrome_browser_sharing::SharingMessage(),
@@ -379,7 +380,8 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
-  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
+  sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
+      kAuthorizedEntity, kFcmToken, kP256dh, kAuthSecret, base::Time::Now()));
 
   // FCM driver will not respond to the send request.
   fake_gcm_driver_.set_should_respond(false);
@@ -416,7 +418,8 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
-  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
+  sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
+      kAuthorizedEntity, kFcmToken, kP256dh, kAuthSecret, base::Time::Now()));
 
   GetSharingService()->SendMessageToDevice(
       id, kTtl, chrome_browser_sharing::SharingMessage(),
@@ -611,7 +614,8 @@ TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
 
   // Create new SharingService instance with FCM already registered at
   // constructor.
-  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
+  sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
+      kAuthorizedEntity, kFcmToken, kP256dh, kAuthSecret, base::Time::Now()));
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   GetSharingService();
 }

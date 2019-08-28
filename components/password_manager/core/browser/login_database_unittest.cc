@@ -81,6 +81,7 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->times_used = 1;
   form->form_data.name = ASCIIToUTF16("form_name");
   form->date_synced = base::Time::Now();
+  form->date_last_used = base::Time::Now();
   form->display_name = ASCIIToUTF16("Mr. Smith");
   form->icon_url = GURL("https://accounts.google.com/Icon");
   form->federation_origin =
@@ -370,6 +371,8 @@ TEST_F(LoginDatabaseTest, Logins) {
   PasswordForm form5(form4);
   form5.password_value = ASCIIToUTF16("test6");
   form5.preferred = true;
+  const base::Time kNow = base::Time::Now();
+  form5.date_last_used = kNow;
 
   // We update, and check to make sure it matches the
   // old form, and there is only one record.
@@ -385,6 +388,8 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(form5.password_value, result[0]->password_value);
   // Preferred login.
   EXPECT_TRUE(form5.preferred);
+  // Date last used.
+  EXPECT_EQ(kNow, form5.date_last_used);
   result.clear();
 
   // Make sure everything can disappear.
@@ -1078,6 +1083,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.blacklisted_by_user = true;
   form.scheme = PasswordForm::Scheme::kHtml;
   form.date_synced = base::Time::Now();
+  form.date_last_used = base::Time::Now();
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.icon_url = GURL("https://accounts.google.com/Icon");
   form.federation_origin =
@@ -1135,6 +1141,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   incomplete_form.username_value = ASCIIToUTF16("my_username");
   incomplete_form.password_value = ASCIIToUTF16("my_password");
   incomplete_form.preferred = true;
+  incomplete_form.date_last_used = base::Time::Now();
   incomplete_form.blacklisted_by_user = false;
   incomplete_form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(incomplete_form), db().AddLogin(incomplete_form));
@@ -1157,6 +1164,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   EXPECT_EQ(incomplete_form.username_value, result[0]->username_value);
   EXPECT_EQ(incomplete_form.password_value, result[0]->password_value);
   EXPECT_TRUE(result[0]->preferred);
+  EXPECT_EQ(incomplete_form.date_last_used, result[0]->date_last_used);
 
   // We should return empty 'action', 'username_element', 'password_element'
   // and 'submit_element' as we can't be sure if the credentials were entered
@@ -1200,6 +1208,7 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   incomplete_form.username_value = ASCIIToUTF16("my_username");
   incomplete_form.password_value = ASCIIToUTF16("my_password");
   incomplete_form.preferred = true;
+  incomplete_form.date_last_used = base::Time::Now();
   incomplete_form.blacklisted_by_user = false;
   incomplete_form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(incomplete_form), db().AddLogin(incomplete_form));
@@ -1285,6 +1294,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
+  form.date_last_used = base::Time::Now();
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
   form.action = GURL("http://accounts.google.com/login");
@@ -1296,6 +1306,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.submit_element = ASCIIToUTF16("submit_element");
   form.date_synced = base::Time::Now();
   form.date_created = base::Time::Now() - base::TimeDelta::FromDays(1);
+  form.date_last_used = base::Time::Now() + base::TimeDelta::FromDays(1);
   form.blacklisted_by_user = true;
   form.scheme = PasswordForm::Scheme::kBasic;
   form.type = PasswordForm::Type::kGenerated;

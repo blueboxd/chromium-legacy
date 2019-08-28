@@ -43,7 +43,7 @@ void GPUFence::OnCompletionCallback(ScriptPromiseResolver* resolver,
           DOMExceptionCode::kOperationError));
       break;
     case DAWN_FENCE_COMPLETION_STATUS_UNKNOWN:
-    case DAWN_FENCE_COMPLETION_STATUS_CONTEXT_LOST:
+    case DAWN_FENCE_COMPLETION_STATUS_DEVICE_LOST:
       resolver->Reject(
           MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
       break;

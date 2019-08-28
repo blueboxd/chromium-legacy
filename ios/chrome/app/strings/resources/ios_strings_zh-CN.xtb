@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">已添加到阅读清单</translation>
 <translation id="1828824471510190776">建议密码…</translation>
 <translation id="1870148520156231997">显示密码</translation>
+<translation id="1872096359983322073">闪光灯</translation>
 <translation id="1876721852596493031">发送使用情况数据</translation>
 <translation id="1911619930368729126">上传到Google云端硬盘</translation>
 <translation id="1923342640370224680">过去 1 小时</translation>
@@ -355,6 +356,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">点按可取消。</translation>
 <translation id="6108923351542677676">正在设置…</translation>
+<translation id="6119050551270742952">当前网页处于无痕模式</translation>
 <translation id="6122191549521593678">在线</translation>
 <translation id="6127379762771434464">该项已移除</translation>
 <translation id="6136914049981179737">几秒前</translation>
@@ -411,6 +413,9 @@
 <translation id="6807889908376551050">全部显示...</translation>
 <translation id="681368974849482173">书签已创建</translation>
 <translation id="6851516051005285358">请求切换到桌面版网站</translation>
+<translation id="6858855187367714033">已扫描</translation>
+<translation id="6859944681507688231">要扫描二维码或信用卡，请从设置中允许该应用使用相机。</translation>
+<translation id="6873263987691478642">拆分视图</translation>
 <translation id="6896758677409633944">复制</translation>
 <translation id="6903907808598579934">开启同步功能</translation>
 <translation id="6914583639806229067">搜索您复制的图片</translation>
@@ -509,6 +514,7 @@
 <translation id="8428045167754449968">市/镇</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8458397775385147834">删除了1项</translation>
+<translation id="8487667956631253959">已开启</translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8490978609246021741">保存更改</translation>
 <translation id="8503813439785031346">用户名</translation>
@@ -519,6 +525,7 @@
 <translation id="8532105204136943229">到期年份</translation>
 <translation id="8534481786647257214">Google+ 信息发布已完成。</translation>
 <translation id="8548878600947630424">在网页中查找...</translation>
+<translation id="8588404856427128947">已关闭</translation>
 <translation id="8605219856220328675">关闭标签页。</translation>
 <translation id="8620640915598389714">编辑</translation>
 <translation id="8636825310635137004">要访问您在其他设备上的标签页，请开启同步功能。</translation>
@@ -559,6 +566,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">已发送崩溃报告。</translation>
 <translation id="935490618240037774">您的书签、历史记录、密码及其他设置均将同步到您的 Google 帐号，以便您在自己所有的设备上使用。</translation>
+<translation id="952704832371081537">取消</translation>
 <translation id="976982866697960176">管理同步的数据…</translation>
 <translation id="988141524645182168">其他设备</translation>
 <translation id="989988560359834682">修改地址</translation>

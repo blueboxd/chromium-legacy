@@ -49,7 +49,6 @@
 <translation id="2388990488038464401">هل تريد الاتصال بهذا الرقم من هاتفك؟</translation>
 <translation id="24452542372838207">توسيع الإشعار</translation>
 <translation id="2445449901874883781">استخدام كثافة عالية</translation>
-<translation id="2451871130406122810">تم الإرسال إلى الجهاز</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2497284189126895209">الملفّات كلّها</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -217,6 +216,7 @@
 <translation id="8806053966018712535">مجلد <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">إضافة تعليق توضيحي على الصورة</translation>
 <translation id="8841375032071747811">زر الرجوع</translation>
+<translation id="8867568208303837180">جارٍ الإرسال...</translation>
 <translation id="8876215549894133151">التنسيق:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> كيلوبايت</translation>
 <translation id="8926951137623668982">إخفاء الرف دائمًا</translation>

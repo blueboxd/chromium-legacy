@@ -21,6 +21,7 @@ ScopedWakeLock::ScopedWakeLock(service_manager::Connector* connector,
                                       reason, mojo::MakeRequest(&wake_lock_));
   // This would violate |GetWakeLockWithoutContext|'s API contract.
   DCHECK(wake_lock_);
+  wake_lock_->RequestWakeLock();
 }
 
 ScopedWakeLock::~ScopedWakeLock() {

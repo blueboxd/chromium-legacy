@@ -13,9 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace apps {
+using ShimLaunchedCallback = base::OnceCallback<void(base::Process)>;
+using ShimTerminatedCallback = base::OnceClosure;
+}  // namespace apps
 
 namespace remote_cocoa {
 class ApplicationHost;
@@ -24,12 +28,45 @@ class ApplicationHost;
 class AppShimHostBootstrap;
 
 // This is the counterpart to AppShimController in
-// chrome/app/chrome_main_app_mode_mac.mm. The AppShimHost owns itself, and is
-// destroyed when the app it corresponds to is closed or when the channel
-// connected to the app shim is closed.
+// chrome/app/chrome_main_app_mode_mac.mm. The AppShimHost is owned by the
+// ExtensionAppShimHandler, which implements its client interface.
 class AppShimHost : public chrome::mojom::AppShimHost {
  public:
-  AppShimHost(const std::string& app_id,
+  // The interface through which the AppShimHost interacts with
+  // ExtensionAppShimHandler.
+  class Client {
+   public:
+    // Request that the handler launch the app shim process.
+    virtual void OnShimLaunchRequested(
+        AppShimHost* host,
+        bool recreate_shims,
+        apps::ShimLaunchedCallback launched_callback,
+        apps::ShimTerminatedCallback terminated_callback) = 0;
+
+    // Invoked by the shim host when the connection to the shim process is
+    // closed. This is also called when we give up on trying to get a shim to
+    // connect.
+    virtual void OnShimProcessDisconnected(AppShimHost* host) = 0;
+
+    // Invoked by the shim host when the shim process receives a focus event.
+    // |files|, if non-empty, holds an array of files dragged onto the app
+    // bundle or dock icon.
+    virtual void OnShimFocus(AppShimHost* host,
+                             apps::AppShimFocusType focus_type,
+                             const std::vector<base::FilePath>& files) = 0;
+
+    // Invoked by the shim host when the shim process is hidden or shown. This
+    // is used only for non-RemoteCocoa.
+    virtual void OnShimSetHidden(AppShimHost* host, bool hidden) = 0;
+
+    // Invoked by the shim host when the shim process receives a quit event.
+    // This is used only for non-RemoteCocoa and could potentially be merged
+    // with OnShimProcessDisconnected.
+    virtual void OnShimQuit(AppShimHost* host) = 0;
+  };
+
+  AppShimHost(Client* client,
+              const std::string& app_id,
               const base::FilePath& profile_path,
               bool uses_remote_views);
 
@@ -72,10 +109,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Return the app shim interface.
   chrome::mojom::AppShim* GetAppShim() const;
 
- protected:
-  // Return the AppShimHandler for this app (virtual for tests).
-  virtual apps::AppShimHandler* GetAppShimHandler() const;
-
  private:
   void ChannelError(uint32_t custom_reason, const std::string& description);
 
@@ -95,6 +128,9 @@ class AppShimHost : public chrome::mojom::AppShimHost {
                 const std::vector<base::FilePath>& files) override;
   void SetAppHidden(bool hidden) override;
   void QuitApp() override;
+
+  // Weak, owns |this|.
+  Client* const client_;
 
   mojo::Binding<chrome::mojom::AppShimHost> host_binding_;
   chrome::mojom::AppShimPtr app_shim_;

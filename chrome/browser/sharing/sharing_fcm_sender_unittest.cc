@@ -8,7 +8,6 @@
 
 #include "base/base64.h"
 #include "base/callback_list.h"
-#include "base/guid.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -21,18 +20,23 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using Device = SharingSyncPreference::Device;
+using RecipientInfo = chrome_browser_sharing::RecipientInfo;
 using SharingMessage = chrome_browser_sharing::SharingMessage;
 using namespace testing;
 
 namespace {
 
 const char kMessageId[] = "message_id";
+const char kFcmToken[] = "fcm_token";
 const char kP256dh[] = "p256dh";
 const char kAuthSecret[] = "auth_secret";
-const char kFcmToken[] = "fcm_token";
 constexpr int kNoCapabilities =
     static_cast<int>(SharingDeviceCapability::kNone);
 const char kSenderGuid[] = "test_sender_guid";
+const char kSenderFcmToken[] = "sender_fcm_token";
+const char kSenderP256dh[] = "sender_p256dh";
+const char kSenderAuthSecret[] = "sender_auth_secret";
 const char kAuthorizedEntity[] = "authorized_entity";
 const int kTtlSeconds = 10;
 
@@ -167,102 +171,66 @@ class SharingFCMSenderTest : public Test {
 struct SharingFCMSenderResultTestData {
   const gcm::SendWebPushMessageResult web_push_result;
   const SharingSendMessageResult expected_result;
-  const bool expect_device_in_pref;
+  const bool ready_before_send_message;
 } kSharingFCMSenderResultTestData[] = {
     {gcm::SendWebPushMessageResult::kSuccessful,
      SharingSendMessageResult::kSuccessful,
-     /*expect_device_in_pref=*/true},
+     /*ready_before_send_message=*/false},
+    {gcm::SendWebPushMessageResult::kSuccessful,
+     SharingSendMessageResult::kSuccessful,
+     /*ready_before_send_message=*/true},
     {gcm::SendWebPushMessageResult::kDeviceGone,
      SharingSendMessageResult::kDeviceNotFound,
-     /*expect_device_in_pref=*/false},
+     /*ready_before_send_message=*/true},
     {gcm::SendWebPushMessageResult::kNetworkError,
      SharingSendMessageResult::kNetworkError,
-     /*expect_device_in_pref=*/true},
+     /*ready_before_send_message=*/true},
     {gcm::SendWebPushMessageResult::kPayloadTooLarge,
      SharingSendMessageResult::kPayloadTooLarge,
-     /*expect_device_in_pref=*/true},
+     /*ready_before_send_message=*/true},
     {gcm::SendWebPushMessageResult::kEncryptionFailed,
      SharingSendMessageResult::kInternalError,
-     /*expect_device_in_pref=*/true},
+     /*ready_before_send_message=*/true},
     {gcm::SendWebPushMessageResult::kCreateJWTFailed,
      SharingSendMessageResult::kInternalError,
-     /*expect_device_in_pref=*/true},
+     /*ready_before_send_message=*/true},
     {gcm::SendWebPushMessageResult::kServerError,
      SharingSendMessageResult::kInternalError,
-     /*expect_device_in_pref=*/true},
+     /*ready_before_send_message=*/true},
     {gcm::SendWebPushMessageResult::kParseResponseFailed,
      SharingSendMessageResult::kInternalError,
-     /*expect_device_in_pref=*/true},
+     /*ready_before_send_message=*/true},
     {gcm::SendWebPushMessageResult::kVapidKeyInvalid,
      SharingSendMessageResult::kInternalError,
-     /*expect_device_in_pref=*/true}};
+     /*ready_before_send_message=*/true}};
 
 class SharingFCMSenderResultTest
     : public SharingFCMSenderTest,
       public testing::WithParamInterface<SharingFCMSenderResultTestData> {};
 
 TEST_P(SharingFCMSenderResultTest, ResultTest) {
-  std::string guid = base::GenerateGUID();
-  sync_prefs_->SetSyncDevice(guid, CreateFakeSyncDevice());
-  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
+  Device target(kFcmToken, kP256dh, kAuthSecret, kNoCapabilities);
+
+  sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
+      kAuthorizedEntity, kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
+      base::Time::Now()));
 
   std::unique_ptr<crypto::ECPrivateKey> vapid_key =
       crypto::ECPrivateKey::Create();
   ON_CALL(vapid_key_manager_, GetOrCreateKey())
       .WillByDefault(Return(vapid_key.get()));
+
+  local_device_info_provider_.SetReady(GetParam().ready_before_send_message);
 
   fake_gcm_driver_.set_result(GetParam().web_push_result);
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
-  sharing_fcm_sender_->SendMessageToDevice(
-      guid, base::TimeDelta::FromSeconds(kTtlSeconds), SharingMessage(),
-      base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
-                     base::Unretained(this), &result, &message_id));
-
-  EXPECT_EQ(kSharingFCMAppID, fake_gcm_driver_.app_id());
-  EXPECT_EQ(kAuthorizedEntity, fake_gcm_driver_.authorized_entity());
-  EXPECT_EQ(kP256dh, fake_gcm_driver_.p256dh());
-  EXPECT_EQ(kAuthSecret, fake_gcm_driver_.auth_secret());
-  EXPECT_EQ(kFcmToken, fake_gcm_driver_.fcm_token());
-  EXPECT_EQ(vapid_key.get(), fake_gcm_driver_.vapid_key());
-
-  EXPECT_EQ(kTtlSeconds, fake_gcm_driver_.message().time_to_live);
-  EXPECT_EQ(gcm::WebPushMessage::Urgency::kHigh,
-            fake_gcm_driver_.message().urgency);
   SharingMessage sharing_message;
-  sharing_message.ParseFromString(fake_gcm_driver_.message().payload);
-  EXPECT_EQ(kSenderGuid, sharing_message.sender_guid());
-
-  EXPECT_EQ(GetParam().expected_result, result);
-  EXPECT_EQ(kMessageId, message_id);
-  EXPECT_EQ(GetParam().expect_device_in_pref,
-            sync_prefs_->GetSyncedDevices().count(guid));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    SharingFCMSenderResultTest,
-    testing::ValuesIn(kSharingFCMSenderResultTestData));
-
-TEST_F(SharingFCMSenderTest, SendMessageBeforeLocalDeviceInfoReady) {
-  std::string guid = base::GenerateGUID();
-  sync_prefs_->SetSyncDevice(guid, CreateFakeSyncDevice());
-  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
-
-  std::unique_ptr<crypto::ECPrivateKey> vapid_key =
-      crypto::ECPrivateKey::Create();
-  ON_CALL(vapid_key_manager_, GetOrCreateKey())
-      .WillByDefault(Return(vapid_key.get()));
-
-  local_device_info_provider_.SetReady(false);
-
-  fake_gcm_driver_.set_result(gcm::SendWebPushMessageResult::kSuccessful);
-
-  SharingSendMessageResult result;
-  base::Optional<std::string> message_id;
+  sharing_message.mutable_ping_message();
   sharing_fcm_sender_->SendMessageToDevice(
-      guid, base::TimeDelta::FromSeconds(kTtlSeconds), SharingMessage(),
+      std::move(target), base::TimeDelta::FromSeconds(kTtlSeconds),
+      std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id));
 
@@ -278,10 +246,20 @@ TEST_F(SharingFCMSenderTest, SendMessageBeforeLocalDeviceInfoReady) {
   EXPECT_EQ(kTtlSeconds, fake_gcm_driver_.message().time_to_live);
   EXPECT_EQ(gcm::WebPushMessage::Urgency::kHigh,
             fake_gcm_driver_.message().urgency);
-  SharingMessage sharing_message;
-  sharing_message.ParseFromString(fake_gcm_driver_.message().payload);
-  EXPECT_EQ(kSenderGuid, sharing_message.sender_guid());
+  SharingMessage message_sent;
+  message_sent.ParseFromString(fake_gcm_driver_.message().payload);
+  EXPECT_EQ(kSenderGuid, message_sent.sender_guid());
+  EXPECT_TRUE(message_sent.has_ping_message());
+  EXPECT_TRUE(message_sent.has_sender_info());
+  EXPECT_EQ(kSenderFcmToken, message_sent.sender_info().fcm_token());
+  EXPECT_EQ(kSenderP256dh, message_sent.sender_info().p256dh());
+  EXPECT_EQ(kSenderAuthSecret, message_sent.sender_info().auth_secret());
 
-  EXPECT_EQ(SharingSendMessageResult::kSuccessful, result);
+  EXPECT_EQ(GetParam().expected_result, result);
   EXPECT_EQ(kMessageId, message_id);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    SharingFCMSenderResultTest,
+    testing::ValuesIn(kSharingFCMSenderResultTestData));

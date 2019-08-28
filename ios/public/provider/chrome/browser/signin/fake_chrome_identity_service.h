@@ -84,11 +84,15 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   // When set to true, call to GetAccessToken() fakes a MDM error.
   void SetFakeMDMError(bool fakeMDMError);
 
+  bool HasPendingCallback();
+
  private:
   NSMutableArray* identities_;
 
   // If true, call to GetAccessToken() fakes a MDM error.
   bool _fakeMDMError;
+
+  int _pendingCallback;
 };
 
 }  // namespace ios

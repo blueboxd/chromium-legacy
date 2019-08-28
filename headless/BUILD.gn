@@ -503,6 +503,10 @@ jumbo_component("headless_non_renderer") {
 
   if (is_mac) {
     deps += [ ":mac_helpers" ]
+    libs = [
+      "AppKit.framework",
+      "CoreFoundation.framework",
+    ]
   } else {
     deps += [ "//ui/aura" ]
   }

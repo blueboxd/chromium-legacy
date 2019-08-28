@@ -222,8 +222,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8417404458978023919">{0,plural, =1{‏צריך להפעיל מחדש את Chromium בתוך יום אחד}two{‏צריך להפעיל מחדש את Chromium בתוך # ימים}many{‏צריך להפעיל מחדש את Chromium בתוך # ימים}other{‏צריך להפעיל מחדש את Chromium בתוך # ימים}}</translation>
 <translation id="8453117565092476964">‏הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
 <translation id="8493179195440786826">‏Chromium אינו מעודכן</translation>
-<translation id="8494843963476918365">‏אם הגדרה לא מופיעה בדף הזה, אפשר לחפש אותה<ph name="LINK_BEGIN" />
-    בהגדרות של דפדפן Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">‏עזרה באמצעות Chromium</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8619360774459241877">‏הפעלת Chromium מתבצעת...</translation>

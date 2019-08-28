@@ -72,6 +72,7 @@
 <translation id="1820259098641718022">Page ajoutée à la liste de lecture</translation>
 <translation id="1828824471510190776">Suggérer un mot de passe…</translation>
 <translation id="1870148520156231997">Afficher le mot de passe</translation>
+<translation id="1872096359983322073">Lampe torche</translation>
 <translation id="1876721852596493031">Envoyer les données d'utilisation</translation>
 <translation id="1911619930368729126">Importer dans Google Drive</translation>
 <translation id="1923342640370224680">Heure précédente</translation>
@@ -355,6 +356,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Appuyez sur l'écran pour annuler.</translation>
 <translation id="6108923351542677676">Configuration en cours…</translation>
+<translation id="6119050551270742952">La page Web actuelle est en mode navigation privée</translation>
 <translation id="6122191549521593678">En ligne</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
 <translation id="6136914049981179737">À l'instant.</translation>
@@ -411,6 +413,9 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6807889908376551050">Tout afficher…</translation>
 <translation id="681368974849482173">Élément créé</translation>
 <translation id="6851516051005285358">Voir la version pour ordinateur</translation>
+<translation id="6858855187367714033">Scanné</translation>
+<translation id="6859944681507688231">Pour scanner un code QR ou une carte de crédit, activez l'appareil photo dans Réglages.</translation>
+<translation id="6873263987691478642">Vue fractionnée</translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6914583639806229067">Rechercher l'image copiée</translation>
@@ -509,6 +514,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8428045167754449968">Ville</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8458397775385147834">1 élément supprimé.</translation>
+<translation id="8487667956631253959">Allumée</translation>
 <translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8490978609246021741">Enregistrer les modifications</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
@@ -519,6 +525,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8532105204136943229">Année d'expiration</translation>
 <translation id="8534481786647257214">Post Google+ publié.</translation>
 <translation id="8548878600947630424">Rechercher sur la page…</translation>
+<translation id="8588404856427128947">Éteinte</translation>
 <translation id="8605219856220328675">Fermer l'onglet</translation>
 <translation id="8620640915598389714">Modifier</translation>
 <translation id="8636825310635137004">Activez la synchronisation pour accéder à vos onglets sur vos autres appareils.</translation>
@@ -559,6 +566,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Le rapport d'erreur a bien été envoyé.</translation>
 <translation id="935490618240037774">Vos favoris, votre historique, vos mots de passe et d'autres paramètres seront synchronisés avec votre compte Google, afin que vous puissiez les utiliser sur tous vos appareils.</translation>
+<translation id="952704832371081537">Annuler</translation>
 <translation id="976982866697960176">Gérer les données synchronisées…</translation>
 <translation id="988141524645182168">Autres appareils</translation>
 <translation id="989988560359834682">Modifier l'adresse</translation>

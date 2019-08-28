@@ -181,8 +181,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="6291549208091401781">Google Chrome er allerede installeret for alle brugere på computeren.</translation>
 <translation id="6338556085225130112">Opdaterer Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS er lavet ved hjælp af <ph name="BEGIN_LINK_CROS_OSS" />open source-software<ph name="END_LINK_CROS_OSS" />.</translation>
-<translation id="6400930858680434649">Hvis en indstilling ikke vises på denne side, kan du prøve at gå til <ph name="LINK_BEGIN" />
-    indstillingerne i din Chrome-browser<ph name="LINK_END" />.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome for udviklere</translation>
 <translation id="6566149418543181476">Opdaterer Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Du bruger <ph name="PROFILE_EMAIL" /> til at synkronisere dine Chrome-ting med. Gå til <ph name="SETTINGS_LINK" />, hvis du vil opdatere dine synkroniseringspræference, eller hvis du vil bruge Chrome uden en Google-konto.</translation>

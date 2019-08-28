@@ -49,21 +49,21 @@
         transform: rotate(180deg);
       }
 
-      :host([children-shown]) #expand {
+      :host([children-shown_]) #expand {
         transform: rotate(90deg);
       }
     </style>
-    <div id="item" on-click="onClick">
+    <div id="item" on-click="onClick_">
       <paper-ripple></paper-ripple>
       <cr-icon-button id="expand" iron-icon="cr:chevron-right"
-          on-click="toggleChildren"></cr-icon-button>
+          on-click="toggleChildren_"></cr-icon-button>
       <span id="title" tabindex="0">{{bookmark.title}}</span>
     </div>
     <!-- dom-if will stamp the complex bookmark tree lazily as individual nodes
       are opened. -->
-    <template is="dom-if" if="[[childrenShown]]" id="sub-bookmarks">
+    <template is="dom-if" if="[[childrenShown_]]">
       <template is="dom-repeat" items="[[bookmark.children]]">
-        <viewer-bookmark bookmark="{{item}}" depth="{{childDepth}}">
+        <viewer-bookmark bookmark="{{item}}" depth="[[childDepth_]]">
         </viewer-bookmark>
       </template>
     </template>

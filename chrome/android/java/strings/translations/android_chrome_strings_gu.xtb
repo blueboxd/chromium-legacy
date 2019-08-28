@@ -34,6 +34,7 @@
 <translation id="1206892813135768548">લિંક ટેક્સ્ટ કૉપિ કરો</translation>
 <translation id="1208340532756947324">સમગ્ર ઉપકરણોમાં સિંક તથા વ્યક્તિગત કરવા માટે સિંક ચાલુ કરો</translation>
 <translation id="1209206284964581585">હમણાં માટે છુપાવો</translation>
+<translation id="1227058898775614466">નૅવિગેશન ઇતિહાસ</translation>
 <translation id="1231733316453485619">સિંક કરવાનું ચાલુ કરીએ?</translation>
 <translation id="123724288017357924">કૅશ કરેલ કન્ટેન્ટને અવગણીને વર્તમાન પેજ ફરીથી લોડ કરો</translation>
 <translation id="124116460088058876">વધુ ભાષાઓ</translation>
@@ -45,9 +46,11 @@
 <translation id="1283039547216852943">વિસ્તૃત કરવા માટે ટૅપ કરો</translation>
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
 <translation id="1291207594882862231">ઇતિહાસ, કુકી, સાઇટ ડેટા, કૅશ સાફ કરો…</translation>
+<translation id="129382876167171263">વેબસાઇટ દ્વારા સાચવવામાં આવેલી ફાઇલો અહી દેખાશે</translation>
 <translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> પરથી મોકલેલ</translation>
 <translation id="1310482092992808703">ટૅબનું ગ્રૂપ બનાવો</translation>
+<translation id="1327257854815634930">નૅવિગેશન ઇતિહાસ ખુલ્લો છે</translation>
 <translation id="1331212799747679585">Chrome અપડેટ કરી શકાતું નથી. વધુ વિકલ્પો</translation>
 <translation id="1332501820983677155">Google Chrome સુવિધાના શૉર્ટકટ્સ</translation>
 <translation id="1360432990279830238">સાઇન આઉટ કરી સિંકનો વિકલ્પ બંધ કરવો છે?</translation>
@@ -70,7 +73,6 @@
 <translation id="1446450296470737166">MIDI ઉપકરણોના પૂર્ણ નિયંત્રણની મંજૂરી આપો</translation>
 <translation id="145097072038377568">Android સેટિંગ્સમાં બંધ કરી</translation>
 <translation id="1477626028522505441">સર્વર સમસ્યાઓને કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
-<translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 વધુ)}one{ (+ # વધુ)}other{ (+ # વધુ)}}</translation>
 <translation id="1501480321619201731">જૂથ ડિલીટ કરો</translation>
 <translation id="1506061864768559482">શોધ એન્જિન</translation>
 <translation id="1513352483775369820">બુકમાર્ક્સ અને વેબ ઇતિહાસ</translation>
@@ -183,7 +185,6 @@
 <translation id="2321958826496381788">જ્યાં સુધી તમે આ અનુકૂળ રીતે વાંચી ન શકો ત્યાં સુધી સ્લાઇડર ખેંચો. ફકરા પર ડબલ-ટેપિંગ પછી ટેક્સ્ટ ઓછામાં ઓછી આટલી મોટી દેખાવી જોઈએ.</translation>
 <translation id="2323763861024343754">સાઇટ સ્ટોરેજ</translation>
 <translation id="2328985652426384049">સાઇન ઇન કરી શકાતું નથી</translation>
-<translation id="2334057574886324800">ટેક્સ્ટ સંદેશ પ્રાપ્ત થયો</translation>
 <translation id="2349710944427398404">Chrome દ્વારા ઉપયોગમાં લેવાયેલ કુલ સ્ટોરેજ, એકાઉન્ટ્સ, બુકમાર્ક્સ અને સાચવેલ સેટિંગ્સ સહિત</translation>
 <translation id="2353636109065292463">તમારું ઇન્ટરનેટ કનેક્શન તપાસી રહ્યાં છીએ</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
@@ -417,12 +418,6 @@
 <translation id="4226663524361240545">સૂચનાઓ ઉપકરણને વાઇબ્રેટ કરી શકે છે</translation>
 <translation id="423219824432660969"><ph name="TIME" /> પ્રમાણે Google પાસવર્ડ વડે સિંક કરેલા ડેટાને એન્ક્રિપ્ટ કરો</translation>
 <translation id="4242533952199664413">સેટિંગ્સ ખોલો</translation>
-<translation id="4247274662191902962">તમે આ VR અનુભવમાં હશો, ત્યારે જ સેન્સરનો ડેટા શેર કરવામાં આવશે. આ સાઇટ અમુક ચોક્કસ માહિતીનો ઉપયોગ કરીને કદાચ તમારા વિશેની માહિતી મેળવી શકશે, જેમ કે:
-    - તમારું સ્થાન
-    - તમારી શારીરિક લાક્ષણિકતાઓ, જેમ કે તમારી આંખની સ્થિતિ
-    - તમારું હલનચલન, જેમ કે તમારી ચાલવાની રીત
-
-    તમે ઍક્સેસ માટે મંજૂરી આપો તે પહેલાં ખાતરી કરો કે તમે આ સાઇટ પર વિશ્વાસ મૂકો છો.</translation>
 <translation id="4256782883801055595">ઓપન સોર્સ લાઇસન્સ</translation>
 <translation id="4259722352634471385">નેવિગેશન અવરોધિત છે: <ph name="URL" /></translation>
 <translation id="4269820728363426813">લિંક સરનામું કૉપિ કરો</translation>
@@ -554,8 +549,8 @@
 <translation id="5170568018924773124">ફોલ્ડરમાં બતાવો</translation>
 <translation id="5184329579814168207">Chrome માં ખોલો</translation>
 <translation id="5193988420012215838">તમારા ક્લિપબોર્ડ પર કૉપિ કરવામાં આવી</translation>
+<translation id="5197729504361054390">તમે પસંદ કરશો તે સંપર્કોને <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> સાથે શેર કરવામાં આવશે.</translation>
 <translation id="5199929503336119739">કાર્ય પ્રોફાઇલ</translation>
-<translation id="5202089186707505116">આ સાઇટને તમારા VR સેન્સરને ઍક્સેસ કરવાની મંજૂરી આપીએ?</translation>
 <translation id="5210286577605176222">પાછલી ટૅબ પર જાઓ</translation>
 <translation id="5210365745912300556">ટૅબ બંધ કરો</translation>
 <translation id="5224771365102442243">વીડિયો દ્વારા</translation>
@@ -568,6 +563,7 @@
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="5301954838959518834">બરાબર, સમજાઇ ગયું</translation>
 <translation id="5304593522240415983">આ ફીલ્ડ ખાલી હોઈ શકતું નથી</translation>
+<translation id="5307446750509046227">સાઇટ સ્ટોરેજ સાફ કરો</translation>
 <translation id="5308380583665731573">કનેક્ટ કરો</translation>
 <translation id="5313967007315987356">સાઈટ ઉમેરો</translation>
 <translation id="5317780077021120954">સાચવો</translation>
@@ -631,7 +627,6 @@
 <translation id="5686790454216892815">ફાઇલનું નામ ખૂબ લાંબું છે</translation>
 <translation id="5689516760719285838">સ્થાન</translation>
 <translation id="569536719314091526">વધુ વિકલ્પો બટનમાંથી આ પેજનો અનુવાદ કોઈપણ ભાષામાં કરો</translation>
-<translation id="5719150327511160085">આગલા ટેક્સ્ટ સંદેશની રાહ જોઈ રહ્યું છે</translation>
 <translation id="572328651809341494">તાજેતરના ટેબ્સ</translation>
 <translation id="5726692708398506830">પૃષ્ઠ પરની તમામ સામગ્રીને મોટી કરો</translation>
 <translation id="5748802427693696783">માનક ટૅબ્સ પર સ્વિચ કરેલ છે</translation>
@@ -702,7 +697,6 @@
 ઉદાહરણ તરીકે, કેટલીક વેબસાઇટ, તમે મુલાકાત લીધેલી બીજા વેબસાઇટ પર આધારિત ન હોય તેવી જાહેરાતો તમને બતાવીને આ વિનંતી પર પ્રતિસાદ આપી શકે છે. ઘણી વેબસાઇટ હજી પણ તમારા બ્રાઉઝિંગ ડેટાને ભેગો કરશે અને ઉપયોગ કરશે — ઉદાહરણ તરીકે સુરક્ષાને બહેતર બનાવવા, કન્ટેન્ટ, જાહેરાતો અને ભલામણો આપવા અને રિપોર્ટિંગ આંકડા જનરેટ કરવા માટે.</translation>
 <translation id="624789221780392884">અપડેટ તૈયાર</translation>
 <translation id="6255999984061454636">કન્ટેન્ટ માટેના સૂચનો</translation>
-<translation id="6264430811215618931"><ph name="ORIGIN" />એ તમારા ફોન નંબર પર ટેક્સ્ટ સંદેશ મોકલ્યો. જો તમે કન્ફર્મ કરશો, તો સાઇટ જાણી શકશે કે આ તમે જ છો.</translation>
 <translation id="6277522088822131679">પૃષ્ઠને છાપવામાં સમસ્યા હતી. કૃપા કરીને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6295158916970320988">બધી સાઇટ્સ</translation>
 <translation id="629730747756840877">એકાઉન્ટ</translation>
@@ -805,6 +799,7 @@
 <translation id="6989267951144302301">ડાઉનલોડ ન કરી શક્યા</translation>
 <translation id="6990079615885386641">Google Play Store માંથી ઍપ્લિકેશન મેળવો: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">સાઇટ્સને તમારા માઇક્રોફોનનો ઉપયોગ કરવાની મંજૂરી આપતાં પહેલા પૂછો (ભલામણ કરેલ)</translation>
+<translation id="7015203776128479407">આરંભિક સિંક સેટઅપ પૂરું થયું નથી. સિંક કરવાનું બંધ છે.</translation>
 <translation id="7016516562562142042">હાલનાં શોધ એંજિન માટે મંજૂર</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ડાઉનલોડ કરી</translation>
 <translation id="7022756207310403729">બ્રાઉઝરમાં ખોલો</translation>
@@ -836,11 +831,11 @@
 <translation id="7274013316676448362">અવરોધિત સાઇટ</translation>
 <translation id="7290209999329137901">નામ બદલવું ઉપલબ્ધ નથી</translation>
 <translation id="7291387454912369099">આસિસ્ટંટે ચેકઆઉટ ટ્રિગર કર્યું</translation>
+<translation id="7293171162284876153">સિંક શરુ કરવા માટે, "તમારો Chromeનો ડેટા સિંક કરો" ચાલુ કરો.</translation>
 <translation id="729975465115245577">તમારા ઉપકરણ પાસે પાસવર્ડ ફાઇલને સ્ટોર કરવા માટેની ઍપ નથી.</translation>
 <translation id="7302081693174882195">વિગતો: સાચવેલ ડેટાની માત્રા દ્વારા સૉર્ટ કરેલ</translation>
 <translation id="7328017930301109123">લાઇટ મોડમાં, Chrome પેજને વધુ ઝડપથી લોડ કરે છે અને તે 60 ટકા ઓછા ડેટાનો ઉપયોગ કરે છે.</translation>
 <translation id="7333031090786104871">હજીપણ પાછલી સાઇટ ઉમેરી રહ્યાં છે</translation>
-<translation id="7352651011704765696">કંઈક ખોટું થયું હતું</translation>
 <translation id="7352939065658542140">વીડિયો</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{પસંદ કરેલ 1 આઇટમ શેર કરો}one{પસંદ કરેલ # આઇટમ શેર કરો}other{પસંદ કરેલ # આઇટમ શેર કરો}}</translation>
 <translation id="7359002509206457351">ચુકવણી પદ્ધતિઓને ઍક્સેસ કરો</translation>
@@ -904,6 +899,7 @@
 <translation id="773466115871691567">હંમેશાં પેજનો <ph name="SOURCE_LANGUAGE" />માં અનુવાદ કરો</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7746457520633464754">જોખમી ઍપ અને સાઇટ શોધી કાઢવા માટે, Chrome તમે મુલાકાત લો તે કેટલાક પેજના URLs, સિસ્ટમ વિશેની સીમિત માહિતી અને પેજનું કેટલુંક કન્ટેન્ટ Googleને મોકલે છે</translation>
+<translation id="7757787379047923882"><ph name="DEVICE_NAME" />માંથી ટેક્સ્ટ શેર કરી</translation>
 <translation id="7762668264895820836">SD કાર્ડ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">સરનામું ઉમેરો</translation>
 <translation id="7769602470925380267">સ્વીકારો અને સાઇન આઉટ કરો</translation>
@@ -1043,6 +1039,7 @@
 <translation id="8730621377337864115">થઈ ગયું</translation>
 <translation id="8748850008226585750">સામગ્રીઓ છુપાવેલ છે</translation>
 <translation id="8751914237388039244">છબી પસંદ કરો</translation>
+<translation id="8788265440806329501">નૅવિગેશન ઇતિહાસ બંધ છે</translation>
 <translation id="8788968922598763114">છેલ્લે બંધ કરેલ ટૅબ ફરીથી ખોલો</translation>
 <translation id="8801436777607969138">કોઈ ચોક્કસ સાઇટ માટે JavaScriptને બ્લૉક કરો.</translation>
 <translation id="8812260976093120287">કેટલીક વેબસાઇટ પર, તમે સમર્થિત ચુકવણી ઍપ્લિકેશનો વડે ચુકવણી કરી શકો છો.</translation>

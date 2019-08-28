@@ -542,6 +542,9 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableConsolidatedMovementXY(
       base::FeatureList::IsEnabled(features::kConsolidatedMovementXY));
 
+  WebRuntimeFeatures::EnableCooperativeScheduling(
+      base::FeatureList::IsEnabled(features::kCooperativeScheduling));
+
   WebRuntimeFeatures::EnableStreamsNative(
       base::FeatureList::IsEnabled(blink::features::kStreamsNative));
 

@@ -475,6 +475,8 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
   EXPECT_THAT(passwords["https://example.com/"], ElementsAre(form_));
   federated.date_created =
       passwords["federation://example.com/google.com"][0].date_created;
+  federated.date_last_used =
+      passwords["federation://example.com/google.com"][0].date_last_used;
   EXPECT_THAT(passwords["federation://example.com/google.com"],
               ElementsAre(federated));
 }

@@ -31,6 +31,7 @@ TEST(CooperativeSchedulingManager, AllowedStackScope) {
 class MockCooperativeSchedulingManager : public CooperativeSchedulingManager {
  public:
   MockCooperativeSchedulingManager() : CooperativeSchedulingManager() {
+    set_feature_enabled(true);
     ON_CALL(*this, RunNestedLoop())
         .WillByDefault(testing::Invoke(
             this, &MockCooperativeSchedulingManager::RealRunNestedLoop));

@@ -32,7 +32,6 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/rtc_event_log_output_sink_proxy.h"
-#include "content/renderer/media/webrtc/rtc_stats.h"
 #include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
@@ -509,7 +508,7 @@ void GetRTCStatsOnSignalingThread(
     const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
 
-  native_peer_connection->GetStats(RTCStatsCollectorCallbackImpl::Create(
+  native_peer_connection->GetStats(blink::CreateRTCStatsCollectorCallback(
       main_thread, std::move(callback), exposed_group_ids));
 }
 

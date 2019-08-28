@@ -100,6 +100,18 @@ public class ChipView extends LinearLayout {
     }
 
     /**
+     * Unlike setSelected, setEnabled doesn't properly propagate the new state to its subcomponents.
+     * Enforce this so ColorStateLists used for the text appearance apply as intended.
+     * @param enabled The new enabled state for the chip view and the TextViews owned by it.
+     */
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        getPrimaryTextView().setEnabled(enabled);
+        if (mSecondaryText != null) mSecondaryText.setEnabled(enabled);
+    }
+
+    /**
      * Sets the icon at the start of the chip view.
      * @param icon The resource id pointing to the icon.
      */
@@ -142,6 +154,10 @@ public class ChipView extends LinearLayout {
             mSecondaryText =
                     new TextView(new ContextThemeWrapper(getContext(), R.style.ChipTextView));
             ApiCompatibilityUtils.setTextAppearance(mSecondaryText, mSecondaryTextAppearanceId);
+            // Ensure that basic state changes are aligned with the ChipView. They update
+            // automatically once the view is part of the hierarchy.
+            mSecondaryText.setSelected(isSelected());
+            mSecondaryText.setEnabled(isEnabled());
             addView(mSecondaryText);
         }
         return mSecondaryText;

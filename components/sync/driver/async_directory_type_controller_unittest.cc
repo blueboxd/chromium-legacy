@@ -104,7 +104,7 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
                                      base::Closure(),
                                      sync_service,
                                      sync_client,
-                                     GROUP_DB,
+                                     GROUP_PASSWORD,
                                      nullptr),
         blocked_(false),
         mock_(mock),

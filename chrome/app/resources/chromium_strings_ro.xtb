@@ -224,8 +224,6 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Relansează Chromium în cel mult o zi}few{Relansează Chromium în cel mult # zile}other{Relansează Chromium în cel mult # de zile}}</translation>
 <translation id="8453117565092476964">Arhiva programului de instalare este deteriorată sau nevalidă. Descărcați din nou Chromium.</translation>
 <translation id="8493179195440786826">Chromium nu este actualizat</translation>
-<translation id="8494843963476918365">Dacă o setare nu apare în pagină, încearcă <ph name="LINK_BEGIN" />
-    setările browserului Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Obțineți ajutor în legătură cu utilizarea Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Toate drepturile rezervate.</translation>
 <translation id="8619360774459241877">Se lansează Chromium...</translation>

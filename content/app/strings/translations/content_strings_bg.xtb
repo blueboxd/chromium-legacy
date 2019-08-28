@@ -73,6 +73,7 @@
 <translation id="3450233048674729344">Стойността трябва да е по-малка или равна на <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниция</translation>
 <translation id="3557673793733683882">заглавие от ниво <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">инструмент за избор на седмица</translation>
 <translation id="3685101356851116974">Изображение без етикет</translation>
 <translation id="3706100364254443312">превключвател</translation>
 <translation id="3732799496749320381">мм</translation>
@@ -218,6 +219,7 @@
 <translation id="811583516810654505">Описанието се изтегля...</translation>
 <translation id="8117451130807776954">Тази седмица</translation>
 <translation id="8199524924445686405">гггг</translation>
+<translation id="8208673686607688524">инструмент за избор на дата и час според местното време</translation>
 <translation id="8261464734335370856">Невалиден правопис</translation>
 <translation id="8284326494547611709">Надписи</translation>
 <translation id="835897206747267392">Невалидна стойност.</translation>

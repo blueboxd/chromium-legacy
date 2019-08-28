@@ -377,6 +377,7 @@ CONTENT_ATTRIBUTE_GETTER_NAMES = {
     'boolean': 'FastHasAttribute',
     'long': 'GetIntegralAttribute',
     'unsigned long': 'GetUnsignedIntegralAttribute',
+    'Element': 'GetElementAttribute',
 }
 
 
@@ -556,6 +557,7 @@ CONTENT_ATTRIBUTE_SETTER_NAMES = {
     'boolean': 'SetBooleanAttribute',
     'long': 'SetIntegralAttribute',
     'unsigned long': 'SetUnsignedIntegralAttribute',
+    'Element': 'SetElementAttribute',
 }
 
 

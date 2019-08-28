@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS Pausing clears the start time
-PASS Aborting a pause preserves the start time
-PASS A pending ready promise should be resolved and not replaced when the animation is paused
-FAIL A pause-pending animation maintains the current time when applying a pending playback rate assert_greater_than: expected a number greater than 50000 but got 50000
-PASS The animation's current time remains fixed after pausing
-Harness: the test ran to completion.
-

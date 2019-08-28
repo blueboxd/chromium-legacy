@@ -41,7 +41,7 @@ const GUID kCommunicationsSessionId = {
 
 namespace {
 
-enum { KSAUDIO_SPEAKER_UNSUPPORTED = 0 };
+constexpr uint32_t KSAUDIO_SPEAKER_UNSUPPORTED = 0xFFFFFFFF;
 
 // Used for mapping UMA histograms with corresponding source of logging.
 enum class UmaLogStep {

@@ -15,6 +15,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_utils.h"
@@ -77,6 +78,30 @@ std::initializer_list<RenderFrameHostImpl*> Elements(
     std::initializer_list<RenderFrameHostImpl*> t) {
   return t;
 }
+
+// Execute a custom callback when two RenderFrameHosts are swapped. This is
+// useful for simulating race conditions happening when a page enters the
+// BackForwardCache and receive inflight messages sent when it wasn't frozen
+// yet.
+class RenderFrameHostChangedCallback : public WebContentsObserver {
+ public:
+  RenderFrameHostChangedCallback(
+      WebContents* content,
+      base::OnceCallback<void(RenderFrameHost*, RenderFrameHost*)> callback)
+      : WebContentsObserver(content), callback_(std::move(callback)) {}
+
+ private:
+  // WebContentsObserver:
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override {
+    if (callback_)
+      std::move(callback_).Run(old_host, new_host);
+  }
+
+  base::OnceCallback<void(RenderFrameHost*, RenderFrameHost*)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostChangedCallback);
+};
 
 }  // namespace
 
@@ -1112,6 +1137,89 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // RenderFrameHost A is evicted from the BackForwardCache:
   delete_observer_rfh_a.WaitUntilDeleted();
+}
+
+// Similar to BackForwardCacheBrowserTest.EvictionOnJavaScriptExecution, but
+// cause the race condition of eviction and restoring.
+//
+// ┌───────┐                 ┌────────┐
+// │Browser│                 │Renderer│
+// └───┬───┘                 └───┬────┘
+// (Store to the bfcache)        │
+//     │         Freeze          │
+//     │────────────────────────>│
+//     │                         │
+// (Restore from the bfcache)    │
+//     │──┐                      │
+//     │  │                      │
+//     │EvictFromBackForwardCache│
+//     │<────────────────────────│
+//     │  │                      │
+//     │  │      Resume          │
+//     │  └─────────────────────>│
+// ┌───┴───┐                 ┌───┴────┐
+// │Browser│                 │Renderer│
+// └───────┘                 └────────┘
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       EvictionOnJavaScriptExecutionRace) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  EXPECT_TRUE(ExecJs(rfh_a, "window.foo = 'initial document'"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  // 3) Execute JavaScript on A when restoring A.
+  // Execute JavaScript after committing but before swapping happens on the
+  // renderer.
+  RenderFrameHostChangedCallback host_changed_callback(
+      web_contents(),
+      base::BindOnce(
+          [](RenderFrameHostImpl* rfh_a,
+             RenderFrameDeletedObserver* delete_observer_rfh_a,
+             RenderFrameHost* old_host, RenderFrameHost* new_host) {
+            EXPECT_FALSE(delete_observer_rfh_a->deleted());
+            EXPECT_EQ(rfh_a, new_host);
+            ExecuteScriptAsync(new_host, "console.log('hi');");
+          },
+          rfh_a, &delete_observer_rfh_a));
+
+  // Wait for two navigations to finish. The first one is the BackForwardCache
+  // navigation, the other is the reload caused by the eviction.
+  //
+  //   1. BFcache navigation start.
+  //   2. BFcache navigation commit & finish.
+  //   3. Evict & reload start.
+  //   4. Reload commit.
+  //   5. Reload finish.
+  //
+  // Each item is a single task.
+  TestNavigationObserver observer(web_contents(),
+                                  2 /* number of navigations */);
+  observer.set_wait_event(
+      TestNavigationObserver::WaitEvent::kNavigationFinished);
+  web_contents()->GetController().GoBack();
+  observer.WaitForNavigationFinished();
+
+  // A is not destroyed. A is reloaded instead.
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_NE("initial document", EvalJs(rfh_a, "window.foo"));
 }
 
 // Tests the events are fired when going back from the cache.

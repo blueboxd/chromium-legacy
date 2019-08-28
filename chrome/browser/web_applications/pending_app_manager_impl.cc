@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/pending_app_registration_task.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
 
 namespace web_app {
@@ -254,7 +256,9 @@ void PendingAppManagerImpl::OnInstalled(PendingAppInstallTask::Result result) {
 void PendingAppManagerImpl::CurrentInstallationFinished(
     const base::Optional<AppId>& app_id,
     InstallResultCode code) {
-  if (app_id && code == InstallResultCode::kSuccessNewInstall) {
+  if (app_id && code == InstallResultCode::kSuccessNewInstall &&
+      base::FeatureList::IsEnabled(
+          features::kDesktopPWAsCacheDuringDefaultInstall)) {
     const GURL& launch_url = registrar()->GetAppLaunchURL(*app_id);
     if (!launch_url.is_empty() && launch_url.scheme() != "chrome")
       pending_registrations_.push_back(launch_url);

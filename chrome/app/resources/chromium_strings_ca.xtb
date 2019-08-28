@@ -224,7 +224,6 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Reinicia Chromium en 1 dia}other{Reinicia Chromium en # dies}}</translation>
 <translation id="8453117565092476964">L'arxiu d'instal·lació està malmès o no és vàlid. Torneu a baixar Chromium.</translation>
 <translation id="8493179195440786826">Chromium no està actualitzat</translation>
-<translation id="8494843963476918365">Si no es mostra alguna opció de configuració en aquesta pàgina, prova la <ph name="LINK_BEGIN" />configuració del navegador de Chromium<ph name="LINK_END" />.</translation>
 <translation id="85843667276690461">Obtén ajuda per a l'ús de Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8619360774459241877">S'està iniciant Chromium...</translation>

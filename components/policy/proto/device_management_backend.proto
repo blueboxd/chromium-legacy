@@ -312,6 +312,10 @@ message PolicyFetchRequest {
   //   google/chrome/machine-level-extension => ExternalPolicyData
   //   google/chromeos/signinextension => ExternalPolicyData
   //   google/android/user => ChromeSettingsProto
+  //   google/chromeos/remotecommand => RemoteCommand (*)
+  //
+  // Types marked with an (*) are not policies, but data signed with the policy
+  // key. It is illegal to try to fetch policies with those types.
   optional string policy_type = 1;
 
   // This is the last policy timestamp that client received from server. The
@@ -1939,7 +1943,7 @@ message RemoteCommandResult {
 
 message DeviceRemoteCommandRequest {
   // The command ID of the last command received from the server until
-  // now.  Omitted if no commands have been received yet.
+  // now. Omitted if no commands have been received yet.
   optional int64 last_command_unique_id = 1;
 
   // The execution results of previously fetched commands.
@@ -1951,19 +1955,17 @@ message DeviceRemoteCommandRequest {
 }
 
 message DeviceRemoteCommandResponse {
-  // The queue of pending, non secure commands. If this is present
-  // then there shall be no secure commands in this response (and
-  // vice versa).
+  // The queue of pending, non secure commands. If this is present then there
+  // shall be no secure commands in this response (and vice versa).
   repeated RemoteCommand commands = 1;
 
-  // The queue of pending, secure commands. If this is present
-  // then there shall be no non secure commands in this response
-  // (and vice versa).
+  // The queue of pending, secure commands. If this is present then there shall
+  // be no non secure commands in this response (and vice versa).
   //
-  // The secure_commands.data field contains a serialized
-  // RemoteCommand. The secure_commands.signature field is a
-  // signature of the data field with the policy key for the
-  // domain the device belongs to.
+  // The secure_commands.data field contains a serialized PolicyData with a
+  // “google/chromeos/remotecommand” policy_type. The secure_commands.signature
+  // field is a signature of the data field with the policy key for the domain
+  // the device belongs to.
   repeated SignedData secure_commands = 2;
 }
 

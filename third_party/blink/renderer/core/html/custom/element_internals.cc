@@ -41,6 +41,7 @@ void ElementInternals::Trace(Visitor* visitor) {
   visitor->Trace(state_);
   visitor->Trace(validity_flags_);
   visitor->Trace(validation_anchor_);
+  visitor->Trace(explicitly_set_attr_element_map);
   ListedElement::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -251,6 +252,15 @@ void ElementInternals::DidUpgrade() {
   }
   Target().GetDocument().GetFormController().RestoreControlStateOnUpgrade(
       *this);
+}
+
+void ElementInternals::SetElementAttribute(const QualifiedName& name,
+                                           Element* element) {
+  explicitly_set_attr_element_map.Set(name, element);
+}
+
+Element* ElementInternals::GetElementAttribute(const QualifiedName& name) {
+  return explicitly_set_attr_element_map.at(name);
 }
 
 bool ElementInternals::IsTargetFormAssociated() const {

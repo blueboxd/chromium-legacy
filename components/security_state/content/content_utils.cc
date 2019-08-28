@@ -93,21 +93,6 @@ void ExplainSafeBrowsingSecurity(
   security_style_explanations->insecure_explanations.push_back(explanation);
 }
 
-void ExplainSafetyTips(
-    const security_state::VisibleSecurityState& visible_security_state,
-    content::SecurityStyleExplanations* security_style_explanations) {
-  DCHECK_NE(visible_security_state.safety_tip_status, SAFETY_TIP_STATUS_NONE);
-
-  security_style_explanations->summary =
-      l10n_util::GetStringUTF8(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY);
-  // Add a bullet describing the issue.
-  content::SecurityStyleExplanation explanation(
-      l10n_util::GetStringUTF8(IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE),
-      l10n_util::GetStringUTF8(
-          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION));
-  security_style_explanations->insecure_explanations.push_back(explanation);
-}
-
 void ExplainCertificateSecurity(
     const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations) {
@@ -449,9 +434,6 @@ blink::WebSecurityStyle GetSecurityStyle(
     // certificate, connection, or content that needs to be explained, e.g. in
     // the case of a net error, so we can early return.
     return security_style;
-  } else if (visible_security_state.safety_tip_status !=
-             security_state::SAFETY_TIP_STATUS_NONE) {
-    ExplainSafetyTips(visible_security_state, security_style_explanations);
   } else {
     ExplainHTTPSecurity(security_level, visible_security_state,
                         security_style_explanations);

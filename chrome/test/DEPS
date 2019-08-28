@@ -73,6 +73,5 @@ include_rules = [
   "+media/base",
   "+mojo/core/embedder",
   "+sandbox/win/tests",
-  "+third_party/ocmock",
   "+third_party/webrtc",
 ]

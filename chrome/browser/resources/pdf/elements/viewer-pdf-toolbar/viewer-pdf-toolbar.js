@@ -7,52 +7,6 @@ Polymer({
 
   properties: {
     /**
-     * The current loading progress of the PDF document (0 - 100).
-     */
-    loadProgress: {type: Number, observer: 'loadProgressChanged_'},
-
-    /**
-     * The title of the PDF document.
-     */
-    docTitle: String,
-
-    /**
-     * The number of the page being viewed (1-based).
-     */
-    pageNo: Number,
-
-    /**
-     * Tree of PDF bookmarks (or null if the document has no bookmarks).
-     */
-    bookmarks: {type: Object, value: null},
-
-    /**
-     * The number of pages in the PDF document.
-     */
-    docLength: Number,
-
-    /**
-     * Whether the toolbar is opened and visible.
-     */
-    opened: {type: Boolean, value: true},
-
-    /**
-     * Whether the viewer is currently in annotation mode.
-     */
-    annotationMode: {
-      type: Boolean,
-      notify: true,
-      value: false,
-      reflectToAttribute: true,
-    },
-
-    annotationTool: {
-      type: Object,
-      value: null,
-      notify: true,
-    },
-
-    /**
      * Whether annotation mode can be entered. This would be false if for
      * example the PDF is encrypted or password protected. Note, this is
      * true regardless of whether the feature flag is enabled.
@@ -62,9 +16,28 @@ Polymer({
       value: true,
     },
 
-    canUndoAnnotation: {
+    /** Whether the viewer is currently in annotation mode. */
+    annotationMode: {
       type: Boolean,
+      notify: true,
       value: false,
+      reflectToAttribute: true,
+    },
+
+    /** @type {?Object} */
+    annotationTool: {
+      type: Object,
+      value: null,
+      notify: true,
+    },
+
+    /**
+     * Tree of PDF bookmarks (empty if the document has no bookmarks).
+     * @type {!Array<!Bookmark>}
+     */
+    bookmarks: {
+      type: Array,
+      value: () => [],
     },
 
     canRedoAnnotation: {
@@ -72,17 +45,39 @@ Polymer({
       value: false,
     },
 
-    /**
-     * Whether the PDF Annotations feature is enabled.
-     */
+    canUndoAnnotation: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** The number of pages in the PDF document. */
+    docLength: Number,
+
+    /** The title of the PDF document. */
+    docTitle: String,
+
+    /** The current loading progress of the PDF document (0 - 100). */
+    loadProgress: {
+      type: Number,
+      observer: 'loadProgressChanged_',
+    },
+
+    /** Whether the toolbar is opened and visible. */
+    opened: {
+      type: Boolean,
+      value: true,
+    },
+
+    /** The number of the page being viewed (1-based). */
+    pageNo: Number,
+
+    /** Whether the PDF Annotations feature is enabled. */
     pdfAnnotationsEnabled: {
       type: Boolean,
       value: false,
     },
 
-    /**
-     * Whether the Printing feature is enabled.
-     */
+    /** Whether the Printing feature is enabled. */
     printingEnabled: {
       type: Boolean,
       value: false,
@@ -90,6 +85,9 @@ Polymer({
 
     strings: Object,
   },
+
+  /** @type {?Object} */
+  animation_: null,
 
   /**
    * @param {number} newProgress
@@ -130,22 +128,16 @@ Polymer({
 
     if (this.opened) {
       this.animation_ = this.animate(
-          {
-            transform: ['translateY(-100%)', 'translateY(0%)'],
-          },
-          {
-            easing: 'cubic-bezier(0, 0, 0.2, 1)',
+          [{transform: 'translateY(-100%)'}, {transform: 'translateY(0%)'}], {
             duration: 250,
+            easing: 'cubic-bezier(0, 0, 0.2, 1)',
             fill: 'forwards',
           });
     } else {
       this.animation_ = this.animate(
-          {
-            transform: ['translateY(0%)', 'translateY(-100%)'],
-          },
-          {
-            easing: 'cubic-bezier(0.4, 0, 1, 1)',
+          [{transform: 'translateY(0%)'}, {transform: 'translateY(-100%)'}], {
             duration: 250,
+            easing: 'cubic-bezier(0.4, 0, 1, 1)',
             fill: 'forwards',
           });
     }
@@ -155,11 +147,13 @@ Polymer({
     this.$.pageselector.select();
   },
 
+  /** @return {boolean} Whether the toolbar should be kept open. */
   shouldKeepOpen: function() {
     return this.$.bookmarks.dropdownOpen || this.loadProgress < 100 ||
         this.$.pageselector.isActive() || this.annotationMode;
   },
 
+  /** @return {boolean} Whether a dropdown was open and was hidden. */
   hideDropdowns: function() {
     let result = false;
     if (this.$.bookmarks.dropdownOpen) {
@@ -177,6 +171,7 @@ Polymer({
     return result;
   },
 
+  /** @param {number} lowerBound */
   setDropdownLowerBound: function(lowerBound) {
     this.$.bookmarks.lowerBound = lowerBound;
   },
@@ -214,12 +209,18 @@ Polymer({
     }));
   },
 
-  /** @param {Event} e */
+  /**
+   * @param {!Event} e
+   * @private
+   */
   annotationToolClicked_: function(e) {
-    this.updateAnnotationTool_(e.currentTarget);
+    this.updateAnnotationTool_(/** @type {!HTMLElement} */ (e.currentTarget));
   },
 
-  /** @param {Event} e */
+  /**
+   * @param {!Event} e
+   * @private
+   */
   annotationToolOptionChanged_: function(e) {
     const element = e.currentTarget.parentElement;
     if (!this.annotationTool || element.id != this.annotationTool.tool) {
@@ -228,15 +229,19 @@ Polymer({
     this.updateAnnotationTool_(e.currentTarget.parentElement);
   },
 
-  /** @param {Element} element */
+  /**
+   * @param {!HTMLElement} element
+   * @private
+   */
   updateAnnotationTool_: function(element) {
     const tool = element.id;
     const options = element.querySelector('viewer-pen-options') || {
       selectedSize: 1,
       selectedColor: null,
     };
-    element.attributeStyleMap.set('--pen-tip-fill', options.selectedColor);
-    element.attributeStyleMap.set(
+    const attributeStyleMap = element.attributeStyleMap;
+    attributeStyleMap.set('--pen-tip-fill', options.selectedColor);
+    attributeStyleMap.set(
         '--pen-tip-border',
         options.selectedColor == '#000000' ? 'currentcolor' :
                                              options.selectedColor);
@@ -248,14 +253,12 @@ Polymer({
   },
 
   /**
-   * Used to determine equality in computed bindings.
-   *
-   * @param {*} a
-   * @param {*} b
+   * @param {string} toolName
+   * @return {boolean} Whether the annotation tool is using tool |toolName|.
+   * @private
    */
-  equal_: function(a, b) {
-    return a == b;
+  isAnnotationTool_: function(toolName) {
+    return !!this.annotationTool && this.annotationTool.tool === toolName;
   },
-
 });
 })();

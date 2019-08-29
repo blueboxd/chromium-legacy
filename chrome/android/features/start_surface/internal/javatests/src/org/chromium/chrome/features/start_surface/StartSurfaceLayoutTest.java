@@ -161,7 +161,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);
@@ -181,7 +181,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);

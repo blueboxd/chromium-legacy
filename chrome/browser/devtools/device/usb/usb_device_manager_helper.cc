@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -104,11 +105,11 @@ void CountAndroidDevices(base::OnceCallback<void(int)> callback,
 }
 
 void BindDeviceServiceOnUIThread(
-    device::mojom::UsbDeviceManagerRequest request) {
+    mojo::PendingReceiver<device::mojom::UsbDeviceManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Bind to the DeviceService for USB device manager.
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               std::move(request));
+  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
+                                         std::move(receiver));
 }
 
 }  // namespace
@@ -147,7 +148,7 @@ void UsbDeviceManagerHelper::CountDevices(
 
 // static
 void UsbDeviceManagerHelper::SetUsbManagerForTesting(
-    device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_usb_manager) {
   GetInstance()->SetUsbManagerForTestingInternal(std::move(fake_usb_manager));
 }
 
@@ -171,11 +172,11 @@ void UsbDeviceManagerHelper::GetAndroidDevices(
 
 void UsbDeviceManagerHelper::GetDevice(
     const std::string& guid,
-    device::mojom::UsbDeviceRequest device_request) {
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver) {
   EnsureUsbDeviceManagerConnection();
 
   DCHECK(device_manager_);
-  device_manager_->GetDevice(guid, std::move(device_request),
+  device_manager_->GetDevice(guid, std::move(device_receiver),
                              /*device_client=*/nullptr);
 }
 
@@ -186,23 +187,21 @@ void UsbDeviceManagerHelper::EnsureUsbDeviceManagerConnection() {
     return;
 
   // Just for testing.
-  if (testing_device_manager_info_) {
-    device_manager_.Bind(std::move(testing_device_manager_info_));
-    device_manager_.set_connection_error_handler(
+  if (testing_device_manager_) {
+    device_manager_.Bind(std::move(testing_device_manager_));
+    device_manager_.set_disconnect_handler(
         base::BindOnce(&UsbDeviceManagerHelper::OnDeviceManagerConnectionError,
                        weak_factory_.GetWeakPtr()));
     return;
   }
 
-  device::mojom::UsbDeviceManagerRequest request =
-      mojo::MakeRequest(&device_manager_);
-  device_manager_.set_connection_error_handler(
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&BindDeviceServiceOnUIThread,
+                                device_manager_.BindNewPipeAndPassReceiver()));
+
+  device_manager_.set_disconnect_handler(
       base::BindOnce(&UsbDeviceManagerHelper::OnDeviceManagerConnectionError,
                      weak_factory_.GetWeakPtr()));
-
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&BindDeviceServiceOnUIThread, std::move(request)));
 }
 
 void UsbDeviceManagerHelper::CountDevicesInternal(
@@ -219,10 +218,10 @@ void UsbDeviceManagerHelper::CountDevicesInternal(
 }
 
 void UsbDeviceManagerHelper::SetUsbManagerForTestingInternal(
-    device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_usb_manager) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(fake_usb_manager);
-  testing_device_manager_info_ = std::move(fake_usb_manager);
+  testing_device_manager_ = std::move(fake_usb_manager);
 }
 
 void UsbDeviceManagerHelper::OnDeviceManagerConnectionError() {

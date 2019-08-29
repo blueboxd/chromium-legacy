@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -131,6 +132,7 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
     // V8 calls into embedder tracing from its own marking to ensure
     // progress. Oilpan will additionally schedule marking steps.
     ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
+    ScriptForbiddenScope script_forbidden_scope;
     base::TimeTicks deadline =
         base::TimeTicks() + base::TimeDelta::FromMillisecondsD(deadline_in_ms);
     is_tracing_done_ = thread_state_->MarkPhaseAdvanceMarking(deadline);

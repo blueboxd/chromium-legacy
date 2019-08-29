@@ -19,7 +19,6 @@
 <link rel="import" href="cups_printers_list.html">
 <link rel="import" href="cups_saved_printers.html">
 <link rel="import" href="cups_nearby_printers.html">
-<link rel="import" href="../route.html">
 
 <dom-module id="settings-cups-printers">
   <template>
@@ -122,21 +121,16 @@
         </div>
       </template>
 
-      <template is="dom-if"
-          if="[[doesAccountHaveSavedPrinters_(savedPrinters_)]]"
-          id="savedPrintersSection" restamp>
-        <div class="settings-box first">
-          <div class="start">
-            <span>$i18n{savedPrintersTitle}</span>
-          </div>
+      <div class="settings-box first">
+        <div class="start">
+          <span>$i18n{savedPrintersTitle}</span>
         </div>
+      </div>
 
-        <settings-cups-saved-printers id="savedPrinters"
-            active-printer="{{activePrinter}}"
-            saved-printers="[[savedPrinters_]]"
-            search-term="[[searchTerm]]">
-        </settings-cups-saved-printers>
-      </template>
+      <settings-cups-saved-printers id="savedPrinters"
+          active-printer="{{activePrinter}}"
+          search-term="[[searchTerm]]">
+      </settings-cups-saved-printers>
 
       <div class="padded first" id="nearbyPrinters">
         <div>$i18n{nearbyPrintersListTitle}</div>

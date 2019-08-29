@@ -264,7 +264,7 @@ LayoutRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {
 
 void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,
                                   const PhysicalOffset& paint_offset) const {
-  if (PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (PaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
   SVGRootPainter(*this).PaintReplaced(paint_info, paint_offset);
 }

@@ -36,6 +36,7 @@ export class StdSwitchElement extends HTMLElement {
           'extensible for now');
     }
     this.#internals = this.attachInternals();
+    this.#internals.setFormValue('off');
     this.#initializeDOM();
 
     this.addEventListener('click', this.#onClick);
@@ -44,6 +45,7 @@ export class StdSwitchElement extends HTMLElement {
 
   attributeChangedCallback(attrName, oldValue, newValue) {
     if (attrName === STATE_ATTR) {
+      this.#internals.setFormValue(newValue !== null ? 'on' : 'off');
       this.#track.value = newValue !== null;
       if (this.#internals.ariaChecked !== undefined) {
         this.#internals.ariaChecked = newValue !== null ? 'true' : 'false';

@@ -84,10 +84,14 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     OutputRecord(OutputRecord&&);
     ~OutputRecord();
     size_t num_times_sent_to_client;
+
+    // Final output frame (i.e. processed if an image processor is used).
+    // Used only when OutputMode is IMPORT.
+    scoped_refptr<VideoFrame> output_frame;
+
     int32_t picture_id;
     GLuint client_texture_id;
     GLuint texture_id;
-    std::vector<base::ScopedFD> dmabuf_fds;
     bool cleared;
 
     bool at_client() const { return num_times_sent_to_client > 0; }
@@ -269,13 +273,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                         GLuint texture_id,
                         const gfx::Size& size,
                         uint32_t fourcc);
-
-  // Take the dmabuf |passed_dmabuf_fds|, for |picture_buffer_id|, and use it
-  // for OutputRecord at |buffer_index|. The buffer is backed by
-  // |passed_dmabuf_fds|, and the OutputRecord takes ownership of them.
-  void AssignDmaBufs(size_t buffer_index,
-                     int32_t picture_buffer_id,
-                     std::vector<base::ScopedFD> passed_dmabuf_fds);
 
   // Performed on decoder_thread_ as a consequence of poll() on decoder_thread_
   // returning an event.

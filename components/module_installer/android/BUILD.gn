@@ -14,6 +14,7 @@ android_library("module_installer_java") {
     "java/src/org/chromium/components/module_installer/ModuleInstaller.java",
     "java/src/org/chromium/components/module_installer/OnModuleInstallFinishedListener.java",
     "java/src/org/chromium/components/module_installer/Module.java",
+    "java/src/org/chromium/components/module_installer/Timer.java",
     "java/src/org/chromium/components/module_installer/observers/ModuleActivityObserver.java",
     "java/src/org/chromium/components/module_installer/observers/ObserverStrategy.java",
     "java/src/org/chromium/components/module_installer/observers/ObserverStrategyImpl.java",

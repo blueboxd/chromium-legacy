@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
@@ -66,6 +67,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const NGUnpositionedListMarker UnpositionedListMarker() const {
     return HasRareData() ? rare_data_->unpositioned_list_marker
                          : NGUnpositionedListMarker();
+  }
+
+  // Get the column spanner (if any) that interrupted column layout.
+  NGBlockNode ColumnSpanner() const {
+    return HasRareData() ? rare_data_->column_spanner : NGBlockNode(nullptr);
   }
 
   const NGExclusionSpace& ExclusionSpace() const {
@@ -284,6 +290,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     LogicalOffset oof_positioned_offset;
     NGMarginStrut end_margin_strut;
     NGUnpositionedListMarker unpositioned_list_marker;
+    NGBlockNode column_spanner = nullptr;
     LayoutUnit minimal_space_shortage = LayoutUnit::Max();
     NGExclusionSpace exclusion_space;
     scoped_refptr<SerializedScriptValue> custom_layout_data;

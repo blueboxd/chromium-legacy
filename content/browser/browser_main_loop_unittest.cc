@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_command_line.h"
 #include "content/browser/browser_thread_impl.h"

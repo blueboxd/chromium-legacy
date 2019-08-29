@@ -273,7 +273,8 @@ bool PrePaintTreeWalk::ContextRequiresPrePaint(
 bool PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(
     const LayoutObject& object) {
   return object.NeedsPaintPropertyUpdate() ||
-         (!object.PrePaintBlockedByDisplayLock(DisplayLockContext::kChildren) &&
+         (!object.PrePaintBlockedByDisplayLock(
+              DisplayLockLifecycleTarget::kChildren) &&
           (object.DescendantNeedsPaintPropertyUpdate() ||
            object.DescendantNeedsPaintOffsetAndVisualRectUpdate()));
 }
@@ -436,10 +437,10 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
   }
 
   WalkInternal(object, context());
-  object.NotifyDisplayLockDidPrePaint(DisplayLockContext::kSelf);
+  object.NotifyDisplayLockDidPrePaint(DisplayLockLifecycleTarget::kSelf);
 
-  bool child_walk_blocked =
-      object.PrePaintBlockedByDisplayLock(DisplayLockContext::kChildren);
+  bool child_walk_blocked = object.PrePaintBlockedByDisplayLock(
+      DisplayLockLifecycleTarget::kChildren);
   // If we need a subtree walk due to context flags, we need to store that
   // information on the display lock, since subsequent walks might not set the
   // same bits on the context.
@@ -483,7 +484,7 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
       // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
     }
 
-    object.NotifyDisplayLockDidPrePaint(DisplayLockContext::kChildren);
+    object.NotifyDisplayLockDidPrePaint(DisplayLockLifecycleTarget::kChildren);
   }
 
   object.GetMutableForPainting().ClearPaintFlags();

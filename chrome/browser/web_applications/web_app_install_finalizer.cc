@@ -145,6 +145,12 @@ bool WebAppInstallFinalizer::CanSkipAppUpdateForSync(
   return true;
 }
 
+bool WebAppInstallFinalizer::CanUserUninstallFromSync(
+    const AppId& app_id) const {
+  // TODO(crbug.com/901226): Implement it.
+  return false;
+}
+
 void WebAppInstallFinalizer::SetSubsystems(AppRegistrar* registrar,
                                            WebAppUiManager* ui_manager) {
   registrar_ = registrar ? registrar->AsWebAppRegistrar() : nullptr;

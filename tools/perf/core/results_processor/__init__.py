@@ -5,3 +5,4 @@
 from core.results_processor.processor import ArgumentParser
 from core.results_processor.processor import ProcessOptions
 from core.results_processor.processor import ProcessResults
+from core.results_processor.processor import main

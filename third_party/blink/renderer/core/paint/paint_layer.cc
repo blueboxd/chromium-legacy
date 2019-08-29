@@ -2164,7 +2164,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     // Next we want to see if the mouse pos is inside the child LayoutObjects of
     // the layer. Check every fragment in reverse order.
     if (IsSelfPaintingLayer() && !layout_object.PaintBlockedByDisplayLock(
-                                     DisplayLockContext::kChildren)) {
+                                     DisplayLockLifecycleTarget::kChildren)) {
       // Hit test with a temporary HitTestResult, because we only want to commit
       // to 'result' if we know we're frontmost.
       HitTestResult temp_result(result.GetHitTestRequest(),
@@ -2419,7 +2419,7 @@ PaintLayer* PaintLayer::HitTestChildren(
     return nullptr;
 
   if (GetLayoutObject().PaintBlockedByDisplayLock(
-          DisplayLockContext::kChildren))
+          DisplayLockLifecycleTarget::kChildren))
     return nullptr;
 
   const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();

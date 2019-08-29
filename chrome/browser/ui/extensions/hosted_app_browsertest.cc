@@ -40,13 +40,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
@@ -1101,12 +1101,12 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, UninstallMenuOption) {
   InstallSecurePWA();
 
   auto app_menu_model =
-      std::make_unique<HostedAppMenuModel>(nullptr, app_browser_);
+      std::make_unique<WebAppMenuModel>(nullptr, app_browser_);
   app_menu_model->Init();
   ui::MenuModel* model = app_menu_model.get();
   int index = -1;
   bool found = app_menu_model->GetModelAndIndexForCommandId(
-      HostedAppMenuModel::kUninstallAppCommandId, &model, &index);
+      WebAppMenuModel::kUninstallAppCommandId, &model, &index);
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(found);
 #else

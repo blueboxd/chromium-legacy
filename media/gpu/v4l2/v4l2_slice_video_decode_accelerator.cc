@@ -32,6 +32,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
+#include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
@@ -857,11 +858,20 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(
   OutputRecord& output_record = output_buffer_map_[index];
   DCHECK_NE(output_record.picture_id, -1);
 
-  bool ret;
-  if (output_mode_ == Config::OutputMode::ALLOCATE)
-    ret = std::move(output_buffer).QueueMMap();
-  else
-    ret = std::move(output_buffer).QueueDMABuf(output_record.dmabuf_fds);
+  bool ret = false;
+  switch (output_buffer.Memory()) {
+    case V4L2_MEMORY_MMAP:
+      ret = std::move(output_buffer).QueueMMap();
+      break;
+    case V4L2_MEMORY_DMABUF: {
+      const auto& fds = output_record.output_frame->DmabufFds();
+      DCHECK_EQ(output_planes_count_, fds.size());
+      ret = std::move(output_buffer).QueueDMABuf(fds);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 
   if (!ret) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -1303,7 +1313,6 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   for (size_t i = 0; i < buffers.size(); i++) {
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK_EQ(output_record.picture_id, -1);
-    DCHECK(output_record.dmabuf_fds.empty());
     DCHECK_EQ(output_record.cleared, false);
 
     output_record.picture_id = buffers[i].id();
@@ -1315,6 +1324,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
                                           ? 0
                                           : buffers[i].client_texture_ids()[0];
 
+    // If we are in allocate mode, then we can already call
+    // ImportBufferForPictureTask().
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
       std::vector<base::ScopedFD> passed_dmabuf_fds =
           gl_image_device_->GetDmabufsForV4L2Buffer(
@@ -1381,47 +1392,6 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
   DCHECK(ret);
   bind_image_cb_.Run(client_texture_id, gl_image_device_->GetTextureTarget(),
                      gl_image, true);
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::AssignDmaBufs,
-                     base::Unretained(this), buffer_index, picture_buffer_id,
-                     std::move(passed_dmabuf_fds)));
-}
-
-void V4L2SliceVideoDecodeAccelerator::AssignDmaBufs(
-    size_t buffer_index,
-    int32_t picture_buffer_id,
-    std::vector<base::ScopedFD> passed_dmabuf_fds) {
-  DVLOGF(3) << "index=" << buffer_index;
-  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-
-  if (IsDestroyPending())
-    return;
-
-  // It's possible that while waiting for the EGLImages to be allocated and
-  // assigned, we have already decoded more of the stream and saw another
-  // resolution change. This is a normal situation, in such a case either there
-  // is no output record with this index awaiting an EGLImage to be assigned to
-  // it, or the record is already updated to use a newer PictureBuffer and is
-  // awaiting an EGLImage associated with a different picture_buffer_id. If so,
-  // just discard this image, we will get the one we are waiting for later.
-  if (buffer_index >= output_buffer_map_.size() ||
-      output_buffer_map_[buffer_index].picture_id != picture_buffer_id) {
-    DVLOGF(4) << "Picture set already changed, dropping EGLImage";
-    return;
-  }
-
-  OutputRecord& output_record = output_buffer_map_[buffer_index];
-  DCHECK_EQ(output_wait_map_.count(picture_buffer_id), 1u);
-
-  if (output_mode_ == Config::OutputMode::IMPORT) {
-    DCHECK(output_record.dmabuf_fds.empty());
-    output_record.dmabuf_fds = std::move(passed_dmabuf_fds);
-  }
-
-  // Buffer is ready to be used.
-  output_wait_map_.erase(picture_buffer_id);
-  ScheduleDecodeBufferTaskIfNeeded();
 }
 
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
@@ -1506,9 +1476,32 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     return;
   }
 
-  size_t index = iter - output_buffer_map_.begin();
+  // If in import mode, build output_frame from the passed DMABUF FDs.
+  if (output_mode_ == Config::OutputMode::IMPORT) {
+    DCHECK_EQ(gl_image_planes_count_, passed_dmabuf_fds.size());
+    DCHECK(!iter->output_frame);
+
+    // TODO(acourbot): Create a more accurate layout from the GMBhandle instead
+    // of assuming the image size will be enough (we may have extra information
+    // between planes).
+    auto layout = VideoFrameLayout::Create(
+        V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_),
+        gl_image_size_);
+    if (!layout) {
+      VLOGF(1) << "Cannot create layout!";
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+    const gfx::Rect visible_rect = decoder_->GetVisibleRect();
+    iter->output_frame = VideoFrame::WrapExternalDmabufs(
+        *layout, visible_rect, visible_rect.size(),
+        DuplicateFDs(passed_dmabuf_fds), base::TimeDelta());
+  }
 
   if (iter->texture_id != 0) {
+    DCHECK_EQ(gl_image_planes_count_, passed_dmabuf_fds.size());
+    size_t index = iter - output_buffer_map_.begin();
+
     child_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
@@ -1516,16 +1509,12 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
                        std::move(passed_dmabuf_fds), iter->client_texture_id,
                        iter->texture_id, gl_image_size_,
                        gl_image_format_fourcc_));
-  } else {
-    // No need for a GLImage, start using this buffer now.
-    DCHECK_EQ(gl_image_planes_count_, passed_dmabuf_fds.size());
-    iter->dmabuf_fds = std::move(passed_dmabuf_fds);
-
-    // Buffer is now ready to be used.
-    DCHECK_EQ(output_wait_map_.count(picture_buffer_id), 1u);
-    output_wait_map_.erase(picture_buffer_id);
-    ScheduleDecodeBufferTaskIfNeeded();
   }
+
+  // Buffer is now ready to be used.
+  DCHECK_EQ(output_wait_map_.count(picture_buffer_id), 1u);
+  output_wait_map_.erase(picture_buffer_id);
+  ScheduleDecodeBufferTaskIfNeeded();
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(

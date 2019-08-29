@@ -68,7 +68,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     InputRecord();
     InputRecord(const InputRecord&);
     ~InputRecord();
-    bool at_device;
     scoped_refptr<VideoFrame> frame;
 
     // This is valid only if image processor is used. The buffer associated with
@@ -303,16 +302,11 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Encoder device.
   scoped_refptr<V4L2Device> device_;
 
-  // Input queue state.
-  bool input_streamon_;
-  // Input buffers enqueued to device.
-  int input_buffer_queued_count_;
-  // Input buffers ready to use; LIFO since we don't care about ordering.
-  std::vector<int> free_input_buffers_;
   // Mapping of int index to input buffer record.
   std::vector<InputRecord> input_buffer_map_;
   v4l2_memory input_memory_type_;
 
+  scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
 
   // Mapping of int index to output buffer record.

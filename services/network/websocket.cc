@@ -185,12 +185,12 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
   impl_->handshake_client_->OnConnectionEstablished(
-      std::move(websocket_to_pass), mojo::MakeRequest(&impl_->client_),
+      std::move(websocket_to_pass), impl_->client_.BindNewPipeAndPassReceiver(),
       selected_protocol, extensions, std::move(readable));
   impl_->handshake_client_.reset();
-  impl_->auth_handler_ = nullptr;
+  impl_->auth_handler_.reset();
   impl_->header_client_.reset();
-  impl_->client_.set_connection_error_handler(base::BindOnce(
+  impl_->client_.set_disconnect_handler(base::BindOnce(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
 }
 
@@ -374,7 +374,7 @@ WebSocket::WebSocket(
     uint32_t options,
     HasRawHeadersAccess has_raw_headers_access,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-    mojom::AuthenticationHandlerPtr auth_handler,
+    mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
     base::TimeDelta delay)
@@ -397,7 +397,7 @@ WebSocket::WebSocket(
   if (auth_handler_) {
     // Make sure the request dies if |auth_handler_| has an error, otherwise
     // requests can hang.
-    auth_handler_.set_connection_error_handler(base::BindOnce(
+    auth_handler_.set_disconnect_handler(base::BindOnce(
         &WebSocket::OnConnectionError, base::Unretained(this), FROM_HERE));
   }
   if (header_client_) {
@@ -690,8 +690,8 @@ void WebSocket::OnHeadersReceivedComplete(
 
 void WebSocket::Reset() {
   handshake_client_.reset();
-  client_ = nullptr;
-  auth_handler_ = nullptr;
+  client_.reset();
+  auth_handler_.reset();
   header_client_.reset();
   binding_.Close();
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
+#include "components/sync_device_info/device_info.h"
 
 void JNI_SharingServiceProxy_InitSharingService(
     JNIEnv* env,
@@ -60,4 +61,20 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
             std::move(callback).Run(static_cast<int>(result));
           },
           std::move(callback)));
+}
+
+void SharingServiceProxyAndroid::GetDeviceCandidates(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_device_info,
+    jint j_capabilities) {
+  auto device_candidates =
+      sharing_service_->GetDeviceCandidates(j_capabilities);
+  for (const auto& device_info : device_candidates) {
+    Java_SharingServiceProxy_createDeviceInfoAndAppendToList(
+        env, j_device_info,
+        base::android::ConvertUTF8ToJavaString(env, device_info->guid()),
+        base::android::ConvertUTF8ToJavaString(env, device_info->client_name()),
+        device_info->device_type(),
+        device_info->last_updated_timestamp().ToJavaTime());
+  }
 }

@@ -118,9 +118,9 @@ class ScriptExecutor : public ActionDelegate,
       const Selector& selector,
       ClickAction::ClickType click_type,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
-  void GetPaymentInformation(
-      std::unique_ptr<PaymentRequestOptions> options,
-      std::unique_ptr<PaymentInformation> information) override;
+  void CollectUserData(
+      std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+      std::unique_ptr<UserData> user_data) override;
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void CancelPrompt() override;
@@ -330,9 +330,9 @@ class ScriptExecutor : public ActionDelegate,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found,
       const Result* interrupt_result);
-  void OnGetPaymentInformation(
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      std::unique_ptr<PaymentInformation> result);
+  void OnGetUserData(
+      base::OnceCallback<void(std::unique_ptr<UserData>)> callback,
+      std::unique_ptr<UserData> result);
   void OnAdditionalActionTriggered(base::OnceCallback<void(int)> callback,
                                    int index);
   void OnTermsAndConditionsLinkClicked(base::OnceCallback<void(int)> callback,

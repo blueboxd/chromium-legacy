@@ -13,10 +13,10 @@
 #include <type_traits>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_math.h"
-#include "base/scoped_clear_last_error.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/third_party/dmg_fp/dmg_fp.h"
+#include "base/third_party/double_conversion/double-conversion/double-conversion.h"
 
 namespace base {
 
@@ -360,21 +360,29 @@ string16 NumberToString16(unsigned long long value) {
   return IntToStringT<string16, unsigned long long>::IntToString(value);
 }
 
+static const double_conversion::DoubleToStringConverter*
+GetDoubleToStringConverter() {
+  static NoDestructor<double_conversion::DoubleToStringConverter> converter(
+      double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN,
+      nullptr, nullptr, 'e', -6, 12, 0, 0);
+  return converter.get();
+}
+
 std::string NumberToString(double value) {
-  // According to g_fmt.cc, it is sufficient to declare a buffer of size 32.
   char buffer[32];
-  dmg_fp::g_fmt(buffer, value);
-  return std::string(buffer);
+  double_conversion::StringBuilder builder(buffer, sizeof(buffer));
+  GetDoubleToStringConverter()->ToShortest(value, &builder);
+  return std::string(buffer, builder.position());
 }
 
 base::string16 NumberToString16(double value) {
-  // According to g_fmt.cc, it is sufficient to declare a buffer of size 32.
   char buffer[32];
-  dmg_fp::g_fmt(buffer, value);
+  double_conversion::StringBuilder builder(buffer, sizeof(buffer));
+  GetDoubleToStringConverter()->ToShortest(value, &builder);
 
   // The number will be ASCII. This creates the string using the "input
   // iterator" variant which promotes from 8-bit to 16-bit via "=".
-  return base::string16(&buffer[0], &buffer[strlen(buffer)]);
+  return base::string16(&buffer[0], &buffer[builder.position()]);
 }
 
 bool StringToInt(StringPiece input, int* output) {
@@ -418,24 +426,24 @@ bool StringToSizeT(StringPiece16 input, size_t* output) {
 }
 
 bool StringToDouble(const std::string& input, double* output) {
-  // Thread-safe?  It is on at least Mac, Linux, and Windows.
-  internal::ScopedClearLastError clear_errno;
+  static NoDestructor<double_conversion::StringToDoubleConverter> converter(
+      double_conversion::StringToDoubleConverter::ALLOW_LEADING_SPACES |
+          double_conversion::StringToDoubleConverter::ALLOW_TRAILING_JUNK,
+      0.0, 0, nullptr, nullptr);
 
-  char* endptr = nullptr;
-  *output = dmg_fp::strtod(input.c_str(), &endptr);
+  int processed_characters_count;
+  *output = converter->StringToDouble(input.c_str(), input.size(),
+                                      &processed_characters_count);
 
   // Cases to return false:
-  //  - If errno is ERANGE, there was an overflow or underflow.
   //  - If the input string is empty, there was nothing to parse.
-  //  - If endptr does not point to the end of the string, there are either
-  //    characters remaining in the string after a parsed number, or the string
-  //    does not begin with a parseable number.  endptr is compared to the
-  //    expected end given the string's stated length to correctly catch cases
-  //    where the string contains embedded NUL characters.
+  //  - If the value saturated to HUGE_VAL.
+  //  - If the entire string was not processed, there are either characters
+  //    remaining in the string after a parsed number, or the string does not
+  //    begin with a parseable number.
   //  - If the first character is a space, there was leading whitespace
-  return errno == 0 &&
-         !input.empty() &&
-         input.c_str() + input.length() == endptr &&
+  return !input.empty() && *output != HUGE_VAL && *output != -HUGE_VAL &&
+         static_cast<size_t>(processed_characters_count) == input.size() &&
          !isspace(input[0]);
 }
 

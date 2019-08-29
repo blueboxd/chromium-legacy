@@ -8,9 +8,9 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/resource_tracker.h"
-#include "chrome/browser/scoped_visibility_tracker.h"
 #include "components/page_load_metrics/common/page_end_reason.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "ui/base/scoped_visibility_tracker.h"
 
 namespace content {
 class WebContents;
@@ -97,7 +97,7 @@ class PageLoadMetricsObserverDelegate {
   virtual const mojom::PageLoadMetadata& GetSubframeMetadata() const = 0;
   virtual const PageRenderData& GetPageRenderData() const = 0;
   virtual const PageRenderData& GetMainFrameRenderData() const = 0;
-  virtual const ScopedVisibilityTracker& GetVisibilityTracker() const = 0;
+  virtual const ui::ScopedVisibilityTracker& GetVisibilityTracker() const = 0;
   virtual const ResourceTracker& GetResourceTracker() const = 0;
 
   // UKM SourceId for the current page load.

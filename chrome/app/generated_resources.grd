@@ -4591,8 +4591,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_LABEL" desc="Promotion text for Chrome sign-in appearing in the password bubble after a password is saved.">
         To get your passwords on all your devices, sign in to Chrome.
       </message>
-      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE" desc="The title shown in the password manager onboarding dialog.">
-        Save your passwords
+      <!-- Password manager onboarding strings -->
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A" desc="The title shown in the password manager onboarding dialog.">
+        Save your passwords?
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_B" desc="The title shown in the password manager onboarding dialog.">
+        Access your passwords everywhere
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_C" desc="The title shown in the password manager onboarding dialog.">
+        Securely remember your passwords
       </message>
 
       <!-- Begin of Sync Promo strings for Desktop Identity Consistency. -->

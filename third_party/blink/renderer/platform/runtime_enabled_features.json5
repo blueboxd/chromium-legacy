@@ -587,6 +587,7 @@
     // https://github.com/WICG/js-self-profiling
     {
       name: "ExperimentalJSProfiler",
+      origin_trial_feature_name: "ExperimentalJSProfiler",
       status: "experimental"
     },
     // Enables a set of features intended to help improve web developer

@@ -14,7 +14,8 @@
 #include "content/common/content_export.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/virtual_fido_device.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 namespace content {
@@ -34,7 +35,8 @@ class CONTENT_EXPORT VirtualAuthenticator
                        bool has_user_verification);
   ~VirtualAuthenticator() override;
 
-  void AddBinding(blink::test::mojom::VirtualAuthenticatorRequest request);
+  void AddReceiver(
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticator> receiver);
 
   const device::VirtualFidoDevice::State::RegistrationsMap& registrations()
       const {
@@ -115,7 +117,7 @@ class CONTENT_EXPORT VirtualAuthenticator
   const std::string unique_id_;
   bool is_user_present_;
   scoped_refptr<::device::VirtualFidoDevice::State> state_;
-  mojo::BindingSet<blink::test::mojom::VirtualAuthenticator> binding_set_;
+  mojo::ReceiverSet<blink::test::mojom::VirtualAuthenticator> receiver_set_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualAuthenticator);
 };

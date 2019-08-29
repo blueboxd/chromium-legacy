@@ -232,8 +232,8 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     STATE_DONE_HEADERS_ADD_TO_ENTRY_COMPLETE,
     STATE_CACHE_READ_RESPONSE,
     STATE_CACHE_READ_RESPONSE_COMPLETE,
-    STATE_TOGGLE_UNUSED_SINCE_PREFETCH,
-    STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE,
+    STATE_WRITE_UPDATED_PREFETCH_RESPONSE,
+    STATE_WRITE_UPDATED_PREFETCH_RESPONSE_COMPLETE,
     STATE_CACHE_DISPATCH_VALIDATION,
     STATE_CACHE_QUERY_DATA,
     STATE_CACHE_QUERY_DATA_COMPLETE,
@@ -312,8 +312,8 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   int DoDoneHeadersAddToEntryComplete(int result);
   int DoCacheReadResponse();
   int DoCacheReadResponseComplete(int result);
-  int DoCacheToggleUnusedSincePrefetch();
-  int DoCacheToggleUnusedSincePrefetchComplete(int result);
+  int DoCacheWriteUpdatedPrefetchResponse(int result);
+  int DoCacheWriteUpdatedPrefetchResponseComplete(int result);
   int DoCacheDispatchValidation();
   int DoCacheQueryData();
   int DoCacheQueryDataComplete(int result);
@@ -442,9 +442,10 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
                    int data_len,
                    CompletionOnceCallback callback);
 
-  // Called to write response_ to the cache entry. |truncated| indicates if the
+  // Called to write a response to the cache entry. |truncated| indicates if the
   // entry should be marked as incomplete.
-  int WriteResponseInfoToEntry(bool truncated);
+  int WriteResponseInfoToEntry(const HttpResponseInfo& response,
+                               bool truncated);
 
   // Helper function, should be called with result of WriteResponseInfoToEntry
   // (or the result of the callback, when WriteResponseInfoToEntry returns
@@ -577,6 +578,16 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   CompletionOnceCallback callback_;  // Consumer's callback.
   HttpResponseInfo response_;
   HttpResponseInfo auth_response_;
+
+  // This is only populated when we want to modify a prefetch request in some
+  // way for future transactions, while leaving it untouched for the current
+  // one. DoCacheReadResponseComplete() sets this to a copy of |response_|,
+  // and modifies the members for future transactions. Then,
+  // WriteResponseInfoToEntry() writes |updated_prefetch_response_| to the cache
+  // entry if it is populated, or |response_| otherwise. Finally,
+  // WriteResponseInfoToEntry() resets this to base::nullopt.
+  std::unique_ptr<HttpResponseInfo> updated_prefetch_response_;
+
   const HttpResponseInfo* new_response_;
   std::string cache_key_;
   Mode mode_;

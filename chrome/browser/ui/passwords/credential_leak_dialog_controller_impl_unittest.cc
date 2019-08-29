@@ -15,7 +15,10 @@
 
 namespace {
 
-using password_manager::CreateLeakTypeFromBools;
+using password_manager::CreateLeakType;
+using password_manager::IsReused;
+using password_manager::IsSaved;
+using password_manager::IsSyncing;
 using password_manager::metrics_util::LeakDialogDismissalReason;
 using testing::StrictMock;
 
@@ -55,8 +58,8 @@ class CredentialLeakDialogControllerTest : public testing::Test {
 };
 
 TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogClose) {
-  SetUpController(CreateLeakTypeFromBools(
-      /*is_saved=*/false, /*is_reused=*/false, /*is_syncing=*/false));
+  SetUpController(
+      CreateLeakType(IsSaved(false), IsReused(false), IsSyncing(false)));
 
   EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
   controller().ShowCredentialLeakPrompt(&leak_prompt());
@@ -76,8 +79,8 @@ TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogClose) {
 }
 
 TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogOk) {
-  SetUpController(CreateLeakTypeFromBools(
-      /*is_saved=*/true, /*is_reused=*/true, /*is_syncing=*/false));
+  SetUpController(
+      CreateLeakType(IsSaved(true), IsReused(true), IsSyncing(false)));
 
   EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
   controller().ShowCredentialLeakPrompt(&leak_prompt());
@@ -97,8 +100,8 @@ TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogOk) {
 }
 
 TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogCancel) {
-  SetUpController(CreateLeakTypeFromBools(
-      /*is_saved=*/false, /*is_reused=*/true, /*is_syncing=*/true));
+  SetUpController(
+      CreateLeakType(IsSaved(false), IsReused(true), IsSyncing(true)));
 
   EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
   controller().ShowCredentialLeakPrompt(&leak_prompt());
@@ -118,8 +121,8 @@ TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogCancel) {
 }
 
 TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogCheckPasswords) {
-  SetUpController(CreateLeakTypeFromBools(
-      /*is_saved=*/true, /*is_reused=*/true, /*is_syncing=*/true));
+  SetUpController(
+      CreateLeakType(IsSaved(true), IsReused(true), IsSyncing(true)));
 
   EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
   controller().ShowCredentialLeakPrompt(&leak_prompt());

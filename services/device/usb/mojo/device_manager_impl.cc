@@ -40,9 +40,10 @@ DeviceManagerImpl::DeviceManagerImpl(std::unique_ptr<UsbService> usb_service)
 
 DeviceManagerImpl::~DeviceManagerImpl() = default;
 
-void DeviceManagerImpl::AddBinding(mojom::UsbDeviceManagerRequest request) {
+void DeviceManagerImpl::AddReceiver(
+    mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
   if (usb_service_)
-    bindings_.AddBinding(this, std::move(request));
+    receivers_.Add(this, std::move(receiver));
 }
 
 void DeviceManagerImpl::EnumerateDevicesAndSetClient(
@@ -60,14 +61,15 @@ void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
       base::Passed(&options), /*client=*/nullptr, base::Passed(&callback)));
 }
 
-void DeviceManagerImpl::GetDevice(const std::string& guid,
-                                  mojom::UsbDeviceRequest device_request,
-                                  mojom::UsbDeviceClientPtr device_client) {
+void DeviceManagerImpl::GetDevice(
+    const std::string& guid,
+    mojo::PendingReceiver<mojom::UsbDevice> device_receiver,
+    mojom::UsbDeviceClientPtr device_client) {
   scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
   if (!device)
     return;
 
-  DeviceImpl::Create(std::move(device), std::move(device_request),
+  DeviceImpl::Create(std::move(device), std::move(device_receiver),
                      std::move(device_client));
 }
 
@@ -201,7 +203,7 @@ void DeviceManagerImpl::WillDestroyUsbService() {
   usb_service_ = nullptr;
 
   // Close all the connections.
-  bindings_.CloseAllBindings();
+  receivers_.Clear();
   clients_.CloseAll();
 }
 

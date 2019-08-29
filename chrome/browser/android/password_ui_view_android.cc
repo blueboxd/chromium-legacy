@@ -24,6 +24,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/android/chrome_jni_headers/PasswordUIView_jni.h"
+#include "chrome/browser/android/password_update_delegate.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
@@ -196,6 +198,17 @@ void PasswordUIViewAndroid::HandleSerializePasswords(
                          env, success_callback.obj()),
                      base::android::ScopedJavaGlobalRef<jobject>(
                          env, error_callback.obj())));
+}
+
+void PasswordUIViewAndroid::HandleShowPasswordEntryEditingView(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    int index) {
+  LaunchPasswordEntryEditor(
+      PasswordStoreFactory::GetForProfile(GetProfile(),
+                                          ServiceAccessType::EXPLICIT_ACCESS)
+          .get(),
+      *password_manager_presenter_.GetPassword(index));
 }
 
 ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetAccountDashboardURL(

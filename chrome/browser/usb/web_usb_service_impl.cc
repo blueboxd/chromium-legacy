@@ -90,7 +90,7 @@ void WebUsbServiceImpl::OnGetDevices(
 
 void WebUsbServiceImpl::GetDevice(
     const std::string& guid,
-    device::mojom::UsbDeviceRequest device_request) {
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver) {
   if (!chooser_context_)
     return;
 
@@ -105,7 +105,7 @@ void WebUsbServiceImpl::GetDevice(
   device::mojom::UsbDeviceClientPtr device_client;
   device_client_bindings_[guid].AddBinding(this,
                                            mojo::MakeRequest(&device_client));
-  chooser_context_->GetDevice(guid, std::move(device_request),
+  chooser_context_->GetDevice(guid, std::move(device_receiver),
                               std::move(device_client));
 }
 

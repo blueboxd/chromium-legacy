@@ -462,16 +462,16 @@ public interface WebContents extends Parcelable {
     void setSize(int width, int height);
 
     /**
-     * Gets the view size width of the WebContents. The size is in physical pixels.
+     * Gets the view size width of the WebContents.
      *
-     * @return The width of the view.
+     * @return The width of the view in dip.
      */
     int getWidth();
 
     /**
-     * Gets the view size width of the WebContents. The size is in physical pixels.
+     * Gets the view size width of the WebContents.
      *
-     * @return The width of the view.
+     * @return The width of the view in dip.
      */
     int getHeight();
 

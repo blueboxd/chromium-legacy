@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_DEVICE_H_
 
 #include <bitset>
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_device.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -26,15 +28,16 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static USBDevice* Create(device::mojom::blink::UsbDeviceInfoPtr device_info,
-                           device::mojom::blink::UsbDevicePtr device,
-                           ExecutionContext* context) {
+  static USBDevice* Create(
+      device::mojom::blink::UsbDeviceInfoPtr device_info,
+      mojo::PendingRemote<device::mojom::blink::UsbDevice> device,
+      ExecutionContext* context) {
     return MakeGarbageCollected<USBDevice>(std::move(device_info),
                                            std::move(device), context);
   }
 
   explicit USBDevice(device::mojom::blink::UsbDeviceInfoPtr,
-                     device::mojom::blink::UsbDevicePtr,
+                     mojo::PendingRemote<device::mojom::blink::UsbDevice>,
                      ExecutionContext*);
   ~USBDevice() override;
 
@@ -171,7 +174,7 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   bool MarkRequestComplete(ScriptPromiseResolver*);
 
   device::mojom::blink::UsbDeviceInfoPtr device_info_;
-  device::mojom::blink::UsbDevicePtr device_;
+  mojo::Remote<device::mojom::blink::UsbDevice> device_;
   HeapHashSet<Member<ScriptPromiseResolver>> device_requests_;
   bool opened_;
   bool device_state_change_in_progress_;

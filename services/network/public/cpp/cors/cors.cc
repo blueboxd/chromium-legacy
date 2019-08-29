@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -414,6 +416,17 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       "sec-ch-ua-model",
   };
   const std::string lower_name = base::ToLowerASCII(name);
+
+  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCors)) {
+    // Here we temporarily define extra CORS safelisted header names. This is
+    // a very short term fix in order to make the change mergeable.
+    // TODO(yhirano): Remove this definition as soon as possible.
+    if (lower_name == "x-googapps-allowed-domains" ||
+        lower_name == "youtube-restrict") {
+      return true;
+    }
+  }
+
   if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
       std::end(safe_names))
     return false;

@@ -1465,6 +1465,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute DRAW_BUFFER9
 [Worker]     attribute DRAW_FRAMEBUFFER
 [Worker]     attribute DRAW_FRAMEBUFFER_BINDING
+[Worker]     attribute DRAW_INDIRECT_BUFFER
+[Worker]     attribute DRAW_INDIRECT_BUFFER_BINDING
 [Worker]     attribute DST_ALPHA
 [Worker]     attribute DST_COLOR
 [Worker]     attribute DYNAMIC_COPY

@@ -186,8 +186,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool DisplayLockInducesSizeContainment() const {
     return box_->DisplayLockInducesSizeContainment();
   }
-  bool LayoutBlockedByDisplayLock(
-      DisplayLockContext::LifecycleTarget target) const {
+  bool LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget target) const {
     return box_->LayoutBlockedByDisplayLock(target);
   }
 

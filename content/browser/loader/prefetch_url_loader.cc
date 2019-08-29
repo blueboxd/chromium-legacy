@@ -59,27 +59,6 @@ PrefetchURLLoader::PrefetchURLLoader(
   DCHECK(network_loader_factory_);
   RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchMade);
 
-  if (base::FeatureList::IsEnabled(
-          net::features::kSplitCacheByNetworkIsolationKey) &&
-      resource_request_.load_flags & net::LOAD_RESTRICTED_PREFETCH) {
-    // If |resource_request| has been marked as a restricted prefetch by the
-    // renderer, we must verify that the request is valid, so we can set its
-    // NetworkIsolationKey for the response to be cached correctly. An invalid
-    // request could indicate a compromised renderer inappropriately modifying
-    // the request, so we immediately complete it with an error.
-    if (!IsValidCrossOriginPrefetch(resource_request)) {
-      SendOnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
-      return;
-    }
-
-    url::Origin destination_origin = url::Origin::Create(resource_request_.url);
-    resource_request_.trusted_params =
-        network::ResourceRequest::TrustedParams();
-    resource_request_.trusted_params->network_isolation_key =
-        net::NetworkIsolationKey(destination_origin, destination_origin);
-  }
-
   if (IsSignedExchangeHandlingEnabled()) {
     // Set the SignedExchange accept header.
     // (https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#internet-media-type-applicationsigned-exchange).
@@ -102,45 +81,6 @@ PrefetchURLLoader::PrefetchURLLoader(
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader_), routing_id, request_id, options,
       resource_request_, std::move(network_client), traffic_annotation);
-}
-
-// This method is used to determine whether it is safe to set the
-// NetworkIsolationKey of a cross-origin prefetch request coming from the
-// renderer, so that it can be cached correctly.
-bool PrefetchURLLoader::IsValidCrossOriginPrefetch(
-    const network::ResourceRequest& resource_request) {
-  // The request is expected to be cross-origin. Same-origin prefetches do not
-  // need a special NetworkIsolationKey, and therefore must not be marked for
-  // restricted use.
-  url::Origin destination_origin = url::Origin::Create(resource_request.url);
-  // TODO(domfarolino): We want to check that the request's initiator is
-  // equivalent to the frame's last committed origin. If they are not equal, we
-  // must cancel the request.
-  if (!resource_request.request_initiator ||
-      resource_request.request_initiator->IsSameOriginWith(
-          destination_origin)) {
-    return false;
-  }
-
-  // If the PrefetchRedirectError feature is enabled, the request's redirect
-  // mode must be |kError|.
-  if (base::FeatureList::IsEnabled(blink::features::kPrefetchRedirectError) &&
-      resource_request.redirect_mode != network::mojom::RedirectMode::kError) {
-    return false;
-  }
-
-  // This prefetch request must not be able to reuse restricted prefetches from
-  // the prefetch cache. This is because it is possible that another origin
-  // prefetched the same resource, which should only be reused for top-level
-  // navigations.
-  if (resource_request.load_flags & net::LOAD_CAN_USE_RESTRICTED_PREFETCH)
-    return false;
-
-  // The request must not already have its |trusted_params| initialized.
-  if (resource_request.trusted_params)
-    return false;
-
-  return true;
 }
 
 PrefetchURLLoader::~PrefetchURLLoader() = default;

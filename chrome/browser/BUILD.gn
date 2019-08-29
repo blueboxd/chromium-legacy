@@ -752,8 +752,8 @@ jumbo_split_static_library("browser") {
     "media/webrtc/webrtc_log_uploader.h",
     "media/webrtc/webrtc_log_util.cc",
     "media/webrtc/webrtc_log_util.h",
-    "media/webrtc/webrtc_logging_handler_host.cc",
-    "media/webrtc/webrtc_logging_handler_host.h",
+    "media/webrtc/webrtc_logging_controller.cc",
+    "media/webrtc/webrtc_logging_controller.h",
     "media/webrtc/webrtc_rtp_dump_handler.cc",
     "media/webrtc/webrtc_rtp_dump_handler.h",
     "media/webrtc/webrtc_rtp_dump_writer.cc",
@@ -1518,8 +1518,6 @@ jumbo_split_static_library("browser") {
     "resource_coordinator/utils.h",
     "resources_util.cc",
     "resources_util.h",
-    "scoped_visibility_tracker.cc",
-    "scoped_visibility_tracker.h",
     "search/instant_io_context.cc",
     "search/instant_io_context.h",
     "search/ntp_icon_source.cc",
@@ -2244,14 +2242,14 @@ jumbo_split_static_library("browser") {
       "android/android_theme_resources.h",
       "android/app_hooks.cc",
       "android/app_hooks.h",
+      "android/autofill_assistant/assistant_collect_user_data_delegate.cc",
+      "android/autofill_assistant/assistant_collect_user_data_delegate.h",
       "android/autofill_assistant/assistant_form_delegate.cc",
       "android/autofill_assistant/assistant_form_delegate.h",
       "android/autofill_assistant/assistant_header_delegate.cc",
       "android/autofill_assistant/assistant_header_delegate.h",
       "android/autofill_assistant/assistant_overlay_delegate.cc",
       "android/autofill_assistant/assistant_overlay_delegate.h",
-      "android/autofill_assistant/assistant_payment_request_delegate.cc",
-      "android/autofill_assistant/assistant_payment_request_delegate.h",
       "android/autofill_assistant/client_android.cc",
       "android/autofill_assistant/client_android.h",
       "android/autofill_assistant/ui_controller_android.cc",
@@ -2578,8 +2576,13 @@ jumbo_split_static_library("browser") {
       "android/oom_intervention/oom_intervention_tab_helper.h",
       "android/partner_browser_customizations.cc",
       "android/partner_browser_customizations.h",
+      "android/password_change_delegate.h",
+      "android/password_editing_bridge.cc",
+      "android/password_editing_bridge.h",
       "android/password_ui_view_android.cc",
       "android/password_ui_view_android.h",
+      "android/password_update_delegate.cc",
+      "android/password_update_delegate.h",
       "android/payments/service_worker_payment_app_bridge.cc",
       "android/photo_picker_sandbox_bridge.cc",
       "android/policy/policy_auditor.cc",
@@ -5764,6 +5767,11 @@ if (!is_android) {
 }
 
 if (is_android) {
+  java_cpp_enum("sharing_device_capability_generated_enum") {
+    sources = [
+      "sharing/sharing_device_capability.h",
+    ]
+  }
   java_cpp_enum("sharing_send_message_result_generated_enum") {
     sources = [
       "sharing/sharing_send_message_result.h",

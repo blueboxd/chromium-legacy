@@ -10,7 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
@@ -53,7 +53,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
       const std::string& content_disposition,
       uint64_t expected_length,
       mojo::ScopedDataPipeConsumerHandle data,
-      blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+      mojo::PendingAssociatedRemote<blink::mojom::ProgressClient>
+          progress_client,
       RegisterFromStreamCallback callback) override;
   void GetBlobFromUUID(mojo::PendingReceiver<blink::mojom::Blob> blob,
                        const std::string& uuid,
@@ -61,7 +62,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
 
   void URLStoreForOrigin(
       const url::Origin& origin,
-      blink::mojom::BlobURLStoreAssociatedRequest url_store) override;
+      mojo::PendingAssociatedReceiver<blink::mojom::BlobURLStore> url_store)
+      override;
 
   size_t BlobsUnderConstructionForTesting() const {
     return blobs_under_construction_.size();
@@ -72,7 +74,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
   }
 
   using URLStoreCreationHook = base::RepeatingCallback<void(
-      mojo::StrongAssociatedBindingPtr<blink::mojom::BlobURLStore>)>;
+      mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::BlobURLStore>)>;
   static void SetURLStoreCreationHookForTesting(URLStoreCreationHook* hook);
 
  private:

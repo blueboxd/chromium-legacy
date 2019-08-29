@@ -36,8 +36,8 @@ namespace autofill_assistant {
 class ClientMemory;
 class ClientStatus;
 struct ClientSettings;
-struct PaymentInformation;
-struct PaymentRequestOptions;
+struct UserData;
+struct CollectUserDataOptions;
 class UserAction;
 class WebsiteLoginFetcher;
 
@@ -108,11 +108,10 @@ class ActionDelegate {
   // Have the UI leave the prompt state and go back to its previous state.
   virtual void CancelPrompt() = 0;
 
-  // Asks the user to provide the data used by UseAddressAction and
-  // UseCreditCardAction.
-  virtual void GetPaymentInformation(
-      std::unique_ptr<PaymentRequestOptions> options,
-      std::unique_ptr<PaymentInformation> information) = 0;
+  // Asks the user to provide the requested user data.
+  virtual void CollectUserData(
+      std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+      std::unique_ptr<UserData> user_data) = 0;
 
   using GetFullCardCallback =
       base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,

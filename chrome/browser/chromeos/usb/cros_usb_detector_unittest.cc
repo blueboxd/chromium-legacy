@@ -146,10 +146,11 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
         nullptr /* profile */);
 
     // Set a fake USB device manager before ConnectToDeviceManager().
-    device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+    device_manager_.AddReceiver(
+        device_manager.InitWithNewPipeAndPassReceiver());
     chromeos::CrosUsbDetector::Get()->SetDeviceManagerForTesting(
-        std::move(device_manager_ptr));
+        std::move(device_manager));
     // Create a default VM instance which is running.
     crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
         crostini::kCrostiniDefaultVmName);

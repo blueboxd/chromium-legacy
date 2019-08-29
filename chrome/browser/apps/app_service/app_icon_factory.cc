@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -11,6 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_system.h"
@@ -40,6 +43,12 @@
 #endif
 
 namespace {
+
+std::map<std::pair<int, int>, gfx::ImageSkia>& GetResourceIconCache() {
+  static base::NoDestructor<std::map<std::pair<int, int>, gfx::ImageSkia>>
+      cache;
+  return *cache;
+}
 
 std::vector<uint8_t> ReadFileAsCompressedData(const base::FilePath path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -321,6 +330,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            const std::string& extension_id,
                            IconEffects icon_effects,
                            apps::mojom::Publisher::LoadIconCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   constexpr bool is_placeholder_icon = false;
 
   // This is the default icon for AppType::kExtension. Other app types might
@@ -374,6 +384,7 @@ void LoadIconFromFileWithFallback(
     apps::mojom::Publisher::LoadIconCallback callback,
     base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
         fallback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   constexpr bool is_placeholder_icon = false;
   switch (icon_compression) {
     case apps::mojom::IconCompression::kUnknown:
@@ -402,6 +413,7 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
                           bool is_placeholder_icon,
                           IconEffects icon_effects,
                           apps::mojom::Publisher::LoadIconCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // This must be zero, to avoid a potential infinite loop if the
   // RunCallbackWithXxx functions could otherwise call back into
   // LoadIconFromResource.
@@ -414,6 +426,8 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
 
       case apps::mojom::IconCompression::kUncompressed:
       case apps::mojom::IconCompression::kCompressed: {
+        // For compressed icons with no |icon_effects|, serve the
+        // already-compressed bytes.
         if (icon_compression == apps::mojom::IconCompression::kCompressed &&
             icon_effects == IconEffects::kNone) {
           base::StringPiece data =
@@ -426,18 +440,35 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
           return;
         }
 
-        // If |icon_effects| are requested, we must always load the
-        // uncompressed image to apply the icon effects, and then re-encode the
-        // image if the compressed icon is requested.
-        gfx::ImageSkia* unscaled =
-            ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                resource_id);
-        RunCallbackWithImageSkia(
-            size_hint_in_dip, default_icon_resource, is_placeholder_icon,
-            icon_effects, icon_compression, std::move(callback),
-            gfx::ImageSkiaOperations::CreateResizedImage(
-                *unscaled, skia::ImageOperations::RESIZE_BEST,
-                gfx::Size(size_hint_in_dip, size_hint_in_dip)));
+        // For compressed icons with |icon_effects|, or for uncompressed icons,
+        // we load the uncompressed image, apply the icon effects, and then
+        // re-encode the image if necessary.
+
+        // Get the ImageSkia for the resource. The ui::ResourceBundle shared
+        // instance already caches ImageSkia's, but caches the unscaled
+        // versions. The |cache| here caches scaled versions, keyed by the pair
+        // (resource_id, size_hint_in_dip).
+        gfx::ImageSkia scaled;
+        std::map<std::pair<int, int>, gfx::ImageSkia>& cache =
+            GetResourceIconCache();
+        const auto cache_key = std::make_pair(resource_id, size_hint_in_dip);
+        const auto cache_iter = cache.find(cache_key);
+        if (cache_iter != cache.end()) {
+          scaled = cache_iter->second;
+        } else {
+          gfx::ImageSkia* unscaled =
+              ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                  resource_id);
+          scaled = gfx::ImageSkiaOperations::CreateResizedImage(
+              *unscaled, skia::ImageOperations::RESIZE_BEST,
+              gfx::Size(size_hint_in_dip, size_hint_in_dip));
+          cache.insert(std::make_pair(cache_key, scaled));
+        }
+
+        // Apply icon effects, re-encode if necessary and run the callback.
+        RunCallbackWithImageSkia(size_hint_in_dip, default_icon_resource,
+                                 is_placeholder_icon, icon_effects,
+                                 icon_compression, std::move(callback), scaled);
         return;
       }
     }

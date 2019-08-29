@@ -38,13 +38,13 @@ interface BlobURLStore {
   // used by the browser process to securely look up the blob a URL used to
   // refer to, even after the URL is revoked.
   // As long as the token is alive, the resolved blob will also be kept alive.
-  ResolveForNavigation(url.mojom.Url url, BlobURLToken& token);
+  ResolveForNavigation(url.mojom.Url url, pending_receiver<BlobURLToken> token);
 };
 
 // A token representing a Blob URL. The browser process can use this to look up
 // the blob URL and blob it referred to, even after the blob URL itself is
 // revoked. For the renderer this is just an opaque token without any meaning.
 interface BlobURLToken {
-  Clone(BlobURLToken& token);
+  Clone(pending_receiver<BlobURLToken> token);
   GetToken() => (mojo_base.mojom.UnguessableToken token);
 };

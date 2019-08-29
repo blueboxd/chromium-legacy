@@ -96,7 +96,7 @@ void CreditCardFIDOAuthenticator::IsUserVerifiable(
   if (base::FeatureList::IsEnabled(
           features::kAutofillCreditCardAuthentication)) {
     autofill_driver_->ConnectToAuthenticator(
-        mojo::MakeRequest(&authenticator_));
+        authenticator_.BindNewPipeAndPassReceiver());
     authenticator_->IsUserVerifyingPlatformAuthenticatorAvailable(
         std::move(callback));
   } else {
@@ -133,7 +133,8 @@ void CreditCardFIDOAuthenticator::SyncUserOptIn(
 
 void CreditCardFIDOAuthenticator::GetAssertion(
     PublicKeyCredentialRequestOptionsPtr request_options) {
-  autofill_driver_->ConnectToAuthenticator(mojo::MakeRequest(&authenticator_));
+  autofill_driver_->ConnectToAuthenticator(
+      authenticator_.BindNewPipeAndPassReceiver());
   authenticator_->GetAssertion(
       std::move(request_options),
       base::BindOnce(&CreditCardFIDOAuthenticator::OnDidGetAssertion,
@@ -142,7 +143,8 @@ void CreditCardFIDOAuthenticator::GetAssertion(
 
 void CreditCardFIDOAuthenticator::MakeCredential(
     PublicKeyCredentialCreationOptionsPtr creation_options) {
-  autofill_driver_->ConnectToAuthenticator(mojo::MakeRequest(&authenticator_));
+  autofill_driver_->ConnectToAuthenticator(
+      authenticator_.BindNewPipeAndPassReceiver());
   authenticator_->MakeCredential(
       std::move(creation_options),
       base::BindOnce(&CreditCardFIDOAuthenticator::OnDidMakeCredential,

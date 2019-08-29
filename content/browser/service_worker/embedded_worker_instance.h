@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/content_browser_client.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -237,9 +238,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // The below can only be called on the UI thread. The returned factory may be
   // later supplied to UpdateLoaderFactories().
   static std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-  CreateFactoryBundleOnUI(RenderProcessHost* rph,
-                          int routing_id,
-                          const url::Origin& origin);
+  CreateFactoryBundleOnUI(
+      RenderProcessHost* rph,
+      int routing_id,
+      const url::Origin& origin,
+      ContentBrowserClient::URLLoaderFactoryType factory_type);
 
  private:
   typedef base::ObserverList<Listener>::Unchecked ListenerList;

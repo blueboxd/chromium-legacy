@@ -218,6 +218,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   static void SetNetworkFactoryForTesting(
       const CreateNetworkFactoryCallback& url_loader_factory_callback);
 
+  // Clears the all prefetched cached signed exchanges.
+  static void ClearAllPrefetchedSignedExchangeCache();
+
   ~RenderFrameHostImpl() override;
 
   // RenderFrameHost
@@ -983,6 +986,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SignedExchangePrefetchCacheForNavigations feature is enabled.
   scoped_refptr<PrefetchedSignedExchangeCache>
   EnsurePrefetchedSignedExchangeCache();
+
+  // Clears the entries in the PrefetchedSignedExchangeCache if exists.
+  void ClearPrefetchedSignedExchangeCache();
 
   // Adds |message| to the DevTools console only if it is unique (i.e. has not
   // been added to the console previously from this frame).

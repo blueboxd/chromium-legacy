@@ -44,6 +44,7 @@ class HTMLOptGroupElement;
 class HTMLOptionElement;
 class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLElementOrLong;
+class LayoutUnit;
 class PopupMenu;
 
 class CORE_EXPORT HTMLSelectElement final

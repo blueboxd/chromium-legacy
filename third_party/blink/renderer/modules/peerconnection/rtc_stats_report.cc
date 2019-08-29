@@ -36,50 +36,50 @@ v8::Local<v8::Value> WebRTCStatsToValue(ScriptState* script_state,
       continue;
     WebString name = member->GetName();
     switch (member->GetType()) {
-      case kWebRTCStatsMemberTypeBool:
+      case webrtc::RTCStatsMemberInterface::kBool:
         builder.AddBoolean(name, member->ValueBool());
         break;
-      case kWebRTCStatsMemberTypeInt32:
+      case webrtc::RTCStatsMemberInterface::kInt32:
         builder.AddNumber(name, static_cast<double>(member->ValueInt32()));
         break;
-      case kWebRTCStatsMemberTypeUint32:
+      case webrtc::RTCStatsMemberInterface::kUint32:
         builder.AddNumber(name, static_cast<double>(member->ValueUint32()));
         break;
-      case kWebRTCStatsMemberTypeInt64:
+      case webrtc::RTCStatsMemberInterface::kInt64:
         builder.AddNumber(name, static_cast<double>(member->ValueInt64()));
         break;
-      case kWebRTCStatsMemberTypeUint64:
+      case webrtc::RTCStatsMemberInterface::kUint64:
         builder.AddNumber(name, static_cast<double>(member->ValueUint64()));
         break;
-      case kWebRTCStatsMemberTypeDouble:
+      case webrtc::RTCStatsMemberInterface::kDouble:
         builder.AddNumber(name, member->ValueDouble());
         break;
-      case kWebRTCStatsMemberTypeString:
+      case webrtc::RTCStatsMemberInterface::kString:
         builder.AddString(name, member->ValueString());
         break;
-      case kWebRTCStatsMemberTypeSequenceBool: {
+      case webrtc::RTCStatsMemberInterface::kSequenceBool: {
         WebVector<int> sequence = member->ValueSequenceBool();
         Vector<bool> vector(SafeCast<wtf_size_t>(sequence.size()));
         std::copy(sequence.begin(), sequence.end(), vector.begin());
         builder.Add(name, vector);
         break;
       }
-      case kWebRTCStatsMemberTypeSequenceInt32:
+      case webrtc::RTCStatsMemberInterface::kSequenceInt32:
         add_vector(name, member->ValueSequenceInt32());
         break;
-      case kWebRTCStatsMemberTypeSequenceUint32:
+      case webrtc::RTCStatsMemberInterface::kSequenceUint32:
         add_vector(name, member->ValueSequenceUint32());
         break;
-      case kWebRTCStatsMemberTypeSequenceInt64:
+      case webrtc::RTCStatsMemberInterface::kSequenceInt64:
         add_vector(name, member->ValueSequenceInt64());
         break;
-      case kWebRTCStatsMemberTypeSequenceUint64:
+      case webrtc::RTCStatsMemberInterface::kSequenceUint64:
         add_vector(name, member->ValueSequenceUint64());
         break;
-      case kWebRTCStatsMemberTypeSequenceDouble:
+      case webrtc::RTCStatsMemberInterface::kSequenceDouble:
         add_vector(name, member->ValueSequenceDouble());
         break;
-      case kWebRTCStatsMemberTypeSequenceString:
+      case webrtc::RTCStatsMemberInterface::kSequenceString:
         add_vector(name, member->ValueSequenceString());
         break;
       default:

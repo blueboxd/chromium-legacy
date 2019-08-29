@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -84,11 +85,11 @@ class AnimationEffectStackTest : public PageTestBase {
     const TypedInterpolationValue* typed_value =
         ToInvalidatableInterpolation(*interpolations.at(0))
             .GetCachedValueForTesting();
-    // font-size is stored as an array of length values; here we assume pixels.
-    EXPECT_TRUE(typed_value->GetInterpolableValue().IsList());
-    const InterpolableList* list =
-        ToInterpolableList(&typed_value->GetInterpolableValue());
-    return ToInterpolableNumber(list->Get(0))->Value();
+    // font-size is stored as an |InterpolableLength|; here we assume pixels.
+    EXPECT_TRUE(typed_value->GetInterpolableValue().IsLength());
+    const InterpolableLength& length =
+        To<InterpolableLength>(typed_value->GetInterpolableValue());
+    return length.CreateCSSValue(kValueRangeAll)->GetDoubleValue();
   }
 
   double GetZIndexValue(const ActiveInterpolationsMap& active_interpolations) {

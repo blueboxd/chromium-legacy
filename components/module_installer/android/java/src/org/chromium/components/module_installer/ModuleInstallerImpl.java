@@ -31,9 +31,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-/** Installs dynamic feature modules (DFMs). */
+/**
+ * Installs dynamic feature modules (DFMs).
+ */
 /* package */ class ModuleInstallerImpl implements ModuleInstaller {
-    /** Command line switch for activating the fake backend.  */
+    /**
+     * Command line switch for activating the fake backend.
+     */
     private static final String FAKE_FEATURE_MODULE_INSTALL = "fake-feature-module-install";
     private static ModuleInstaller sInstance = new ModuleInstallerImpl();
     private static boolean sAppContextSplitCompatted;
@@ -42,7 +46,9 @@ import java.util.TreeSet;
     private ModuleInstallerBackend mBackend;
     private ModuleActivityObserver mActivityObserver = new ModuleActivityObserver();
 
-    /** Returns the singleton instance. */
+    /**
+     * Returns the singleton instance.
+     */
     public static ModuleInstaller getInstance() {
         return sInstance;
     }
@@ -53,114 +59,132 @@ import java.util.TreeSet;
 
     @Override
     public void init() {
-        if (sAppContextSplitCompatted) return;
-        // SplitCompat.install may copy modules into Chrome's internal folder or clean them up.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            SplitCompat.install(ContextUtils.getApplicationContext());
-            sAppContextSplitCompatted = true;
+        try (Timer ignored1 = new Timer()) {
+            if (sAppContextSplitCompatted) return;
+            // SplitCompat.install may copy modules into Chrome's internal folder or clean them up.
+            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+                SplitCompat.install(ContextUtils.getApplicationContext());
+                sAppContextSplitCompatted = true;
+            }
+            // SplitCompat.install may add emulated modules. Thus, update crash keys.
+            updateCrashKeys();
         }
-        // SplitCompat.install may add emulated modules. Thus, update crash keys.
-        updateCrashKeys();
     }
 
     @Override
     public void initActivity(Activity activity) {
-        // SplitCompat#install should always be run for the application first before it is run for
-        // any activities.
-        init();
-        SplitCompat.installActivity(activity);
+        try (Timer ignored = new Timer()) {
+            // SplitCompat#install should always be run for the application first before it is run
+            // for any activities.
+            init();
+            SplitCompat.installActivity(activity);
+        }
     }
 
     @Override
     public void recordModuleAvailability() {
-        if (!CommandLine.getInstance().hasSwitch(FAKE_FEATURE_MODULE_INSTALL)) {
-            PlayCoreModuleInstallerBackend.recordModuleAvailability();
+        try (Timer ignored = new Timer()) {
+            getBackend().recordModuleAvailability();
         }
+    }
+
+    @Override
+    public void recordStartupTime() {
+        getBackend().recordStartupTime(Timer.getTotalTime());
     }
 
     @Override
     public void updateCrashKeys() {
-        Context context = ContextUtils.getApplicationContext();
+        try (Timer ignored = new Timer()) {
+            Context context = ContextUtils.getApplicationContext();
 
-        // Get modules that are fully installed as split APKs (excluding base which is always
-        // installed). Tree set to have ordered and, thus, deterministic results.
-        Set<String> fullyInstalledModules = new TreeSet<>();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Split APKs are only supported on Android L+.
-            try {
-                PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
-                        BuildInfo.getInstance().packageName, 0);
-                if (packageInfo.splitNames != null) {
-                    fullyInstalledModules.addAll(Arrays.asList(packageInfo.splitNames));
+            // Get modules that are fully installed as split APKs (excluding base which is always
+            // installed). Tree set to have ordered and, thus, deterministic results.
+            Set<String> fullyInstalledModules = new TreeSet<>();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // Split APKs are only supported on Android L+.
+                try {
+                    PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
+                            BuildInfo.getInstance().packageName, 0);
+                    if (packageInfo.splitNames != null) {
+                        fullyInstalledModules.addAll(Arrays.asList(packageInfo.splitNames));
+                    }
+                } catch (NameNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (NameNotFoundException e) {
-                throw new RuntimeException(e);
             }
-        }
 
-        // Create temporary split install manager to retrieve both fully installed and emulated
-        // modules. Then remove fully installed ones to get emulated ones only. Querying the
-        // installed modules can only be done if splitcompat has already been called. Otherwise,
-        // emulation of later modules won't work. If splitcompat has not been called no modules are
-        // emulated. Therefore, use an empty set in that case.
-        Set<String> emulatedModules = new TreeSet<>();
-        if (sAppContextSplitCompatted) {
-            emulatedModules.addAll(
-                    SplitInstallManagerFactory.create(context).getInstalledModules());
-            emulatedModules.removeAll(fullyInstalledModules);
-        }
+            // Create temporary split install manager to retrieve both fully installed and emulated
+            // modules. Then remove fully installed ones to get emulated ones only. Querying the
+            // installed modules can only be done if splitcompat has already been called. Otherwise,
+            // emulation of later modules won't work. If splitcompat has not been called no modules
+            // are emulated. Therefore, use an empty set in that case.
+            Set<String> emulatedModules = new TreeSet<>();
+            if (sAppContextSplitCompatted) {
+                emulatedModules.addAll(
+                        SplitInstallManagerFactory.create(context).getInstalledModules());
+                emulatedModules.removeAll(fullyInstalledModules);
+            }
 
-        CrashKeys.getInstance().set(
-                CrashKeyIndex.INSTALLED_MODULES, encodeCrashKeyValue(fullyInstalledModules));
-        CrashKeys.getInstance().set(
-                CrashKeyIndex.EMULATED_MODULES, encodeCrashKeyValue(emulatedModules));
+            CrashKeys.getInstance().set(
+                    CrashKeyIndex.INSTALLED_MODULES, encodeCrashKeyValue(fullyInstalledModules));
+            CrashKeys.getInstance().set(
+                    CrashKeyIndex.EMULATED_MODULES, encodeCrashKeyValue(emulatedModules));
+        }
     }
 
     @Override
     public void install(String moduleName, OnModuleInstallFinishedListener onFinishedListener) {
-        ThreadUtils.assertOnUiThread();
+        try (Timer ignored = new Timer()) {
+            ThreadUtils.assertOnUiThread();
 
-        if (!mModuleNameListenerMap.containsKey(moduleName)) {
-            mModuleNameListenerMap.put(moduleName, new LinkedList<>());
+            if (!mModuleNameListenerMap.containsKey(moduleName)) {
+                mModuleNameListenerMap.put(moduleName, new LinkedList<>());
+            }
+            List<OnModuleInstallFinishedListener> onFinishedListeners =
+                    mModuleNameListenerMap.get(moduleName);
+            onFinishedListeners.add(onFinishedListener);
+            if (onFinishedListeners.size() > 1) {
+                // Request is already running.
+                return;
+            }
+            getBackend().install(moduleName);
         }
-        List<OnModuleInstallFinishedListener> onFinishedListeners =
-                mModuleNameListenerMap.get(moduleName);
-        onFinishedListeners.add(onFinishedListener);
-        if (onFinishedListeners.size() > 1) {
-            // Request is already running.
-            return;
-        }
-        getBackend().install(moduleName);
     }
 
     @Override
     public void installDeferred(String moduleName) {
-        ThreadUtils.assertOnUiThread();
-        getBackend().installDeferred(moduleName);
+        try (Timer ignored = new Timer()) {
+            ThreadUtils.assertOnUiThread();
+            getBackend().installDeferred(moduleName);
+        }
     }
 
     private void onFinished(boolean success, List<String> moduleNames) {
-        ThreadUtils.assertOnUiThread();
+        // Add timer to this private method since it is passed as a callback.
+        try (Timer ignored = new Timer()) {
+            ThreadUtils.assertOnUiThread();
 
-        mActivityObserver.onModuleInstalled();
+            mActivityObserver.onModuleInstalled();
 
-        for (String moduleName : moduleNames) {
-            List<OnModuleInstallFinishedListener> onFinishedListeners =
-                    mModuleNameListenerMap.get(moduleName);
-            if (onFinishedListeners == null) continue;
+            for (String moduleName : moduleNames) {
+                List<OnModuleInstallFinishedListener> onFinishedListeners =
+                        mModuleNameListenerMap.get(moduleName);
+                if (onFinishedListeners == null) continue;
 
-            for (OnModuleInstallFinishedListener listener : onFinishedListeners) {
-                listener.onFinished(success);
+                for (OnModuleInstallFinishedListener listener : onFinishedListeners) {
+                    listener.onFinished(success);
+                }
+                mModuleNameListenerMap.remove(moduleName);
             }
-            mModuleNameListenerMap.remove(moduleName);
-        }
 
-        if (mModuleNameListenerMap.isEmpty()) {
-            mBackend.close();
-            mBackend = null;
-        }
+            if (mModuleNameListenerMap.isEmpty()) {
+                mBackend.close();
+                mBackend = null;
+            }
 
-        updateCrashKeys();
+            updateCrashKeys();
+        }
     }
 
     private ModuleInstallerBackend getBackend() {
@@ -179,5 +203,6 @@ import java.util.TreeSet;
         // they don't get sanitized.
         return TextUtils.join(",", moduleNames).replace('.', '$');
     }
+
     private ModuleInstallerImpl() {}
 }

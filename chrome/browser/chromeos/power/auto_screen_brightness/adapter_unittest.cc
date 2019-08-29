@@ -10,7 +10,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"

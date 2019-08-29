@@ -175,8 +175,8 @@ content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
   return rph;
 }
 
-WebRtcLoggingHandlerHost*
-WebrtcLoggingPrivateFunction::LoggingHandlerFromRequest(
+WebRtcLoggingController*
+WebrtcLoggingPrivateFunction::LoggingControllerFromRequest(
     const api::webrtc_logging_private::RequestInfo& request,
     const std::string& security_origin) {
   content::RenderProcessHost* host = RphFromRequest(request, security_origin);
@@ -184,17 +184,17 @@ WebrtcLoggingPrivateFunction::LoggingHandlerFromRequest(
     // SetError() will have been called by RphFromRequest().
     return nullptr;
   }
-  return WebRtcLoggingHandlerHost::FromRenderProcessHost(host);
+  return WebRtcLoggingController::FromRenderProcessHost(host);
 }
 
-WebRtcLoggingHandlerHost*
+WebRtcLoggingController*
 WebrtcLoggingPrivateFunctionWithGenericCallback::PrepareTask(
     const api::webrtc_logging_private::RequestInfo& request,
     const std::string& security_origin,
-    WebRtcLoggingHandlerHost::GenericDoneCallback* callback) {
+    WebRtcLoggingController::GenericDoneCallback* callback) {
   *callback = base::Bind(
       &WebrtcLoggingPrivateFunctionWithGenericCallback::FireCallback, this);
-  return LoggingHandlerFromRequest(request, security_origin);
+  return LoggingControllerFromRequest(request, security_origin);
 }
 
 void WebrtcLoggingPrivateFunctionWithGenericCallback::FireCallback(
@@ -244,17 +244,17 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
       SetMetaData::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WebRtcLoggingHandlerHost::GenericDoneCallback callback;
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
+  WebRtcLoggingController::GenericDoneCallback callback;
+  WebRtcLoggingController* webrtc_logging_controller =
       PrepareTask(params->request, params->security_origin, &callback);
-  if (!webrtc_logging_handler_host)
+  if (!webrtc_logging_controller)
     return false;
 
   std::unique_ptr<WebRtcLogMetaDataMap> meta_data(new WebRtcLogMetaDataMap());
   for (const MetaDataEntry& entry : params->meta_data)
     (*meta_data)[entry.key] = entry.value;
 
-  webrtc_logging_handler_host->SetMetaData(std::move(meta_data), callback);
+  webrtc_logging_controller->SetMetaData(std::move(meta_data), callback);
   return true;
 }
 
@@ -262,13 +262,13 @@ bool WebrtcLoggingPrivateStartFunction::RunAsync() {
   std::unique_ptr<Start::Params> params(Start::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WebRtcLoggingHandlerHost::GenericDoneCallback callback;
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
+  WebRtcLoggingController::GenericDoneCallback callback;
+  WebRtcLoggingController* webrtc_logging_controller =
       PrepareTask(params->request, params->security_origin, &callback);
-  if (!webrtc_logging_handler_host)
+  if (!webrtc_logging_controller)
     return false;
 
-  webrtc_logging_handler_host->StartLogging(callback);
+  webrtc_logging_controller->StartLogging(callback);
   return true;
 }
 
@@ -277,12 +277,12 @@ bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
       SetUploadOnRenderClose::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host(
-      LoggingHandlerFromRequest(params->request, params->security_origin));
-  if (!webrtc_logging_handler_host)
+  WebRtcLoggingController* webrtc_logging_controller(
+      LoggingControllerFromRequest(params->request, params->security_origin));
+  if (!webrtc_logging_controller)
     return false;
 
-  webrtc_logging_handler_host->set_upload_log_on_render_close(
+  webrtc_logging_controller->set_upload_log_on_render_close(
       params->should_upload);
 
   // Post a task since this is an asynchronous extension function.
@@ -300,13 +300,13 @@ bool WebrtcLoggingPrivateStopFunction::RunAsync() {
   std::unique_ptr<Stop::Params> params(Stop::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WebRtcLoggingHandlerHost::GenericDoneCallback callback;
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
+  WebRtcLoggingController::GenericDoneCallback callback;
+  WebRtcLoggingController* webrtc_logging_controller =
       PrepareTask(params->request, params->security_origin, &callback);
-  if (!webrtc_logging_handler_host)
+  if (!webrtc_logging_controller)
     return false;
 
-  webrtc_logging_handler_host->StopLogging(callback);
+  webrtc_logging_controller->StopLogging(callback);
   return true;
 }
 
@@ -314,16 +314,16 @@ bool WebrtcLoggingPrivateStoreFunction::RunAsync() {
   std::unique_ptr<Store::Params> params(Store::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WebRtcLoggingHandlerHost::GenericDoneCallback callback;
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
+  WebRtcLoggingController::GenericDoneCallback callback;
+  WebRtcLoggingController* webrtc_logging_controller =
       PrepareTask(params->request, params->security_origin, &callback);
-  if (!webrtc_logging_handler_host)
+  if (!webrtc_logging_controller)
     return false;
 
   const std::string local_log_id(HashIdWithOrigin(params->security_origin,
                                                   params->log_id));
 
-  webrtc_logging_handler_host->StoreLog(local_log_id, callback);
+  webrtc_logging_controller->StoreLog(local_log_id, callback);
   return true;
 }
 
@@ -332,18 +332,18 @@ bool WebrtcLoggingPrivateUploadStoredFunction::RunAsync() {
       UploadStored::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WebRtcLoggingHandlerHost* logging_handler =
-      LoggingHandlerFromRequest(params->request, params->security_origin);
-  if (!logging_handler)
+  WebRtcLoggingController* logging_controller =
+      LoggingControllerFromRequest(params->request, params->security_origin);
+  if (!logging_controller)
     return false;
 
-  WebRtcLoggingHandlerHost::UploadDoneCallback callback = base::Bind(
-      &WebrtcLoggingPrivateUploadStoredFunction::FireCallback, this);
+  WebRtcLoggingController::UploadDoneCallback callback =
+      base::Bind(&WebrtcLoggingPrivateUploadStoredFunction::FireCallback, this);
 
   const std::string local_log_id(HashIdWithOrigin(params->security_origin,
                                                   params->log_id));
 
-  logging_handler->UploadStoredLog(local_log_id, callback);
+  logging_controller->UploadStoredLog(local_log_id, callback);
   return true;
 }
 
@@ -351,15 +351,15 @@ bool WebrtcLoggingPrivateUploadFunction::RunAsync() {
   std::unique_ptr<Upload::Params> params(Upload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WebRtcLoggingHandlerHost* logging_handler =
-      LoggingHandlerFromRequest(params->request, params->security_origin);
-  if (!logging_handler)
+  WebRtcLoggingController* logging_controller =
+      LoggingControllerFromRequest(params->request, params->security_origin);
+  if (!logging_controller)
     return false;
 
-  WebRtcLoggingHandlerHost::UploadDoneCallback callback = base::Bind(
-      &WebrtcLoggingPrivateUploadFunction::FireCallback, this);
+  WebRtcLoggingController::UploadDoneCallback callback =
+      base::Bind(&WebrtcLoggingPrivateUploadFunction::FireCallback, this);
 
-  logging_handler->UploadLog(callback);
+  logging_controller->UploadLog(callback);
   return true;
 }
 
@@ -367,13 +367,13 @@ bool WebrtcLoggingPrivateDiscardFunction::RunAsync() {
   std::unique_ptr<Discard::Params> params(Discard::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  WebRtcLoggingHandlerHost::GenericDoneCallback callback;
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
+  WebRtcLoggingController::GenericDoneCallback callback;
+  WebRtcLoggingController* webrtc_logging_controller =
       PrepareTask(params->request, params->security_origin, &callback);
-  if (!webrtc_logging_handler_host)
+  if (!webrtc_logging_controller)
     return false;
 
-  webrtc_logging_handler_host->DiscardLog(callback);
+  webrtc_logging_controller->DiscardLog(callback);
   return true;
 }
 
@@ -399,13 +399,13 @@ bool WebrtcLoggingPrivateStartRtpDumpFunction::RunAsync() {
     return false;
   }
 
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
-      WebRtcLoggingHandlerHost::FromRenderProcessHost(host);
+  WebRtcLoggingController* webrtc_logging_controller =
+      WebRtcLoggingController::FromRenderProcessHost(host);
 
-  WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
-      &WebrtcLoggingPrivateStartRtpDumpFunction::FireCallback, this);
+  WebRtcLoggingController::GenericDoneCallback callback =
+      base::Bind(&WebrtcLoggingPrivateStartRtpDumpFunction::FireCallback, this);
 
-  webrtc_logging_handler_host->StartRtpDump(type, callback);
+  webrtc_logging_controller->StartRtpDump(type, callback);
   return true;
 }
 
@@ -431,13 +431,13 @@ bool WebrtcLoggingPrivateStopRtpDumpFunction::RunAsync() {
     return false;
   }
 
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
-      WebRtcLoggingHandlerHost::FromRenderProcessHost(host);
+  WebRtcLoggingController* webrtc_logging_controller =
+      WebRtcLoggingController::FromRenderProcessHost(host);
 
-  WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
-      &WebrtcLoggingPrivateStopRtpDumpFunction::FireCallback, this);
+  WebRtcLoggingController::GenericDoneCallback callback =
+      base::Bind(&WebrtcLoggingPrivateStopRtpDumpFunction::FireCallback, this);
 
-  webrtc_logging_handler_host->StopRtpDump(type, callback);
+  webrtc_logging_controller->StopRtpDump(type, callback);
   return true;
 }
 
@@ -520,18 +520,18 @@ bool WebrtcLoggingPrivateStartEventLoggingFunction::RunAsync() {
     return false;
   }
 
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
-      WebRtcLoggingHandlerHost::FromRenderProcessHost(host);
-  if (!webrtc_logging_handler_host) {
-    SetError("WebRTC logging handler not found.");
+  WebRtcLoggingController* webrtc_logging_controller =
+      WebRtcLoggingController::FromRenderProcessHost(host);
+  if (!webrtc_logging_controller) {
+    SetError("WebRTC logging controller not found.");
     return false;
   }
 
-  WebRtcLoggingHandlerHost::StartEventLoggingCallback callback =
+  WebRtcLoggingController::StartEventLoggingCallback callback =
       base::BindRepeating(
           &WebrtcLoggingPrivateStartEventLoggingFunction::FireCallback, this);
 
-  webrtc_logging_handler_host->StartEventLogging(
+  webrtc_logging_controller->StartEventLogging(
       params->session_id, params->max_log_size_bytes, params->output_period_ms,
       params->web_app_id, callback);
   return true;
@@ -566,14 +566,14 @@ bool WebrtcLoggingPrivateGetLogsDirectoryFunction::RunAsync() {
   // that should be granted access to the logs directory.
   content::RenderProcessHost* host = render_frame_host()->GetProcess();
 
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
-      WebRtcLoggingHandlerHost::FromRenderProcessHost(host);
-  if (!webrtc_logging_handler_host) {
-    FireErrorCallback("WebRTC logging handler not found.");
+  WebRtcLoggingController* webrtc_logging_controller =
+      WebRtcLoggingController::FromRenderProcessHost(host);
+  if (!webrtc_logging_controller) {
+    FireErrorCallback("WebRTC logging controller not found.");
     return true;
   }
 
-  webrtc_logging_handler_host->GetLogsDirectory(
+  webrtc_logging_controller->GetLogsDirectory(
       base::Bind(&WebrtcLoggingPrivateGetLogsDirectoryFunction::FireCallback,
                  this),
       base::Bind(

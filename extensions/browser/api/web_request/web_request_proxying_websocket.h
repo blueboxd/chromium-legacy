@@ -121,8 +121,9 @@ class WebRequestProxyingWebSocket
   mojo::Remote<network::mojom::WebSocketHandshakeClient>
       forwarding_handshake_client_;
   mojo::Receiver<network::mojom::WebSocketHandshakeClient>
-      binding_as_handshake_client_{this};
-  mojo::Binding<network::mojom::AuthenticationHandler> binding_as_auth_handler_;
+      receiver_as_handshake_client_{this};
+  mojo::Receiver<network::mojom::AuthenticationHandler>
+      receiver_as_auth_handler_{this};
   mojo::Receiver<network::mojom::TrustedHeaderClient>
       receiver_as_header_client_{this};
 

@@ -12,9 +12,9 @@
 
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
-#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
 #include "url/gurl.h"
 
@@ -66,9 +66,9 @@ class ScriptExecutorDelegate {
   virtual void SetDetails(std::unique_ptr<Details> details) = 0;
   virtual void SetInfoBox(const InfoBox& info_box) = 0;
   virtual void ClearInfoBox() = 0;
-  virtual void SetPaymentRequestOptions(
-      std::unique_ptr<PaymentRequestOptions> options,
-      std::unique_ptr<PaymentInformation> information) = 0;
+  virtual void SetCollectUserDataOptions(
+      std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+      std::unique_ptr<UserData> user_data) = 0;
   virtual void SetProgress(int progress) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetUserActions(

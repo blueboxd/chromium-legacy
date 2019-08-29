@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/sync_load_response.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response_info.h"
@@ -193,7 +194,7 @@ void SyncLoadContext::OnStartLoadingResponseBody(
     download_to_blob_registry_->RegisterFromStream(
         response_->info.mime_type, "",
         std::max<int64_t>(0, response_->info.content_length), std::move(body),
-        nullptr,
+        mojo::NullAssociatedRemote(),
         base::BindOnce(&SyncLoadContext::OnFinishCreatingBlob,
                        base::Unretained(this)));
     return;

@@ -36,9 +36,9 @@ void OnboardingDialogView::Show() {
       env, window_android->GetJavaObject(), reinterpret_cast<intptr_t>(this)));
 
   base::string16 onboarding_title =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE);
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A);
   base::string16 onboarding_details =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS);
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_A);
 
   Java_OnboardingDialogBridge_showDialog(
       env, java_object_,

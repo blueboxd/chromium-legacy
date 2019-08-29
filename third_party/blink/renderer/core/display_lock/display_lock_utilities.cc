@@ -148,8 +148,8 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
   auto ancestor_view = [node, include_self] {
     if (auto* element = DynamicTo<Element>(node)) {
       auto* context = element->GetDisplayLockContext();
-      if (context &&
-          (include_self || !context->ShouldLayout(DisplayLockContext::kSelf))) {
+      if (context && (include_self || !context->ShouldLayout(
+                                          DisplayLockLifecycleTarget::kSelf))) {
         return FlatTreeTraversal::InclusiveAncestorsOf(*node);
       }
     }
@@ -309,7 +309,7 @@ bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
   auto* element = DynamicTo<Element>(node);
   if (element && node->GetDocument().LockedDisplayLockCount()) {
     auto* context = element->GetDisplayLockContext();
-    if (context && !context->ShouldLayout(DisplayLockContext::kSelf))
+    if (context && !context->ShouldLayout(DisplayLockLifecycleTarget::kSelf))
       return true;
   }
   const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();

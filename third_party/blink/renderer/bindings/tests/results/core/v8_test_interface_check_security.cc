@@ -22,7 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
-#include "third_party/blink/renderer/platform/bindings/v8_cross_origin_setter_info.h"
+#include "third_party/blink/renderer/platform/bindings/v8_cross_origin_callback_info.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
@@ -152,7 +152,7 @@ static void DoNotCheckSecurityOnSetterLongAttributeAttributeGetter(const v8::Pro
 }
 
 static void DoNotCheckSecurityOnSetterLongAttributeAttributeSetter(
-    v8::Local<v8::Value> v8_value, const V8CrossOriginSetterInfo& info
+    v8::Local<v8::Value> v8_value, const V8CrossOriginCallbackInfo& info
 ) {
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);
@@ -601,7 +601,7 @@ static void TestInterfaceCheckSecurityOriginSafeMethodSetter(
 }
 static const struct {
   using GetterCallback = void(*)(const v8::PropertyCallbackInfo<v8::Value>&);
-  using SetterCallback = void(*)(v8::Local<v8::Value>, const V8CrossOriginSetterInfo&);
+  using SetterCallback = void(*)(v8::Local<v8::Value>, const V8CrossOriginCallbackInfo&);
 
   const char* const name;
   const GetterCallback getter;
@@ -687,7 +687,7 @@ void V8TestInterfaceCheckSecurity::DoNotCheckSecurityOnSetterLongAttributeAttrib
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_doNotCheckSecurityOnSetterLongAttribute_Setter");
 
   test_interface_check_security_v8_internal::DoNotCheckSecurityOnSetterLongAttributeAttributeSetter(
-      v8_value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
+      v8_value, V8CrossOriginCallbackInfo(info));
 }
 
 void V8TestInterfaceCheckSecurity::DoNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -819,7 +819,7 @@ void V8TestInterfaceCheckSecurity::CrossOriginNamedSetter(v8::Local<v8::Name> na
 
   for (const auto& attribute : test_interface_check_security_v8_internal::kCrossOriginAttributeTable) {
     if (property_name == attribute.name && attribute.setter) {
-      attribute.setter(value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
+      attribute.setter(value, V8CrossOriginCallbackInfo(info));
       return;
     }
   }

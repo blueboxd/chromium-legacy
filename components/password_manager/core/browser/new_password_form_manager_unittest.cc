@@ -340,6 +340,9 @@ class NewPasswordFormManagerTest : public testing::Test {
             StartUploadRequest(_, _, _, _, _, _))
         .WillByDefault(testing::Return(true));
 
+    fetcher_.reset(new FakeFormFetcher());
+    fetcher_->Fetch();
+
     CreateFormManager(observed_form_);
   }
 
@@ -365,8 +368,6 @@ class NewPasswordFormManagerTest : public testing::Test {
   // Creates NewPasswordFormManager and sets it to |form_manager_|. Along the
   // way a new |fetcher_| is created.
   void CreateFormManager(const FormData& observed_form) {
-    fetcher_.reset(new FakeFormFetcher());
-    fetcher_->Fetch();
     form_manager_.reset(new NewPasswordFormManager(
         &client_, driver_.AsWeakPtr(), observed_form, fetcher_.get(),
         std::make_unique<NiceMock<MockFormSaver>>(), nullptr));
@@ -376,8 +377,6 @@ class NewPasswordFormManagerTest : public testing::Test {
   // |base_auth_observed_form|. Along the way a new |fetcher_| is created.
   void CreateFormManagerForNonWebForm(
       const PasswordForm& base_auth_observed_form) {
-    fetcher_.reset(new FakeFormFetcher());
-    fetcher_->Fetch();
     form_manager_.reset(new NewPasswordFormManager(
         &client_, PasswordStore::FormDigest(base_auth_observed_form),
         fetcher_.get(), std::make_unique<NiceMock<MockFormSaver>>()));

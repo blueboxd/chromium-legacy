@@ -9,8 +9,6 @@ import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -18,6 +16,8 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import org.chromium.base.VisibleForTesting;
 
 /**
  * A main activity to handle WPT requests.
@@ -30,52 +30,76 @@ import android.widget.TextView;
  *                         children, which is not supported for now.
  */
 public class WebPlatformTestsActivity extends Activity {
+    /**
+     * A callback for testing.
+     */
+    @VisibleForTesting
+    public interface TestCallback {
+        /** Called after child layout becomes visible. */
+        void onChildLayoutVisible();
+        /** Called after child layout becomes invisible. */
+        void onChildLayoutInvisible();
+    }
+
     private WebView mWebView;
+    private WebView mChildWebView;
     private RelativeLayout mChildLayout;
     private RelativeLayout mBrowserLayout;
     private Button mChildCloseButton;
     private TextView mChildTitleText;
+    private TestCallback mTestCallback;
 
     private class MultiWindowWebChromeClient extends WebChromeClient {
         @Override
         public boolean onCreateWindow(
-                WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-            // Make the child webview's layout visible
-            mChildLayout.setVisibility(View.VISIBLE);
-
+                WebView webView, boolean isDialog, boolean isUserGesture, Message resultMsg) {
+            removeAndDestroyChildWebView();
             // Now create a new WebView
-            WebView newView = new WebView(WebPlatformTestsActivity.this);
-            WebSettings settings = newView.getSettings();
+            mChildWebView = new WebView(WebPlatformTestsActivity.this);
+            WebSettings settings = mChildWebView.getSettings();
             setUpWebSettings(settings);
             settings.setUseWideViewPort(false);
-            newView.setWebViewClient(new WebViewClient() {
+            mChildWebView.setWebViewClient(new WebViewClient() {
                 @Override
-                public void onPageFinished(WebView view, String url) {
+                public void onPageFinished(WebView childWebView, String url) {
                     // Once the view has loaded, display its title for debugging.
-                    mChildTitleText.setText(view.getTitle());
+                    mChildTitleText.setText(childWebView.getTitle());
+                }
+            });
+            mChildWebView.setWebChromeClient(new WebChromeClient() {
+                @Override
+                public void onCloseWindow(WebView childWebView) {
+                    closeChild();
                 }
             });
             // Add the new WebView to the layout
-            newView.setLayoutParams(new RelativeLayout.LayoutParams(
+            mChildWebView.setLayoutParams(new RelativeLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            mBrowserLayout.addView(newView);
             // Tell the transport about the new view
             WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
-            transport.setWebView(newView);
+            transport.setWebView(mChildWebView);
             resultMsg.sendToTarget();
 
-            // Slide the new WebView up into view
-            Animation slideUp =
-                    AnimationUtils.loadAnimation(WebPlatformTestsActivity.this, R.anim.slide_up);
-            mChildLayout.startAnimation(slideUp);
+            mBrowserLayout.addView(mChildWebView);
+            // Make the child webview's layout visible
+            mChildLayout.setVisibility(View.VISIBLE);
+            if (mTestCallback != null) mTestCallback.onChildLayoutVisible();
             return true;
         }
 
         @Override
         public void onCloseWindow(WebView webView) {
-            mBrowserLayout.removeView(webView);
-            webView.destroy();
+            // Ignore window.close() on the test runner window.
         }
+    }
+
+    /** Remove and destroy a child webview if it exists. */
+    private void removeAndDestroyChildWebView() {
+        if (mChildWebView == null) return;
+        ViewGroup parent = (ViewGroup) mChildWebView.getParent();
+        if (parent != null) parent.removeView(mChildWebView);
+        mChildWebView.destroy();
+        mChildWebView = null;
     }
 
     @Override
@@ -121,20 +145,19 @@ public class WebPlatformTestsActivity extends Activity {
     }
 
     private void closeChild() {
-        Animation slideDown = AnimationUtils.loadAnimation(this, R.anim.slide_down);
-        mChildLayout.startAnimation(slideDown);
-        slideDown.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
+        mChildTitleText.setText("");
+        mChildLayout.setVisibility(View.INVISIBLE);
+        removeAndDestroyChildWebView();
+        if (mTestCallback != null) mTestCallback.onChildLayoutInvisible();
+    }
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                mChildTitleText.setText("");
-                mChildLayout.setVisibility(View.INVISIBLE);
-            }
+    @VisibleForTesting
+    public void setTestCallback(TestCallback testDelegate) {
+        mTestCallback = testDelegate;
+    }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
+    @VisibleForTesting
+    public WebView getTestRunnerWebView() {
+        return mWebView;
     }
 }

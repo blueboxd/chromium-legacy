@@ -68,6 +68,7 @@ class WebAppProvider : public WebAppProviderBase {
   // WebAppProviderBase:
   AppRegistrar& registrar() override;
   InstallManager& install_manager() override;
+  InstallFinalizer& install_finalizer() override;
   PendingAppManager& pending_app_manager() override;
   WebAppPolicyManager& policy_manager() override;
   WebAppUiManager& ui_manager() override;

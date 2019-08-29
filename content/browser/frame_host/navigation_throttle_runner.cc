@@ -90,7 +90,9 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
       std::move(throttles_);
 
   NavigationHandleImpl* handle = static_cast<NavigationHandleImpl*>(handle_);
-  throttles_ = handle->GetDelegate()->CreateThrottlesForNavigation(handle);
+  throttles_ =
+      handle->navigation_request()->GetDelegate()->CreateThrottlesForNavigation(
+          handle);
 
   // Enforce rules for WebUI navigations.
   AddThrottle(WebUINavigationThrottle::CreateThrottleForNavigation(handle));

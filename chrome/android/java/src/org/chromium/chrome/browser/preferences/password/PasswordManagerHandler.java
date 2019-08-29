@@ -83,4 +83,10 @@ public interface PasswordManagerHandler {
      */
     void serializePasswords(
             String targetPath, IntStringCallback successCallback, Callback<String> errorCallback);
+
+    /**
+     * Proceed to edit a credential entry.
+     * @param index is the current id of a credential.
+     */
+    void showPasswordEntryEditingView(int index);
 }

@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 #include "url/gurl.h"
@@ -22,7 +24,7 @@ class WebUsbDetector : public device::mojom::UsbDeviceManagerClient {
   void Initialize();
 
   void SetDeviceManagerForTesting(
-      device::mojom::UsbDeviceManagerPtr fake_device_manager);
+      mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager);
   void RemoveNotification(const std::string& id);
 
  private:
@@ -36,7 +38,7 @@ class WebUsbDetector : public device::mojom::UsbDeviceManagerClient {
   std::map<std::string, GURL> open_notifications_by_id_;
 
   // Connection to |device_manager_instance_|.
-  device::mojom::UsbDeviceManagerPtr device_manager_;
+  mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
       client_binding_;
 

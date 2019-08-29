@@ -311,14 +311,14 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
   // If we're blocked from painting by the display lock, return early.
   if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock(
-          DisplayLockContext::kSelf)) {
+          DisplayLockLifecycleTarget::kSelf)) {
     return result;
   }
 
   // TODO(vmpstr): This should be called after paint succeeds, but due to
   // multiple early outs this is more convenient. We should use RAII here.
   paint_layer_.GetLayoutObject().NotifyDisplayLockDidPaint(
-      DisplayLockContext::kSelf);
+      DisplayLockLifecycleTarget::kSelf);
 
   // A paint layer should always have LocalBorderBoxProperties when it's ready
   // for paint.
@@ -634,7 +634,7 @@ PaintResult PaintLayerPainter::PaintChildren(
     return result;
 
   if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock(
-          DisplayLockContext::kChildren)) {
+          DisplayLockLifecycleTarget::kChildren)) {
     return result;
   }
 
@@ -734,7 +734,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
                            ? fragment.fragment_data->LogicalTopInFlowThread()
                            : LayoutUnit());
   if (UNLIKELY(paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock(
-          DisplayLockContext::kChildren))) {
+          DisplayLockLifecycleTarget::kChildren))) {
     paint_info.SetDescendantPaintingBlocked(true);
   }
   paint_layer_.GetLayoutObject().Paint(paint_info);

@@ -23,6 +23,7 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -169,8 +170,9 @@ class CrostiniManagerTest : public testing::Test {
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(user_manager));
 
-    device::mojom::UsbDeviceManagerPtr fake_usb_manager_ptr_;
-    fake_usb_manager_.AddBinding(mojo::MakeRequest(&fake_usb_manager_ptr_));
+    mojo::Remote<device::mojom::UsbDeviceManager> fake_usb_manager;
+    fake_usb_manager_.AddReceiver(
+        fake_usb_manager.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {

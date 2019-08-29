@@ -47,8 +47,8 @@ interface VirtualAuthenticator {
 // Manages a virtual environment where the Web Authentication API talks to a
 // set of virtual authenticators instead of real physical devices.
 interface VirtualAuthenticatorManager {
-  CreateAuthenticator(VirtualAuthenticatorOptions options) => (VirtualAuthenticator authenticator);
-  GetAuthenticators() => (array<VirtualAuthenticator> authenticators);
+  CreateAuthenticator(VirtualAuthenticatorOptions options) => (pending_remote<VirtualAuthenticator> authenticator);
+  GetAuthenticators() => (array<pending_remote<VirtualAuthenticator>> authenticators);
   RemoveAuthenticator(string id) => (bool removed);
   ClearAuthenticators() => ();
 };

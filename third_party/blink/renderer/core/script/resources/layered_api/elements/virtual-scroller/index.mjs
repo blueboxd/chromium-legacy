@@ -44,11 +44,7 @@ export class VirtualScrollerElement extends HTMLElement {
     shadowRoot.adoptedStyleSheets = [generateStyleSheet()];
     shadowRoot.appendChild(document.createElement('slot'));
 
-    const visibilityManager = new VisibilityManager(this.children);
-
-    new ResizeObserver(() => {
-      visibilityManager.scheduleSync();
-    }).observe(this);
+    const visibilityManager = new VisibilityManager(this);
 
     new MutationObserver(records => {
       visibilityManager.applyMutationObserverRecords(records);

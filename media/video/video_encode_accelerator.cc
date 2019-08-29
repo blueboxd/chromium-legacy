@@ -52,8 +52,7 @@ VideoEncodeAccelerator::Config::Config(
       initial_framerate(initial_framerate.value_or(
           VideoEncodeAccelerator::kDefaultFramerate)),
       gop_length(gop_length),
-      h264_output_level(h264_output_level.value_or(
-          VideoEncodeAccelerator::kDefaultH264Level)),
+      h264_output_level(h264_output_level),
       storage_type(storage_type),
       content_type(content_type) {}
 

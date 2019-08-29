@@ -35,6 +35,7 @@
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -408,10 +409,11 @@ TEST_F(PageInfoTest, OnSiteDataAccessed) {
 TEST_F(PageInfoTest, OnChosenObjectDeleted) {
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
-  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-  usb_device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+  usb_device_manager.AddReceiver(
+      device_manager.InitWithNewPipeAndPassReceiver());
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
-  store->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+  store->SetDeviceManagerForTesting(std::move(device_manager));
 
   auto device_info = usb_device_manager.CreateAndAddDevice(
       0, 0, "Google", "Gizmo", "1234567890");

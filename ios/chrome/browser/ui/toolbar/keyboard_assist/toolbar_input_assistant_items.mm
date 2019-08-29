@@ -10,6 +10,8 @@
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_ui_bar_button_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,10 +26,11 @@ NSArray<UIBarButtonItemGroup*>* ToolbarAssistiveKeyboardLeadingBarButtonGroups(
       initWithImage:voiceSearchIcon
               style:UIBarButtonItemStylePlain
              target:delegate
-             action:@selector(keyboardAccessoryVoiceSearchTouchDown:)];
-  SetA11yLabelAndUiAutomationName(voiceSearchItem,
-                                  IDS_IOS_KEYBOARD_ACCESSORY_VIEW_VOICE_SEARCH,
-                                  @"Voice Search");
+             action:@selector(keyboardAccessoryVoiceSearchTouchUpInside:)];
+  NSString* accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_KEYBOARD_ACCESSORY_VIEW_VOICE_SEARCH);
+  voiceSearchItem.accessibilityLabel = accessibilityLabel;
+  voiceSearchItem.accessibilityIdentifier = kVoiceSearchInputAccessoryViewID;
 
   UIImage* cameraIcon = [[UIImage imageNamed:@"keyboard_accessory_qr_scanner"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];

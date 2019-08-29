@@ -103,7 +103,7 @@ TEST(BaseWinUtilTest, String16FromGUID) {
 TEST(BaseWinUtilTest, GetWindowObjectName) {
   base::string16 created_desktop_name(STRING16_LITERAL("test_desktop"));
   HDESK desktop_handle =
-      ::CreateDesktop(created_desktop_name.c_str(), nullptr, nullptr, 0,
+      ::CreateDesktop(as_wcstr(created_desktop_name), nullptr, nullptr, 0,
                       DESKTOP_CREATEWINDOW | DESKTOP_READOBJECTS |
                           READ_CONTROL | WRITE_DAC | WRITE_OWNER,
                       nullptr);

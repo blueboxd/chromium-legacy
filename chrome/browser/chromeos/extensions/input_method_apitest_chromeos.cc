@@ -104,7 +104,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Basic) {
   ASSERT_TRUE(RunExtensionTest("input_method/basic")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Typing) {
+// TODO(https://crbug.com/997888): Flaky on multiple platforms.
+IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, DISABLED_Typing) {
   // Enable the test IME from the test extension.
   std::vector<std::string> extension_ime_ids = {
       "_ext_ime_ilanclmaeigfpnmdlgelmhkpkegdioiptest"};

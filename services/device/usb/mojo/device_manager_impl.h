@@ -17,8 +17,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/usb/usb_service.h"
 
@@ -38,7 +39,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   explicit DeviceManagerImpl(std::unique_ptr<UsbService> usb_service);
   ~DeviceManagerImpl() override;
 
-  void AddBinding(mojom::UsbDeviceManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::UsbDeviceManager> receiver);
 
   UsbService* GetUsbService() const { return usb_service_.get(); }
 
@@ -50,7 +51,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   void GetDevices(mojom::UsbEnumerationOptionsPtr options,
                   GetDevicesCallback callback) override;
   void GetDevice(const std::string& guid,
-                 mojom::UsbDeviceRequest device_request,
+                 mojo::PendingReceiver<mojom::UsbDevice> device_receiver,
                  mojom::UsbDeviceClientPtr device_client) override;
 
 #if defined(OS_ANDROID)
@@ -95,7 +96,7 @@ class DeviceManagerImpl : public mojom::UsbDeviceManager,
   std::unique_ptr<UsbService> usb_service_;
   ScopedObserver<UsbService, UsbService::Observer> observer_;
 
-  mojo::BindingSet<mojom::UsbDeviceManager> bindings_;
+  mojo::ReceiverSet<mojom::UsbDeviceManager> receivers_;
   mojo::AssociatedInterfacePtrSet<mojom::UsbDeviceManagerClient> clients_;
 
   base::WeakPtrFactory<DeviceManagerImpl> weak_factory_{this};

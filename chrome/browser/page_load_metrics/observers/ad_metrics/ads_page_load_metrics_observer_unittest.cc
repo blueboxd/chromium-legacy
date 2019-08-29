@@ -426,9 +426,9 @@ class AdsPageLoadMetricsObserverTest
         clock_.get(), test_blocklist_.get());
     ads_observer_ = observer.get();
     tracker->AddObserver(std::move(observer));
-    // Swap out the ScopedVisibilityTracker to use the test clock.
+    // Swap out the ui::ScopedVisibilityTracker to use the test clock.
     if (clock_) {
-      ScopedVisibilityTracker visibility_tracker(clock_.get(), true);
+      ui::ScopedVisibilityTracker visibility_tracker(clock_.get(), true);
       tracker->SetVisibilityTrackerForTesting(visibility_tracker);
     }
   }
@@ -437,7 +437,7 @@ class AdsPageLoadMetricsObserverTest
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserverTester> tester_;
-  // The clock used by the ScopedVisibilityTracker, assigned if non-null.
+  // The clock used by the ui::ScopedVisibilityTracker, assigned if non-null.
   std::unique_ptr<base::SimpleTestTickClock> clock_;
   // A pointer to the AdsPageLoadMetricsObserver used by the tests.
   AdsPageLoadMetricsObserver* ads_observer_ = nullptr;

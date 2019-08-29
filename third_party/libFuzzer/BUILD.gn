@@ -80,12 +80,3 @@ if (use_afl) {
     configs += fuzzing_engine_add_configs
   }
 }
-
-source_set("fuzzed_data_provider") {
-  sources = [
-    "src/utils/FuzzedDataProvider.h",
-  ]
-
-  configs -= fuzzing_engine_remove_configs
-  configs += fuzzing_engine_add_configs
-}

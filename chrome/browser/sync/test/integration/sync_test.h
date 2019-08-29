@@ -16,11 +16,8 @@
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/configuration_refresher.h"
-#include "chrome/browser/sync/test/integration/fake_server_invalidation_sender.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/gcm_driver/instance_id/instance_id.h"
-#include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -62,6 +59,7 @@ class ScopedTempDir;
 
 namespace fake_server {
 class FakeServer;
+class FakeServerInvalidationService;
 }  // namespace fake_server
 
 namespace syncer {
@@ -92,55 +90,6 @@ class SyncTest : public InProcessBrowserTest {
                            // account state is initially clean.
     IN_PROCESS_FAKE_SERVER,  // The fake Sync server (FakeServer) running
                              // in-process (bypassing HTTP calls).
-  };
-
-  class FakeInstanceID : public instance_id::InstanceID {
-   public:
-    FakeInstanceID()
-        : instance_id::InstanceID("FakeAppId", /*gcm_driver = */ nullptr) {}
-    ~FakeInstanceID() override = default;
-
-    void GetID(const GetIDCallback& callback) override {}
-
-    void GetCreationTime(const GetCreationTimeCallback& callback) override {}
-
-    void GetToken(const std::string& authorized_entity,
-                  const std::string& scope,
-                  const std::map<std::string, std::string>& options,
-                  std::set<Flags> flags,
-                  GetTokenCallback callback) override {}
-
-    void ValidateToken(const std::string& authorized_entity,
-                       const std::string& scope,
-                       const std::string& token,
-                       const ValidateTokenCallback& callback) override {}
-
-    void DeleteToken(const std::string& authorized_entity,
-                     const std::string& scope,
-                     DeleteTokenCallback callback) override {}
-
-   protected:
-    void DeleteTokenImpl(const std::string& authorized_entity,
-                         const std::string& scope,
-                         DeleteTokenCallback callback) override {}
-    void DeleteIDImpl(DeleteIDCallback callback) override {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(FakeInstanceID);
-  };
-
-  class FakeInstanceIDDriver : public instance_id::InstanceIDDriver {
-   public:
-    FakeInstanceIDDriver()
-        : instance_id::InstanceIDDriver(/*gcm_driver=*/nullptr) {}
-    ~FakeInstanceIDDriver() override = default;
-    instance_id::InstanceID* GetInstanceID(const std::string& app_id) override;
-    void RemoveInstanceID(const std::string& app_id) override {}
-    bool ExistsInstanceID(const std::string& app_id) const override;
-
-   private:
-    FakeInstanceID fake_instance_id_;
-    DISALLOW_COPY_AND_ASSIGN(FakeInstanceIDDriver);
   };
 
   // A SyncTest must be associated with a particular test type.
@@ -279,9 +228,6 @@ class SyncTest : public InProcessBrowserTest {
   // BrowserTestBase implementation:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-  void SetUpInProcessBrowserTestFixture() override;
-
-  void OnWillCreateBrowserContextServices(content::BrowserContext* context);
 
   virtual void BeforeSetupClient(int index);
 
@@ -347,12 +293,6 @@ class SyncTest : public InProcessBrowserTest {
   static void CreateProfileCallback(const base::Closure& quit_closure,
                                     Profile* profile,
                                     Profile::CreateStatus status);
-
-  static std::unique_ptr<KeyedService> CreateProfileInvalidationProvider(
-      std::map<const Profile*, syncer::FCMNetworkHandler*>*
-          profile_to_fcm_network_handler_map,
-      instance_id::InstanceIDDriver* instance_id_driver,
-      content::BrowserContext* context);
 
   // Helper to Profile::CreateProfile that handles path creation, setting up
   // preexisting pref files, and registering the created profile  as a testing
@@ -469,24 +409,13 @@ class SyncTest : public InProcessBrowserTest {
   // notifications of this activity to its peer sync clients.
   std::vector<std::unique_ptr<P2PSyncRefresher>> sync_refreshers_;
 
-  // Owns the FakeServerInvalidationSender for each profile.
-  std::vector<std::unique_ptr<fake_server::FakeServerInvalidationSender>>
-      fake_server_invalidation_observers_;
-
-  // Maps a profile to the corresponding FCMNetworkHandler. Contains one entry
-  // per profile. It is used to simulate an incoming FCM messages to different
-  // profiles within the FakeServerInvalidationSender.
-  std::map<const Profile*, syncer::FCMNetworkHandler*>
-      profile_to_fcm_network_handler_map_;
-
-  FakeInstanceIDDriver fake_instance_id_driver_;
+  // Collection of pointers to FakeServerInvalidation objects for each
+  // profile.
+  std::vector<fake_server::FakeServerInvalidationService*>
+      fake_server_invalidation_services_;
 
   // Triggers a GetUpdates via refresh after a configuration.
   std::unique_ptr<ConfigurationRefresher> configuration_refresher_;
-
-  std::unique_ptr<
-      base::CallbackList<void(content::BrowserContext*)>::Subscription>
-      will_create_browser_context_services_subscription_;
 
   // Sync profile against which changes to individual profiles are verified.
   // We don't need a corresponding verifier sync client because the contents

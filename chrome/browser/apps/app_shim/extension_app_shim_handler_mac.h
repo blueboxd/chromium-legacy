@@ -128,8 +128,10 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   void HideHostedApp(Profile* profile, const std::string& app_id);
   void FocusAppForWindow(extensions::AppWindow* app_window);
 
-  // Instructs the shim to set it's "Hide/Show" state to not-hidden.
-  void UnhideWithoutActivationForWindow(extensions::AppWindow* app_window);
+  // Instructs the shim to set it's "Hide/Show" state to not-hidden. Virtual for
+  // testing.
+  virtual void UnhideWithoutActivationForWindow(
+      extensions::AppWindow* app_window);
 
   // Instructs the shim to request user attention. Returns false if there is no
   // shim for this window.
@@ -187,6 +189,10 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   content::NotificationRegistrar& registrar() { return registrar_; }
 
  private:
+  // The state for an individual app, and for the profile-scoped app info.
+  struct ProfileState;
+  struct AppState;
+
   // Gets the extension for the corresponding |host|. Note that extensions can
   // be uninstalled at any time (even between sending OnAppClosed() to the host,
   // and receiving the quit confirmation). If the extension has been uninstalled
@@ -215,42 +221,14 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
 
   std::unique_ptr<Delegate> delegate_;
 
-  // The state for an individual (app, Profile) pair. This includes the
-  // AppShimHost.
-  // TODO(https://crbug.com/982024): Add browser windows.
-  struct ProfileState {
-    ProfileState();
-    ProfileState(ProfileState&& other);
-    ProfileState& operator=(ProfileState&& other);
-    ~ProfileState();
-
-    std::unique_ptr<AppShimHost> host;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ProfileState);
-  };
-
-  // The state for an individual app. This includes the state for all
-  // profiles that are using the app.
-  // TODO(https://crbug.com/982024): Add AppShimHost when shared amongst
-  // profiles.
-  struct AppState {
-    AppState();
-    AppState(AppState&& other);
-    AppState& operator=(AppState&& other);
-    ~AppState();
-
-    std::map<Profile*, ProfileState> profiles;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(AppState);
-  };
+  // Retrieve the ProfileState for a given (app, Profile) pair. If one does not
+  // exist, do not create one unless |create| is specified.
+  ProfileState* GetProfileState(Profile* profile,
+                                const std::string& app_id,
+                                bool create = false);
 
   // Map from extension id to the state for that app.
-  std::map<std::string, AppState> apps_;
-
-  // A map of app ids to associated browser windows.
-  AppBrowserMap app_browser_windows_;
+  std::map<std::string, std::unique_ptr<AppState>> apps_;
 
   content::NotificationRegistrar registrar_;
 

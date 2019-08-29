@@ -5,8 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEVTOOLS_SESSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEVTOOLS_SESSION_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
@@ -34,7 +37,7 @@ class CORE_EXPORT DevToolsSession
       DevToolsAgent*,
       mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
       mojom::blink::DevToolsSessionAssociatedRequest main_request,
-      mojom::blink::DevToolsSessionRequest io_request,
+      mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
       bool client_expects_binary_responses);
   ~DevToolsSession() override;

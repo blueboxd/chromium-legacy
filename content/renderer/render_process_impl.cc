@@ -8,8 +8,8 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#include <objidl.h>
 #include <mlang.h>
+#include <objidl.h>
 #endif
 
 #include <stddef.h>
@@ -28,7 +28,7 @@
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool/initialization_util.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/time/time.h"
 #include "content/common/thread_pool_util.h"
 #include "content/public/common/bindings_policy.h"

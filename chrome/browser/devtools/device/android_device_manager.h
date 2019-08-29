@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -204,7 +205,7 @@ class AndroidDeviceManager {
   void CountDevices(const base::Callback<void(int)>& callback);
 
   void set_usb_device_manager_for_test(
-      device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager);
+      mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_usb_manager);
 
   static std::string GetBrowserName(const std::string& socket,
                                     const std::string& package);

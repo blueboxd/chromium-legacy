@@ -19,6 +19,9 @@ def module(symbol):
 
 class ProcessOptionsTestCase(unittest.TestCase):
   def setUp(self):
+    self.legacy_formats = []
+    self.standalone = False
+
     # Mock os module within results_processor so path manipulations do not
     # depend on the file system of the test environment.
     mock_os = mock.patch(module('os')).start()
@@ -35,14 +38,15 @@ class ProcessOptionsTestCase(unittest.TestCase):
     mock_os.path.dirname.side_effect = posixpath.dirname
     mock_os.path.join.side_effect = posixpath.join
 
-    telemetry_util = mock.patch(module('util')).start()
-    telemetry_util.GetBaseDir.return_value = '/path/to/output_dir'
+    mock.patch(module('_DefaultOutputDir'),
+               return_value='/path/to/output_dir').start()
 
   def tearDown(self):
     mock.patch.stopall()
 
   def ParseArgs(self, args):
-    parser = processor.ArgumentParser()
+    parser = processor.ArgumentParser(
+        standalone=self.standalone, legacy_formats=self.legacy_formats)
     options = parser.parse_args(args)
     processor.ProcessOptions(options)
     return options
@@ -112,6 +116,7 @@ class TestProcessOptions(ProcessOptionsTestCase):
     self.assertEqual(options.upload_bucket, 'some-special-bucket')
 
   def testDefaultOutputFormat(self):
+    self.legacy_formats = ['html']
     options = self.ParseArgs([])
     self.assertEqual(options.output_formats, [])
     self.assertEqual(options.legacy_output_formats, ['html'])
@@ -121,10 +126,32 @@ class TestProcessOptions(ProcessOptionsTestCase):
       self.ParseArgs(['--output-format', 'unknown'])
 
   @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
-  @mock.patch(module('command_line'))
-  def testOutputFormatsSplit(self, telemetry_cli):
-    telemetry_cli.LEGACY_OUTPUT_FORMATS = ['old-format']
+  def testOutputFormatsSplit(self):
+    self.legacy_formats = ['old-format']
     options = self.ParseArgs(
         ['--output-format', 'new-format', '--output-format', 'old-format'])
     self.assertEqual(options.output_formats, ['new-format'])
     self.assertEqual(options.legacy_output_formats, ['old-format'])
+
+
+class StandaloneTestProcessOptions(ProcessOptionsTestCase):
+  def setUp(self):
+    super(StandaloneTestProcessOptions, self).setUp()
+    self.standalone = True
+
+  def testOutputFormatRequired(self):
+    with self.assertRaises(SystemExit):
+      self.ParseArgs([])
+
+  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
+  def testIntermediateDirRequired(self):
+    with self.assertRaises(SystemExit):
+      self.ParseArgs(['--output-format', 'new-format'])
+
+  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
+  def testSuccessful(self):
+    options = self.ParseArgs(
+        ['--output-format', 'new-format', '--intermediate-dir', 'some_dir'])
+    self.assertEqual(options.output_formats, ['new-format'])
+    self.assertEqual(options.intermediate_dir, '/path/to/curdir/some_dir')
+    self.assertEqual(options.output_dir, '/path/to/output_dir')

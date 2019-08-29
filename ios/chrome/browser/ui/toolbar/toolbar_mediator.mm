@@ -38,6 +38,9 @@
 // The icon for the search button.
 @property(nonatomic, strong) UIImage* searchIcon;
 
+// Whether the associated toolbar is in dark mode.
+@property(nonatomic, assign) BOOL toolbarDarkMode;
+
 @end
 
 @implementation ToolbarMediator {
@@ -185,7 +188,7 @@
   _incognito = incognito;
   if (self.searchIcon) {
     // If the searchEngine was already initialized, ask for the new image.
-    [self searchEngineChanged];
+    [self updateSearchIcon];
   }
 }
 
@@ -302,6 +305,26 @@
   [self.consumer setShareMenuEnabled:shareMenuEnabled];
 }
 
+// Updates the search icon in the toolbar. This depends on both the current
+// search engine as well as the dark mode status of the associated toolbar.
+- (void)updateSearchIcon {
+  SearchEngineIcon searchEngineIcon = SEARCH_ENGINE_ICON_OTHER;
+  if (self.templateURLService &&
+      self.templateURLService->GetDefaultSearchProvider() &&
+      self.templateURLService->GetDefaultSearchProvider()->GetEngineType(
+          self.templateURLService->search_terms_data()) ==
+          SEARCH_ENGINE_GOOGLE) {
+    searchEngineIcon = SEARCH_ENGINE_ICON_GOOGLE_SEARCH;
+  }
+  BOOL useDarkIcon = self.incognito || self.toolbarDarkMode;
+  UIImage* searchIcon =
+      ios::GetChromeBrowserProvider()
+          ->GetBrandedImageProvider()
+          ->GetToolbarSearchIcon(searchEngineIcon, useDarkIcon);
+  DCHECK(searchIcon);
+  [self.consumer setSearchIcon:searchIcon];
+}
+
 #pragma mark - BookmarkModelBridgeObserver
 
 // If an added or removed bookmark is the same as the current url, update the
@@ -338,27 +361,16 @@
 #pragma mark - SearchEngineObserving
 
 - (void)searchEngineChanged {
-  SearchEngineIcon searchEngineIcon = SEARCH_ENGINE_ICON_OTHER;
-  if (self.templateURLService &&
-      self.templateURLService->GetDefaultSearchProvider() &&
-      self.templateURLService->GetDefaultSearchProvider()->GetEngineType(
-          self.templateURLService->search_terms_data()) ==
-          SEARCH_ENGINE_GOOGLE) {
-    searchEngineIcon = SEARCH_ENGINE_ICON_GOOGLE_SEARCH;
-  }
-  BOOL useDarkIcon = self.incognito;
-  // In iOS 13, incognito coloring overrides the userInterfaceStyle, so one
-  // imageset holds both the regular image and the dark mode/incognito image.
-  // TODO(crbug.com/981889): After iOS 12 is removed, this can be cleaned up.
-  if (@available(iOS 13, *)) {
-    useDarkIcon = NO;
-  }
-  UIImage* searchIcon =
-      ios::GetChromeBrowserProvider()
-          ->GetBrandedImageProvider()
-          ->GetToolbarSearchIcon(searchEngineIcon, useDarkIcon);
-  DCHECK(searchIcon);
-  [self.consumer setSearchIcon:searchIcon];
+  [self updateSearchIcon];
+}
+
+#pragma mark - AdaptiveToolbarViewControllerDelegate
+
+- (void)userInterfaceStyleChangedForViewController:
+    (AdaptiveToolbarViewController*)viewController {
+  self.toolbarDarkMode = viewController.traitCollection.userInterfaceStyle ==
+                         UIUserInterfaceStyleDark;
+  [self updateSearchIcon];
 }
 
 @end

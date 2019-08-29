@@ -18,7 +18,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -1189,7 +1189,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to intercept URLLoaderFactory interfaces used for
   // navigation or being brokered on behalf of a renderer fetching subresources.
   //
-  // |frame| is nullptr for kWorkerSubResource and kServiceWorkerSubResource.
+  // |frame| is nullptr for kWorkerSubResource, kServiceWorkerSubResource and
+  // kServiceWorkerScript.
   // For kNavigation type, it's the RenderFrameHost the navigation might commit
   // in. Else it's the initiating frame.
   //
@@ -1200,8 +1201,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // requests that will use the URLLoaderFactory. It's set when this factory is
   // created a) for a renderer to use to fetch subresources
   // (kDocumentSubResource, kWorkerSubResource, kServiceWorkerSubResource), or
-  // b) for the browser to use to fetch a worker (kWorkerMainResource). An
-  // opaque origin is passed currently for navigation (kNavigation) and
+  // b) for the browser to use to fetch a worker (kWorkerMainResource) or
+  // service worker scripts (kServiceWorkerScript).
+  // An opaque origin is passed currently for navigation (kNavigation) and
   // download (kDownload) factories even though requests from these factories
   // can have a valid |network::ResourceRequest::request_initiator|.
   // Note: For the kDocumentSubResource case, the |request_initiator| may be
@@ -1235,7 +1237,12 @@ class CONTENT_EXPORT ContentBrowserClient {
     kWorkerMainResource,
     kWorkerSubResource,
 
+    // For regular fetches from a service worker (e.g., fetch(), XHR).
     kServiceWorkerSubResource,
+
+    // For fetching a service worker main script or subresource scripts
+    // (e.g., importScripts()).
+    kServiceWorkerScript,
   };
   virtual bool WillCreateURLLoaderFactory(
       BrowserContext* browser_context,
@@ -1271,7 +1278,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& /* url */,
       std::vector<network::mojom::HttpHeaderPtr> /* additional_headers */,
       mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>,
-      network::mojom::AuthenticationHandlerPtr,
+      mojo::PendingRemote<network::mojom::AuthenticationHandler>,
       mojo::PendingRemote<network::mojom::TrustedHeaderClient>)>;
 
   // Allows the embedder to intercept a WebSocket connection. This is called

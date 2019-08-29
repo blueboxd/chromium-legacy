@@ -6,10 +6,13 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+
 #include <sddl.h>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/debug/stack_trace.h"
+#include "base/strings/string_util.h"
 #include "base/win/win_util.h"
 #elif defined(OS_LINUX)
 // <syslog.h> defines LOG_INFO, LOG_WARNING macros that could conflict with
@@ -99,7 +102,7 @@ EventLogMessage::~EventLogMessage() {
   }
   LPCSTR strings[1] = {message.data()};
   PSID user_sid = nullptr;
-  if (!::ConvertStringSidToSid(g_user_sid->c_str(), &user_sid)) {
+  if (!::ConvertStringSidToSid(base::as_wcstr(*g_user_sid), &user_sid)) {
     stream() << " !!ERROR GETTING USER SID!!";
   }
 

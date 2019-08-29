@@ -23,7 +23,8 @@ class PasswordStore;
 class LeakDetectionDelegateHelper : public PasswordStoreConsumer {
  public:
   // Type alias for |callback_|.
-  using LeakTypeReply = base::OnceCallback<void(int, GURL, base::string16)>;
+  using LeakTypeReply =
+      base::OnceCallback<void(CredentialLeakType, GURL, base::string16)>;
 
   explicit LeakDetectionDelegateHelper(LeakTypeReply callback);
   ~LeakDetectionDelegateHelper() override;

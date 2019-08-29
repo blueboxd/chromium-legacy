@@ -54,7 +54,8 @@ class ProofVerifierChromiumWithOwnership : public net::ProofVerifierChromium {
   net::MultiLogCTVerifier ct_verifier_;
 };
 
-std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl() {
+std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl(
+    const std::string& /*host*/) {
   std::unique_ptr<net::CertVerifier> cert_verifier =
       net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   return QuicMakeUnique<ProofVerifierChromiumWithOwnership>(
@@ -65,8 +66,8 @@ std::unique_ptr<ProofSource> CreateDefaultProofSourceImpl() {
   auto proof_source = std::make_unique<net::ProofSourceChromium>();
   CHECK(proof_source->Initialize(
 #if defined(OS_WIN)
-      base::FilePath(base::UTF8ToWide(GetQuicFlag(FLAGS_certificate_file))),
-      base::FilePath(base::UTF8ToWide(GetQuicFlag(FLAGS_key_file))),
+      base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_certificate_file))),
+      base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_key_file))),
       base::FilePath()));
 #else
       base::FilePath(GetQuicFlag(FLAGS_certificate_file)),

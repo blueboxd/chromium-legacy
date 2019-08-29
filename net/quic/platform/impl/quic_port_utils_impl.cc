@@ -8,7 +8,7 @@
 
 namespace quic {
 
-int QuicPickUnusedPortOrDieImpl() {
+int QuicPickServerPortForTestsOrDieImpl() {
   return 12345 + (QuicRandom::GetInstance()->RandUint64() % 20000);
 }
 

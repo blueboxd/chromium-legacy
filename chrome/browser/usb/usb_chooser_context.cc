@@ -179,16 +179,17 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
   if (device_manager_)
     return;
 
-  // Request UsbDeviceManagerPtr from DeviceService.
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
+  // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      device_manager_.BindNewPipeAndPassReceiver());
 
   SetUpDeviceManagerConnection();
 }
 
 void UsbChooserContext::SetUpDeviceManagerConnection() {
   DCHECK(device_manager_);
-  device_manager_.set_connection_error_handler(
+  device_manager_.set_disconnect_handler(
       base::BindOnce(&UsbChooserContext::OnDeviceManagerConnectionError,
                      base::Unretained(this)));
 
@@ -477,10 +478,10 @@ void UsbChooserContext::GetDevices(
 
 void UsbChooserContext::GetDevice(
     const std::string& guid,
-    device::mojom::UsbDeviceRequest device_request,
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
     device::mojom::UsbDeviceClientPtr device_client) {
   EnsureConnectionWithDeviceManager();
-  device_manager_->GetDevice(guid, std::move(device_request),
+  device_manager_->GetDevice(guid, std::move(device_receiver),
                              std::move(device_client));
 }
 
@@ -608,9 +609,9 @@ void UsbChooserContext::OnDeviceManagerConnectionError() {
 }
 
 void UsbChooserContext::SetDeviceManagerForTesting(
-    device::mojom::UsbDeviceManagerPtr fake_device_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager) {
   DCHECK(!device_manager_);
   DCHECK(fake_device_manager);
-  device_manager_ = std::move(fake_device_manager);
+  device_manager_.Bind(std::move(fake_device_manager));
   SetUpDeviceManagerConnection();
 }

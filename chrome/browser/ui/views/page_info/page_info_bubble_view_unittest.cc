@@ -30,6 +30,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_web_contents_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -365,11 +366,11 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
 
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
-  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-  usb_device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> usb_manager;
+  usb_device_manager.AddReceiver(usb_manager.InitWithNewPipeAndPassReceiver());
   UsbChooserContext* store =
       UsbChooserContextFactory::GetForProfile(web_contents_helper_.profile());
-  store->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+  store->SetDeviceManagerForTesting(std::move(usb_manager));
 
   auto device_info = usb_device_manager.CreateAndAddDevice(
       0, 0, "Google", "Gizmo", "1234567890");
@@ -470,10 +471,11 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
 
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
-  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-  usb_device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+  usb_device_manager.AddReceiver(
+      device_manager.InitWithNewPipeAndPassReceiver());
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile);
-  store->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+  store->SetDeviceManagerForTesting(std::move(device_manager));
 
   auto device_info = usb_device_manager.CreateAndAddDevice(
       0, 0, "Google", "Gizmo", "1234567890");

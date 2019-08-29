@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 namespace autofill {
@@ -28,7 +29,8 @@ class TestAutofillDriver : public AutofillDriver {
   bool RendererIsAvailable() override;
 #if !defined(OS_IOS)
   void ConnectToAuthenticator(
-      blink::mojom::InternalAuthenticatorRequest request) override;
+      mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver)
+      override;
 #endif
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,

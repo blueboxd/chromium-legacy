@@ -5,10 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <string>
 #include <vector>
 
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "third_party/sfntly/src/cpp/src/sample/chromium/font_subsetter.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

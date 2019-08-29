@@ -17,7 +17,7 @@
 @property(nonatomic, assign) NSTextAlignment textAlignment;
 
 // UIColor for the cell's textLabel. Default is
-// kTableViewTextLabelColorLightGrey. ChromeTableViewStyler's |cellTitleColor|
+// UIColor.cr_labelColor. ChromeTableViewStyler's |cellTitleColor|
 // takes precedence over the default color, but not over |textColor|.
 @property(nonatomic, strong) UIColor* textColor;
 

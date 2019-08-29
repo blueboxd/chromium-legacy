@@ -363,7 +363,6 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
       resource_(resource),
       inflight_keepalive_bytes_(inflight_keepalive_bytes),
       is_cache_aware_loading_activated_(false),
-      progress_binding_(this),
       cancel_timer_(fetcher_->GetTaskRunner(),
                     this,
                     &ResourceLoader::CancelTimerFired) {
@@ -1068,16 +1067,13 @@ void ResourceLoader::DidStartLoadingResponseBody(
     const ResourceResponse& response = resource_->GetResponse();
     AtomicString mime_type = response.MimeType();
 
-    mojom::blink::ProgressClientAssociatedPtrInfo progress_client_ptr;
-    progress_binding_.Bind(MakeRequest(&progress_client_ptr),
-                           GetLoadingTaskRunner());
-
     // Callback is bound to a WeakPersistent, as ResourceLoader is kept alive by
     // ResourceFetcher as long as we still care about the result of the load.
     fetcher_->GetBlobRegistry()->RegisterFromStream(
         mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
         std::max(static_cast<int64_t>(0), response.ExpectedContentLength()),
-        std::move(body), std::move(progress_client_ptr),
+        std::move(body),
+        progress_receiver_.BindNewEndpointAndPassRemote(GetLoadingTaskRunner()),
         WTF::Bind(&ResourceLoader::FinishedCreatingBlob,
                   WrapWeakPersistent(this)));
     return;
@@ -1315,7 +1311,7 @@ void ResourceLoader::RequestAsynchronously(const ResourceRequest& request) {
 
 void ResourceLoader::Dispose() {
   loader_ = nullptr;
-  progress_binding_.Close();
+  progress_receiver_.reset();
   code_cache_request_.reset();
 
   // Release() should be called to release |scheduler_client_id_| beforehand in

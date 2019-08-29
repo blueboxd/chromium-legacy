@@ -112,6 +112,13 @@ void Mixer::MixAndPublish(size_t num_max_results, const base::string16& query) {
   // number* will be kept (e.g., an app result takes priority over a web store
   // result with the same ID).
   RemoveDuplicates(&results);
+
+  // Zero state search results: if any search provider won't have any results
+  // displayed, but has a high-scoring result that the user hasn't seen many
+  // times, replace a to-be-displayed result with it.
+  if (query.empty() && non_app_ranker_)
+    non_app_ranker_->OverrideZeroStateResults(&results);
+
   std::sort(results.begin(), results.end());
 
   const size_t original_size = results.size();

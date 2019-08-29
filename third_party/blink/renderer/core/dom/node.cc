@@ -1221,7 +1221,7 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
       auto* ancestor_element = DynamicTo<Element>(ancestor);
       if (ancestor_element && ancestor_element->StyleRecalcBlockedByDisplayLock(
-                                  DisplayLockContext::kChildren)) {
+                                  DisplayLockLifecycleTarget::kChildren)) {
         break;
       }
     }
@@ -1244,7 +1244,7 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
       auto* ancestor_copy_element = DynamicTo<Element>(ancestor_copy);
       if (ancestor_copy_element &&
           ancestor_copy_element->StyleRecalcBlockedByDisplayLock(
-              DisplayLockContext::kChildren)) {
+              DisplayLockLifecycleTarget::kChildren)) {
         return;
       }
     }
@@ -1320,7 +1320,7 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   auto* this_element = DynamicTo<Element>(this);
   if (existing_change_type == kNoStyleChange &&
       (!this_element || !this_element->StyleRecalcBlockedByDisplayLock(
-                            DisplayLockContext::kSelf)))
+                            DisplayLockLifecycleTarget::kSelf)))
     MarkAncestorsWithChildNeedsStyleRecalc();
 
   if (this_element && HasRareData())

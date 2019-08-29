@@ -71,6 +71,8 @@ class InstallFinalizer {
       const AppId& app_id,
       const WebApplicationInfo& web_app_info) const = 0;
 
+  virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
+
   // TODO(loyso): This method should be protected and subclasses should call it
   // (upcasting their final registrar type). Subclassing WebAppProvider will fix
   // this.

@@ -33,7 +33,6 @@
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -237,8 +236,9 @@ void SetupOnUIThread(
   // the 'installed' state.
   if (!params->is_installed) {
     factory_bundle_for_new_scripts =
-        EmbeddedWorkerInstance::CreateFactoryBundleOnUI(rph, routing_id,
-                                                        origin);
+        EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
+            rph, routing_id, origin,
+            ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
   }
 
   // The bundle for the renderer is passed to the service worker, and
@@ -246,8 +246,9 @@ void SetupOnUIThread(
   // It's OK to not support reconnection to the network service because the
   // service worker terminates itself when the connection breaks, so a new
   // instance can be started.
-  factory_bundle_for_renderer =
-      EmbeddedWorkerInstance::CreateFactoryBundleOnUI(rph, routing_id, origin);
+  factory_bundle_for_renderer = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
+      rph, routing_id, origin,
+      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
 
   // TODO(crbug.com/862854): Support changes to
   // blink::mojom::RendererPreferences while the worker is running.
@@ -1036,9 +1037,11 @@ base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {
 //
 // The network factory does not support reconnection to the network service.
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
-                                                int routing_id,
-                                                const url::Origin& origin) {
+EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
+    RenderProcessHost* rph,
+    int routing_id,
+    const url::Origin& origin,
+    ContentBrowserClient::URLLoaderFactoryType factory_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
   mojo::PendingReceiver<network::mojom::URLLoaderFactory>
@@ -1051,8 +1054,7 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
   // See if the default factory needs to be tweaked by the embedder.
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
-      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource,
-      origin, &default_factory_receiver, &default_header_client,
+      factory_type, origin, &default_factory_receiver, &default_header_client,
       &bypass_redirect_checks);
   devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
       rph, routing_id, &default_factory_receiver);

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -68,11 +69,10 @@ class UsbPrinterDetectorTest : public testing::Test {
   };
 
   UsbPrinterDetectorTest() {
-    device::mojom::UsbDeviceManagerPtrInfo manager_ptr_info;
-    usb_manager_.AddBinding(mojo::MakeRequest(&manager_ptr_info));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> manager;
+    usb_manager_.AddReceiver(manager.InitWithNewPipeAndPassReceiver());
 
-    detector_ =
-        UsbPrinterDetector::CreateForTesting(std::move(manager_ptr_info));
+    detector_ = UsbPrinterDetector::CreateForTesting(std::move(manager));
     detector_->RegisterPrintersFoundCallback(
         base::BindRepeating(&FakePrinterDetectorClient::OnPrintersFound,
                             base::Unretained(&detector_client_)));

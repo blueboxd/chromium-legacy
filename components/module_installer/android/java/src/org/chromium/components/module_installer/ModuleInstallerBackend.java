@@ -46,6 +46,10 @@ import java.util.List;
      */
     public abstract void close();
 
+    /* package */ void recordModuleAvailability() {}
+
+    /* package */ void recordStartupTime(long durationMs) {}
+
     /** To be called when module install has finished. */
     protected void onFinished(boolean success, List<String> moduleNames) {
         mListener.onFinished(success, moduleNames);

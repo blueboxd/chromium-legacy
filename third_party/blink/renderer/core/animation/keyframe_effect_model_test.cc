@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
@@ -67,13 +68,15 @@ class AnimationKeyframeEffectModel : public PageTestBase {
     const TypedInterpolationValue* typed_value =
         ToInvalidatableInterpolation(interpolation_value)
             ->GetCachedValueForTesting();
-    // Length values are stored as a list of values; here we assume pixels.
-    EXPECT_TRUE(typed_value->GetInterpolableValue().IsList());
-    const InterpolableList* list =
-        ToInterpolableList(&typed_value->GetInterpolableValue());
+    // Length values are stored as an |InterpolableLength|; here we assume
+    // pixels.
+    EXPECT_TRUE(typed_value->GetInterpolableValue().IsLength());
+    const InterpolableLength& length =
+        To<InterpolableLength>(typed_value->GetInterpolableValue());
     // Lengths are computed in logical units, which are quantized to 64ths of
     // a pixel.
-    EXPECT_NEAR(expected_value, ToInterpolableNumber(list->Get(0))->Value(),
+    EXPECT_NEAR(expected_value,
+                length.CreateCSSValue(kValueRangeAll)->GetDoubleValue(),
                 /*abs_error=*/0.02);
   }
 

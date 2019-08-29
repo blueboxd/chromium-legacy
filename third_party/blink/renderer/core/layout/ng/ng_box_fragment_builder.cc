@@ -144,6 +144,7 @@ void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
 
 void NGBoxFragmentBuilder::AddBreakToken(
     scoped_refptr<const NGBreakToken> token) {
+  DCHECK(token.get());
   child_break_tokens_.push_back(std::move(token));
 }
 

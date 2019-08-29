@@ -19,10 +19,11 @@ class UsbInternalsPageHandler : public mojom::UsbInternalsPageHandler {
   ~UsbInternalsPageHandler() override;
 
   void BindUsbDeviceManagerInterface(
-      device::mojom::UsbDeviceManagerRequest request) override;
+      mojo::PendingReceiver<device::mojom::UsbDeviceManager> receiver) override;
 
   void BindTestInterface(
-      device::mojom::UsbDeviceManagerTestRequest request) override;
+      mojo::PendingReceiver<device::mojom::UsbDeviceManagerTest> receiver)
+      override;
 
  private:
   mojo::Receiver<mojom::UsbInternalsPageHandler> receiver_;

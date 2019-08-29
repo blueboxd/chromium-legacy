@@ -485,7 +485,7 @@ void Controller::EnterStoppedState() {
   ClearInfoBox();
   SetDetails(nullptr);
   SetUserActions(nullptr);
-  SetPaymentRequestOptions(nullptr, nullptr);
+  SetCollectUserDataOptions(nullptr, nullptr);
   EnterState(AutofillAssistantState::STOPPED);
 }
 
@@ -912,168 +912,167 @@ std::string Controller::GetDebugContext() {
   return output_js;
 }
 
-const PaymentRequestOptions* Controller::GetPaymentRequestOptions() const {
-  return payment_request_options_.get();
+const CollectUserDataOptions* Controller::GetCollectUserDataOptions() const {
+  return collect_user_data_options_.get();
 }
 
-const PaymentInformation* Controller::GetPaymentRequestInformation() const {
-  return payment_request_info_.get();
+const UserData* Controller::GetUserData() const {
+  return user_data_.get();
 }
 
-void Controller::OnPaymentRequestContinueButtonClicked() {
-  if (!payment_request_options_ || !payment_request_info_)
+void Controller::OnCollectUserDataContinueButtonClicked() {
+  if (!collect_user_data_options_ || !user_data_)
     return;
 
-  auto callback = std::move(payment_request_options_->confirm_callback);
-  auto payment_request_info = std::move(payment_request_info_);
+  auto callback = std::move(collect_user_data_options_->confirm_callback);
+  auto user_data = std::move(user_data_);
 
   // TODO(crbug.com/806868): succeed is currently always true, but we might want
-  // to set it to false and propagate the result to GetPaymentInformationAction
+  // to set it to false and propagate the result to CollectUserDataAction
   // when the user clicks "Cancel" during that action.
-  payment_request_info->succeed = true;
+  user_data->succeed = true;
 
-  SetPaymentRequestOptions(nullptr, nullptr);
-  std::move(callback).Run(std::move(payment_request_info));
+  SetCollectUserDataOptions(nullptr, nullptr);
+  std::move(callback).Run(std::move(user_data));
 }
 
-void Controller::OnPaymentRequestAdditionalActionTriggered(int index) {
-  if (!payment_request_options_)
+void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
+  if (!collect_user_data_options_)
     return;
 
   auto callback =
-      std::move(payment_request_options_->additional_actions_callback);
-  SetPaymentRequestOptions(nullptr, nullptr);
+      std::move(collect_user_data_options_->additional_actions_callback);
+  SetCollectUserDataOptions(nullptr, nullptr);
   std::move(callback).Run(index);
 }
 
 void Controller::OnTermsAndConditionsLinkClicked(int link) {
-  if (!payment_request_info_)
+  if (!user_data_)
     return;
 
-  auto callback = std::move(payment_request_options_->terms_link_callback);
-  SetPaymentRequestOptions(nullptr, nullptr);
+  auto callback = std::move(collect_user_data_options_->terms_link_callback);
+  SetCollectUserDataOptions(nullptr, nullptr);
   std::move(callback).Run(link);
 }
 
 void Controller::SetShippingAddress(
     std::unique_ptr<autofill::AutofillProfile> address) {
-  if (!payment_request_info_)
+  if (!user_data_)
     return;
 
-  payment_request_info_->shipping_address = std::move(address);
+  user_data_->shipping_address = std::move(address);
   for (ControllerObserver& observer : observers_) {
-    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+    observer.OnUserDataChanged(user_data_.get());
   }
-  UpdatePaymentRequestActions();
+  UpdateCollectUserDataActions();
 }
 
 void Controller::SetBillingAddress(
     std::unique_ptr<autofill::AutofillProfile> address) {
-  if (!payment_request_info_)
+  if (!user_data_)
     return;
 
-  payment_request_info_->billing_address = std::move(address);
+  user_data_->billing_address = std::move(address);
   for (ControllerObserver& observer : observers_) {
-    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+    observer.OnUserDataChanged(user_data_.get());
   }
-  UpdatePaymentRequestActions();
+  UpdateCollectUserDataActions();
 }
 
 void Controller::SetContactInfo(std::string name,
                                 std::string phone,
                                 std::string email) {
-  if (!payment_request_info_)
+  if (!user_data_)
     return;
 
-  payment_request_info_->payer_name = name;
-  payment_request_info_->payer_phone = phone;
-  payment_request_info_->payer_email = email;
+  user_data_->payer_name = name;
+  user_data_->payer_phone = phone;
+  user_data_->payer_email = email;
   for (ControllerObserver& observer : observers_) {
-    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+    observer.OnUserDataChanged(user_data_.get());
   }
-  UpdatePaymentRequestActions();
+  UpdateCollectUserDataActions();
 }
 
 void Controller::SetCreditCard(std::unique_ptr<autofill::CreditCard> card) {
-  if (!payment_request_info_)
+  if (!user_data_)
     return;
 
-  payment_request_info_->card = std::move(card);
+  user_data_->card = std::move(card);
   for (ControllerObserver& observer : observers_) {
-    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+    observer.OnUserDataChanged(user_data_.get());
   }
-  UpdatePaymentRequestActions();
+  UpdateCollectUserDataActions();
 }
 
 void Controller::SetTermsAndConditions(
     TermsAndConditionsState terms_and_conditions) {
-  if (!payment_request_info_)
+  if (!user_data_)
     return;
 
-  payment_request_info_->terms_and_conditions = terms_and_conditions;
-  UpdatePaymentRequestActions();
+  user_data_->terms_and_conditions = terms_and_conditions;
+  UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+    observer.OnUserDataChanged(user_data_.get());
   }
 }
 
 void Controller::SetLoginOption(std::string identifier) {
-  if (!payment_request_info_ || !payment_request_options_)
+  if (!user_data_ || !collect_user_data_options_)
     return;
 
-  payment_request_info_->login_choice_identifier.assign(identifier);
-  UpdatePaymentRequestActions();
+  user_data_->login_choice_identifier.assign(identifier);
+  UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+    observer.OnUserDataChanged(user_data_.get());
   }
 }
 
-void Controller::UpdatePaymentRequestActions() {
+void Controller::UpdateCollectUserDataActions() {
   // TODO(crbug.com/806868): This method uses #SetUserActions(), which means
   // that updating the PR action buttons will also clear the suggestions. We
   // should update the action buttons only if there are use cases of PR +
   // suggestions.
-  if (!payment_request_options_ || !payment_request_info_) {
+  if (!collect_user_data_options_ || !user_data_) {
     SetUserActions(nullptr);
     return;
   }
 
-  bool contact_info_ok = (!payment_request_options_->request_payer_name ||
-                          !payment_request_info_->payer_name.empty()) &&
-                         (!payment_request_options_->request_payer_email ||
-                          !payment_request_info_->payer_email.empty()) &&
-                         (!payment_request_options_->request_payer_phone ||
-                          !payment_request_info_->payer_phone.empty());
+  bool contact_info_ok = (!collect_user_data_options_->request_payer_name ||
+                          !user_data_->payer_name.empty()) &&
+                         (!collect_user_data_options_->request_payer_email ||
+                          !user_data_->payer_email.empty()) &&
+                         (!collect_user_data_options_->request_payer_phone ||
+                          !user_data_->payer_phone.empty());
 
-  bool shipping_address_ok = !payment_request_options_->request_shipping ||
-                             payment_request_info_->shipping_address;
+  bool shipping_address_ok = !collect_user_data_options_->request_shipping ||
+                             user_data_->shipping_address;
 
-  bool payment_method_ok = !payment_request_options_->request_payment_method ||
-                           payment_request_info_->card;
+  bool payment_method_ok =
+      !collect_user_data_options_->request_payment_method || user_data_->card;
 
   bool billing_address_ok =
-      !payment_request_options_->require_billing_postal_code ||
-      (payment_request_info_->billing_address &&
-       !payment_request_info_->billing_address
-            ->GetRawInfo(autofill::ADDRESS_HOME_ZIP)
+      !collect_user_data_options_->require_billing_postal_code ||
+      (user_data_->billing_address &&
+       !user_data_->billing_address->GetRawInfo(autofill::ADDRESS_HOME_ZIP)
             .empty());
 
   bool terms_ok =
-      payment_request_info_->terms_and_conditions != NOT_SELECTED ||
-      payment_request_options_->accept_terms_and_conditions_text.empty();
+      user_data_->terms_and_conditions != NOT_SELECTED ||
+      collect_user_data_options_->accept_terms_and_conditions_text.empty();
 
-  bool login_ok = !payment_request_options_->request_login_choice ||
-                  !payment_request_info_->login_choice_identifier.empty();
+  bool login_ok = !collect_user_data_options_->request_login_choice ||
+                  !user_data_->login_choice_identifier.empty();
 
   bool confirm_button_enabled = contact_info_ok && shipping_address_ok &&
                                 payment_method_ok && billing_address_ok &&
                                 terms_ok && login_ok;
 
-  UserAction confirm(payment_request_options_->confirm_action);
+  UserAction confirm(collect_user_data_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);
   if (confirm_button_enabled) {
     confirm.SetCallback(
-        base::BindOnce(&Controller::OnPaymentRequestContinueButtonClicked,
+        base::BindOnce(&Controller::OnCollectUserDataContinueButtonClicked,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -1081,12 +1080,12 @@ void Controller::UpdatePaymentRequestActions() {
   user_actions->emplace_back(std::move(confirm));
 
   // Add additional actions.
-  for (size_t i = 0; i < payment_request_options_->additional_actions.size();
+  for (size_t i = 0; i < collect_user_data_options_->additional_actions.size();
        ++i) {
-    auto action = payment_request_options_->additional_actions[i];
+    auto action = collect_user_data_options_->additional_actions[i];
     user_actions->push_back({action.chip(), action.direct_action()});
     user_actions->back().SetCallback(
-        base::BindOnce(&Controller::OnPaymentRequestAdditionalActionTriggered,
+        base::BindOnce(&Controller::OnCollectUserDataAdditionalActionTriggered,
                        weak_ptr_factory_.GetWeakPtr(), i));
   }
 
@@ -1360,22 +1359,22 @@ void Controller::OnTouchableAreaChanged(
   }
 }
 
-void Controller::SetPaymentRequestOptions(
-    std::unique_ptr<PaymentRequestOptions> options,
-    std::unique_ptr<PaymentInformation> information) {
+void Controller::SetCollectUserDataOptions(
+    std::unique_ptr<CollectUserDataOptions> options,
+    std::unique_ptr<UserData> information) {
   DCHECK(!options ||
          (options->confirm_callback && options->additional_actions_callback &&
           options->terms_link_callback));
 
-  if (payment_request_options_ == nullptr && options == nullptr)
+  if (collect_user_data_options_ == nullptr && options == nullptr)
     return;
 
-  payment_request_options_ = std::move(options);
-  payment_request_info_ = std::move(information);
-  UpdatePaymentRequestActions();
+  collect_user_data_options_ = std::move(options);
+  user_data_ = std::move(information);
+  UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnPaymentRequestOptionsChanged(payment_request_options_.get());
-    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+    observer.OnCollectUserDataOptionsChanged(collect_user_data_options_.get());
+    observer.OnUserDataChanged(user_data_.get());
   }
 }
 

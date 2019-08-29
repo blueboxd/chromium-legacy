@@ -13,10 +13,10 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_settings.h"
-#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
@@ -108,9 +108,10 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD2(GetPaymentInformation,
-               void(std::unique_ptr<PaymentRequestOptions> options,
-                    std::unique_ptr<PaymentInformation> information));
+  MOCK_METHOD2(
+      CollectUserData,
+      void(std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+           std::unique_ptr<UserData> user_data));
 
   MOCK_METHOD1(OnGetFullCard,
                void(base::OnceCallback<void(const autofill::CreditCard& card,

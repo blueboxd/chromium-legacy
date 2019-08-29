@@ -12,11 +12,21 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_type.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_consumer.h"
 
+@class AdaptiveToolbarViewController;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol PopupMenuLongPressDelegate;
 @class ToolbarButtonFactory;
 @class ToolbarToolsMenuButton;
+
+// This protocol is needed to work around an iOS 13 UIKit bug with dark mode.
+// See crbug.com/998090 for more details.
+@protocol AdaptiveToolbarViewControllerDelegate
+// Notifies the delegate that the user interface style of the toolbar has
+// changed.
+- (void)userInterfaceStyleChangedForViewController:
+    (AdaptiveToolbarViewController*)viewController;
+@end
 
 // ViewController for the adaptive toolbar. This ViewController is the super
 // class of the different implementation (primary or secondary).
@@ -36,6 +46,9 @@
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 // Delegate for the long press gesture recognizer triggering popup menu.
 @property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
+// Dark mode delegate for this toolbar.
+@property(nonatomic, weak) id<AdaptiveToolbarViewControllerDelegate>
+    adaptiveToolbarViewControllerDelegate;
 
 // Returns the tools menu button.
 - (ToolbarToolsMenuButton*)toolsMenuButton;

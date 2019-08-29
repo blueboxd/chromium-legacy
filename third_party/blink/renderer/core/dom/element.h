@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
-#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
@@ -57,6 +56,7 @@ class DOMRect;
 class DOMRectList;
 class DOMStringMap;
 class DOMTokenList;
+class DisplayLockContext;
 class Document;
 class ElementAnimations;
 class ElementInternals;
@@ -70,6 +70,7 @@ class InputDeviceCapabilities;
 class Locale;
 class MutableCSSPropertyValueSet;
 class NamedNodeMap;
+class PaintLayerScrollableArea;
 class PseudoElement;
 class PseudoStyleRequest;
 class ResizeObservation;
@@ -91,6 +92,7 @@ class V0CustomElementDefinition;
 
 enum class CSSPropertyID;
 enum class CSSValueID;
+enum class DisplayLockLifecycleTarget;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -918,8 +920,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   DisplayLockContext* GetDisplayLockContext() const;
   DisplayLockContext& EnsureDisplayLockContext();
 
-  bool StyleRecalcBlockedByDisplayLock(
-      DisplayLockContext::LifecycleTarget) const;
+  bool StyleRecalcBlockedByDisplayLock(DisplayLockLifecycleTarget) const;
 
   // Activates all activatable locked ancestors for this element. Return true if
   // we activated at least one previously locked element.

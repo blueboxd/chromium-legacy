@@ -19,6 +19,7 @@ include_rules = [
   "+net/traffic_annotation",
   "+net/url_request",
   "+services/network/public",
+  "+services/network/test",
   "+services/service_manager/public",
   "+testing/gtest",
   "+third_party/blink/public/common/loader/url_loader_throttle.h",

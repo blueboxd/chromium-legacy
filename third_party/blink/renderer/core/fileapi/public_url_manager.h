@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_PUBLIC_URL_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_PUBLIC_URL_MANAGER_H_
 
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -63,7 +64,7 @@ class CORE_EXPORT PublicURLManager final
   // BlobURLToken. This token can be used by the browser process to securely
   // lookup what blob a URL used to refer to, even after the URL is revoked.
   // If the URL fails to resolve the request will simply be disconnected.
-  void Resolve(const KURL&, mojom::blink::BlobURLTokenRequest);
+  void Resolve(const KURL&, mojo::PendingReceiver<mojom::blink::BlobURLToken>);
 
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
@@ -71,7 +72,7 @@ class CORE_EXPORT PublicURLManager final
   void Trace(blink::Visitor*) override;
 
   void SetURLStoreForTesting(
-      mojom::blink::BlobURLStoreAssociatedPtr url_store) {
+      mojo::AssociatedRemote<mojom::blink::BlobURLStore> url_store) {
     url_store_ = std::move(url_store);
   }
 
@@ -84,7 +85,7 @@ class CORE_EXPORT PublicURLManager final
 
   bool is_stopped_;
 
-  mojom::blink::BlobURLStoreAssociatedPtr url_store_;
+  mojo::AssociatedRemote<mojom::blink::BlobURLStore> url_store_;
 };
 
 }  // namespace blink

@@ -35,8 +35,10 @@ class AbstractInlineBox {
 
   explicit AbstractInlineBox(const InlineBox& box)
       : type_(InstanceType::kOldLayout), inline_box_(&box) {}
-  explicit AbstractInlineBox(const NGPaintFragment& fragment)
-      : AbstractInlineBox(NGPaintFragmentTraversalContext::Create(&fragment)) {}
+  explicit AbstractInlineBox(const NGPaintFragment& paint_fragment)
+      : AbstractInlineBox(
+            NGPaintFragmentTraversal(*paint_fragment.ContainerLineBox(),
+                                     paint_fragment)) {}
 
   bool IsNotNull() const { return type_ != InstanceType::kNull; }
   bool IsNull() const { return !IsNotNull(); }
@@ -52,7 +54,7 @@ class AbstractInlineBox {
       case InstanceType::kOldLayout:
         return inline_box_ == other.inline_box_;
       case InstanceType::kNG:
-        return paint_fragment_ == other.paint_fragment_;
+        return paint_fragment_.get() == other.paint_fragment_.get();
     }
     NOTREACHED();
     return false;
@@ -66,8 +68,8 @@ class AbstractInlineBox {
 
   const NGPaintFragment& GetNGPaintFragment() const {
     DCHECK(IsNG());
-    DCHECK(!paint_fragment_.IsNull());
-    return *paint_fragment_.GetFragment();
+    DCHECK(!paint_fragment_.IsAtEnd());
+    return *paint_fragment_;
   }
 
   UBiDiLevel BidiLevel() const {
@@ -89,9 +91,10 @@ class AbstractInlineBox {
       const InlineBox* result = GetInlineBox().PrevLeafChild();
       return result ? AbstractInlineBox(*result) : AbstractInlineBox();
     }
-    const NGPaintFragmentTraversalContext result =
-        NGPaintFragmentTraversal::PreviousInlineLeafOf(paint_fragment_);
-    return result.IsNull() ? AbstractInlineBox() : AbstractInlineBox(result);
+    NGPaintFragmentTraversal result(paint_fragment_);
+    result.MoveToPreviousInlineLeaf();
+    return result.IsAtEnd() ? AbstractInlineBox()
+                            : AbstractInlineBox(std::move(result));
   }
 
   AbstractInlineBox PrevLeafChildIgnoringLineBreak() const {
@@ -100,10 +103,10 @@ class AbstractInlineBox {
       const InlineBox* result = GetInlineBox().PrevLeafChildIgnoringLineBreak();
       return result ? AbstractInlineBox(*result) : AbstractInlineBox();
     }
-    const NGPaintFragmentTraversalContext result =
-        NGPaintFragmentTraversal::PreviousInlineLeafOfIgnoringLineBreak(
-            paint_fragment_);
-    return result.IsNull() ? AbstractInlineBox() : AbstractInlineBox(result);
+    NGPaintFragmentTraversal result(paint_fragment_);
+    result.MoveToPreviousInlineLeafIgnoringLineBreak();
+    return result.IsAtEnd() ? AbstractInlineBox()
+                            : AbstractInlineBox(std::move(result));
   }
 
   AbstractInlineBox NextLeafChild() const {
@@ -112,9 +115,10 @@ class AbstractInlineBox {
       const InlineBox* result = GetInlineBox().NextLeafChild();
       return result ? AbstractInlineBox(*result) : AbstractInlineBox();
     }
-    const NGPaintFragmentTraversalContext result =
-        NGPaintFragmentTraversal::NextInlineLeafOf(paint_fragment_);
-    return result.IsNull() ? AbstractInlineBox() : AbstractInlineBox(result);
+    NGPaintFragmentTraversal result(paint_fragment_);
+    result.MoveToNextInlineLeaf();
+    return result.IsAtEnd() ? AbstractInlineBox()
+                            : AbstractInlineBox(std::move(result));
   }
 
   AbstractInlineBox NextLeafChildIgnoringLineBreak() const {
@@ -123,10 +127,10 @@ class AbstractInlineBox {
       const InlineBox* result = GetInlineBox().NextLeafChildIgnoringLineBreak();
       return result ? AbstractInlineBox(*result) : AbstractInlineBox();
     }
-    const NGPaintFragmentTraversalContext result =
-        NGPaintFragmentTraversal::NextInlineLeafOfIgnoringLineBreak(
-            paint_fragment_);
-    return result.IsNull() ? AbstractInlineBox() : AbstractInlineBox(result);
+    NGPaintFragmentTraversal result(paint_fragment_);
+    result.MoveToNextInlineLeafIgnoringLineBreak();
+    return result.IsAtEnd() ? AbstractInlineBox()
+                            : AbstractInlineBox(std::move(result));
   }
 
   TextDirection ParagraphDirection() const {
@@ -137,8 +141,8 @@ class AbstractInlineBox {
   }
 
  private:
-  explicit AbstractInlineBox(const NGPaintFragmentTraversalContext& fragment)
-      : type_(InstanceType::kNG), paint_fragment_(fragment) {}
+  explicit AbstractInlineBox(NGPaintFragmentTraversal&& fragment)
+      : type_(InstanceType::kNG), paint_fragment_(std::move(fragment)) {}
 
   enum class InstanceType { kNull, kOldLayout, kNG };
   InstanceType type_;
@@ -146,7 +150,7 @@ class AbstractInlineBox {
   // Only one of |inline_box_| or |paint_fragment_| is used, but we cannot make
   // them union because of non-trivial destructor.
   const InlineBox* inline_box_;
-  NGPaintFragmentTraversalContext paint_fragment_;
+  NGPaintFragmentTraversal paint_fragment_;
 };
 
 // |SideAffinity| represents the left or right side of a leaf inline

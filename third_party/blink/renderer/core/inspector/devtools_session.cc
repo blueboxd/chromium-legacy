@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -111,21 +115,21 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
   IOSession(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
             scoped_refptr<InspectorTaskRunner> inspector_task_runner,
             CrossThreadWeakPersistent<::blink::DevToolsSession> session,
-            mojom::blink::DevToolsSessionRequest request)
+            mojo::PendingReceiver<mojom::blink::DevToolsSession> receiver)
       : io_task_runner_(io_task_runner),
         inspector_task_runner_(inspector_task_runner),
-        session_(std::move(session)),
-        binding_(this) {
+        session_(std::move(session)) {
     PostCrossThreadTask(*io_task_runner, FROM_HERE,
                         CrossThreadBindOnce(&IOSession::BindInterface,
                                             CrossThreadUnretained(this),
-                                            WTF::Passed(std::move(request))));
+                                            WTF::Passed(std::move(receiver))));
   }
 
   ~IOSession() override {}
 
-  void BindInterface(mojom::blink::DevToolsSessionRequest request) {
-    binding_.Bind(std::move(request), io_task_runner_);
+  void BindInterface(
+      mojo::PendingReceiver<mojom::blink::DevToolsSession> receiver) {
+    receiver_.Bind(std::move(receiver), io_task_runner_);
   }
 
   void DeleteSoon() { io_task_runner_->DeleteSoon(FROM_HERE, this); }
@@ -148,7 +152,7 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   CrossThreadWeakPersistent<::blink::DevToolsSession> session_;
-  mojo::Binding<mojom::blink::DevToolsSession> binding_;
+  mojo::Receiver<mojom::blink::DevToolsSession> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IOSession);
 };
@@ -157,7 +161,7 @@ DevToolsSession::DevToolsSession(
     DevToolsAgent* agent,
     mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
     mojom::blink::DevToolsSessionAssociatedRequest main_request,
-    mojom::blink::DevToolsSessionRequest io_request,
+    mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
     bool client_expects_binary_responses)
     : agent_(agent),
@@ -168,9 +172,9 @@ DevToolsSession::DevToolsSession(
       v8_session_state_(kV8StateKey),
       v8_session_state_cbor_(&v8_session_state_,
                              /*default_value=*/{}) {
-  io_session_ =
-      new IOSession(agent_->io_task_runner_, agent_->inspector_task_runner_,
-                    WrapCrossThreadWeakPersistent(this), std::move(io_request));
+  io_session_ = new IOSession(
+      agent_->io_task_runner_, agent_->inspector_task_runner_,
+      WrapCrossThreadWeakPersistent(this), std::move(io_receiver));
 
   host_ptr_.Bind(std::move(host_ptr_info));
   host_ptr_.set_connection_error_handler(

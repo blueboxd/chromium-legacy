@@ -202,6 +202,7 @@
 
 #if defined(OS_WIN)
 #include "media/device_monitors/system_message_window_win.h"
+#include "sandbox/win/src/process_mitigations.h"
 #elif defined(OS_LINUX) && defined(USE_UDEV)
 #include "media/device_monitors/device_monitor_udev.h"
 #elif defined(OS_MACOSX)
@@ -387,6 +388,15 @@ mojo::PendingRemote<data_decoder::mojom::BleScanParser> GetBleScanParser() {
   return ble_scan_parser;
 }
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN)
+// Disable dynamic code using ACG. Prevents the browser process from generating
+// dynamic code or modifying executable code. See comments in
+// sandbox/win/src/security_level.h. Only available on Windows 10 RS1 (1607,
+// Build 14393) onwards.
+const base::Feature kBrowserDynamicCodeDisabled{
+    "BrowserDynamicCodeDisabled", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -635,6 +645,15 @@ int BrowserMainLoop::EarlyInitialization() {
 
 #if defined(OS_FUCHSIA)
   InitDefaultJob();
+#endif
+
+#if defined(OS_WIN)
+  if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
+    if (base::FeatureList::IsEnabled(kBrowserDynamicCodeDisabled)) {
+      sandbox::ApplyProcessMitigationsToCurrentProcess(
+          sandbox::MITIGATION_DYNAMIC_CODE_DISABLE_WITH_OPT_OUT);
+    }
+  }
 #endif
 
   if (parsed_command_line_.HasSwitch(switches::kRendererProcessLimit)) {

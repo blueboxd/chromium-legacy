@@ -205,7 +205,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
   SkSurface* current_surface_ = nullptr;
-  scoped_refptr<ResourceFence> current_frame_resource_fence_;
+  class FrameResourceFence;
+  scoped_refptr<FrameResourceFence> current_frame_resource_fence_;
 
   bool disable_picture_quad_image_filtering_ = false;
   bool is_scissor_enabled_ = false;

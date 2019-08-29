@@ -22,10 +22,6 @@ namespace storage {
 class BlobStorageContext;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 namespace blink {
 class URLLoaderThrottle;
 }
@@ -54,23 +50,6 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache);
 
-  // Used only when NetworkService is not enabled (or indirectly via the
-  // other CreateLoaderAndStart when NetworkService is enabled).
-  // This creates a loader and starts fetching using the given
-  // |network_lader_factory|. |frame_tree_node_id| may be given and used to
-  // create necessary throttles when Network Service is enabled when the
-  // created loader internally makes additional requests.
-  void CreateLoaderAndStart(
-      network::mojom::URLLoaderRequest request,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
-
   // Register a callback that is fired right before a prefetch load is started
   // by this service.
   void RegisterPrefetchLoaderCallbackForTest(
@@ -98,7 +77,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
-                            const network::ResourceRequest& resource_request,
+                            const network::ResourceRequest& resource_request_in,
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
@@ -108,6 +87,8 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
   // by setting it to a special URLLoaderFactory created by the current
   // context's RenderFrameHost.
   void EnsureCrossOriginFactory();
+  bool IsValidCrossOriginPrefetch(
+      const network::ResourceRequest& resource_request);
 
   // blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;

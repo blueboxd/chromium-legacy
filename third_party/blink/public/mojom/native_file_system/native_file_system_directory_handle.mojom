@@ -12,7 +12,7 @@ import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 // Union representing either a file or a directory handle. Used in APIs that
 // can return arbitrary handles.
 union NativeFileSystemHandle {
-  NativeFileSystemFileHandle file;
+  pending_remote<NativeFileSystemFileHandle> file;
   NativeFileSystemDirectoryHandle directory;
 };
 
@@ -43,7 +43,7 @@ interface NativeFileSystemDirectoryHandle {
   // created. Returns an error if the operation fails, or a handle to the newly
   // created file if the operation succeeds.
   GetFile(string basename, bool create) =>
-      (NativeFileSystemError result, NativeFileSystemFileHandle? file);
+      (NativeFileSystemError result, pending_remote<NativeFileSystemFileHandle>? file);
 
   // Returns a directory with the given |basename| that is a child of this
   // directory. If no such directory exists, and |create| is true, the directory

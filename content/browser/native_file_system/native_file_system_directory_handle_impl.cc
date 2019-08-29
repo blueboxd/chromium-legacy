@@ -88,14 +88,15 @@ void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& basename,
   blink::mojom::NativeFileSystemErrorPtr get_child_url_result =
       GetChildURL(basename, &child_url);
   if (get_child_url_result->status != NativeFileSystemStatus::kOk) {
-    std::move(callback).Run(std::move(get_child_url_result), nullptr);
+    std::move(callback).Run(std::move(get_child_url_result),
+                            mojo::NullRemote());
     return;
   }
 
   if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kPermissionDenied),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 
@@ -111,7 +112,7 @@ void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& basename,
           std::move(callback).Run(
               native_file_system_error::FromStatus(
                   NativeFileSystemStatus::kPermissionDenied),
-              nullptr);
+              mojo::NullRemote());
         }),
         std::move(callback));
   } else {
@@ -232,7 +233,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetFile(
 
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(native_file_system_error::FromFileError(result),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 
@@ -376,9 +377,7 @@ NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
   }
   return NativeFileSystemEntry::New(
       NativeFileSystemHandle::NewFile(
-          manager()
-              ->CreateFileHandle(context(), url, handle_state())
-              .PassInterface()),
+          manager()->CreateFileHandle(context(), url, handle_state())),
       basename);
 }
 

@@ -24,6 +24,7 @@
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
+#include "third_party/pdfium/public/fpdf_catalog.h"
 
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;
@@ -718,6 +719,8 @@ void PDFiumPage::CalculateImages() {
   calculated_images_ = true;
   FPDF_PAGE page = GetPage();
   int page_object_count = FPDFPage_CountObjects(page);
+  MarkedContentIdToImageMap marked_content_id_image_map;
+  bool is_tagged = FPDFCatalog_IsTagged(engine_->doc());
   for (int i = 0; i < page_object_count; ++i) {
     FPDF_PAGEOBJECT page_object = FPDFPage_GetObject(page, i);
     if (FPDFPageObj_GetType(page_object) != FPDF_PAGEOBJ_IMAGE)
@@ -732,7 +735,79 @@ void PDFiumPage::CalculateImages() {
     Image image;
     image.bounding_rect = PageToScreen(pp::Point(), 1.0, left, top, right,
                                        bottom, PageOrientation::kOriginal);
+
+    if (is_tagged) {
+      // Collect all marked content IDs for image objects so that they can
+      // later be used to retrieve alt text from struct tree for the page.
+      FPDF_IMAGEOBJ_METADATA image_metadata;
+      if (FPDFImageObj_GetImageMetadata(page_object, page, &image_metadata)) {
+        int marked_content_id = image_metadata.marked_content_id;
+        if (marked_content_id >= 0) {
+          // If |marked_content_id| is already present, ignore the one being
+          // inserted.
+          marked_content_id_image_map.insert(
+              {marked_content_id, images_.size()});
+        }
+      }
+    }
     images_.push_back(image);
+  }
+
+  if (!marked_content_id_image_map.empty())
+    PopulateImageAltText(marked_content_id_image_map);
+}
+
+void PDFiumPage::PopulateImageAltText(
+    const MarkedContentIdToImageMap& marked_content_id_image_map) {
+  ScopedFPDFStructTree struct_tree(FPDF_StructTree_GetForPage(GetPage()));
+  if (!struct_tree)
+    return;
+
+  std::set<FPDF_STRUCTELEMENT> visited_elements;
+  int tree_children_count = FPDF_StructTree_CountChildren(struct_tree.get());
+  for (int i = 0; i < tree_children_count; ++i) {
+    FPDF_STRUCTELEMENT current_element =
+        FPDF_StructTree_GetChildAtIndex(struct_tree.get(), i);
+    PopulateImageAltTextForStructElement(marked_content_id_image_map,
+                                         current_element, &visited_elements);
+  }
+}
+
+void PDFiumPage::PopulateImageAltTextForStructElement(
+    const MarkedContentIdToImageMap& marked_content_id_image_map,
+    FPDF_STRUCTELEMENT current_element,
+    std::set<FPDF_STRUCTELEMENT>* visited_elements) {
+  if (!current_element)
+    return;
+
+  bool inserted = visited_elements->insert(current_element).second;
+  if (!inserted)
+    return;
+
+  int marked_content_id =
+      FPDF_StructElement_GetMarkedContentID(current_element);
+  if (marked_content_id >= 0) {
+    auto it = marked_content_id_image_map.find(marked_content_id);
+    if (it != marked_content_id_image_map.end() &&
+        images_[it->second].alt_text.empty()) {
+      size_t buffer_size =
+          FPDF_StructElement_GetAltText(current_element, nullptr, 0);
+      if (buffer_size > 0) {
+        base::string16 alt_text;
+        PDFiumAPIStringBufferSizeInBytesAdapter<base::string16>
+            api_string_adapter(&alt_text, buffer_size, true);
+        api_string_adapter.Close(FPDF_StructElement_GetAltText(
+            current_element, api_string_adapter.GetData(), buffer_size));
+        images_[it->second].alt_text = base::UTF16ToUTF8(alt_text);
+      }
+    }
+  }
+  int children_count = FPDF_StructElement_CountChildren(current_element);
+  for (int i = 0; i < children_count; ++i) {
+    FPDF_STRUCTELEMENT child =
+        FPDF_StructElement_GetChildAtIndex(current_element, i);
+    PopulateImageAltTextForStructElement(marked_content_id_image_map, child,
+                                         visited_elements);
   }
 }
 

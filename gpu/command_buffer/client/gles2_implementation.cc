@@ -209,6 +209,7 @@ GLES2Implementation::GLES2Implementation(
       bound_copy_read_buffer_(0),
       bound_copy_write_buffer_(0),
       bound_dispatch_indirect_buffer_(0),
+      bound_draw_indirect_buffer_(0),
       bound_pixel_pack_buffer_(0),
       bound_pixel_unpack_buffer_(0),
       bound_shader_storage_buffer_(0),
@@ -1056,6 +1057,9 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       return true;
     case GL_DISPATCH_INDIRECT_BUFFER_BINDING:
       *params = bound_dispatch_indirect_buffer_;
+      return true;
+    case GL_DRAW_INDIRECT_BUFFER_BINDING:
+      *params = bound_draw_indirect_buffer_;
       return true;
     case GL_SHADER_STORAGE_BUFFER_BINDING:
       *params = bound_shader_storage_buffer_;
@@ -4663,6 +4667,12 @@ void GLES2Implementation::BindBufferHelper(GLenum target, GLuint buffer_id) {
         changed = true;
       }
       break;
+    case GL_DRAW_INDIRECT_BUFFER:
+      if (bound_draw_indirect_buffer_ != buffer_id) {
+        bound_draw_indirect_buffer_ = buffer_id;
+        changed = true;
+      }
+      break;
     case GL_ELEMENT_ARRAY_BUFFER:
       changed = vertex_array_object_manager_->BindElementArray(buffer_id);
       break;
@@ -4987,6 +4997,9 @@ void GLES2Implementation::DeleteBuffersHelper(GLsizei n,
     }
     if (buffers[ii] == bound_dispatch_indirect_buffer_) {
       bound_dispatch_indirect_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_draw_indirect_buffer_) {
+      bound_draw_indirect_buffer_ = 0;
     }
     if (buffers[ii] == bound_pixel_pack_buffer_) {
       bound_pixel_pack_buffer_ = 0;
@@ -5694,6 +5707,7 @@ GLboolean GLES2Implementation::UnmapBuffer(GLenum target) {
     case GL_COPY_READ_BUFFER:
     case GL_COPY_WRITE_BUFFER:
     case GL_DISPATCH_INDIRECT_BUFFER:
+    case GL_DRAW_INDIRECT_BUFFER:
     case GL_PIXEL_PACK_BUFFER:
     case GL_PIXEL_UNPACK_BUFFER:
     case GL_SHADER_STORAGE_BUFFER:

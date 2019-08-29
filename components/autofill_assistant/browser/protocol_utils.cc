@@ -10,10 +10,10 @@
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/autofill_action.h"
 #include "components/autofill_assistant/browser/actions/click_action.h"
+#include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 #include "components/autofill_assistant/browser/actions/configure_bottom_sheet_action.h"
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/focus_element_action.h"
-#include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
 #include "components/autofill_assistant/browser/actions/highlight_element_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
 #include "components/autofill_assistant/browser/actions/popup_message_action.h"
@@ -250,9 +250,9 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
         client_action = std::make_unique<ShowDetailsAction>(delegate, action);
         break;
       }
-      case ActionProto::ActionInfoCase::kGetPaymentInformation: {
+      case ActionProto::ActionInfoCase::kCollectUserData: {
         client_action =
-            std::make_unique<GetPaymentInformationAction>(delegate, action);
+            std::make_unique<CollectUserDataAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::kSetFormValue: {

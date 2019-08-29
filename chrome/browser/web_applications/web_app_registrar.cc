@@ -146,25 +146,16 @@ std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
   app_ids.reserve(registry_.size());
 
-  for (auto& app : AllApps())
+  for (const WebApp& app : AllApps())
     app_ids.push_back(app.app_id());
 
   return app_ids;
 }
 
-WebAppRegistrar::AppSet::Iter::Iter(InternalIter&& internal_iter)
-    : internal_iter_(std::move(internal_iter)) {}
-
-WebAppRegistrar::AppSet::Iter::Iter(Iter&&) = default;
-
-WebAppRegistrar::AppSet::Iter::~Iter() = default;
-
 WebAppRegistrar::AppSet::AppSet(const WebAppRegistrar* registrar)
-    : begin_(registrar->registry_.begin()),
-      end_(registrar->registry_.end())
+    : registrar_(registrar)
 #if DCHECK_IS_ON()
       ,
-      registrar_(registrar),
       mutations_count_(registrar->mutations_count_)
 #endif
 {
@@ -176,7 +167,27 @@ WebAppRegistrar::AppSet::~AppSet() {
 #endif
 }
 
-WebAppRegistrar::AppSet WebAppRegistrar::AllApps() const {
+WebAppRegistrar::AppSet::iterator WebAppRegistrar::AppSet::begin() {
+  return iterator(registrar_->registry_.begin());
+}
+
+WebAppRegistrar::AppSet::iterator WebAppRegistrar::AppSet::end() {
+  return iterator(registrar_->registry_.end());
+}
+
+WebAppRegistrar::AppSet::const_iterator WebAppRegistrar::AppSet::begin() const {
+  return const_iterator(registrar_->registry_.begin());
+}
+
+WebAppRegistrar::AppSet::const_iterator WebAppRegistrar::AppSet::end() const {
+  return const_iterator(registrar_->registry_.end());
+}
+
+const WebAppRegistrar::AppSet WebAppRegistrar::AllApps() const {
+  return AppSet(this);
+}
+
+WebAppRegistrar::AppSet WebAppRegistrar::AllAppsMutable() {
   return AppSet(this);
 }
 

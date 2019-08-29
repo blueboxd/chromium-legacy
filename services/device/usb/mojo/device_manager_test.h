@@ -8,7 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/usb_manager_test.mojom.h"
 #include "services/device/usb/usb_service.h"
 
@@ -23,7 +24,8 @@ class DeviceManagerTest : public mojom::UsbDeviceManagerTest {
   explicit DeviceManagerTest(UsbService* usb_service);
   ~DeviceManagerTest() override;
 
-  void BindRequest(mojom::UsbDeviceManagerTestRequest request);
+  void BindReceiver(
+      mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver);
 
  private:
   // mojom::DeviceManagerTest overrides:
@@ -36,7 +38,7 @@ class DeviceManagerTest : public mojom::UsbDeviceManagerTest {
   void GetTestDevices(GetTestDevicesCallback callback) override;
 
  private:
-  mojo::BindingSet<mojom::UsbDeviceManagerTest> bindings_;
+  mojo::ReceiverSet<mojom::UsbDeviceManagerTest> receivers_;
   UsbService* usb_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerTest);

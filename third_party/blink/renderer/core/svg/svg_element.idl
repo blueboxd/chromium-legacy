@@ -25,18 +25,14 @@
 [Exposed=Window]
 interface SVGElement : Element {
     [MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
-    [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
     // CSS Object Model (CSSOM)
     // https://drafts.csswg.org/cssom/#the-elementcssinlinestyle-interface
     [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 
     readonly attribute SVGSVGElement? ownerSVGElement;
     readonly attribute SVGElement? viewportElement;
-    [CustomElementCallbacks] attribute long tabIndex;
-    void focus();
-    void blur();
 };
 
 SVGElement includes GlobalEventHandlers;
 SVGElement includes DocumentAndElementEventHandlers;
-SVGElement includes NoncedElement;
+SVGElement includes HTMLOrForeignElement;

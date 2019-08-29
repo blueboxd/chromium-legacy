@@ -57,7 +57,6 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
     : factory_(std::move(factory)),
       browser_context_(browser_context),
       forwarding_handshake_client_(std::move(handshake_client)),
-      binding_as_auth_handler_(this),
       request_headers_(request.headers),
       has_extra_headers_(has_extra_headers),
       info_(WebRequestInfoInitParams(request_id_generator->Generate(),
@@ -307,7 +306,7 @@ void WebRequestProxyingWebSocket::StartProxying(
 
 void WebRequestProxyingWebSocket::OnBeforeRequestComplete(int error_code) {
   DCHECK(receiver_as_header_client_.is_bound() ||
-         !binding_as_handshake_client_.is_bound());
+         !receiver_as_handshake_client_.is_bound());
   DCHECK(info_.url.SchemeIsWSOrWSS());
   if (error_code != net::OK) {
     OnError(error_code);
@@ -340,7 +339,7 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(
     const std::set<std::string>& set_headers,
     int error_code) {
   DCHECK(receiver_as_header_client_.is_bound() ||
-         !binding_as_handshake_client_.is_bound());
+         !receiver_as_handshake_client_.is_bound());
   if (error_code != net::OK) {
     OnError(error_code);
     return;
@@ -374,8 +373,6 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
     }
   }
 
-  network::mojom::AuthenticationHandlerPtr auth_handler;
-  binding_as_auth_handler_.Bind(mojo::MakeRequest(&auth_handler));
   mojo::PendingRemote<network::mojom::TrustedHeaderClient>
       trusted_header_client = mojo::NullRemote();
   if (has_extra_headers_) {
@@ -385,13 +382,14 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
 
   std::move(factory_).Run(
       info_.url, std::move(additional_headers),
-      binding_as_handshake_client_.BindNewPipeAndPassRemote(),
-      std::move(auth_handler), std::move(trusted_header_client));
+      receiver_as_handshake_client_.BindNewPipeAndPassRemote(),
+      receiver_as_auth_handler_.BindNewPipeAndPassRemote(),
+      std::move(trusted_header_client));
 
-  // Here we detect mojo connection errors on |binding_as_handshake_client_|.
+  // Here we detect mojo connection errors on |receiver_as_handshake_client_|.
   // See also CreateWebSocket in
   // //network/services/public/mojom/network_context.mojom.
-  binding_as_handshake_client_.set_disconnect_with_reason_handler(
+  receiver_as_handshake_client_.set_disconnect_with_reason_handler(
       base::BindOnce(&WebRequestProxyingWebSocket::OnMojoConnectionError,
                      base::Unretained(this)));
 }
@@ -463,15 +461,15 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth(
 }
 
 void WebRequestProxyingWebSocket::PauseIncomingMethodCallProcessing() {
-  binding_as_handshake_client_.Pause();
-  binding_as_auth_handler_.PauseIncomingMethodCallProcessing();
+  receiver_as_handshake_client_.Pause();
+  receiver_as_auth_handler_.Pause();
   if (receiver_as_header_client_.is_bound())
     receiver_as_header_client_.Pause();
 }
 
 void WebRequestProxyingWebSocket::ResumeIncomingMethodCallProcessing() {
-  binding_as_handshake_client_.Resume();
-  binding_as_auth_handler_.ResumeIncomingMethodCallProcessing();
+  receiver_as_handshake_client_.Resume();
+  receiver_as_auth_handler_.Resume();
   if (receiver_as_header_client_.is_bound())
     receiver_as_header_client_.Resume();
 }

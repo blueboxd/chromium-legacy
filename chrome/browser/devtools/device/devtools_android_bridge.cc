@@ -400,6 +400,6 @@ void DevToolsAndroidBridge::set_tcp_provider_callback_for_test(
 }
 
 void DevToolsAndroidBridge::set_usb_device_manager_for_test(
-    device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_usb_manager) {
   device_manager_->set_usb_device_manager_for_test(std::move(fake_usb_manager));
 }

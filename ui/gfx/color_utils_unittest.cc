@@ -196,7 +196,7 @@ TEST(ColorUtils, AlphaBlend) {
 TEST(ColorUtils, SkColorToRgbaString) {
   SkColor color = SkColorSetARGB(153, 100, 150, 200);
   std::string color_string = SkColorToRgbaString(color);
-  EXPECT_EQ(color_string, "rgba(100,150,200,.6)");
+  EXPECT_EQ(color_string, "rgba(100,150,200,0.6)");
 }
 
 TEST(ColorUtils, SkColorToRgbString) {

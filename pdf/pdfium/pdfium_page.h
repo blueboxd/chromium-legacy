@@ -5,6 +5,8 @@
 #ifndef PDF_PDFIUM_PDFIUM_PAGE_H_
 #define PDF_PDFIUM_PDFIUM_PAGE_H_
 
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -159,6 +161,24 @@ class PDFiumPage {
   // broken for page objects such as links and images.
   void CalculatePageObjectTextRunBreaks();
 
+  // Key    :  Marked content id for the image element as specified in the
+  //           struct tree.
+  // Value  :  Index of image in the |images_| vector.
+  using MarkedContentIdToImageMap = std::map<int, size_t>;
+  // Traverses the entire struct tree of the page recursively and extracts the
+  // alt text from struct tree elements corresponding to the marked content IDs
+  // present in |marked_content_id_image_map|.
+  void PopulateImageAltText(
+      const MarkedContentIdToImageMap& marked_content_id_image_map);
+  // Traverses a struct element and its sub-tree recursively and extracts the
+  // alt text from struct elements corresponding to the marked content IDs
+  // present in |marked_content_id_image_map|. Uses |visited_elements| to guard
+  // against malformed struct trees.
+  void PopulateImageAltTextForStructElement(
+      const MarkedContentIdToImageMap& marked_content_id_image_map,
+      FPDF_STRUCTELEMENT current_element,
+      std::set<FPDF_STRUCTELEMENT>* visited_elements);
+
   class ScopedUnloadPreventer {
    public:
     explicit ScopedUnloadPreventer(PDFiumPage* page);
@@ -191,6 +211,8 @@ class PDFiumPage {
     ~Image();
 
     pp::Rect bounding_rect;
+    // Alt text is available only for tagged PDFs.
+    std::string alt_text;
   };
 
   PDFiumEngine* engine_;

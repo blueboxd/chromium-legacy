@@ -359,7 +359,7 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
       ts << ")";
   }
 
-  if (o.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (o.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     ts << " (display-locked)";
 }
 
@@ -575,7 +575,7 @@ void Write(WTF::TextStream& ts,
     }
   }
 
-  if (!o.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+  if (!o.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
     for (LayoutObject* child = o.SlowFirstChild(); child;
          child = child->NextSibling()) {
       if (child->HasLayer())

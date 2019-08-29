@@ -182,7 +182,7 @@ bool DoCopyFile(const FilePath& from_path,
 
   // Mitigate the issues caused by loading DLLs on a background thread
   // (http://crbug/973868).
-  base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
+  ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
 
   // Unlike the posix implementation that copies the file manually and discards
   // the ACL bits, CopyFile() copies the complete SECURITY_DESCRIPTOR and access
@@ -732,18 +732,19 @@ bool DevicePathToDriveLetterPath(const FilePath& nt_device_path,
 FilePath MakeLongFilePath(const FilePath& input) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
-  DWORD path_long_len = ::GetLongPathName(input.value().c_str(), nullptr, 0);
+  DWORD path_long_len = ::GetLongPathName(as_wcstr(input.value()), nullptr, 0);
   if (path_long_len == 0UL)
     return FilePath();
 
-  base::string16 path_long_str;
+  string16 path_long_str;
   path_long_len = ::GetLongPathName(
-      input.value().c_str(), base::WriteInto(&path_long_str, path_long_len),
+      as_wcstr(input.value()),
+      as_writable_wcstr(WriteInto(&path_long_str, path_long_len)),
       path_long_len);
   if (path_long_len == 0UL)
     return FilePath();
 
-  return base::FilePath(path_long_str);
+  return FilePath(path_long_str);
 }
 
 // TODO(rkc): Work out if we want to handle NTFS junctions here or not, handle

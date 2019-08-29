@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/usb_device.mojom-blink.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -25,9 +26,9 @@
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
+using device::mojom::blink::UsbDevice;
 using device::mojom::blink::UsbDeviceFilterPtr;
 using device::mojom::blink::UsbDeviceInfoPtr;
-using device::mojom::blink::UsbDevicePtr;
 
 namespace blink {
 namespace {
@@ -206,8 +207,8 @@ USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
   USBDevice* device = device_cache_.at(device_info->guid);
   if (!device) {
     String guid = device_info->guid;
-    UsbDevicePtr pipe;
-    service_->GetDevice(guid, mojo::MakeRequest(&pipe));
+    mojo::PendingRemote<UsbDevice> pipe;
+    service_->GetDevice(guid, pipe.InitWithNewPipeAndPassReceiver());
     device = USBDevice::Create(std::move(device_info), std::move(pipe),
                                GetExecutionContext());
     device_cache_.insert(guid, device);
@@ -253,7 +254,7 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
   String guid = device_info->guid;
   USBDevice* device = device_cache_.at(guid);
   if (!device) {
-    device = USBDevice::Create(std::move(device_info), nullptr,
+    device = USBDevice::Create(std::move(device_info), mojo::NullRemote(),
                                GetExecutionContext());
   }
   DispatchEvent(

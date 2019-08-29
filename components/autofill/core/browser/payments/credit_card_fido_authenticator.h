@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "device/fido/fido_constants.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
 
 namespace autofill {
@@ -21,7 +22,7 @@ namespace autofill {
 using blink::mojom::AuthenticatorStatus;
 using blink::mojom::GetAssertionAuthenticatorResponse;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
-using blink::mojom::InternalAuthenticatorPtr;
+using blink::mojom::InternalAuthenticator;
 using blink::mojom::MakeCredentialAuthenticatorResponse;
 using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
 using blink::mojom::PublicKeyCredentialCreationOptions;
@@ -192,7 +193,7 @@ class CreditCardFIDOAuthenticator
   payments::PaymentsClient* const payments_client_;
 
   // Authenticator pointer to facilitate WebAuthn.
-  InternalAuthenticatorPtr authenticator_;
+  mojo::Remote<InternalAuthenticator> authenticator_;
 
   // Responsible for getting the full card details, including the PAN and the
   // CVC.

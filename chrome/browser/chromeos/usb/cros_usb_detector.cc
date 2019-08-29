@@ -264,9 +264,9 @@ CrosUsbDetector::~CrosUsbDetector() {
 }
 
 void CrosUsbDetector::SetDeviceManagerForTesting(
-    device::mojom::UsbDeviceManagerPtr device_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager) {
   DCHECK(!device_manager_) << "device_manager_ was already initialized";
-  device_manager_ = std::move(device_manager);
+  device_manager_.Bind(std::move(device_manager));
 }
 
 void CrosUsbDetector::AddUsbDeviceObserver(CrosUsbDeviceObserver* observer) {
@@ -300,11 +300,12 @@ std::vector<CrosUsbDeviceInfo> CrosUsbDetector::GetDevicesSharableWithCrostini()
 void CrosUsbDetector::ConnectToDeviceManager() {
   // Tests may set a fake manager.
   if (!device_manager_) {
-    content::GetSystemConnector()->BindInterface(
-        device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
+    content::GetSystemConnector()->Connect(
+        device::mojom::kServiceName,
+        device_manager_.BindNewPipeAndPassReceiver());
   }
   DCHECK(device_manager_);
-  device_manager_.set_connection_error_handler(
+  device_manager_.set_disconnect_handler(
       base::BindOnce(&CrosUsbDetector::OnDeviceManagerConnectionError,
                      weak_ptr_factory_.GetWeakPtr()));
 

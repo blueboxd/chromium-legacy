@@ -167,6 +167,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.EnsureRareData()->is_inside_balanced_columns = true;
   }
 
+  void SetIsInColumnBfc() { space_.EnsureRareData()->is_in_column_bfc = true; }
+
   void SetIsTableCell(bool b) { space_.bitfields_.is_table_cell = b; }
 
   void SetIsRestrictedBlockSizeTableCell(bool b) {

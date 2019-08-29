@@ -158,8 +158,7 @@ bool* GetRegisteredWithManagementStateStorage() {
   static bool state = []() {
     // Mitigate the issues caused by loading DLLs on a background thread
     // (http://crbug/973868).
-    base::ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(
-        FROM_HERE);
+    ScopedThreadMayLoadLibraryOnBackgroundThread priority_boost(FROM_HERE);
 
     ScopedNativeLibrary library(
         FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
@@ -212,7 +211,7 @@ bool IsWindows10TabletMode(HWND hwnd) {
   ScopedHString view_settings_guid = ScopedHString::Create(
       RuntimeClass_Windows_UI_ViewManagement_UIViewSettings);
   Microsoft::WRL::ComPtr<IUIViewSettingsInterop> view_settings_interop;
-  HRESULT hr = base::win::RoGetActivationFactory(
+  HRESULT hr = win::RoGetActivationFactory(
       view_settings_guid.get(), IID_PPV_ARGS(&view_settings_interop));
   if (FAILED(hr))
     return false;
@@ -811,13 +810,14 @@ bool IsCurrentSessionRemote() {
   if (!::ProcessIdToSessionId(::GetCurrentProcessId(), &current_session_id))
     return false;
 
-  static constexpr wchar_t kRdpSettingsKeyName[] =
-      L"SYSTEM\\CurrentControlSet\\Control\\Terminal Server";
-  base::win::RegKey key(HKEY_LOCAL_MACHINE, kRdpSettingsKeyName, KEY_READ);
+  static constexpr char16 kRdpSettingsKeyName[] =
+      STRING16_LITERAL("SYSTEM\\CurrentControlSet\\Control\\Terminal Server");
+  RegKey key(HKEY_LOCAL_MACHINE, kRdpSettingsKeyName, KEY_READ);
   if (!key.Valid())
     return false;
 
-  static constexpr wchar_t kGlassSessionIdValueName[] = L"GlassSessionId";
+  static constexpr char16 kGlassSessionIdValueName[] =
+      STRING16_LITERAL("GlassSessionId");
   DWORD glass_session_id = 0;
   if (key.ReadValueDW(kGlassSessionIdValueName, &glass_session_id) !=
       ERROR_SUCCESS)

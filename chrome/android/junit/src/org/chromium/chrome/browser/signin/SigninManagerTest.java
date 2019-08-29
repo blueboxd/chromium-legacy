@@ -146,14 +146,11 @@ public class SigninManagerTest {
     }
 
     @Test
-    public void signOutFromNativeWithManagedDomain() {
+    public void signOutFromNative() {
         // Stub out various native calls. Some of these are verified as never called
         // and those stubs simply allow that verification to catch any issues.
         doNothing().when(mNativeMock).wipeProfileData(anyLong(), any());
         doNothing().when(mNativeMock).wipeGoogleServiceWorkerCaches(anyLong(), any());
-
-        // See verification of nativeWipeProfileData below.
-        doReturn("TestDomain").when(mNativeMock).getManagementDomain(anyLong());
 
         // Trigger the sign out flow!
         mSigninManager.onNativeSignOut();
@@ -161,24 +158,6 @@ public class SigninManagerTest {
         // Sign-out should only clear the profile when the user is managed.
         verify(mNativeMock, times(1)).wipeProfileData(anyLong(), any());
         verify(mNativeMock, never()).wipeGoogleServiceWorkerCaches(anyLong(), any());
-    }
-
-    @Test
-    public void signOutFromNativeWithNullDomain() {
-        // Stub out various native calls. Some of these are verified as never called
-        // and those stubs simply allow that verification to catch any issues.
-        doNothing().when(mNativeMock).wipeProfileData(anyLong(), any());
-        doNothing().when(mNativeMock).wipeGoogleServiceWorkerCaches(anyLong(), any());
-
-        // See verification of nativeWipeGoogleServiceWorkerCaches below.
-        doReturn(null).when(mNativeMock).getManagementDomain(anyLong());
-
-        // Trigger the sign out flow!
-        mSigninManager.onNativeSignOut();
-
-        // Sign-out should only clear the service worker cache when the user is not managed.
-        verify(mNativeMock, never()).wipeProfileData(anyLong(), any());
-        verify(mNativeMock, times(1)).wipeGoogleServiceWorkerCaches(anyLong(), any());
     }
 
     @Test

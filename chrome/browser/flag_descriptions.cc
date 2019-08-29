@@ -2804,6 +2804,12 @@ const char kNtpZeroSuggestDescription[] =
     "If enabled, forces on \"Real search box in New Tab Page\" and suggests "
     "results without any typed input (i.e. on focus).";
 
+const char kEnableImprovedCookieControlsName[] =
+    "Enable improved cookie controls UI";
+const char kEnableImprovedCookieControlsDescription[] =
+    "Enables third-party cookie blocking and an improved cookie controls UI in "
+    "incognito mode.";
+
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =
     "Allows viewing of simplified web pages by selecting 'Customize and "

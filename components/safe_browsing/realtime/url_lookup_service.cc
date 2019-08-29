@@ -5,6 +5,7 @@
 #include "components/safe_browsing/realtime/url_lookup_service.h"
 
 #include "base/base64url.h"
+#include "base/time/time.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -22,6 +23,12 @@ namespace {
 // TODO(vakh): Use the correct endpoint.
 const char kRealTimeLookupUrlPrefix[] =
     "http://localhost:8000/safebrowsing/clientreport/realtime";
+
+const size_t kMaxFailuresToEnforceBackoff = 3;
+
+const size_t kBackOffResetDurationInSeconds = 5 * 60;  // 5 minutes.
+
+const size_t kURLLookupTimeoutDurationInSeconds = 1 * 60;  // 1 minute.
 
 }  // namespace
 
@@ -85,12 +92,12 @@ void RealTimeUrlLookupService::StartLookup(const GURL& url,
                                        traffic_annotation);
   network::SimpleURLLoader* loader = owned_loader.get();
   owned_loader->AttachStringForUpload(req_data, "application/octet-stream");
+  owned_loader->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(kURLLookupTimeoutDurationInSeconds));
   owned_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&RealTimeUrlLookupService::OnURLLoaderComplete,
-                     base::Unretained(this), loader));
-
-  // TODO(crbug.com/992099): Implement timeout and backoff.
+                     GetWeakPtr(), loader));
 
   pending_requests_[owned_loader.release()] = std::move(callback);
 }
@@ -121,24 +128,54 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
       "SafeBrowsing.RT.Network.Result", net_error, response_code);
 
   auto response = std::make_unique<RTLookupResponse>();
-  if (net_error == net::OK && response_code == net::HTTP_OK) {
-    response->ParseFromString(*response_body);
-  } else {
-    HandleResponseError();
-  }
+  bool success = (net_error == net::OK) && (response_code == net::HTTP_OK) &&
+                 response->ParseFromString(*response_body);
+  success ? HandleLookupSuccess() : HandleLookupError();
 
   std::move(it->second).Run(std::move(response));
   delete it->first;
   pending_requests_.erase(it);
 }
 
-void RealTimeUrlLookupService::HandleResponseError() {
-  // TODO(crbug.com/992099): Implement a backoff mechanism.
+bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) const {
+  return url.SchemeIsHTTPOrHTTPS();
+}
+
+void RealTimeUrlLookupService::ExitBackoff() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  ResetFailures();
+}
+
+void RealTimeUrlLookupService::HandleLookupError() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  consecutive_failures_++;
+
+  if (IsInBackoffMode()) {
+    reset_backoff_timer_.Stop();
+    reset_backoff_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kBackOffResetDurationInSeconds),
+        this, &RealTimeUrlLookupService::ExitBackoff);
+  }
+}
+
+void RealTimeUrlLookupService::HandleLookupSuccess() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  ResetFailures();
 }
 
 bool RealTimeUrlLookupService::IsInBackoffMode() {
-  // TODO(crbug.com/992099): Implement a backoff mechanism.
-  return false;
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  return consecutive_failures_ >= kMaxFailuresToEnforceBackoff;
+}
+
+void RealTimeUrlLookupService::ResetFailures() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  consecutive_failures_ = 0;
+  reset_backoff_timer_.Stop();
+}
+
+base::WeakPtr<RealTimeUrlLookupService> RealTimeUrlLookupService::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace safe_browsing

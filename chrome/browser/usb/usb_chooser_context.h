@@ -20,6 +20,9 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/usb/usb_policy_allowed_devices.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 #include "url/origin.h"
@@ -69,9 +72,10 @@ class UsbChooserContext : public ChooserContextBase,
 
   // Forward UsbDeviceManager methods.
   void GetDevices(device::mojom::UsbDeviceManager::GetDevicesCallback callback);
-  void GetDevice(const std::string& guid,
-                 device::mojom::UsbDeviceRequest device_request,
-                 device::mojom::UsbDeviceClientPtr device_client);
+  void GetDevice(
+      const std::string& guid,
+      mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
+      device::mojom::UsbDeviceClientPtr device_client);
 #if defined(OS_ANDROID)
   void RefreshDeviceInfo(
       const std::string& guid,
@@ -85,7 +89,7 @@ class UsbChooserContext : public ChooserContextBase,
   base::WeakPtr<UsbChooserContext> AsWeakPtr();
 
   void SetDeviceManagerForTesting(
-      device::mojom::UsbDeviceManagerPtr fake_device_manager);
+      mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager);
 
   // ChooserContextBase implementation.
   bool IsValidObject(const base::Value& object) override;
@@ -120,7 +124,7 @@ class UsbChooserContext : public ChooserContextBase,
   std::unique_ptr<UsbPolicyAllowedDevices> usb_policy_allowed_devices_;
 
   // Connection to |device_manager_instance_|.
-  device::mojom::UsbDeviceManagerPtr device_manager_;
+  mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
       client_binding_;
   base::ObserverList<DeviceObserver> device_observer_list_;

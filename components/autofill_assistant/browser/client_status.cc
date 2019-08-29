@@ -62,8 +62,8 @@ std::ostream& operator<<(std::ostream& out,
     case ProcessedActionStatusProto::OTHER_ACTION_STATUS:
       out << "OTHER_ACTION_STATUS";
       break;
-    case ProcessedActionStatusProto::PAYMENT_REQUEST_ERROR:
-      out << "PAYMENT_REQUEST_ERROR";
+    case ProcessedActionStatusProto::COLLECT_USER_DATA_ERROR:
+      out << "COLLECT_USER_DATA_ERROR";
       break;
     case ProcessedActionStatusProto::UNSUPPORTED_ACTION:
       out << "UNSUPPORTED_ACTION";

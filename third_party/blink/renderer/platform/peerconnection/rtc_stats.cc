@@ -229,40 +229,8 @@ blink::WebString RTCStatsMember::GetName() const {
   return blink::WebString::FromUTF8(member_->name());
 }
 
-blink::WebRTCStatsMemberType RTCStatsMember::GetType() const {
-  switch (member_->type()) {
-    case webrtc::RTCStatsMemberInterface::kBool:
-      return blink::kWebRTCStatsMemberTypeBool;
-    case webrtc::RTCStatsMemberInterface::kInt32:
-      return blink::kWebRTCStatsMemberTypeInt32;
-    case webrtc::RTCStatsMemberInterface::kUint32:
-      return blink::kWebRTCStatsMemberTypeUint32;
-    case webrtc::RTCStatsMemberInterface::kInt64:
-      return blink::kWebRTCStatsMemberTypeInt64;
-    case webrtc::RTCStatsMemberInterface::kUint64:
-      return blink::kWebRTCStatsMemberTypeUint64;
-    case webrtc::RTCStatsMemberInterface::kDouble:
-      return blink::kWebRTCStatsMemberTypeDouble;
-    case webrtc::RTCStatsMemberInterface::kString:
-      return blink::kWebRTCStatsMemberTypeString;
-    case webrtc::RTCStatsMemberInterface::kSequenceBool:
-      return blink::kWebRTCStatsMemberTypeSequenceBool;
-    case webrtc::RTCStatsMemberInterface::kSequenceInt32:
-      return blink::kWebRTCStatsMemberTypeSequenceInt32;
-    case webrtc::RTCStatsMemberInterface::kSequenceUint32:
-      return blink::kWebRTCStatsMemberTypeSequenceUint32;
-    case webrtc::RTCStatsMemberInterface::kSequenceInt64:
-      return blink::kWebRTCStatsMemberTypeSequenceInt64;
-    case webrtc::RTCStatsMemberInterface::kSequenceUint64:
-      return blink::kWebRTCStatsMemberTypeSequenceUint64;
-    case webrtc::RTCStatsMemberInterface::kSequenceDouble:
-      return blink::kWebRTCStatsMemberTypeSequenceDouble;
-    case webrtc::RTCStatsMemberInterface::kSequenceString:
-      return blink::kWebRTCStatsMemberTypeSequenceString;
-    default:
-      NOTREACHED();
-      return blink::kWebRTCStatsMemberTypeSequenceInt32;
-  }
+webrtc::RTCStatsMemberInterface::Type RTCStatsMember::GetType() const {
+  return member_->type();
 }
 
 bool RTCStatsMember::IsDefined() const {

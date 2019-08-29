@@ -521,6 +521,18 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   bool WasResponseCached();
   bool HasPrefetchedAlternativeSubresourceSignedExchange();
 
+  // The NavigatorDelegate to notify/query for various navigation events.
+  // Normally this is the WebContents, except if this NavigationHandle was
+  // created during a navigation to an interstitial page. In this case it will
+  // be the InterstitialPage itself.
+  //
+  // Note: due to the interstitial navigation case, all calls that can possibly
+  // expose the NavigationHandle to code outside of content/ MUST go though the
+  // NavigatorDelegate. In particular, the ContentBrowserClient should not be
+  // called directly from the NavigationHandle code. Thus, these calls will not
+  // expose the NavigationHandle when navigating to an InterstitialPage.
+  NavigatorDelegate* GetDelegate() const;
+
  private:
   friend class NavigationRequestTest;
 
@@ -706,8 +718,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       NavigationThrottle::ThrottleCheckResult result);
   void OnWillProcessResponseProcessed(
       NavigationThrottle::ThrottleCheckResult result);
-
-  NavigatorDelegate* GetDelegate() const;
 
   void CancelDeferredNavigationInternal(
       NavigationThrottle::ThrottleCheckResult result);

@@ -52,17 +52,29 @@ class TrafficAnnotationTestsChecker():
     """
 
     configs = [
-      ["--test-only", "--error-resilient"],  # Similar to trybot.
-      ["--test-only"],                       # Failing on any runtime error.
-      ["--test-only", "--no-filtering"],     # Not using heuristic filtering.
-      [                                      # extractor.py.
+      [                         # Similar to trybot.
+          "--test-only",
+          "--error-resilient",
+          "--extractor-backend=python_script",
+      ],
+      [                         # Failing on any runtime error.
           "--test-only",
           "--extractor-backend=python_script",
       ],
-      [                                      # extractor.py, no filtering.
+      [                                      # No heuristic filtering.
           "--test-only",
           "--no-filtering",
           "--extractor-backend=python_script",
+      ],
+
+      [                         # Clang tool backend.
+          "--test-only",
+          "--extractor-backend=clang_tool",
+      ],
+      [                         # Clang tool backend, no heuristic filtering.
+          "--test-only",
+          "--no-filtering",
+          "--extractor-backend=clang_tool",
       ],
     ]
 

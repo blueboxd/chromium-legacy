@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -56,16 +57,18 @@ class WebAppRegistrar : public AppRegistrar {
   class AppSet {
    public:
     // An iterator class that can be used to access the list of apps.
+    template <typename WebAppType>
     class Iter {
      public:
       using InternalIter = Registry::const_iterator;
 
-      explicit Iter(InternalIter&& internal_iter);
-      Iter(Iter&&);
-      ~Iter();
+      explicit Iter(InternalIter&& internal_iter)
+          : internal_iter_(std::move(internal_iter)) {}
+      Iter(Iter&&) = default;
+      ~Iter() = default;
 
       void operator++() { ++internal_iter_; }
-      WebApp& operator*() const { return *internal_iter_->second.get(); }
+      WebAppType& operator*() const { return *internal_iter_->second.get(); }
       bool operator!=(const Iter& iter) const {
         return internal_iter_ != iter.internal_iter_;
       }
@@ -79,27 +82,31 @@ class WebAppRegistrar : public AppRegistrar {
     AppSet(AppSet&&) = default;
     ~AppSet();
 
-    using iterator = Iter;
-    using const_iterator = Iter;
+    using iterator = Iter<WebApp>;
+    using const_iterator = Iter<const WebApp>;
 
-    iterator begin() { return std::move(begin_); }
-    iterator end() { return std::move(end_); }
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
 
    private:
-    Iter begin_;
-    Iter end_;
-#if DCHECK_IS_ON()
     const WebAppRegistrar* registrar_;
+#if DCHECK_IS_ON()
     const size_t mutations_count_;
 #endif
     DISALLOW_COPY_AND_ASSIGN(AppSet);
   };
 
-  AppSet AllApps() const;
+  const AppSet AllApps() const;
 
   const Registry& registry_for_testing() const { return registry_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebAppRegistrarTest, AllAppsMutable);
+
+  AppSet AllAppsMutable();
+
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);
 
   void CountMutation();

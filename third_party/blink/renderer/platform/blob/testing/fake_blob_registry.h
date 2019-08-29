@@ -21,19 +21,21 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
                 Vector<mojom::blink::DataElementPtr> elements,
                 RegisterCallback) override;
 
-  void RegisterFromStream(const String& content_type,
-                          const String& content_disposition,
-                          uint64_t expected_length,
-                          mojo::ScopedDataPipeConsumerHandle,
-                          mojom::blink::ProgressClientAssociatedPtrInfo,
-                          RegisterFromStreamCallback) override;
+  void RegisterFromStream(
+      const String& content_type,
+      const String& content_disposition,
+      uint64_t expected_length,
+      mojo::ScopedDataPipeConsumerHandle,
+      mojo::PendingAssociatedRemote<mojom::blink::ProgressClient>,
+      RegisterFromStreamCallback) override;
 
   void GetBlobFromUUID(mojo::PendingReceiver<mojom::blink::Blob>,
                        const String& uuid,
                        GetBlobFromUUIDCallback) override;
 
-  void URLStoreForOrigin(const scoped_refptr<const SecurityOrigin>&,
-                         mojom::blink::BlobURLStoreAssociatedRequest) override;
+  void URLStoreForOrigin(
+      const scoped_refptr<const SecurityOrigin>&,
+      mojo::PendingAssociatedReceiver<mojom::blink::BlobURLStore>) override;
 
   struct Registration {
     String uuid;
@@ -43,10 +45,10 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
   };
   Vector<Registration> registrations;
 
-  struct BindingRequest {
+  struct OwnedReceiver {
     String uuid;
   };
-  Vector<BindingRequest> binding_requests;
+  Vector<OwnedReceiver> owned_receivers;
 };
 
 }  // namespace blink

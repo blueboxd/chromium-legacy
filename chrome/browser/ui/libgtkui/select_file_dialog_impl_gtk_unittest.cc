@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl_gtk.h"
 
 #include "base/run_loop.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 #include "chrome/test/base/scoped_testing_local_state.h"

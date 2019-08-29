@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
-#include "base/task/thread_pool/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_impl.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"

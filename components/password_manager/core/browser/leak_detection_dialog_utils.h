@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_DIALOG_UTILS_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_DIALOG_UTILS_H_
 
+#include <type_traits>
+
+#include "base/util/type_safety/strong_alias.h"
+
 namespace password_manager {
 
 // Defines possible scenarios for leaked credentials.
@@ -18,12 +22,16 @@ enum CredentialLeakFlags {
 };
 
 // Contains combination of CredentialLeakFlags values.
-using CredentialLeakType = int;
+using CredentialLeakType = std::underlying_type_t<CredentialLeakFlags>;
 
-// Creates CredentialLeakType from booleans.
-CredentialLeakType CreateLeakTypeFromBools(bool is_saved,
-                                           bool is_reused,
-                                           bool is_syncing);
+using IsSaved = util::StrongAlias<class IsSavedTag, bool>;
+using IsReused = util::StrongAlias<class IsReusedTag, bool>;
+using IsSyncing = util::StrongAlias<class IsSyncingTag, bool>;
+
+// Creates CredentialLeakType from strong booleans.
+CredentialLeakType CreateLeakType(IsSaved is_saved,
+                                  IsReused is_reused,
+                                  IsSyncing is_syncing);
 
 // Checks whether password is saved in chrome.
 bool IsPasswordSaved(CredentialLeakType leak_type);

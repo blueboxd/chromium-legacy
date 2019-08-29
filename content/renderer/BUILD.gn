@@ -220,8 +220,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/rtc_rtp_transceiver.h",
     "media/webrtc/rtc_video_decoder_factory.cc",
     "media/webrtc/rtc_video_decoder_factory.h",
-    "media/webrtc/rtc_video_encoder.cc",
-    "media/webrtc/rtc_video_encoder.h",
     "media/webrtc/rtc_video_encoder_factory.cc",
     "media/webrtc/rtc_video_encoder_factory.h",
     "media/webrtc/stun_field_trial.cc",

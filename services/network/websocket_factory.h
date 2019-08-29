@@ -46,7 +46,7 @@ class WebSocketFactory final {
       const url::Origin& origin,
       uint32_t options,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-      mojom::AuthenticationHandlerPtr auth_handler,
+      mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client);
 
   // Returns a URLRequestContext associated with this factory.

@@ -98,11 +98,16 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   [self addLongPressGestureToView:self.view.toolsMenuButton];
 
   [self updateLayoutBasedOnTraitCollection];
+
+  [self.adaptiveToolbarViewControllerDelegate
+      userInterfaceStyleChangedForViewController:self];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self updateLayoutBasedOnTraitCollection];
+  [self.adaptiveToolbarViewControllerDelegate
+      userInterfaceStyleChangedForViewController:self];
 }
 
 - (void)viewDidLayoutSubviews {

@@ -27,10 +27,18 @@ const PP_PrivateAccessibilityTextRunInfo kSecondTextRun = {
 const PP_PrivateAccessibilityCharInfo kDummyCharsData[] = {
     {'H', 12}, {'e', 6},  {'l', 5},  {'l', 4},  {'o', 8},  {',', 4},
     {' ', 4},  {'w', 12}, {'o', 6},  {'r', 6},  {'l', 4},  {'d', 9},
-    {'!', 4},  {'\r', 0}, {'\n', 0}, {'G', 16}, {'o', 12}, {'o', 12},
+    {'!', 4},  {' ', 0},  {' ', 0},  {'G', 16}, {'o', 12}, {'o', 12},
     {'d', 12}, {'b', 10}, {'y', 12}, {'e', 12}, {',', 4},  {' ', 6},
     {'w', 16}, {'o', 12}, {'r', 8},  {'l', 4},  {'d', 12}, {'!', 2},
 };
+const PP_PrivateAccessibilityTextRunInfo kFirstRunMultiLine = {
+    7, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+const PP_PrivateAccessibilityTextRunInfo kSecondRunMultiLine = {
+    8, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+const PP_PrivateAccessibilityTextRunInfo kThirdRunMultiLine = {
+    9, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
+const PP_PrivateAccessibilityTextRunInfo kFourthRunMultiLine = {
+    6, 12, PP_MakeFloatRectFromXYWH(26.0f, 189.0f, 84.0f, 13.0f)};
 
 void CompareRect(PP_Rect expected_rect, PP_Rect actual_rect) {
   EXPECT_EQ(expected_rect.point.x, actual_rect.point.x);
@@ -205,6 +213,208 @@ TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
 
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
                                                   chars_, links_, images_);
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityLinkInfo link;
+  link.url = "www.cs.chromium.org";
+  link.text_run_index = 0;
+  link.text_run_count = 1;
+  links_.push_back(link);
+
+  ppapi::PdfAccessibilityImageInfo image;
+  image.alt_text = "Alternate text for image";
+  image.text_run_index = 2;
+  images_.push_back(image);
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+  page_info_.link_count = links_.size();
+  page_info_.image_count = images_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, links_, images_);
+
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Link
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++++ Image
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(2u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(1u, paragraph_node->children().size());
+
+  ui::AXNode* link_node = paragraph_node->children()[0];
+  ASSERT_TRUE(link_node);
+  EXPECT_EQ(link.url,
+            link_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl));
+  EXPECT_EQ(ax::mojom::Role::kLink, link_node->data().role);
+  ASSERT_EQ(1u, link_node->children().size());
+
+  paragraph_node = page_node->children()[1];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(2u, paragraph_node->children().size());
+
+  ui::AXNode* static_text_node = paragraph_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(1u, static_text_node->children().size());
+
+  ui::AXNode* image_node = paragraph_node->children()[1];
+  ASSERT_TRUE(image_node);
+  EXPECT_EQ(ax::mojom::Role::kImage, image_node->data().role);
+  EXPECT_EQ(image.alt_text,
+            image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+}
+
+// The test is failing, see: https://crbug.com/999076
+TEST_F(PdfAccessibilityTreeTest, DISABLED_TestPreviousNextOnLine) {
+  text_runs_.emplace_back(kFirstRunMultiLine);
+  text_runs_.emplace_back(kSecondRunMultiLine);
+  text_runs_.emplace_back(kThirdRunMultiLine);
+  text_runs_.emplace_back(kFourthRunMultiLine);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityLinkInfo link;
+  link.url = "www.cs.chromium.org";
+  link.text_run_index = 2;
+  link.text_run_count = 2;
+  links_.push_back(link);
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+  page_info_.link_count = links_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, links_, images_);
+
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Static Text
+   * ++++++++ Inline Text Box
+   * ++++++++ Inline Text Box
+   * ++++++ Link
+   * ++++++++ Static Text
+   * ++++++++++ Inline Text Box
+   * ++++++++++ Inline Text Box
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(1u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(2u, paragraph_node->children().size());
+
+  ui::AXNode* static_text_node = paragraph_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(2u, static_text_node->children().size());
+
+  ui::AXNode* previous_inline_node = static_text_node->children()[0];
+  ASSERT_TRUE(previous_inline_node);
+  EXPECT_EQ(ax::mojom::Role::kInlineTextBox, previous_inline_node->data().role);
+
+  ui::AXNode* next_inline_node = static_text_node->children()[1];
+  ASSERT_TRUE(next_inline_node);
+  EXPECT_EQ(ax::mojom::Role::kInlineTextBox, next_inline_node->data().role);
+
+  ASSERT_EQ(next_inline_node->data().id,
+            previous_inline_node->GetIntAttribute(
+                ax::mojom::IntAttribute::kNextOnLineId));
+  ASSERT_EQ(previous_inline_node->data().id,
+            next_inline_node->GetIntAttribute(
+                ax::mojom::IntAttribute::kPreviousOnLineId));
+  ASSERT_FALSE(next_inline_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kNextOnLineId));
+  ASSERT_FALSE(previous_inline_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kPreviousOnLineId));
+
+  ui::AXNode* link_node = paragraph_node->children()[1];
+  ASSERT_TRUE(link_node);
+  EXPECT_EQ(link.url,
+            link_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl));
+  EXPECT_EQ(ax::mojom::Role::kLink, link_node->data().role);
+  ASSERT_EQ(1u, link_node->children().size());
+
+  static_text_node = link_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(2u, static_text_node->children().size());
+
+  previous_inline_node = static_text_node->children()[0];
+  ASSERT_TRUE(previous_inline_node);
+  EXPECT_EQ(ax::mojom::Role::kInlineTextBox, previous_inline_node->data().role);
+
+  next_inline_node = static_text_node->children()[1];
+  ASSERT_TRUE(next_inline_node);
+  EXPECT_EQ(ax::mojom::Role::kInlineTextBox, next_inline_node->data().role);
+
+  ASSERT_EQ(next_inline_node->data().id,
+            previous_inline_node->GetIntAttribute(
+                ax::mojom::IntAttribute::kNextOnLineId));
+  ASSERT_EQ(previous_inline_node->data().id,
+            next_inline_node->GetIntAttribute(
+                ax::mojom::IntAttribute::kPreviousOnLineId));
+  ASSERT_FALSE(next_inline_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kNextOnLineId));
+  ASSERT_FALSE(previous_inline_node->HasIntAttribute(
+      ax::mojom::IntAttribute::kPreviousOnLineId));
 }
 
 TEST_F(PdfAccessibilityTreeTest, TextRunsAndCharsMismatch) {

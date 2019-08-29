@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "fuchsia/engine/web_engine_content_client.h"
-#include "base/command_line.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -35,9 +34,4 @@ gfx::Image& WebEngineContentClient::GetNativeImageNamed(int resource_id) {
 blink::OriginTrialPolicy* WebEngineContentClient::GetOriginTrialPolicy() {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
-}
-
-void WebEngineContentClient::AddAdditionalSchemes(Schemes* schemes) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories))
-    schemes->standard_schemes.push_back(kFuchsiaContentDirectoryScheme);
 }

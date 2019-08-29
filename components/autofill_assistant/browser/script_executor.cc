@@ -203,27 +203,28 @@ void ScriptExecutor::ClickOrTapElement(
                                                    std::move(callback));
 }
 
-void ScriptExecutor::GetPaymentInformation(
-    std::unique_ptr<PaymentRequestOptions> options,
-    std::unique_ptr<PaymentInformation> information) {
-  options->confirm_callback = base::BindOnce(
-      &ScriptExecutor::OnGetPaymentInformation, weak_ptr_factory_.GetWeakPtr(),
-      std::move(options->confirm_callback));
-  options->additional_actions_callback =
-      base::BindOnce(&ScriptExecutor::OnAdditionalActionTriggered,
+void ScriptExecutor::CollectUserData(
+    std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+    std::unique_ptr<UserData> user_data) {
+  collect_user_data_options->confirm_callback = base::BindOnce(
+      &ScriptExecutor::OnGetUserData, weak_ptr_factory_.GetWeakPtr(),
+      std::move(collect_user_data_options->confirm_callback));
+  collect_user_data_options->additional_actions_callback = base::BindOnce(
+      &ScriptExecutor::OnAdditionalActionTriggered,
+      weak_ptr_factory_.GetWeakPtr(),
+      std::move(collect_user_data_options->additional_actions_callback));
+  collect_user_data_options->terms_link_callback =
+      base::BindOnce(&ScriptExecutor::OnTermsAndConditionsLinkClicked,
                      weak_ptr_factory_.GetWeakPtr(),
-                     std::move(options->additional_actions_callback));
-  options->terms_link_callback = base::BindOnce(
-      &ScriptExecutor::OnTermsAndConditionsLinkClicked,
-      weak_ptr_factory_.GetWeakPtr(), std::move(options->terms_link_callback));
-  delegate_->SetPaymentRequestOptions(std::move(options),
-                                      std::move(information));
+                     std::move(collect_user_data_options->terms_link_callback));
+  delegate_->SetCollectUserDataOptions(std::move(collect_user_data_options),
+                                       std::move(user_data));
   delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
 
-void ScriptExecutor::OnGetPaymentInformation(
-    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-    std::unique_ptr<PaymentInformation> result) {
+void ScriptExecutor::OnGetUserData(
+    base::OnceCallback<void(std::unique_ptr<UserData>)> callback,
+    std::unique_ptr<UserData> result) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   std::move(callback).Run(std::move(result));
 }

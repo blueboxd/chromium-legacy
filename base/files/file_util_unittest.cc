@@ -159,18 +159,20 @@ bool DeleteReparsePoint(HANDLE source) {
 // Method that wraps the win32 GetShortPathName API. Returns an empty path on
 // error.
 FilePath MakeShortFilePath(const FilePath& input) {
-  DWORD path_short_len = ::GetShortPathName(input.value().c_str(), nullptr, 0);
+  DWORD path_short_len =
+      ::GetShortPathName(as_wcstr(input.value()), nullptr, 0);
   if (path_short_len == 0UL)
     return FilePath();
 
-  base::string16 path_short_str;
+  string16 path_short_str;
   path_short_len = ::GetShortPathName(
-      input.value().c_str(), base::WriteInto(&path_short_str, path_short_len),
+      as_wcstr(input.value()),
+      as_writable_wcstr(WriteInto(&path_short_str, path_short_len)),
       path_short_len);
   if (path_short_len == 0UL)
     return FilePath();
 
-  return base::FilePath(path_short_str);
+  return FilePath(path_short_str);
 }
 
 // Manages a reparse point for a test.

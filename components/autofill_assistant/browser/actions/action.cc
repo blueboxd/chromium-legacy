@@ -101,8 +101,8 @@ std::ostream& operator<<(std::ostream& out,
     case ActionProto::ActionInfoCase::kStop:
       out << "Stop";
       break;
-    case ActionProto::ActionInfoCase::kGetPaymentInformation:
-      out << "GetPaymentInformation";
+    case ActionProto::ActionInfoCase::kCollectUserData:
+      out << "CollectUserData";
       break;
     case ActionProto::ActionInfoCase::kSetAttribute:
       out << "SetAttribute";

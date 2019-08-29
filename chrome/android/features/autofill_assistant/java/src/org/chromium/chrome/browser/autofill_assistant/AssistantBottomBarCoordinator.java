@@ -28,8 +28,8 @@ import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormCoordina
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.tab.TabViewAndroidDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -62,7 +62,7 @@ class AssistantBottomBarCoordinator
     private final AssistantCarouselCoordinator mActionsCoordinator;
     private final AssistantPeekHeightCoordinator mPeekHeightCoordinator;
     private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
-    private AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
+    private AssistantCollectUserDataCoordinator mPaymentRequestCoordinator;
 
     // The transition triggered whenever the layout of the BottomSheet content changes.
     private final TransitionSet mLayoutTransition =
@@ -113,7 +113,7 @@ class AssistantBottomBarCoordinator
         mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(activity, model.getInfoBoxModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel());
         mPaymentRequestCoordinator =
-                new AssistantPaymentRequestCoordinator(activity, model.getPaymentRequestModel());
+                new AssistantCollectUserDataCoordinator(activity, model.getCollectUserDataModel());
         mFormCoordinator = new AssistantFormCoordinator(activity, model.getFormModel());
         mSuggestionsCoordinator =
                 new AssistantSuggestionsCarouselCoordinator(activity, model.getSuggestionsModel());
@@ -134,9 +134,9 @@ class AssistantBottomBarCoordinator
         // since the animation is not required and causes a rendering crash.
         mLayoutTransition.excludeChildren(
                 mPaymentRequestCoordinator.getView()
-                        .findViewWithTag(
-                                AssistantTagsForTesting.PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_TAG)
-                        .findViewWithTag(AssistantTagsForTesting.PAYMENT_REQUEST_CHOICE_LIST),
+                        .findViewWithTag(AssistantTagsForTesting
+                                                 .COLLECT_USER_DATA_PAYMENT_METHOD_SECTION_TAG)
+                        .findViewWithTag(AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST),
                 /* exclude= */ true);
 
         // Add child views to bottom bar container. We put all child views in the scrollable
@@ -241,8 +241,8 @@ class AssistantBottomBarCoordinator
         model.getDetailsModel().addObserver((source, propertyKey) -> animateChildren(rootView));
 
         // Animate when a PR section is expanded.
-        model.getPaymentRequestModel().addObserver((source, propertyKey) -> {
-            if (propertyKey == AssistantPaymentRequestModel.EXPANDED_SECTION) {
+        model.getCollectUserDataModel().addObserver((source, propertyKey) -> {
+            if (propertyKey == AssistantCollectUserDataModel.EXPANDED_SECTION) {
                 animateChildren(rootView);
             }
         });

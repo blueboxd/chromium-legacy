@@ -197,14 +197,14 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   // Finished acquiring the lock.
   // Note that because the element is locked after append, the "self" phase for
   // style should still happen.
-  EXPECT_TRUE(
-      element->GetDisplayLockContext()->ShouldStyle(DisplayLockContext::kSelf));
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
+      DisplayLockLifecycleTarget::kSelf));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
 
   // If the element is dirty, style recalc would handle it in the next recalc.
@@ -572,11 +572,11 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
 
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
@@ -628,7 +628,8 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   // Simulating style recalc happening, will mark for reattachment.
   element->ClearChildNeedsStyleRecalc();
   element->firstChild()->ClearNeedsStyleRecalc();
-  element->GetDisplayLockContext()->DidStyle(DisplayLockContext::kChildren);
+  element->GetDisplayLockContext()->DidStyle(
+      DisplayLockLifecycleTarget::kChildren);
 
   EXPECT_FALSE(element->NeedsStyleRecalc());
   EXPECT_FALSE(element->ChildNeedsStyleRecalc());
@@ -671,11 +672,11 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
 
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
@@ -697,11 +698,11 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   }
 
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -816,11 +817,11 @@ TEST_F(DisplayLockContextTest,
 
   // Sanity checks to ensure the element is locked.
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
@@ -1571,11 +1572,11 @@ TEST_F(DisplayLockContextTest, DisconnectedWhileUpdating) {
 
   EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
   EXPECT_FALSE(container->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(container->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(container->GetDisplayLockContext()->ShouldPrePaint(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
 
   auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
   {
@@ -1588,19 +1589,19 @@ TEST_F(DisplayLockContextTest, DisconnectedWhileUpdating) {
 
   // This should style and allow layout, but not actually do layout (thus
   // pre-paint would be blocked). Furthermore, this should schedule a task to
-  // run DisplayLockContext::ScheduleAnimation (since we can't directly schedule
-  // it from within a lifecycle).
+  // run DisplayLockLifecycleTarget::ScheduleAnimation (since we can't directly
+  // schedule it from within a lifecycle).
   UpdateAllLifecyclePhasesForTest();
 
   ASSERT_FALSE(GetDocument().View()->InLifecycleUpdate());
   GetDocument().View()->SetInLifecycleUpdateForTest(true);
   EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
   EXPECT_TRUE(container->GetDisplayLockContext()->ShouldStyle(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_TRUE(container->GetDisplayLockContext()->ShouldLayout(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   EXPECT_FALSE(container->GetDisplayLockContext()->ShouldPrePaint(
-      DisplayLockContext::kChildren));
+      DisplayLockLifecycleTarget::kChildren));
   GetDocument().View()->SetInLifecycleUpdateForTest(false);
 
   // Now disconnect the element.

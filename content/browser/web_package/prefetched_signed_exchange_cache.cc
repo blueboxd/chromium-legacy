@@ -645,6 +645,10 @@ void PrefetchedSignedExchangeCache::Store(
   exchanges_[outer_url] = std::move(cached_exchange);
 }
 
+void PrefetchedSignedExchangeCache::Clear() {
+  exchanges_.clear();
+}
+
 std::unique_ptr<NavigationLoaderInterceptor>
 PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

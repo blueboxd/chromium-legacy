@@ -83,6 +83,7 @@ const char kChromeMachineLevelUserCloudPolicyType[] =
     "google/chrome/machine-level-user";
 const char kChromeMachineLevelExtensionCloudPolicyType[] =
     "google/chrome/machine-level-extension";
+const char kChromeRemoteCommandPolicyType[] = "google/chromeos/remotecommand";
 
 }  // namespace dm_protocol
 

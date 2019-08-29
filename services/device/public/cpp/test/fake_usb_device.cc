@@ -20,12 +20,13 @@
 namespace device {
 
 // static
-void FakeUsbDevice::Create(scoped_refptr<FakeUsbDeviceInfo> device,
-                           mojom::UsbDeviceRequest request,
-                           mojom::UsbDeviceClientPtr client) {
+void FakeUsbDevice::Create(
+    scoped_refptr<FakeUsbDeviceInfo> device,
+    mojo::PendingReceiver<device::mojom::UsbDevice> receiver,
+    mojom::UsbDeviceClientPtr client) {
   auto* device_object = new FakeUsbDevice(device, std::move(client));
-  device_object->binding_ = mojo::MakeStrongBinding(
-      base::WrapUnique(device_object), std::move(request));
+  device_object->receiver_ = mojo::MakeSelfOwnedReceiver(
+      base::WrapUnique(device_object), std::move(receiver));
 }
 
 FakeUsbDevice::~FakeUsbDevice() {
@@ -265,13 +266,13 @@ void FakeUsbDevice::IsochronousTransferOut(
 
 void FakeUsbDevice::OnDeviceRemoved(scoped_refptr<FakeUsbDeviceInfo> device) {
   DCHECK_EQ(device_, device);
-  binding_->Close();
+  receiver_->Close();
 }
 
 void FakeUsbDevice::OnClientConnectionError() {
   // Close the binding with Blink when WebUsbService finds permission revoked
   // from setting UI.
-  binding_->Close();
+  receiver_->Close();
 }
 
 }  // namespace device

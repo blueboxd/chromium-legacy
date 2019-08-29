@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -33,6 +34,7 @@
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/image_processor_factory.h"
 #include "media/gpu/macros.h"
+#include "media/video/h264_level_limits.h"
 #include "media/video/h264_parser.h"
 
 #define NOTIFY_ERROR(x)                      \
@@ -98,12 +100,12 @@ struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
   const std::unique_ptr<UnalignedSharedMemory> shm;
 };
 
-V4L2VideoEncodeAccelerator::InputRecord::InputRecord() : at_device(false) {}
+V4L2VideoEncodeAccelerator::InputRecord::InputRecord() = default;
 
 V4L2VideoEncodeAccelerator::InputRecord::InputRecord(const InputRecord&) =
     default;
 
-V4L2VideoEncodeAccelerator::InputRecord::~InputRecord() {}
+V4L2VideoEncodeAccelerator::InputRecord::~InputRecord() = default;
 
 V4L2VideoEncodeAccelerator::OutputRecord::OutputRecord() = default;
 
@@ -137,8 +139,6 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       output_format_fourcc_(0),
       encoder_state_(kUninitialized),
       device_(device),
-      input_streamon_(false),
-      input_buffer_queued_count_(0),
       input_memory_type_(V4L2_MEMORY_USERPTR),
       is_flush_supported_(false),
       encoder_thread_("V4L2EncoderThread"),
@@ -221,8 +221,10 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(done)));
   *result = false;
 
+  input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-  if (!output_queue_) {
+  if (!input_queue_ || !output_queue_) {
+    VLOGF(1) << "Failed to get V4L2Queue.";
     NOTIFY_ERROR(kPlatformFailureError);
     return;
   }
@@ -789,6 +791,7 @@ void V4L2VideoEncodeAccelerator::DestroyTask() {
       encoder_thread_.task_runner()->BelongsToCurrentThread()) {
     DestroyInputBuffers();
     DestroyOutputBuffers();
+    input_queue_ = nullptr;
     output_queue_ = nullptr;
     image_processor_ = nullptr;
   }
@@ -813,8 +816,9 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
     return;
 
   // Device can be polled as soon as either input or output buffers are queued.
-  bool poll_device =
-      (input_buffer_queued_count_ + output_queue_->QueuedBuffersCount() > 0);
+  bool poll_device = (input_queue_->QueuedBuffersCount() +
+                          output_queue_->QueuedBuffersCount() >
+                      0);
 
   // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
   // so either:
@@ -829,8 +833,9 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
                                 base::Unretained(this), poll_device));
 
   DVLOGF(3) << encoder_input_queue_.size() << "] => DEVICE["
-            << free_input_buffers_.size() << "+" << input_buffer_queued_count_
-            << "/" << input_buffer_map_.size() << "->"
+            << input_queue_->FreeBuffersCount() << "+"
+            << input_queue_->QueuedBuffersCount() << "/"
+            << input_buffer_map_.size() << "->"
             << output_queue_->FreeBuffersCount() << "+"
             << output_queue_->QueuedBuffersCount() << "/"
             << output_queue_->AllocatedBuffersCount() << "] => OUT["
@@ -841,13 +846,14 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   TRACE_EVENT0("media,gpu", "V4L2VEA::Enqueue");
 
-  DVLOGF(4) << "free_input_buffers: " << free_input_buffers_.size()
+  DVLOGF(4) << "free_input_buffers: " << input_queue_->FreeBuffersCount()
             << "input_queue: " << encoder_input_queue_.size();
 
   bool do_streamon = false;
   // Enqueue all the inputs we can.
-  const int old_inputs_queued = input_buffer_queued_count_;
-  while (!encoder_input_queue_.empty() && !free_input_buffers_.empty()) {
+  const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
+  while (!encoder_input_queue_.empty() &&
+         input_queue_->FreeBuffersCount() > 0) {
     // A null frame indicates a flush.
     if (encoder_input_queue_.front().frame == nullptr) {
       DVLOGF(3) << "All input frames needed to be flushed are enqueued.";
@@ -857,7 +863,7 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
       // to call V4L2_ENC_CMD_STOP to request a flush. This also means there is
       // nothing left to process, so we can return flush success back to the
       // client.
-      if (!input_streamon_) {
+      if (!input_queue_->IsStreaming()) {
         child_task_runner_->PostTask(
             FROM_HERE, base::BindOnce(std::move(flush_callback_), true));
         return;
@@ -877,16 +883,16 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
     if (!EnqueueInputRecord())
       return;
   }
-  if (old_inputs_queued == 0 && input_buffer_queued_count_ != 0) {
+  if (old_inputs_queued == 0 && input_queue_->QueuedBuffersCount() != 0) {
     // We just started up a previously empty queue.
     // Queue state changed; signal interrupt.
     if (!device_->SetDevicePollInterrupt())
       return;
     // Shall call VIDIOC_STREAMON if we haven't yet.
-    do_streamon = !input_streamon_;
+    do_streamon = !input_queue_->IsStreaming();
   }
 
-  if (!input_streamon_ && !do_streamon) {
+  if (!input_queue_->IsStreaming() && !do_streamon) {
     // We don't have to enqueue any buffers in the output queue until we enqueue
     // buffers in the input queue. This enables to call S_FMT in Encode() on
     // the first frame.
@@ -914,14 +920,11 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
   // Once nyan_kitty, which uses tegra driver, reaches EOL, crrev.com/c/1753982
   // should be reverted.
   if (do_streamon) {
-    DCHECK(!output_queue_->IsStreaming() && !input_streamon_);
+    DCHECK(!output_queue_->IsStreaming() && !input_queue_->IsStreaming());
     // When VIDIOC_STREAMON can be executed in OUTPUT queue, it is fine to call
     // STREAMON in CAPTURE queue.
     output_queue_->Streamon();
-
-    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    IOCTL_OR_ERROR_RETURN(VIDIOC_STREAMON, &type);
-    input_streamon_ = true;
+    input_queue_->Streamon();
   }
 }
 
@@ -932,36 +935,24 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers, and recycle to the free
   // list.
-  struct v4l2_buffer dqbuf;
-  struct v4l2_plane planes[VIDEO_MAX_PLANES];
-  while (input_buffer_queued_count_ > 0) {
-    DVLOGF(4) << "inputs queued: " << input_buffer_queued_count_;
-    DCHECK(input_streamon_);
-    memset(&dqbuf, 0, sizeof(dqbuf));
-    memset(&planes, 0, sizeof(planes));
-    dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    dqbuf.memory = input_memory_type_;
-    dqbuf.m.planes = planes;
-    dqbuf.length = V4L2Device::GetNumPlanesOfV4L2PixFmt(
-        V4L2Device::VideoFrameLayoutToV4L2PixFmt(*device_input_layout_));
-    if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
-      if (errno == EAGAIN) {
-        // EAGAIN if we're just out of buffers to dequeue.
-        break;
-      }
-      VPLOGF(1) << "ioctl() failed: VIDIOC_DQBUF";
+  while (input_queue_->QueuedBuffersCount() > 0) {
+    DVLOGF(4) << "inputs queued: " << input_queue_->QueuedBuffersCount();
+    DCHECK(input_queue_->IsStreaming());
+
+    auto ret = input_queue_->DequeueBuffer();
+    if (!ret.first) {
       NOTIFY_ERROR(kPlatformFailureError);
       return;
     }
-    InputRecord& input_record = input_buffer_map_[dqbuf.index];
-    DCHECK(input_record.at_device);
-    input_record.at_device = false;
+    if (!ret.second) {
+      // We're just out of buffers to dequeue.
+      break;
+    }
 
-    input_record.frame = NULL;
+    InputRecord& input_record = input_buffer_map_[ret.second->BufferId()];
+    input_record.frame = nullptr;
     if (input_record.ip_output_buffer_index)
       ReuseImageProcessorOutputBuffer(*input_record.ip_output_buffer_index);
-    free_input_buffers_.push_back(dqbuf.index);
-    input_buffer_queued_count_--;
   }
 
   // Dequeue completed output (VIDEO_CAPTURE) buffers, and recycle to the
@@ -1022,7 +1013,7 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
 bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   DVLOGF(4);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!free_input_buffers_.empty());
+  DCHECK_GT(input_queue_->FreeBuffersCount(), 0u);
   DCHECK(!encoder_input_queue_.empty());
   TRACE_EVENT0("media,gpu", "V4L2VEA::EnqueueInputRecord");
 
@@ -1041,78 +1032,85 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   }
 
   scoped_refptr<VideoFrame> frame = frame_info.frame;
-  const int index = free_input_buffers_.back();
-  InputRecord& input_record = input_buffer_map_[index];
-  DCHECK(!input_record.at_device);
-  struct v4l2_buffer qbuf{};
-  struct v4l2_plane qbuf_planes[VIDEO_MAX_PLANES] = {};
-  qbuf.index = index;
-  qbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  qbuf.m.planes = qbuf_planes;
-  qbuf.timestamp.tv_sec = static_cast<time_t>(frame->timestamp().InSeconds());
-  qbuf.timestamp.tv_usec =
+
+  V4L2WritableBufferRef input_buf = input_queue_->GetFreeBuffer();
+  DCHECK(input_buf.IsValid());
+  size_t buffer_id = input_buf.BufferId();
+
+  struct timeval timestamp;
+  timestamp.tv_sec = static_cast<time_t>(frame->timestamp().InSeconds());
+  timestamp.tv_usec =
       frame->timestamp().InMicroseconds() -
       frame->timestamp().InSeconds() * base::Time::kMicrosecondsPerSecond;
+  input_buf.SetTimeStamp(timestamp);
+
   DCHECK_EQ(device_input_layout_->format(), frame->format());
   size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
       V4L2Device::VideoFrameLayoutToV4L2PixFmt(*device_input_layout_));
   for (size_t i = 0; i < num_planes; ++i) {
-    // Single-buffer input format may have multiple color  planes, so bytesused
+    // Single-buffer input format may have multiple color planes, so bytesused
     // of the single buffer should be sum of each color planes' size.
+    size_t bytesused = 0;
     if (num_planes == 1) {
-      qbuf.m.planes[i].bytesused = VideoFrame::AllocationSize(
+      bytesused = VideoFrame::AllocationSize(
           frame->format(), device_input_layout_->coded_size());
     } else {
-      qbuf.m.planes[i].bytesused = base::checked_cast<__u32>(
+      bytesused = base::checked_cast<size_t>(
           VideoFrame::PlaneSize(frame->format(), i,
                                 device_input_layout_->coded_size())
               .GetArea());
     }
 
-    switch (input_memory_type_) {
+    switch (input_buf.Memory()) {
       case V4L2_MEMORY_USERPTR:
         // Use buffer_size VideoEncodeAccelerator HW requested by S_FMT.
-        qbuf.m.planes[i].length = device_input_layout_->planes()[i].size;
-        qbuf.m.planes[i].m.userptr =
-            reinterpret_cast<unsigned long>(frame->data(i));
-        DCHECK(qbuf.m.planes[i].m.userptr);
+        input_buf.SetPlaneSize(i, device_input_layout_->planes()[i].size);
         break;
 
       case V4L2_MEMORY_DMABUF: {
-        const auto& fds = frame->DmabufFds();
         const auto& planes = frame->layout().planes();
-        qbuf.m.planes[i].m.fd =
-            (i < fds.size()) ? fds[i].get() : fds.back().get();
         // TODO(crbug.com/901264): The way to pass an offset within a DMA-buf is
         // not defined in V4L2 specification, so we abuse data_offset for now.
         // Fix it when we have the right interface, including any necessary
         // validation and potential alignment
-        qbuf.m.planes[i].data_offset = planes[i].offset;
-        qbuf.m.planes[i].bytesused += qbuf.m.planes[i].data_offset;
+        input_buf.SetPlaneDataOffset(i, planes[i].offset);
+        bytesused += planes[i].offset;
         // Workaround: filling length should not be needed. This is a bug of
         // videobuf2 library.
-        qbuf.m.planes[i].length = device_input_layout_->planes()[i].size +
-                                  qbuf.m.planes[i].data_offset;
-        DCHECK_NE(qbuf.m.planes[i].m.fd, -1);
+        input_buf.SetPlaneSize(
+            i, device_input_layout_->planes()[i].size + planes[i].offset);
         break;
       }
       default:
         NOTREACHED();
         return false;
     }
+
+    input_buf.SetPlaneBytesUsed(i, bytesused);
   }
 
-  qbuf.memory = input_memory_type_;
-  qbuf.length = num_planes;
+  switch (input_buf.Memory()) {
+    case V4L2_MEMORY_USERPTR: {
+      std::vector<void*> user_ptrs;
+      for (size_t i = 0; i < num_planes; ++i)
+        user_ptrs.push_back(frame->data(i));
+      std::move(input_buf).QueueUserPtr(std::move(user_ptrs));
+      break;
+    }
+    case V4L2_MEMORY_DMABUF: {
+      std::move(input_buf).QueueDMABuf(frame->DmabufFds());
+      break;
+    }
+    default:
+      NOTREACHED() << "Unknown input memory type: "
+                   << static_cast<int>(input_buf.Memory());
+      return false;
+  }
 
-  DVLOGF(4) << "Calling VIDIOC_QBUF: " << V4L2Device::V4L2BufferToString(qbuf);
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
-  input_record.at_device = true;
+  InputRecord& input_record = input_buffer_map_[buffer_id];
   input_record.frame = frame;
   input_record.ip_output_buffer_index = frame_info.ip_output_buffer_index;
   encoder_input_queue_.pop();
-  free_input_buffers_.pop_back();
-  input_buffer_queued_count_++;
   return true;
 }
 
@@ -1168,26 +1166,22 @@ bool V4L2VideoEncodeAccelerator::StopDevicePoll() {
   if (!device_->ClearDevicePollInterrupt())
     return false;
 
-  if (input_streamon_) {
-    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
-  }
-  input_streamon_ = false;
+  // Tegra driver cannot call Streamoff() when the stream is off, so we check
+  // IsStreaming() first.
+  if (input_queue_ && input_queue_->IsStreaming() && !input_queue_->Streamoff())
+    return false;
 
-  if (output_queue_ && !output_queue_->Streamoff())
+  if (output_queue_ && output_queue_->IsStreaming() &&
+      !output_queue_->Streamoff())
     return false;
 
   // Reset all our accounting info.
   while (!encoder_input_queue_.empty())
     encoder_input_queue_.pop();
-  free_input_buffers_.clear();
   for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
     InputRecord& input_record = input_buffer_map_[i];
-    input_record.at_device = false;
-    input_record.frame = NULL;
-    free_input_buffers_.push_back(i);
+    input_record.frame = nullptr;
   }
-  input_buffer_queued_count_ = 0;
 
   for (auto& output_record : output_buffer_map_)
     output_record.buffer_ref.reset();
@@ -1285,7 +1279,7 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
 bool V4L2VideoEncodeAccelerator::SetOutputFormat(
     VideoCodecProfile output_profile) {
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!input_streamon_);
+  DCHECK(!input_queue_->IsStreaming());
   DCHECK(!output_queue_->IsStreaming());
 
   DCHECK(!visible_size_.IsEmpty());
@@ -1315,7 +1309,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     const gfx::Size& size) {
   VLOGF(2);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!input_streamon_);
+  DCHECK(!input_queue_->IsStreaming());
   DCHECK(!output_queue_->IsStreaming());
 
   // First see if the device can use the provided format directly.
@@ -1373,7 +1367,7 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
                                             VideoCodecProfile output_profile) {
   VLOGF(2);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!input_streamon_);
+  DCHECK(!input_queue_->IsStreaming());
   DCHECK(!output_queue_->IsStreaming());
 
   if (!SetOutputFormat(output_profile))
@@ -1498,13 +1492,42 @@ bool V4L2VideoEncodeAccelerator::InitControls(const Config& config) {
     ctrls.push_back(ctrl);
 
     // Set H.264 output level from config. Use Level 4.0 as fallback default.
-    int32_t level_value = V4L2Device::H264LevelIdcToV4L2H264Level(
-        config.h264_output_level.value_or(
-            VideoEncodeAccelerator::kDefaultH264Level));
-    if (level_value < 0) {
-      NOTIFY_ERROR(kInvalidArgumentError);
-      return false;
+    uint8_t h264_level =
+        config.h264_output_level.value_or(H264SPS::kLevelIDC4p0);
+    constexpr size_t kH264MacroblockSizeInPixels = 16;
+    const uint32_t framerate = config.initial_framerate.value_or(
+        VideoEncodeAccelerator::kDefaultFramerate);
+    const uint32_t mb_width =
+        base::bits::Align(config.input_visible_size.width(),
+                          kH264MacroblockSizeInPixels) /
+        kH264MacroblockSizeInPixels;
+    const uint32_t mb_height =
+        base::bits::Align(config.input_visible_size.height(),
+                          kH264MacroblockSizeInPixels) /
+        kH264MacroblockSizeInPixels;
+    const uint32_t framesize_in_mbs = mb_width * mb_height;
+
+    // Check whether the h264 level is valid.
+    if (!CheckH264LevelLimits(config.output_profile, h264_level,
+                              config.initial_bitrate, framerate,
+                              framesize_in_mbs)) {
+      base::Optional<uint8_t> valid_level =
+          FindValidH264Level(config.output_profile, config.initial_bitrate,
+                             framerate, framesize_in_mbs);
+      if (!valid_level) {
+        VLOGF(1) << "Could not find a valid h264 level for"
+                 << " profile=" << config.output_profile
+                 << " bitrate=" << config.initial_bitrate
+                 << " framerate=" << framerate
+                 << " size=" << config.input_visible_size.ToString();
+        NOTIFY_ERROR(kInvalidArgumentError);
+        return false;
+      }
+
+      h264_level = *valid_level;
     }
+
+    int32_t level_value = V4L2Device::H264LevelIdcToV4L2H264Level(h264_level);
     memset(&ctrl, 0, sizeof(ctrl));
     ctrl.id = V4L2_CID_MPEG_VIDEO_H264_LEVEL;
     ctrl.value = level_value;
@@ -1557,20 +1580,16 @@ bool V4L2VideoEncodeAccelerator::InitControls(const Config& config) {
 bool V4L2VideoEncodeAccelerator::CreateInputBuffers() {
   VLOGF(2);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!input_streamon_);
+  DCHECK(!input_queue_->IsStreaming());
 
-  struct v4l2_requestbuffers reqbufs{};
-  // Driver will modify to the appropriate number of buffers.
-  reqbufs.count = kInputBufferCount;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  reqbufs.memory = input_memory_type_;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
+  if (input_queue_->AllocateBuffers(kInputBufferCount, input_memory_type_) <
+      kInputBufferCount) {
+    VLOGF(1) << "Failed to allocate V4L2 input buffers.";
+    return false;
+  }
 
   DCHECK(input_buffer_map_.empty());
-  input_buffer_map_.resize(reqbufs.count);
-  for (size_t i = 0; i < input_buffer_map_.size(); ++i)
-    free_input_buffers_.push_back(i);
-
+  input_buffer_map_.resize(input_queue_->AllocatedBuffersCount());
   return true;
 }
 
@@ -1594,19 +1613,12 @@ bool V4L2VideoEncodeAccelerator::CreateOutputBuffers() {
 void V4L2VideoEncodeAccelerator::DestroyInputBuffers() {
   VLOGF(2);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!input_streamon_);
 
-  free_input_buffers_.clear();
-
-  if (input_buffer_map_.empty())
+  if (!input_queue_ || input_queue_->AllocatedBuffersCount() == 0)
     return;
 
-  struct v4l2_requestbuffers reqbufs{};
-  reqbufs.count = 0;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  reqbufs.memory = input_memory_type_;
-  IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
-
+  DCHECK(!input_queue_->IsStreaming());
+  input_queue_->DeallocateBuffers();
   input_buffer_map_.clear();
 }
 

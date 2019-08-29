@@ -6,9 +6,9 @@
 
 namespace password_manager {
 
-CredentialLeakType CreateLeakTypeFromBools(bool is_saved,
-                                           bool is_reused,
-                                           bool is_syncing) {
+CredentialLeakType CreateLeakType(IsSaved is_saved,
+                                  IsReused is_reused,
+                                  IsSyncing is_syncing) {
   CredentialLeakType leak_type = 0;
   if (is_saved)
     leak_type |= kPasswordSaved;

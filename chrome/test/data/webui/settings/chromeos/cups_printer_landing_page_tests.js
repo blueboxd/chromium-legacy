@@ -130,50 +130,32 @@ function verifyPrintersList(entryList, printerList) {
 }
 
 /**
- * Removes a saved printer located at |index|.
+ * Removes a saved printer located at |index| and then verify that saved
+ * printers list is updated accordingly.
  * @param {!TestCupsPrintersBrowserProxy} cupsPrintersBrowserProxy
- * @param {!HTMLElement} savedPrintersElement
+ * @param {!HTMLElement} savedPrinters
+ * @param {!HTMLElement} entryList
+ * @param {!Array<!CupsPrinterInfo>} printerList
  * @param {number} index
  * @return {!Promise}
  */
-function removePrinter(cupsPrintersBrowserProxy, savedPrintersElement, index) {
-  let printerList = cupsPrintersBrowserProxy.printerList.printerList;
-  let savedPrinterEntries = getPrinterEntries(savedPrintersElement);
-
-  clickThreeDotMenu(savedPrinterEntries[index]);
-  savedPrintersElement.$$('#removeButton').click();
+function removeAndVerifyPrinters(
+    cupsPrintersBrowserProxy, savedPrinters, entryList, printerList, index) {
+  clickThreeDotMenu(entryList[index]);
+  savedPrinters.$$('#removeButton').click();
 
   return cupsPrintersBrowserProxy.whenCalled('removeCupsPrinter')
       .then(function() {
         // Simulate removing the printer from |cupsPrintersBrowserProxy|.
         printerList.splice(index, 1);
 
-        // Simuluate saved printer changes.
-        cr.webUIListenerCallback(
-            'on-printers-changed', cupsPrintersBrowserProxy.printerList);
         Polymer.dom.flush();
+        return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList');
+      })
+      .then(function() {
+        entryList = getPrinterEntries(savedPrinters);
+        verifyPrintersList(entryList, printerList);
       });
-}
-
-/**
- * Removes all saved printers through recursion.
- * @param {!TestCupsPrintersBrowserProxy} cupsPrintersBrowserProxy
- * @param {!HTMLElement} savedPrintersElement
- * @return {!Promise}
- */
-function removeAllPrinters(cupsPrintersBrowserProxy, savedPrintersElement) {
-  let printerList = cupsPrintersBrowserProxy.printerList.printerList;
-  let savedPrinterEntries = getPrinterEntries(savedPrintersElement);
-
-  if (!printerList.length) {
-    return Promise.resolve();
-  }
-
-  return removePrinter(
-             cupsPrintersBrowserProxy, savedPrintersElement, 0 /* index */)
-      .then(test_util.flushTasks)
-      .then(removeAllPrinters.bind(
-          this, cupsPrintersBrowserProxy, savedPrintersElement));
 }
 
 /**
@@ -255,8 +237,6 @@ suite('CupsSavedPrintersTests', function() {
     api_.enableNetworkType('WiFi');
 
     PolymerTest.clearBody();
-    settings.navigateTo(settings.routes.CUPS_PRINTERS);
-
     page = document.createElement('settings-cups-printers');
     // Enable feature flag to show the new saved printers list.
     // TODO(jimmyxgong): Remove this line when the feature flag is removed.
@@ -265,6 +245,9 @@ suite('CupsSavedPrintersTests', function() {
     assertTrue(!!page);
 
     Polymer.dom.flush();
+
+    savedPrintersElement = page.$$('settings-cups-saved-printers');
+    assertTrue(!!savedPrintersElement);
   });
 
   teardown(function() {
@@ -277,63 +260,49 @@ suite('CupsSavedPrintersTests', function() {
   });
 
   test('SavedPrintersSuccessfullyPopulates', function() {
-    // Wait for saved printers to populate.
-    return test_util.flushTasks().then(() => {
-      savedPrintersElement = page.$$('settings-cups-saved-printers');
-      assertTrue(!!savedPrintersElement);
+    // List component contained by CupsSavedPrinters.
+    const savedPrintersList =
+        savedPrintersElement.$$('settings-cups-printers-entry-list');
 
-      // List component contained by CupsSavedPrinters.
-      const savedPrintersList =
-          savedPrintersElement.$$('settings-cups-printers-entry-list');
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(function() {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
 
-      const printerListEntries = getPrinterEntries(savedPrintersElement);
+          const printerListEntries = getPrinterEntries(savedPrintersElement);
 
-      verifyPrintersList(printerListEntries, printerList);
-    });
+          verifyPrintersList(printerListEntries, printerList);
+        });
   });
 
   test('SuccessfullyRemoveMultipleSavedPrinters', function() {
     let savedPrinterEntries = [];
 
-    // Wait for saved printers to populate.
-    return test_util.flushTasks()
-        .then(() => {
-          savedPrintersElement = page.$$('settings-cups-saved-printers');
-          assertTrue(!!savedPrintersElement);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(function() {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
 
-          return removeAllPrinters(
-              cupsPrintersBrowserProxy, savedPrintersElement);
-        })
-        .then(() => {
-          let entryList = getPrinterEntries(savedPrintersElement);
-          verifyPrintersList(entryList, printerList);
-        });
-  });
-
-  test('HideSavedPrintersWhenEmpty', function() {
-    // List component contained by CupsSavedPrinters.
-    let savedPrintersList = [];
-    let savedPrinterEntries = [];
-
-    // Wait for saved printers to populate.
-    return test_util.flushTasks()
-        .then(() => {
-          savedPrintersElement = page.$$('settings-cups-saved-printers');
-          assertTrue(!!savedPrintersElement);
-
-          savedPrintersList =
-              savedPrintersElement.$$('settings-cups-printers-entry-list');
           savedPrinterEntries = getPrinterEntries(savedPrintersElement);
 
-          verifyPrintersList(savedPrinterEntries, printerList);
-
-          assertTrue(!!page.$$('#savedPrinters'));
-
-          return removeAllPrinters(
-              cupsPrintersBrowserProxy, savedPrintersElement);
+          return removeAndVerifyPrinters(
+              cupsPrintersBrowserProxy, savedPrintersElement,
+              savedPrinterEntries, printerList, 1 /** index */);
         })
-        .then(() => {
-          assertFalse(!!page.$$('#savedPrinters'));
+        .then(function() {
+          return removeAndVerifyPrinters(
+              cupsPrintersBrowserProxy, savedPrintersElement,
+              savedPrinterEntries, printerList, 0 /** index */);
+        })
+        .then(function() {
+          return removeAndVerifyPrinters(
+              cupsPrintersBrowserProxy, savedPrintersElement,
+              savedPrinterEntries, printerList, 1 /** index */);
+        })
+        .then(function() {
+          return removeAndVerifyPrinters(
+              cupsPrintersBrowserProxy, savedPrintersElement,
+              savedPrinterEntries, printerList, 0 /** index */);
         });
   });
 
@@ -343,11 +312,10 @@ suite('CupsSavedPrintersTests', function() {
     let editDialog = null;
     let savedPrinterEntries = null;
 
-    // Wait for saved printers to populate.
-    return test_util.flushTasks()
-        .then(() => {
-          savedPrintersElement = page.$$('settings-cups-saved-printers');
-          assertTrue(!!savedPrintersElement);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(function() {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
 
           savedPrinterEntries = getPrinterEntries(savedPrintersElement);
 
@@ -371,7 +339,7 @@ suite('CupsSavedPrintersTests', function() {
 
           return cupsPrintersBrowserProxy.whenCalled('updateCupsPrinter');
         })
-        .then(() => {
+        .then(function() {
           assertEquals(expectedName, editDialog.activePrinter.printerName);
 
           // Mimic changes to |cupsPrintersBrowserProxy.printerList|.
@@ -388,11 +356,10 @@ suite('CupsSavedPrintersTests', function() {
     let savedPrinterEntries = null;
     let editDialog = null;
 
-    // Wait for saved printers to populate.
-    return test_util.flushTasks()
-        .then(() => {
-          savedPrintersElement = page.$$('settings-cups-saved-printers');
-          assertTrue(!!savedPrintersElement);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(function() {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
 
           savedPrinterEntries = getPrinterEntries(savedPrintersElement);
 
@@ -420,7 +387,7 @@ suite('CupsSavedPrintersTests', function() {
 
           return cupsPrintersBrowserProxy.whenCalled('reconfigureCupsPrinter');
         })
-        .then(() => {
+        .then(function() {
           assertEquals(expectedName, editDialog.activePrinter.printerName);
           assertEquals(
               expectedAddress, editDialog.activePrinter.printerAddress);
@@ -491,8 +458,6 @@ suite('CupsNearbyPrintersTests', function() {
     setNetworksForTest(api_, activeNetworks_);
 
     PolymerTest.clearBody();
-    settings.navigateTo(settings.routes.CUPS_PRINTERS);
-
     page = document.createElement('settings-cups-printers');
     // Enable feature flag to show the new saved printers list.
     // TODO(jimmyxgong): Remove this line when the feature flag is removed.

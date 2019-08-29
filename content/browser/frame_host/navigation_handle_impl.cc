@@ -64,10 +64,6 @@ NavigationHandleImpl::~NavigationHandleImpl() {
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationHandle", this);
 }
 
-NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
-  return frame_tree_node()->navigator()->GetDelegate();
-}
-
 int64_t NavigationHandleImpl::GetNavigationId() {
   return navigation_request_->navigation_handle_id();
 }

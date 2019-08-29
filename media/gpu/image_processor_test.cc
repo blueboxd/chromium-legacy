@@ -42,6 +42,14 @@ const base::FilePath::CharType* kBGRAImage =
 const base::FilePath::CharType* kYV12Image =
     FILE_PATH_LITERAL("bear_320x192.yv12.yuv");
 
+// Files for scaling test.
+const base::FilePath::CharType* kNV12Image720P =
+    FILE_PATH_LITERAL("puppets-1280x720.nv12.yuv");
+const base::FilePath::CharType* kNV12Image360P =
+    FILE_PATH_LITERAL("puppets-640x360.nv12.yuv");
+const base::FilePath::CharType* kNV12Image180P =
+    FILE_PATH_LITERAL("puppets-320x180.nv12.yuv");
+
 class ImageProcessorParamTest
     : public ::testing::Test,
       public ::testing::WithParamInterface<
@@ -72,7 +80,11 @@ class ImageProcessorParamTest
     LOG_ASSERT(output_image.IsMetadataLoaded());
     std::vector<std::unique_ptr<test::VideoFrameProcessor>> frame_processors;
     // TODO(crbug.com/944823): Use VideoFrameValidator for RGB formats.
-    if (IsYuvPlanar(input_format) && IsYuvPlanar(output_format)) {
+    // TODO(crbug.com/917951): We should validate a scaled image with SSIM.
+    // Validating processed frames is currently not supported when a format is
+    // not YUV or when scaling images.
+    if (IsYuvPlanar(input_format) && IsYuvPlanar(output_format) &&
+        input_image.Size() == output_image.Size()) {
       auto vf_validator = test::VideoFrameValidator::Create(
           {output_image.Checksum()}, output_image.PixelFormat());
       frame_processors.push_back(std::move(vf_validator));
@@ -91,6 +103,13 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_MemToMem) {
   test::Image output_image(std::get<1>(GetParam()));
   ASSERT_TRUE(input_image.Load());
   ASSERT_TRUE(output_image.LoadMetadata());
+  if (input_image.PixelFormat() == output_image.PixelFormat()) {
+    // If the input format is the same as the output format, then the conversion
+    // is scaling. LibyuvImageProcessor doesn't support scaling yet. So skip
+    // this test case.
+    // TODO(hiroh): Remove this skip once LibyuvIP supports scaling.
+    GTEST_SKIP();
+  }
 
   auto ip_client = CreateImageProcessorClient(
       input_image, {VideoFrame::STORAGE_OWNED_MEMORY}, output_image,
@@ -114,6 +133,13 @@ TEST_P(ImageProcessorParamTest, ConvertOneTime_DmabufToMem) {
   test::Image output_image(std::get<1>(GetParam()));
   ASSERT_TRUE(input_image.Load());
   ASSERT_TRUE(output_image.LoadMetadata());
+  if (input_image.PixelFormat() == output_image.PixelFormat()) {
+    // If the input format is the same as the output format, then the conversion
+    // is scaling. LibyuvImageProcessor doesn't support scaling yet. So skip
+    // this test case.
+    // TODO(hiroh): Remove this skip once LibyuvIP supports scaling.
+    GTEST_SKIP();
+  }
 
   auto ip_client = CreateImageProcessorClient(
       input_image, {VideoFrame::STORAGE_DMABUFS}, output_image,
@@ -163,6 +189,13 @@ INSTANTIATE_TEST_SUITE_P(
                       // std::make_tuple(kI420Image, kNV12Image),
                       std::make_tuple(kRGBAImage, kNV12Image),
                       std::make_tuple(kYV12Image, kNV12Image)));
+
+INSTANTIATE_TEST_SUITE_P(
+    NV12DownScaling,
+    ImageProcessorParamTest,
+    ::testing::Values(std::make_tuple(kNV12Image720P, kNV12Image360P),
+                      std::make_tuple(kNV12Image720P, kNV12Image180P),
+                      std::make_tuple(kNV12Image360P, kNV12Image180P)));
 
 #if defined(OS_CHROMEOS)
 // TODO(hiroh): Add more tests.

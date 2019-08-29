@@ -998,7 +998,7 @@ interface NetworkContext {
         url.mojom.Origin origin,
         uint32 options,
         pending_remote<WebSocketHandshakeClient> handshake_client,
-        AuthenticationHandler? auth_handler,
+        pending_remote<AuthenticationHandler>? auth_handler,
         pending_remote<TrustedHeaderClient>? header_client);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.

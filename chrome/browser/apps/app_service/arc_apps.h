@@ -17,7 +17,6 @@
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -33,12 +32,8 @@ class AppServiceProxy;
 // See chrome/services/app_service/README.md.
 class ArcApps : public KeyedService,
                 public apps::mojom::Publisher,
-                public arc::ConnectionObserver<arc::mojom::AppInstance>,
                 public ArcAppListPrefs::Observer {
  public:
-  using AppConnectionHolder =
-      arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>;
-
   static ArcApps* Get(Profile* profile);
 
   static ArcApps* CreateForTesting(Profile* profile,
@@ -71,9 +66,6 @@ class ArcApps : public KeyedService,
                      apps::mojom::PermissionPtr permission) override;
   void Uninstall(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
-
-  // arc::ConnectionObserver<arc::mojom::AppInstance> overrides.
-  void OnConnectionReady() override;
 
   // ArcAppListPrefs::Observer overrides.
   void OnAppRegistered(const std::string& app_id,
@@ -117,9 +109,6 @@ class ArcApps : public KeyedService,
 
   Profile* profile_;
   ArcIconOnceLoader arc_icon_once_loader_;
-
-  std::vector<base::OnceCallback<void(AppConnectionHolder*)>>
-      pending_load_icon_calls_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 

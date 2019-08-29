@@ -27,16 +27,14 @@ void LeakDetectionDelegateHelper::GetCredentialLeakType(
 
 void LeakDetectionDelegateHelper::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  bool is_saved = false;
-  for (const auto& form : results) {
-    if (form->origin == url_ && form->username_value == username_) {
-      is_saved = true;
-      break;
-    }
-  }
-  bool is_reused = results.size() > (is_saved ? 1 : 0);
+  IsSaved is_saved(
+      std::any_of(results.begin(), results.end(), [this](const auto& form) {
+        return form->origin == url_ && form->username_value == username_;
+      }));
+
+  IsReused is_reused(results.size() > (is_saved ? 1 : 0));
   CredentialLeakType leak_type =
-      CreateLeakTypeFromBools(is_saved, is_reused, /*is_synced=*/true);
+      CreateLeakType(is_saved, is_reused, IsSyncing(true));
   std::move(callback_).Run(std::move(leak_type), std::move(url_),
                            std::move(username_));
 }

@@ -20,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -443,6 +444,9 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     network_context->ClearNetworkingHistorySince(
         delete_begin,
         CreateTaskCompletionClosureForMojo(TracingDataType::kNetworkHistory));
+
+    // Clears the PrefetchedSignedExchangeCache of all RenderFrameHostImpls.
+    RenderFrameHostImpl::ClearAllPrefetchedSignedExchangeCache();
 
     // Tell the shader disk cache to clear.
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));

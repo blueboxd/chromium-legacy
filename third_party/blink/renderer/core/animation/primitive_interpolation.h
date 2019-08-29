@@ -73,6 +73,7 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
     DCHECK(result);
     DCHECK_EQ(&result->GetType(), &type_);
     DCHECK_EQ(result->GetNonInterpolableValue(), non_interpolable_value_.get());
+    start_->AssertCanInterpolateWith(*end_);
     start_->Interpolate(*end_, fraction,
                         *result->MutableValue().interpolable_value);
   }

@@ -282,14 +282,26 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     return SBOX_ERROR_BAD_PARAMS;
 
   // Even though the resources touched by SpawnTarget can be accessed in
-  // multiple threads, the method itself cannot be called from more than
-  // 1 thread. This is to protect the global variables used while setting up
-  // the child process.
+  // multiple threads, the method itself cannot be called from more than one
+  // thread. This is to protect the global variables used while setting up the
+  // child process, and to make sure launcher thread mitigations are applied
+  // correctly.
   static DWORD thread_id = ::GetCurrentThreadId();
   DCHECK(thread_id == ::GetCurrentThreadId());
   *last_warning = SBOX_ALL_OK;
 
   AutoLock lock(&lock_);
+
+  // Launcher thread only needs to be opted out of ACG once. Do this on the
+  // first child process being spawned.
+  static bool launcher_thread_opted_out = false;
+
+  if (!launcher_thread_opted_out) {
+    // Soft fail this call. It will fail if ACG is not enabled for this process.
+    sandbox::ApplyMitigationsToCurrentThread(
+        sandbox::MITIGATION_DYNAMIC_CODE_OPT_OUT_THIS_THREAD);
+    launcher_thread_opted_out = true;
+  }
 
   // This downcast is safe as long as we control CreatePolicy()
   scoped_refptr<PolicyBase> policy_base(static_cast<PolicyBase*>(policy.get()));

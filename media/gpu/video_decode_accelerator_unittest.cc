@@ -538,15 +538,22 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
         texture_target_, g_test_import, pixel_format, dimensions);
     LOG_ASSERT(texture_ref);
     int32_t picture_buffer_id = next_picture_buffer_id_++;
-    int irrelevant_id = picture_buffer_id;
     LOG_ASSERT(
         active_textures_.insert(std::make_pair(picture_buffer_id, texture_ref))
             .second);
 
-    PictureBuffer::TextureIds texture_ids(1, texture_ref->texture_id());
-    buffers.push_back(PictureBuffer(picture_buffer_id, dimensions,
-                                    PictureBuffer::TextureIds{irrelevant_id++},
-                                    texture_ids, texture_target, pixel_format));
+    if (g_test_import) {
+      // Texture ids are not needed in import mode. GpuArcVideoDecodeAccelerator
+      // actually doesn't pass them. This test code follows the implementation.
+      buffers.push_back(PictureBuffer(picture_buffer_id, dimensions));
+    } else {
+      int irrelevant_id = picture_buffer_id;
+      PictureBuffer::TextureIds texture_ids(1, texture_ref->texture_id());
+      buffers.push_back(
+          PictureBuffer(picture_buffer_id, dimensions,
+                        PictureBuffer::TextureIds{irrelevant_id++}, texture_ids,
+                        texture_target, pixel_format));
+    }
   }
   decoder_->AssignPictureBuffers(buffers);
 
@@ -1226,6 +1233,14 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
     LOG(WARNING) << "Skipping thumbnail test because GL is deactivated by "
                     "--disable_rendering";
     return;
+  }
+
+  if (render_as_thumbnails && g_test_import) {
+    // We cannot renderer a thumbnail in import mode because we don't assign
+    // texture id to PictureBuffer. Since the frame soundness should be ensured
+    // by frame validator in import mode. So this will not reduces the test
+    // coverage.
+    GTEST_SKIP();
   }
 
   if (test_video_files_.size() > 1)

@@ -328,7 +328,13 @@ Google Chrome is unable to recover your settings.
         Chrome will save this password in your Google Account. You won’t have to remember it.
       </message>
       <!-- Password manager onboarding strings -->
-      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_A" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
+        Chrome can help you remember your passwords so you don't have to.
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_B" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
+        Save your passwords to Chrome to access them on all your devices.
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS_C" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
         Chrome can help you remember your passwords so you don't have to.
       </message>
       <message name="IDS_PASSWORD_MANAGER_TITLE_BRAND" desc="The product name used in the title of the password bubble.">

@@ -113,6 +113,8 @@ class H264Encoder : public AcceleratedVideoEncoder {
   bool PrepareEncodeJob(EncodeJob* encode_job) override;
 
  private:
+  friend class H264EncoderTest;
+
   // Fill current_sps_ and current_pps_ with current encoding state parameters.
   void UpdateSPS();
   void UpdatePPS();

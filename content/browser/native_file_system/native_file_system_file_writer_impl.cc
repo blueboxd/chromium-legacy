@@ -81,7 +81,9 @@ NativeFileSystemFileWriterImpl::NativeFileSystemFileWriterImpl(
                                  url,
                                  handle_state,
                                  /*is_directory=*/false),
-      swap_url_(swap_url) {}
+      swap_url_(swap_url) {
+  DCHECK_EQ(swap_url.type(), url.type());
+}
 
 NativeFileSystemFileWriterImpl::~NativeFileSystemFileWriterImpl() {
   if (can_purge()) {
@@ -294,6 +296,7 @@ void NativeFileSystemFileWriterImpl::CloseImpl(CloseCallback callback) {
 void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     CloseCallback callback,
     base::File::Error result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (result != base::File::FILE_OK) {
     state_ = State::kCloseError;
     DLOG(ERROR) << "Swap file move operation failed source: "
@@ -325,6 +328,7 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
 void NativeFileSystemFileWriterImpl::DidAnnotateFile(
     CloseCallback callback,
     quarantine::mojom::QuarantineFileResult result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = State::kClosed;
 
   if (result != quarantine::mojom::QuarantineFileResult::OK &&
@@ -342,12 +346,12 @@ void NativeFileSystemFileWriterImpl::DidAnnotateFile(
   std::move(callback).Run(native_file_system_error::Ok());
 }
 
-void NativeFileSystemFileWriterImpl::ComputeSecureHashForFile(
-    const base::FilePath& path,
+void NativeFileSystemFileWriterImpl::ComputeHashForSwapFile(
     HashCallback callback) {
+  DCHECK_EQ(swap_url().type(), storage::kFileSystemTypeNativeLocal);
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&ReadAndComputeSHA256Checksum, path),
+      base::BindOnce(&ReadAndComputeSHA256Checksum, swap_url().path()),
       base::BindOnce(
           [](HashCallback callback,
              const std::pair<base::File::Error, std::string>& result) {

@@ -31,11 +31,12 @@ ApiResourceManager<UsbDeviceResource>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-UsbDeviceResource::UsbDeviceResource(const std::string& owner_extension_id,
-                                     const std::string& guid,
-                                     device::mojom::UsbDevicePtr device)
+UsbDeviceResource::UsbDeviceResource(
+    const std::string& owner_extension_id,
+    const std::string& guid,
+    mojo::Remote<device::mojom::UsbDevice> device)
     : ApiResource(owner_extension_id), guid_(guid), device_(std::move(device)) {
-  device_.set_connection_error_handler(base::BindOnce(
+  device_.set_disconnect_handler(base::BindOnce(
       &UsbDeviceResource::OnConnectionError, base::Unretained(this)));
 }
 

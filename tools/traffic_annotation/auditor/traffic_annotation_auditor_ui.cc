@@ -133,9 +133,9 @@ std::string UpdateTextForTSV(std::string text) {
 }
 
 ExtractorBackend GetExtractorBackend(const std::string& backend_switch) {
-  if (backend_switch.empty() || backend_switch == "clang_tool")
+  if (backend_switch == "clang_tool")
     return ExtractorBackend::CLANG_TOOL;
-  if (backend_switch == "python_script")
+  if (backend_switch.empty() || backend_switch == "python_script")
     return ExtractorBackend::PYTHON_SCRIPT;
   return ExtractorBackend::INVALID;
 }

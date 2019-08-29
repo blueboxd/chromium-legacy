@@ -40,6 +40,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -491,10 +492,11 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardWebUsbConnectionsOpen) {
 
   // Connect with the FakeUsbDeviceManager.
   device::FakeUsbDeviceManager device_manager;
-  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-  device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> pending_device_manager;
+  device_manager.AddReceiver(
+      pending_device_manager.InitWithNewPipeAndPassReceiver());
   UsbChooserContextFactory::GetForProfile(profile())
-      ->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+      ->SetDeviceManagerForTesting(std::move(pending_device_manager));
 
   UsbTabHelper* usb_tab_helper =
       UsbTabHelper::GetOrCreateForWebContents(web_contents_);

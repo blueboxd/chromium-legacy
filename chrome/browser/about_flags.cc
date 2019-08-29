@@ -59,6 +59,7 @@
 #include "components/autofill_assistant/browser/features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/contextual_search/core/browser/public.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -4469,6 +4470,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnablePasswordsAccountStorage)},
+
+#if !defined(OS_ANDROID)
+    {"improved-cookie-controls",
+     flag_descriptions::kEnableImprovedCookieControlsName,
+     flag_descriptions::kEnableImprovedCookieControlsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

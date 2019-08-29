@@ -214,10 +214,10 @@ void ArcUsbHostBridge::OnConnectionReady() {
   if (delegate_)
     delegate_->AttachDevicesToArcVm();
 
-  // Request UsbDeviceManagerPtr from DeviceService.
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&usb_manager_));
-  usb_manager_.set_connection_error_handler(
+  // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, usb_manager_.BindNewPipeAndPassReceiver());
+  usb_manager_.set_disconnect_handler(
       base::BindOnce(&ArcUsbHostBridge::Disconnect, base::Unretained(this)));
 
   // Listen for added/removed device events.

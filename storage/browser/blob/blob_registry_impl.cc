@@ -9,8 +9,6 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/blob/blob_builder_from_stream.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -560,7 +558,7 @@ void BlobRegistryImpl::RegisterFromStream(
     const std::string& content_disposition,
     uint64_t expected_length,
     mojo::ScopedDataPipeConsumerHandle data,
-    blink::mojom::ProgressClientAssociatedPtrInfo progress_client,
+    mojo::PendingAssociatedRemote<blink::mojom::ProgressClient> progress_client,
     RegisterFromStreamCallback callback) {
   if (!context_) {
     std::move(callback).Run(nullptr);
@@ -603,17 +601,17 @@ void BlobRegistryImpl::GetBlobFromUUID(
 
 void BlobRegistryImpl::URLStoreForOrigin(
     const url::Origin& origin,
-    blink::mojom::BlobURLStoreAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<blink::mojom::BlobURLStore> receiver) {
   // TODO(mek): Pass origin on to BlobURLStoreImpl so it can use it to generate
   // Blob URLs, and verify at this point that the renderer can create URLs for
   // that origin.
   Delegate* delegate = receivers_.current_context().get();
   DCHECK(delegate);
-  auto binding = mojo::MakeStrongAssociatedBinding(
+  auto self_owned_associated_receiver = mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<BlobURLStoreImpl>(context_, delegate),
-      std::move(request));
+      std::move(receiver));
   if (g_url_store_creation_hook)
-    g_url_store_creation_hook->Run(binding);
+    g_url_store_creation_hook->Run(self_owned_associated_receiver);
 }
 
 // static

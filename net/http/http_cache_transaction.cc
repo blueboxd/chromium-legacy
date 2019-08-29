@@ -768,9 +768,9 @@ void HttpCache::Transaction::MaybeSetParallelWritingPatternForMetrics(
 //   UpdateCachedResponse.
 //
 // 12. Prefetch, cached entry:
-//   Like examples 2-4, only CacheToggleUnusedSincePrefetch* is inserted between
-//   CacheReadResponse* and CacheDispatchValidation if the unused_since_prefetch
-//   bit is unset.
+//   Like examples 2-4, only CacheWriteUpdatedPrefetchResponse* is inserted
+//   between CacheReadResponse* and CacheDispatchValidation if the
+//   unused_since_prefetch bit is unset.
 //
 // 13. Cached entry less than 5 minutes old, unused_since_prefetch is true:
 //   Skip validation, similar to example 2.
@@ -847,12 +847,12 @@ int HttpCache::Transaction::DoLoop(int result) {
       case STATE_CACHE_READ_RESPONSE_COMPLETE:
         rv = DoCacheReadResponseComplete(rv);
         break;
-      case STATE_TOGGLE_UNUSED_SINCE_PREFETCH:
+      case STATE_WRITE_UPDATED_PREFETCH_RESPONSE:
         DCHECK_EQ(OK, rv);
-        rv = DoCacheToggleUnusedSincePrefetch();
+        rv = DoCacheWriteUpdatedPrefetchResponse(rv);
         break;
-      case STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE:
-        rv = DoCacheToggleUnusedSincePrefetchComplete(rv);
+      case STATE_WRITE_UPDATED_PREFETCH_RESPONSE_COMPLETE:
+        rv = DoCacheWriteUpdatedPrefetchResponseComplete(rv);
         break;
       case STATE_CACHE_DISPATCH_VALIDATION:
         DCHECK_EQ(OK, rv);
@@ -1505,9 +1505,7 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
     return OK;
   }
 
-  // When a restricted prefetch is reused, we lift its reuse restriction. This
-  // is done by DoCacheToggleUnusedSincePrefetch(), because when a restricted
-  // prefetch is reused, |unused_since_prefetch| must be set as well.
+  // When a restricted prefetch is reused, we lift its reuse restriction.
   bool restricted_prefetch_reuse =
       response_.restricted_prefetch &&
       request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH;
@@ -1518,7 +1516,16 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
     // Either this is the first use of an entry since it was prefetched XOR
     // this is a prefetch. The value of response.unused_since_prefetch is
     // valid for this transaction but the bit needs to be flipped in storage.
-    TransitionToState(STATE_TOGGLE_UNUSED_SINCE_PREFETCH);
+    DCHECK(!updated_prefetch_response_);
+    updated_prefetch_response_ = std::make_unique<HttpResponseInfo>(response_);
+    updated_prefetch_response_->unused_since_prefetch =
+        !response_.unused_since_prefetch;
+    if (response_.restricted_prefetch &&
+        request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH) {
+      updated_prefetch_response_->restricted_prefetch = false;
+    }
+
+    TransitionToState(STATE_WRITE_UPDATED_PREFETCH_RESPONSE);
     return OK;
   }
 
@@ -1526,33 +1533,23 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   return OK;
 }
 
-int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch() {
-  TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheToggleUnusedSincePrefetch");
-  // Write back the toggled value for the next use of this entry.
-  response_.unused_since_prefetch = !response_.unused_since_prefetch;
-  // TODO(crbug.com/939317): Instead of toggling |unused_since_prefetch| and
-  // |restricted_prefetch| here, writing them to the cache, and untoggling for
-  // the current transaction, we should instead make a copy of |response_| with
-  // the modified properties to write to disk, and use that here.
-  if (response_.restricted_prefetch &&
-      request_->load_flags & LOAD_CAN_USE_RESTRICTED_PREFETCH) {
-    response_.restricted_prefetch = false;
-  }
+int HttpCache::Transaction::DoCacheWriteUpdatedPrefetchResponse(int result) {
+  TRACE_EVENT0(NetTracingCategory(),
+               "HttpCacheTransaction::DoCacheWriteUpdatedPrefetchResponse");
+  DCHECK(updated_prefetch_response_);
   // TODO(jkarlin): If DoUpdateCachedResponse is also called for this
   // transaction then metadata will be written to cache twice. If prefetching
   // becomes more common, consider combining the writes.
-
-  TransitionToState(STATE_TOGGLE_UNUSED_SINCE_PREFETCH_COMPLETE);
-  return WriteResponseInfoToEntry(false);
+  TransitionToState(STATE_WRITE_UPDATED_PREFETCH_RESPONSE_COMPLETE);
+  return WriteResponseInfoToEntry(*updated_prefetch_response_.get(), false);
 }
 
-int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetchComplete(
+int HttpCache::Transaction::DoCacheWriteUpdatedPrefetchResponseComplete(
     int result) {
   TRACE_EVENT0(
       NetTracingCategory(),
-      "HttpCacheTransaction::DoCacheToggleUnusedSincePrefetchComplete");
-  // Restore the original value for this transaction.
-  response_.unused_since_prefetch = !response_.unused_since_prefetch;
+      "HttpCacheTransaction::DoCacheWriteUpdatedPrefetchResponseComplete");
+  updated_prefetch_response_.reset();
   TransitionToState(STATE_CACHE_DISPATCH_VALIDATION);
   return OnWriteResponseInfoToEntryComplete(result);
 }
@@ -1653,7 +1650,7 @@ int HttpCache::Transaction::DoCacheUpdateStaleWhileRevalidateTimeout() {
   response_.stale_revalidate_timeout =
       cache_->clock_->Now() + kStaleRevalidateTimeout;
   TransitionToState(STATE_CACHE_UPDATE_STALE_WHILE_REVALIDATE_TIMEOUT_COMPLETE);
-  return WriteResponseInfoToEntry(false);
+  return WriteResponseInfoToEntry(response_, false);
 }
 
 int HttpCache::Transaction::DoCacheUpdateStaleWhileRevalidateTimeoutComplete(
@@ -1894,9 +1891,8 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
 
 int HttpCache::Transaction::DoCacheWriteUpdatedResponse() {
   TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheWriteUpdatedResponse");
-
   TransitionToState(STATE_CACHE_WRITE_UPDATED_RESPONSE_COMPLETE);
-  return WriteResponseInfoToEntry(false);
+  return WriteResponseInfoToEntry(response_, false);
 }
 
 int HttpCache::Transaction::DoCacheWriteUpdatedResponseComplete(int result) {
@@ -2001,7 +1997,7 @@ int HttpCache::Transaction::DoCacheWriteResponse() {
   }
 
   TransitionToState(STATE_CACHE_WRITE_RESPONSE_COMPLETE);
-  return WriteResponseInfoToEntry(truncated_);
+  return WriteResponseInfoToEntry(response_, truncated_);
 }
 
 int HttpCache::Transaction::DoCacheWriteResponseComplete(int result) {
@@ -3070,7 +3066,9 @@ int HttpCache::Transaction::WriteToEntry(int index,
   return rv;
 }
 
-int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
+int HttpCache::Transaction::WriteResponseInfoToEntry(
+    const HttpResponseInfo& response,
+    bool truncated) {
   if (!entry_)
     return OK;
 
@@ -3086,9 +3084,9 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   // (even though the cert status contains the actual errors) and no SSL
   // blocking page is shown.  An alternative would be to reverse-map the cert
   // status to a net error and replay the net error.
-  if ((response_.headers->HasHeaderValue("cache-control", "no-store")) ||
-      IsCertStatusError(response_.ssl_info.cert_status) ||
-      ShouldDisableMediaCaching(response_.headers.get())) {
+  if ((response.headers->HasHeaderValue("cache-control", "no-store")) ||
+      IsCertStatusError(response.ssl_info.cert_status) ||
+      ShouldDisableMediaCaching(response.headers.get())) {
     bool stopped = StopCachingImpl(false);
     DCHECK(stopped);
     if (net_log_.IsCapturing())
@@ -3097,12 +3095,12 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   }
 
   if (truncated)
-    DCHECK_EQ(200, response_.headers->response_code());
+    DCHECK_EQ(200, response.headers->response_code());
 
   // When writing headers, we normally only write the non-transient headers.
   bool skip_transient_headers = true;
   scoped_refptr<PickledIOBuffer> data(new PickledIOBuffer());
-  response_.Persist(data->pickle(), skip_transient_headers, truncated);
+  response.Persist(data->pickle(), skip_transient_headers, truncated);
   data->Done();
 
   io_buf_len_ = data->pickle()->size();

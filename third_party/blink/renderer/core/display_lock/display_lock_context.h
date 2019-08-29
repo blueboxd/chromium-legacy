@@ -21,6 +21,9 @@ class Element;
 class DisplayLockOptions;
 class DisplayLockScopedLogger;
 class TaskHandle;
+
+enum class DisplayLockLifecycleTarget { kSelf, kChildren };
+
 class CORE_EXPORT DisplayLockContext final
     : public ScriptWrappable,
       public ActiveScriptWrappable<DisplayLockContext>,
@@ -110,17 +113,15 @@ class CORE_EXPORT DisplayLockContext final
   // Initiate a commit.
   void StartCommit();
 
-  enum LifecycleTarget { kSelf, kChildren };
-
   // Lifecycle observation / state functions.
-  bool ShouldStyle(LifecycleTarget) const;
-  void DidStyle(LifecycleTarget);
-  bool ShouldLayout(LifecycleTarget) const;
-  void DidLayout(LifecycleTarget);
-  bool ShouldPrePaint(LifecycleTarget) const;
-  void DidPrePaint(LifecycleTarget);
-  bool ShouldPaint(LifecycleTarget) const;
-  void DidPaint(LifecycleTarget);
+  bool ShouldStyle(DisplayLockLifecycleTarget) const;
+  void DidStyle(DisplayLockLifecycleTarget);
+  bool ShouldLayout(DisplayLockLifecycleTarget) const;
+  void DidLayout(DisplayLockLifecycleTarget);
+  bool ShouldPrePaint(DisplayLockLifecycleTarget) const;
+  void DidPrePaint(DisplayLockLifecycleTarget);
+  bool ShouldPaint(DisplayLockLifecycleTarget) const;
+  void DidPaint(DisplayLockLifecycleTarget);
 
   // Returns true if the last style recalc traversal was blocked at this
   // element, either for itself, its children or its descendants.

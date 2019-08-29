@@ -516,7 +516,12 @@ void AppListClientImpl::NotifySearchResultsForLogging(
     const base::string16& trimmed_query,
     const ash::SearchResultIdWithPositionIndices& results,
     int position_index) {
-  search_ranking_event_logger_->Log(trimmed_query, results, position_index);
+  if (search_ranking_event_logger_)
+    search_ranking_event_logger_->Log(trimmed_query, results, position_index);
+  if (search_controller_) {
+    search_controller_->OnSearchResultsDisplayed(trimmed_query, results,
+                                                 position_index);
+  }
 }
 
 ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(

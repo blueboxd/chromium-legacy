@@ -431,12 +431,13 @@ bool DisplayLockContext::ShouldPerformUpdatePhase(
                                             view->CurrentLifecycleData());
 }
 
-bool DisplayLockContext::ShouldStyle(LifecycleTarget target) const {
-  return target == kSelf || update_forced_ || state_ > kUpdating ||
+bool DisplayLockContext::ShouldStyle(DisplayLockLifecycleTarget target) const {
+  return target == DisplayLockLifecycleTarget::kSelf || update_forced_ ||
+         state_ > kUpdating ||
          ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kStyle);
 }
 
-void DisplayLockContext::DidStyle(LifecycleTarget target) {
+void DisplayLockContext::DidStyle(DisplayLockLifecycleTarget target) {
   if (state_ == kUnlocked) {
     // If we're committing without finishing the acquire() first, it's possible
     // for the state to be kUnlocked instead of kCommitting. We should still
@@ -447,7 +448,7 @@ void DisplayLockContext::DidStyle(LifecycleTarget target) {
     return;
   }
 
-  if (target == kSelf) {
+  if (target == DisplayLockLifecycleTarget::kSelf) {
     if (ForceUnlockIfNeeded())
       return;
 
@@ -473,13 +474,14 @@ void DisplayLockContext::DidStyle(LifecycleTarget target) {
     update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kStyle);
 }
 
-bool DisplayLockContext::ShouldLayout(LifecycleTarget target) const {
-  return target == kSelf || update_forced_ || state_ > kUpdating ||
+bool DisplayLockContext::ShouldLayout(DisplayLockLifecycleTarget target) const {
+  return target == DisplayLockLifecycleTarget::kSelf || update_forced_ ||
+         state_ > kUpdating ||
          ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kLayout);
 }
 
-void DisplayLockContext::DidLayout(LifecycleTarget target) {
-  if (target == kSelf)
+void DisplayLockContext::DidLayout(DisplayLockLifecycleTarget target) {
+  if (target == DisplayLockLifecycleTarget::kSelf)
     return;
 
   // Since we did layout on children already, we'll clear this.
@@ -488,13 +490,15 @@ void DisplayLockContext::DidLayout(LifecycleTarget target) {
     update_budget_->DidPerformPhase(DisplayLockBudget::Phase::kLayout);
 }
 
-bool DisplayLockContext::ShouldPrePaint(LifecycleTarget target) const {
-  return target == kSelf || update_forced_ || state_ > kUpdating ||
+bool DisplayLockContext::ShouldPrePaint(
+    DisplayLockLifecycleTarget target) const {
+  return target == DisplayLockLifecycleTarget::kSelf || update_forced_ ||
+         state_ > kUpdating ||
          ShouldPerformUpdatePhase(DisplayLockBudget::Phase::kPrePaint);
 }
 
-void DisplayLockContext::DidPrePaint(LifecycleTarget target) {
-  if (target == kSelf)
+void DisplayLockContext::DidPrePaint(DisplayLockLifecycleTarget target) {
+  if (target == DisplayLockLifecycleTarget::kSelf)
     return;
 
   if (state_ == kUpdating)
@@ -509,15 +513,16 @@ void DisplayLockContext::DidPrePaint(LifecycleTarget target) {
 #endif
 }
 
-bool DisplayLockContext::ShouldPaint(LifecycleTarget target) const {
+bool DisplayLockContext::ShouldPaint(DisplayLockLifecycleTarget target) const {
   // Note that forced updates should never require us to paint, so we don't
   // check |update_forced_| here. In other words, although |update_forced_|
   // could be true here, we still should not paint. This also holds for
   // kUpdating state, since updates should not paint.
-  return target == kSelf || state_ == kCommitting || state_ == kUnlocked;
+  return target == DisplayLockLifecycleTarget::kSelf || state_ == kCommitting ||
+         state_ == kUnlocked;
 }
 
-void DisplayLockContext::DidPaint(LifecycleTarget) {
+void DisplayLockContext::DidPaint(DisplayLockLifecycleTarget) {
   // This is here for symmetry, but could be removed if necessary.
 }
 

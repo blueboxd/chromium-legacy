@@ -195,8 +195,7 @@ group("gn_all") {
     ]
   }
 
-  # TODO: add Android.
-  if (is_win || (is_linux && !is_chromeos)) {
+  if (is_win || (is_linux && !is_chromeos) || is_android) {
     deps += [ "//weblayer/shell:weblayer_shell" ]
   }
 

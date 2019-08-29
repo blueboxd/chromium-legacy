@@ -166,6 +166,7 @@ source_set("vaapi_test_utils") {
 source_set("unit_test") {
   testonly = true
   sources = [
+    "h264_encoder_unittest.cc",
     "vaapi_image_decode_accelerator_worker_unittest.cc",
     "vaapi_video_decode_accelerator_unittest.cc",
   ]

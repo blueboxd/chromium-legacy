@@ -44,6 +44,7 @@ import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerPrefs;
 import org.chromium.components.crash.browser.ChildProcessCrashObserver;
 import org.chromium.components.minidump_uploader.CrashFileManager;
+import org.chromium.components.module_installer.ModuleInstaller;
 import org.chromium.components.module_installer.observers.ModuleActivityObserver;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.DeviceUtils;
@@ -444,6 +445,8 @@ public class ChromeBrowserInitializer {
 
         // Needed for field trial metrics to be properly collected in ServiceManager only mode.
         FeatureUtilities.cacheNativeFlagsForServiceManagerOnlyMode();
+
+        ModuleInstaller.getInstance().recordStartupTime();
 
         PostTask.postTask(
                 TaskTraits.BEST_EFFORT_MAY_BLOCK, LibraryPrefetcher::maybePinOrderedCodeInMemory);

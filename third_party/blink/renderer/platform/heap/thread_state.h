@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
@@ -257,7 +256,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
   void ScheduleForcedGCForTesting();
   void ScheduleGCIfNeeded();
-  void PostIdleGCTask();
   void WillStartV8GC(BlinkGC::V8GCType);
   void SetGCState(GCState);
   GCState GetGCState() const { return gc_state_; }
@@ -330,8 +328,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   bool IsIncrementalMarking() const { return incremental_marking_; }
   void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
 
-  void FlushHeapDoesNotContainCacheIfNeeded();
-
   void SafePoint(BlinkGC::StackState);
 
   // A region of non-weak PersistentNodes allocated on the given thread.
@@ -386,12 +382,15 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   int GcAge() const { return gc_age_; }
 
-  MarkingVisitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
+  MarkingVisitor* CurrentVisitor() const {
+    return current_gc_data_.visitor.get();
+  }
 
   // Implementation for RAILModeObserver
   void OnRAILModeChanged(RAILMode new_mode) override;
 
-  bool VerifyMarkingEnabled() const;
+  // Returns true if the marking verifier is enabled, false otherwise.
+  bool IsVerifyMarkingEnabled() const;
 
  private:
   // Stores whether some ThreadState is currently in incremental marking.
@@ -512,7 +511,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // to the event loop. If both return false, we don't need to
   // collect garbage at this point.
   bool ShouldForceConservativeGC();
-  bool ShouldScheduleIncrementalMarking();
   // V8 minor or major GC is likely to drop a lot of references to objects
   // on Oilpan's heap. We give a chance to schedule a GC.
   bool ShouldScheduleV8FollowupGC();
@@ -551,7 +549,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // The argument must be registered before calling this.
   void RemoveObserver(BlinkGCObserver*);
 
-  bool IsForcedGC(BlinkGC::GCReason reason) {
+  bool IsForcedGC(BlinkGC::GCReason reason) const {
     return reason == BlinkGC::GCReason::kThreadTerminationGC ||
            reason == BlinkGC::GCReason::kForcedGCForTesting;
   }

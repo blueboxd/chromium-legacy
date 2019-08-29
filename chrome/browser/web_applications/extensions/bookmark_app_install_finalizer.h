@@ -48,6 +48,7 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   bool CanSkipAppUpdateForSync(
       const web_app::AppId& app_id,
       const WebApplicationInfo& web_app_info) const override;
+  bool CanUserUninstallFromSync(const web_app::AppId& app_id) const override;
   void SetSubsystems(web_app::AppRegistrar* registrar,
                      web_app::WebAppUiManager* ui_manager) override;
 

@@ -31,7 +31,7 @@ class AssistantOverlayEventFilter extends EventFilter {
      * {@link @TAP_TRACKING_DURATION_MS} in the unallowed area.
      */
     private static final int TAP_TRACKING_COUNT = 3;
-    private static final long TAP_TRACKING_DURATION_MS = 15_000;
+    private static final long TAP_TRACKING_DURATION_MS = 5_000;
 
     /** A mode that describes what's happening to the current gesture. */
     @Retention(RetentionPolicy.SOURCE)

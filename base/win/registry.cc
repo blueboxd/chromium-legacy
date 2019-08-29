@@ -281,7 +281,7 @@ LONG RegKey::DeleteEmptyKey(const char16* name) {
     return result;
 
   if (count == 0)
-    return RegDeleteKeyEx(key_, name, wow64access_, 0);
+    return RegDeleteKeyEx(key_, as_wcstr(name), wow64access_, 0);
 
   return ERROR_DIR_NOT_EMPTY;
 }
@@ -433,7 +433,7 @@ bool RegKey::StartWatching(ChangeCallback callback) {
 // static
 LONG RegKey::RegDelRecurse(HKEY root_key, const char16* name, REGSAM access) {
   // First, see if the key can be deleted without having to recurse.
-  LONG result = RegDeleteKeyEx(root_key, name, access, 0);
+  LONG result = RegDeleteKeyEx(root_key, as_wcstr(name), access, 0);
   if (result == ERROR_SUCCESS)
     return result;
 
@@ -478,7 +478,7 @@ LONG RegKey::RegDelRecurse(HKEY root_key, const char16* name, REGSAM access) {
   RegCloseKey(target_key);
 
   // Try again to delete the key.
-  result = RegDeleteKeyEx(root_key, name, access, 0);
+  result = RegDeleteKeyEx(root_key, as_wcstr(name), access, 0);
 
   return result;
 }

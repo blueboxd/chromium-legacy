@@ -19,7 +19,7 @@
 #include "base/process/process_metrics.h"
 #include "base/task/post_task.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/web/net/cookie_notification_bridge.h"

@@ -13,7 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/usb/usb_device.h"
 #include "services/device/usb/usb_device_handle.h"
@@ -27,7 +28,7 @@ namespace usb {
 class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
  public:
   static void Create(scoped_refptr<device::UsbDevice> device,
-                     mojom::UsbDeviceRequest request,
+                     mojo::PendingReceiver<mojom::UsbDevice> receiver,
                      mojom::UsbDeviceClientPtr client);
 
   ~DeviceImpl() override;
@@ -104,7 +105,7 @@ class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
   // has been closed.
   scoped_refptr<UsbDeviceHandle> device_handle_;
 
-  mojo::StrongBindingPtr<mojom::UsbDevice> binding_;
+  mojo::SelfOwnedReceiverRef<mojom::UsbDevice> receiver_;
   device::mojom::UsbDeviceClientPtr client_;
   base::WeakPtrFactory<DeviceImpl> weak_factory_{this};
 

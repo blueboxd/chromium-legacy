@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/chrome_cleaner/executables/shutdown_sequence.h"
-#include "base/task/thread_pool/thread_pool.h"
+
+#include "base/task/thread_pool/thread_pool_instance.h"
 
 namespace chrome_cleaner {
 

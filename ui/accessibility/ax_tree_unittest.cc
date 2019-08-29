@@ -1019,7 +1019,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("busy changed to true", change_log[3]);
   EXPECT_EQ("minValueForRange changed from 1 to 2", change_log[4]);
   EXPECT_EQ("maxValueForRange changed from 10 to 9", change_log[5]);
-  EXPECT_EQ("stepValueForRange changed from 3 to .5", change_log[6]);
+  EXPECT_EQ("stepValueForRange changed from 3 to 0.5", change_log[6]);
   EXPECT_EQ("scrollX changed from 5 to 6", change_log[7]);
   EXPECT_EQ("scrollXMin changed from 1 to 2", change_log[8]);
 
@@ -1051,7 +1051,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("busy changed to false", change_log2[3]);
   EXPECT_EQ("modal changed to true", change_log2[4]);
   EXPECT_EQ("minValueForRange changed from 2 to 0", change_log2[5]);
-  EXPECT_EQ("stepValueForRange changed from 3 to .5", change_log[6]);
+  EXPECT_EQ("stepValueForRange changed from 3 to 0.5", change_log[6]);
   EXPECT_EQ("valueForRange changed from 0 to 5", change_log2[7]);
   EXPECT_EQ("scrollXMin changed from 2 to 0", change_log2[8]);
   EXPECT_EQ("scrollX changed from 6 to 7", change_log2[9]);

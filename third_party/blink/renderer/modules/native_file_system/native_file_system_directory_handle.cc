@@ -47,7 +47,8 @@ ScriptPromise NativeFileSystemDirectoryHandle::getFile(
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, const String& name,
              NativeFileSystemErrorPtr result,
-             mojom::blink::NativeFileSystemFileHandlePtr handle) {
+             mojo::PendingRemote<mojom::blink::NativeFileSystemFileHandle>
+                 handle) {
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context)
               return;
@@ -58,7 +59,7 @@ ScriptPromise NativeFileSystemDirectoryHandle::getFile(
             resolver->Resolve(MakeGarbageCollected<NativeFileSystemFileHandle>(
                 name,
                 RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle>(
-                    handle.PassInterface(), context->GetInterfaceInvalidator(),
+                    std::move(handle), context->GetInterfaceInvalidator(),
                     context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
           },
           WrapPersistent(resolver), name));

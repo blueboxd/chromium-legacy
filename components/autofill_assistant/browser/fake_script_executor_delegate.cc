@@ -98,9 +98,9 @@ void FakeScriptExecutorDelegate::SetUserActions(
   user_actions_ = std::move(user_actions);
 }
 
-void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
-    std::unique_ptr<PaymentRequestOptions> options,
-    std::unique_ptr<PaymentInformation> information) {
+void FakeScriptExecutorDelegate::SetCollectUserDataOptions(
+    std::unique_ptr<CollectUserDataOptions> options,
+    std::unique_ptr<UserData> information) {
   payment_request_options_ = std::move(options);
   payment_request_info_ = std::move(information);
 }

@@ -9,18 +9,6 @@
 
 namespace blink {
 
-namespace {
-
-bool HasPercentage(const NonInterpolableValue* non_interpolable_value) {
-  return LengthInterpolationFunctions::HasPercentage(non_interpolable_value);
-}
-
-bool HasPercentage(const InterpolationValue& value) {
-  return HasPercentage(value.non_interpolable_value.get());
-}
-
-}  // namespace
-
 InterpolationValue CSSCustomLengthInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
@@ -34,7 +22,8 @@ InterpolationValue CSSCustomLengthInterpolationType::MaybeConvertValue(
     ConversionCheckers&) const {
   InterpolationValue interpolation_value =
       LengthInterpolationFunctions::MaybeConvertCSSValue(value);
-  if (HasPercentage(interpolation_value))
+  if (LengthInterpolationFunctions::HasPercentage(
+          *interpolation_value.interpolable_value))
     return nullptr;
   return interpolation_value;
 }
@@ -43,7 +32,7 @@ const CSSValue* CSSCustomLengthInterpolationType::CreateCSSValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     const StyleResolverState&) const {
-  DCHECK(!HasPercentage(non_interpolable_value));
+  DCHECK(!LengthInterpolationFunctions::HasPercentage(interpolable_value));
   return LengthInterpolationFunctions::CreateCSSValue(
       interpolable_value, non_interpolable_value, kValueRangeAll);
 }

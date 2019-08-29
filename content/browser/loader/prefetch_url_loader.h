@@ -91,8 +91,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   };
 
   void RecordPrefetchRedirectHistogram(PrefetchRedirect event);
-  bool IsValidCrossOriginPrefetch(
-      const network::ResourceRequest& resource_request);
 
   // network::mojom::URLLoader overrides:
   void FollowRedirect(const std::vector<std::string>& removed_headers,

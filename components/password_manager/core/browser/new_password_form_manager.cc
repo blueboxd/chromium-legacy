@@ -168,7 +168,9 @@ NewPasswordFormManager::NewPasswordFormManager(
   form_fetcher_->AddConsumer(this);
 }
 
-NewPasswordFormManager::~NewPasswordFormManager() = default;
+NewPasswordFormManager::~NewPasswordFormManager() {
+  form_fetcher_->RemoveConsumer(this);
+}
 
 bool NewPasswordFormManager::DoesManage(
     const FormData& form,

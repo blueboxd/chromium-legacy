@@ -53,7 +53,7 @@ void WebSocketConnectorImpl::Connect(
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
       url, requested_protocols, site_for_cookies, std::move(headers),
       process_id_, frame_id_, origin_, options, std::move(handshake_client),
-      nullptr, mojo::NullRemote());
+      mojo::NullRemote(), mojo::NullRemote());
 }
 
 void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
@@ -67,7 +67,7 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     std::vector<network::mojom::HttpHeaderPtr> additional_headers,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client,
-    network::mojom::AuthenticationHandlerPtr auth_handler,
+    mojo::PendingRemote<network::mojom::AuthenticationHandler> auth_handler,
     mojo::PendingRemote<network::mojom::TrustedHeaderClient>
         trusted_header_client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -80,4 +80,5 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
       process_id, frame_id, origin, options, std::move(handshake_client),
       std::move(auth_handler), std::move(trusted_header_client));
 }
+
 }  // namespace content

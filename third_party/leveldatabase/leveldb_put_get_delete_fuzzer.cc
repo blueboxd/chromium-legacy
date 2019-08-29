@@ -5,10 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "leveldb/db.h"
 #include "leveldb/env.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "util/testharness.h"
 
 using leveldb::DB;

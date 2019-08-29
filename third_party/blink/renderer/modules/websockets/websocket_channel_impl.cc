@@ -161,13 +161,14 @@ struct WebSocketChannelImpl::ConnectInfo {
 
 // static
 WebSocketChannelImpl* WebSocketChannelImpl::CreateForTesting(
-    Document* document,
+    ExecutionContext* execution_context,
     WebSocketChannelClient* client,
     std::unique_ptr<SourceLocation> location,
-    WebSocketHandle* handle,
     std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle) {
   auto* channel = MakeGarbageCollected<WebSocketChannelImpl>(
-      document, client, std::move(location), base::WrapUnique(handle));
+      execution_context, client, std::move(location),
+      std::make_unique<WebSocketHandleImpl>(
+          execution_context->GetTaskRunner(TaskType::kNetworking)));
   channel->handshake_throttle_ = std::move(handshake_throttle);
   return channel;
 }

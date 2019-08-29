@@ -795,6 +795,14 @@ void RenderFrameHostImpl::SetNetworkFactoryForTesting(
       create_network_factory_callback;
 }
 
+// static
+void RenderFrameHostImpl::ClearAllPrefetchedSignedExchangeCache() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RoutingIDFrameMap* frames = g_routing_id_frame_map.Pointer();
+  for (auto it : *frames)
+    it.second->ClearPrefetchedSignedExchangeCache();
+}
+
 RenderFrameHostImpl::RenderFrameHostImpl(
     SiteInstance* site_instance,
     scoped_refptr<RenderViewHostImpl> render_view_host,
@@ -7242,6 +7250,11 @@ RenderFrameHostImpl::EnsurePrefetchedSignedExchangeCache() {
         base::MakeRefCounted<PrefetchedSignedExchangeCache>();
   }
   return prefetched_signed_exchange_cache_;
+}
+
+void RenderFrameHostImpl::ClearPrefetchedSignedExchangeCache() {
+  if (prefetched_signed_exchange_cache_)
+    prefetched_signed_exchange_cache_->Clear();
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetLocalRenderWidgetHost() const {

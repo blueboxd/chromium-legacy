@@ -353,8 +353,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
 There is [FuzzedDataProvider] class that might be helpful for writing fuzz
 targets using that approach. In order to use it, add
-`#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"` to your fuzz
-target source file. To learn more about `FuzzedDataProvider`, check out the
+`#include <fuzzer/FuzzedDataProvider.h>` to your fuzz target source file. To
+learn more about `FuzzedDataProvider`, check out the
 [google/fuzzing documentation page] on it.
 
 Note that it's not recommended to use `FuzzedDataProvider` unless you actually

@@ -8,13 +8,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -80,7 +80,7 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::Button* source,
                                               const gfx::Point& point,
                                               const ui::Event* event) {
   Browser* browser = browser_view_->browser();
-  RunMenu(std::make_unique<HostedAppMenuModel>(browser_view_, browser), browser,
+  RunMenu(std::make_unique<WebAppMenuModel>(browser_view_, browser), browser,
           event && event->IsKeyEvent()
               ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
               : views::MenuRunner::NO_FLAGS,

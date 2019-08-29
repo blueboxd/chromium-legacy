@@ -243,6 +243,11 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     return true;
   }
 
+  bool CanUserUninstallFromSync(const AppId& app_id) const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
  private:
   TestAppRegistrar* registrar_ = nullptr;
 

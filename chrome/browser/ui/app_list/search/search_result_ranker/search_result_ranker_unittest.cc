@@ -75,11 +75,21 @@ class TestSearchResult : public ChromeSearchResult {
 int TestSearchResult::instantiation_count = 0;
 
 MATCHER_P(HasId, id, "") {
-  return base::UTF16ToUTF8(arg.result->title()) == id;
+  bool match = base::UTF16ToUTF8(arg.result->title()) == id;
+  if (!match)
+    *result_listener << "HasId wants '" << id << "', but got '"
+                     << arg.result->title() << "'";
+  return match;
 }
 
 MATCHER_P2(HasIdScore, id, score, "") {
-  return base::UTF16ToUTF8(arg.result->title()) == id && arg.score == score;
+  bool match =
+      base::UTF16ToUTF8(arg.result->title()) == id && arg.score == score;
+  if (!match)
+    *result_listener << "HasIdScore wants (" << id << ", " << score
+                     << "), but got (" << arg.result->title() << ", "
+                     << arg.result->title() << ")";
+  return match;
 }
 
 }  // namespace
@@ -139,19 +149,19 @@ class SearchResultRankerTest : public testing::Test {
 
   void Wait() { task_environment_.RunUntilIdle(); }
 
-  content::BrowserTaskEnvironment task_environment_;
-
   // This is used only to make the ownership clear for the TestSearchResult
   // objects that the return value of MakeSearchResults() contains raw pointers
   // to.
   std::list<TestSearchResult> test_search_results_;
 
+  content::BrowserTaskEnvironment task_environment_;
+
   data_decoder::TestDataDecoderService dd_service_;
 
   ScopedFeatureList scoped_feature_list_;
   ScopedTempDir temp_dir_;
-  std::unique_ptr<history::HistoryService> history_service_;
 
+  std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<Profile> profile_;
 
  private:
@@ -563,6 +573,265 @@ TEST_F(SearchResultRankerTest, ZeroStateGroupModelImprovesScores) {
 
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("B"), HasId("A"),
                                               HasId("D"), HasId("C"))));
+}
+
+// If results from all groups are present, the model should not force any
+// changes to the ranking.
+TEST_F(SearchResultRankerTest, ZeroStateAllGroupsPresent) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "0.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  auto results = MakeSearchResults(
+      {"A2", "O1", "Z1", "Z2", "A1", "D1"},
+      {ResultType::kInstalledApp, ResultType::kOmnibox,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kInstalledApp, ResultType::kDriveQuickAccess},
+      {8.1f, 0.4f, 0.8f, 0.2f, 8.2f, 0.1f});
+
+  ranker->Rank(&results);
+  ranker->OverrideZeroStateResults(&results);
+  EXPECT_THAT(results,
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                     HasId("O1"), HasId("Z2"), HasId("D1"))));
+}
+
+// If one group won't have shown results, but has a high-scoring new result
+// in the list, it should replace the bottom-most shown result.
+TEST_F(SearchResultRankerTest, ZeroStateMissingGroupAdded) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "0.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  auto results = MakeSearchResults(
+      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D1", "D2"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kDriveQuickAccess, ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.3f, 0.7f});
+
+  ranker->Rank(&results);
+  ranker->OverrideZeroStateResults(&results);
+  // Z3 and D1 should be swapped.
+  EXPECT_THAT(results,
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
+                                     HasId("O2"), HasId("Z1"), HasId("Z2"),
+                                     HasId("D2"), HasId("Z3"), HasId("D1"))));
+}
+
+// Check we handle one group not having any entries in the results list at all.
+TEST_F(SearchResultRankerTest, ZeroStateOnlyTwoGroupsExist) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "0.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  auto results = MakeSearchResults(
+      {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D1", "D2"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kDriveQuickAccess,
+       ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.3f, 0.7f});
+
+  ranker->Rank(&results);
+  ranker->OverrideZeroStateResults(&results);
+  // Z3 and D1 should be swapped.
+  EXPECT_THAT(results,
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                     HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                     HasId("D2"), HasId("Z5"), HasId("D1"))));
+}
+
+// If two group won't have shown results but meet the conditions for inclusion,
+// both should have a result in the list.
+TEST_F(SearchResultRankerTest, ZeroStateTwoMissingGroupsAdded) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "0.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  auto results =
+      MakeSearchResults({"Z1", "Z2", "Z3", "Z4", "Z5", "D1", "O1"},
+                        {ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+                         ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+                         ResultType::kZeroStateFile,
+                         ResultType::kDriveQuickAccess, ResultType::kOmnibox},
+                        {1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.75f, 0.7f});
+
+  ranker->Rank(&results);
+  ranker->OverrideZeroStateResults(&results);
+  EXPECT_THAT(results, WhenSorted(ElementsAre(
+                           HasId("Z1"), HasId("Z2"), HasId("Z3"), HasId("D1"),
+                           HasId("O1"), HasId("Z4"), HasId("Z5"))));
+}
+
+// If one group won't have shown results and has a high-scoring new result in
+// the list, but that result has recently been shown twice, it shouldn't be
+// shown.
+TEST_F(SearchResultRankerTest, ZeroStateStaleResultIgnored) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "0.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  const auto results = MakeSearchResults(
+      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D1"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f});
+
+  for (int i = 0; i < 3; ++i) {
+    auto results_copy = results;
+    ranker->Rank(&results_copy);
+    ranker->OverrideZeroStateResults(&results_copy);
+    // Z3 and D1 should be swapped.
+    EXPECT_THAT(results_copy,
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
+                                       HasId("O2"), HasId("Z1"), HasId("Z2"),
+                                       HasId("D1"), HasId("Z3"))));
+    // D1 should increment its cache counter.
+    ranker->ZeroStateResultsDisplayed({{"D1", 0.0f}});
+  }
+
+  auto results_copy = results;
+  ranker->Rank(&results_copy);
+  ranker->OverrideZeroStateResults(&results_copy);
+  // Z3 and D1 should NOT be swapped because D1's cache count is too high.
+  EXPECT_THAT(results_copy,
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
+                                     HasId("O2"), HasId("Z1"), HasId("Z2"),
+                                     HasId("Z3"), HasId("D1"))));
+}
+
+// If a group's top result changes, its cache count should reset.
+TEST_F(SearchResultRankerTest, ZeroStateCacheResetWhenTopResultChanges) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "0.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  const auto results_1 = MakeSearchResults(
+      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D1", "D2"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kDriveQuickAccess, ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f, 0.1f});
+  const auto results_2 = MakeSearchResults(
+      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D2", "D1"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kDriveQuickAccess, ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f, 0.1f});
+
+  for (int i = 0; i < 3; ++i) {
+    auto results_copy = results_1;
+    ranker->Rank(&results_copy);
+    ranker->OverrideZeroStateResults(&results_copy);
+    // Z3 and D1 should be swapped.
+    EXPECT_THAT(results_copy,
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
+                                       HasId("O2"), HasId("Z1"), HasId("Z2"),
+                                       HasId("D1"), HasId("Z3"), HasId("D2"))));
+    // D1 should increment its cache counter.
+    ranker->ZeroStateResultsDisplayed({{"D1", 0.0f}});
+  }
+
+  {
+    auto results_copy = results_1;
+    ranker->Rank(&results_copy);
+    ranker->OverrideZeroStateResults(&results_copy);
+    // Z3 and D1 should NOT be swapped because D1's cache count is too high.
+    EXPECT_THAT(results_copy,
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
+                                       HasId("O2"), HasId("Z1"), HasId("Z2"),
+                                       HasId("Z3"), HasId("D1"), HasId("D2"))));
+  }
+
+  {
+    auto results_copy = results_2;
+    ranker->Rank(&results_copy);
+    ranker->OverrideZeroStateResults(&results_copy);
+    // D2 should override Z3 because the Drive cache countis reset.
+    EXPECT_THAT(results_copy,
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
+                                       HasId("O2"), HasId("Z1"), HasId("Z2"),
+                                       HasId("D2"), HasId("Z3"), HasId("D1"))));
+  }
+}
+
+// If a group won't have shown results but the best result is too low-scoring,
+// no ordering changes should be made.
+TEST_F(SearchResultRankerTest, ZeroStateLowScoringResultIgnored) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "0.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  auto results = MakeSearchResults(
+      {"A1", "A2", "O1", "O2", "Z1", "Z2", "Z3", "D1"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kOmnibox, ResultType::kOmnibox, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.1f});
+
+  ranker->Rank(&results);
+  ranker->OverrideZeroStateResults(&results);
+  EXPECT_THAT(results,
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("O1"),
+                                     HasId("O2"), HasId("Z1"), HasId("Z2"),
+                                     HasId("Z3"), HasId("D1"))));
 }
 
 }  // namespace app_list

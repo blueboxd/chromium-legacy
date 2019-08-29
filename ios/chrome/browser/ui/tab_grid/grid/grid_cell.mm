@@ -175,7 +175,6 @@ void PositionView(UIView* view, CGPoint point) {
     return;
 
   self.iconView.backgroundColor = UIColor.clearColor;
-  self.contentView.backgroundColor = UIColor.blackColor;
   switch (theme) {
     // This is necessary for iOS 13 because on iOS 13, this will return
     // the dynamic color (which will then be colored with the user
@@ -183,6 +182,7 @@ void PositionView(UIView* view, CGPoint point) {
     // On iOS 12, this will always return the dynamic color in the light
     // variant.
     case GridThemeLight:
+      self.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
       self.snapshotView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
       self.topBar.backgroundColor = [UIColor colorNamed:kBackgroundColor];
       self.titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
@@ -193,6 +193,8 @@ void PositionView(UIView* view, CGPoint point) {
     // TODO (crbug.com/981889): The following lines will be removed
     // along with iOS 12
     case GridThemeDark:
+      self.contentView.backgroundColor =
+          [UIColor colorNamed:kBackgroundDarkColor];
       self.snapshotView.backgroundColor =
           [UIColor colorNamed:kBackgroundDarkColor];
       self.topBar.backgroundColor = [UIColor colorNamed:kBackgroundDarkColor];
@@ -201,7 +203,6 @@ void PositionView(UIView* view, CGPoint point) {
       break;
   }
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     // When iOS 12 is dropped, only the next line is needed for styling.
     // Every other check for |GridThemeDark| can be removed, as well as
@@ -210,7 +211,6 @@ void PositionView(UIView* view, CGPoint point) {
                                           ? UIUserInterfaceStyleDark
                                           : UIUserInterfaceStyleUnspecified;
   }
-#endif
 
   // When iOS 12 is dropped, only the next switch statement is needed for
   // styling.

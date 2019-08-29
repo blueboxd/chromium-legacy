@@ -1983,12 +1983,6 @@
   {
     'name': 'chromium.goma',
     'machines': {
-      'Cast Linux (Goma RBE FYI)': {
-        'additional_compile_targets': [
-          'cast_shell',
-          'cast_test_lists',
-        ],
-      },
       'Chromium Linux Goma RBE Staging': {
         'mixins': [
           'linux-xenial',

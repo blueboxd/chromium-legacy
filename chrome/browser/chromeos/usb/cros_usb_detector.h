@@ -16,6 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
@@ -89,7 +91,7 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   ~CrosUsbDetector() override;
 
   void SetDeviceManagerForTesting(
-      device::mojom::UsbDeviceManagerPtr device_manager);
+      mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager);
 
   // Connect to the device manager to be notified of connection/removal.
   // Used during browser startup, after connection errors and to setup a fake
@@ -178,7 +180,7 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   // Returns true when a device should show a notification when attached.
   bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info);
 
-  device::mojom::UsbDeviceManagerPtr device_manager_;
+  mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
       client_binding_;
 

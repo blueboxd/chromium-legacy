@@ -22,7 +22,7 @@
 @property(nonatomic, strong) UIColor* textColor;
 
 // UIColor for the cell's detailTextLabel. If not set,
-// kTableViewSecondaryLabelLightGrayTextColor is used.
+// UIColor.cr_secondaryLabelColor is used.
 @property(nonatomic, strong) UIColor* detailTextColor;
 // Detail text to be displayed. The detail text label is configured wiht
 // multiline (no limit).

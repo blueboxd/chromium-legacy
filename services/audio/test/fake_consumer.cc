@@ -12,7 +12,7 @@
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/numerics/math_constants.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/task_environment.h"
 #include "media/audio/audio_debug_file_writer.h"
 #include "media/base/audio_bus.h"

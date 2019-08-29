@@ -175,14 +175,15 @@ class DisplayLockStyleScope {
  public:
   DisplayLockStyleScope(DisplayLockContext* context)
       : context_(context),
-        should_update_self_(!context ||
-                            context->ShouldStyle(DisplayLockContext::kSelf)) {}
+        should_update_self_(
+            !context ||
+            context->ShouldStyle(DisplayLockLifecycleTarget::kSelf)) {}
 
   ~DisplayLockStyleScope() {
     if (!context_)
       return;
     if (did_update_children_)
-      context_->DidStyle(DisplayLockContext::kChildren);
+      context_->DidStyle(DisplayLockLifecycleTarget::kChildren);
   }
 
   bool ShouldUpdateSelfStyle() const { return should_update_self_; }
@@ -190,13 +191,14 @@ class DisplayLockStyleScope {
     // We can't calculate this on construction time, because the element might
     // get unlocked after self-style calculation due to lack of containment,
     // which might change the value of ShouldStyle(children).
-    return !context_ || context_->ShouldStyle(DisplayLockContext::kChildren);
+    return !context_ ||
+           context_->ShouldStyle(DisplayLockLifecycleTarget::kChildren);
   }
   void DidUpdateChildStyle() { did_update_children_ = true; }
   void DidUpdateSelfStyle() {
     DCHECK(should_update_self_);
     if (context_)
-      context_->DidStyle(DisplayLockContext::kSelf);
+      context_->DidStyle(DisplayLockLifecycleTarget::kSelf);
   }
 
   void NotifyUpdateWasBlocked(DisplayLockContext::StyleType style) {
@@ -2952,7 +2954,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
 void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   DCHECK(InActiveDocument());
   DCHECK(parentNode());
-  DCHECK(!StyleRecalcBlockedByDisplayLock(DisplayLockContext::kSelf));
+  DCHECK(!StyleRecalcBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
@@ -2963,7 +2965,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
-  } else if (!StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+  } else if (!StyleRecalcBlockedByDisplayLock(
+                 DisplayLockLifecycleTarget::kChildren)) {
     // TODO(crbug.com/972752): Make the condition above a DCHECK instead when
     // style recalc and dirty bit propagation uses flat-tree traversal.
     // We create a local WhitespaceAttacher when rebuilding children of an
@@ -2996,11 +2999,13 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     ClearChildNeedsReattachLayoutTree();
   }
   DCHECK(!NeedsStyleRecalc());
-  DCHECK(!ChildNeedsStyleRecalc() ||
-         StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren));
+  DCHECK(
+      !ChildNeedsStyleRecalc() ||
+      StyleRecalcBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   DCHECK(!NeedsReattachLayoutTree());
-  DCHECK(!ChildNeedsReattachLayoutTree() ||
-         StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren));
+  DCHECK(
+      !ChildNeedsReattachLayoutTree() ||
+      StyleRecalcBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
 }
 
 void Element::RebuildShadowRootLayoutTree(
@@ -5894,7 +5899,7 @@ const NamesMap* Element::PartNamesMap() const {
 }
 
 bool Element::StyleRecalcBlockedByDisplayLock(
-    DisplayLockContext::LifecycleTarget target) const {
+    DisplayLockLifecycleTarget target) const {
   auto* context = GetDisplayLockContext();
   return context && !context->ShouldStyle(target);
 }

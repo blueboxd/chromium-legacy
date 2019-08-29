@@ -79,7 +79,7 @@ class PLATFORM_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
   ~RTCStatsMember() override;
 
   blink::WebString GetName() const override;
-  blink::WebRTCStatsMemberType GetType() const override;
+  webrtc::RTCStatsMemberInterface::Type GetType() const override;
   bool IsDefined() const override;
 
   bool ValueBool() const override;

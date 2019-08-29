@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceList;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList;
 
 import java.util.List;
 

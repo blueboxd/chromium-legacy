@@ -280,7 +280,7 @@ void LayoutEmbeddedContent::UpdateLayout() {
 void LayoutEmbeddedContent::PaintReplaced(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) const {
-  if (PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (PaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
   EmbeddedContentPainter(*this).PaintReplaced(paint_info, paint_offset);
 }

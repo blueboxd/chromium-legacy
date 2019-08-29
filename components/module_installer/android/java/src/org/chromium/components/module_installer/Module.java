@@ -51,16 +51,18 @@ public class Module<T> {
 
     /** Returns true if the module is currently installed and can be accessed. */
     public boolean isInstalled() {
-        if (sModulesUninstalledForTesting.contains(mName)) return false;
-        if (mImpl != null) return true;
-        // Accessing classes in the module may cause its DEX file to be loaded. And on some devices
-        // that causes a read mode violation.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            ModuleInstaller.getInstance().init();
-            Class.forName(mImplClassName);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
+        try (Timer ignored1 = new Timer()) {
+            if (sModulesUninstalledForTesting.contains(mName)) return false;
+            if (mImpl != null) return true;
+            // Accessing classes in the module may cause its DEX file to be loaded. And on some
+            // devices that causes a read mode violation.
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                ModuleInstaller.getInstance().init();
+                Class.forName(mImplClassName);
+                return true;
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
         }
     }
 
@@ -83,18 +85,20 @@ public class Module<T> {
      * installed.
      */
     public T getImpl() {
-        assert isInstalled();
-        if (mImpl == null) {
-            ModuleInstaller.getInstance().init();
-            // Accessing classes in the module may cause its DEX file to be loaded. And on some
-            // devices that causes a read mode violation.
-            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                mImpl = mInterfaceClass.cast(Class.forName(mImplClassName).newInstance());
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                    | IllegalArgumentException e) {
-                throw new RuntimeException(e);
+        try (Timer ignored1 = new Timer()) {
+            assert isInstalled();
+            if (mImpl == null) {
+                ModuleInstaller.getInstance().init();
+                // Accessing classes in the module may cause its DEX file to be loaded. And on some
+                // devices that causes a read mode violation.
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                    mImpl = mInterfaceClass.cast(Class.forName(mImplClassName).newInstance());
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                        | IllegalArgumentException e) {
+                    throw new RuntimeException(e);
+                }
             }
+            return mImpl;
         }
-        return mImpl;
     }
 }

@@ -85,6 +85,11 @@ public final class PasswordUIView implements PasswordManagerHandler {
                 mNativePasswordUIViewAndroid, targetPath, successCallback, errorCallback);
     }
 
+    @Override
+    public void showPasswordEntryEditingView(int index) {
+        nativeHandleShowPasswordEntryEditingView(mNativePasswordUIViewAndroid, index);
+    }
+
     /**
      * Returns the URL for the website for managing one's passwords without the need to use Chrome
      * with the user's profile signed in.
@@ -129,4 +134,7 @@ public final class PasswordUIView implements PasswordManagerHandler {
 
     private native void nativeHandleSerializePasswords(long nativePasswordUIViewAndroid,
             String targetPath, IntStringCallback successCallback, Callback<String> errorCallback);
+
+    private native void nativeHandleShowPasswordEntryEditingView(
+            long nativePasswordUIViewAndroid, int index);
 }

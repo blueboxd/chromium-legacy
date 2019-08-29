@@ -69,7 +69,7 @@ class ResurrectingPreFinalizer
 }  // namespace
 
 TEST_F(MarkingVerifierDeathTest, DiesOnResurrectedMember) {
-  if (!ThreadState::Current()->VerifyMarkingEnabled())
+  if (!ThreadState::Current()->IsVerifyMarkingEnabled())
     return;
 
   Persistent<ResurrectingPreFinalizer::GlobalStorage> storage(
@@ -82,7 +82,7 @@ TEST_F(MarkingVerifierDeathTest, DiesOnResurrectedMember) {
 }
 
 TEST_F(MarkingVerifierDeathTest, DiesOnResurrectedWeakMember) {
-  if (!ThreadState::Current()->VerifyMarkingEnabled())
+  if (!ThreadState::Current()->IsVerifyMarkingEnabled())
     return;
 
   Persistent<ResurrectingPreFinalizer::GlobalStorage> storage(

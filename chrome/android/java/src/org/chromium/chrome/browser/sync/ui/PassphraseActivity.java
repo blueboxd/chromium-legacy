@@ -9,9 +9,9 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import org.chromium.base.library_loader.ProcessInitException;
@@ -26,10 +26,8 @@ import org.chromium.components.signin.ChromeSigninController;
  * This activity is used for requesting a sync passphrase from the user. Typically,
  * this will be the target of an Android notification.
  */
-public class PassphraseActivity extends FragmentActivity implements
-        PassphraseDialogFragment.Listener,
-        FragmentManager.OnBackStackChangedListener {
-
+public class PassphraseActivity extends AppCompatActivity
+        implements PassphraseDialogFragment.Listener, FragmentManager.OnBackStackChangedListener {
     public static final String FRAGMENT_PASSPHRASE = "passphrase_fragment";
     public static final String FRAGMENT_SPINNER = "spinner_fragment";
     private static final String TAG = "PassphraseActivity";
@@ -144,7 +142,7 @@ public class PassphraseActivity extends FragmentActivity implements
 
     @Override
     public void onBackStackChanged() {
-        if (getFragmentManager().getBackStackEntryCount() == 0) {
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
             finish();
         }
     }

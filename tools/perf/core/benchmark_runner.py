@@ -15,9 +15,10 @@ from telemetry import command_line
 
 
 def main(config, args=None):
+  results_arg_parser = results_processor.ArgumentParser(
+      legacy_formats=command_line.LEGACY_OUTPUT_FORMATS)
   options = command_line.ParseArgs(
-      environment=config, args=args,
-      results_arg_parser=results_processor.ArgumentParser())
+      environment=config, args=args, results_arg_parser=results_arg_parser)
   results_processor.ProcessOptions(options)
   run_return_code = command_line.RunCommand(options)
   process_return_code = results_processor.ProcessResults(options)

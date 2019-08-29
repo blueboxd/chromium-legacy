@@ -29,6 +29,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
 #include "third_party/vulkan/include/vulkan/vulkan.h"
 
@@ -111,7 +112,7 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
 
   bool found_amd = false;
   bool found_intel = false;
-  bool amd_is_primary = false;
+  bool found_nvidia = false;
 
   UINT i;
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
@@ -135,6 +136,19 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
       DLOG(ERROR) << "Unable to retrieve the umd version of adapter: "
                   << desc.Description << " HR: " << std::hex << hr;
     }
+    switch (device.vendor_id) {
+      case 0x8086:
+        found_intel = true;
+        break;
+      case 0x1002:
+        found_amd = true;
+        break;
+      case 0x10de:
+        found_nvidia = true;
+        break;
+      default:
+        break;
+    }
 
     if (i == 0) {
       gpu_info->gpu = device;
@@ -143,19 +157,20 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
     }
   }
 
-  if (found_amd && found_intel) {
-    // Potential AMD Switchable system found.
-    if (!amd_is_primary) {
-      // Some machines aren't properly detected as AMD switchable, but count
-      // them anyway. This may erroneously count machines where there are
-      // independent AMD and Intel cards and the AMD isn't hooked up to
-      // anything, but that should be rare.
-      gpu_info->amd_switchable = true;
-    } else {
+  if (found_intel && base::win::GetVersion() < base::win::Version::WIN10) {
+    // Since Windows 10 (and Windows 8.1 on some systems), switchable graphics
+    // platforms are managed by Windows and each adapter is accessible as
+    // separate devices.
+    // See https://msdn.microsoft.com/en-us/windows/dn265501(v=vs.80)
+    if (found_amd) {
       bool is_amd_switchable = false;
       uint32_t active_vendor = 0, active_device = 0;
       GetAMDSwitchableInfo(&is_amd_switchable, &active_vendor, &active_device);
       gpu_info->amd_switchable = is_amd_switchable;
+    } else if (found_nvidia) {
+      // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
+      HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
+      gpu_info->optimus = nvd3d9wrap != nullptr;
     }
   }
 
@@ -511,13 +526,7 @@ bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
 bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
-
   DCHECK(gpu_info);
-
-  // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
-  HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
-  gpu_info->optimus = nvd3d9wrap != nullptr;
-
   // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
   return CollectDriverInfoD3D(gpu_info);
 }

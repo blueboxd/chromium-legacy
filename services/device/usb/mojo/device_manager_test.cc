@@ -62,9 +62,9 @@ DeviceManagerTest::DeviceManagerTest(UsbService* usb_service)
 
 DeviceManagerTest::~DeviceManagerTest() {}
 
-void DeviceManagerTest::BindRequest(
-    mojom::UsbDeviceManagerTestRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void DeviceManagerTest::BindReceiver(
+    mojo::PendingReceiver<device::mojom::UsbDeviceManagerTest> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void DeviceManagerTest::AddDeviceForTesting(

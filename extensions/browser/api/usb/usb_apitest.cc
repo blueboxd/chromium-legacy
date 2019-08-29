@@ -14,6 +14,7 @@
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/cpp/test/mock_usb_mojo_device.h"
@@ -123,10 +124,10 @@ class UsbApiTest : public ShellApiTest {
     ShellApiTest::SetUpOnMainThread();
 
     // Set fake USB device manager for extensions::UsbDeviceManager.
-    device::mojom::UsbDeviceManagerPtr usb_manager_ptr;
-    fake_usb_manager_.AddBinding(mojo::MakeRequest(&usb_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> usb_manager;
+    fake_usb_manager_.AddReceiver(usb_manager.InitWithNewPipeAndPassReceiver());
     UsbDeviceManager::Get(browser_context())
-        ->SetDeviceManagerForTesting(std::move(usb_manager_ptr));
+        ->SetDeviceManagerForTesting(std::move(usb_manager));
     base::RunLoop().RunUntilIdle();
 
     std::vector<device::mojom::UsbConfigurationInfoPtr> configs;

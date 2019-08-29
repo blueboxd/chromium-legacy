@@ -69,4 +69,7 @@ public interface ModuleInstaller {
      * @param moduleName Name of the module.
      */
     default void installDeferred(String moduleName) {}
+
+    /** Called when startup completes to record module overhead during startup. */
+    default void recordStartupTime() {}
 }

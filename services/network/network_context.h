@@ -272,7 +272,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const url::Origin& origin,
       uint32_t options,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-      mojom::AuthenticationHandlerPtr auth_handler,
+      mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
   void ResolveHost(const net::HostPortPair& host,

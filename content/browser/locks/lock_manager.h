@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "content/public/browser/browser_context.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "url/origin.h"
 
@@ -26,7 +26,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
  public:
   LockManager();
 
-  void CreateService(blink::mojom::LockManagerRequest request,
+  void CreateService(mojo::PendingReceiver<blink::mojom::LockManager> receiver,
                      const url::Origin& origin);
 
   // Request a lock. When the lock is acquired, |callback| will be invoked with
@@ -34,7 +34,8 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   void RequestLock(const std::string& name,
                    blink::mojom::LockMode mode,
                    WaitMode wait,
-                   blink::mojom::LockRequestAssociatedPtrInfo request) override;
+                   mojo::PendingAssociatedRemote<blink::mojom::LockRequest>
+                       request) override;
 
   // Called by a LockHandle's implementation when destructed.
   void ReleaseLock(const url::Origin& origin, int64_t lock_id);
@@ -53,8 +54,8 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // State for a particular origin.
   class OriginState;
 
-  // State for each client held in |bindings_|.
-  struct BindingState {
+  // State for each client held in |receivers_|.
+  struct ReceiverState {
     url::Origin origin;
     std::string client_id;
   };
@@ -73,7 +74,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // to process outstanding requests within the origin.
   void ProcessRequests(const url::Origin& origin);
 
-  mojo::BindingSet<blink::mojom::LockManager, BindingState> bindings_;
+  mojo::ReceiverSet<blink::mojom::LockManager, ReceiverState> receivers_;
 
   int64_t next_lock_id_ = 0;
   std::map<url::Origin, OriginState> origins_;

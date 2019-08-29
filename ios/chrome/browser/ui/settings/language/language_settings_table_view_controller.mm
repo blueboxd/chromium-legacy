@@ -23,6 +23,8 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -423,7 +425,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.addLanguageItem = addLanguageItem;
   addLanguageItem.text = l10n_util::GetNSString(
       IDS_IOS_LANGUAGE_SETTINGS_ADD_LANGUAGE_BUTTON_TITLE);
-  addLanguageItem.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
+  addLanguageItem.textColor = [UIColor colorNamed:kBlueColor];
   addLanguageItem.accessibilityTraits |= UIAccessibilityTraitButton;
   [self.tableViewModel addItem:addLanguageItem
        toSectionWithIdentifier:SectionIdentifierLanguages];
@@ -445,9 +447,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setAddLanguageItemEnabled:(BOOL)enabled {
   // Update the model.
   self.addLanguageItem.enabled = enabled;
-  self.addLanguageItem.textColor =
-      self.isEditing ? UIColorFromRGB(kSettingsCellsDetailTextColor)
-                     : UIColorFromRGB(kTableViewTextLabelColorBlue);
+  self.addLanguageItem.textColor = self.isEditing
+                                       ? UIColor.cr_secondaryLabelColor
+                                       : [UIColor colorNamed:kBlueColor];
 
   // Update the table view.
   [self reconfigureCellsForItems:@[ self.addLanguageItem ]];

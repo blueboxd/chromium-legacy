@@ -7,7 +7,7 @@
 
 namespace quic {
 
-int QuicPickUnusedPortOrDieImpl();
+int QuicPickServerPortForTestsOrDieImpl();
 void QuicRecyclePortImpl(int port);
 
 }  // namespace quic

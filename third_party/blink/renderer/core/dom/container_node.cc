@@ -977,8 +977,8 @@ void ContainerNode::RemovedFrom(ContainerNode& insertion_point) {
 DISABLE_CFI_PERF
 void ContainerNode::AttachLayoutTree(AttachContext& context) {
   auto* element = DynamicTo<Element>(this);
-  if (element &&
-      element->StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+  if (element && element->StyleRecalcBlockedByDisplayLock(
+                     DisplayLockLifecycleTarget::kChildren)) {
     // Since we block style recalc on descendants of this node due to display
     // locking, none of its descendants should have the NeedsReattachLayoutTree
     // bit set.

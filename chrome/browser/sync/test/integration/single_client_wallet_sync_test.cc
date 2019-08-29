@@ -611,14 +611,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // If the server sends the same cards and addresses again, they should not
 // change on the client. We should also not overwrite existing metadata.
-// Flaky on ASan/TSan only. http://crbug.com/997912
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_SameUpdatesAreIgnored DISABLED_SameUpdatesAreIgnored
-#else
-#define MAYBE_SameUpdatesAreIgnored SameUpdatesAreIgnored
-#endif
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       MAYBE_SameUpdatesAreIgnored) {
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, SameUpdatesAreIgnored) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),

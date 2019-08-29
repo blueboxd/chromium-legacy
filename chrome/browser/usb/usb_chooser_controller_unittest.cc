@@ -16,6 +16,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
@@ -59,10 +60,11 @@ class UsbChooserControllerTest : public ChromeRenderViewHostTestHarness {
     web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
     // Set fake device manager for UsbChooserContext.
-    device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+    device_manager_.AddReceiver(
+        device_manager.InitWithNewPipeAndPassReceiver());
     UsbChooserContextFactory::GetForProfile(profile())
-        ->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+        ->SetDeviceManagerForTesting(std::move(device_manager));
 
     usb_chooser_controller_.reset(new UsbChooserController(
         main_rfh(), std::move(device_filters), std::move(callback)));

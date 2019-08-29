@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "chrome/browser/badging/badge_manager_delegate.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
 class Profile;
 

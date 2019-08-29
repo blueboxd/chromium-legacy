@@ -13,8 +13,12 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+using password_manager::CreateLeakType;
 using password_manager::CredentialLeakFlags;
 using password_manager::CredentialLeakType;
+using password_manager::IsReused;
+using password_manager::IsSaved;
+using password_manager::IsSyncing;
 
 namespace leak_dialog_utils {
 
@@ -33,35 +37,20 @@ const struct {
   bool should_show_cancel_button;
   bool should_check_passwords;
 } kLeakTypesTestCases[] = {
-    {password_manager::CreateLeakTypeFromBools(
-         /*is_saved=*/false,
-         /*is_reused=*/false,
-         /*is_syncing=*/false),
-     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
+    {CreateLeakType(IsSaved(false), IsReused(false), IsSyncing(false)), IDS_OK,
+     IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
      IDS_CREDENTIAL_LEAK_TITLE, false, false},
-    {password_manager::CreateLeakTypeFromBools(
-         /*is_saved=*/false,
-         /*is_reused=*/false,
-         /*is_syncing=*/true),
-     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
+    {CreateLeakType(IsSaved(false), IsReused(false), IsSyncing(true)), IDS_OK,
+     IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
      IDS_CREDENTIAL_LEAK_TITLE, false, false},
-    {password_manager::CreateLeakTypeFromBools(
-         /*is_saved=*/false,
-         /*is_reused=*/true,
-         /*is_syncing=*/true),
+    {CreateLeakType(IsSaved(false), IsReused(true), IsSyncing(true)),
      IDS_LEAK_CHECK_CREDENTIALS, IDS_CLOSE,
      IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE,
      IDS_CREDENTIAL_LEAK_TITLE, true, true},
-    {password_manager::CreateLeakTypeFromBools(
-         /*is_saved=*/true,
-         /*is_reused=*/false,
-         /*is_syncing=*/true),
-     IDS_OK, IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
+    {CreateLeakType(IsSaved(true), IsReused(false), IsSyncing(true)), IDS_OK,
+     IDS_CLOSE, IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
      IDS_CREDENTIAL_LEAK_TITLE, false, false},
-    {password_manager::CreateLeakTypeFromBools(
-         /*is_saved=*/true,
-         /*is_reused=*/true,
-         /*is_syncing=*/true),
+    {CreateLeakType(IsSaved(true), IsReused(true), IsSyncing(true)),
      IDS_LEAK_CHECK_CREDENTIALS, IDS_CLOSE,
      IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE, IDS_CREDENTIAL_LEAK_TITLE,
      true, true}};

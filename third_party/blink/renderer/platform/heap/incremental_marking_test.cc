@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -116,6 +117,7 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
             heap_.GetNotFullyConstructedWorklist()) {
     thread_state_->SetGCPhase(ThreadState::GCPhase::kMarking);
     ThreadState::AtomicPauseScope atomic_pause_scope_(thread_state_);
+    ScriptForbiddenScope script_forbidden_scope;
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
     thread_state->EnableIncrementalMarkingBarrier();

@@ -527,7 +527,15 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 
 // Verifies that SaveUserImageFromProfileImage() correctly downloads, sets and
 // persists the chosen user image.
-IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
+// TODO(crbug.com/998369): Flaky on Linux TSAN and ASAN.
+#if defined(OS_CHROMEOS)
+#define MAYBE_SaveUserImageFromProfileImage \
+  DISABLED_SaveUserImageFromProfileImage
+#else
+#define MAYBE_SaveUserImageFromProfileImage SaveUserImageFromProfileImage
+#endif
+IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
+                       MAYBE_SaveUserImageFromProfileImage) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(test_account_id1_);
   ASSERT_TRUE(user);

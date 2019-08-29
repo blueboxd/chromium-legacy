@@ -1941,7 +1941,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/rtc_rtp_receiver_unittest.cc",
     "../renderer/media/webrtc/rtc_rtp_sender_unittest.cc",
     "../renderer/media/webrtc/rtc_rtp_transceiver_unittest.cc",
-    "../renderer/media/webrtc/rtc_video_encoder_unittest.cc",
     "../renderer/media/webrtc/stun_field_trial_unittest.cc",
     "../renderer/media/webrtc/task_queue_factory_unittest.cc",
     "../renderer/media/webrtc/transceiver_state_surfacer_unittest.cc",

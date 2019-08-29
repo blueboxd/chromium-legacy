@@ -128,21 +128,7 @@ bool BeingDebugged() {
   return being_debugged;
 }
 
-void VerifyDebugger() {
-#if BUILDFLAG(ENABLE_LLDBINIT_WARNING)
-  // Quick check before potentially slower GetDebuggerProcess().
-  if (Environment::Create()->HasVar("CHROMIUM_LLDBINIT_SOURCED"))
-    return;
-  DCHECK(false)
-      << "Detected lldb without sourcing //tools/lldb/lldbinit.py. lldb may "
-         "not be able to find debug symbols. Please see debug instructions for "
-         "using //tools/lldb/lldbinit.py:\n"
-         "https://chromium.googlesource.com/chromium/src/+/master/docs/"
-         "lldbinit.md\n"
-         "To continue anyway, type 'continue' in lldb. To always skip this "
-         "check, define an environment variable CHROMIUM_LLDBINIT_SOURCED=1";
-#endif
-}
+void VerifyDebugger() {}
 
 #elif defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
 

@@ -27,10 +27,10 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using device::mojom::blink::UsbControlTransferParamsPtr;
-using device::mojom::blink::UsbControlTransferType;
 using device::mojom::blink::UsbControlTransferRecipient;
+using device::mojom::blink::UsbControlTransferType;
+using device::mojom::blink::UsbDevice;
 using device::mojom::blink::UsbDeviceInfoPtr;
-using device::mojom::blink::UsbDevicePtr;
 using device::mojom::blink::UsbIsochronousPacketPtr;
 using device::mojom::blink::UsbOpenDeviceError;
 using device::mojom::blink::UsbTransferDirection;
@@ -125,7 +125,7 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
 }  // namespace
 
 USBDevice::USBDevice(UsbDeviceInfoPtr device_info,
-                     UsbDevicePtr device,
+                     mojo::PendingRemote<UsbDevice> device,
                      ExecutionContext* context)
     : ContextLifecycleObserver(context),
       device_info_(std::move(device_info)),
@@ -134,7 +134,7 @@ USBDevice::USBDevice(UsbDeviceInfoPtr device_info,
       device_state_change_in_progress_(false),
       configuration_index_(kNotFound) {
   if (device_) {
-    device_.set_connection_error_handler(
+    device_.set_disconnect_handler(
         WTF::Bind(&USBDevice::OnConnectionError, WrapWeakPersistent(this)));
   }
   wtf_size_t configuration_index =

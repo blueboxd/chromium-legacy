@@ -225,7 +225,9 @@ Compositor::Compositor(
       cc::AnimationTimeline::Create(cc::AnimationIdProvider::NextTimelineId());
   animation_host_->AddAnimationTimeline(animation_timeline_.get());
 
-  host_->SetHasGpuRasterizationTrigger(features::IsUiGpuRasterizationEnabled());
+  bool gpu_raster_trigger = features::IsUiGpuRasterizationEnabled() ||
+                            features::IsUiOopRasterizationEnabled();
+  host_->SetHasGpuRasterizationTrigger(gpu_raster_trigger);
   host_->SetRootLayer(root_web_layer_);
 
   // This shouldn't be done in the constructor in order to match Widget.

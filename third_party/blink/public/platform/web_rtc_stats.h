@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
+#include "third_party/webrtc/api/stats/rtc_stats.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -28,24 +29,6 @@ namespace blink {
 
 class WebRTCStats;
 class WebRTCStatsMember;
-
-enum WebRTCStatsMemberType {
-  kWebRTCStatsMemberTypeBool,    // bool
-  kWebRTCStatsMemberTypeInt32,   // int32_t
-  kWebRTCStatsMemberTypeUint32,  // uint32_t
-  kWebRTCStatsMemberTypeInt64,   // int64_t
-  kWebRTCStatsMemberTypeUint64,  // uint64_t
-  kWebRTCStatsMemberTypeDouble,  // double
-  kWebRTCStatsMemberTypeString,  // WebString
-
-  kWebRTCStatsMemberTypeSequenceBool,    // WebVector<int>
-  kWebRTCStatsMemberTypeSequenceInt32,   // WebVector<int32_t>
-  kWebRTCStatsMemberTypeSequenceUint32,  // WebVector<uint32_t>
-  kWebRTCStatsMemberTypeSequenceInt64,   // WebVector<int64_t>
-  kWebRTCStatsMemberTypeSequenceUint64,  // WebVector<uint64_t>
-  kWebRTCStatsMemberTypeSequenceDouble,  // WebVector<double>
-  kWebRTCStatsMemberTypeSequenceString,  // WebVector<WebString>
-};
 
 class BLINK_PLATFORM_EXPORT WebRTCStatsReport {
  public:
@@ -91,7 +74,7 @@ class BLINK_PLATFORM_EXPORT WebRTCStatsMember {
   virtual ~WebRTCStatsMember();
 
   virtual WebString GetName() const = 0;
-  virtual WebRTCStatsMemberType GetType() const = 0;
+  virtual webrtc::RTCStatsMemberInterface::Type GetType() const = 0;
   virtual bool IsDefined() const = 0;
 
   // Value getters. No conversion is performed; the function must match the

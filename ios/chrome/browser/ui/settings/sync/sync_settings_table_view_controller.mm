@@ -47,6 +47,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -436,10 +437,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                  ? [UIImage imageNamed:@"settings_error"]
                                  : nil;
   encryptionCellItem.enabled = [self shouldEncryptionItemBeEnabled];
-  encryptionCellItem.textColor =
-      encryptionCellItem.enabled
-          ? UIColor.blackColor
-          : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  encryptionCellItem.textColor = encryptionCellItem.enabled
+                                     ? UIColor.cr_labelColor
+                                     : UIColor.cr_secondaryLabelColor;
   return encryptionCellItem;
 }
 
@@ -889,8 +889,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                    : nil;
   item.enabled = [self shouldEncryptionItemBeEnabled];
   item.textColor =
-      item.enabled ? UIColor.blackColor
-                   : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+      item.enabled ? UIColor.cr_labelColor : UIColor.cr_secondaryLabelColor;
   [self reconfigureCellsForItems:@[ item ]];
 }
 

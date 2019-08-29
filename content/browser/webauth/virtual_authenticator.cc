@@ -38,9 +38,9 @@ VirtualAuthenticator::VirtualAuthenticator(
 
 VirtualAuthenticator::~VirtualAuthenticator() = default;
 
-void VirtualAuthenticator::AddBinding(
-    blink::test::mojom::VirtualAuthenticatorRequest request) {
-  binding_set_.AddBinding(this, std::move(request));
+void VirtualAuthenticator::AddReceiver(
+    mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticator> receiver) {
+  receiver_set_.Add(this, std::move(receiver));
 }
 
 bool VirtualAuthenticator::AddRegistration(

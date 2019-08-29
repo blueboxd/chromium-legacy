@@ -10,6 +10,8 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "components/safe_browsing/proto/realtimeapi.pb.h"
 #include "url/gurl.h"
 
@@ -31,12 +33,17 @@ class RealTimeUrlLookupService {
       scoped_refptr<network::SharedURLLoaderFactory>);
   ~RealTimeUrlLookupService();
 
-  void StartLookup(const GURL& url, RTLookupResponseCallback callback);
+  // Returns true if |url|'s scheme can be checked.
+  bool CanCheckUrl(const GURL& url) const;
 
   // Returns true if the real time lookups are currently in backoff mode due to
   // too many prior errors. If this happens, the checking falls back to
   // local hash-based method.
   bool IsInBackoffMode();
+
+  // Start the full URL lookup for |url| and call |callback| on the same thread
+  // when done.
+  void StartLookup(const GURL& url, RTLookupResponseCallback callback);
 
  private:
   using PendingRTLookupRequests =
@@ -44,17 +51,47 @@ class RealTimeUrlLookupService {
 
   // Called when the request to remote endpoint fails. May initiate or extend
   // backoff.
-  void HandleResponseError();
+  void HandleLookupError();
+
+  // Called when the request to remote endpoint succeeds. Resets error count and
+  // ends backoff.
+  void HandleLookupSuccess();
+
+  // Resets the error count and ends backoff mode. Functionally same as
+  // |HandleLookupSuccess| for now.
+  void ResetFailures();
+
+  // Called when the timer to end backoff mode fires. Resets error count.
+  void ExitBackoff();
 
   // Called when the response from the real-time lookup remote endpoint is
   // received.
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
                            std::unique_ptr<std::string> response_body);
 
+  // Helper function to return a weak pointer.
+  base::WeakPtr<RealTimeUrlLookupService> GetWeakPtr();
+
   PendingRTLookupRequests pending_requests_;
+
+  // Count of consecutive failures to complete URL lookup requests. When it
+  // reaches |kMaxFailuresToEnforceBackoff|, we enter the backoff mode. It gets
+  // reset when we complete a lookup successfully or when the backoff reset
+  // timer fires.
+  size_t consecutive_failures_ = 0;
+
+  // Started when we enter backoff. We exit the backoff mode when this fires.
+  base::OneShotTimer reset_backoff_timer_;
 
   // The URLLoaderFactory we use to issue network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  friend class RealTimeUrlLookupServiceTest;
+
+  base::WeakPtrFactory<RealTimeUrlLookupService> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(RealTimeUrlLookupService);
+
 };  // class RealTimeUrlLookupService
 
 }  // namespace safe_browsing

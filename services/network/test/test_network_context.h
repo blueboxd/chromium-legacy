@@ -149,7 +149,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       const url::Origin& origin,
       uint32_t options,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-      mojom::AuthenticationHandlerPtr auth_handler,
+      mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override {}
   void LookUpProxyForURL(
       const GURL& url,

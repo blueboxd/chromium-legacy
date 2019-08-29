@@ -793,7 +793,8 @@ const PageRenderData& PageLoadTracker::GetMainFrameRenderData() const {
   return metrics_update_dispatcher_.main_frame_render_data();
 }
 
-const ScopedVisibilityTracker& PageLoadTracker::GetVisibilityTracker() const {
+const ui::ScopedVisibilityTracker& PageLoadTracker::GetVisibilityTracker()
+    const {
   return visibility_tracker_;
 }
 

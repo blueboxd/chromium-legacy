@@ -45,6 +45,17 @@ constexpr char kLogFileOpenType[] = "RecurrenceRanker.LogFileOpenType";
 // Keep in sync with value in search_controller_factory.cc.
 constexpr float kBoostOfApps = 8.0f;
 
+// How many zero state results are shown in the results list.
+constexpr int kDisplayedZeroStateResults = 5;
+
+// For zero state, how many times a result can be shown before it is no longer
+// considered 'fresh' and can therefore override another result.
+constexpr int kMaxCacheCountForOverride = 3;
+
+// For zero state, the minimum result score to be considered a candidate to
+// override another result.
+constexpr float kMinScoreForOverride = 0.5f;
+
 // Represents each model used within the SearchResultRanker.
 enum class Model { NONE, APPS, MIXED_TYPES };
 
@@ -307,6 +318,7 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
 
     if (model == Model::MIXED_TYPES) {
       if (last_query_.empty() && zero_state_group_ranker_) {
+        // Apply model score updates.
         const auto& rank_it = zero_state_group_ranks_.find(
             base::NumberToString(static_cast<int>(type)));
         const float group_score = (rank_it != zero_state_group_ranks_.end())
@@ -398,6 +410,79 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
     }
   } else if (model == Model::APPS && app_ranker_) {
     app_ranker_->Record(NormalizeAppId(app_launch_data.id));
+  }
+}
+
+void SearchResultRanker::ZeroStateResultsDisplayed(
+    const ash::SearchResultIdWithPositionIndices& results) {
+  for (auto& cache_item : zero_state_results_cache_) {
+    for (const auto& result : results) {
+      if (cache_item.second.first == result.id) {
+        ++cache_item.second.second;
+        break;
+      }
+    }
+  }
+}
+
+void SearchResultRanker::OverrideZeroStateResults(
+    Mixer::SortedResults* const results) {
+  // Construct a list of pointers filtered to contain all zero state results
+  // and sorted in decreasing order of score.
+  std::vector<Mixer::SortData*> result_ptrs;
+  for (auto& result : *results) {
+    if (ModelForType(RankingItemTypeFromSearchResult(*result.result)) ==
+        Model::MIXED_TYPES) {
+      result_ptrs.emplace_back(&result);
+    }
+  }
+  std::sort(result_ptrs.begin(), result_ptrs.end(),
+            [](const Mixer::SortData* const a, const Mixer::SortData* const b) {
+              return a->score > b->score;
+            });
+
+  // For each group, override a candidate in the displayed results if
+  // necessary. The ordering of the groups in the foreach means that if, there
+  // are multiple overrides necessary, a QuickAccess result is above a
+  // ZeroStateFile result is above an Omnibox result.
+  int next_modifiable_index = kDisplayedZeroStateResults - 1;
+  for (auto group :
+       {RankingItemType::kOmniboxGeneric, RankingItemType::kZeroStateFile,
+        RankingItemType::kDriveQuickAccess}) {
+    // Find the best result for the group.
+    int candidate_override_index = -1;
+    for (int i = 0; i < static_cast<int>(result_ptrs.size()); ++i) {
+      const auto& result = *result_ptrs[i];
+      if (RankingItemTypeFromSearchResult(*result.result) != group)
+        continue;
+
+      // This is the highest scoring result of this group. Reset the top-results
+      // cache if needed.
+      const auto& cache_it = zero_state_results_cache_.find(group);
+      if (cache_it == zero_state_results_cache_.end() ||
+          cache_it->second.first != result.result->id()) {
+        zero_state_results_cache_[group] = {result.result->id(), 0};
+      }
+      const auto& cache_count = zero_state_results_cache_[group].second;
+
+      if (i >= kDisplayedZeroStateResults &&
+          result.score >= kMinScoreForOverride &&
+          cache_count < kMaxCacheCountForOverride) {
+        candidate_override_index = i;
+      }
+      break;
+    }
+
+    // If a result from this group will already be displayed or there are no
+    // results in the group, we have nothing to do.
+    if (candidate_override_index == -1)
+      continue;
+
+    // Override the result at |next_modifiable_index| with
+    // |candidate_override_index| by swapping their scores.
+    std::swap(result_ptrs[candidate_override_index]->score,
+              result_ptrs[next_modifiable_index]->score);
+    --next_modifiable_index;
   }
 }
 

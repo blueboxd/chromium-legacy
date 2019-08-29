@@ -30,8 +30,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
   void ResolveAsURLLoaderFactory(
       const GURL& url,
       network::mojom::URLLoaderFactoryRequest request) override;
-  void ResolveForNavigation(const GURL& url,
-                            blink::mojom::BlobURLTokenRequest token) override;
+  void ResolveForNavigation(
+      const GURL& url,
+      mojo::PendingReceiver<blink::mojom::BlobURLToken> token) override;
 
  private:
   void RegisterWithUUID(blink::mojom::BlobPtr blob,

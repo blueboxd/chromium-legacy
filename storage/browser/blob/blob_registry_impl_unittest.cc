@@ -18,6 +18,8 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -1015,9 +1017,8 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream) {
   const std::string kContentDisposition = "disposition";
 
   FakeProgressClient progress_client;
-  blink::mojom::ProgressClientAssociatedPtrInfo progress_client_ptr;
-  mojo::AssociatedBinding<blink::mojom::ProgressClient> progress_binding(
-      &progress_client, MakeRequest(&progress_client_ptr));
+  mojo::AssociatedReceiver<blink::mojom::ProgressClient> progress_receiver(
+      &progress_client);
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
@@ -1026,7 +1027,7 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream) {
   base::RunLoop loop;
   registry_->RegisterFromStream(
       kContentType, kContentDisposition, kData.length(), std::move(consumer),
-      std::move(progress_client_ptr),
+      progress_receiver.BindNewEndpointAndPassRemote(),
       base::BindLambdaForTesting([&](blink::mojom::SerializedBlobPtr result) {
         blob = std::move(result);
         loop.Quit();
@@ -1056,9 +1057,8 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream_NoDiskSpace) {
   const std::string kContentDisposition = "disposition";
 
   FakeProgressClient progress_client;
-  blink::mojom::ProgressClientAssociatedPtrInfo progress_client_ptr;
-  mojo::AssociatedBinding<blink::mojom::ProgressClient> progress_binding(
-      &progress_client, MakeRequest(&progress_client_ptr));
+  mojo::AssociatedReceiver<blink::mojom::ProgressClient> progress_receiver(
+      &progress_client);
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
@@ -1067,7 +1067,7 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream_NoDiskSpace) {
   base::RunLoop loop;
   registry_->RegisterFromStream(
       kContentType, kContentDisposition, kData.length(), std::move(consumer),
-      std::move(progress_client_ptr),
+      progress_receiver.BindNewEndpointAndPassRemote(),
       base::BindLambdaForTesting([&](blink::mojom::SerializedBlobPtr result) {
         blob = std::move(result);
         loop.Quit();
@@ -1083,9 +1083,11 @@ TEST_F(BlobRegistryImplTest, RegisterFromStream_NoDiskSpace) {
 TEST_F(BlobRegistryImplTest, DestroyWithUnfinishedStream) {
   mojo::DataPipe pipe1, pipe2;
   registry_->RegisterFromStream("", "", 0, std::move(pipe1.consumer_handle),
-                                nullptr, base::DoNothing());
+                                mojo::NullAssociatedRemote(),
+                                base::DoNothing());
   registry_->RegisterFromStream("", "", 0, std::move(pipe2.consumer_handle),
-                                nullptr, base::DoNothing());
+                                mojo::NullAssociatedRemote(),
+                                base::DoNothing());
   registry_.FlushForTesting();
   // This test just makes sure no crash happens if we're shut down while still
   // creating blobs from streams.

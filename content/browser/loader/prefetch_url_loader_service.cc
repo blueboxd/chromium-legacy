@@ -23,6 +23,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
@@ -97,14 +98,51 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    const network::ResourceRequest& resource_request,
+    const network::ResourceRequest& resource_request_in,
     network::mojom::URLLoaderClientPtr client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Make a copy of |resource_request_in|, because we may need to modify the
+  // request.
+  network::ResourceRequest resource_request = resource_request_in;
+
   DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
             resource_request.resource_type);
+  const auto& current_context = *loader_factory_receivers_.current_context();
+
+  if (!current_context.render_frame_host) {
+    client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    return;
+  }
+
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_to_use =
+      current_context.factory;
+
+  if (resource_request.load_flags & net::LOAD_RESTRICTED_PREFETCH) {
+    // The renderer has marked this prefetch as restricted, meaning it is a
+    // cross-origin prefetch intended for top-leve navigation reuse. We must
+    // verify that the request meets the necessary security requirements, and
+    // populate |resource_request|'s NetworkIsolationKey appropriately.
+    EnsureCrossOriginFactory();
+    DCHECK(current_context.cross_origin_factory);
+
+    // An invalid request could indicate a compromised renderer inappropriately
+    // modifying the request, so we immediately complete it with an error.
+    if (!IsValidCrossOriginPrefetch(resource_request)) {
+      client->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+      return;
+    }
+
+    // Use the trusted cross-origin prefetch loader factory, and set the
+    // request's NetworkIsolationKey suitable for the cross-origin prefetch.
+    network_loader_factory_to_use = current_context.cross_origin_factory;
+    url::Origin destination_origin = url::Origin::Create(resource_request.url);
+    resource_request.trusted_params = network::ResourceRequest::TrustedParams();
+    resource_request.trusted_params->network_isolation_key =
+        net::NetworkIsolationKey(destination_origin, destination_origin);
+  }
 
   if (prefetch_load_callback_for_testing_)
     prefetch_load_callback_for_testing_.Run();
@@ -116,6 +154,9 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
             ->prefetched_signed_exchange_cache;
   }
 
+  auto frame_tree_node_id_getter = base::BindRepeating(
+      [](int id) { return id; }, current_context.frame_tree_node_id);
+
   // For now we strongly bind the loader to the request, while we can
   // also possibly make the new loader owned by the factory so that
   // they can live longer than the client (i.e. run in detached mode).
@@ -124,7 +165,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
       std::make_unique<PrefetchURLLoader>(
           routing_id, request_id, options, frame_tree_node_id_getter,
           resource_request, std::move(client), traffic_annotation,
-          std::move(network_loader_factory),
+          std::move(network_loader_factory_to_use),
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
               resource_request, frame_tree_node_id_getter),
@@ -136,42 +177,43 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
 
 PrefetchURLLoaderService::~PrefetchURLLoaderService() = default;
 
-void PrefetchURLLoaderService::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest request,
-    int32_t routing_id,
-    int32_t request_id,
-    uint32_t options,
-    const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const auto& current_context = *loader_factory_receivers_.current_context();
-
-  if (!current_context.render_frame_host) {
-    client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
-    return;
+// This method is used to determine whether it is safe to set the
+// NetworkIsolationKey of a cross-origin prefetch request coming from the
+// renderer, so that it can be cached correctly.
+bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
+    const network::ResourceRequest& resource_request) {
+  // The request is expected to be cross-origin. Same-origin prefetches do not
+  // need a special NetworkIsolationKey, and therefore must not be marked for
+  // restricted use.
+  url::Origin destination_origin = url::Origin::Create(resource_request.url);
+  // TODO(domfarolino): We want to check that the request's initiator is
+  // equivalent to the frame's last committed origin. If they are not equal, we
+  // must cancel the request.
+  if (!resource_request.request_initiator ||
+      resource_request.request_initiator->IsSameOriginWith(
+          destination_origin)) {
+    return false;
   }
 
-  int frame_tree_node_id = current_context.frame_tree_node_id;
-  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_to_use =
-      current_context.factory;
-
-  if (resource_request.load_flags & net::LOAD_RESTRICTED_PREFETCH) {
-    // The renderer has marked this prefetch as restricted. We must give
-    // PrefetchURLLoader the cross-origin prefetch loader factory, which will be
-    // used if the request meets necessary security requirements.
-    // PrefetchURLLoader will then populate |resource_request|'s
-    // NetworkIsolationKey appropriately.
-    EnsureCrossOriginFactory();
-    DCHECK(current_context.cross_origin_factory);
-    network_loader_factory_to_use = current_context.cross_origin_factory;
+  // If the PrefetchRedirectError feature is enabled, the request's redirect
+  // mode must be |kError|.
+  if (base::FeatureList::IsEnabled(blink::features::kPrefetchRedirectError) &&
+      resource_request.redirect_mode != network::mojom::RedirectMode::kError) {
+    return false;
   }
 
-  CreateLoaderAndStart(
-      std::move(request), routing_id, request_id, options, resource_request,
-      std::move(client), traffic_annotation,
-      std::move(network_loader_factory_to_use),
-      base::BindRepeating([](int id) { return id; }, frame_tree_node_id));
+  // This prefetch request must not be able to reuse restricted prefetches from
+  // the prefetch cache. This is because it is possible that another origin
+  // prefetched the same resource, which should only be reused for top-level
+  // navigations.
+  if (resource_request.load_flags & net::LOAD_CAN_USE_RESTRICTED_PREFETCH)
+    return false;
+
+  // The request must not already have its |trusted_params| initialized.
+  if (resource_request.trusted_params)
+    return false;
+
+  return true;
 }
 
 void PrefetchURLLoaderService::EnsureCrossOriginFactory() {

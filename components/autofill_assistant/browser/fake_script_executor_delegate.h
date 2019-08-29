@@ -48,9 +48,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetProgressVisible(bool visible) override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
-  void SetPaymentRequestOptions(
-      std::unique_ptr<PaymentRequestOptions> options,
-      std::unique_ptr<PaymentInformation> information) override;
+  void SetCollectUserDataOptions(
+      std::unique_ptr<CollectUserDataOptions> options,
+      std::unique_ptr<UserData> information) override;
   void SetViewportMode(ViewportMode mode) override;
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
@@ -86,7 +86,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   std::vector<UserAction>* GetUserActions() { return user_actions_.get(); }
 
-  PaymentRequestOptions* GetOptions() { return payment_request_options_.get(); }
+  CollectUserDataOptions* GetOptions() {
+    return payment_request_options_.get();
+  }
 
   void UpdateNavigationState(bool navigating, bool error) {
     navigating_to_new_document_ = navigating;
@@ -113,8 +115,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<Details> details_;
   std::unique_ptr<InfoBox> info_box_;
   std::unique_ptr<std::vector<UserAction>> user_actions_;
-  std::unique_ptr<PaymentRequestOptions> payment_request_options_;
-  std::unique_ptr<PaymentInformation> payment_request_info_;
+  std::unique_ptr<CollectUserDataOptions> payment_request_options_;
+  std::unique_ptr<UserData> payment_request_info_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;
   std::set<ScriptExecutorDelegate::Listener*> listeners_;

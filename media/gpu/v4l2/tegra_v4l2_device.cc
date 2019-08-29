@@ -64,15 +64,26 @@ int TegraV4L2Device::Ioctl(int flags, void* arg) {
     return ret;
 
   // Workarounds for Tegra's broken closed-source V4L2 interface.
-  struct v4l2_format* format;
   switch (flags) {
-    // VIDIOC_G_FMT returns 0 planes for multiplanar formats with 1 plane.
-    case static_cast<int>(VIDIOC_G_FMT):
-      format = static_cast<struct v4l2_format*>(arg);
-      if (V4L2_TYPE_IS_MULTIPLANAR(format->type) &&
-          format->fmt.pix_mp.num_planes == 0)
-        format->fmt.pix_mp.num_planes = 1;
+    case static_cast<int>(VIDIOC_S_FMT): {
+      struct v4l2_format format;
+      memcpy(&format, arg, sizeof(struct v4l2_format));
+      v4l2_format_cache_[static_cast<enum v4l2_buf_type>(format.type)] = format;
       break;
+    }
+    case static_cast<int>(VIDIOC_G_FMT): {
+      // The driver doesn't fill values of returned v4l2_format correctly. Set
+      // the value that is previously passed to driver via VIDIOC_S_FMT.
+      struct v4l2_format* format = static_cast<struct v4l2_format*>(arg);
+      const auto it = v4l2_format_cache_.find(
+          static_cast<enum v4l2_buf_type>(format->type));
+      if (it != v4l2_format_cache_.end()) {
+        format->fmt.pix_mp.pixelformat = it->second.fmt.pix_mp.pixelformat;
+        if (format->fmt.pix_mp.num_planes == 0)
+          format->fmt.pix_mp.num_planes = it->second.fmt.pix_mp.num_planes;
+      }
+      break;
+    }
     default:
       break;
   }

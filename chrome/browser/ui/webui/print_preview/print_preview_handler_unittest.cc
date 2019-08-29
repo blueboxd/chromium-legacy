@@ -469,10 +469,9 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsHiLocale) {
   InitializeWithLocale("hi");
 
   // Verify initial settings were sent for Hindi.
-  // TODO(crbug.com/998039): Fix the incorrect delimiters.
   ValidateInitialSettingsForLocale(*web_ui()->call_data().back(),
                                    kDummyPrinterName, kDummyInitiatorName, "hi",
-                                   "3", "6", {});
+                                   ",", ".", {});
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsRuLocale) {

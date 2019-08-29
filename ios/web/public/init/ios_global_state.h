@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_INIT_IOS_GLOBAL_STATE_H_
 #define IOS_WEB_PUBLIC_INIT_IOS_GLOBAL_STATE_H_
 
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 
 namespace base {
 class SingleThreadTaskExecutor;

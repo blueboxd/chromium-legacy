@@ -49,6 +49,8 @@ NGLayoutResult::NGLayoutResult(
     EnsureRareData()->custom_layout_data =
         std::move(builder->custom_layout_data_);
   }
+  if (builder->column_spanner_)
+    EnsureRareData()->column_spanner = builder->column_spanner_;
   bitfields_.initial_break_before =
       static_cast<unsigned>(builder->initial_break_before_);
   bitfields_.final_break_after =

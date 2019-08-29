@@ -18,6 +18,7 @@
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/usb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 
 namespace extensions {
@@ -103,7 +104,7 @@ class UsbFindDevicesFunction : public UsbExtensionFunction {
   void OnGetDevicesComplete(
       std::vector<device::mojom::UsbDeviceInfoPtr> devices);
   void OnDeviceOpened(const std::string& guid,
-                      device::mojom::UsbDevicePtr device_ptr,
+                      mojo::Remote<device::mojom::UsbDevice> device_ptr,
                       device::mojom::UsbOpenDeviceError error);
   void OpenComplete();
   void OnDisconnect();
@@ -199,7 +200,7 @@ class UsbOpenDeviceFunction : public UsbPermissionCheckingFunction {
   ResponseAction Run() override;
 
   void OnDeviceOpened(std::string guid,
-                      device::mojom::UsbDevicePtr device_ptr,
+                      mojo::Remote<device::mojom::UsbDevice> device,
                       device::mojom::UsbOpenDeviceError error);
   void OnDisconnect();
 

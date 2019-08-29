@@ -2689,7 +2689,7 @@ bool CompositedLayerMapping::PaintBlockedByDisplayLockIncludingAncestors(
     auto* element = DynamicTo<Element>(node);
     if (target == DisplayLockContextLifecycleTarget::kSelf && element) {
       if (auto* context = element->GetDisplayLockContext()) {
-        if (!context->ShouldPaint(DisplayLockContext::kSelf))
+        if (!context->ShouldPaint(DisplayLockLifecycleTarget::kSelf))
           return true;
       }
     }

@@ -63,6 +63,8 @@
   self.mediator.webStateList = self.webStateList;
   self.mediator.bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
+
+  self.viewController.adaptiveToolbarViewControllerDelegate = self.mediator;
 }
 
 - (void)stop {

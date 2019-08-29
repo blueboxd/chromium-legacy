@@ -45,7 +45,7 @@ bool TestAutofillDriver::RendererIsAvailable() {
 
 #if !defined(OS_IOS)
 void TestAutofillDriver::ConnectToAuthenticator(
-    blink::mojom::InternalAuthenticatorRequest request) {}
+    mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) {}
 #endif
 
 void TestAutofillDriver::SendFormDataToRenderer(int query_id,

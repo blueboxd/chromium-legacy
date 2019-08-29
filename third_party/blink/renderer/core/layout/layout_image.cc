@@ -216,7 +216,7 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
 
 void LayoutImage::PaintReplaced(const PaintInfo& paint_info,
                                 const PhysicalOffset& paint_offset) const {
-  if (PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (PaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
   ImagePainter(*this).PaintReplaced(paint_info, paint_offset);
 }

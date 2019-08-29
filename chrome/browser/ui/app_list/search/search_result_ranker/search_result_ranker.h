@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -79,6 +80,16 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
     json_config_parsed_for_testing_ = std::move(closure);
   }
 
+  // Called when some zero state |results| have likely been seen by the user.
+  // Updates the cache of recently shown results.
+  void ZeroStateResultsDisplayed(
+      const ash::SearchResultIdWithPositionIndices& results);
+
+  // Given a search results list containing zero-state results, ensure that at
+  // least one result from each result group will be displayed if that group has
+  // a result shown to the user only a few times.
+  void OverrideZeroStateResults(Mixer::SortedResults* results);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SearchResultRankerTest,
                            QueryMixedModelConfigDeployment);
@@ -121,6 +132,11 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // Ranks the kinds of results possible in the zero state results list.
   std::unique_ptr<RecurrenceRanker> zero_state_group_ranker_;
   std::map<std::string, float> zero_state_group_ranks_;
+  // Stores the id of the most recent highest-scoring zero state result from
+  // each relevant provider, along with how many times it has been shown to the
+  // user.
+  base::flat_map<RankingItemType, std::pair<std::string, int>>
+      zero_state_results_cache_;
 
   // Coefficients that control the weighting between different parts of the
   // score of a result in the zero-state results list.

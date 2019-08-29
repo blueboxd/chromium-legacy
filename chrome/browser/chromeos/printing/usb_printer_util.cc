@@ -53,7 +53,7 @@ const int kDefaultConfiguration = 0;
 
 // Callback for device.mojom.UsbDevice.ControlTransferIn.
 // Expects |data| to hold a newly queried Device ID.
-void OnControlTransfer(device::mojom::UsbDevicePtr device_ptr,
+void OnControlTransfer(mojo::Remote<device::mojom::UsbDevice> device,
                        GetDeviceIdCallback cb,
                        device::mojom::UsbTransferStatus status,
                        const std::vector<uint8_t>& data) {
@@ -61,9 +61,9 @@ void OnControlTransfer(device::mojom::UsbDevicePtr device_ptr,
     return std::move(cb).Run({});
   }
 
-  // Cleanup device_ptr.
-  device_ptr->ReleaseInterface(kDefaultInterface, base::DoNothing());
-  device_ptr->Close(base::DoNothing());
+  // Cleanup device.
+  device->ReleaseInterface(kDefaultInterface, base::DoNothing());
+  device->Close(base::DoNothing());
 
   return std::move(cb).Run(UsbPrinterId(data));
 }
@@ -71,7 +71,7 @@ void OnControlTransfer(device::mojom::UsbDevicePtr device_ptr,
 // Callback for device.mojom.UsbDevice.ClaimInterface.
 // If interface was claimed successfully, attempts to query printer for a
 // Device ID.
-void OnClaimInterface(device::mojom::UsbDevicePtr device_ptr,
+void OnClaimInterface(mojo::Remote<device::mojom::UsbDevice> device,
                       GetDeviceIdCallback cb,
                       bool success) {
   if (!success) {
@@ -86,27 +86,27 @@ void OnClaimInterface(device::mojom::UsbDevicePtr device_ptr,
   params->index = kDefaultInterface;      // default interface index
 
   // Query for IEEE1284 string.
-  auto* device = device_ptr.get();
-  device->ControlTransferIn(
+  auto* device_raw = device.get();
+  device_raw->ControlTransferIn(
       std::move(params), 255 /* max size */, 2000 /* 2 second timeout */,
-      base::BindOnce(OnControlTransfer, std::move(device_ptr), std::move(cb)));
+      base::BindOnce(OnControlTransfer, std::move(device), std::move(cb)));
 }
 
 // Callback for device.mojom.UsbDevice.Open.
 // If device was opened successfully, attempts to claim printer's default
 // interface.
-void OnDeviceOpen(device::mojom::UsbDevicePtr device_ptr,
+void OnDeviceOpen(mojo::Remote<device::mojom::UsbDevice> device,
                   GetDeviceIdCallback cb,
                   device::mojom::UsbOpenDeviceError error) {
-  if (error != device::mojom::UsbOpenDeviceError::OK || !device_ptr) {
+  if (error != device::mojom::UsbOpenDeviceError::OK || !device) {
     return std::move(cb).Run({});
   }
 
   // Claim interface.
-  auto* device = device_ptr.get();
-  device->ClaimInterface(
+  auto* device_raw = device.get();
+  device_raw->ClaimInterface(
       kDefaultInterface,
-      base::BindOnce(OnClaimInterface, std::move(device_ptr), std::move(cb)));
+      base::BindOnce(OnClaimInterface, std::move(device), std::move(cb)));
 }
 
 // Escape URI strings the same way cups does it, so we end up with a URI cups
@@ -320,12 +320,12 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(const UsbDeviceInfo& device_info) {
   return printer;
 }
 
-void GetDeviceId(device::mojom::UsbDevicePtr device_ptr,
+void GetDeviceId(mojo::Remote<device::mojom::UsbDevice> device,
                  GetDeviceIdCallback cb) {
   // Open device.
-  auto* device = device_ptr.get();
-  device->Open(
-      base::BindOnce(OnDeviceOpen, std::move(device_ptr), std::move(cb)));
+  auto* device_raw = device.get();
+  device_raw->Open(
+      base::BindOnce(OnDeviceOpen, std::move(device), std::move(cb)));
 }
 
 }  // namespace chromeos

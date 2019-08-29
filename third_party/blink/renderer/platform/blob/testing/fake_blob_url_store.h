@@ -7,7 +7,6 @@
 
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -23,8 +22,9 @@ class FakeBlobURLStore : public mojom::blink::BlobURLStore {
   void ResolveAsURLLoaderFactory(
       const KURL&,
       network::mojom::blink::URLLoaderFactoryRequest) override;
-  void ResolveForNavigation(const KURL&,
-                            mojom::blink::BlobURLTokenRequest) override;
+  void ResolveForNavigation(
+      const KURL&,
+      mojo::PendingReceiver<mojom::blink::BlobURLToken>) override;
 
   HashMap<KURL, mojom::blink::BlobPtr> registrations;
   Vector<KURL> revocations;

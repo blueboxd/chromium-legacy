@@ -7,6 +7,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/loader/prefetch_url_loader.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "storage/browser/blob/blob_builder_from_stream.h"
 #include "storage/browser/blob/blob_data_handle.h"
 
@@ -154,8 +155,9 @@ PrefetchedSignedExchangeCacheAdapter::CreateBlobBuilderFromStream(
               &PrefetchedSignedExchangeCacheAdapter::StreamingBlobDoneOnIO,
               std::move(adapter)));
 
-  blob_builder_from_stream->Start(length_hint, std::move(body),
-                                  nullptr /*  progress_client */);
+  blob_builder_from_stream->Start(
+      length_hint, std::move(body),
+      mojo::NullAssociatedRemote() /*  progress_client */);
   return blob_builder_from_stream;
 }
 

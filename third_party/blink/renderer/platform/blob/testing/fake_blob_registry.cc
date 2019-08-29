@@ -28,7 +28,7 @@ void FakeBlobRegistry::RegisterFromStream(
     const String& content_disposition,
     uint64_t expected_length,
     mojo::ScopedDataPipeConsumerHandle data,
-    mojom::blink::ProgressClientAssociatedPtrInfo,
+    mojo::PendingAssociatedRemote<mojom::blink::ProgressClient>,
     RegisterFromStreamCallback) {
   NOTREACHED();
 }
@@ -37,7 +37,7 @@ void FakeBlobRegistry::GetBlobFromUUID(
     mojo::PendingReceiver<mojom::blink::Blob> blob,
     const String& uuid,
     GetBlobFromUUIDCallback callback) {
-  binding_requests.push_back(BindingRequest{uuid});
+  owned_receivers.push_back(OwnedReceiver{uuid});
   mojo::MakeSelfOwnedReceiver(std::make_unique<FakeBlob>(uuid),
                               std::move(blob));
   std::move(callback).Run();
@@ -45,7 +45,7 @@ void FakeBlobRegistry::GetBlobFromUUID(
 
 void FakeBlobRegistry::URLStoreForOrigin(
     const scoped_refptr<const SecurityOrigin>& origin,
-    mojom::blink::BlobURLStoreAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<mojom::blink::BlobURLStore> receiver) {
   NOTREACHED();
 }
 

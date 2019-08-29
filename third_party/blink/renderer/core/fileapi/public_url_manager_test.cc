@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -23,7 +23,6 @@ namespace {
 using mojom::blink::Blob;
 using mojom::blink::BlobPtr;
 using mojom::blink::BlobURLStore;
-using mojom::blink::BlobURLStoreAssociatedPtr;
 
 class TestURLRegistrable : public URLRegistrable {
  public:
@@ -66,7 +65,7 @@ class FakeURLRegistry : public URLRegistry {
 
 class PublicURLManagerTest : public testing::Test {
  public:
-  PublicURLManagerTest() : url_store_binding_(&url_store_) {}
+  PublicURLManagerTest() : url_store_receiver_(&url_store_) {}
 
   void SetUp() override {
     execution_context_ = MakeGarbageCollected<NullExecutionContext>();
@@ -74,10 +73,10 @@ class PublicURLManagerTest : public testing::Test {
     // wants.
     execution_context_->SetUpSecurityContext();
 
-    BlobURLStoreAssociatedPtr url_store_ptr;
-    url_store_binding_.Bind(
-        MakeRequestAssociatedWithDedicatedPipe(&url_store_ptr));
-    url_manager().SetURLStoreForTesting(std::move(url_store_ptr));
+    mojo::AssociatedRemote<BlobURLStore> url_store_remote;
+    url_store_receiver_.Bind(
+        url_store_remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
+    url_manager().SetURLStoreForTesting(std::move(url_store_remote));
   }
 
   PublicURLManager& url_manager() {
@@ -95,7 +94,7 @@ class PublicURLManagerTest : public testing::Test {
   Persistent<NullExecutionContext> execution_context_;
 
   FakeBlobURLStore url_store_;
-  mojo::AssociatedBinding<BlobURLStore> url_store_binding_;
+  mojo::AssociatedReceiver<BlobURLStore> url_store_receiver_;
 };
 
 TEST_F(PublicURLManagerTest, RegisterNonMojoBlob) {
@@ -117,7 +116,7 @@ TEST_F(PublicURLManagerTest, RegisterNonMojoBlob) {
   url_manager().Revoke(KURL(url));
   EXPECT_FALSE(SecurityOrigin::CreateFromString(url)->IsSameSchemeHostPort(
       execution_context_->GetSecurityOrigin()));
-  url_store_binding_.FlushForTesting();
+  url_store_receiver_.FlushForTesting();
   // Even though this was not a mojo blob, the PublicURLManager might not know
   // that, so still expect a revocation on the mojo interface.
   ASSERT_EQ(1u, url_store_.revocations.size());
@@ -141,7 +140,7 @@ TEST_F(PublicURLManagerTest, RegisterMojoBlob) {
   url_manager().Revoke(KURL(url));
   EXPECT_FALSE(SecurityOrigin::CreateFromString(url)->IsSameSchemeHostPort(
       execution_context_->GetSecurityOrigin()));
-  url_store_binding_.FlushForTesting();
+  url_store_receiver_.FlushForTesting();
   ASSERT_EQ(1u, url_store_.revocations.size());
   EXPECT_EQ(url, url_store_.revocations[0]);
 }
@@ -152,7 +151,7 @@ TEST_F(PublicURLManagerTest, RevokeValidNonRegisteredURL) {
 
   KURL url = KURL("blob:http://example.com/id");
   url_manager().Revoke(url);
-  url_store_binding_.FlushForTesting();
+  url_store_receiver_.FlushForTesting();
   ASSERT_EQ(1u, url_store_.revocations.size());
   EXPECT_EQ(url, url_store_.revocations[0]);
 }
@@ -167,7 +166,7 @@ TEST_F(PublicURLManagerTest, RevokeInvalidURL) {
   url_manager().Revoke(invalid_scheme_url);
   url_manager().Revoke(fragment_url);
   url_manager().Revoke(invalid_origin_url);
-  url_store_binding_.FlushForTesting();
+  url_store_receiver_.FlushForTesting();
   // Both should have been silently ignored.
   EXPECT_TRUE(url_store_.revocations.IsEmpty());
 }

@@ -14,7 +14,8 @@
 #include "base/guid.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 
 using blink::mojom::LockMode;
 
@@ -31,14 +32,14 @@ constexpr int64_t kPreemptiveLockId = 0;
 // connection can also be closed here when a lock is stolen.
 class LockHandleImpl final : public blink::mojom::LockHandle {
  public:
-  static mojo::StrongAssociatedBindingPtr<blink::mojom::LockHandle> Create(
+  static mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::LockHandle> Create(
       base::WeakPtr<LockManager> context,
       const url::Origin& origin,
       int64_t lock_id,
-      blink::mojom::LockHandleAssociatedPtr* ptr) {
-    return mojo::MakeStrongAssociatedBinding(
+      mojo::PendingAssociatedRemote<blink::mojom::LockHandle>* remote) {
+    return mojo::MakeSelfOwnedAssociatedReceiver(
         std::make_unique<LockHandleImpl>(std::move(context), origin, lock_id),
-        mojo::MakeRequest(ptr));
+        remote->InitWithNewEndpointAndPassReceiver());
   }
 
   LockHandleImpl(base::WeakPtr<LockManager> context,
@@ -74,7 +75,7 @@ class LockManager::Lock {
        LockMode mode,
        int64_t lock_id,
        const std::string& client_id,
-       blink::mojom::LockRequestAssociatedPtr request)
+       mojo::AssociatedRemote<blink::mojom::LockRequest> request)
       : name_(name),
         mode_(mode),
         client_id_(client_id),
@@ -89,7 +90,7 @@ class LockManager::Lock {
     DCHECK(!handle_);
 
     request_->Abort(message);
-    request_ = nullptr;
+    request_.reset();
   }
 
   // Grant a lock request. This mints a LockHandle and returns it over the
@@ -99,11 +100,11 @@ class LockManager::Lock {
     DCHECK(request_);
     DCHECK(!handle_);
 
-    blink::mojom::LockHandleAssociatedPtr ptr;
+    mojo::PendingAssociatedRemote<blink::mojom::LockHandle> remote;
     handle_ =
-        LockHandleImpl::Create(std::move(context), origin, lock_id_, &ptr);
-    request_->Granted(ptr.PassInterface());
-    request_ = nullptr;
+        LockHandleImpl::Create(std::move(context), origin, lock_id_, &remote);
+    request_->Granted(std::move(remote));
+    request_.reset();
   }
 
   // Break a granted lock. This terminates the connection, signaling an error
@@ -135,11 +136,11 @@ class LockManager::Lock {
   // Exactly one of the following is non-null at any given time.
 
   // |request_| is valid until the lock is granted (or failure).
-  blink::mojom::LockRequestAssociatedPtr request_;
+  mojo::AssociatedRemote<blink::mojom::LockRequest> request_;
 
   // Once granted, |handle_| holds this end of the pipe that lets us monitor
   // for the other end going away.
-  mojo::StrongAssociatedBindingPtr<blink::mojom::LockHandle> handle_;
+  mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::LockHandle> handle_;
 };
 
 LockManager::LockManager() {}
@@ -170,7 +171,7 @@ class LockManager::OriginState {
                    const std::string& name,
                    LockMode mode,
                    const std::string& client_id,
-                   blink::mojom::LockRequestAssociatedPtr request,
+                   mojo::AssociatedRemote<blink::mojom::LockRequest> request,
                    const url::Origin origin) {
     // Preempting shared locks is not supported.
     DCHECK_EQ(mode, LockMode::EXCLUSIVE);
@@ -188,7 +189,7 @@ class LockManager::OriginState {
                   const std::string& name,
                   LockMode mode,
                   const std::string& client_id,
-                  blink::mojom::LockRequestAssociatedPtr request,
+                  mojo::AssociatedRemote<blink::mojom::LockRequest> request,
                   WaitMode wait,
                   const url::Origin origin) {
     DCHECK(wait != WaitMode::PREEMPT);
@@ -306,22 +307,23 @@ class LockManager::OriginState {
   LockManager* lock_manager_;
 };
 
-void LockManager::CreateService(blink::mojom::LockManagerRequest request,
-                                const url::Origin& origin) {
+void LockManager::CreateService(
+    mojo::PendingReceiver<blink::mojom::LockManager> receiver,
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(jsbell): This should reflect the 'environment id' from HTML,
   // and be the same opaque string seen in Service Worker client ids.
   const std::string client_id = base::GenerateGUID();
 
-  bindings_.AddBinding(this, std::move(request), {origin, client_id});
+  receivers_.Add(this, std::move(receiver), {origin, client_id});
 }
 
 void LockManager::RequestLock(
     const std::string& name,
     LockMode mode,
     WaitMode wait,
-    blink::mojom::LockRequestAssociatedPtrInfo request_info) {
+    mojo::PendingAssociatedRemote<blink::mojom::LockRequest> request_remote) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (wait == WaitMode::PREEMPT && mode != LockMode::EXCLUSIVE) {
@@ -334,18 +336,18 @@ void LockManager::RequestLock(
     return;
   }
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
 
   if (!base::Contains(origins_, context.origin))
     origins_.emplace(context.origin, this);
 
   int64_t lock_id = NextLockId();
 
-  blink::mojom::LockRequestAssociatedPtr request;
-  request.Bind(std::move(request_info));
-  request.set_connection_error_handler(base::BindOnce(&LockManager::ReleaseLock,
-                                                      base::Unretained(this),
-                                                      context.origin, lock_id));
+  mojo::AssociatedRemote<blink::mojom::LockRequest> request(
+      std::move(request_remote));
+  request.set_disconnect_handler(base::BindOnce(&LockManager::ReleaseLock,
+                                                base::Unretained(this),
+                                                context.origin, lock_id));
 
   OriginState& origin_state = origins_.find(context.origin)->second;
   if (wait == WaitMode::PREEMPT) {
@@ -372,7 +374,7 @@ void LockManager::ReleaseLock(const url::Origin& origin, int64_t lock_id) {
 void LockManager::QueryState(QueryStateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const url::Origin& origin = bindings_.dispatch_context().origin;
+  const url::Origin& origin = receivers_.current_context().origin;
   auto origin_it = origins_.find(origin);
   if (origin_it == origins_.end()) {
     std::move(callback).Run(std::vector<blink::mojom::LockInfoPtr>(),

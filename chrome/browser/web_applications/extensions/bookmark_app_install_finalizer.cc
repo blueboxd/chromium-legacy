@@ -195,6 +195,16 @@ bool BookmarkAppInstallFinalizer::CanSkipAppUpdateForSync(
   return false;
 }
 
+bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(
+    const web_app::AppId& app_id) const {
+  const Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          app_id, extensions::ExtensionRegistry::EVERYTHING);
+  return extensions::ExtensionSystem::Get(profile_)
+      ->management_policy()
+      ->UserMayModifySettings(extension, nullptr);
+}
+
 void BookmarkAppInstallFinalizer::SetSubsystems(
     web_app::AppRegistrar* registrar,
     web_app::WebAppUiManager* ui_manager) {

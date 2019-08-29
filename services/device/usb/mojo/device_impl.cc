@@ -88,11 +88,11 @@ void OnIsochronousTransferOut(
 
 // static
 void DeviceImpl::Create(scoped_refptr<device::UsbDevice> device,
-                        mojom::UsbDeviceRequest request,
+                        mojo::PendingReceiver<mojom::UsbDevice> receiver,
                         mojom::UsbDeviceClientPtr client) {
   auto* device_impl = new DeviceImpl(std::move(device), std::move(client));
-  device_impl->binding_ = mojo::MakeStrongBinding(base::WrapUnique(device_impl),
-                                                  std::move(request));
+  device_impl->receiver_ = mojo::MakeSelfOwnedReceiver(
+      base::WrapUnique(device_impl), std::move(receiver));
 }
 
 DeviceImpl::~DeviceImpl() {
@@ -389,13 +389,13 @@ void DeviceImpl::IsochronousTransferOut(
 
 void DeviceImpl::OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) {
   DCHECK_EQ(device_, device);
-  binding_->Close();
+  receiver_->Close();
 }
 
 void DeviceImpl::OnClientConnectionError() {
   // Close the connection with Blink when WebUsbServiceImpl notifies the
   // permission revocation from settings UI.
-  binding_->Close();
+  receiver_->Close();
 }
 
 }  // namespace usb

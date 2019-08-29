@@ -685,7 +685,7 @@ bool LayoutBlock::SimplifiedLayout() {
         return false;
     }
 
-    if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
       return false;
 
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this);
@@ -821,7 +821,7 @@ static bool NeedsLayoutDueToStaticPosition(LayoutBox* child) {
 
 void LayoutBlock::LayoutPositionedObjects(bool relayout_children,
                                           PositionedLayoutBehavior info) {
-  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
@@ -2161,7 +2161,7 @@ bool LayoutBlock::RecalcChildLayoutOverflow() {
 void LayoutBlock::RecalcChildVisualOverflow() {
   DCHECK(!IsTable());
 
-  if (PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (PaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
   if (ChildrenInline()) {
@@ -2280,7 +2280,7 @@ void LayoutBlock::CheckPositionedObjectsNeedLayout() {
   if (!g_positioned_descendants_map)
     return;
 
-  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
   if (TrackedLayoutBoxListHashSet* positioned_descendant_set =
@@ -2292,9 +2292,9 @@ void LayoutBlock::CheckPositionedObjectsNeedLayout() {
          it != end; ++it) {
       LayoutBox* curr_box = *it;
       DCHECK(!curr_box->SelfNeedsLayout());
-      DCHECK(
-          curr_box->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren) ||
-          !curr_box->NeedsLayout());
+      DCHECK(curr_box->LayoutBlockedByDisplayLock(
+                 DisplayLockLifecycleTarget::kChildren) ||
+             !curr_box->NeedsLayout());
     }
   }
 }

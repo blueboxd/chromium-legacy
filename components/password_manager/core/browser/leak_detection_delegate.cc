@@ -62,15 +62,14 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
       // If the credentials are not synced, the |CredentialLeakType| needed to
       // show the correct notification is already determined.
       OnShowLeakDetectionNotifiction(
-          CreateLeakTypeFromBools(/*is_saved=*/false, /*is_reused=*/false,
-                                  /*is_synced=*/false),
+          CreateLeakType(IsSaved(false), IsReused(false), IsSyncing(false)),
           std::move(url), std::move(username));
     } else {
       // Otherwise query the helper to asynchronously determine the
       // |CredentialLeakType|.
-      helper_ = std::make_unique<LeakDetectionDelegateHelper>(std::move(
+      helper_ = std::make_unique<LeakDetectionDelegateHelper>(
           base::BindOnce(&LeakDetectionDelegate::OnShowLeakDetectionNotifiction,
-                         base::Unretained(this))));
+                         base::Unretained(this)));
       helper_->GetCredentialLeakType(client_->GetPasswordStore(),
                                      std::move(url), std::move(username),
                                      std::move(password));

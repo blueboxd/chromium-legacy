@@ -386,6 +386,7 @@ void ThreadHeap::VerifyMarking() {
 
 size_t ThreadHeap::ObjectPayloadSizeForTesting() {
   ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
+  ScriptForbiddenScope script_forbidden_scope;
   size_t object_payload_size = 0;
   thread_state_->SetGCPhase(ThreadState::GCPhase::kMarking);
   thread_state_->Heap().MakeConsistentForGC();

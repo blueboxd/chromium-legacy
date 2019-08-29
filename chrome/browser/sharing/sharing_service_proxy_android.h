@@ -33,6 +33,11 @@ class SharingServiceProxyAndroid {
       const base::android::JavaParamRef<jstring>& j_text,
       const base::android::JavaParamRef<jobject>& j_runnable);
 
+  void GetDeviceCandidates(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& j_device_info,
+      jint j_capabilities);
+
  private:
   SharingService* sharing_service_ = nullptr;
   SharedClipboardMessageHandler shared_clipboard_message_handler_;

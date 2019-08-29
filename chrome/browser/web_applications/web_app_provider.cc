@@ -86,6 +86,11 @@ InstallManager& WebAppProvider::install_manager() {
   return *install_manager_;
 }
 
+InstallFinalizer& WebAppProvider::install_finalizer() {
+  CheckIsConnected();
+  return *install_finalizer_;
+}
+
 PendingAppManager& WebAppProvider::pending_app_manager() {
   CheckIsConnected();
   return *pending_app_manager_;

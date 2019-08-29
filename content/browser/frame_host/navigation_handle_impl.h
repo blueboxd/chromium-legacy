@@ -34,7 +34,6 @@
 namespace content {
 
 class NavigationUIData;
-class NavigatorDelegate;
 class SiteInstanceImpl;
 
 // This class keeps track of a single navigation. It is created after the
@@ -118,23 +117,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
-
-  // Used in tests.
-  NavigationRequest::NavigationHandleState state_for_testing() const {
-    return state();
-  }
-
-  // The NavigatorDelegate to notify/query for various navigation events.
-  // Normally this is the WebContents, except if this NavigationHandle was
-  // created during a navigation to an interstitial page. In this case it will
-  // be the InterstitialPage itself.
-  //
-  // Note: due to the interstitial navigation case, all calls that can possibly
-  // expose the NavigationHandle to code outside of content/ MUST go though the
-  // NavigatorDelegate. In particular, the ContentBrowserClient should not be
-  // called directly from the NavigationHandle code. Thus, these calls will not
-  // expose the NavigationHandle when navigating to an InterstitialPage.
-  NavigatorDelegate* GetDelegate() const;
 
   blink::mojom::RequestContextType request_context_type() const {
     DCHECK_GE(state(), NavigationRequest::PROCESSING_WILL_START_REQUEST);

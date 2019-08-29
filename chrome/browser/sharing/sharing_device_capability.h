@@ -10,6 +10,7 @@
 // adding a new capability, the value should be '1 << (NEXT_FREE_BIT_ID)' and
 // NEXT_FREE_BIT_ID should be incremented by one.
 // NEXT_FREE_BIT_ID: 2
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.sharing
 enum class SharingDeviceCapability {
   kNone = 0,
   kClickToCall = 1 << 0,

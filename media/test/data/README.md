@@ -788,6 +788,22 @@ RAW BGRA format data. This data is created from bear\_320x192.i420.yuv by the
 following command. Alpha channel is always 0xFF because of that.
 `ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.bgra`
 
+
+#### puppets-1280x720.nv12.yuv
+RAW NV12 format data. The width and height are 1280 and 720, respectively.
+This data is created from peach\_pi-1280x720.jpg by the following command.
+`ffmpeg -i peach_pi-1280x720.jpg -s 1280x720 -pix_fmt nv12 puppets-1280x720.nv12.yuv`
+
+#### puppets-640x360.nv12.yuv
+RAW NV12 format data. The width and height are 640 and 360, respectively.
+This data is created from puppets-1280x720.nv12.yuv by the following command.
+`ffmpeg -s:v 1280x720 -pix_fmt nv12 -i puppets-1280x720.nv12.yuv -vf scale=640x360 -c:v rawvideo -pix_fmt nv12 puppets-640x360.nv12.yuv`
+
+#### puppets-320x180.nv12.yuv
+RAW NV12 format data. The width and height are 320 and 180, respectively.
+This data is created from puppets-1280x720.nv12.yuv by the following command.
+`ffmpeg -s:v 1280x720 -pix_fmt nv12 -i puppets-1280x720.nv12.yuv -vf scale=320x180 -c:v rawvideo -pix_fmt nv12 puppets-320x180.nv12.yuv`
+
 ###  VP9 parser test files:
 
 #### bear-vp9.ivf

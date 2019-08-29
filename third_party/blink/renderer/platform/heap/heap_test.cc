@@ -44,6 +44,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/buildflags.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -6180,6 +6181,7 @@ TEST_F(HeapTest, AccessDeletedBackingStore) {
       thread_state->Heap().Arena(BlinkGC::kHashTableArenaIndex);
   {
     ThreadState::AtomicPauseScope scope(thread_state);
+    ScriptForbiddenScope script_forbidden_scope;
     ThreadState::SweepForbiddenScope sweep_forbidden(thread_state);
     hash_arena->CompleteSweep();
   }

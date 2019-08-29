@@ -994,7 +994,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
     } else if (stats->Id().Utf8() == "RTCDefinedStats") {
       ++defined_stats_count;
       EXPECT_EQ(stats->Timestamp(), 2.0);
-      std::set<blink::WebRTCStatsMemberType> members;
+      std::set<webrtc::RTCStatsMemberInterface::Type> members;
       for (size_t i = 0; i < stats->MembersCount(); ++i) {
         std::unique_ptr<blink::WebRTCStatsMember> member = stats->GetMember(i);
         // TODO(hbos): A WebRTC-change is adding new members, this would cause
@@ -1006,50 +1006,50 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
         EXPECT_TRUE(member->IsDefined());
         members.insert(member->GetType());
         switch (member->GetType()) {
-          case blink::kWebRTCStatsMemberTypeBool:
+          case webrtc::RTCStatsMemberInterface::kBool:
             EXPECT_EQ(member->ValueBool(), true);
             break;
-          case blink::kWebRTCStatsMemberTypeInt32:
+          case webrtc::RTCStatsMemberInterface::kInt32:
             EXPECT_EQ(member->ValueInt32(), static_cast<int32_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeUint32:
+          case webrtc::RTCStatsMemberInterface::kUint32:
             EXPECT_EQ(member->ValueUint32(), static_cast<uint32_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeInt64:
+          case webrtc::RTCStatsMemberInterface::kInt64:
             EXPECT_EQ(member->ValueInt64(), static_cast<int64_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeUint64:
+          case webrtc::RTCStatsMemberInterface::kUint64:
             EXPECT_EQ(member->ValueUint64(), static_cast<uint64_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeDouble:
+          case webrtc::RTCStatsMemberInterface::kDouble:
             EXPECT_EQ(member->ValueDouble(), 42.0);
             break;
-          case blink::kWebRTCStatsMemberTypeString:
+          case webrtc::RTCStatsMemberInterface::kString:
             EXPECT_EQ(member->ValueString(), blink::WebString::FromUTF8("42"));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceBool:
+          case webrtc::RTCStatsMemberInterface::kSequenceBool:
             ExpectSequenceEquals(member->ValueSequenceBool(), 1);
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceInt32:
+          case webrtc::RTCStatsMemberInterface::kSequenceInt32:
             ExpectSequenceEquals(member->ValueSequenceInt32(),
                                  static_cast<int32_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceUint32:
+          case webrtc::RTCStatsMemberInterface::kSequenceUint32:
             ExpectSequenceEquals(member->ValueSequenceUint32(),
                                  static_cast<uint32_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceInt64:
+          case webrtc::RTCStatsMemberInterface::kSequenceInt64:
             ExpectSequenceEquals(member->ValueSequenceInt64(),
                                  static_cast<int64_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceUint64:
+          case webrtc::RTCStatsMemberInterface::kSequenceUint64:
             ExpectSequenceEquals(member->ValueSequenceUint64(),
                                  static_cast<uint64_t>(42));
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceDouble:
+          case webrtc::RTCStatsMemberInterface::kSequenceDouble:
             ExpectSequenceEquals(member->ValueSequenceDouble(), 42.0);
             break;
-          case blink::kWebRTCStatsMemberTypeSequenceString:
+          case webrtc::RTCStatsMemberInterface::kSequenceString:
             ExpectSequenceEquals(member->ValueSequenceString(),
                                  blink::WebString::FromUTF8("42"));
             break;

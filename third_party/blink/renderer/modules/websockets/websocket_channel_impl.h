@@ -71,10 +71,9 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
                                       WebSocketChannelClient* client,
                                       std::unique_ptr<SourceLocation> location);
   static WebSocketChannelImpl* CreateForTesting(
-      Document*,
+      ExecutionContext*,
       WebSocketChannelClient*,
       std::unique_ptr<SourceLocation>,
-      WebSocketHandle*,
       std::unique_ptr<WebSocketHandshakeThrottle>);
 
   WebSocketChannelImpl(ExecutionContext*,

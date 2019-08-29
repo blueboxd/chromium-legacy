@@ -56,9 +56,6 @@ crbug.com/848354 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Pass Le
 # Test flaking on Linux Trusty Leak
 crbug.com/862029 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Leak ]
 
-# Sheriff 2018-08-15
-crbug.com/874442 [ Linux ] svg/animations/mpath-remove-from-dependents-on-delete-crash.html [ Pass Crash ]
-
 # Sheriff 2018-08-17
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure Leak ]
 crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure Leak ]

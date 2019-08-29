@@ -10,6 +10,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_web_app_database.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
@@ -172,12 +173,24 @@ TEST_F(WebAppRegistrarTest, InitRegistrarAndDoForEachApp) {
   EXPECT_TRUE(ids.empty());
 }
 
+TEST_F(WebAppRegistrarTest, AllAppsMutable) {
+  std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
+
+  for (WebApp& web_app : registrar().AllAppsMutable()) {
+    web_app.SetLaunchContainer(LaunchContainer::kWindow);
+    const size_t num_removed = ids.erase(web_app.app_id());
+    EXPECT_EQ(1U, num_removed);
+  }
+
+  EXPECT_TRUE(ids.empty());
+}
+
 TEST_F(WebAppRegistrarTest, DoForEachAndUnregisterAllApps) {
   Registry registry = CreateRegistryForTesting("https://example.com/path", 100);
   auto ids = RegisterAppsForTesting(std::move(registry));
   EXPECT_EQ(100UL, ids.size());
 
-  for (WebApp& web_app : registrar().AllApps()) {
+  for (const WebApp& web_app : registrar().AllApps()) {
     const size_t num_removed = ids.erase(web_app.app_id());
     EXPECT_EQ(1U, num_removed);
   }

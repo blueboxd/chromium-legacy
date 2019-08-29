@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_CRONET_ANDROID_CRONET_INTEGRATED_MODE_STATE_H_
 #define COMPONENTS_CRONET_ANDROID_CRONET_INTEGRATED_MODE_STATE_H_
 
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 
 namespace cronet {
 

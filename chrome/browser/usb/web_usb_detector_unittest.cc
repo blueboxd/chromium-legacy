@@ -86,10 +86,10 @@ class WebUsbDetectorTest : public BrowserWithTestWindowTest {
 
     web_usb_detector_.reset(new WebUsbDetector());
     // Set a fake USB device manager before Initialize().
-    device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
-    web_usb_detector_->SetDeviceManagerForTesting(
-        std::move(device_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+    device_manager_.AddReceiver(
+        device_manager.InitWithNewPipeAndPassReceiver());
+    web_usb_detector_->SetDeviceManagerForTesting(std::move(device_manager));
   }
 
   void TearDown() override {

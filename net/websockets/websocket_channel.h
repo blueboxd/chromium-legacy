@@ -155,8 +155,6 @@ class NET_EXPORT WebSocketChannel {
   static const uint64_t kReceiveQuotaThreshold = 1 << 15;
 
  private:
-  class PendingReceivedFrame;
-
   // The object passes through a linear progression of states from
   // FRESHLY_CONSTRUCTED to CLOSED, except that the SEND_CLOSED and RECV_CLOSED
   // states may be skipped in case of error.

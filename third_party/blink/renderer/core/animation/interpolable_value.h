@@ -26,12 +26,16 @@ class CORE_EXPORT InterpolableValue {
   virtual bool IsNumber() const { return false; }
   virtual bool IsBool() const { return false; }
   virtual bool IsList() const { return false; }
+  virtual bool IsLength() const { return false; }
 
+  // TODO(alancutter): Remove Equals().
   virtual bool Equals(const InterpolableValue&) const = 0;
   virtual std::unique_ptr<InterpolableValue> Clone() const = 0;
   virtual std::unique_ptr<InterpolableValue> CloneAndZero() const = 0;
   virtual void Scale(double scale) = 0;
   virtual void ScaleAndAdd(double scale, const InterpolableValue& other) = 0;
+  virtual void AssertCanInterpolateWith(
+      const InterpolableValue& other) const = 0;
 
  private:
   virtual void Interpolate(const InterpolableValue& to,
@@ -66,6 +70,7 @@ class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
   void Scale(double scale) final;
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
   void Set(double value) { value_ = value; }
+  void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 
  private:
   void Interpolate(const InterpolableValue& to,
@@ -109,6 +114,7 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   std::unique_ptr<InterpolableValue> CloneAndZero() const final;
   void Scale(double scale) final;
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
+  void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 
  private:
   void Interpolate(const InterpolableValue& to,

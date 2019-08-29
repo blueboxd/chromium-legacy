@@ -20,6 +20,17 @@ export function div(id) {
 }
 
 /**
+ * Creates a 5000px DIV with a solid border with id and textContent
+ * set to |id|.
+ */
+export function largeDiv(id) {
+  const large = div(id);
+  large.style.height = "5000px";
+  large.style.border = "solid";
+  return large;
+}
+
+/**
  * Creates a container DIV with |n| child DIVs with their margin=|margin|.
  */
 export function appendDivs(container, n, margin) {
@@ -68,11 +79,23 @@ export function words(n) {
 }
 
 /**
- * Allow the current frame to end and then call |callback| asap in the next
- * frame.
+ * Allow the next |n| frames to end and then call |callback| ASAP in
+ * the following frame.
+*/
+export function inNFrames(n, callback) {
+  if (n == 0) {
+    window.setTimeout(callback, 0);
+  } else {
+    window.requestAnimationFrame(() => {
+      inNFrames(n - 1, callback);
+    });
+  }
+}
+
+/**
+ * Allow the current frame to end and then call |callback| asap in the
+ * next frame.
 */
 export function nextFrame(callback) {
-  window.requestAnimationFrame(() => {
-    window.setTimeout(callback, 0);
-  });
+  inNFrames(1, callback);
 }

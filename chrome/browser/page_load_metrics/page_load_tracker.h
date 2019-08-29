@@ -15,7 +15,6 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
 #include "chrome/browser/page_load_metrics/resource_tracker.h"
-#include "chrome/browser/scoped_visibility_tracker.h"
 #include "components/page_load_metrics/common/page_end_reason.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
@@ -23,6 +22,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/base/scoped_visibility_tracker.h"
 #include "ui/gfx/geometry/size.h"
 
 class GURL;
@@ -220,7 +220,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const mojom::PageLoadMetadata& GetSubframeMetadata() const override;
   const PageRenderData& GetPageRenderData() const override;
   const PageRenderData& GetMainFrameRenderData() const override;
-  const ScopedVisibilityTracker& GetVisibilityTracker() const override;
+  const ui::ScopedVisibilityTracker& GetVisibilityTracker() const override;
   const ResourceTracker& GetResourceTracker() const override;
   ukm::SourceId GetSourceId() const override;
 
@@ -249,7 +249,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void FlushMetricsOnAppEnterBackground();
 
   // Replaces the |visibility_tracker_| for testing, which can mock a clock.
-  void SetVisibilityTrackerForTesting(const ScopedVisibilityTracker& tracker) {
+  void SetVisibilityTrackerForTesting(
+      const ui::ScopedVisibilityTracker& tracker) {
     visibility_tracker_ = tracker;
   }
 
@@ -387,7 +388,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // The start URL for this page load (before redirects).
   GURL start_url_;
 
-  ScopedVisibilityTracker visibility_tracker_;
+  ui::ScopedVisibilityTracker visibility_tracker_;
 
   // Whether this page load committed.
   bool did_commit_;

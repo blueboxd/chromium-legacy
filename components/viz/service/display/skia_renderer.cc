@@ -614,16 +614,22 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
 
 SkiaRenderer::~SkiaRenderer() = default;
 
-class FrameResourceFence : public ResourceFence {
+class SkiaRenderer::FrameResourceFence : public ResourceFence {
  public:
   FrameResourceFence() = default;
 
   // ResourceFence implementation.
-  void Set() override { event_.Signal(); }
+  void Set() override { set_ = true; }
   bool HasPassed() override { return event_.IsSignaled(); }
+
+  bool WasSet() { return set_; }
+  void Signal() { event_.Signal(); }
 
  private:
   ~FrameResourceFence() override = default;
+
+  // Accessed only from compositor thread.
+  bool set_ = false;
 
   base::WaitableEvent event_;
 
@@ -655,8 +661,8 @@ void SkiaRenderer::BeginDrawingFrame() {
     read_lock_fence = sync_queries_->StartNewFrame();
     current_frame_resource_fence_ = nullptr;
   } else {
-    read_lock_fence = base::MakeRefCounted<FrameResourceFence>();
-    current_frame_resource_fence_ = read_lock_fence;
+    current_frame_resource_fence_ = base::MakeRefCounted<FrameResourceFence>();
+    read_lock_fence = current_frame_resource_fence_;
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
 
@@ -679,6 +685,7 @@ void SkiaRenderer::FinishDrawingFrame() {
   if (sync_queries_) {
     sync_queries_->EndCurrentFrame();
   }
+  current_frame_resource_fence_ = nullptr;
   current_canvas_ = nullptr;
   current_surface_ = nullptr;
 
@@ -1909,10 +1916,12 @@ void SkiaRenderer::FinishDrawingQuadList() {
       // Signal |current_frame_resource_fence_| when the root render pass is
       // finished.
       if (current_frame_resource_fence_ &&
+          current_frame_resource_fence_->WasSet() &&
           current_frame()->current_render_pass ==
               current_frame()->root_render_pass) {
-        on_finished_callback = base::BindOnce(
-            &ResourceFence::Set, std::move(current_frame_resource_fence_));
+        on_finished_callback =
+            base::BindOnce(&FrameResourceFence::Signal,
+                           std::move(current_frame_resource_fence_));
       }
       gpu::SyncToken sync_token =
           skia_output_surface_->SubmitPaint(std::move(on_finished_callback));

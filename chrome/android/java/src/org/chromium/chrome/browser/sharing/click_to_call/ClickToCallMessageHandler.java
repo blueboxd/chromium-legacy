@@ -65,6 +65,22 @@ public class ClickToCallMessageHandler {
     }
 
     /**
+     * Handles the device unlock event to remove notification and just show dialer.
+     */
+    public static final class PhoneUnlockedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // We only try to remove the notifications if we have opened the dialer.
+            if (intent != null && Intent.ACTION_USER_PRESENT.equals(intent.getAction())
+                    && shouldOpenDialer()) {
+                SharingNotificationUtil.dismissNotification(
+                        NotificationConstants.GROUP_CLICK_TO_CALL,
+                        NotificationConstants.NOTIFICATION_ID_CLICK_TO_CALL);
+            }
+        }
+    }
+
+    /**
      * Displays a notification that opens the dialer when clicked.
      *
      * @param phoneNumber The phone number to show in the dialer when the user taps the
@@ -85,16 +101,28 @@ public class ClickToCallMessageHandler {
     }
 
     /**
-     * Returns true if we should open the dialer straight away, and false if we should display a
-     * notification to click on instead.
+     * Returns true if we should open the dialer straight away.
      */
     private static boolean shouldOpenDialer() {
-        // On Q and above, we could only open the dialer if we're in foreground, which would be an
-        // inconsistent experience. We always show the notification for those versions for now.
-        // Only show the dialer if the user would see it, otherwise show a notification.
+        // On Q and above, we never open the dialer directly. On pre-Q, we always open the dialer
+        // directly.
         return !BuildInfo.isAtLeastQ()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY)
-                && DeviceConditions.isCurrentlyScreenOnAndUnlocked(
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY);
+    }
+
+    /**
+     * Returns true if we should show notification to the user.
+     */
+    private static boolean shouldShowNotification() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY)) {
+            return true;
+        }
+
+        // Always show the notification for Android Q and above. For pre-Q, only show notification
+        // if device is locked.
+        return BuildInfo.isAtLeastQ()
+                || !DeviceConditions.isCurrentlyScreenOnAndUnlocked(
                         ContextUtils.getApplicationContext());
     }
 
@@ -107,9 +135,12 @@ public class ClickToCallMessageHandler {
     @VisibleForTesting
     static void handleMessage(String phoneNumber) {
         ClickToCallUma.recordMessageReceived();
+
         if (shouldOpenDialer()) {
             openDialer(phoneNumber);
-        } else {
+        }
+
+        if (shouldShowNotification()) {
             displayNotification(phoneNumber);
         }
     }

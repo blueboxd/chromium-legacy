@@ -23,7 +23,6 @@ class Profile;
 
 namespace app_list {
 
-class AppSearchResultRanker;
 class SearchResultRanker;
 class SearchProvider;
 enum class RankingItemType;
@@ -58,16 +57,19 @@ class SearchController {
   // Sends training signal to each |providers_|
   void Train(AppLaunchData&& app_launch_data);
 
-  // Gets the search result ranker owned by this object that is used for ranking
-  // apps.
-  AppSearchResultRanker* GetAppSearchResultRanker();
-
   // Gets the search result ranker owned by the Mixer that is used for all
   // other ranking.
   SearchResultRanker* GetNonAppSearchResultRanker();
 
   // Gets the length of the most recent query.
   int GetLastQueryLength() const;
+
+  // Called when items in the results list have been on screen for some amount
+  // of time, or the user clicked a search result.
+  void OnSearchResultsDisplayed(
+      const base::string16& trimmed_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int launched_index);
 
  private:
   // Invoked when the search results are changed.

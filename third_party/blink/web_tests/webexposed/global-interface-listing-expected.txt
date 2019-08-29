@@ -8512,6 +8512,8 @@ interface WebGL2ComputeRenderingContext
     attribute DRAW_BUFFER9
     attribute DRAW_FRAMEBUFFER
     attribute DRAW_FRAMEBUFFER_BINDING
+    attribute DRAW_INDIRECT_BUFFER
+    attribute DRAW_INDIRECT_BUFFER_BINDING
     attribute DST_ALPHA
     attribute DST_COLOR
     attribute DYNAMIC_COPY

@@ -1488,7 +1488,7 @@ TEST_F(HttpCacheTest, SimpleGET_RestrictedPrefetchIsRestrictedUntilReuse) {
   RunTransactionTestWithResponseInfoAndGetTiming(
       cache.http_cache(), can_use_restricted_prefetch_transaction,
       &response_info, BoundTestNetLog().bound(), nullptr);
-  EXPECT_FALSE(response_info.restricted_prefetch);
+  EXPECT_TRUE(response_info.restricted_prefetch);
   EXPECT_TRUE(response_info.was_cached);
   EXPECT_FALSE(response_info.network_accessed);
 

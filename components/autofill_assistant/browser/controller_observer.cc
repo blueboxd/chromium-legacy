@@ -18,10 +18,9 @@ void ControllerObserver::OnBubbleMessageChanged(const std::string& message) {}
 void ControllerObserver::CloseCustomTab() {}
 void ControllerObserver::OnUserActionsChanged(
     const std::vector<UserAction>& user_actions) {}
-void ControllerObserver::OnPaymentRequestOptionsChanged(
-    const PaymentRequestOptions* options) {}
-void ControllerObserver::OnPaymentRequestInformationChanged(
-    const PaymentInformation* state) {}
+void ControllerObserver::OnCollectUserDataOptionsChanged(
+    const CollectUserDataOptions* options) {}
+void ControllerObserver::OnUserDataChanged(const UserData* state) {}
 void ControllerObserver::OnDetailsChanged(const Details* details) {}
 void ControllerObserver::OnInfoBoxChanged(const InfoBox* info_box) {}
 void ControllerObserver::OnProgressChanged(int progress) {}

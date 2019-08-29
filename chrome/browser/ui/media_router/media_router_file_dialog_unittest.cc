@@ -8,7 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/test/browser_task_environment.h"

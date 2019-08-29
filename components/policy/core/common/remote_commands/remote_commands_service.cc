@@ -15,6 +15,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
@@ -92,9 +93,6 @@ void RemoteCommandsService::SetOnCommandAckedCallback(
 
 void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
     const em::SignedData& signed_command) {
-  em::RemoteCommand command;
-  command.ParseFromString(signed_command.data());
-
   const bool valid_signature = CloudPolicyValidatorBase::VerifySignature(
       signed_command.data(), store_->policy_signature_public_key(),
       signed_command.signature(),
@@ -104,7 +102,28 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
     SYSLOG(ERROR) << "Secure remote command signature verification failed";
     em::RemoteCommandResult result;
     result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
-    result.set_command_id(command.command_id());
+    unsent_results_.push_back(result);
+    return;
+  }
+
+  em::PolicyData policy_data;
+  if (!policy_data.ParseFromString(signed_command.data()) ||
+      !policy_data.has_policy_type() ||
+      policy_data.policy_type() !=
+          dm_protocol::kChromeRemoteCommandPolicyType) {
+    SYSLOG(ERROR) << "Secure remote command with wrong PolicyData type";
+    em::RemoteCommandResult result;
+    result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
+    unsent_results_.push_back(result);
+    return;
+  }
+
+  em::RemoteCommand command;
+  if (!policy_data.has_policy_value() ||
+      !command.ParseFromString(policy_data.policy_value())) {
+    SYSLOG(ERROR) << "Secure remote command invalid RemoteCommand data";
+    em::RemoteCommandResult result;
+    result.set_result(em::RemoteCommandResult_ResultType_RESULT_IGNORED);
     unsent_results_.push_back(result);
     return;
   }

@@ -49,10 +49,10 @@ class POLICY_EXPORT RemoteCommandJob {
   // time. It must be consistent to the same parameter passed to Run() below.
   // In order to minimize the error while estimating the command issued time,
   // this method must be called immediately after the command is received from
-  // the server. |signed_command| is passed if we're using signed commands, its
-  // format is the raw serialized command plus its signature, and it's cached in
-  // case the actual command implementation needs to pass its signature on to
-  // some other system for verification.
+  // the server. |signed_command| is passed if we're using signed commands; its
+  // format is the raw serialized command inside of policy data proto plus its
+  // signature, and it's cached in case the actual command implementation needs
+  // to pass its signature on to some other system for verification.
   bool Init(base::TimeTicks now,
             const enterprise_management::RemoteCommand& command,
             const enterprise_management::SignedData* signed_command);
@@ -161,8 +161,8 @@ class POLICY_EXPORT RemoteCommandJob {
   // The time when the command started running.
   base::TimeTicks execution_started_time_;
 
-  // Serialized command with signature in case of a signed command, otherwise
-  // empty.
+  // Serialized command inside policy data proto with signature in case of a
+  // signed command, otherwise empty.
   base::Optional<enterprise_management::SignedData> signed_command_;
 
   std::unique_ptr<ResultPayload> result_payload_;

@@ -112,6 +112,11 @@ bool TestInstallFinalizer::CanSkipAppUpdateForSync(
   return next_can_skip_app_update_for_sync_;
 }
 
+bool TestInstallFinalizer::CanUserUninstallFromSync(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
     const AppId& app_id,
     InstallResultCode code) {

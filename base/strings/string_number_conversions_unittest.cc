@@ -791,6 +791,8 @@ TEST(StringNumberConversionsTest, StringToDouble) {
   };
 
   for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(
+        StringPrintf("case %" PRIuS " \"%s\"", i, cases[i].input.c_str()));
     double output;
     errno = 1;
     EXPECT_EQ(cases[i].success, StringToDouble(cases[i].input, &output));
@@ -814,13 +816,14 @@ TEST(StringNumberConversionsTest, DoubleToString) {
     double input;
     const char* expected;
   } cases[] = {
-    {0.0, "0"},
-    {1.25, "1.25"},
-    {1.33518e+012, "1.33518e+12"},
-    {1.33489e+012, "1.33489e+12"},
-    {1.33505e+012, "1.33505e+12"},
-    {1.33545e+009, "1335450000"},
-    {1.33503e+009, "1335030000"},
+      {0.0, "0"},
+      {0.5, "0.5"},
+      {1.25, "1.25"},
+      {1.33518e+012, "1.33518e+12"},
+      {1.33489e+012, "1.33489e+12"},
+      {1.33505e+012, "1.33505e+12"},
+      {1.33545e+009, "1335450000"},
+      {1.33503e+009, "1335030000"},
   };
 
   for (const auto& i : cases) {
@@ -832,12 +835,12 @@ TEST(StringNumberConversionsTest, DoubleToString) {
   const char input_bytes[8] = {0, 0, 0, 0, '\xee', '\x6d', '\x73', '\x42'};
   double input = 0;
   memcpy(&input, input_bytes, base::size(input_bytes));
-  EXPECT_EQ("1335179083776", NumberToString(input));
+  EXPECT_EQ("1.335179083776e+12", NumberToString(input));
   const char input_bytes2[8] =
       {0, 0, 0, '\xa0', '\xda', '\x6c', '\x73', '\x42'};
   input = 0;
   memcpy(&input, input_bytes2, base::size(input_bytes2));
-  EXPECT_EQ("1334890332160", NumberToString(input));
+  EXPECT_EQ("1.33489033216e+12", NumberToString(input));
 }
 
 TEST(StringNumberConversionsTest, HexEncode) {
@@ -892,6 +895,7 @@ TEST(StringNumberConversionsTest, StrtodFailures) {
   };
 
   for (const auto& test : cases) {
+    SCOPED_TRACE(StringPrintf("input: \"%s\"", test.input));
     double output;
     EXPECT_TRUE(StringToDouble(test.input, &output));
     EXPECT_EQ(bit_cast<uint64_t>(output), test.expected);

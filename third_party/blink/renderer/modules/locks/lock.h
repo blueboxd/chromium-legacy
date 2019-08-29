@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_H_
 
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -27,13 +28,13 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
   static Lock* Create(ScriptState*,
                       const String& name,
                       mojom::blink::LockMode,
-                      mojom::blink::LockHandleAssociatedPtr,
+                      mojo::PendingAssociatedRemote<mojom::blink::LockHandle>,
                       LockManager*);
 
   Lock(ScriptState*,
        const String& name,
        mojom::blink::LockMode,
-       mojom::blink::LockHandleAssociatedPtr,
+       mojo::PendingAssociatedRemote<mojom::blink::LockHandle>,
        LockManager*);
   ~Lock() override;
 
@@ -69,7 +70,7 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
 
   // An opaque handle; this one end of a mojo pipe. When this is closed,
   // the lock is released by the back end.
-  mojom::blink::LockHandleAssociatedPtr handle_;
+  mojo::AssociatedRemote<mojom::blink::LockHandle> handle_;
 
   // LockManager::OnLockReleased() is called when this lock is released, to
   // stop artificially keeping this instance alive. It is necessary in the

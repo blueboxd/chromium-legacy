@@ -74,5 +74,10 @@ public final class SharingNotificationUtil {
                 type, notification.getNotification());
     }
 
+    public static void dismissNotification(String tag, int notificationId) {
+        Context context = ContextUtils.getApplicationContext();
+        new NotificationManagerProxyImpl(context).cancel(tag, notificationId);
+    }
+
     private SharingNotificationUtil() {}
 }

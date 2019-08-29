@@ -206,9 +206,11 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
   }
   const url::Origin origin = url::Origin::Create(url_);
   auto script_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, worker_route_id_, origin);
+      rph, worker_route_id_, origin,
+      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript);
   auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
-      rph, worker_route_id_, origin);
+      rph, worker_route_id_, origin,
+      ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
   base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&UpdateLoaderFactoriesOnIO, context_weak_, version_id_,

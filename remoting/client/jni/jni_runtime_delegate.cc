@@ -15,7 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "remoting/android/jni_headers/JniInterface_jni.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/oauth_token_getter_proxy.h"

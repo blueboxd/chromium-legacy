@@ -28,8 +28,20 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       const MinMaxSizeInput&) const override;
 
  private:
-  scoped_refptr<const NGBreakToken> LayoutRow(
+  // Lay out as many children as we can.
+  void LayoutChildren();
+
+  // Lay out one row of columns. The layout result returned is for the last
+  // column that was laid out. The rows themselves don't create fragments.
+  scoped_refptr<const NGLayoutResult> LayoutRow(
       const NGBlockBreakToken* next_column_token);
+
+  // Lay out a column spanner. Will return a break token if we break before or
+  // inside the spanner. If no break token is returned, it means that we can
+  // proceed to the next row of columns.
+  scoped_refptr<const NGBlockBreakToken> LayoutSpanner(
+      NGBlockNode spanner_node,
+      const NGBlockBreakToken* break_token);
 
   LayoutUnit CalculateBalancedColumnBlockSize(
       const LogicalSize& column_size,
@@ -41,6 +53,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
                                     LayoutUnit current_column_size) const;
 
   LayoutUnit ConstrainColumnBlockSize(LayoutUnit size) const;
+  LayoutUnit CurrentContentBlockOffset() const;
 
   NGConstraintSpace CreateConstraintSpaceForColumns(
       const LogicalSize& column_size,
@@ -48,6 +61,8 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       bool balance_columns) const;
   NGConstraintSpace CreateConstraintSpaceForBalancing(
       const LogicalSize& column_size) const;
+  NGConstraintSpace CreateConstraintSpaceForSpanner(
+      LayoutUnit block_offset) const;
   NGConstraintSpace CreateConstraintSpaceForMinMax() const;
 
   const NGBoxStrut border_padding_;

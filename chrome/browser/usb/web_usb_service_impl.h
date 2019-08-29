@@ -54,8 +54,9 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
 
   // blink::mojom::WebUsbService implementation:
   void GetDevices(GetDevicesCallback callback) override;
-  void GetDevice(const std::string& guid,
-                 device::mojom::UsbDeviceRequest device_request) override;
+  void GetDevice(
+      const std::string& guid,
+      mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver) override;
   void GetPermission(
       std::vector<device::mojom::UsbDeviceFilterPtr> device_filters,
       GetPermissionCallback callback) override;

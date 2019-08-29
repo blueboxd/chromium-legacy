@@ -168,6 +168,13 @@ void InspectorTraceEvents::DidFailLoading(uint64_t identifier,
                            loader, identifier, base::TimeTicks(), true, 0, 0));
 }
 
+void InspectorTraceEvents::MarkResourceAsCached(DocumentLoader* loader,
+                                                uint64_t identifier) {
+  TRACE_EVENT_INSTANT1(
+      "devtools.timeline", "ResourceMarkAsCached", TRACE_EVENT_SCOPE_THREAD,
+      "data", inspector_mark_resource_cached_event::Data(loader, identifier));
+}
+
 void InspectorTraceEvents::Will(const probe::ExecuteScript&) {}
 
 void InspectorTraceEvents::Did(const probe::ExecuteScript&) {
@@ -843,6 +850,15 @@ std::unique_ptr<TracedValue> inspector_resource_finish_event::Data(
   value->SetDouble("decodedBodyLength", decoded_body_length);
   if (!finish_time.is_null())
     value->SetDouble("finishTime", finish_time.since_origin().InSecondsF());
+  return value;
+}
+
+std::unique_ptr<TracedValue> inspector_mark_resource_cached_event::Data(
+    DocumentLoader* loader,
+    uint64_t identifier) {
+  auto value = std::make_unique<TracedValue>();
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
+  value->SetString("requestId", request_id);
   return value;
 }
 

@@ -93,13 +93,28 @@ bool H264Encoder::Initialize(
   mb_height_ = coded_size_.height() / kH264MacroblockSizeInPixels;
 
   profile_ = config.output_profile;
-  level_ = config.h264_output_level.value_or(
-      VideoEncodeAccelerator::kDefaultH264Level);
+  level_ = config.h264_output_level.value_or(H264SPS::kLevelIDC4p0);
   uint32_t initial_framerate = config.initial_framerate.value_or(
       VideoEncodeAccelerator::kDefaultFramerate);
+
+  // Checks if |level_| is valid. If it is invalid, set |level_| to a minimum
+  // level that comforts Table A-1 in H.264 spec with specified bitrate,
+  // framerate and dimension.
   if (!CheckH264LevelLimits(profile_, level_, config.initial_bitrate,
-                            initial_framerate, mb_width_ * mb_height_))
-    return false;
+                            initial_framerate, mb_width_ * mb_height_)) {
+    base::Optional<uint8_t> valid_level =
+        FindValidH264Level(profile_, config.initial_bitrate, initial_framerate,
+                           mb_width_ * mb_height_);
+    if (!valid_level) {
+      VLOGF(1) << "Could not find a valid h264 level for"
+               << " profile=" << profile_
+               << " bitrate=" << config.initial_bitrate
+               << " framerate=" << initial_framerate
+               << " size=" << config.input_visible_size.ToString();
+      return false;
+    }
+    level_ = *valid_level;
+  }
 
   curr_params_.max_ref_pic_list0_size =
       std::min(kMaxRefIdxL0Size, ave_config.max_num_ref_frames & 0xffff);

@@ -600,21 +600,21 @@ TEST_F(DisplayLockBudgetTest, UpdateHappensInLifecycleOnly) {
 
   // Since we're not in a lifecycle, the budget itself should not want to do any
   // phases, even though the budget allows it.
-  EXPECT_FALSE(context->ShouldStyle(DisplayLockContext::kChildren));
-  EXPECT_FALSE(context->ShouldLayout(DisplayLockContext::kChildren));
-  EXPECT_FALSE(context->ShouldPrePaint(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldStyle(DisplayLockLifecycleTarget::kChildren));
+  EXPECT_FALSE(context->ShouldLayout(DisplayLockLifecycleTarget::kChildren));
+  EXPECT_FALSE(context->ShouldPrePaint(DisplayLockLifecycleTarget::kChildren));
 
   GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(true);
 
-  EXPECT_TRUE(context->ShouldStyle(DisplayLockContext::kChildren));
-  EXPECT_TRUE(context->ShouldLayout(DisplayLockContext::kChildren));
-  EXPECT_TRUE(context->ShouldPrePaint(DisplayLockContext::kChildren));
+  EXPECT_TRUE(context->ShouldStyle(DisplayLockLifecycleTarget::kChildren));
+  EXPECT_TRUE(context->ShouldLayout(DisplayLockLifecycleTarget::kChildren));
+  EXPECT_TRUE(context->ShouldPrePaint(DisplayLockLifecycleTarget::kChildren));
 
   GetDocument().GetFrame()->View()->SetInLifecycleUpdateForTest(false);
 
-  EXPECT_FALSE(context->ShouldStyle(DisplayLockContext::kChildren));
-  EXPECT_FALSE(context->ShouldLayout(DisplayLockContext::kChildren));
-  EXPECT_FALSE(context->ShouldPrePaint(DisplayLockContext::kChildren));
+  EXPECT_FALSE(context->ShouldStyle(DisplayLockLifecycleTarget::kChildren));
+  EXPECT_FALSE(context->ShouldLayout(DisplayLockLifecycleTarget::kChildren));
+  EXPECT_FALSE(context->ShouldPrePaint(DisplayLockLifecycleTarget::kChildren));
 
   // Ensure to flush any tasks scheduled by context calls.
   test::RunPendingTasks();

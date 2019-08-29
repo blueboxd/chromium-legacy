@@ -245,6 +245,8 @@ class CloudPolicyClientTest : public testing::Test {
         em::RemoteCommandResult_ResultType_RESULT_SUCCESS);
     command_result->set_payload(kResultPayload);
     command_result->set_timestamp(kTimestamp);
+    remote_command_request_.mutable_remote_command_request()
+        ->set_send_secure_commands(true);
 
     em::RemoteCommand* command =
         remote_command_response_.mutable_remote_command_response()

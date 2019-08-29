@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 class NavigationHandle;
@@ -59,7 +60,8 @@ class ContentAutofillDriver : public AutofillDriver,
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
   void ConnectToAuthenticator(
-      blink::mojom::InternalAuthenticatorRequest request) override;
+      mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver)
+      override;
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,
                               const FormData& data) override;

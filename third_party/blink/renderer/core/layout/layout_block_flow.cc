@@ -444,7 +444,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   DCHECK(NeedsLayout());
   DCHECK(IsInlineBlockOrInlineTable() || !IsInline());
 
-  if (LayoutBlockedByDisplayLock(DisplayLockContext::kSelf))
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf))
     return;
 
   if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled())
@@ -542,7 +542,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
 
   ClearNeedsLayout();
   is_self_collapsing_ = CheckIfIsSelfCollapsingBlock();
-  NotifyDisplayLockDidLayout(DisplayLockContext::kSelf);
+  NotifyDisplayLockDidLayout(DisplayLockLifecycleTarget::kSelf);
 }
 
 DISABLE_CFI_PERF
@@ -603,7 +603,7 @@ void LayoutBlockFlow::LayoutChildren(bool relayout_children,
                                      SubtreeLayoutScope& layout_scope) {
   ResetLayout();
 
-  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
   LayoutUnit before_edge = BorderBefore() + PaddingBefore();
@@ -627,7 +627,7 @@ void LayoutBlockFlow::LayoutChildren(bool relayout_children,
       CreatesNewFormattingContext())
     SetLogicalHeight(LowestFloatLogicalBottom() + after_edge);
 
-  NotifyDisplayLockDidLayout(DisplayLockContext::kChildren);
+  NotifyDisplayLockDidLayout(DisplayLockLifecycleTarget::kChildren);
 }
 
 void LayoutBlockFlow::AddOverhangingFloatsFromChildren(
@@ -810,7 +810,8 @@ bool LayoutBlockFlow::PositionAndLayoutOnceIfNeeded(
     if (!child.NeedsLayout())
       return false;
     return child.SelfNeedsLayout() ||
-           !child.LayoutBlockedByDisplayLock(DisplayLockContext::kChildren);
+           !child.LayoutBlockedByDisplayLock(
+               DisplayLockLifecycleTarget::kChildren);
   };
 
   if (!child_needs_layout()) {
@@ -2394,7 +2395,7 @@ bool LayoutBlockFlow::MustDiscardMarginAfter() const {
 bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
     const LayoutBox& child) const {
   DCHECK(!child.SelfNeedsLayout() ||
-         child.LayoutBlockedByDisplayLock(DisplayLockContext::kSelf));
+         child.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
   if (!child.IsWritingModeRoot()) {
     auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
     return child_layout_block ? child_layout_block->MustDiscardMarginBefore()
@@ -2418,7 +2419,7 @@ bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
 bool LayoutBlockFlow::MustDiscardMarginAfterForChild(
     const LayoutBox& child) const {
   DCHECK(!child.SelfNeedsLayout() ||
-         child.LayoutBlockedByDisplayLock(DisplayLockContext::kSelf));
+         child.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
   if (!child.IsWritingModeRoot()) {
     auto* child_layout_block = DynamicTo<LayoutBlockFlow>(&child);
     return child_layout_block ? child_layout_block->MustDiscardMarginAfter()
@@ -2461,7 +2462,7 @@ void LayoutBlockFlow::SetMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg) {
 bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
     const LayoutBox& child) const {
   DCHECK(!child.SelfNeedsLayout() ||
-         child.LayoutBlockedByDisplayLock(DisplayLockContext::kSelf));
+         child.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
     return child_style.MarginBeforeCollapse() == EMarginCollapse::kSeparate;
@@ -2475,7 +2476,7 @@ bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
 bool LayoutBlockFlow::MustSeparateMarginAfterForChild(
     const LayoutBox& child) const {
   DCHECK(!child.SelfNeedsLayout() ||
-         child.LayoutBlockedByDisplayLock(DisplayLockContext::kSelf));
+         child.LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kSelf));
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
     return child_style.MarginAfterCollapse() == EMarginCollapse::kSeparate;
@@ -4896,7 +4897,7 @@ const NGOffsetMapping* LayoutBlockFlow::GetOffsetMapping() const {
   DCHECK(!IsLayoutNGObject());
   CHECK(!SelfNeedsLayout());
   CHECK(!NeedsLayout() ||
-        LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+        LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   return rare_data_ ? rare_data_->offset_mapping_.get() : nullptr;
 }
 

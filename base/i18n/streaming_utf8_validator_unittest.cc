@@ -33,7 +33,7 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "third_party/icu/source/common/unicode/utf8.h"
 
 #endif  // BASE_I18N_UTF8_VALIDATOR_THOROUGH_TEST

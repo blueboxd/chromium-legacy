@@ -11,6 +11,7 @@
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/native_file_system_permission_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom.h"
 
@@ -59,21 +60,16 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
     skip_quarantine_service_for_testing_ = true;
   }
 
-  // TODO(https://crbug.com/968556): Use swap_url_ path, instead of requiring a
-  // FilePath.
-  void compute_file_hash_for_testing(
-      const base::FilePath& path,
-      base::OnceCallback<void(base::File::Error, const std::string&)>
-          callback) {
-    ComputeSecureHashForFile(path, std::move(callback));
+  using HashCallback = base::OnceCallback<void(base::File::Error error,
+                                               const std::string& hash)>;
+  void ComputeHashForSwapFileForTesting(HashCallback callback) {
+    ComputeHashForSwapFile(std::move(callback));
   }
 
  private:
   // State that is kept for the duration of a write operation, to keep track of
   // progress until the write completes.
   struct WriteState;
-  using HashCallback = base::OnceCallback<void(base::File::Error error,
-                                               const std::string& hash)>;
 
   void WriteImpl(uint64_t offset,
                  blink::mojom::BlobPtr data,
@@ -101,9 +97,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   }
 
   // TODO(https://crbug.com/968556): Integrate with Close writer flow.
-  // The path given needs to be a native local path.
-  void ComputeSecureHashForFile(const base::FilePath& path,
-                                HashCallback callback);
+  void ComputeHashForSwapFile(HashCallback callback);
 
   enum class State {
     // The writer accepts write operations.

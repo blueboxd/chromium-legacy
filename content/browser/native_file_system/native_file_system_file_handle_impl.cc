@@ -82,7 +82,7 @@ void NativeFileSystemFileHandleImpl::CreateFileWriter(
       base::BindOnce([](CreateFileWriterCallback callback) {
         std::move(callback).Run(native_file_system_error::FromStatus(
                                     NativeFileSystemStatus::kPermissionDenied),
-                                nullptr);
+                                mojo::NullRemote());
       }),
       std::move(callback));
 }
@@ -173,7 +173,7 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
   if (GetWritePermissionStatus() != blink::mojom::PermissionStatus::GRANTED) {
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kPermissionDenied),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 
@@ -188,7 +188,7 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kOperationFailed,
                                 "Failed to create swap file."),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 
@@ -251,7 +251,7 @@ void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
                 << " path: " << swap_url.path();
     std::move(callback).Run(native_file_system_error::FromFileError(
                                 result, "Error creating swap file."),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 
@@ -288,7 +288,7 @@ void NativeFileSystemFileHandleImpl::DidCopySwapFile(
                 << " path: " << swap_url.path();
     std::move(callback).Run(native_file_system_error::FromFileError(
                                 result, "Error copying to swap file."),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
   std::move(callback).Run(

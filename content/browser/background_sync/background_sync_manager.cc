@@ -1548,7 +1548,7 @@ bool& BackgroundSyncManager::delayed_processing_scheduled(
 
 void BackgroundSyncManager::ScheduleOrCancelDelayedProcessing(
     BackgroundSyncType sync_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   bool can_fire_with_connectivity =
       CanFireAnyRegistrationUponConnectivity(sync_type);
@@ -1568,7 +1568,7 @@ void BackgroundSyncManager::ScheduleOrCancelDelayedProcessing(
 bool BackgroundSyncManager::IsRegistrationReadyToFire(
     const BackgroundSyncRegistration& registration,
     int64_t service_worker_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (clock_->Now() < registration.delay_until())
     return false;

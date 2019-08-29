@@ -131,6 +131,11 @@ void UpdateLegacyMultiColumnFlowThread(
 
   // Stitch the columns together.
   for (const auto& child : fragment.Children()) {
+    // Skip column spanners, as they are not part of the flow thread (and
+    // besides, otherwise we'd hit a DCHECK below, because the inline-size of a
+    // spanner is typically different from that of the columns).
+    if (child->GetLayoutObject() && child->GetLayoutObject()->IsColumnSpanAll())
+      continue;
     NGFragment child_fragment(writing_mode, *child);
     flow_end += child_fragment.BlockSize();
     // Non-uniform fragmentainer widths not supported by legacy layout.
@@ -353,8 +358,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::SimplifiedLayout() {
   if (!box_->NeedsLayout())
     return previous_result;
 
-  DCHECK(box_->NeedsSimplifiedLayoutOnly() ||
-         box_->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+  DCHECK(
+      box_->NeedsSimplifiedLayoutOnly() ||
+      box_->LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
 
   // Perform layout on ourselves using the previous constraint space.
   const NGConstraintSpace space(
@@ -443,8 +449,8 @@ void NGBlockNode::FinishLayout(
         child && AreNGBlockFlowChildrenInline(block_flow);
 
     // Don't consider display-locked objects as having any children.
-    if (has_inline_children &&
-        box_->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+    if (has_inline_children && box_->LayoutBlockedByDisplayLock(
+                                   DisplayLockLifecycleTarget::kChildren)) {
       has_inline_children = false;
       // It could be the case that our children are already clean at the time
       // the lock was acquired. This means that |box_| self dirty bits might be
@@ -802,9 +808,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   // We should notify the display lock that we've done layout on self, and if
   // it's not blocked, on children.
   if (auto* context = box_->GetDisplayLockContext()) {
-    context->DidLayout(DisplayLockContext::kSelf);
-    if (!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
-      context->DidLayout(DisplayLockContext::kChildren);
+    context->DidLayout(DisplayLockLifecycleTarget::kSelf);
+    if (!LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+      context->DidLayout(DisplayLockLifecycleTarget::kChildren);
   }
 }
 
@@ -848,8 +854,13 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     const NGPhysicalBoxFragment& physical_fragment) {
   LayoutUnit flowthread_offset;
   for (const auto& child : physical_fragment.Children()) {
+    if (child->GetLayoutObject() != box_) {
+      DCHECK(child->GetLayoutObject()->IsColumnSpanAll());
+      // TODO(mstensho): Write back the spanner offset to the associated
+      // LayoutMultiColumnSpannerPlaceholder (if we bother)
+      continue;
+    }
     // Each anonymous child of a multicol container constitutes one column.
-    DCHECK(child->GetLayoutObject() == box_);
 
     // TODO(mstensho): writing modes
     PhysicalOffset offset(LayoutUnit(), flowthread_offset);

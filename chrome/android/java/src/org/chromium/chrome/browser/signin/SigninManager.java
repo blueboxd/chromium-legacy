@@ -159,21 +159,19 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private static class SignOutState {
         final Runnable mCallback;
         final WipeDataHooks mWipeDataHooks;
-        final String mManagementDomain;
-        final boolean mForceWipeUserData;
+        final boolean mShouldWipeUserData;
 
         /**
          * @param callback Called after sign-out finishes and all data has been cleared.
          * @param wipeDataHooks Hooks to call before/after data wiping phase of sign-out.
-         * @param managementDomain Domain when account is managed.
-         * @param forceWipeUserData Flag to wipe user data when account is not managed.
+         * @param shouldWipeUserData Flag to wipe user data as requested by the user and enforced
+         *         for managed users.
          */
         SignOutState(@Nullable Runnable callback, @Nullable WipeDataHooks wipeDataHooks,
-                @Nullable String managementDomain, boolean forceWipeUserData) {
+                boolean shouldWipeUserData) {
             this.mCallback = callback;
             this.mWipeDataHooks = wipeDataHooks;
-            this.mManagementDomain = managementDomain;
-            this.mForceWipeUserData = forceWipeUserData;
+            this.mShouldWipeUserData = shouldWipeUserData;
         }
     }
 
@@ -580,10 +578,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         assert mSignOutState == null;
 
         // Grab the management domain before nativeSignOut() potentially clears it.
-        mSignOutState =
-                new SignOutState(callback, wipeDataHooks, getManagementDomain(), forceWipeUserData);
-
-        Log.d(TAG, "Signing out, management domain: " + mSignOutState.mManagementDomain);
+        String managementDomain = getManagementDomain();
+        mSignOutState = new SignOutState(
+                callback, wipeDataHooks, forceWipeUserData || managementDomain != null);
+        Log.d(TAG, "Signing out, management domain: " + managementDomain);
 
         // User data will be wiped in disableSyncAndWipeData(), called from onNativeSignOut().
         SigninManagerJni.get().signOut(mNativeSigninManagerAndroid, signoutSource);
@@ -631,22 +629,20 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     @CalledByNative
     void onNativeSignOut() {
         if (mSignOutState == null) {
-            // TODO(https://crbug.com/873671): Management domain is not captured in signOut() for
-            // sign-outs that are initiated from the native side. But grabbing it here may be too
-            // late! The management domain may be already cleared due to race condition with
-            // sign-out observers on the native side.
-            mSignOutState = new SignOutState(null, null, getManagementDomain(), false);
+            // mSignOutState can only be null when the sign out is triggered by
+            // native (since otherwise SigninManager.signOut would have created
+            // it). As sign out from native can only happen from policy code,
+            // the account is managed and the user data must be wiped.
+            mSignOutState = new SignOutState(null, null, true);
         }
 
-        Log.d(TAG, "Native signed out, management domain: " + mSignOutState.mManagementDomain);
+        Log.d(TAG, "On native signout, wipe user data: " + mSignOutState.mShouldWipeUserData);
 
         // Native sign-out must happen before resetting the account so data is deleted correctly.
         // http://crbug.com/589028
         ChromeSigninController.get().setSignedInAccountName(null);
         if (mSignOutState.mWipeDataHooks != null) mSignOutState.mWipeDataHooks.preWipeData();
-        disableSyncAndWipeData(
-                mSignOutState.mManagementDomain != null || mSignOutState.mForceWipeUserData,
-                this::onProfileDataWiped);
+        disableSyncAndWipeData(mSignOutState.mShouldWipeUserData, this::onProfileDataWiped);
         mAccountTrackerService.invalidateAccountSeedStatus(true);
     }
 
@@ -731,9 +727,9 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     private void disableSyncAndWipeData(
-            boolean isManagedOrForceWipe, final Runnable wipeDataCallback) {
+            boolean shouldWipeUserData, final Runnable wipeDataCallback) {
         mAndroidSyncSettings.updateAccount(null);
-        if (isManagedOrForceWipe) {
+        if (shouldWipeUserData) {
             SigninManagerJni.get().wipeProfileData(mNativeSigninManagerAndroid, wipeDataCallback);
         } else {
             SigninManagerJni.get().wipeGoogleServiceWorkerCaches(

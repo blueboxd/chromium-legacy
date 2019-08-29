@@ -22,7 +22,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "components/cronet/android/buildflags.h"
 #include "components/cronet/android/cronet_jni_headers/CronetLibraryLoader_jni.h"

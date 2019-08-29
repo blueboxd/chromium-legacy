@@ -272,7 +272,7 @@ NativeFileSystemManagerImpl::CreateWritableFileEntryFromPath(
       NativeFileSystemPermissionContext::UserAction::kSave);
 }
 
-blink::mojom::NativeFileSystemFileHandlePtr
+mojo::PendingRemote<blink::mojom::NativeFileSystemFileHandle>
 NativeFileSystemManagerImpl::CreateFileHandle(
     const BindingContext& binding_context,
     const storage::FileSystemURL& url,
@@ -283,10 +283,10 @@ NativeFileSystemManagerImpl::CreateFileHandle(
             handle_state.file_system.is_valid())
       << url.mount_type();
 
-  blink::mojom::NativeFileSystemFileHandlePtr result;
-  file_bindings_.AddBinding(std::make_unique<NativeFileSystemFileHandleImpl>(
-                                this, binding_context, url, handle_state),
-                            mojo::MakeRequest(&result));
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileHandle> result;
+  file_receivers_.Add(std::make_unique<NativeFileSystemFileHandleImpl>(
+                          this, binding_context, url, handle_state),
+                      result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 
@@ -309,7 +309,7 @@ NativeFileSystemManagerImpl::CreateDirectoryHandle(
   return result;
 }
 
-blink::mojom::NativeFileSystemFileWriterPtr
+mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>
 NativeFileSystemManagerImpl::CreateFileWriter(
     const BindingContext& binding_context,
     const storage::FileSystemURL& url,
@@ -317,11 +317,10 @@ NativeFileSystemManagerImpl::CreateFileWriter(
     const SharedHandleState& handle_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  blink::mojom::NativeFileSystemFileWriterPtr result;
-  writer_bindings_.AddBinding(
-      std::make_unique<NativeFileSystemFileWriterImpl>(
-          this, binding_context, url, swap_url, handle_state),
-      mojo::MakeRequest(&result));
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter> result;
+  writer_receivers_.Add(std::make_unique<NativeFileSystemFileWriterImpl>(
+                            this, binding_context, url, swap_url, handle_state),
+                        result.InitWithNewPipeAndPassReceiver());
 
   return result;
 }
@@ -596,12 +595,10 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
   }
 
   return blink::mojom::NativeFileSystemEntry::New(
-      blink::mojom::NativeFileSystemHandle::NewFile(
-          CreateFileHandle(
-              binding_context, url.url,
-              SharedHandleState(std::move(read_grant), std::move(write_grant),
-                                std::move(url.file_system)))
-              .PassInterface()),
+      blink::mojom::NativeFileSystemHandle::NewFile(CreateFileHandle(
+          binding_context, url.url,
+          SharedHandleState(std::move(read_grant), std::move(write_grant),
+                            std::move(url.file_system)))),
       url.base_name);
 }
 

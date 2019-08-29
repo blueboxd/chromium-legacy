@@ -145,7 +145,6 @@ CONTENT_EXPORT extern const base::Feature kWebRtcHWH264Encoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcHWVP8Encoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcHWVP9Encoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcMultiplexCodec;
-CONTENT_EXPORT extern const base::Feature kWebRtcScreenshareSwEncoding;
 CONTENT_EXPORT extern const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames;
 CONTENT_EXPORT extern const base::Feature kWebRtcHideLocalIpsWithMdns;
 CONTENT_EXPORT extern const base::Feature kWebUsb;

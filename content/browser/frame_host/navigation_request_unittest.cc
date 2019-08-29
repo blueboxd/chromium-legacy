@@ -550,8 +550,9 @@ TEST_F(NavigationRequestTest, MAYBE_WillFailRequestCanAccessRenderFrameHost) {
   navigation->SetAutoAdvance(false);
   navigation->Start();
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(NavigationRequest::PROCESSING_WILL_FAIL_REQUEST,
-            navigation->GetNavigationHandle()->state_for_testing());
+  EXPECT_EQ(
+      NavigationRequest::PROCESSING_WILL_FAIL_REQUEST,
+      navigation->GetNavigationHandle()->navigation_request()->handle_state());
   EXPECT_TRUE(navigation->GetNavigationHandle()->GetRenderFrameHost());
   navigation->GetNavigationHandle()->CallResumeForTesting();
   EXPECT_TRUE(navigation->GetNavigationHandle()->GetRenderFrameHost());

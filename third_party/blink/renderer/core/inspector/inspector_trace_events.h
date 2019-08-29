@@ -111,6 +111,7 @@ class CORE_EXPORT InspectorTraceEvents
   void DidFailLoading(uint64_t identifier,
                       DocumentLoader*,
                       const ResourceError&);
+  void MarkResourceAsCached(DocumentLoader* loader, uint64_t identifier);
 
   void Will(const probe::ExecuteScript&);
   void Did(const probe::ExecuteScript&);
@@ -302,6 +303,10 @@ std::unique_ptr<TracedValue> Data(DocumentLoader*,
                                   bool did_fail,
                                   int64_t encoded_data_length,
                                   int64_t decoded_body_length);
+}
+
+namespace inspector_mark_resource_cached_event {
+std::unique_ptr<TracedValue> Data(DocumentLoader*, uint64_t identifier);
 }
 
 namespace inspector_timer_install_event {

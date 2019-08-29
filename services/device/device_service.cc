@@ -353,7 +353,7 @@ void DeviceService::BindUsbDeviceManagerRequest(
   if (!usb_device_manager_)
     usb_device_manager_ = std::make_unique<usb::DeviceManagerImpl>();
 
-  usb_device_manager_->AddBinding(std::move(request));
+  usb_device_manager_->AddReceiver(std::move(request));
 }
 
 void DeviceService::BindUsbDeviceManagerTestRequest(
@@ -366,7 +366,7 @@ void DeviceService::BindUsbDeviceManagerTestRequest(
         usb_device_manager_->GetUsbService());
   }
 
-  usb_device_manager_test_->BindRequest(std::move(request));
+  usb_device_manager_test_->BindReceiver(std::move(request));
 }
 
 #if defined(OS_ANDROID)

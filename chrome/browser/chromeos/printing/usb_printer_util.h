@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 
 namespace chromeos {
@@ -37,7 +38,7 @@ std::unique_ptr<Printer> UsbDeviceToPrinter(
 // Expects |device_ptr| to be linked to a Printer-class USB Device. Queries the
 // printer for its IEEE 1284 Standard Device ID.
 using GetDeviceIdCallback = base::OnceCallback<void(UsbPrinterId)>;
-void GetDeviceId(device::mojom::UsbDevicePtr device_ptr,
+void GetDeviceId(mojo::Remote<device::mojom::UsbDevice> device,
                  GetDeviceIdCallback cb);
 
 }  // namespace chromeos

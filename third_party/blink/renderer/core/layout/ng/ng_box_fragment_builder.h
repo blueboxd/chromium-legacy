@@ -154,6 +154,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // left to discover.
   void SetHasSeenAllChildren() { has_seen_all_children_ = true; }
 
+  void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
+  bool FoundColumnSpanner() const { return !!column_spanner_; }
+
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
 
@@ -242,6 +245,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   LayoutUnit intrinsic_block_size_;
 
   NGFragmentItemsBuilder* items_builder_ = nullptr;
+
+  NGBlockNode column_spanner_ = nullptr;
 
   NGPhysicalFragment::NGBoxType box_type_;
   bool is_fieldset_container_ = false;

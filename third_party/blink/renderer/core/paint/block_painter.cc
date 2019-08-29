@@ -28,9 +28,9 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
   if (!ShouldPaint(paint_state))
     return;
 
-  DCHECK(
-      !layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren) ||
-      paint_info.DescendantPaintingBlocked());
+  DCHECK(!layout_block_.PaintBlockedByDisplayLock(
+             DisplayLockLifecycleTarget::kChildren) ||
+         paint_info.DescendantPaintingBlocked());
 
   auto paint_offset = paint_state.PaintOffset();
   auto& local_paint_info = paint_state.MutablePaintInfo();

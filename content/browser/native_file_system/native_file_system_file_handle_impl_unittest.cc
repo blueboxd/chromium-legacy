@@ -121,7 +121,8 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
           test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe("test.crswap"));
 
-  std::vector<blink::mojom::NativeFileSystemFileWriterPtr> writers;
+  std::vector<mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>>
+      writers;
   for (int i = 0; i < max_files; i++) {
     FileSystemURL swap_url;
     if (i == 0) {
@@ -138,11 +139,12 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
         /*keepExistingData=*/false,
         base::BindLambdaForTesting(
             [&](blink::mojom::NativeFileSystemErrorPtr result,
-                blink::mojom::NativeFileSystemFileWriterPtr writer_ptr) {
+                mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>
+                    writer_remote) {
               EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk,
                         result->status);
               EXPECT_EQ("", ReadFile(swap_url));
-              writers.push_back(std::move(writer_ptr));
+              writers.push_back(std::move(writer_remote));
               loop.Quit();
             }));
     loop.Run();
@@ -153,7 +155,8 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
       /*keepExistingData=*/false,
       base::BindLambdaForTesting(
           [&](blink::mojom::NativeFileSystemErrorPtr result,
-              blink::mojom::NativeFileSystemFileWriterPtr writer_ptr) {
+              mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>
+                  writer_remote) {
             EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOperationFailed,
                       result->status);
             loop.Quit();

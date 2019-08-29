@@ -38,7 +38,8 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
              mojom::blink::NativeFileSystemErrorPtr result,
-             mojom::blink::NativeFileSystemFileWriterPtr writer) {
+             mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter>
+                 writer) {
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context)
               return;
@@ -48,7 +49,7 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
             }
             resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
                 RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>(
-                    writer.PassInterface(), context->GetInterfaceInvalidator(),
+                    std::move(writer), context->GetInterfaceInvalidator(),
                     context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
           },
           WrapPersistent(resolver)));

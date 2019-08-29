@@ -23,7 +23,7 @@ java_cpp_enum("autofill_assistant_enums_java") {
   sources = [
     "metrics.h",
     "overlay_state.h",
-    "payment_request.h",
+    "user_data.h",
     "viewport_mode.h",
   ]
 }
@@ -38,14 +38,14 @@ jumbo_static_library("browser") {
     "actions/autofill_action.h",
     "actions/click_action.cc",
     "actions/click_action.h",
+    "actions/collect_user_data_action.cc",
+    "actions/collect_user_data_action.h",
     "actions/configure_bottom_sheet_action.cc",
     "actions/configure_bottom_sheet_action.h",
     "actions/expect_navigation_action.cc",
     "actions/expect_navigation_action.h",
     "actions/focus_element_action.cc",
     "actions/focus_element_action.h",
-    "actions/get_payment_information_action.cc",
-    "actions/get_payment_information_action.h",
     "actions/highlight_element_action.cc",
     "actions/highlight_element_action.h",
     "actions/navigate_action.cc",
@@ -114,8 +114,6 @@ jumbo_static_library("browser") {
     "metrics.cc",
     "metrics.h",
     "overlay_state.h",
-    "payment_request.cc",
-    "payment_request.h",
     "protocol_utils.cc",
     "protocol_utils.h",
     "rectf.cc",
@@ -148,6 +146,8 @@ jumbo_static_library("browser") {
     "ui_delegate.h",
     "user_action.cc",
     "user_action.h",
+    "user_data.cc",
+    "user_data.h",
     "viewport_mode.h",
     "web/element_finder.cc",
     "web/element_finder.h",
@@ -186,8 +186,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "actions/autofill_action_unittest.cc",
+    "actions/collect_user_data_action_unittest.cc",
     "actions/configure_bottom_sheet_action_unittest.cc",
-    "actions/get_payment_information_action_unittest.cc",
     "actions/mock_action_delegate.cc",
     "actions/mock_action_delegate.h",
     "actions/popup_message_action_unittest.cc",

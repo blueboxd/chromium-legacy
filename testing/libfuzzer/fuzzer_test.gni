@@ -37,10 +37,7 @@ template("fuzzer_test") {
   if (!disable_libfuzzer && (use_fuzzing_engine || is_linux)) {
     assert(defined(invoker.sources), "Need sources in $target_name.")
 
-    test_deps = [
-      "//testing/libfuzzer:libfuzzer_main",
-      "//third_party/libFuzzer:fuzzed_data_provider",
-    ]
+    test_deps = [ "//testing/libfuzzer:libfuzzer_main" ]
 
     if (defined(invoker.deps)) {
       test_deps += invoker.deps

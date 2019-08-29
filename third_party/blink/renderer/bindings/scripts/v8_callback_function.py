@@ -24,6 +24,7 @@ CALLBACK_FUNCTION_CPP_INCLUDES = frozenset([
     'core/execution_context/execution_context.h',
     'platform/bindings/exception_messages.h',
     'platform/bindings/exception_state.h',
+    'platform/bindings/script_forbidden_scope.h',
 ])
 
 

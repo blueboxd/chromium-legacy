@@ -46,6 +46,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
@@ -608,6 +609,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   bool sweep_completed = false;
   {
     AtomicPauseScope atomic_pause_scope(this);
+    ScriptForbiddenScope script_forbidden_scope;
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kLazySweepInIdle,
@@ -1255,6 +1257,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
         ThreadHeapStatsCollector::kIncrementalMarkingStartMarking, "reason",
         BlinkGC::ToString(reason));
     AtomicPauseScope atomic_pause_scope(this);
+    ScriptForbiddenScope script_forbidden_scope;
     next_incremental_marking_step_duration_ =
         kDefaultIncrementalMarkingStepDuration;
     previous_incremental_marking_time_left_ = base::TimeDelta::Max();
@@ -1280,6 +1283,7 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
           << "IncrementalMarking: Step "
           << "Reason: " << BlinkGC::ToString(current_gc_data_.reason);
   AtomicPauseScope atomic_pause_scope(this);
+  ScriptForbiddenScope script_forbidden_scope;
   if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
     Heap().FlushNotFullyConstructedObjects();
   }
@@ -1476,6 +1480,7 @@ void ThreadState::AtomicPauseSweepAndCompact(
       ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact, "epoch", gc_age_,
       "forced", IsForcedGC(current_gc_data_.reason));
   AtomicPauseScope atomic_pause_scope(this);
+  ScriptForbiddenScope script_forbidden_scope;
 
   DCHECK(InAtomicMarkingPause());
   DCHECK(CheckThread());
@@ -1724,7 +1729,7 @@ bool ThreadState::MarkPhaseAdvanceMarking(base::TimeTicks deadline) {
       deadline);
 }
 
-bool ThreadState::VerifyMarkingEnabled() const {
+bool ThreadState::IsVerifyMarkingEnabled() const {
   bool should_verify_marking = base::FeatureList::IsEnabled(
       blink::features::kBlinkHeapIncrementalMarkingStress);
 #if BUILDFLAG(BLINK_HEAP_VERIFICATION)
@@ -1770,7 +1775,7 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
   DCHECK_NE(BlinkGC::kTakeSnapshot, marking_type);
 
-  if (VerifyMarkingEnabled())
+  if (IsVerifyMarkingEnabled())
     Heap().VerifyMarking();
 }
 

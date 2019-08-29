@@ -289,7 +289,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
     if (RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
             resource_type_) &&
-        rt_lookup_service && !rt_lookup_service->IsInBackoffMode()) {
+        rt_lookup_service && rt_lookup_service->CanCheckUrl(url) &&
+        !rt_lookup_service->IsInBackoffMode()) {
       UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Checked",
                                 resource_type_);
       safe_synchronously = false;

@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
@@ -121,10 +122,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   // Creates a new NativeFileSystemFileHandleImpl for a given url. Assumes the
   // passed in URL is valid and represents a file.
-  blink::mojom::NativeFileSystemFileHandlePtr CreateFileHandle(
-      const BindingContext& binding_context,
-      const storage::FileSystemURL& url,
-      const SharedHandleState& handle_state);
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileHandle>
+  CreateFileHandle(const BindingContext& binding_context,
+                   const storage::FileSystemURL& url,
+                   const SharedHandleState& handle_state);
 
   // Creates a new NativeFileSystemDirectoryHandleImpl for a given url. Assumes
   // the passed in URL is valid and represents a directory.
@@ -135,11 +136,11 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   // Creates a new NativeFileSystemFileWriterImpl for a given target and
   // swap file URLs. Assumes the passed in URLs are valid and represent files.
-  blink::mojom::NativeFileSystemFileWriterPtr CreateFileWriter(
-      const BindingContext& binding_context,
-      const storage::FileSystemURL& url,
-      const storage::FileSystemURL& swap_url,
-      const SharedHandleState& handle_state);
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>
+  CreateFileWriter(const BindingContext& binding_context,
+                   const storage::FileSystemURL& url,
+                   const storage::FileSystemURL& swap_url,
+                   const SharedHandleState& handle_state);
 
   // Create a transfer token for a specific file or directory.
   void CreateTransferToken(
@@ -238,14 +239,14 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   mojo::ReceiverSet<blink::mojom::NativeFileSystemManager, BindingContext>
       receivers_;
 
-  // All the bindings for file and directory handles that have references to
-  // them.
-  mojo::StrongBindingSet<blink::mojom::NativeFileSystemFileHandle>
-      file_bindings_;
+  // All the bindings and receivers for file and directory handles that have
+  // references to them.
+  mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemFileHandle>
+      file_receivers_;
   mojo::StrongBindingSet<blink::mojom::NativeFileSystemDirectoryHandle>
       directory_bindings_;
-  mojo::StrongBindingSet<blink::mojom::NativeFileSystemFileWriter>
-      writer_bindings_;
+  mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemFileWriter>
+      writer_receivers_;
 
   bool off_the_record_;
 

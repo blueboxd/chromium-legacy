@@ -226,57 +226,6 @@ class WebSocketChannel::ConnectDelegate
   DISALLOW_COPY_AND_ASSIGN(ConnectDelegate);
 };
 
-class WebSocketChannel::PendingReceivedFrame {
- public:
-  PendingReceivedFrame(bool final,
-                       WebSocketFrameHeader::OpCode opcode,
-                       scoped_refptr<IOBuffer> data,
-                       uint64_t offset,
-                       uint64_t size)
-      : final_(final),
-        opcode_(opcode),
-        data_(std::move(data)),
-        offset_(offset),
-        size_(size) {}
-  PendingReceivedFrame(const PendingReceivedFrame& other) = default;
-  PendingReceivedFrame(PendingReceivedFrame&& other) = default;
-  ~PendingReceivedFrame() = default;
-
-  // PendingReceivedFrame is placed in a base::queue and so needs to be copyable
-  // and movable.
-  PendingReceivedFrame& operator=(const PendingReceivedFrame& other) = default;
-  PendingReceivedFrame& operator=(PendingReceivedFrame&& other) = default;
-
-  bool final() const { return final_; }
-  WebSocketFrameHeader::OpCode opcode() const { return opcode_; }
-
-  // ResetOpcode() to Continuation.
-  void ResetOpcode() {
-    DCHECK(WebSocketFrameHeader::IsKnownDataOpCode(opcode_));
-    opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
-  }
-  const scoped_refptr<IOBuffer>& data() const { return data_; }
-  uint64_t offset() const { return offset_; }
-  uint64_t size() const { return size_; }
-
-  // Increase |offset_| by |bytes|.
-  void DidConsume(uint64_t bytes) {
-    DCHECK_LE(offset_, size_);
-    DCHECK_LE(bytes, size_ - offset_);
-    offset_ += bytes;
-  }
-
- private:
-  bool final_;
-  WebSocketFrameHeader::OpCode opcode_;
-  scoped_refptr<IOBuffer> data_;
-  // Where to start reading from data_. Everything prior to offset_ has
-  // already been sent to the browser.
-  uint64_t offset_;
-  // The size of data_.
-  uint64_t size_;
-};
-
 WebSocketChannel::WebSocketChannel(
     std::unique_ptr<WebSocketEventInterface> event_interface,
     URLRequestContext* url_request_context)
@@ -631,8 +580,7 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
 }
 
 ChannelState WebSocketChannel::ReadFrames() {
-  // TODO(crbug.com/994000) Remove this CHECK.
-  CHECK(stream_);
+  DCHECK(stream_);
   DCHECK(state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
   DCHECK(read_frames_.empty());
   if (is_reading_) {
@@ -648,8 +596,7 @@ ChannelState WebSocketChannel::ReadFrames() {
   }
 
   while (!event_interface_->HasPendingDataFrames()) {
-    // TODO(crbug.com/994000) Remove this CHECK.
-    CHECK(stream_);
+    DCHECK(stream_);
     // This use of base::Unretained is safe because this object owns the
     // WebSocketStream, and any pending reads will be cancelled when it is
     // destroyed.
@@ -665,8 +612,6 @@ ChannelState WebSocketChannel::ReadFrames() {
       return CHANNEL_DELETED;
     }
     DCHECK_NE(CLOSED, state_);
-    // TODO(crbug.com/994000) Remove this CHECK.
-    CHECK_EQ(result, net::OK);
   }
   return CHANNEL_ALIVE;
 }

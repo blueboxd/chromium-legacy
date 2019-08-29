@@ -12,10 +12,11 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
-#include "content/renderer/media/webrtc/rtc_video_encoder.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_encoder_factory.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
+#include "third_party/webrtc/api/video_codecs/video_encoder.h"
 #include "third_party/webrtc/common_video/h264/profile_level_id.h"
 #include "third_party/webrtc/media/base/codec.h"
 
@@ -126,7 +127,7 @@ RTCVideoEncoderFactory::CreateVideoEncoder(
     const webrtc::SdpVideoFormat& format) {
   for (size_t i = 0; i < supported_formats_.size(); ++i) {
     if (IsSameFormat(format, supported_formats_[i])) {
-      return std::make_unique<RTCVideoEncoder>(profiles_[i], gpu_factories_);
+      return blink::CreateRTCVideoEncoder(profiles_[i], gpu_factories_);
     }
   }
   return nullptr;

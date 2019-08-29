@@ -409,24 +409,24 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
       IsWorkerContextLost(worker_context_provider_.get()))
     worker_context_provider_.reset();
 
-  bool enable_oop_rasterization =
-      gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-      gpu::kGpuFeatureStatusEnabled;
-
   if (!worker_context_provider_) {
-    constexpr bool kSharedWorkerContextSupportsLocking = true;
-    constexpr bool kSharedWorkerContextSupportsRaster = true;
-    const bool kSharedWorkerContextSupportsGLES2 =
-        features::IsUiGpuRasterizationEnabled() && !enable_oop_rasterization;
-    const bool kSharedWorkerContextSupportsGrContext =
-        features::IsUiGpuRasterizationEnabled() && !enable_oop_rasterization;
-    const bool kSharedWorkerContextSupportsOOPR = enable_oop_rasterization;
+    bool enable_oop_rasterization =
+        gpu_feature_info
+                .status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+            gpu::kGpuFeatureStatusEnabled &&
+        features::IsUiOopRasterizationEnabled();
+
+    bool enable_gpu_rasterization =
+        !enable_oop_rasterization && features::IsUiGpuRasterizationEnabled();
+
+    const bool supports_gles2 = enable_gpu_rasterization;
+    const bool supports_gr_context = enable_gpu_rasterization;
+    const bool supports_oopr = enable_oop_rasterization;
 
     worker_context_provider_ = CreateContextProviderImpl(
         gpu_channel_host, GetGpuMemoryBufferManager(),
-        kSharedWorkerContextSupportsLocking, kSharedWorkerContextSupportsGLES2,
-        kSharedWorkerContextSupportsRaster,
-        kSharedWorkerContextSupportsGrContext, kSharedWorkerContextSupportsOOPR,
+        /*supports_locking=*/true, supports_gles2,
+        /*supports_raster=*/true, supports_gr_context, supports_oopr,
         viz::command_buffer_metrics::ContextType::BROWSER_WORKER);
 
     // Don't observer context loss on |worker_context_provider_| here, that is

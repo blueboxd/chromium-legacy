@@ -35,11 +35,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -794,6 +796,14 @@ ScriptPromise Performance::profile(ScriptState* script_state,
                                    ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::ExperimentalJSProfilerEnabled(
       ExecutionContext::From(script_state)));
+
+  // The JS Self-Profiling origin trial currently requires site isolation.
+  if (!Platform::Current()->IsLockedToSite()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "performance.profile() requires site-per-process (crbug.com/956688)");
+    return ScriptPromise();
+  }
 
   auto* profiler_group = ProfilerGroup::From(script_state->GetIsolate());
   DCHECK(profiler_group);

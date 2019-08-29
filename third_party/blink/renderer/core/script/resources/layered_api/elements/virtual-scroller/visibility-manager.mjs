@@ -125,34 +125,28 @@ class SizeManager {
  * elements. This list of elements is assumed to be in vertical
  * display order (e.g. from lowest to highest offset).
  *
- * It uses resize and intersection observers on all of the visible
- * elements to ensure that changes that impact visibility cause us to
- * recalulate things (e.g. scrolling, restyling).
+ * It uses intersection observers to ensure that changes that impact
+ * visibility cause us to recalulate things (e.g. scrolling,
+ * restyling).
  */
 export class VisibilityManager {
   #sizeManager = new SizeManager();
   #elements;
   #syncRAFToken;
 
-  #elementIntersectionObserver;
-  #elementResizeObserver;
+  #intersectionObserver;
 
   #revealed = new Set();
 
-  constructor(elements) {
-    this.#elements = elements;
+  constructor(container) {
+    this.#elements = container.children;
 
     // We want to sync if any element's size changes or if it becomes
     // more/less visible.
-    this.#elementIntersectionObserver = new IntersectionObserver(() => {
+    this.#intersectionObserver = new IntersectionObserver(() => {
       this.scheduleSync();
     });
-    // TODO(fergal): Remove this? I'm not sure that we need the resize
-    // observer. Any resize that is important to us seems like it will
-    // also involve an intersection change.
-    this.#elementResizeObserver = new ResizeObserver(() => {
-      this.scheduleSync();
-    });
+    this.#intersectionObserver.observe(container);
 
     for (const element of this.#elements) {
       this.#didAdd(element);
@@ -268,8 +262,7 @@ export class VisibilityManager {
   #reveal =
       element => {
         this.#revealed.add(element);
-        this.#elementIntersectionObserver.observe(element);
-        this.#elementResizeObserver.observe(element);
+        this.#intersectionObserver.observe(element);
         this.#unlock(element);
       }
 
@@ -305,8 +298,7 @@ export class VisibilityManager {
   #hide =
       element => {
         this.#revealed.delete(element);
-        this.#elementIntersectionObserver.unobserve(element);
-        this.#elementResizeObserver.unobserve(element);
+        this.#intersectionObserver.unobserve(element);
         element.displayLock
             .acquire({
               timeout: Infinity,
@@ -357,8 +349,7 @@ export class VisibilityManager {
           this.#unlock(element);
         }
         this.#revealed.delete(element);
-        this.#elementIntersectionObserver.unobserve(element);
-        this.#elementResizeObserver.unobserve(element);
+        this.#intersectionObserver.unobserve(element);
         this.#sizeManager.remove(element);
       }
 

@@ -14,7 +14,6 @@ Polymer({
 
   behaviors: [
       CrNetworkListenerBehavior,
-      settings.RouteObserverBehavior,
       WebUIListenerBehavior,
   ],
 
@@ -41,15 +40,6 @@ Polymer({
     canAddPrinter: {
       type: Boolean,
       reflectToAttribute: true,
-    },
-
-    /**
-     * @type {!Array<!PrinterListEntry>}
-     * @private
-     */
-    savedPrinters_: {
-      type: Array,
-      value: () => [],
     },
 
     /** @private */
@@ -103,26 +93,14 @@ Polymer({
     if (this.enableUpdatedUi_) {
       return;
     }
+
+    this.addWebUIListener(
+        'on-printers-changed', this.printersChanged_.bind(this));
   },
 
   /** @override */
   ready: function() {
     this.updateCupsPrintersList_();
-  },
-
-
-  /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
-   * @protected
-   */
-  currentRouteChanged: function(route) {
-    if (route != settings.routes.CUPS_PRINTERS) {
-      cr.removeWebUIListener('on-printers-changed');
-      return;
-    }
-    cr.addWebUIListener(
-        'on-printers-changed', this.onPrintersChanged_.bind(this));
   },
 
   /**
@@ -152,13 +130,21 @@ Polymer({
     const printerName = event.detail.printerName;
     switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:
-        this.updateCupsPrintersList_();
+        if (this.enableUpdatedUi_) {
+          this.$$('#savedPrinters').updateSavedPrintersList();
+        } else {
+          this.updateCupsPrintersList_();
+        }
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerAddedSuccessfulMessage',
                                     printerName);
         break;
       case PrinterSetupResult.EDIT_SUCCESS:
-        this.updateCupsPrintersList_();
+        if (this.enableUpdatedUi_) {
+          this.$$('#savedPrinters').updateSavedPrintersList();
+        } else {
+          this.updateCupsPrintersList_();
+        }
         this.addPrinterResultText_ =
             loadTimeData.getStringF('printerEditedSuccessfulMessage',
                                     printerName);
@@ -190,22 +176,15 @@ Polymer({
   updateCupsPrintersList_: function() {
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .getCupsPrintersList()
-        .then(this.onPrintersChanged_.bind(this));
+        .then(this.printersChanged_.bind(this));
   },
 
   /**
    * @param {!CupsPrintersList} cupsPrintersList
    * @private
    */
-  onPrintersChanged_: function(cupsPrintersList) {
-    if (this.enableUpdatedUi_) {
-      this.savedPrinters_ = cupsPrintersList.printerList.map(
-          printer => /** @type {!PrinterListEntry} */({
-              printerInfo: printer,
-              printerType: PrinterType.SAVED}));
-    } else {
-      this.printers = cupsPrintersList.printerList;
-    }
+  printersChanged_: function(cupsPrintersList) {
+    this.printers = cupsPrintersList.printerList;
   },
 
   /** @private */
@@ -256,13 +235,5 @@ Polymer({
   addPrinterButtonActive_: function(
       connectedToNetwork, userNativePrintersAllowed) {
     return connectedToNetwork && userNativePrintersAllowed;
-  },
-
-  /**
-   * @return {boolean} Whether |savedPrinters_| is empty.
-   * @private
-   */
-  doesAccountHaveSavedPrinters_: function() {
-    return !!this.savedPrinters_.length;
   }
 });

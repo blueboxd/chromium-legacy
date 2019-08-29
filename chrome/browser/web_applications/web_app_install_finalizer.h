@@ -40,6 +40,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   bool CanSkipAppUpdateForSync(
       const AppId& app_id,
       const WebApplicationInfo& web_app_info) const override;
+  bool CanUserUninstallFromSync(const AppId& app_id) const override;
   void SetSubsystems(AppRegistrar* registrar,
                      WebAppUiManager* ui_manager) override;
 

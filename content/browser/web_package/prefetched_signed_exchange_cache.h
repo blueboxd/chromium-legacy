@@ -105,6 +105,8 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
 
   void Store(std::unique_ptr<const Entry> cached_exchange);
 
+  void Clear();
+
   std::unique_ptr<NavigationLoaderInterceptor> MaybeCreateInterceptor(
       const GURL& outer_url);
 

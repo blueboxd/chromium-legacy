@@ -52,8 +52,18 @@ const base::Feature kUiGpuRasterization = {"UiGpuRasterization",
 #endif
 };
 
+// Enables out-of-process rasterization for all UI drawing (where not
+// blacklisted). If both GPU and OOP rasterization for UI are enabled then
+// OOP-R will take precedence.
+const base::Feature kUiOopRasterization{"UiOopRasterization",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsUiGpuRasterizationEnabled() {
   return base::FeatureList::IsEnabled(kUiGpuRasterization);
+}
+
+bool IsUiOopRasterizationEnabled() {
+  return base::FeatureList::IsEnabled(kUiOopRasterization);
 }
 
 // Enables scrolling with layers under ui using the ui::Compositor.

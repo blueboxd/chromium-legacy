@@ -1261,13 +1261,11 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
   if (fragments.IsEmpty() || !fragments.IsInLayoutNGInlineFormattingContext())
     return nullptr;
-  for (NGPaintFragmentTraversalContext runner =
-           NGPaintFragmentTraversal::NextInlineLeafOf(
-               NGPaintFragmentTraversalContext::Create(&fragments.back()));
-       !runner.IsNull();
-       runner = NGPaintFragmentTraversal::NextInlineLeafOf(runner)) {
-    LayoutObject* runner_layout_object =
-        runner.GetFragment()->GetMutableLayoutObject();
+  NGPaintFragmentTraversal runner(*fragments.back().ContainerLineBox(),
+                                  fragments.back());
+  for (runner.MoveToNextInlineLeaf(); !runner.IsAtEnd();
+       runner.MoveToNextInlineLeaf()) {
+    LayoutObject* runner_layout_object = runner->GetMutableLayoutObject();
     if (AXObject* result =
             ax_object.AXObjectCache().GetOrCreate(runner_layout_object))
       return result;
@@ -1341,13 +1339,11 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
   const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
   if (fragments.IsEmpty() || !fragments.IsInLayoutNGInlineFormattingContext())
     return nullptr;
-  for (NGPaintFragmentTraversalContext runner =
-           NGPaintFragmentTraversal::PreviousInlineLeafOf(
-               NGPaintFragmentTraversalContext::Create(&fragments.front()));
-       !runner.IsNull();
-       runner = NGPaintFragmentTraversal::PreviousInlineLeafOf(runner)) {
-    LayoutObject* earlier_layout_object =
-        runner.GetFragment()->GetMutableLayoutObject();
+  NGPaintFragmentTraversal runner(*fragments.front().ContainerLineBox(),
+                                  fragments.front());
+  for (runner.MoveToPreviousInlineLeaf(); !runner.IsAtEnd();
+       runner.MoveToPreviousInlineLeaf()) {
+    LayoutObject* earlier_layout_object = runner->GetMutableLayoutObject();
     if (AXObject* result =
             ax_object.AXObjectCache().GetOrCreate(earlier_layout_object))
       return result;

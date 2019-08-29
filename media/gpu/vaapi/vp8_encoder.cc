@@ -162,6 +162,12 @@ void VP8Encoder::InitializeFrameHeader() {
   // TODO(sprang): Make this dynamic. Value based on reference implementation
   // in libyami (https://github.com/intel/libyami).
   current_frame_hdr_.loopfilter_hdr.level = 19;
+
+  // b/138840822: Set mb_no_skip_coeff and loop_filter_adj_enable to 1 as a
+  // workaround of color artifacts issue with a kepler device hw decoder and
+  // ffmpeg sw decoder.
+  current_frame_hdr_.mb_no_skip_coeff = 1;
+  current_frame_hdr_.loopfilter_hdr.loop_filter_adj_enable = 1;
 }
 
 void VP8Encoder::UpdateFrameHeader(bool keyframe) {

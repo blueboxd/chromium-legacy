@@ -15,6 +15,7 @@ namespace web_app {
 // Forward declarations of generalized interfaces.
 class PendingAppManager;
 class InstallManager;
+class InstallFinalizer;
 class AppRegistrar;
 class FileHandlerManager;
 class WebAppPolicyManager;
@@ -32,6 +33,8 @@ class WebAppProviderBase : public KeyedService {
   virtual AppRegistrar& registrar() = 0;
   // UIs can use InstallManager for user-initiated Web Apps install.
   virtual InstallManager& install_manager() = 0;
+  // Implements persistence for Web Apps install.
+  virtual InstallFinalizer& install_finalizer() = 0;
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.
   virtual PendingAppManager& pending_app_manager() = 0;

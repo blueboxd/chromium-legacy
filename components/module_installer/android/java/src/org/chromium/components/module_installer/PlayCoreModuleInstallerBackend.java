@@ -19,6 +19,7 @@ import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
+import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.Collections;
@@ -90,18 +91,15 @@ import java.util.Set;
     private static final int AVAILABILITY_STATUS_COUNT = 3;
 
     /** Records via UMA all modules that have been requested and are currently installed. */
-    public static void recordModuleAvailability() {
-        // MUST call init before creating a SplitInstallManager.
-        ModuleInstaller.getInstance().init();
+    @Override
+    /* package */ void recordModuleAvailability() {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         Set<String> requestedModules = new HashSet<>();
         requestedModules.addAll(
                 prefs.getStringSet(KEY_MODULES_ONDEMAND_REQUESTED_PREVIOUSLY, new HashSet<>()));
         requestedModules.addAll(
                 prefs.getStringSet(KEY_MODULES_DEFERRED_REQUESTED_PREVIOUSLY, new HashSet<>()));
-        Set<String> installedModules =
-                SplitInstallManagerFactory.create(ContextUtils.getApplicationContext())
-                        .getInstalledModules();
+        Set<String> installedModules = mManager.getInstalledModules();
 
         for (String name : requestedModules) {
             EnumeratedHistogramSample sample = new EnumeratedHistogramSample(
@@ -124,7 +122,14 @@ import java.util.Set;
         }
     }
 
-    public PlayCoreModuleInstallerBackend(OnFinishedListener listener) {
+    @Override
+    /* package */ void recordStartupTime(long durationMs) {
+        TimesHistogramSample sample =
+                new TimesHistogramSample("Android.FeatureModules.StartupTime");
+        sample.record(durationMs);
+    }
+
+    /* package */ PlayCoreModuleInstallerBackend(OnFinishedListener listener) {
         super(listener);
         // MUST call init before creating a SplitInstallManager.
         ModuleInstaller.getInstance().init();
@@ -271,9 +276,9 @@ import java.util.Set;
      * @param prefKey Pref key pointing to a string set to which the requested module will be added.
      * @return Whether the module has been requested previously.
      */
-    private static boolean storeModuleRequested(String moduleName, String prefKey) {
+    private boolean storeModuleRequested(String moduleName, String prefKey) {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        Set<String> modulesRequestedPreviously = prefs.getStringSet(prefKey, new HashSet<String>());
+        Set<String> modulesRequestedPreviously = prefs.getStringSet(prefKey, new HashSet<>());
         Set<String> newModulesRequestedPreviously = new HashSet<>(modulesRequestedPreviously);
         newModulesRequestedPreviously.add(moduleName);
         SharedPreferences.Editor editor = prefs.edit();

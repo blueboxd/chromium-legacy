@@ -41,6 +41,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -237,18 +238,39 @@ bool UsesRemoteViews(const extensions::Extension* extension) {
 
 namespace apps {
 
-ExtensionAppShimHandler::ProfileState::ProfileState() = default;
-ExtensionAppShimHandler::ProfileState::ProfileState(ProfileState&& other) =
-    default;
-ExtensionAppShimHandler::ProfileState& ExtensionAppShimHandler::ProfileState::
-operator=(ProfileState&& other) = default;
-ExtensionAppShimHandler::ProfileState::~ProfileState() = default;
+// The state for an individual (app, Profile) pair. This includes the
+// AppShimHost.
+struct ExtensionAppShimHandler::ProfileState {
+  ProfileState(ExtensionAppShimHandler::AppState* in_app_state)
+      : app_state(in_app_state) {}
+  ~ProfileState() = default;
 
-ExtensionAppShimHandler::AppState::AppState() = default;
-ExtensionAppShimHandler::AppState::AppState(AppState&& other) = default;
-ExtensionAppShimHandler::AppState& ExtensionAppShimHandler::AppState::operator=(
-    AppState&& other) = default;
-ExtensionAppShimHandler::AppState::~AppState() = default;
+  // Weak, owns |this|.
+  ExtensionAppShimHandler::AppState* const app_state;
+
+  // The AppShimHost for apps that are not multi-profile.
+  std::unique_ptr<AppShimHost> host;
+
+  // All browser instances for this (app, Profile) pair.
+  std::set<Browser*> browsers;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProfileState);
+};
+
+// The state for an individual app. This includes the state for all
+// profiles that are using the app.
+// TODO(https://crbug.com/982024): Add AppShimHost when shared amongst
+// profiles.
+struct ExtensionAppShimHandler::AppState {
+  AppState() = default;
+  ~AppState() = default;
+
+  std::map<Profile*, std::unique_ptr<ProfileState>> profiles;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppState);
+};
 
 base::FilePath ExtensionAppShimHandler::Delegate::GetFullProfilePath(
     const base::FilePath& relative_profile_path) {
@@ -410,15 +432,10 @@ ExtensionAppShimHandler::~ExtensionAppShimHandler() {
 
 AppShimHost* ExtensionAppShimHandler::FindHost(Profile* profile,
                                                const std::string& app_id) {
-  auto found_app = apps_.find(app_id);
-  if (found_app == apps_.end())
+  ProfileState* profile_state = GetProfileState(profile, app_id);
+  if (!profile_state)
     return nullptr;
-  AppState& app_state = found_app->second;
-  auto found_profile = app_state.profiles.find(profile);
-  if (found_profile == app_state.profiles.end())
-    return nullptr;
-  ProfileState& profile_state = found_profile->second;
-  return profile_state.host.get();
+  return profile_state->host.get();
 }
 
 AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
@@ -426,10 +443,11 @@ AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
     const extensions::Extension* extension) {
   if (web_app::AppShimLaunchDisabled())
     return nullptr;
-  ProfileState& profile_state = apps_[extension->id()].profiles[profile];
-  if (!profile_state.host)
-    profile_state.host = delegate_->CreateHost(this, profile, extension);
-  return profile_state.host.get();
+  ProfileState* profile_state =
+      GetProfileState(profile, extension->id(), true /* create */);
+  if (!profile_state->host)
+    profile_state->host = delegate_->CreateHost(this, profile, extension);
+  return profile_state->host.get();
 }
 
 AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
@@ -446,12 +464,11 @@ AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
 void ExtensionAppShimHandler::SetHostedAppHidden(Profile* profile,
                                                  const std::string& app_id,
                                                  bool hidden) {
-  const AppBrowserMap::iterator it =
-      app_browser_windows_.find(std::make_pair(profile, app_id));
-  if (it == app_browser_windows_.end())
+  ProfileState* profile_state = GetProfileState(profile, app_id);
+  if (!profile_state)
     return;
 
-  for (const Browser* browser : it->second) {
+  for (const Browser* browser : profile_state->browsers) {
     if (web_app::GetAppIdFromApplicationName(browser->app_name()) != app_id)
       continue;
 
@@ -564,10 +581,11 @@ void ExtensionAppShimHandler::OnChromeWillHide() {
   // This is necessary so that when the shim is next focused, it will know to
   // unhide.
   for (auto& iter_app : apps_) {
-    AppState& app_state = iter_app.second;
-    for (auto& iter_profile : app_state.profiles) {
-      ProfileState& profile_state = iter_profile.second;
-      profile_state.host->OnAppHide();
+    AppState* app_state = iter_app.second.get();
+    for (auto& iter_profile : app_state->profiles) {
+      ProfileState* profile_state = iter_profile.second.get();
+      if (profile_state->host)
+        profile_state->host->OnAppHide();
     }
   }
 }
@@ -656,20 +674,18 @@ const Extension* ExtensionAppShimHandler::MaybeGetExtensionOrCloseHost(
 
 void ExtensionAppShimHandler::CloseBrowsersForApp(Profile* profile,
                                                   const std::string& app_id) {
-  AppBrowserMap::iterator it =
-      app_browser_windows_.find(std::make_pair(profile, app_id));
-  if (it == app_browser_windows_.end())
+  ProfileState* profile_state = GetProfileState(profile, app_id);
+  if (!profile_state)
     return;
-
-  for (const Browser* browser : it->second)
+  for (const Browser* browser : profile_state->browsers)
     browser->window()->Close();
 }
 
 void ExtensionAppShimHandler::CloseShimsForProfile(Profile* profile) {
   for (auto iter_app = apps_.begin(); iter_app != apps_.end();) {
-    AppState& app_state = iter_app->second;
-    app_state.profiles.erase(profile);
-    if (app_state.profiles.empty())
+    AppState* app_state = iter_app->second.get();
+    app_state->profiles.erase(profile);
+    if (app_state->profiles.empty())
       iter_app = apps_.erase(iter_app);
     else
       ++iter_app;
@@ -681,9 +697,9 @@ void ExtensionAppShimHandler::CloseShimForApp(Profile* profile,
   auto found_app = apps_.find(app_id);
   if (found_app == apps_.end())
     return;
-  AppState& app_state = found_app->second;
-  app_state.profiles.erase(profile);
-  if (app_state.profiles.empty())
+  AppState* app_state = found_app->second.get();
+  app_state->profiles.erase(profile);
+  if (app_state->profiles.empty())
     apps_.erase(found_app);
 }
 
@@ -778,13 +794,15 @@ void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
   // This might be called when shutting down. Don't try to look up the profile
   // since profile_manager might not be around.
   for (auto iter_app = apps_.begin(); iter_app != apps_.end(); ++iter_app) {
-    AppState& app_state = iter_app->second;
-    for (auto iter_profile = app_state.profiles.begin();
-         iter_profile != app_state.profiles.end(); ++iter_profile) {
-      ProfileState& profile_state = iter_profile->second;
-      if (profile_state.host.get() == host) {
-        app_state.profiles.erase(iter_profile);
-        if (app_state.profiles.empty())
+    AppState* app_state = iter_app->second.get();
+    for (auto iter_profile = app_state->profiles.begin();
+         iter_profile != app_state->profiles.end(); ++iter_profile) {
+      ProfileState* profile_state = iter_profile->second.get();
+      if (profile_state->host.get() == host) {
+        // Erase this ProfileState (and the AppState, if this is the last
+        // ProfileState).
+        app_state->profiles.erase(iter_profile);
+        if (app_state->profiles.empty())
           apps_.erase(iter_app);
         return;
       }
@@ -807,12 +825,10 @@ void ExtensionAppShimHandler::OnShimFocus(
   bool windows_focused;
   const std::string& app_id = host->GetAppId();
   if (extension->is_hosted_app()) {
-    AppBrowserMap::iterator it =
-        app_browser_windows_.find(std::make_pair(profile, app_id));
-    if (it == app_browser_windows_.end())
+    ProfileState* profile_state = GetProfileState(profile, app_id);
+    if (!profile_state)
       return;
-
-    windows_focused = FocusHostedAppWindows(it->second);
+    windows_focused = FocusHostedAppWindows(profile_state->browsers);
   } else {
     const AppWindowList windows =
         delegate_->GetWindows(profile, host->GetAppId());
@@ -904,10 +920,10 @@ void ExtensionAppShimHandler::Observe(
       if (!extension)
         return;
 
-      BrowserSet& browsers = app_browser_windows_[std::make_pair(
-          browser->profile(), extension->id())];
-      browsers.insert(browser);
-      if (browsers.size() == 1)
+      ProfileState* profile_state = GetProfileState(
+          browser->profile(), extension->id(), true /* create */);
+      profile_state->browsers.insert(browser);
+      if (profile_state->browsers.size() == 1)
         OnAppActivated(browser->profile(), extension->id());
 
       break;
@@ -954,23 +970,50 @@ void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {}
 
 void ExtensionAppShimHandler::OnBrowserRemoved(Browser* browser) {
   // Note that |browser| may no longer have an extension, if it was unloaded
-  // before |browser| was closed. Search for |browser| in all extensions in
-  // |app_browser_windows_|.
-  for (auto it = app_browser_windows_.begin(); it != app_browser_windows_.end();
-       ++it) {
-    const std::string& extension_id = it->first.second;
-    BrowserSet& browsers = it->second;
-    auto found = browsers.find(browser);
-    if (found == browsers.end())
-      continue;
-
-    browsers.erase(found);
-    if (browsers.empty()) {
-      OnAppDeactivated(browser->profile(), extension_id);
-      app_browser_windows_.erase(it);
+  // before |browser| was closed. Search for |browser| in all |apps_|.
+  for (auto iter_app = apps_.begin(); iter_app != apps_.end(); ++iter_app) {
+    AppState* app_state = iter_app->second.get();
+    const std::string& app_id = iter_app->first;
+    for (auto iter_profile = app_state->profiles.begin();
+         iter_profile != app_state->profiles.end(); ++iter_profile) {
+      ProfileState* profile_state = iter_profile->second.get();
+      auto found = profile_state->browsers.find(browser);
+      if (found != profile_state->browsers.end()) {
+        // If we have no browser windows open after erasing this window, then
+        // close the ProfileState (and potentially the shim as well).
+        profile_state->browsers.erase(found);
+        if (profile_state->browsers.empty())
+          OnAppDeactivated(browser->profile(), app_id);
+        return;
+      }
     }
-    return;
   }
+}
+
+ExtensionAppShimHandler::ProfileState* ExtensionAppShimHandler::GetProfileState(
+    Profile* profile,
+    const std::string& app_id,
+    bool create) {
+  auto found_app = apps_.find(app_id);
+  if (found_app == apps_.end()) {
+    if (!create)
+      return nullptr;
+    auto new_app_state = std::make_unique<AppState>();
+    found_app =
+        apps_.insert(std::make_pair(app_id, std::move(new_app_state))).first;
+  }
+  AppState* app_state = found_app->second.get();
+  auto found_profile = app_state->profiles.find(profile);
+  if (found_profile == app_state->profiles.end()) {
+    if (!create)
+      return nullptr;
+    auto new_profile_state = std::make_unique<ProfileState>(app_state);
+    found_profile =
+        app_state->profiles
+            .insert(std::make_pair(profile, std::move(new_profile_state)))
+            .first;
+  }
+  return found_profile->second.get();
 }
 
 }  // namespace apps

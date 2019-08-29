@@ -1893,6 +1893,107 @@ TEST_F(CorsURLLoaderTest, RestrictedPrefetchFailsWithoutNIK) {
                              "LOAD_RESTRICTED_PREFETCH flag is not trusted"));
 }
 
+// TODO(yhirano): Remove this as soon as possible.
+TEST_F(CorsURLLoaderTest, ExtraSafelistedHeader1) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://other2.example.com/bar.png");
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = "GET";
+  request.url = url;
+  request.request_initiator = url::Origin::Create(origin);
+  request.headers.SetHeader("x-gOOgapps-allowed-domains", "foo");
+  request.headers.SetHeader("YouTube-restricT", "bar");
+
+  CreateLoaderAndStart(request);
+
+  // NO preflight request
+  ASSERT_EQ(1, num_created_loaders());
+  EXPECT_EQ(GetRequest().url, url);
+  EXPECT_EQ(GetRequest().method, "GET");
+}
+
+// TODO(yhirano): Remove this as soon as possible.
+TEST_F(CorsURLLoaderTest, ExtraSafelistedHeader2) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://other2.example.com/bar.png");
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = "GET";
+  request.url = url;
+  request.request_initiator = url::Origin::Create(origin);
+  request.headers.SetHeader("x-gOOgapps-allowed-domains", "foo");
+
+  CreateLoaderAndStart(request);
+
+  // NO preflight request
+  ASSERT_EQ(1, num_created_loaders());
+  EXPECT_EQ(GetRequest().url, url);
+  EXPECT_EQ(GetRequest().method, "GET");
+}
+
+// TODO(yhirano): Remove this as soon as possible.
+TEST_F(CorsURLLoaderTest, ExtraSafelistedHeader3) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://other2.example.com/bar.png");
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = "GET";
+  request.url = url;
+  request.request_initiator = url::Origin::Create(origin);
+  request.headers.SetHeader("x-gOOgapps-allowed-domains", "foo");
+  request.headers.SetHeader("foo", "foo");
+
+  CreateLoaderAndStart(request);
+
+  // preflight request
+  ASSERT_EQ(1, num_created_loaders());
+  EXPECT_EQ(GetRequest().url, url);
+  EXPECT_EQ(GetRequest().method, "OPTIONS");
+
+  std::string headers;
+  EXPECT_TRUE(GetRequest().headers.GetHeader("access-control-request-headers",
+                                             &headers));
+  EXPECT_EQ(headers, "foo");
+}
+
+// TODO(yhirano): Remove this as soon as possible.
+TEST_F(CorsURLLoaderTest, ExtraSafelistedHeader4) {
+  const GURL origin("https://example.com");
+  const GURL url("https://other.example.com/foo.png");
+  const GURL new_url("https://other2.example.com/bar.png");
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.method = "GET";
+  request.url = url;
+  request.request_initiator = url::Origin::Create(origin);
+  request.headers.SetHeader("x-gOOgapps-allowed-domains", "foo");
+  request.headers.SetHeader("YouTube-restricT", "bar");
+  request.headers.SetHeader("hoge", "fuga");
+
+  CreateLoaderAndStart(request);
+
+  // preflight request
+  ASSERT_EQ(1, num_created_loaders());
+  EXPECT_EQ(GetRequest().url, url);
+  EXPECT_EQ(GetRequest().method, "OPTIONS");
+  std::string headers;
+  EXPECT_TRUE(GetRequest().headers.GetHeader("access-control-request-headers",
+                                             &headers));
+  EXPECT_EQ(headers, "hoge");
+}
+
 }  // namespace
 
 }  // namespace cors

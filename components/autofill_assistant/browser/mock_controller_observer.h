@@ -28,7 +28,7 @@ class MockControllerObserver : public ControllerObserver {
   MOCK_METHOD1(OnUserActionsChanged,
                void(const std::vector<UserAction>& user_actions));
   MOCK_METHOD1(OnPaymentRequestChanged,
-               void(const PaymentRequestOptions* options));
+               void(const CollectUserDataOptions* options));
   MOCK_METHOD1(OnDetailsChanged, void(const Details* details));
   MOCK_METHOD1(OnInfoBoxChanged, void(const InfoBox* info_box));
   MOCK_METHOD1(OnProgressChanged, void(int progress));

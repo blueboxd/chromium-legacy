@@ -422,16 +422,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void AssertLaidOut() const {
     if (NeedsLayout() &&
-        !LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+        !LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
       ShowLayoutTreeForThis();
-    SECURITY_DCHECK(!NeedsLayout() ||
-                    LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+    SECURITY_DCHECK(
+        !NeedsLayout() ||
+        LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   }
 
   void AssertSubtreeIsLaidOut() const {
     for (const LayoutObject* layout_object = this; layout_object;
          layout_object = layout_object->LayoutBlockedByDisplayLock(
-                             DisplayLockContext::kChildren)
+                             DisplayLockLifecycleTarget::kChildren)
                              ? layout_object->NextInPreOrderAfterChildren()
                              : layout_object->NextInPreOrder()) {
       layout_object->AssertLaidOut();
@@ -440,7 +441,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void AssertClearedPaintInvalidationFlags() const {
     if (PaintInvalidationStateIsDirty() &&
-        !PrePaintBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+        !PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
       ShowLayoutTreeForThis();
       NOTREACHED();
     }
@@ -449,7 +450,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void AssertSubtreeClearedPaintInvalidationFlags() const {
     for (const LayoutObject* layout_object = this; layout_object;
          layout_object = layout_object->PrePaintBlockedByDisplayLock(
-                             DisplayLockContext::kChildren)
+                             DisplayLockLifecycleTarget::kChildren)
                              ? layout_object->NextInPreOrderAfterChildren()
                              : layout_object->NextInPreOrder()) {
       layout_object->AssertClearedPaintInvalidationFlags();
@@ -2230,7 +2231,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.bitfields_.SetEffectiveAllowedTouchActionChanged(false);
 
       if (!layout_object_.PrePaintBlockedByDisplayLock(
-              DisplayLockContext::kChildren)) {
+              DisplayLockLifecycleTarget::kChildren)) {
         layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
         layout_object_.bitfields_
             .SetDescendantEffectiveAllowedTouchActionChanged(false);
@@ -2429,7 +2430,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   inline bool LayoutBlockedByDisplayLock(
-      DisplayLockContext::LifecycleTarget target) const {
+      DisplayLockLifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldLayout(target);
   }
@@ -2439,26 +2440,22 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return context && context->IsLocked();
   }
 
-  bool PrePaintBlockedByDisplayLock(
-      DisplayLockContext::LifecycleTarget target) const {
+  bool PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldPrePaint(target);
   }
 
-  bool PaintBlockedByDisplayLock(
-      DisplayLockContext::LifecycleTarget target) const {
+  bool PaintBlockedByDisplayLock(DisplayLockLifecycleTarget target) const {
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldPaint(target);
   }
 
-  void NotifyDisplayLockDidPrePaint(
-      DisplayLockContext::LifecycleTarget target) const {
+  void NotifyDisplayLockDidPrePaint(DisplayLockLifecycleTarget target) const {
     if (auto* context = GetDisplayLockContext())
       context->DidPrePaint(target);
   }
 
-  void NotifyDisplayLockDidPaint(
-      DisplayLockContext::LifecycleTarget target) const {
+  void NotifyDisplayLockDidPaint(DisplayLockLifecycleTarget target) const {
     if (auto* context = GetDisplayLockContext())
       context->DidPaint(target);
   }
@@ -2625,7 +2622,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Called before paint invalidation.
   virtual void EnsureIsReadyForPaintInvalidation() {
     DCHECK(!NeedsLayout() ||
-           LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+           LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   }
 
   void SetIsBackgroundAttachmentFixedObject(bool);
@@ -2652,7 +2649,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   PhysicalOffset OffsetFromScrollableContainer(const LayoutObject*,
                                                bool ignore_scroll_offset) const;
 
-  void NotifyDisplayLockDidLayout(DisplayLockContext::LifecycleTarget target) {
+  void NotifyDisplayLockDidLayout(DisplayLockLifecycleTarget target) {
     if (auto* context = GetDisplayLockContext())
       context->DidLayout(target);
   }
@@ -3339,7 +3336,7 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
   SetNeedsPositionedMovementLayout(false);
   SetAncestorLineBoxDirty(false);
 
-  if (!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+  if (!LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
     SetPosChildNeedsLayout(false);
     SetNormalChildNeedsLayout(false);
     SetNeedsSimplifiedNormalFlowLayout(false);

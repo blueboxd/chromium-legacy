@@ -574,7 +574,7 @@ void AndroidDeviceManager::CountDevices(
 }
 
 void AndroidDeviceManager::set_usb_device_manager_for_test(
-    device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_usb_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   handler_thread_->message_loop()->PostTask(
       FROM_HERE,

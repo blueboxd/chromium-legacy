@@ -5,7 +5,7 @@
 #include "storage/browser/blob/blob_url_store_impl.h"
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_loader_factory.h"
@@ -19,13 +19,13 @@ class BlobURLTokenImpl : public blink::mojom::BlobURLToken {
   BlobURLTokenImpl(base::WeakPtr<BlobStorageContext> context,
                    const GURL& url,
                    std::unique_ptr<BlobDataHandle> blob,
-                   blink::mojom::BlobURLTokenRequest request)
+                   mojo::PendingReceiver<blink::mojom::BlobURLToken> receiver)
       : context_(std::move(context)),
         url_(url),
         blob_(std::move(blob)),
         token_(base::UnguessableToken::Create()) {
-    bindings_.AddBinding(this, std::move(request));
-    bindings_.set_connection_error_handler(base::BindRepeating(
+    receivers_.Add(this, std::move(receiver));
+    receivers_.set_disconnect_handler(base::BindRepeating(
         &BlobURLTokenImpl::OnConnectionError, base::Unretained(this)));
     if (context_) {
       context_->mutable_registry()->AddTokenMapping(token_, url_,
@@ -42,19 +42,20 @@ class BlobURLTokenImpl : public blink::mojom::BlobURLToken {
     std::move(callback).Run(token_);
   }
 
-  void Clone(blink::mojom::BlobURLTokenRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(
+      mojo::PendingReceiver<blink::mojom::BlobURLToken> receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
  private:
   void OnConnectionError() {
-    if (!bindings_.empty())
+    if (!receivers_.empty())
       return;
     delete this;
   }
 
   base::WeakPtr<BlobStorageContext> context_;
-  mojo::BindingSet<blink::mojom::BlobURLToken> bindings_;
+  mojo::ReceiverSet<blink::mojom::BlobURLToken> receivers_;
   const GURL url_;
   const std::unique_ptr<BlobDataHandle> blob_;
   const base::UnguessableToken token_;
@@ -151,7 +152,7 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
 
 void BlobURLStoreImpl::ResolveForNavigation(
     const GURL& url,
-    blink::mojom::BlobURLTokenRequest token) {
+    mojo::PendingReceiver<blink::mojom::BlobURLToken> token) {
   if (!context_)
     return;
   std::unique_ptr<BlobDataHandle> blob_handle =

@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       uint32_t options,
       HasRawHeadersAccess has_raw_cookie_access,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
-      mojom::AuthenticationHandlerPtr auth_handler,
+      mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
       WebSocketThrottler::PendingConnection pending_connection_tracker,
       base::TimeDelta delay);
@@ -151,8 +151,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::Binding<mojom::WebSocket> binding_;
 
   mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_;
-  mojom::WebSocketClientPtr client_;
-  mojom::AuthenticationHandlerPtr auth_handler_;
+  mojo::Remote<mojom::WebSocketClient> client_;
+  mojo::Remote<mojom::AuthenticationHandler> auth_handler_;
   mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 
   WebSocketThrottler::PendingConnection pending_connection_tracker_;

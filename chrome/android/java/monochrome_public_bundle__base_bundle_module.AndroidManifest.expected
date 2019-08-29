@@ -1364,6 +1364,13 @@
       </intent-filter>
     </receiver>
     <receiver
+        android:exported="true"
+        android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$PhoneUnlockedReceiver">
+      <intent-filter>
+        <action android:name="android.intent.action.USER_PRESENT"/>
+      </intent-filter>
+    </receiver>
+    <receiver
         android:label="@string/bookmark_widget_title"
         android:name="com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider">
       <intent-filter>

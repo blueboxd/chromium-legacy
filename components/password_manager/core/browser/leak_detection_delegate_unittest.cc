@@ -148,11 +148,11 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDone) {
   histogram_tester.ExpectTotalCount(
       "PasswordManager.LeakDetection.NotifyIsLeakedTime", 0);
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakTypeFromBools(
-                                /*is_saved=*/false, /*is_reused=*/false,
-                                /*is_syncing=*/false),
-                            form.origin));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(false), IsReused(false), IsSyncing(false)),
+                  form.origin));
   delegate_interface->OnLeakDetectionDone(
       true, form.origin, form.username_value, form.password_value);
   histogram_tester.ExpectTotalCount(

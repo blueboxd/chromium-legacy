@@ -64,6 +64,28 @@ export function testResize(target) {
   });
 }
 
+export function testScrollFromOffScreen(target) {
+  // This scrollTo and nextFrame are not necessary for the ref-test
+  // however it helps when trying to debug this test in a
+  // browser. Without it, the scroll offset may be preserved across
+  // page reloads.
+  document.body.scrollTo(0, 0);
+  helpers.nextFrame(() => {
+    // The page is a large element (much bigger than the page)
+    // followed by the scroller. We then scroll down to the scroller.
+    const largeSibling = helpers.largeDiv("large");
+    target.before(largeSibling);
+    const child = helpers.div("child");
+    target.appendChild(child);
+
+    // Give the scroller time to settle.
+    helpers.inNFrames(10, () => {
+      window.scrollBy(0, largeSibling.getBoundingClientRect().height);
+      helpers.stopWaiting();
+    });
+  });
+}
+
 /**
  * Runs |test| with a <virtual-scroller>, waiting until the custom element is
  * defined.

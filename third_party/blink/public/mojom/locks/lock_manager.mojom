@@ -15,7 +15,7 @@ interface LockHandle {};
 interface LockRequest {
   // Request was granted. Associated to maintain ordering within
   // a LockManager, to match task queue behavior required by spec.
-  Granted(associated LockHandle lock_handle);
+  Granted(pending_associated_remote<LockHandle> lock_handle);
 
   // Request failed; e.g. request was only "if available" and it was not.
   Failed();
@@ -69,7 +69,7 @@ interface LockManager {
   RequestLock(string name,
               LockMode mode,
               WaitMode wait,
-              associated LockRequest request);
+              pending_associated_remote<LockRequest> request);
 
   // Produces a snapshot of the lock manager's state. Web applications
   // can use this for diagnostic purposes.

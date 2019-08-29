@@ -212,6 +212,11 @@ public class SavePasswordsPreferencesTest {
             mExportErrorCallback = errorCallback;
             mExportTargetPath = targetPath;
         }
+
+        @Override
+        public void showPasswordEntryEditingView(int index) {
+            assert false : "Define this method before starting to use it in tests.";
+        }
     }
 
     private final static SavedPasswordEntry ZEUS_ON_EARTH =

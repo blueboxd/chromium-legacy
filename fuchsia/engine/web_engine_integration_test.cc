@@ -3,16 +3,13 @@
 // found in the LICENSE file.
 
 #include <fuchsia/web/cpp/fidl.h>
-#include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/test/task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
@@ -106,17 +103,6 @@ class WebEngineIntegrationTest : public testing::Test {
     base::Optional<base::Value> value =
         cr_fuchsia::ExecuteJavaScript(frame_.get(), script);
     return value ? value->GetString() : std::string();
-  }
-
-  fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryHandle(
-      const base::FilePath& path) {
-    fidl::InterfaceHandle<fuchsia::io::Directory> directory_channel;
-    zx_status_t status = fdio_open(
-        path.value().c_str(),
-        fuchsia::io::OPEN_FLAG_DIRECTORY | fuchsia::io::OPEN_RIGHT_READABLE,
-        directory_channel.NewRequest().TakeChannel().release());
-    ZX_DCHECK(status == ZX_OK, status) << "fdio_open";
-    return directory_channel;
   }
 
  protected:
@@ -261,38 +247,4 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
   base::Value* devtools_url = devtools_list.GetList()[0].FindPath("url");
   ASSERT_TRUE(devtools_url->is_string());
   EXPECT_EQ(devtools_url->GetString(), url);
-}
-
-// Navigates to a resource served under the "testdata" ContentDirectory.
-TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
-  const GURL kUrl("fuchsia-dir://testdata/title1.html");
-  constexpr char kTitle[] = "title 1";
-
-  fuchsia::web::CreateContextParams create_params = DefaultContextParams();
-
-  fuchsia::web::ContentDirectoryProvider provider;
-  provider.set_name("testdata");
-  base::FilePath pkg_path;
-  CHECK(base::PathService::Get(base::DIR_ASSETS, &pkg_path));
-  provider.set_directory(
-      OpenDirectoryHandle(pkg_path.AppendASCII("fuchsia/engine/test/data")));
-
-  create_params.mutable_content_directories()->emplace_back(
-      std::move(provider));
-
-  CreateContextAndFrame(std::move(create_params));
-
-  fuchsia::web::NavigationControllerPtr controller;
-  frame_->GetNavigationController(controller.NewRequest());
-  controller.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
-
-  // Navigate to test1.html and verify that the resource was correctly
-  // downloaded and interpreted by inspecting the document title.
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), kUrl.spec()));
-  cr_fuchsia::TestNavigationListener navigation_listener;
-  fidl::Binding<fuchsia::web::NavigationEventListener> listener_binding(
-      &navigation_listener);
-  frame_->SetNavigationEventListener(listener_binding.NewBinding());
-  navigation_listener.RunUntilUrlAndTitleEquals(kUrl, kTitle);
 }

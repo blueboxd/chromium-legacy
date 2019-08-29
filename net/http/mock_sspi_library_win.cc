@@ -88,7 +88,7 @@ struct MockContext {
     return base::StringPrintf(
         "%s's token #%d for %S",
         base::UTF16ToUTF8(credential->source_principal).c_str(), rounds + 1,
-        target_principal.c_str());
+        base::as_wcstr(target_principal));
   }
 
   static MockContext* FromHandle(PCtxtHandle handle) {
@@ -120,8 +120,9 @@ SECURITY_STATUS MockSSPILibrary::AcquireCredentialsHandle(
     PTimeStamp ptsExpiry) {
   DCHECK(!SecIsValidHandle(phCredential));
   auto* credential = new MockCredential;
-  credential->source_principal = pszPrincipal ? pszPrincipal : L"<Default>";
-  credential->package = pszPackage;
+  credential->source_principal = pszPrincipal ? base::as_u16cstr(pszPrincipal)
+                                              : STRING16_LITERAL("<Default>");
+  credential->package = base::as_u16cstr(pszPackage);
   credential->has_explicit_credentials = !!pvAuthData;
 
   credential->StoreInHandle(phCredential);
@@ -150,7 +151,7 @@ SECURITY_STATUS MockSSPILibrary::InitializeSecurityContext(
     PTimeStamp ptsExpiry) {
   MockContext* new_context = new MockContext;
   new_context->credential = MockCredential::FromHandle(phCredential);
-  new_context->target_principal = pszTargetName;
+  new_context->target_principal = base::as_u16cstr(pszTargetName);
   new_context->rounds = 0;
 
   // Always rotate contexts. That way tests will fail if the caller's context
@@ -200,9 +201,9 @@ SECURITY_STATUS MockSSPILibrary::QueryContextAttributesEx(PCtxtHandle phContext,
           reinterpret_cast<SecPkgContext_NativeNames*>(pBuffer);
       DCHECK_EQ(sizeof(*native_names), cbBuffer);
       native_names->sClientName =
-          const_cast<SEC_WCHAR*>(context->credential->source_principal.c_str());
+          base::as_writable_wcstr(context->credential->source_principal);
       native_names->sServerName =
-          const_cast<SEC_WCHAR*>(context->target_principal.c_str());
+          base::as_writable_wcstr(context->target_principal);
       return SEC_E_OK;
     }
 

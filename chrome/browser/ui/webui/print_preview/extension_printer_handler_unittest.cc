@@ -35,6 +35,7 @@
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/value_builder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/print_job_constants.h"
 #include "printing/pwg_raster_settings.h"
@@ -507,10 +508,10 @@ class ExtensionPrinterHandlerTest : public testing::Test {
         std::move(pwg_raster_converter));
 
     // Set fake USB device manager for extensions::UsbDeviceManager.
-    device::mojom::UsbDeviceManagerPtr usb_manager_ptr;
-    fake_usb_manager_.AddBinding(mojo::MakeRequest(&usb_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> usb_manager;
+    fake_usb_manager_.AddReceiver(usb_manager.InitWithNewPipeAndPassReceiver());
     extensions::UsbDeviceManager::Get(env_.profile())
-        ->SetDeviceManagerForTesting(std::move(usb_manager_ptr));
+        ->SetDeviceManagerForTesting(std::move(usb_manager));
     base::RunLoop().RunUntilIdle();
   }
 

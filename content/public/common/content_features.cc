@@ -703,11 +703,6 @@ const base::Feature kWebRtcHWVP9Encoding {
 const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Fallback from hardware encoder (if available) to software, for WebRTC
-// screensharing that uses temporal scalability.
-const base::Feature kWebRtcScreenshareSwEncoding{
-    "WebRtcScreenshareSwEncoding", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Use GpuMemoryBuffer backed VideoFrames in media streams.
 const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames{
     "WebRTC-UseGpuMemoryBufferVideoFrames", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -42,22 +42,13 @@ class AnimationInterpolableValueTest : public testing::Test {
     base.ScaleAndAdd(scale, add);
   }
 
-  std::unique_ptr<TypedInterpolationValue> InterpolateLists(
-      std::unique_ptr<InterpolableList> list_a,
-      std::unique_ptr<InterpolableList> list_b,
+  std::unique_ptr<InterpolableValue> InterpolateLists(
+      std::unique_ptr<InterpolableValue> list_a,
+      std::unique_ptr<InterpolableValue> list_b,
       double progress) {
-    // We require a property that maps to CSSLengthInterpolationType. 'left'
-    // suffices for this, and also means we can ignore the AnimatableValues for
-    // the compositor (as left isn't compositor-compatible).
-    PropertyHandle property_handle(GetCSSPropertyLeft());
-    CSSLengthInterpolationType interpolation_type(property_handle);
-    InterpolationValue start(std::move(list_a));
-    InterpolationValue end(std::move(list_b));
-    TransitionInterpolation* i = TransitionInterpolation::Create(
-        property_handle, interpolation_type, std::move(start), std::move(end),
-        nullptr, nullptr);
-    i->Interpolate(0, progress);
-    return i->GetInterpolatedValue();
+    std::unique_ptr<InterpolableValue> result = list_a->CloneAndZero();
+    list_a->Interpolate(*list_b, progress, *result);
+    return result;
   }
 };
 
@@ -81,10 +72,9 @@ TEST_F(AnimationInterpolableValueTest, SimpleList) {
   list_b->Set(1, std::make_unique<InterpolableNumber>(-200));
   list_b->Set(2, std::make_unique<InterpolableNumber>(300));
 
-  std::unique_ptr<TypedInterpolationValue> interpolated_value =
+  std::unique_ptr<InterpolableValue> interpolated_value =
       InterpolateLists(std::move(list_a), std::move(list_b), 0.3);
-  const InterpolableList& out_list =
-      ToInterpolableList(interpolated_value->GetInterpolableValue());
+  const InterpolableList& out_list = ToInterpolableList(*interpolated_value);
 
   EXPECT_FLOAT_EQ(30, ToInterpolableNumber(out_list.Get(0))->Value());
   EXPECT_FLOAT_EQ(-30.6f, ToInterpolableNumber(out_list.Get(1))->Value());
@@ -106,10 +96,9 @@ TEST_F(AnimationInterpolableValueTest, NestedList) {
   list_b->Set(1, std::move(sub_list_b));
   list_b->Set(2, std::make_unique<InterpolableNumber>(1));
 
-  std::unique_ptr<TypedInterpolationValue> interpolated_value =
+  std::unique_ptr<InterpolableValue> interpolated_value =
       InterpolateLists(std::move(list_a), std::move(list_b), 0.5);
-  const InterpolableList& out_list =
-      ToInterpolableList(interpolated_value->GetInterpolableValue());
+  const InterpolableList& out_list = ToInterpolableList(*interpolated_value);
 
   EXPECT_FLOAT_EQ(50, ToInterpolableNumber(out_list.Get(0))->Value());
   EXPECT_FLOAT_EQ(

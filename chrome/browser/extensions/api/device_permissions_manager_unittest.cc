@@ -17,6 +17,7 @@
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/hid/fake_hid_manager.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -53,10 +54,10 @@ class DevicePermissionsManagerTest : public testing::Test {
         "}"));
 
     // Set fake device manager for extensions::UsbDeviceManager.
-    device::mojom::UsbDeviceManagerPtr usb_manager_ptr;
-    fake_usb_manager_.AddBinding(mojo::MakeRequest(&usb_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> usb_manager;
+    fake_usb_manager_.AddReceiver(usb_manager.InitWithNewPipeAndPassReceiver());
     UsbDeviceManager::Get(env_->profile())
-        ->SetDeviceManagerForTesting(std::move(usb_manager_ptr));
+        ->SetDeviceManagerForTesting(std::move(usb_manager));
     base::RunLoop().RunUntilIdle();
 
     device0_ = fake_usb_manager_.CreateAndAddDevice(0, 0, "Test Manufacturer",

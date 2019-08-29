@@ -342,6 +342,12 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() && rare_data_->is_inside_balanced_columns;
   }
 
+  // Return true if we're participating in the same block formatting context as
+  // the one established by the nearest ancestor multicol container.
+  bool IsInColumnBfc() const {
+    return HasRareData() && rare_data_->is_in_column_bfc;
+  }
+
   // Returns if this node is a table cell child, and which table layout mode
   // is occurring.
   NGTableCellChildLayoutMode TableCellChildLayoutMode() const {
@@ -553,7 +559,8 @@ class CORE_EXPORT NGConstraintSpace final {
         : bfc_offset(bfc_offset),
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
-          is_inside_balanced_columns(false) {}
+          is_inside_balanced_columns(false),
+          is_in_column_bfc(false) {}
     RareData(const RareData&) = default;
     ~RareData() = default;
 
@@ -577,6 +584,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
     unsigned block_direction_fragmentation_type : 2;
     unsigned is_inside_balanced_columns : 1;
+    unsigned is_in_column_bfc : 1;
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
@@ -588,7 +596,8 @@ class CORE_EXPORT NGConstraintSpace final {
                  other.fragmentainer_space_at_bfc_start &&
              block_direction_fragmentation_type ==
                  other.block_direction_fragmentation_type &&
-             is_inside_balanced_columns == other.is_inside_balanced_columns;
+             is_inside_balanced_columns == other.is_inside_balanced_columns &&
+             is_in_column_bfc == other.is_in_column_bfc;
     }
 
     // Must be kept in sync with members checked within |MaySkipLayout|.
@@ -599,7 +608,7 @@ class CORE_EXPORT NGConstraintSpace final {
              fragmentainer_block_size == kIndefiniteSize &&
              fragmentainer_space_at_bfc_start == kIndefiniteSize &&
              block_direction_fragmentation_type == kFragmentNone &&
-             !is_inside_balanced_columns;
+             !is_inside_balanced_columns && !is_in_column_bfc;
     }
   };
 

@@ -75,7 +75,8 @@ bool IsForcedBreakValue(const NGConstraintSpace& constraint_space,
 
 void SetupFragmentation(const NGConstraintSpace& parent_space,
                         LayoutUnit new_bfc_block_offset,
-                        NGConstraintSpaceBuilder* builder) {
+                        NGConstraintSpaceBuilder* builder,
+                        bool is_new_fc) {
   DCHECK(parent_space.HasBlockFragmentation());
 
   LayoutUnit space_available =
@@ -84,6 +85,9 @@ void SetupFragmentation(const NGConstraintSpace& parent_space,
   builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
   builder->SetFragmentainerSpaceAtBfcStart(space_available);
   builder->SetFragmentationType(parent_space.BlockFragmentationType());
+
+  if (parent_space.IsInColumnBfc() && !is_new_fc)
+    builder->SetIsInColumnBfc();
 }
 
 void FinishFragmentation(NGBoxFragmentBuilder* builder,

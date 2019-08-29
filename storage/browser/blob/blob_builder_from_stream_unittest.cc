@@ -13,10 +13,11 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -102,7 +103,8 @@ class BlobBuilderFromStreamTestWithDelayedLimits
           result = std::move(blob);
           loop.Quit();
         }));
-    builder.Start(length_hint, std::move(pipe.consumer_handle), nullptr);
+    builder.Start(length_hint, std::move(pipe.consumer_handle),
+                  mojo::NullAssociatedRemote());
 
     // Make sure the initial memory allocation done by the builder matches the
     // length hint passed in.
@@ -204,7 +206,8 @@ TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnAbortBeforeDeletion) {
         loop.Quit();
       }));
   builder_ptr = builder.get();
-  builder->Start(GetLengthHint(16), std::move(pipe.consumer_handle), nullptr);
+  builder->Start(GetLengthHint(16), std::move(pipe.consumer_handle),
+                 mojo::NullAssociatedRemote());
   builder->Abort();
   builder.reset();
   loop.Run();
@@ -368,7 +371,8 @@ TEST_F(BlobBuilderFromStreamTest, HintTooLargeForQuota) {
             result = std::move(blob);
             loop.Quit();
           }));
-  builder.Start(kLengthHint, std::move(pipe.consumer_handle), nullptr);
+  builder.Start(kLengthHint, std::move(pipe.consumer_handle),
+                mojo::NullAssociatedRemote());
   pipe.producer_handle.reset();
   loop.Run();
 
@@ -391,7 +395,8 @@ TEST_F(BlobBuilderFromStreamTest, HintTooLargeForQuotaAndNoDisk) {
             result = std::move(blob);
             loop.Quit();
           }));
-  builder.Start(kLengthHint, std::move(pipe.consumer_handle), nullptr);
+  builder.Start(kLengthHint, std::move(pipe.consumer_handle),
+                mojo::NullAssociatedRemote());
   pipe.producer_handle.reset();
   loop.Run();
 
@@ -405,10 +410,11 @@ TEST_P(BlobBuilderFromStreamTest, ProgressEvents) {
       base::RandBytesAsString(kTestBlobStorageMaxBytesDataItemSize + 5);
 
   FakeProgressClient progress_client;
-  blink::mojom::ProgressClientAssociatedPtr progress_client_ptr;
-  mojo::AssociatedBinding<blink::mojom::ProgressClient> progress_binding(
+  mojo::AssociatedRemote<blink::mojom::ProgressClient> progress_client_remote;
+  mojo::AssociatedReceiver<blink::mojom::ProgressClient> progress_receiver(
       &progress_client,
-      MakeRequestAssociatedWithDedicatedPipe(&progress_client_ptr));
+      progress_client_remote
+          .BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   mojo::DataPipe pipe;
   base::RunLoop loop;
@@ -421,12 +427,12 @@ TEST_P(BlobBuilderFromStreamTest, ProgressEvents) {
             loop.Quit();
           }));
   builder.Start(GetLengthHint(kData.size()), std::move(pipe.consumer_handle),
-                progress_client_ptr.PassInterface());
+                progress_client_remote.Unbind());
   mojo::BlockingCopyFromString(kData, pipe.producer_handle);
   pipe.producer_handle.reset();
 
   loop.Run();
-  progress_binding.FlushForTesting();
+  progress_receiver.FlushForTesting();
 
   EXPECT_EQ(kData.size(), progress_client.total_size);
   EXPECT_GE(progress_client.call_count, 2);
@@ -455,7 +461,8 @@ TEST_F(BlobBuilderFromStreamTestWithDelayedLimits, LargeStream) {
         result = std::move(blob);
         loop.Quit();
       }));
-  builder.Start(kData.size(), std::move(pipe.consumer_handle), nullptr);
+  builder.Start(kData.size(), std::move(pipe.consumer_handle),
+                mojo::NullAssociatedRemote());
 
   context_->set_limits_for_testing(limits_);
   auto data_producer =

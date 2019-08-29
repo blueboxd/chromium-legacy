@@ -194,12 +194,13 @@ void WebUsbDetector::Initialize() {
   SCOPED_UMA_HISTOGRAM_TIMER("WebUsb.DetectorInitialization");
   // Tests may set a fake manager.
   if (!device_manager_) {
-    // Request UsbDeviceManagerPtr from DeviceService.
-    content::GetSystemConnector()->BindInterface(
-        device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
+    // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
+    content::GetSystemConnector()->Connect(
+        device::mojom::kServiceName,
+        device_manager_.BindNewPipeAndPassReceiver());
   }
   DCHECK(device_manager_);
-  device_manager_.set_connection_error_handler(base::BindOnce(
+  device_manager_.set_disconnect_handler(base::BindOnce(
       &WebUsbDetector::OnDeviceManagerConnectionError, base::Unretained(this)));
 
   // Listen for added/removed device events.
@@ -282,9 +283,9 @@ void WebUsbDetector::OnDeviceManagerConnectionError() {
 }
 
 void WebUsbDetector::SetDeviceManagerForTesting(
-    device::mojom::UsbDeviceManagerPtr fake_device_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager) {
   DCHECK(!device_manager_);
   DCHECK(!client_binding_);
   DCHECK(fake_device_manager);
-  device_manager_ = std::move(fake_device_manager);
+  device_manager_.Bind(std::move(fake_device_manager));
 }

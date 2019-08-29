@@ -20,7 +20,7 @@ interface UsbDeviceManager {
   GetDevices(UsbEnumerationOptions? options) => (array<UsbDeviceInfo> results);
 
   // Requests a device by guid.
-  GetDevice(string guid, UsbDevice& device_request,
+  GetDevice(string guid, pending_receiver<UsbDevice> device_receiver,
             UsbDeviceClient? device_client);
 
   // Check Android permissions to access the device identified by |guid|. If

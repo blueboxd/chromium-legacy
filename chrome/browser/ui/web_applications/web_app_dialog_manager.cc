@@ -10,6 +10,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
@@ -81,11 +84,11 @@ WebAppDialogManager::WebAppDialogManager(Profile* profile)
 WebAppDialogManager::~WebAppDialogManager() = default;
 
 bool WebAppDialogManager::CanUninstallWebApp(const AppId& app_id) const {
-  auto* app = GetExtension(profile_, app_id);
+  auto* provider = WebAppProvider::Get(profile_);
+  if (!provider)
+    return false;
 
-  return extensions::ExtensionSystem::Get(profile_)
-      ->management_policy()
-      ->UserMayModifySettings(app, nullptr);
+  return provider->install_finalizer().CanUserUninstallFromSync(app_id);
 }
 
 void WebAppDialogManager::UninstallWebApp(const AppId& app_id,

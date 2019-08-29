@@ -38,11 +38,16 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "policy_engine_unittest.cc",
+    "url_lookup_service_unittest.cc",
   ]
   deps = [
     ":policy_engine",
+    ":url_lookup_service",
     "//base/test:test_support",
     "//components/safe_browsing:features",
+    "//content/test:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp:cpp",
     "//testing/gtest",
   ]
 }

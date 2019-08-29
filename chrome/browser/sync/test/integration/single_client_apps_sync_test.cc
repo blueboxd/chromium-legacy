@@ -24,29 +24,12 @@ class SingleClientAppsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientAppsSyncTest);
 };
 
-// crbug.com/997984
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define MAYBE_StartWithNoApps DISABLED_StartWithNoApps
-#define MAYBE_StartWithSomeLegacyApps DISABLED_StartWithSomeLegacyApps
-#define MAYBE_StartWithSomePlatformApps DISABLED_StartWithSomePlatformApps
-#define MAYBE_InstallSomeLegacyApps DISABLED_InstallSomeLegacyApps
-#define MAYBE_InstallSomePlatformApps DISABLED_InstallSomePlatformApps
-#define MAYBE_InstallSomeApps DISABLED_InstallSomeApps
-#else
-#define MAYBE_StartWithNoApps StartWithNoApps
-#define MAYBE_StartWithSomeLegacyApps StartWithSomeLegacyApps
-#define MAYBE_StartWithSomePlatformApps StartWithSomePlatformApps
-#define MAYBE_InstallSomeLegacyApps InstallSomeLegacyApps
-#define MAYBE_InstallSomePlatformApps InstallSomePlatformApps
-#define MAYBE_InstallSomeApps InstallSomeApps
-#endif
-
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_StartWithNoApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithNoApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_StartWithSomeLegacyApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomeLegacyApps) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumApps = 5;
@@ -59,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_StartWithSomeLegacyApps) 
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_StartWithSomePlatformApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomePlatformApps) {
   ASSERT_TRUE(SetupClients());
 
   const int kNumApps = 5;
@@ -72,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_StartWithSomePlatformApps
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomeLegacyApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeLegacyApps) {
   ASSERT_TRUE(SetupSync());
 
   const int kNumApps = 5;
@@ -85,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomeLegacyApps) {
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomePlatformApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
   ASSERT_TRUE(SetupSync());
 
   const int kNumApps = 5;
@@ -98,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomePlatformApps) 
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomeApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
   ASSERT_TRUE(SetupSync());
 
   int i = 0;

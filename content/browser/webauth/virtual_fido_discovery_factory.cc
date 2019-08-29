@@ -13,16 +13,19 @@
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_u2f_device.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 
 namespace {
 
-blink::test::mojom::VirtualAuthenticatorPtr GetMojoPtrToVirtualAuthenticator(
-    VirtualAuthenticator* authenticator) {
-  blink::test::mojom::VirtualAuthenticatorPtr mojo_authenticator_ptr;
-  authenticator->AddBinding(mojo::MakeRequest(&mojo_authenticator_ptr));
-  return mojo_authenticator_ptr;
+mojo::PendingRemote<blink::test::mojom::VirtualAuthenticator>
+GetMojoToVirtualAuthenticator(VirtualAuthenticator* authenticator) {
+  mojo::PendingRemote<blink::test::mojom::VirtualAuthenticator>
+      mojo_authenticator;
+  authenticator->AddReceiver(
+      mojo_authenticator.InitWithNewPipeAndPassReceiver());
+  return mojo_authenticator;
 }
 
 }  // namespace
@@ -134,17 +137,16 @@ void VirtualFidoDiscoveryFactory::CreateAuthenticator(
       options->protocol, options->transport, options->attachment,
       options->has_resident_key, options->has_user_verification);
 
-  std::move(callback).Run(GetMojoPtrToVirtualAuthenticator(authenticator));
+  std::move(callback).Run(GetMojoToVirtualAuthenticator(authenticator));
 }
 
 void VirtualFidoDiscoveryFactory::GetAuthenticators(
     GetAuthenticatorsCallback callback) {
-  std::vector<blink::test::mojom::VirtualAuthenticatorPtrInfo>
+  std::vector<mojo::PendingRemote<blink::test::mojom::VirtualAuthenticator>>
       mojo_authenticators;
   for (auto& authenticator : authenticators_) {
     mojo_authenticators.push_back(
-        GetMojoPtrToVirtualAuthenticator(authenticator.second.get())
-            .PassInterface());
+        GetMojoToVirtualAuthenticator(authenticator.second.get()));
   }
 
   std::move(callback).Run(std::move(mojo_authenticators));

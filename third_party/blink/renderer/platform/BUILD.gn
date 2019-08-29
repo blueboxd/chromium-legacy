@@ -439,7 +439,7 @@ jumbo_component("platform") {
     "bindings/v8_binding.cc",
     "bindings/v8_binding.h",
     "bindings/v8_binding_macros.h",
-    "bindings/v8_cross_origin_setter_info.h",
+    "bindings/v8_cross_origin_callback_info.h",
     "bindings/v8_dom_activity_logger.cc",
     "bindings/v8_dom_activity_logger.h",
     "bindings/v8_dom_wrapper.cc",
@@ -1240,6 +1240,8 @@ jumbo_component("platform") {
     "peerconnection/rtc_stats_response_base.h",
     "peerconnection/rtc_video_decoder_adapter.cc",
     "peerconnection/rtc_video_decoder_adapter.h",
+    "peerconnection/rtc_video_encoder.cc",
+    "peerconnection/rtc_video_encoder.h",
     "peerconnection/rtc_void_request.h",
     "prerender.cc",
     "prerender.h",
@@ -1375,6 +1377,7 @@ jumbo_component("platform") {
     "webrtc/webrtc_logging.cc",
     "webrtc/webrtc_video_frame_adapter.cc",
     "webrtc/webrtc_video_utils.cc",
+    "webrtc/webrtc_video_utils.h",
     "windows_keyboard_codes.h",
   ]
 
@@ -1461,6 +1464,7 @@ jumbo_component("platform") {
     "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_opus",
     "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_multiopus",
     "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_opus",
+    "//third_party/webrtc/modules/video_coding:webrtc_h264",
     "//third_party/webrtc/p2p:rtc_p2p",
     "//third_party/webrtc_overrides:init_webrtc",
     "//third_party/zlib/google:compression_utils",
@@ -1561,8 +1565,6 @@ jumbo_static_library("test_support") {
     "testing/fake_graphics_layer_client.h",
     "testing/font_test_helpers.cc",
     "testing/font_test_helpers.h",
-    "testing/fuzzed_data_provider.cc",
-    "testing/fuzzed_data_provider.h",
     "testing/histogram_tester.cc",
     "testing/histogram_tester.h",
     "testing/io_task_runner_testing_platform_support.cc",
@@ -1600,6 +1602,14 @@ jumbo_static_library("test_support") {
     "testing/weburl_loader_mock_factory_impl.cc",
     "testing/weburl_loader_mock_factory_impl.h",
   ]
+
+  # fuzzed_data_provider may not work with a custom toolchain.
+  if (custom_toolchain == "") {
+    sources += [
+      "testing/fuzzed_data_provider.cc",
+      "testing/fuzzed_data_provider.h",
+    ]
+  }
 
   configs += [
     ":blink_platform_pch",
@@ -1789,6 +1799,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "mojo/string16_mojom_traits_test.cc",
     "peerconnection/rtc_stats_test.cc",
     "peerconnection/rtc_video_decoder_adapter_test.cc",
+    "peerconnection/rtc_video_encoder_test.cc",
     "text/bidi_resolver_test.cc",
     "text/bidi_test_harness.h",
     "text/capitalize_test.cc",

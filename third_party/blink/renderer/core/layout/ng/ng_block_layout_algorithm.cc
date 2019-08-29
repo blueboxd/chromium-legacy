@@ -200,7 +200,8 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
 
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
-    if (child.IsOutOfFlowPositioned() || child.IsColumnSpanAll())
+    if (child.IsOutOfFlowPositioned() ||
+        (child.IsColumnSpanAll() && ConstraintSpace().IsInColumnBfc()))
       continue;
 
     const ComputedStyle& child_style = child.Style();
@@ -507,7 +508,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   // If this layout is blocked by a display-lock, then we pretend this node has
   // no children and that there are no break tokens. Due to this, we skip layout
   // on these children.
-  if (Node().LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (Node().LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     child_iterator = NGBlockChildIterator(NGBlockNode(nullptr), nullptr);
 
   for (auto entry = child_iterator.NextChild();
@@ -516,7 +517,12 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     const NGBreakToken* child_break_token = entry.token;
 
     if (child.IsOutOfFlowPositioned()) {
-      DCHECK(!child_break_token);
+      // We don't support fragmentation inside out-of-flow positioned boxes yet,
+      // but breaking before is fine. This may happen when a column spanner is
+      // directly followed by an OOF.
+      DCHECK(!child_break_token ||
+             (child_break_token->IsBlockType() &&
+              To<NGBlockBreakToken>(child_break_token)->IsBreakBefore()));
       HandleOutOfFlowPositioned(previous_inflow_position,
                                 To<NGBlockNode>(child));
     } else if (child.IsFloating()) {
@@ -525,6 +531,21 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     } else if (child.IsListMarker() && !child.ListMarkerOccupiesWholeLine()) {
       container_builder_.SetUnpositionedListMarker(
           NGUnpositionedListMarker(To<NGBlockNode>(child)));
+    } else if (child.IsColumnSpanAll() && ConstraintSpace().IsInColumnBfc()) {
+      // The child is a column spanner. We now need to finish this
+      // fragmentainer, then abort and let the column layout algorithm handle
+      // the spanner as a child.
+      container_builder_.SetColumnSpanner(To<NGBlockNode>(child));
+      // We also need to find out where to resume column layout after the
+      // spanner. If it has a next sibling, that's where we'll resume. If not,
+      // we'll need to keep looking for subsequent content on the way up the
+      // tree.
+      if (NGLayoutInputNode next = child.NextSibling()) {
+        container_builder_.AddBreakBeforeChild(next,
+                                               /* is_forced_break */ true);
+        container_builder_.SetDidBreak();
+      }
+      break;
     } else {
       // We need to propagate the initial break-before value up our container
       // chain, until we reach a container that's not a first child. If we get
@@ -543,7 +564,14 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
         abort = !HandleInflow(
             child, child_break_token, &previous_inflow_position,
             inline_child_layout_context, &previous_inline_break_token);
+        if (container_builder_.FoundColumnSpanner())
+          break;
       }
+
+      // Spanners should be detected above. They can only occur in the same
+      // block formatting context as the initial one established by the multicol
+      // container.
+      DCHECK(!container_builder_.FoundColumnSpanner());
 
       if (abort) {
         // We need to abort the layout, as our BFC block offset was resolved.
@@ -1611,6 +1639,23 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       child.IsInline() ? To<NGInlineBreakToken>(physical_fragment.BreakToken())
                        : nullptr;
 
+  // If a spanner was found inside the child, we need to finish up and propagate
+  // the spanner to the column layout algorithm, so that it can take care of it.
+  if (UNLIKELY(ConstraintSpace().IsInColumnBfc())) {
+    if (NGBlockNode spanner_node = layout_result->ColumnSpanner()) {
+      container_builder_.SetColumnSpanner(spanner_node);
+      if (!container_builder_.DidBreak()) {
+        // If we still haven't found a descendant at which to resume column
+        // layout after the spanner, look for one now.
+        if (NGLayoutInputNode next = child.NextSibling()) {
+          container_builder_.AddBreakBeforeChild(next,
+                                                 /* is_forced_break */ true);
+          container_builder_.SetDidBreak();
+        }
+      }
+    }
+  }
+
   return true;
 }
 
@@ -2288,7 +2333,8 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // fragmentation line.
     if (is_new_fc)
       new_bfc_block_offset = child_data.bfc_offset_estimate.block_offset;
-    SetupFragmentation(ConstraintSpace(), new_bfc_block_offset, &builder);
+    SetupFragmentation(ConstraintSpace(), new_bfc_block_offset, &builder,
+                       is_new_fc);
   }
 
   return builder.ToConstraintSpace();

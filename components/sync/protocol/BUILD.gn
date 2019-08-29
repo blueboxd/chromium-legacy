@@ -35,7 +35,7 @@ jumbo_static_library("util") {
 if (is_android) {
   import("//build/config/android/rules.gni")
 
-  proto_java_library("test_support_java") {
+  proto_java_library("protocol_java") {
     proto_path = "//components/sync/protocol/"
     sources = sync_protocol_sources
   }

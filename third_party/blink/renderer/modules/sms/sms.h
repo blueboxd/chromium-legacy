@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

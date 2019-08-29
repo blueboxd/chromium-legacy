@@ -15,7 +15,7 @@
 #include "base/process/process_handle.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/strcat.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"

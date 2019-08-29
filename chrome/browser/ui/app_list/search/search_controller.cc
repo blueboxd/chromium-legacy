@@ -166,6 +166,14 @@ ChromeSearchResult* SearchController::FindSearchResult(
   return nullptr;
 }
 
+void SearchController::OnSearchResultsDisplayed(
+    const base::string16& trimmed_query,
+    const ash::SearchResultIdWithPositionIndices& results,
+    int launched_index) {
+  if (trimmed_query.empty())
+    mixer_->GetNonAppSearchResultRanker()->ZeroStateResultsDisplayed(results);
+}
+
 ChromeSearchResult* SearchController::GetResultByTitleForTest(
     const std::string& title) {
   base::string16 target_title = base::ASCIIToUTF16(title);

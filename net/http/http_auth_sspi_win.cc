@@ -68,8 +68,8 @@ base::Value ContextAttributesToValue(SSPILibrary* library,
       handle, SECPKG_ATTR_NATIVE_NAMES, &native_names, sizeof(native_names));
   if (qc_result == SEC_E_OK && native_names.sClientName &&
       native_names.sServerName) {
-    params.SetStringKey("source", native_names.sClientName);
-    params.SetStringKey("target", native_names.sServerName);
+    params.SetStringKey("source", base::as_u16cstr(native_names.sClientName));
+    params.SetStringKey("target", base::as_u16cstr(native_names.sServerName));
   }
 
   SecPkgContext_NegotiationInfo negotiation_info = {0};
@@ -78,7 +78,8 @@ base::Value ContextAttributesToValue(SSPILibrary* library,
       sizeof(negotiation_info));
   if (qc_result == SEC_E_OK && negotiation_info.PackageInfo &&
       negotiation_info.PackageInfo->Name) {
-    params.SetStringKey("mechanism", negotiation_info.PackageInfo->Name);
+    params.SetStringKey("mechanism",
+                        base::as_u16cstr(negotiation_info.PackageInfo->Name));
     params.SetBoolKey("open", negotiation_info.NegotiationState !=
                                   SECPKG_NEGOTIATION_COMPLETE);
   }
@@ -87,7 +88,8 @@ base::Value ContextAttributesToValue(SSPILibrary* library,
   qc_result = library->QueryContextAttributesEx(handle, SECPKG_ATTR_AUTHORITY,
                                                 &authority, sizeof(authority));
   if (qc_result == SEC_E_OK && authority.sAuthorityName) {
-    params.SetStringKey("authority", authority.sAuthorityName);
+    params.SetStringKey("authority",
+                        base::as_u16cstr(authority.sAuthorityName));
   }
 
   params.SetKey("flags", ContextFlagsToValue(attributes));

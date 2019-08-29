@@ -86,7 +86,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
         includes.add('platform/instrumentation/use_counter.h')
     # [CrossOrigin]
     if has_extended_attribute_value(attribute, 'CrossOrigin', 'Setter'):
-        includes.add('platform/bindings/v8_cross_origin_setter_info.h')
+        includes.add('platform/bindings/v8_cross_origin_callback_info.h')
     # [Constructor]
     # TODO(yukishiino): Constructors are much like methods although constructors
     # are not methods.  Constructors must be data-type properties, and we can

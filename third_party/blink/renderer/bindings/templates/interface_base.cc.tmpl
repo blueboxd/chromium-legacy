@@ -150,7 +150,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% if has_access_check_callbacks and not is_partial and has_cross_origin_named_enumerator %}
 static const struct {
   using GetterCallback = void(*)(const v8::PropertyCallbackInfo<v8::Value>&);
-  using SetterCallback = void(*)(v8::Local<v8::Value>, const V8CrossOriginSetterInfo&);
+  using SetterCallback = void(*)(v8::Local<v8::Value>, const V8CrossOriginCallbackInfo&);
 
   const char* const name;
   const GetterCallback getter;
@@ -309,7 +309,7 @@ void {{v8_class_or_partial}}::CrossOriginNamedSetter(v8::Local<v8::Name> name, v
 
   for (const auto& attribute : {{internal_namespace}}::kCrossOriginAttributeTable) {
     if (property_name == attribute.name && attribute.setter) {
-      attribute.setter(value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
+      attribute.setter(value, V8CrossOriginCallbackInfo(info));
       return;
     }
   }

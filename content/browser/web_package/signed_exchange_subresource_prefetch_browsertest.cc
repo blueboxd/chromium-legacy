@@ -26,14 +26,17 @@
 #include "content/browser/loader/prefetch_browsertest_base.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -915,6 +918,52 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     histograms.ExpectTotalCount(
         "PrefetchedSignedExchangeCache.HeadersSizeTotal", 0);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest, ClearAll) {
+  const char* hostname = "example.com";
+  const char* sxg_path = "/target.sxg";
+  const char* inner_url_path = "/target.html";
+  const std::string content =
+      "<head><title>Prefetch Target (SXG)</title></head>";
+  auto sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
+
+  LoadPrefetchMainResourceSXGTestPage(
+      hostname, "/prefetch.html" /* prefetch_page_path */, hostname, sxg_path,
+      hostname, inner_url_path,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {} /* sxg_outer_headers */, {} /* sxg_inner_headers */);
+  EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
+
+  const GURL sxg_url = embedded_test_server()->GetURL(hostname, sxg_path);
+  const GURL inner_url =
+      embedded_test_server()->GetURL(hostname, inner_url_path);
+
+  EXPECT_EQ(IsSignedExchangePrefetchCacheEnabled() ? 1u : 0u,
+            GetCachedExchanges(shell()).size());
+
+  BrowsingDataRemover* remover = BrowserContext::GetBrowsingDataRemover(
+      shell()->web_contents()->GetBrowserContext());
+  BrowsingDataRemoverCompletionObserver completion_observer(remover);
+  remover->RemoveAndReply(
+      base::Time(), base::Time::Max(), BrowsingDataRemover::DATA_TYPE_CACHE,
+      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+      &completion_observer);
+  completion_observer.BlockUntilCompletion();
+
+  // Need to setup MockSignedExchangeHandlerFactory because the SXG is loaded
+  // from the server again.
+  MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+      sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, inner_url,
+      "text/html", {} /* sxg_inner_headers */,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */)});
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+
+  // SXG must be fetched again.
+  EXPECT_EQ(2, sxg_request_counter->GetRequestCount());
 }
 
 INSTANTIATE_TEST_SUITE_P(SignedExchangePrefetchBrowserTest,

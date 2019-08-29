@@ -26,11 +26,12 @@ def make_copy(obj, memo=None):
         if copy is not None:
             return copy
 
-    if isinstance(obj, (bool, int, long, float, complex, basestring)):
-        # Do not create a copy of a primitive (and its subclasses) object.
-        return obj
-
     cls = type(obj)
+
+    if isinstance(obj, (bool, int, long, float, complex, basestring)):
+        # Subclasses of simple builtin types are expected to have a copy
+        # constructor.
+        return cls.__new__(cls, obj)
 
     if isinstance(obj, (list, tuple, set, frozenset)):
         return cls(map(lambda x: make_copy(x, memo), obj))

@@ -158,7 +158,7 @@ void ModulesInitializer::Initialize() {
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-        &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
+        &CopylessPasteServer::BindMojoReceiver, WrapWeakPersistent(&frame)));
   }
   if (RuntimeEnabledFeatures::FileHandlingEnabled()) {
     frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(

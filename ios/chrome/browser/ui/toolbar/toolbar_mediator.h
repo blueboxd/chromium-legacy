@@ -7,20 +7,21 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
+
 namespace bookmarks {
 class BookmarkModel;
 }
 namespace web {
 class WebState;
 }
-
 class TemplateURLService;
 @protocol ToolbarConsumer;
 class WebStateList;
 
 // A mediator object that provides the relevant properties of a web state
 // to a consumer.
-@interface ToolbarMediator : NSObject
+@interface ToolbarMediator : NSObject <AdaptiveToolbarViewControllerDelegate>
 
 // Whether the search icon should be in dark mode or not.
 @property(nonatomic, assign, getter=isIncognito) BOOL incognito;

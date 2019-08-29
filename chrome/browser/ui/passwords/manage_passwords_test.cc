@@ -20,10 +20,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "content/public/test/test_utils.h"
+
+using password_manager::NewPasswordFormManager;
 
 namespace {
 constexpr char kTestOrigin[] = "https://www.example.com";
@@ -44,10 +46,21 @@ ManagePasswordsTest::ManagePasswordsTest() {
       url::Origin::Create(GURL("https://somelongeroriginurl.com/"));
   federated_form_.username_value =
       base::ASCIIToUTF16("test_federation_username");
+
+  // Create a simple sign-in form.
+  observed_form_.url = password_form_.origin;
+  autofill::FormFieldData field;
+  field.form_control_type = "text";
+  observed_form_.fields.push_back(field);
+  field.form_control_type = "password";
+  observed_form_.fields.push_back(field);
+
+  // Turn off waiting for server predictions in order to avoid dealing with
+  // posted tasks in NewPasswordFormManager.
+  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
 }
 
-ManagePasswordsTest::~ManagePasswordsTest() {
-}
+ManagePasswordsTest::~ManagePasswordsTest() = default;
 
 void ManagePasswordsTest::SetUpOnMainThread() {
   AddTabAtIndex(0, GURL(kTestOrigin), ui::PAGE_TRANSITION_TYPED);
@@ -74,23 +87,21 @@ void ManagePasswordsTest::SetupManagingPasswords() {
 }
 
 void ManagePasswordsTest::SetupPendingPassword() {
-  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
-      new password_manager::PasswordFormManager(
-          nullptr, &client_, driver_.AsWeakPtr(), *test_form(),
-          base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
-  test_form_manager->Init(nullptr);
+  auto form_manager = std::make_unique<NewPasswordFormManager>(
+      &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
+      base::WrapUnique(new password_manager::StubFormSaver),
+      nullptr /*  metrics_recorder */);
   fetcher_.NotifyFetchCompleted();
-  GetController()->OnPasswordSubmitted(std::move(test_form_manager));
+  GetController()->OnPasswordSubmitted(std::move(form_manager));
 }
 
 void ManagePasswordsTest::SetupAutomaticPassword() {
-  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
-      new password_manager::PasswordFormManager(
-          nullptr, &client_, driver_.AsWeakPtr(), *test_form(),
-          base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
-  test_form_manager->Init(nullptr);
+  auto form_manager = std::make_unique<NewPasswordFormManager>(
+      &client_, driver_.AsWeakPtr(), observed_form_, &fetcher_,
+      base::WrapUnique(new password_manager::StubFormSaver),
+      nullptr /*  metrics_recorder */);
   fetcher_.NotifyFetchCompleted();
-  GetController()->OnAutomaticPasswordSave(std::move(test_form_manager));
+  GetController()->OnAutomaticPasswordSave(std::move(form_manager));
 }
 
 void ManagePasswordsTest::SetupAutoSignin(

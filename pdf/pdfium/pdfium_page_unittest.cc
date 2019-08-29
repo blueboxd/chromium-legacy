@@ -107,8 +107,11 @@ TEST_F(PDFiumPageImageTest, TestCalculateImages) {
   page->CalculateImages();
   ASSERT_EQ(3u, page->images_.size());
   CompareRect({380, 78, 67, 68}, page->images_[0].bounding_rect);
+  EXPECT_EQ("Image 1", page->images_[0].alt_text);
   CompareRect({380, 385, 27, 28}, page->images_[1].bounding_rect);
+  EXPECT_EQ("Image 2", page->images_[1].alt_text);
   CompareRect({380, 678, 1, 1}, page->images_[2].bounding_rect);
+  EXPECT_EQ("Image 3", page->images_[2].alt_text);
 }
 
 using PDFiumPageTextTest = PDFiumTestBase;

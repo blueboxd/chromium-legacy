@@ -292,6 +292,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_DISPATCH_INDIRECT_BUFFER_BINDING:
       return 1;
+    case GL_DRAW_INDIRECT_BUFFER_BINDING:
+      return 1;
     case GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS:
       return 1;
     case GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS:
@@ -1678,6 +1680,8 @@ uint32_t GLES2Util::MapBufferTargetToBindingEnum(uint32_t target) {
       return GL_COPY_WRITE_BUFFER_BINDING;
     case GL_DISPATCH_INDIRECT_BUFFER:
       return GL_DISPATCH_INDIRECT_BUFFER_BINDING;
+    case GL_DRAW_INDIRECT_BUFFER:
+      return GL_DRAW_INDIRECT_BUFFER_BINDING;
     case GL_ELEMENT_ARRAY_BUFFER:
       return GL_ELEMENT_ARRAY_BUFFER_BINDING;
     case GL_PIXEL_PACK_BUFFER:

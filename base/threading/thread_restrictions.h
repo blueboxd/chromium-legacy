@@ -111,6 +111,7 @@ class OutputDevice;
 }
 namespace blink {
 class RTCVideoDecoderAdapter;
+class RTCVideoEncoder;
 class SourceStream;
 class VideoFrameResourceProvider;
 class WorkerThread;
@@ -147,7 +148,6 @@ class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
 class RenderWidgetHostViewMac;
 class RTCVideoDecoder;
-class RTCVideoEncoder;
 class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
 class ServiceWorkerContextClient;
@@ -460,12 +460,12 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
   friend class blink::RTCVideoDecoderAdapter;
+  friend class blink::RTCVideoEncoder;
   friend class cc::TileTaskManagerImpl;
   friend class content::CategorizedWorkerPool;
   friend class content::DesktopCaptureDevice;
   friend class content::InProcessUtilityThread;
   friend class content::RTCVideoDecoder;
-  friend class content::RTCVideoEncoder;
   friend class content::SandboxHostLinux;
   friend class content::ScopedAllowWaitForDebugURL;
   friend class content::SynchronousCompositor;

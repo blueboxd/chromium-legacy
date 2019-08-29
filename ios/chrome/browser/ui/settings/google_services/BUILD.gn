@@ -69,6 +69,7 @@ source_set("google_services") {
     "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/signin",

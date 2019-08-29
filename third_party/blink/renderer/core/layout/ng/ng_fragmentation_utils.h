@@ -45,7 +45,8 @@ inline bool IsResumingLayout(const NGBlockBreakToken* token) {
 // fragmentainer block-start.
 void SetupFragmentation(const NGConstraintSpace& parent_space,
                         LayoutUnit new_bfc_block_offset,
-                        NGConstraintSpaceBuilder*);
+                        NGConstraintSpaceBuilder*,
+                        bool is_new_fc);
 
 // Write fragmentation information to the fragment builder after layout.
 void FinishFragmentation(NGBoxFragmentBuilder*,

@@ -12,6 +12,7 @@
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_context.h"
 #include "content/public/browser/background_sync_controller.h"
@@ -331,7 +332,8 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
 std::unique_ptr<content::BackgroundSyncController::BackgroundSyncEventKeepAlive>
 BackgroundSyncControllerImpl::CreateBackgroundSyncEventKeepAlive() {
 #if !defined(OS_ANDROID)
-  return std::make_unique<BackgroundSyncEventKeepAliveImpl>();
+  if (!KeepAliveRegistry::GetInstance()->IsShuttingDown())
+    return std::make_unique<BackgroundSyncEventKeepAliveImpl>();
 #endif
   return nullptr;
 }

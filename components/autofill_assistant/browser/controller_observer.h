@@ -14,11 +14,11 @@
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/metrics.h"
-#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
@@ -47,13 +47,12 @@ class ControllerObserver : public base::CheckedObserver {
   virtual void OnUserActionsChanged(
       const std::vector<UserAction>& user_actions);
 
-  // Gets or clears request for payment information.
-  virtual void OnPaymentRequestOptionsChanged(
-      const PaymentRequestOptions* options);
+  // Report that the options configuring a CollectUserDataAction have changed.
+  virtual void OnCollectUserDataOptionsChanged(
+      const CollectUserDataOptions* options);
 
-  // Updates the currently selected contact information / payment method.
-  virtual void OnPaymentRequestInformationChanged(
-      const PaymentInformation* state);
+  // Updates the currently selected user data (e.g., contact information).
+  virtual void OnUserDataChanged(const UserData* state);
 
   // Called when details have changed. Details will be null if they have been
   // cleared.

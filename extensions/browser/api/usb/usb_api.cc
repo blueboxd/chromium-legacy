@@ -633,13 +633,13 @@ void UsbFindDevicesFunction::OnGetDevicesComplete(
             APIPermission::kUsbDevice, param.get())) {
       barrier_.Run();
     } else {
-      device::mojom::UsbDevicePtr device_ptr;
+      mojo::Remote<device::mojom::UsbDevice> device;
       usb_device_manager()->GetDevice(device_info->guid,
-                                      mojo::MakeRequest(&device_ptr));
-      auto* device = device_ptr.get();
-      device->Open(mojo::WrapCallbackWithDropHandler(
+                                      device.BindNewPipeAndPassReceiver());
+      auto* device_raw = device.get();
+      device_raw->Open(mojo::WrapCallbackWithDropHandler(
           base::BindOnce(&UsbFindDevicesFunction::OnDeviceOpened, this,
-                         device_info->guid, std::move(device_ptr)),
+                         device_info->guid, std::move(device)),
           base::BindOnce(&UsbFindDevicesFunction::OnDisconnect, this)));
     }
   }
@@ -647,13 +647,13 @@ void UsbFindDevicesFunction::OnGetDevicesComplete(
 
 void UsbFindDevicesFunction::OnDeviceOpened(
     const std::string& guid,
-    device::mojom::UsbDevicePtr device_ptr,
+    mojo::Remote<device::mojom::UsbDevice> device,
     device::mojom::UsbOpenDeviceError error) {
-  if (error == device::mojom::UsbOpenDeviceError::OK && device_ptr) {
+  if (error == device::mojom::UsbOpenDeviceError::OK && device) {
     ApiResourceManager<UsbDeviceResource>* manager =
         ApiResourceManager<UsbDeviceResource>::Get(browser_context());
     UsbDeviceResource* resource =
-        new UsbDeviceResource(extension_id(), guid, std::move(device_ptr));
+        new UsbDeviceResource(extension_id(), guid, std::move(device));
     result_->Append(PopulateConnectionHandle(manager->Add(resource), vendor_id_,
                                              product_id_));
   }
@@ -859,21 +859,22 @@ ExtensionFunction::ResponseAction UsbOpenDeviceFunction::Run() {
     return RespondNow(Error(kErrorNoDevice));
   }
 
-  device::mojom::UsbDevicePtr device_ptr;
-  device_manager->GetDevice(device_info->guid, mojo::MakeRequest(&device_ptr));
-  auto* device = device_ptr.get();
-  device->Open(mojo::WrapCallbackWithDropHandler(
+  mojo::Remote<device::mojom::UsbDevice> device;
+  device_manager->GetDevice(device_info->guid,
+                            device.BindNewPipeAndPassReceiver());
+  auto* device_raw = device.get();
+  device_raw->Open(mojo::WrapCallbackWithDropHandler(
       base::BindOnce(&UsbOpenDeviceFunction::OnDeviceOpened, this,
-                     device_info->guid, std::move(device_ptr)),
+                     device_info->guid, std::move(device)),
       base::BindOnce(&UsbOpenDeviceFunction::OnDisconnect, this)));
   return RespondLater();
 }
 
 void UsbOpenDeviceFunction::OnDeviceOpened(
     std::string guid,
-    device::mojom::UsbDevicePtr device_ptr,
+    mojo::Remote<device::mojom::UsbDevice> device,
     device::mojom::UsbOpenDeviceError error) {
-  if (error != device::mojom::UsbOpenDeviceError::OK || !device_ptr) {
+  if (error != device::mojom::UsbOpenDeviceError::OK || !device) {
     Respond(Error(kErrorOpen));
     return;
   }
@@ -886,7 +887,7 @@ void UsbOpenDeviceFunction::OnDeviceOpened(
       usb_device_manager()->GetDeviceInfo(guid);
   DCHECK(device_info);
   UsbDeviceResource* resource = new UsbDeviceResource(
-      extension_id(), device_info->guid, std::move(device_ptr));
+      extension_id(), device_info->guid, std::move(device));
   Respond(OneArgument(PopulateConnectionHandle(manager->Add(resource),
                                                device_info->vendor_id,
                                                device_info->product_id)));

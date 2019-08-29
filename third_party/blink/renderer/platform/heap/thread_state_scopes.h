@@ -87,7 +87,6 @@ class ThreadState::AtomicPauseScope final {
 
  private:
   ThreadState* const thread_state_;
-  ScriptForbiddenScope script_forbidden_scope;
   GCForbiddenScope gc_forbidden_scope;
 };
 

@@ -7,10 +7,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <vector>
 
 #include "base/scoped_generic.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "third_party/minizip/src/mz.h"
 #include "third_party/minizip/src/mz_strm_mem.h"
 #include "third_party/minizip/src/mz_zip.h"

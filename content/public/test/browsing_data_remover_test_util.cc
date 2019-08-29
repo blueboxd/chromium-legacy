@@ -5,7 +5,7 @@
 #include "content/public/test/browsing_data_remover_test_util.h"
 
 #include "base/bind.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace content {

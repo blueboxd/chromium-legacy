@@ -290,7 +290,7 @@ class _BuildHelper(object):
 
   def _SetDefaults(self):
     has_goma_dir = os.path.exists(os.path.join(os.path.expanduser('~'), 'goma'))
-    self.use_goma = self.use_goma or has_goma_dir
+    self.use_goma = self.use_goma and has_goma_dir
     self.max_load_average = (self.max_load_average or
                              str(multiprocessing.cpu_count()))
 

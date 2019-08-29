@@ -402,7 +402,7 @@ message ActionProto {
     ShowDetailsProto show_details = 32;
     ResetProto reset = 34;
     StopProto stop = 35;
-    GetPaymentInformationProto get_payment_information = 36;
+    CollectUserDataProto collect_user_data = 36;
     SetAttributeProto set_attribute = 37;
     ShowInfoBoxProto show_info_box = 39;
     ExpectNavigationProto expect_navigation = 40;
@@ -419,15 +419,15 @@ message ActionProto {
   optional bool clean_contextual_ui = 33;
 }
 
-// Result message used to send payment request related data to the server.
-message PaymentDetails {
+// Result of |CollectUserDataProto| to be sent to the server.
+message CollectUserDataResultProto {
   optional string card_issuer_network = 1;
   // Whether the integrated terms and conditions approval checkbox was checked.
   optional bool is_terms_and_conditions_accepted = 2;
   // The email address of the payer.
   optional string payer_email = 3;
   // If set, this means that the user triggered the action in
-  // |GetPaymentInformationProto.additional_actions| that has index
+  // |CollectUserDataProto.additional_actions| that has index
   // |additional_action_index|.
   optional int32 additional_action_index = 4;
   // If set, this means that the user clicked on one of the terms and conditions
@@ -448,8 +448,8 @@ message ProcessedActionProto {
   oneof result_data {
     PromptProto.Choice prompt_choice = 5;
     string html_source = 12;
-    // Should be set as a result of GetPaymentInformationAction.
-    PaymentDetails payment_details = 15;
+    // Should be set as a result of CollectUserDataAction.
+    CollectUserDataResultProto collect_user_data_result = 15;
     // Should be set as a result of SetFormFieldValueAction.
     SetFormFieldValueProto.Result set_form_field_value_result = 17;
     // May be set as a result of WaitForDomProto.
@@ -574,8 +574,8 @@ enum ProcessedActionStatusProto {
   // ProcessedActionProto.UnexpectedErrorInfoProto contains more details.
   OTHER_ACTION_STATUS = 3;
 
-  // The action failed to get payment information.
-  PAYMENT_REQUEST_ERROR = 4;
+  // The action failed to collect the requested user data.
+  COLLECT_USER_DATA_ERROR = 4;
 
   // Server asked the client to execute an unknown or unsupported action.
   UNSUPPORTED_ACTION = 5;
@@ -611,8 +611,7 @@ enum ProcessedActionStatusProto {
   //
   // This is currently returned by the autofill action, when it could not find
   // the credit card or the address it needs in the client memory. This is
-  // usually the sign that the Get Payment Information action was not run or
-  // failed.
+  // usually the sign that the CollectUserDataAction was not run or failed.
   //
   PRECONDITION_FAILED = 10;
 
@@ -1166,7 +1165,7 @@ message LoginDetailsProto {
 
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
-message GetPaymentInformationProto {
+message CollectUserDataProto {
   enum TermsAndConditionsState {
     // No choice has been made yet.
     NOT_SELECTED = 0;
@@ -1177,7 +1176,7 @@ message GetPaymentInformationProto {
   }
 
   optional string prompt = 1;
-  // NOTE: Payment request does not ask separately for billing address.
+  // NOTE: The action does not ask separately for billing address.
   // The billing address is associated with the credit card that was picked.
   optional string billing_address_name = 2;
   // If present will save the shipping address inside the memory under the
@@ -1185,13 +1184,13 @@ message GetPaymentInformationProto {
   // under this name can be reused by UseAddressAction.
   optional string shipping_address_name = 3;
   // When 'true' will ask for the credit card.
-  optional bool ask_for_payment = 4;
+  optional bool request_payment_method = 4;
   // If non-empty, the UI will filter the available basic-card networks
   // accordingly (e.g., only `visa' and `mastercard').
   repeated string supported_basic_card_networks = 6;
   // Contact details that should be gathered.
   optional ContactDetailsProto contact_details = 5;
-  // Override for the text of the confirm button in the payment request.
+  // Override for the text of the confirm button.
   optional string confirm_button_text = 7;
   // The initial state of the terms & conditions choice.
   optional TermsAndConditionsState terms_and_conditions_state = 8;
@@ -1366,10 +1365,10 @@ message SetFormFieldValueProto {
       // as "\r" or "\t".
       string keyboard_input = 3;
       // Use the username from the Chrome password manager login previously
-      // selected in a GetPaymentInformationAction.
+      // selected in a CollectUserDataAction.
       bool use_username = 4;
       // Use the password from the Chrome password manager login previously
-      // selected in a GetPaymentInformationAction.
+      // selected in a CollectUserDataAction.
       bool use_password = 5;
     }
   }

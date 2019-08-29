@@ -62,11 +62,12 @@ class Lock::ThenFunction final : public ScriptFunction {
 };
 
 // static
-Lock* Lock::Create(ScriptState* script_state,
-                   const String& name,
-                   mojom::blink::LockMode mode,
-                   mojom::blink::LockHandleAssociatedPtr handle,
-                   LockManager* manager) {
+Lock* Lock::Create(
+    ScriptState* script_state,
+    const String& name,
+    mojom::blink::LockMode mode,
+    mojo::PendingAssociatedRemote<mojom::blink::LockHandle> handle,
+    LockManager* manager) {
   return MakeGarbageCollected<Lock>(script_state, name, mode, std::move(handle),
                                     manager);
 }
@@ -74,14 +75,14 @@ Lock* Lock::Create(ScriptState* script_state,
 Lock::Lock(ScriptState* script_state,
            const String& name,
            mojom::blink::LockMode mode,
-           mojom::blink::LockHandleAssociatedPtr handle,
+           mojo::PendingAssociatedRemote<mojom::blink::LockHandle> handle,
            LockManager* manager)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       name_(name),
       mode_(mode),
       handle_(std::move(handle)),
       manager_(manager) {
-  handle_.set_connection_error_handler(
+  handle_.set_disconnect_handler(
       WTF::Bind(&Lock::OnConnectionError, WrapWeakPersistent(this)));
 }
 

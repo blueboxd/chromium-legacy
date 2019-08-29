@@ -14,7 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 
@@ -27,7 +28,7 @@ class FakeUsbDevice : public mojom::UsbDevice,
                       public FakeUsbDeviceInfo::Observer {
  public:
   static void Create(scoped_refptr<FakeUsbDeviceInfo> device,
-                     mojom::UsbDeviceRequest request,
+                     mojo::PendingReceiver<device::mojom::UsbDevice> receiver,
                      mojom::UsbDeviceClientPtr client);
   ~FakeUsbDevice() override;
 
@@ -83,7 +84,7 @@ class FakeUsbDevice : public mojom::UsbDevice,
 
   void CloseHandle();
 
-  mojo::StrongBindingPtr<mojom::UsbDevice> binding_;
+  mojo::SelfOwnedReceiverRef<mojom::UsbDevice> receiver_;
 
  private:
   const scoped_refptr<FakeUsbDeviceInfo> device_;

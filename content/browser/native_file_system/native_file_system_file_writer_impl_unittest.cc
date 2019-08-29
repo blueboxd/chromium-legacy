@@ -31,6 +31,7 @@
 
 using blink::mojom::NativeFileSystemStatus;
 using storage::FileSystemURL;
+using storage::IsolatedContext;
 
 namespace content {
 
@@ -51,13 +52,22 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     file_system_context_ = CreateFileSystemContextForTesting(
         /*quota_manager_proxy=*/nullptr, dir_.GetPath());
 
+    auto* isolated_context = IsolatedContext::GetInstance();
+    std::string base_name;
+    IsolatedContext::ScopedFSHandle fs =
+        isolated_context->RegisterFileSystemForPath(
+            storage::kFileSystemTypeNativeLocal, std::string(), dir_.GetPath(),
+            &base_name);
+    base::FilePath root_path =
+        isolated_context->CreateVirtualRootPath(fs.id()).AppendASCII(base_name);
+
     test_file_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
-        base::FilePath::FromUTF8Unsafe("test"));
+        kTestOrigin.GetURL(), storage::kFileSystemTypeIsolated,
+        root_path.AppendASCII("test"));
 
     test_swap_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
-        base::FilePath::FromUTF8Unsafe("test.crswap"));
+        kTestOrigin.GetURL(), storage::kFileSystemTypeIsolated,
+        root_path.AppendASCII("test.crswap"));
 
     ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::CreateFile(file_system_context_.get(),
@@ -83,8 +93,13 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
             /*frame_id=*/MSG_ROUTING_NONE),
         test_file_url_, test_swap_url_,
         NativeFileSystemManagerImpl::SharedHandleState(
-            permission_grant_, permission_grant_, /*file_system=*/{}));
+            permission_grant_, permission_grant_, std::move(fs)));
     handle_->set_skip_quarantine_service_for_testing();
+  }
+
+  void TearDown() override {
+    task_environment_.RunUntilIdle();
+    EXPECT_TRUE(dir_.Delete());
   }
 
   blink::mojom::BlobPtr CreateBlob(const std::string& contents) {
@@ -267,12 +282,9 @@ TEST_F(NativeFileSystemFileWriterImplTest, HashSimpleOK) {
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 3u);
 
-  base::FilePath real_path = dir_.GetPath().Append(test_swap_url_.path());
-
   base::RunLoop loop;
-  handle_->compute_file_hash_for_testing(
-      real_path, base::BindLambdaForTesting([&](base::File::Error result,
-                                                const std::string& hash_value) {
+  handle_->ComputeHashForSwapFileForTesting(base::BindLambdaForTesting(
+      [&](base::File::Error result, const std::string& hash_value) {
         EXPECT_EQ(base::File::FILE_OK, result);
         EXPECT_EQ(
             "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD",
@@ -283,11 +295,9 @@ TEST_F(NativeFileSystemFileWriterImplTest, HashSimpleOK) {
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, HashEmptyOK) {
-  base::FilePath real_path = dir_.GetPath().Append(test_swap_url_.path());
   base::RunLoop loop;
-  handle_->compute_file_hash_for_testing(
-      real_path, base::BindLambdaForTesting([&](base::File::Error result,
-                                                const std::string& hash_value) {
+  handle_->ComputeHashForSwapFileForTesting(base::BindLambdaForTesting(
+      [&](base::File::Error result, const std::string& hash_value) {
         EXPECT_EQ(base::File::FILE_OK, result);
         EXPECT_EQ(
             "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
@@ -298,11 +308,13 @@ TEST_F(NativeFileSystemFileWriterImplTest, HashEmptyOK) {
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, HashNonExistingFileFails) {
-  base::FilePath real_path = dir_.GetPath().AppendASCII("i_do_not_exist.txt");
+  ASSERT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::Remove(file_system_context_.get(),
+                                        handle_->swap_url(),
+                                        /*recursive=*/false));
   base::RunLoop loop;
-  handle_->compute_file_hash_for_testing(
-      real_path, base::BindLambdaForTesting([&](base::File::Error result,
-                                                const std::string& hash_value) {
+  handle_->ComputeHashForSwapFileForTesting(base::BindLambdaForTesting(
+      [&](base::File::Error result, const std::string& hash_value) {
         EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, result);
         loop.Quit();
       }));
@@ -317,11 +329,9 @@ TEST_F(NativeFileSystemFileWriterImplTest, HashLargerFileOK) {
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, target_size);
 
-  base::FilePath real_path = dir_.GetPath().Append(test_swap_url_.path());
   base::RunLoop loop;
-  handle_->compute_file_hash_for_testing(
-      real_path, base::BindLambdaForTesting([&](base::File::Error result,
-                                                const std::string& hash_value) {
+  handle_->ComputeHashForSwapFileForTesting(base::BindLambdaForTesting(
+      [&](base::File::Error result, const std::string& hash_value) {
         EXPECT_EQ(base::File::FILE_OK, result);
         EXPECT_EQ(
             "34A82D28CB1E0BA92CADC4BE8497DC9EEA9AC4F63B9C445A9E52D298990AC491",
@@ -375,15 +385,19 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetInFile) {
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetPastFile) {
+  // TODO(https://crbug.com/998913): Currently expectations here are different
+  // from what WPT tests are asserting. Figure out what the desired behavior is
+  // and make both tests match.
   uint64_t bytes_written;
   NativeFileSystemStatus result = WriteSync(4, "abc", &bytes_written);
-  EXPECT_EQ(result, NativeFileSystemStatus::kFileError);
-  EXPECT_EQ(bytes_written, 0u);
+  EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_EQ(bytes_written, 3u);
 
   result = CloseSync();
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
-  EXPECT_EQ("", ReadFile(test_file_url_));
+  using namespace std::string_literals;
+  EXPECT_EQ("\0\0\0\0abc"s, ReadFile(test_file_url_));
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, TruncateShrink) {

@@ -33,10 +33,10 @@ constexpr char kOtherOrigin[] = "https://www.other_origin.de/login";
 
 // Creates a |PasswordForm| with the supplied |origin| and |username|. The
 // password is always set to |kLeakedPassword|.
-PasswordForm CreateForm(const char* origin, const char* username) {
+PasswordForm CreateForm(base::StringPiece origin, base::StringPiece username) {
   PasswordForm form;
   form.origin = GURL(ASCIIToUTF16(origin));
-  form.username_value = std::move(ASCIIToUTF16(username));
+  form.username_value = ASCIIToUTF16(username);
   form.password_value = ASCIIToUTF16(kLeakedPassword);
   form.signon_realm = form.origin.GetOrigin().spec();
   return form;
@@ -83,17 +83,16 @@ class LeakDetectionDelegateHelperTest : public testing::Test {
   void SetGetLoginByPasswordConsumerInvocation(
       std::vector<PasswordForm> password_forms) {
     EXPECT_CALL(*store_.get(), GetLoginsByPassword(_, _))
-        .WillRepeatedly(WithArg<1>(
-            InvokeConsumerWithPasswordForms(std::move(password_forms))));
+        .WillRepeatedly(
+            WithArg<1>(InvokeConsumerWithPasswordForms(password_forms)));
   }
 
   // Set the expectation for the |CredentialLeakType| in the callback_.
-  void SetOnShowLeakDetectionNotificationExpectation(bool is_saved,
-                                                     bool is_reused) {
-    EXPECT_CALL(
-        callback_,
-        Run(CreateLeakTypeFromBools(is_saved, is_reused, /*is_synced=*/true),
-            GURL(kLeakedOrigin), ASCIIToUTF16(kLeakedUsername)))
+  void SetOnShowLeakDetectionNotificationExpectation(IsSaved is_saved,
+                                                     IsReused is_reused) {
+    EXPECT_CALL(callback_,
+                Run(CreateLeakType(is_saved, is_reused, IsSyncing(true)),
+                    GURL(kLeakedOrigin), ASCIIToUTF16(kLeakedUsername)))
         .Times(1);
   }
 
@@ -107,8 +106,8 @@ TEST_F(LeakDetectionDelegateHelperTest, NeitherSaveNotReused) {
   std::vector<PasswordForm> password_forms;
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/false,
-                                                /*is_reused=*/false);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false),
+                                                IsReused(false));
   InitiateGetCredentialLeakType();
 }
 
@@ -118,8 +117,7 @@ TEST_F(LeakDetectionDelegateHelperTest, SavedLeakedCredentials) {
       CreateForm(kLeakedOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/true,
-                                                /*is_reused=*/false);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(false));
   InitiateGetCredentialLeakType();
 }
 
@@ -131,8 +129,7 @@ TEST_F(LeakDetectionDelegateHelperTest,
       CreateForm(kOtherOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/true,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
@@ -145,8 +142,7 @@ TEST_F(LeakDetectionDelegateHelperTest,
       CreateForm(kLeakedOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/true,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
@@ -156,8 +152,7 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPasswordWithOtherUsername) {
       CreateForm(kLeakedOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/false,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
@@ -167,8 +162,7 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPasswordOnOtherOrigin) {
       CreateForm(kOtherOrigin, kLeakedUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/false,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 
@@ -179,8 +173,7 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPassword) {
       CreateForm(kOtherOrigin, kOtherUsername)};
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
-  SetOnShowLeakDetectionNotificationExpectation(/*is_saved=*/false,
-                                                /*is_reused=*/true);
+  SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
   InitiateGetCredentialLeakType();
 }
 

@@ -5,15 +5,13 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_CONTENT_BROWSER_CLIENT_H_
 #define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_CONTENT_BROWSER_CLIENT_H_
 
-#include <lib/zx/channel.h>
+#include <memory>
 
 #include <fuchsia/web/cpp/fidl.h>
-#include <memory>
-#include <string>
+#include <lib/zx/channel.h>
 
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
-#include "fuchsia/engine/browser/content_directory_loader_factory.h"
 #include "fuchsia/engine/browser/web_engine_cdm_service.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
@@ -23,31 +21,22 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit WebEngineContentBrowserClient(
       fidl::InterfaceRequest<fuchsia::web::Context> request);
-  ~WebEngineContentBrowserClient() final;
+  ~WebEngineContentBrowserClient() override;
 
   WebEngineBrowserMainParts* main_parts_for_test() const { return main_parts_; }
 
   // ContentBrowserClient overrides.
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) final;
-  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() final;
-  std::string GetProduct() final;
-  std::string GetUserAgent() final;
+      const content::MainFunctionParams& parameters) override;
+  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  std::string GetProduct() override;
+  std::string GetUserAgent() override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
-                           content::WebPreferences* web_prefs) final;
+                           content::WebPreferences* web_prefs) override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) final;
-  void RegisterNonNetworkNavigationURLLoaderFactories(
-      int frame_tree_node_id,
-      NonNetworkURLLoaderFactoryMap* factories) final;
-  void RegisterNonNetworkSubresourceURLLoaderFactories(
-      int render_process_id,
-      int render_frame_id,
-      NonNetworkURLLoaderFactoryMap* factories) final;
-  void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
-                                      int child_process_id) final;
+      mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
   fidl::InterfaceRequest<fuchsia::web::Context> request_;

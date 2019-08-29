@@ -23,6 +23,11 @@ bool InterpolableList::Equals(const InterpolableValue& other) const {
   return true;
 }
 
+void InterpolableNumber::AssertCanInterpolateWith(
+    const InterpolableValue& other) const {
+  DCHECK(other.IsNumber());
+}
+
 void InterpolableNumber::Interpolate(const InterpolableValue& to,
                                      const double progress,
                                      InterpolableValue& result) const {
@@ -38,14 +43,17 @@ void InterpolableNumber::Interpolate(const InterpolableValue& to,
         value_ * (1 - progress) + to_number.value_ * progress;
 }
 
+void InterpolableList::AssertCanInterpolateWith(
+    const InterpolableValue& other) const {
+  DCHECK(other.IsList());
+  DCHECK_EQ(ToInterpolableList(other).length(), length());
+}
+
 void InterpolableList::Interpolate(const InterpolableValue& to,
                                    const double progress,
                                    InterpolableValue& result) const {
   const InterpolableList& to_list = ToInterpolableList(to);
   InterpolableList& result_list = ToInterpolableList(result);
-
-  DCHECK_EQ(to_list.length(), length());
-  DCHECK_EQ(result_list.length(), length());
 
   for (wtf_size_t i = 0; i < length(); i++) {
     DCHECK(values_[i]);

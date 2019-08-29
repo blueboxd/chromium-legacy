@@ -18,12 +18,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/mojom/app.mojom.h"
 #include "components/arc/mojom/app_permissions.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/system_connector.h"
@@ -79,79 +77,6 @@ void OnArcAppIconCompletelyLoaded(
   std::move(callback).Run(std::move(iv));
 }
 
-// ArcApps::LoadIcon (via ArcApps::LoadIconFromVM) runs a series of callbacks,
-// defined here in back-to-front order so that e.g. the compiler knows
-// LoadIcon1's signature when compiling LoadIcon0 (which binds LoadIcon1).
-//
-//  - LoadIcon0 is called back when the AppConnectionHolder is connected.
-//  - LoadIcon1 is called back when the compressed (PNG) image is loaded.
-
-void LoadIcon1(apps::mojom::IconCompression icon_compression,
-               apps::mojom::Publisher::LoadIconCallback callback,
-               const std::vector<uint8_t>& icon_png_data) {
-  switch (icon_compression) {
-    case apps::mojom::IconCompression::kUnknown:
-      std::move(callback).Run(apps::mojom::IconValue::New());
-      break;
-
-    case apps::mojom::IconCompression::kUncompressed:
-      LOG(ERROR) << "unexpected ArcApps icon_compression";
-      std::move(callback).Run(apps::mojom::IconValue::New());
-      break;
-
-    case apps::mojom::IconCompression::kCompressed:
-      apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-      iv->icon_compression = apps::mojom::IconCompression::kCompressed;
-      iv->compressed = icon_png_data;
-      iv->is_placeholder_icon = false;
-      std::move(callback).Run(std::move(iv));
-      break;
-  }
-}
-
-void LoadIcon0(apps::mojom::IconCompression icon_compression,
-               int size_hint_in_px,
-               std::string package_name,
-               std::string activity,
-               std::string icon_resource_id,
-               apps::mojom::Publisher::LoadIconCallback callback,
-               apps::ArcApps::AppConnectionHolder* app_connection_holder) {
-  // TODO(crbug.com/826982): consider that, per khmel@, "Regardless the number
-  // of request for the same icon scale it should be only one and only one
-  // request to ARC++ container to extract the real data. This logic is
-  // isolated inside ArcAppListPrefs and I don't think that anybody else should
-  // call mojom RequestAppIcon".
-  //
-  // Note that this TODO will be obsolete when the LoadIcon0 code is deleted,
-  // which depends on ArcAppIcon being able to provide *compressed* icons
-  // (PNG-encoded bytes, not RGBA pixels).
-  if (app_connection_holder) {
-    if (icon_resource_id.empty()) {
-      auto* app_instance =
-          ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder, RequestAppIcon);
-      if (app_instance) {
-        app_instance->RequestAppIcon(
-            package_name, activity, size_hint_in_px,
-            base::BindOnce(&LoadIcon1, icon_compression, std::move(callback)));
-        return;
-      }
-
-    } else {
-      auto* app_instance = ARC_GET_INSTANCE_FOR_METHOD(app_connection_holder,
-                                                       RequestShortcutIcon);
-      if (app_instance) {
-        app_instance->RequestShortcutIcon(
-            icon_resource_id, size_hint_in_px,
-            base::BindOnce(&LoadIcon1, icon_compression, std::move(callback)));
-        return;
-      }
-    }
-  }
-
-  // On failure, we still run the callback, with the zero IconValue.
-  std::move(callback).Run(apps::mojom::IconValue::New());
-}
-
 void UpdateAppPermissions(
     const base::flat_map<arc::mojom::AppPermission,
                          arc::mojom::PermissionStatePtr>& new_permissions,
@@ -205,7 +130,6 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
     return;
   }
   prefs->AddObserver(this);
-  prefs->app_connection_holder()->AddObserver(this);
 
   apps::mojom::PublisherPtr publisher;
   binding_.Bind(mojo::MakeRequest(&publisher));
@@ -213,14 +137,7 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
                                  apps::mojom::AppType::kArc);
 }
 
-ArcApps::~ArcApps() {
-  // Clear out any pending icon calls to avoid a CHECK for Mojo callbacks that
-  // have not been run at App Service destruction.
-  for (auto& pending : pending_load_icon_calls_) {
-    std::move(pending).Run(nullptr);
-  }
-  pending_load_icon_calls_.clear();
-}
+ArcApps::~ArcApps() = default;
 
 void ArcApps::Shutdown() {
   // Disconnect the observee-observer connections that we made during the
@@ -244,12 +161,6 @@ void ArcApps::Shutdown() {
   // notified so we can re-connect this object as an observer.
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (prefs) {
-    auto* holder = prefs->app_connection_holder();
-    // The null check is for unit tests. On production, |holder| is always
-    // non-null.
-    if (holder) {
-      holder->RemoveObserver(this);
-    }
     prefs->RemoveObserver(this);
     arc_icon_once_loader_.StopObserving(prefs);
   }
@@ -405,20 +316,6 @@ void ArcApps::OpenNativeSettings(const std::string& app_id) {
                        display::Screen::GetScreen()->GetPrimaryDisplay().id());
 }
 
-void ArcApps::OnConnectionReady() {
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (!prefs) {
-    return;
-  }
-  AppConnectionHolder* app_connection_holder = prefs->app_connection_holder();
-  if (app_connection_holder && app_connection_holder->IsConnected()) {
-    for (auto& pending : pending_load_icon_calls_) {
-      std::move(pending).Run(app_connection_holder);
-    }
-    pending_load_icon_calls_.clear();
-  }
-}
-
 void ArcApps::OnAppRegistered(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
@@ -530,46 +427,10 @@ void ArcApps::LoadIconFromVM(const std::string app_id,
     return;
   }
 
-  // TODO(crbug.com/826982): drop the "not kUnknown" condition, and
-  // always use the arc_icon_once_loader_.
-  //
-  // Once that happens, we can delete the rest of this function, the LoadIcon0
-  // code, the pending_load_icon_calls_ mechanism and any mention in this file
-  // (or its .h) of arc::ConnectionHolder or arc::ConnectionObserver.
-  if (icon_compression != apps::mojom::IconCompression::kUnknown) {
-    arc_icon_once_loader_.LoadIcon(
-        app_id, size_hint_in_dip, icon_compression,
-        base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_compression,
-                       size_hint_in_dip, icon_effects, std::move(callback)));
-    return;
-  }
-
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (prefs) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
-    if (app_info) {
-      constexpr bool quantize_to_supported_scale_factor = true;
-      base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
-          base::BindOnce(
-              &LoadIcon0, icon_compression,
-              apps_util::ConvertDipToPx(size_hint_in_dip,
-                                        quantize_to_supported_scale_factor),
-              app_info->package_name, app_info->activity,
-              app_info->icon_resource_id, std::move(callback));
-
-      AppConnectionHolder* app_connection_holder =
-          prefs->app_connection_holder();
-      if (app_connection_holder && app_connection_holder->IsConnected()) {
-        std::move(pending).Run(app_connection_holder);
-      } else {
-        pending_load_icon_calls_.push_back(std::move(pending));
-      }
-      return;
-    }
-  }
-
-  // On failure, we still run the callback, with the zero IconValue.
-  std::move(callback).Run(apps::mojom::IconValue::New());
+  arc_icon_once_loader_.LoadIcon(
+      app_id, size_hint_in_dip, icon_compression,
+      base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_compression,
+                     size_hint_in_dip, icon_effects, std::move(callback)));
 }
 
 void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,

@@ -78,6 +78,12 @@ void VideoTestEnvironment::SetUp() {
 }
 
 void VideoTestEnvironment::TearDown() {
+  // Some implementations (like VideoDecoder) might be destroyed on a different
+  // thread from the thread that the client releases it on. Call RunUntilIdle()
+  // to ensure this kind of destruction is finished before |task_environment_|
+  // is destroyed.
+  task_environment_->RunUntilIdle();
+  task_environment_ = nullptr;
 }
 
 base::FilePath::StringType VideoTestEnvironment::GetTestName() const {

@@ -44,6 +44,7 @@
 namespace blink {
 
 class Document;
+class DoublePoint;
 class VTTScanner;
 
 class VTTParserClient : public GarbageCollectedMixin {

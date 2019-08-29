@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -10,7 +12,6 @@
 #include "net/server/http_server.h"
 #include "net/socket/fuzzed_server_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 

@@ -4,11 +4,11 @@
 
 #include "services/device/generic_sensor/platform_sensor_reader_winrt.h"
 
+#include <cmath>
+
 #include "base/win/core_winrt_util.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
-#include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/mojom/sensor.mojom.h"
-#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
 
@@ -54,6 +54,16 @@ using ABI::Windows::Foundation::DateTime;
 using ABI::Windows::Foundation::ITypedEventHandler;
 using Microsoft::WRL::Callback;
 using Microsoft::WRL::ComPtr;
+
+double GetAngleBetweenOrientationSamples(SensorReading reading1,
+                                         SensorReading reading2) {
+  auto dot_product = reading1.orientation_quat.x * reading2.orientation_quat.x +
+                     reading1.orientation_quat.y * reading2.orientation_quat.y +
+                     reading1.orientation_quat.z * reading2.orientation_quat.z +
+                     reading1.orientation_quat.w * reading2.orientation_quat.w;
+
+  return 2.0 * acos(dot_product);
+}
 }  // namespace
 
 std::unique_ptr<PlatformSensorReaderWinBase>
@@ -332,6 +342,9 @@ PlatformSensorReaderWinrtLightSensor::Create() {
   return nullptr;
 }
 
+PlatformSensorReaderWinrtLightSensor::PlatformSensorReaderWinrtLightSensor() =
+    default;
+
 HRESULT PlatformSensorReaderWinrtLightSensor::OnReadingChangedCallback(
     ILightSensor* light_sensor,
     ILightSensorReadingChangedEventArgs* reading_changed_args) {
@@ -361,10 +374,17 @@ HRESULT PlatformSensorReaderWinrtLightSensor::OnReadingChangedCallback(
     return S_OK;
   }
 
-  SensorReading reading;
-  reading.als.value = lux;
-  reading.als.timestamp = timestamp_delta.InSecondsF();
-  client_->OnReadingUpdated(reading);
+  if (!has_received_first_sample_ ||
+      (abs(lux - last_reported_lux_) >=
+       (last_reported_lux_ * kLuxPercentThreshold))) {
+    SensorReading reading;
+    reading.als.value = lux;
+    reading.als.timestamp = timestamp_delta.InSecondsF();
+    client_->OnReadingUpdated(reading);
+
+    last_reported_lux_ = lux;
+    has_received_first_sample_ = true;
+  }
 
   return S_OK;
 }
@@ -379,6 +399,9 @@ PlatformSensorReaderWinrtAccelerometer::Create() {
   }
   return nullptr;
 }
+
+PlatformSensorReaderWinrtAccelerometer::
+    PlatformSensorReaderWinrtAccelerometer() = default;
 
 HRESULT PlatformSensorReaderWinrtAccelerometer::OnReadingChangedCallback(
     IAccelerometer* accelerometer,
@@ -423,16 +446,26 @@ HRESULT PlatformSensorReaderWinrtAccelerometer::OnReadingChangedCallback(
     return S_OK;
   }
 
-  // Windows.Devices.Sensors.Accelerometer exposes acceleration as
-  // proportional and in the same direction as the force of gravity.
-  // The generic sensor interface exposes acceleration simply as
-  // m/s^2, so the data must be converted.
-  SensorReading reading;
-  reading.accel.x = -x * kMeanGravity;
-  reading.accel.y = -y * kMeanGravity;
-  reading.accel.z = -z * kMeanGravity;
-  reading.accel.timestamp = timestamp_delta.InSecondsF();
-  client_->OnReadingUpdated(reading);
+  if (!has_received_first_sample_ ||
+      (abs(x - last_reported_x_) >= kAxisThreshold) ||
+      (abs(y - last_reported_y_) >= kAxisThreshold) ||
+      (abs(z - last_reported_z_) >= kAxisThreshold)) {
+    // Windows.Devices.Sensors.Accelerometer exposes acceleration as
+    // proportional and in the same direction as the force of gravity.
+    // The generic sensor interface exposes acceleration simply as
+    // m/s^2, so the data must be converted.
+    SensorReading reading;
+    reading.accel.x = -x * kMeanGravity;
+    reading.accel.y = -y * kMeanGravity;
+    reading.accel.z = -z * kMeanGravity;
+    reading.accel.timestamp = timestamp_delta.InSecondsF();
+    client_->OnReadingUpdated(reading);
+
+    last_reported_x_ = x;
+    last_reported_y_ = y;
+    last_reported_z_ = z;
+    has_received_first_sample_ = true;
+  }
 
   return S_OK;
 }
@@ -446,6 +479,9 @@ PlatformSensorReaderWinrtGyrometer::Create() {
   }
   return nullptr;
 }
+
+PlatformSensorReaderWinrtGyrometer::PlatformSensorReaderWinrtGyrometer() =
+    default;
 
 HRESULT PlatformSensorReaderWinrtGyrometer::OnReadingChangedCallback(
     IGyrometer* gyrometer,
@@ -490,15 +526,25 @@ HRESULT PlatformSensorReaderWinrtGyrometer::OnReadingChangedCallback(
     return S_OK;
   }
 
-  // Windows.Devices.Sensors.Gyrometer exposes angular velocity as degrees,
-  // but the generic sensor interface uses radians so the data must be
-  // converted.
-  SensorReading reading;
-  reading.gyro.x = gfx::DegToRad(x);
-  reading.gyro.y = gfx::DegToRad(y);
-  reading.gyro.z = gfx::DegToRad(z);
-  reading.gyro.timestamp = timestamp_delta.InSecondsF();
-  client_->OnReadingUpdated(reading);
+  if (!has_received_first_sample_ ||
+      (abs(x - last_reported_x_) >= kDegreeThreshold) ||
+      (abs(y - last_reported_y_) >= kDegreeThreshold) ||
+      (abs(z - last_reported_z_) >= kDegreeThreshold)) {
+    // Windows.Devices.Sensors.Gyrometer exposes angular velocity as degrees,
+    // but the generic sensor interface uses radians so the data must be
+    // converted.
+    SensorReading reading;
+    reading.gyro.x = gfx::DegToRad(x);
+    reading.gyro.y = gfx::DegToRad(y);
+    reading.gyro.z = gfx::DegToRad(z);
+    reading.gyro.timestamp = timestamp_delta.InSecondsF();
+    client_->OnReadingUpdated(reading);
+
+    last_reported_x_ = x;
+    last_reported_y_ = y;
+    last_reported_z_ = z;
+    has_received_first_sample_ = true;
+  }
 
   return S_OK;
 }
@@ -512,6 +558,9 @@ PlatformSensorReaderWinrtMagnetometer::Create() {
   }
   return nullptr;
 }
+
+PlatformSensorReaderWinrtMagnetometer::PlatformSensorReaderWinrtMagnetometer() =
+    default;
 
 HRESULT PlatformSensorReaderWinrtMagnetometer::OnReadingChangedCallback(
     IMagnetometer* magnetometer,
@@ -556,12 +605,22 @@ HRESULT PlatformSensorReaderWinrtMagnetometer::OnReadingChangedCallback(
     return S_OK;
   }
 
-  SensorReading reading;
-  reading.magn.x = x;
-  reading.magn.y = y;
-  reading.magn.z = z;
-  reading.magn.timestamp = timestamp_delta.InSecondsF();
-  client_->OnReadingUpdated(reading);
+  if (!has_received_first_sample_ ||
+      (abs(x - last_reported_x_) >= kMicroteslaThreshold) ||
+      (abs(y - last_reported_y_) >= kMicroteslaThreshold) ||
+      (abs(z - last_reported_z_) >= kMicroteslaThreshold)) {
+    SensorReading reading;
+    reading.magn.x = x;
+    reading.magn.y = y;
+    reading.magn.z = z;
+    reading.magn.timestamp = timestamp_delta.InSecondsF();
+    client_->OnReadingUpdated(reading);
+
+    last_reported_x_ = x;
+    last_reported_y_ = y;
+    last_reported_z_ = z;
+    has_received_first_sample_ = true;
+  }
 
   return S_OK;
 }
@@ -576,6 +635,9 @@ PlatformSensorReaderWinrtAbsOrientationEulerAngles::Create() {
   }
   return nullptr;
 }
+
+PlatformSensorReaderWinrtAbsOrientationEulerAngles::
+    PlatformSensorReaderWinrtAbsOrientationEulerAngles() = default;
 
 HRESULT
 PlatformSensorReaderWinrtAbsOrientationEulerAngles::OnReadingChangedCallback(
@@ -621,12 +683,22 @@ PlatformSensorReaderWinrtAbsOrientationEulerAngles::OnReadingChangedCallback(
     return S_OK;
   }
 
-  SensorReading reading;
-  reading.orientation_euler.x = x;
-  reading.orientation_euler.y = y;
-  reading.orientation_euler.z = z;
-  reading.orientation_euler.timestamp = timestamp_delta.InSecondsF();
-  client_->OnReadingUpdated(reading);
+  if (!has_received_first_sample_ ||
+      (abs(x - last_reported_x_) >= kDegreeThreshold) ||
+      (abs(y - last_reported_y_) >= kDegreeThreshold) ||
+      (abs(z - last_reported_z_) >= kDegreeThreshold)) {
+    SensorReading reading;
+    reading.orientation_euler.x = x;
+    reading.orientation_euler.y = y;
+    reading.orientation_euler.z = z;
+    reading.orientation_euler.timestamp = timestamp_delta.InSecondsF();
+    client_->OnReadingUpdated(reading);
+
+    last_reported_x_ = x;
+    last_reported_y_ = y;
+    last_reported_z_ = z;
+    has_received_first_sample_ = true;
+  }
 
   return S_OK;
 }
@@ -641,6 +713,12 @@ PlatformSensorReaderWinrtAbsOrientationQuaternion::Create() {
   }
   return nullptr;
 }
+
+PlatformSensorReaderWinrtAbsOrientationQuaternion::
+    PlatformSensorReaderWinrtAbsOrientationQuaternion() = default;
+
+PlatformSensorReaderWinrtAbsOrientationQuaternion::
+    ~PlatformSensorReaderWinrtAbsOrientationQuaternion() = default;
 
 HRESULT
 PlatformSensorReaderWinrtAbsOrientationQuaternion::OnReadingChangedCallback(
@@ -709,7 +787,19 @@ PlatformSensorReaderWinrtAbsOrientationQuaternion::OnReadingChangedCallback(
   reading.orientation_quat.y = y;
   reading.orientation_quat.z = z;
   reading.orientation_quat.timestamp = timestamp_delta.InSecondsF();
-  client_->OnReadingUpdated(reading);
+
+  // As per
+  // https://docs.microsoft.com/en-us/windows-hardware/drivers/sensors/orientation-sensor-thresholds,
+  // thresholding should be done on angle between two quaternions:
+  // 2 * cos-1(dot_product(q1, q2))
+  auto angle =
+      abs(GetAngleBetweenOrientationSamples(reading, last_reported_sample));
+  if (!has_received_first_sample_ || (angle >= kRadianThreshold)) {
+    client_->OnReadingUpdated(reading);
+
+    last_reported_sample = reading;
+    has_received_first_sample_ = true;
+  }
 
   return S_OK;
 }

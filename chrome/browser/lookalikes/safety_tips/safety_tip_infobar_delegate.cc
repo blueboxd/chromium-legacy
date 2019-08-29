@@ -17,36 +17,40 @@
 
 using content::WebContents;
 using safety_tips::SafetyTipInfoBarDelegate;
-using safety_tips::SafetyTipType;
 
 namespace safety_tips {
 
 // From safety_tip_ui.h
 void ShowSafetyTipDialog(content::WebContents* web_contents,
-                         SafetyTipType type,
+                         security_state::SafetyTipStatus safety_tip_status,
                          const GURL& url) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::make_unique<SafetyTipInfoBarDelegate>(type, url, web_contents)));
+      std::make_unique<SafetyTipInfoBarDelegate>(safety_tip_status, url,
+                                                 web_contents)));
 }
 
 }  // namespace safety_tips
 
-SafetyTipInfoBarDelegate::SafetyTipInfoBarDelegate(SafetyTipType type,
-                                                   const GURL& url,
-                                                   WebContents* web_contents)
-    : type_(type), url_(url), web_contents_(web_contents) {}
+SafetyTipInfoBarDelegate::SafetyTipInfoBarDelegate(
+    security_state::SafetyTipStatus safety_tip_status,
+    const GURL& url,
+    WebContents* web_contents)
+    : safety_tip_status_(safety_tip_status),
+      url_(url),
+      web_contents_(web_contents) {}
 
 base::string16 SafetyTipInfoBarDelegate::GetMessageText() const {
   size_t offset;
   const base::string16 safety_tip_name =
       l10n_util::GetStringUTF16(IDS_SAFETY_TIP_ANDROID_NAME);
   const base::string16 title_text = l10n_util::GetStringFUTF16(
-      GetSafetyTipTitleId(type_), safety_tip_name, &offset);
+      GetSafetyTipTitleId(safety_tip_status_), safety_tip_name, &offset);
 
   return base::JoinString(
-      {title_text, l10n_util::GetStringUTF16(GetSafetyTipDescriptionId(type_))},
+      {title_text, l10n_util::GetStringUTF16(
+                       GetSafetyTipDescriptionId(safety_tip_status_))},
       base::ASCIIToUTF16("\n\n"));
 }
 

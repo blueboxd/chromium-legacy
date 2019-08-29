@@ -15,6 +15,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
@@ -68,7 +69,9 @@ public class PrefetchedPagesNotifier {
             // TODO(dewittj): Handle the case where we somehow get this broadcast but the Chrome
             // download manager is unavailable.  Today, if this happens then the Android download
             // manager will be launched, and that will not contain any prefetched content.
-            DownloadUtils.showDownloadManager(null, null, true /*showPrefetchedContent*/);
+            DownloadUtils.showDownloadManager(null, null,
+                    DownloadOpenSource.OFFLINE_CONTENT_NOTIFICATION,
+                    true /*showPrefetchedContent*/);
         }
     }
 

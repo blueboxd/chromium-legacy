@@ -248,7 +248,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   // Set a big enough viewport to show the entire render pass.
-  host_impl.active_tree()->SetDeviceViewportSize(gfx::Size(1000, 1000));
+  host_impl.active_tree()->SetDeviceViewportRect(gfx::Rect(1000, 1000));
 
   std::unique_ptr<LayerImpl> root_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);

@@ -145,6 +145,12 @@ void MockXRDeviceHookBase::WaitGetControllerData(
   std::move(callback).Run(DeviceToMojoControllerFrameData(data));
 }
 
+void MockXRDeviceHookBase::WaitGetSessionStateStopping(
+    device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
+        callback) {
+  std::move(callback).Run(false);
+}
+
 unsigned int MockXRDeviceHookBase::ConnectController(
     const device::ControllerFrameData& initial_data) {
   // Find the first open tracked device slot and fill that.

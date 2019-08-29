@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/proto_conversion.h"
+#include "chrome/browser/notifications/scheduler/internal/stats.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
 namespace leveldb_proto {
@@ -130,6 +131,7 @@ void IconProtoDbStore::OnIconsEncoded(
     std::vector<IconType> icons_type,
     std::vector<std::string> icons_uuid,
     std::unique_ptr<EncodeResult> encode_result) {
+  stats::LogPngIconConverterEncodeResult(encode_result->success);
   IconTypeUuidMap icons_uuid_map;
   if (!encode_result->success) {
     std::move(callback).Run(std::move(icons_uuid_map), false);
@@ -155,6 +157,7 @@ void IconProtoDbStore::OnIconsDecoded(
     LoadIconsCallback callback,
     std::vector<std::string> icons_uuid,
     std::unique_ptr<DecodeResult> decoded_result) {
+  stats::LogPngIconConverterDecodeResult(decoded_result->success);
   if (!decoded_result->success) {
     std::move(callback).Run(false, {} /*IconsMap*/);
     return;

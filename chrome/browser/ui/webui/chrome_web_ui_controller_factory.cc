@@ -250,12 +250,12 @@ using ui::WebDialogUI;
 namespace {
 
 // A function for creating a new WebUI. The caller owns the return value, which
-// may be NULL (for example, if the URL refers to an non-existent extension).
+// may be nullptr (for example, if the URL refers to an non-existent extension).
 typedef WebUIController* (*WebUIFactoryFunction)(WebUI* web_ui,
                                                  const GURL& url);
 
 // Template for defining WebUIFactoryFunction.
-template<class T>
+template <class T>
 WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
   return new T(web_ui);
 }
@@ -269,13 +269,13 @@ WebUIController* NewWebUI<PageNotAvailableForGuestUI>(WebUI* web_ui,
 #endif
 
 // Special case for older about: handlers.
-template<>
+template <>
 WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
   return new AboutUI(web_ui, url.host());
 }
 
 #if defined(OS_CHROMEOS)
-template<>
+template <>
 WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
   return new chromeos::OobeUI(web_ui, url);
 }
@@ -297,7 +297,7 @@ WebUIController* NewWebUI<chromeos::multidevice::ProximityAuthUI>(
 #endif
 
 // Special cases for DOM distiller.
-template<>
+template <>
 WebUIController* NewWebUI<dom_distiller::DomDistillerUi>(WebUI* web_ui,
                                                          const GURL& url) {
   // The DomDistillerUi can not depend on components/dom_distiller/content,
@@ -307,8 +307,8 @@ WebUIController* NewWebUI<dom_distiller::DomDistillerUi>(WebUI* web_ui,
   dom_distiller::DomDistillerService* service =
       dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
           browser_context);
-  return new dom_distiller::DomDistillerUi(
-      web_ui, service, dom_distiller::kDomDistillerScheme);
+  return new dom_distiller::DomDistillerUi(web_ui, service,
+                                           dom_distiller::kDomDistillerScheme);
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -331,12 +331,12 @@ bool IsAboutUI(const GURL& url) {
           || url.host_piece() == chrome::kChromeUIOSCreditsHost ||
           url.host_piece() == chrome::kChromeUILinuxCreditsHost
 #endif
-          );  // NOLINT
+  );  // NOLINT
 }
 
 // Returns a function that can be used to create the right type of WebUI for a
-// tab, based on its URL. Returns NULL if the URL doesn't have WebUI associated
-// with it.
+// tab, based on its URL. Returns nullptr if the URL doesn't have WebUI
+// associated with it.
 WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
                                              Profile* profile,
                                              const GURL& url) {
@@ -344,13 +344,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // schemes to filter out most URLs.
   if (!url.SchemeIs(content::kChromeDevToolsScheme) &&
       !url.SchemeIs(content::kChromeUIScheme)) {
-    return NULL;
+    return nullptr;
   }
 
-  /****************************************************************************
-   * Please keep this in alphabetical order. If #ifs or special logics are
-   * required, add it below in the appropriate section.
-   ***************************************************************************/
+  // Please keep this in alphabetical order. If #ifs or special logics are
+  // required, add it below in the appropriate section.
+  //
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
   // All platform builds of Chrome will need to have a cloud printing
@@ -428,9 +427,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIVersionHost)
     return &NewWebUI<VersionUI>;
 
-  /****************************************************************************
-   * OS Specific #defines
-   ***************************************************************************/
 #if !defined(OS_ANDROID)
   if (AppManagementUI::IsEnabled() &&
       url.host_piece() == chrome::kChromeUIAppManagementHost && profile &&
@@ -633,9 +629,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<WelcomeUI>;
 #endif
 
-  /****************************************************************************
-   * Other #defines and special logics.
-   ***************************************************************************/
 #if BUILDFLAG(ENABLE_NACL)
   if (url.host_piece() == chrome::kChromeUINaClHost)
     return &NewWebUI<NaClUI>;
@@ -736,7 +729,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SupervisedUserInternalsUI>;
 #endif
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace
@@ -745,7 +738,8 @@ WebUI::TypeID ChromeWebUIControllerFactory::GetWebUIType(
     content::BrowserContext* browser_context,
     const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  WebUIFactoryFunction function = GetWebUIFactoryFunction(NULL, profile, url);
+  WebUIFactoryFunction function =
+      GetWebUIFactoryFunction(nullptr, profile, url);
   return function ? reinterpret_cast<WebUI::TypeID>(function) : WebUI::kNoWebUI;
 }
 
@@ -813,8 +807,8 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
         gfx::Size(candidate_edge_size, candidate_edge_size));
   }
   std::vector<size_t> selected_indices;
-  SelectFaviconFrameIndices(
-      candidate_sizes, desired_sizes_in_pixel, &selected_indices, NULL);
+  SelectFaviconFrameIndices(candidate_sizes, desired_sizes_in_pixel,
+                            &selected_indices, nullptr);
   for (size_t i = 0; i < selected_indices.size(); ++i) {
     size_t selected_index = selected_indices[i];
     ui::ScaleFactor selected_resource_scale =
@@ -862,24 +856,23 @@ bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
       origin.host() == chrome::kChromeUIDownloadsHost;
 }
 
-ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() {
-}
+ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() {}
 
-ChromeWebUIControllerFactory::~ChromeWebUIControllerFactory() {
-}
+ChromeWebUIControllerFactory::~ChromeWebUIControllerFactory() {}
 
 base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
-    const GURL& page_url, ui::ScaleFactor scale_factor) const {
+    const GURL& page_url,
+    ui::ScaleFactor scale_factor) const {
 #if !defined(OS_ANDROID)
   // The extension scheme is handled in GetFaviconForURL.
   if (page_url.SchemeIs(extensions::kExtensionScheme)) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 #endif
 
   if (!content::HasWebUIScheme(page_url))
-    return NULL;
+    return nullptr;
 
   if (page_url.host_piece() == chrome::kChromeUIComponentsHost)
     return ComponentsUI::GetFaviconResourceBytes(scale_factor);
@@ -933,5 +926,5 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 #endif  // !defined(OS_ANDROID)
 
-  return NULL;
+  return nullptr;
 }

@@ -2940,6 +2940,9 @@ if (enable_java_templates) {
       if (_chromium_code) {
         args += [ "--chromium-code=1" ]
       }
+      if (defined(invoker.jar_excluded_patterns)) {
+        args += [ "--jar-info-exclude-globs=${invoker.jar_excluded_patterns}" ]
+      }
 
       # Use errorprone with checks disabled when !enable_errorprone so that
       # compile results are the same across machines.
@@ -3496,6 +3499,7 @@ if (enable_java_templates) {
         "processor_args_javac",
         "provider_configurations",
         "javac_args",
+        "jar_excluded_patterns",
       ]
       compile_java_helper(_compile_java_target) {
         forward_variables_from(invoker, _compile_java_forward_variables)

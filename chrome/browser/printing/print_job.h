@@ -44,8 +44,18 @@ class PrintSettings;
 class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
                  public content::NotificationObserver {
  public:
+#if defined(OS_CHROMEOS)
+  // An enumeration of components where print jobs can come from.
+  enum class Source {
+    PRINT_PREVIEW,
+    ARC,
+  };
+#endif  // defined(OS_CHROMEOS)
+
   // Create a empty PrintJob. When initializing with this constructor,
   // post-constructor initialization must be done with Initialize().
+  // If PrintJob is created on Chrome OS, call SetSource() to set which
+  // component initiated this print job.
   PrintJob();
 
   // Grabs the ownership of the PrintJobWorker from a PrinterQuery along with
@@ -105,6 +115,17 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
 
   // Access stored settings.
   const PrintSettings& settings() const;
+
+#if defined(OS_CHROMEOS)
+  // Sets the component which initiated the print job.
+  void SetSource(Source source, const std::string& source_id);
+
+  // Returns the source of print job.
+  Source source() const;
+
+  // Returns the ID of the source.
+  const std::string& source_id() const;
+#endif  // defined(OS_CHROMEOS)
 
   // Posts the given task to be run.
   bool PostTask(const base::Location& from_here, base::OnceClosure task);
@@ -195,6 +216,15 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   std::unique_ptr<PdfConversionState> pdf_conversion_state_;
   std::vector<int> pdf_page_mapping_;
 #endif  // defined(OS_WIN)
+
+#if defined(OS_CHROMEOS)
+  // The component which initiated the print job.
+  Source source_;
+
+  // ID of the source.
+  // This should be blank if the source is PRINT_PREVIEW or ARC.
+  std::string source_id_;
+#endif  // defined(OS_CHROMEOS)
 
   // Holds the quit closure while running a nested RunLoop to flush tasks.
   base::OnceClosure quit_closure_;

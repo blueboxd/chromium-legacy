@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/test/ash_test_helper.h"
@@ -120,6 +121,18 @@ class AshTestBase : public testing::Test {
       int container_id = desks_util::GetActiveDeskContainerId(),
       const gfx::Rect& bounds = gfx::Rect(),
       bool show = true);
+
+  // Creates a widget with a visible WINDOW_TYPE_NORMAL window with the given
+  // |app_type|. If |app_type| is AppType::NON_APP, this window is considered a
+  // non-app window.
+  // If |bounds_in_screen| is empty the window is added to the primary root
+  // window, otherwise the window is added to the display matching
+  // |bounds_in_screen|. |shell_window_id| is the shell window id to give to
+  // the new window.
+  std::unique_ptr<aura::Window> CreateAppWindow(
+      const gfx::Rect& bounds_in_screen = gfx::Rect(),
+      AppType app_type = AppType::SYSTEM_APP,
+      int shell_window_id = kShellWindowId_Invalid);
 
   // Creates a visible window in the appropriate container. If
   // |bounds_in_screen| is empty the window is added to the primary root

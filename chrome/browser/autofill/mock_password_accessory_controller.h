@@ -29,8 +29,6 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
   MOCK_METHOD1(OnGenerationRequested,
                void(autofill::password_generation::PasswordGenerationType));
   MOCK_METHOD0(DidNavigateMainFrame, void());
-  MOCK_METHOD2(GetFavicon,
-               void(int, base::OnceCallback<void(const gfx::Image&)>));
   MOCK_METHOD1(OnFillingTriggered, void(const autofill::UserInfo::Field&));
   MOCK_METHOD1(OnOptionSelected,
                void(autofill::AccessoryAction selected_action));

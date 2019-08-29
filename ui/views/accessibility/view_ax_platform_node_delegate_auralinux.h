@@ -7,12 +7,14 @@
 
 #include "base/macros.h"
 #include "ui/views/accessibility/view_ax_platform_node_delegate.h"
+#include "ui/views/view_observer.h"
 
 namespace views {
 
 class View;
 
-class ViewAXPlatformNodeDelegateAuraLinux : public ViewAXPlatformNodeDelegate {
+class ViewAXPlatformNodeDelegateAuraLinux : public ViewAXPlatformNodeDelegate,
+                                            public views::ViewObserver {
  public:
   explicit ViewAXPlatformNodeDelegateAuraLinux(View* view);
   ~ViewAXPlatformNodeDelegateAuraLinux() override;
@@ -21,6 +23,10 @@ class ViewAXPlatformNodeDelegateAuraLinux : public ViewAXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetParent() override;
 
  private:
+  void OnViewHierarchyChanged(
+      views::View* observed_view,
+      const views::ViewHierarchyChangedDetails& details) override;
+
   DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateAuraLinux);
 };
 

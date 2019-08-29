@@ -1375,6 +1375,10 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="SNACK_BAR"/>
   <int value="7" label="AUTO_OPEN"/>
   <int value="8" label="DOWNLOAD_PROGRESS_INFO_BAR"/>
+  <int value="9" label="MENU"/>
+  <int value="10" label="DINO_PAGE_OFFLINE_CONTENT"/>
+  <int value="11" label="OFFLINE_INDICATOR"/>
+  <int value="12" label="OFFLINE_CONTENT_NOTIFICATION"/>
 </enum>
 
 <enum name="AndroidEvictionReason">
@@ -9100,7 +9104,6 @@ Called by update_net_error_codes.py.-->
   <int value="-302" label="UNKNOWN_URL_SCHEME"/>
   <int value="-301" label="DISALLOWED_URL_SCHEME"/>
   <int value="-300" label="INVALID_URL"/>
-  <int value="-216" label="CERT_END"/>
   <int value="-215" label="CERT_SYMANTEC_LEGACY"/>
   <int value="-214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
   <int value="-213" label="CERT_VALIDITY_TOO_LONG"/>
@@ -14143,41 +14146,41 @@ Called by update_net_error_codes.py.-->
 
 <enum name="DownEventInputFormFactorDestinationCombination2">
   <int value="0"
-      label="Unknown input in clamshell mode, destination is
-             others(everything except browser and apps)"/>
+      label="Unknown input in clamshell mode, destination is non-application
+             windows"/>
   <int value="1"
       label="Unknown input in touchview mode landscape orientation,
-             destination is others(everything except browser and apps)"/>
+             destination is non-application windows"/>
   <int value="2"
       label="Unknown input in touchview mode portrait orientation,
-             destination is others(everything except browser and apps)"/>
+             destination is non-application windows"/>
   <int value="3"
-      label="Mouse input in clamshell mode, destination is others(everything
-             except browser and apps)"/>
+      label="Mouse input in clamshell mode, destination is non-application
+             windows"/>
   <int value="4"
       label="Mouse input in touchview mode landscape orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="5"
       label="Mouse input in touchview mode portrait orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="6"
-      label="Stylus input in clamshell mode, destination is others(everything
-             except browser and apps)"/>
+      label="Stylus input in clamshell mode, destination is non-application
+             windows"/>
   <int value="7"
       label="Stylus input in touchview mode landscape orientation,
-             destination is others(everything except browser and apps)"/>
+             destination is non-application windows"/>
   <int value="8"
       label="Stylus input in touchview mode portrait orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="9"
-      label="Touch input in clamshell mode, destination is others(everything
-             except browser and apps)"/>
+      label="Touch input in clamshell mode, destination is non-application
+             windows"/>
   <int value="10"
       label="Touch input in touchview mode landscape orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="11"
       label="Touch input in touchview mode portrait orientation, destination
-             is others(everything except browser and apps)"/>
+             is non-application windows"/>
   <int value="12"
       label="Unknown input in clamshell mode, destination is inside the
              browser frame"/>
@@ -14320,6 +14323,42 @@ Called by update_net_error_codes.py.-->
   <int value="59"
       label="Touch input in touchview mode portrait orientation, destination
              is Crostini app(Linux app in ChromeOS)"/>
+  <int value="60"
+      label="Unknown input in clamshell mode, destination is system apps and
+             dialogs"/>
+  <int value="61"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is system apps and dialogs"/>
+  <int value="62"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is system apps and dialogs"/>
+  <int value="63"
+      label="Mouse input in clamshell mode, destination is system apps and
+             dialogs"/>
+  <int value="64"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is system apps and dialogs"/>
+  <int value="65"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is system apps and dialogs"/>
+  <int value="66"
+      label="Stylus input in clamshell mode, destination is system apps and
+             dialogs"/>
+  <int value="67"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is system apps and dialogs"/>
+  <int value="68"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is system apps and dialogs"/>
+  <int value="69"
+      label="Touch input in clamshell mode, destination is system apps and
+             dialogs"/>
+  <int value="70"
+      label="Touch input in touchview mode landscape orientation, destination
+             is system apps and dialogs"/>
+  <int value="71"
+      label="Touch input in touchview mode portrait orientation, destination
+             is system apps and dialogs"/>
 </enum>
 
 <enum name="DownEventSource">
@@ -34479,6 +34518,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1939003674" label="NetworkServiceInProcess:disabled"/>
   <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1937077699" label="http-form-warning"/>
+  <int value="-1936032607" label="enable-experimental-webassembly-features"/>
   <int value="-1934661084" label="ForceUnifiedConsentBump:disabled"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
   <int value="-1932609987" label="CSSBackdropFilter:disabled"/>
@@ -35146,6 +35186,7 @@ from previous Chrome versions.
   <int value="-1077752943" label="enable-password-generation"/>
   <int value="-1075156797" label="enable-brotli"/>
   <int value="-1075089382" label="enable-physical-web"/>
+  <int value="-1074257709" label="ScalableAppList:enabled"/>
   <int value="-1074107607" label="data-reduction-proxy-experiment"/>
   <int value="-1073479583" label="ShowArcFilesApp:disabled"/>
   <int value="-1069453905" label="CCTModuleUseIntentExtras:disabled"/>
@@ -35721,6 +35762,7 @@ from previous Chrome versions.
   <int value="-278347667" label="default-tile-height"/>
   <int value="-277144896" label="enable-viewport-meta"/>
   <int value="-277118813" label="InterestFeedNotifications:disabled"/>
+  <int value="-276946251" label="AppServiceShelf:disabled"/>
   <int value="-276260362" label="GamepadVibration:enabled"/>
   <int value="-275870837"
       label="OmniboxUIExperimentHideSuggestionUrlPath:enabled"/>
@@ -35817,6 +35859,7 @@ from previous Chrome versions.
   <int value="-137303226" label="enable-chromevox-developer-option"/>
   <int value="-135584721"
       label="OmniboxUIExperimentBoldUserTextOnSearchSuggestions:disabled"/>
+  <int value="-135584175" label="EnableAggregatedMlAppRanking:enabled"/>
   <int value="-135223364" label="AutofillShowTypePredictions:disabled"/>
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
   <int value="-131673218" label="FileHandlingAPI:disabled"/>
@@ -36532,6 +36575,7 @@ from previous Chrome versions.
   <int value="868009556" label="AutofillUpstream:enabled"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
   <int value="870664435" label="DownloadProgressInfoBar:disabled"/>
+  <int value="871435095" label="EnableAggregatedMlAppRanking:disabled"/>
   <int value="871713352" label="ImprovedLanguageSettings:enabled"/>
   <int value="876879670" label="OfflinePagesInDownloadHomeOpenInCct:enabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>
@@ -37108,6 +37152,7 @@ from previous Chrome versions.
   <int value="1677258310" label="DragAppsInTabletMode:disabled"/>
   <int value="1679558835" label="ArcAvailableForChildAccount:enabled"/>
   <int value="1684043382" label="AssistantKeyRemapping:enabled"/>
+  <int value="1685280468" label="AppServiceShelf:enabled"/>
   <int value="1688075820" label="OmniboxExperimentalKeywordMode:disabled"/>
   <int value="1689123607" label="enable-app-link"/>
   <int value="1689183477" label="enable-merge-key-char-events"/>
@@ -37333,6 +37378,7 @@ from previous Chrome versions.
   <int value="1972232935" label="DisplayMoveWindowAccels:enabled"/>
   <int value="1972720114" label="WebPaymentsJustInTimePaymentApp:enabled"/>
   <int value="1974565950" label="enable-experimental-accessibility-labels"/>
+  <int value="1975657253" label="ScalableAppList:disabled"/>
   <int value="1976644015" label="enable-forbid-sync-xhr-in-page-dismissal"/>
   <int value="1979222611" label="XRSandbox:disabled"/>
   <int value="1980011075" label="debug-packed-apps"/>
@@ -41280,6 +41326,7 @@ Called by update_net_error_codes.py.-->
   <int value="178" label="EARLY_DATA_REJECTED"/>
   <int value="179" label="WRONG_VERSION_ON_EARLY_DATA"/>
   <int value="180" label="TLS13_DOWNGRADE_DETECTED"/>
+  <int value="181" label="SSL_KEY_USAGE_INCOMPATIBLE"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>
@@ -41296,7 +41343,7 @@ Called by update_net_error_codes.py.-->
   <int value="213" label="CERT_VALIDITY_TOO_LONG"/>
   <int value="214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
   <int value="215" label="CERT_SYMANTEC_LEGACY"/>
-  <int value="216" label="CERT_END"/>
+  <int value="216" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
   <int value="300" label="INVALID_URL"/>
   <int value="301" label="DISALLOWED_URL_SCHEME"/>
   <int value="302" label="UNKNOWN_URL_SCHEME"/>
@@ -41321,7 +41368,7 @@ Called by update_net_error_codes.py.-->
   <int value="334" label="UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT"/>
   <int value="335" label="INVALID_SPDY_STREAM"/>
   <int value="336" label="NO_SUPPORTED_PROXIES"/>
-  <int value="337" label="SPDY_PROTOCOL_ERROR"/>
+  <int value="337" label="HTTP2_PROTOCOL_ERROR"/>
   <int value="338" label="INVALID_AUTH_CREDENTIALS"/>
   <int value="339" label="UNSUPPORTED_AUTH_SCHEME"/>
   <int value="340" label="ENCODING_DETECTION_FAILED"/>
@@ -41331,12 +41378,12 @@ Called by update_net_error_codes.py.-->
   <int value="344" label="UNDOCUMENTED_SECURITY_LIBRARY_STATUS"/>
   <int value="345" label="RESPONSE_BODY_TOO_BIG_TO_DRAIN"/>
   <int value="346" label="RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH"/>
-  <int value="347" label="INCOMPLETE_SPDY_HEADERS"/>
+  <int value="347" label="INCOMPLETE_HTTP2_HEADERS"/>
   <int value="348" label="PAC_NOT_IN_DHCP"/>
   <int value="349" label="RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION"/>
   <int value="350" label="RESPONSE_HEADERS_MULTIPLE_LOCATION"/>
-  <int value="351" label="SPDY_SERVER_REFUSED_STREAM"/>
-  <int value="352" label="SPDY_PING_FAILED"/>
+  <int value="351" label="HTTP2_SERVER_REFUSED_STREAM"/>
+  <int value="352" label="HTTP2_PING_FAILED"/>
   <int value="353" label="PIPELINE_EVICTION"/>
   <int value="354" label="CONTENT_LENGTH_MISMATCH"/>
   <int value="355" label="INCOMPLETE_CHUNKED_ENCODING"/>
@@ -41344,10 +41391,10 @@ Called by update_net_error_codes.py.-->
   <int value="357" label="RESPONSE_HEADERS_TRUNCATED"/>
   <int value="358" label="QUIC_HANDSHAKE_FAILED"/>
   <int value="359" label="REQUEST_FOR_SECURE_RESOURCE_OVER_INSECURE_QUIC"/>
-  <int value="360" label="SPDY_INADEQUATE_TRANSPORT_SECURITY"/>
-  <int value="361" label="SPDY_FLOW_CONTROL_ERROR"/>
-  <int value="362" label="SPDY_FRAME_SIZE_ERROR"/>
-  <int value="363" label="SPDY_COMPRESSION_ERROR"/>
+  <int value="360" label="HTTP2_INADEQUATE_TRANSPORT_SECURITY"/>
+  <int value="361" label="HTTP2_FLOW_CONTROL_ERROR"/>
+  <int value="362" label="HTTP2_FRAME_SIZE_ERROR"/>
+  <int value="363" label="HTTP2_COMPRESSION_ERROR"/>
   <int value="364" label="PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION"/>
   <int value="365" label="HTTP_1_1_REQUIRED"/>
   <int value="366" label="PROXY_HTTP_1_1_REQUIRED"/>
@@ -41356,10 +41403,13 @@ Called by update_net_error_codes.py.-->
   <int value="369" label="TEMPORARY_BACKOFF"/>
   <int value="370" label="INVALID_HTTP_RESPONSE"/>
   <int value="371" label="CONTENT_DECODING_INIT_FAILED"/>
-  <int value="372" label="SPDY_RST_STREAM_NO_ERROR_RECEIVED"/>
-  <int value="373" label="SPDY_PUSHED_STREAM_NOT_AVAILABLE"/>
-  <int value="374" label="SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
+  <int value="372" label="HTTP2_RST_STREAM_NO_ERROR_RECEIVED"/>
+  <int value="373" label="HTTP2_PUSHED_STREAM_NOT_AVAILABLE"/>
+  <int value="374" label="HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
   <int value="375" label="TOO_MANY_RETRIES"/>
+  <int value="376" label="HTTP2_STREAM_CLOSED"/>
+  <int value="377" label="HTTP2_CLIENT_REFUSED_STREAM"/>
+  <int value="378" label="HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>
@@ -41372,9 +41422,13 @@ Called by update_net_error_codes.py.-->
   <int value="409" label="CACHE_LOCK_TIMEOUT"/>
   <int value="410" label="CACHE_AUTH_FAILURE_AFTER_READ"/>
   <int value="411" label="CACHE_ENTRY_NOT_SUITABLE"/>
+  <int value="412" label="CACHE_DOOM_FAILURE"/>
+  <int value="413" label="CACHE_OPEN_OR_CREATE_FAILURE"/>
   <int value="501" label="INSECURE_RESPONSE"/>
   <int value="502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="503" label="ADD_USER_CERT_FAILED"/>
+  <int value="504" label="INVALID_SIGNED_EXCHANGE"/>
+  <int value="505" label="INVALID_BUNDLED_EXCHANGES"/>
   <int value="601" label="FTP_FAILED"/>
   <int value="602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="603" label="FTP_TRANSFER_ABORTED"/>

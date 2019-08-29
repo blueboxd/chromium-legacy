@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/autofill/address_accessory_controller.h"
 #include "chrome/browser/autofill/credit_card_accessory_controller.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/favicon/core/favicon_service.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "content/public/browser/web_contents.h"
 
@@ -69,6 +72,7 @@ base::WeakPtr<ManualFillingController> ManualFillingController::GetOrCreate(
 // static
 void ManualFillingControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
+    favicon::FaviconService* favicon_service,
     base::WeakPtr<PasswordAccessoryController> pwd_controller,
     base::WeakPtr<AddressAccessoryController> address_controller,
     base::WeakPtr<CreditCardAccessoryController> cc_controller,
@@ -80,12 +84,13 @@ void ManualFillingControllerImpl::CreateForWebContentsForTesting(
   DCHECK(cc_controller);
   DCHECK(view);
 
-  web_contents->SetUserData(UserDataKey(),
-                            // Using `new` to access a non-public constructor.
-                            base::WrapUnique(new ManualFillingControllerImpl(
-                                web_contents, std::move(pwd_controller),
-                                std::move(address_controller),
-                                std::move(cc_controller), std::move(view))));
+  web_contents->SetUserData(
+      UserDataKey(),
+      // Using `new` to access a non-public constructor.
+      base::WrapUnique(new ManualFillingControllerImpl(
+          web_contents, favicon_service, std::move(pwd_controller),
+          std::move(address_controller), std::move(cc_controller),
+          std::move(view))));
 
   FromWebContents(web_contents)->Initialize();
 }
@@ -170,12 +175,28 @@ void ManualFillingControllerImpl::OnOptionSelected(
 
 void ManualFillingControllerImpl::GetFavicon(
     int desired_size_in_pixel,
-    base::OnceCallback<void(const gfx::Image&)> icon_callback) {
-  // TODO(crbug.com/945300): This should request favicons directly.
-  PasswordAccessoryController* controller = GetPasswordController();
-  if (!controller)
-    return;  // Controller not available anymore.
-  controller->GetFavicon(desired_size_in_pixel, std::move(icon_callback));
+    const std::string& credential_origin,
+    IconCallback icon_callback) {
+  // credential_origin is only available if the credential has a different
+  // origin than the focused frame.
+  url::Origin origin = url::Origin::Create(GURL(credential_origin));
+  if (origin.opaque() && web_contents_->GetFocusedFrame())
+    origin = web_contents_->GetFocusedFrame()->GetLastCommittedOrigin();
+  if (origin.opaque()) {
+    std::move(icon_callback).Run(gfx::Image());
+    return;  // Don't proceed for invalid origins (e.g. due to unfocused frame).
+  }
+
+  favicon_service_->GetRawFaviconForPageURL(
+      origin.GetURL(),
+      {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+       favicon_base::IconType::kTouchPrecomposedIcon,
+       favicon_base::IconType::kWebManifestIcon},
+      desired_size_in_pixel,
+      /* fallback_to_host = */ true,
+      base::BindOnce(&ManualFillingControllerImpl::OnImageFetched,
+                     weak_factory_.GetWeakPtr(), std::move(icon_callback)),
+      &favicon_tracker_);
 }
 
 gfx::NativeView ManualFillingControllerImpl::container_view() const {
@@ -198,7 +219,10 @@ void ManualFillingControllerImpl::Initialize() {
 
 ManualFillingControllerImpl::ManualFillingControllerImpl(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : web_contents_(web_contents),
+      favicon_service_(FaviconServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+          ServiceAccessType::EXPLICIT_ACCESS)) {
   if (AddressAccessoryController::AllowedForWebContents(web_contents)) {
     address_controller_ =
         AddressAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
@@ -218,11 +242,13 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
 
 ManualFillingControllerImpl::ManualFillingControllerImpl(
     content::WebContents* web_contents,
+    favicon::FaviconService* favicon_service,
     base::WeakPtr<PasswordAccessoryController> pwd_controller,
     base::WeakPtr<AddressAccessoryController> address_controller,
     base::WeakPtr<CreditCardAccessoryController> cc_controller,
     std::unique_ptr<ManualFillingViewInterface> view)
     : web_contents_(web_contents),
+      favicon_service_(favicon_service),
       pwd_controller_for_testing_(std::move(pwd_controller)),
       address_controller_(std::move(address_controller)),
       cc_controller_(std::move(cc_controller)),
@@ -272,6 +298,17 @@ void ManualFillingControllerImpl::UpdateVisibility() {
   } else {
     view_->Hide();
   }
+}
+
+void ManualFillingControllerImpl::OnImageFetched(
+    IconCallback icon_callback,
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
+  favicon_base::FaviconImageResult image_result;
+  if (bitmap_result.is_valid()) {
+    image_result.image =
+        gfx::Image::CreateFrom1xPNGBytes(bitmap_result.bitmap_data);
+  }
+  std::move(icon_callback).Run(image_result.image);
 }
 
 AccessoryController* ManualFillingControllerImpl::GetControllerForTab(

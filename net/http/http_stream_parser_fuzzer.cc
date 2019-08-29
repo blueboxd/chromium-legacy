@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -24,7 +26,6 @@
 #include "net/log/test_net_log.h"
 #include "net/socket/fuzzed_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "url/gurl.h"
 
 // Fuzzer for HttpStreamParser.

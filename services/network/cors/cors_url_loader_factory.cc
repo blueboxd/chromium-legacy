@@ -217,8 +217,9 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     case InitiatorLockCompatibility::kNoInitiator:
       // Requests from the renderer need to always specify an initiator.
       DCHECK_NE(process_id_, mojom::kBrowserProcessId);
-      // TODO(lukasza): Report this as a bad message.
-      break;
+      mojo::ReportBadMessage(
+          "CorsURLLoaderFactory: no initiator in a renderer request");
+      return false;
 
     case InitiatorLockCompatibility::kIncorrectLock:
       // Requests from the renderer need to always specify a correct initiator.

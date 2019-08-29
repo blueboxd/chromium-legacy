@@ -45,6 +45,7 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
 UsbInternalsUI::~UsbInternalsUI() {}
 
 void UsbInternalsUI::BindUsbInternalsPageHandler(
-    mojom::UsbInternalsPageHandlerRequest request) {
-  page_handler_ = std::make_unique<UsbInternalsPageHandler>(std::move(request));
+    mojo::PendingReceiver<mojom::UsbInternalsPageHandler> receiver) {
+  page_handler_ =
+      std::make_unique<UsbInternalsPageHandler>(std::move(receiver));
 }

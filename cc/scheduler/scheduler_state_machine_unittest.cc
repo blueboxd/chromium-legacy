@@ -2540,13 +2540,12 @@ TEST(SchedulerStateMachineTest, TestFullPipelineMode) {
 
   // Begin the frame.
   state.OnBeginImplFrame(0, 10, kAnimateOnly);
-  // We are blocking because we need a main frame.
   EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::BLOCKED,
             state.CurrentBeginImplFrameDeadlineMode());
 
-  // Even if main thread defers commits, we still need to wait for it.
+  // If main thread defers commits, don't wait for it.
   state.SetDeferBeginMainFrame(true);
-  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::BLOCKED,
+  EXPECT_EQ(SchedulerStateMachine::BeginImplFrameDeadlineMode::IMMEDIATE,
             state.CurrentBeginImplFrameDeadlineMode());
   state.SetDeferBeginMainFrame(false);
 

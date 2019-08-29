@@ -39,24 +39,5 @@ const char kCloudManagementEnrollmentMandatory[] =
 // machine policy.
 const char kCloudPolicyOverridesPlatformPolicy[] = "policy.cloud_override";
 
-// Boolean that indidicates if Chrome reports unsafe events to Google.
-const char kUnsafeEventsReportingEnabled[] = "policy.unsafe_events_reporting";
-
-// Integer that specifies if large files are blocked form either uploads or
-// downloads or both.
-const char kBlockLargeFileTransfer[] = "policy.block_large_file_transfers";
-
-// Integer that specifies if delivery to the user of potentially unsafe data
-// is delayed until a verdict about the data is known.
-const char kDelayDeliveryUntilVerdict[] = "policy.delay_delivery_until_verdict";
-
-// Integer that specifies if password protected files can be either uploaded
-// or downloaded or both.
-const char kAllowPasswordProtectedFiles[] =
-    "policy.allow_password_protected_files";
-
-// Boolean that indidicates if Chrome checks data for content compliance.
-const char kCheckContentCompliance[] = "policy.check_content_compliance";
-
 }  // namespace policy_prefs
 }  // namespace policy

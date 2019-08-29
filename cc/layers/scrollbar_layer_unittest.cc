@@ -1078,7 +1078,7 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     layer_tree_host_->SetRootLayer(layer_tree_root);
 
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        layer_tree_root.get(), layer_tree_host_->device_viewport_size());
+        layer_tree_root.get(), layer_tree_host_->device_viewport_rect());
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
     scrollbar_layer->SetIsDrawable(true);
@@ -1140,7 +1140,7 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   layer_tree_host_->SetRootLayer(layer_tree_root);
 
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      layer_tree_root.get(), layer_tree_host_->device_viewport_size());
+      layer_tree_root.get(), layer_tree_host_->device_viewport_rect());
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   scrollbar_layer->SetIsDrawable(true);
@@ -1313,12 +1313,12 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        layer_tree_root.get(), layer_tree_host_->device_viewport_size());
+        layer_tree_root.get(), layer_tree_host_->device_viewport_rect());
     inputs.device_scale_factor = test_scale;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-    layer_tree_host_->SetViewportSizeAndScale(
-        layer_tree_host_->device_viewport_size(), test_scale,
+    layer_tree_host_->SetViewportRectAndScale(
+        layer_tree_host_->device_viewport_rect(), test_scale,
         layer_tree_host_->local_surface_id_allocation_from_parent());
 
     scrollbar_layer->Update();
@@ -1383,11 +1383,11 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
 
     LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        layer_tree_root.get(), layer_tree_host_->device_viewport_size());
+        layer_tree_root.get(), layer_tree_host_->device_viewport_rect());
     inputs.device_scale_factor = test_scale;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
-    layer_tree_host_->SetViewportSizeAndScale(
-        layer_tree_host_->device_viewport_size(), test_scale,
+    layer_tree_host_->SetViewportRectAndScale(
+        layer_tree_host_->device_viewport_rect(), test_scale,
         layer_tree_host_->local_surface_id_allocation_from_parent());
 
     scrollbar_layer->Update();

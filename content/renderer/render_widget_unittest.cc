@@ -676,8 +676,8 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
     viz::ParentLocalSurfaceIdAllocator allocator;
     widget()->layer_tree_view()->SetVisible(true);
     allocator.GenerateId();
-    widget()->layer_tree_view()->SetViewportSizeAndScale(
-        gfx::Size(200, 100), 1.f,
+    widget()->layer_tree_view()->SetViewportRectAndScale(
+        gfx::Rect(200, 100), 1.f,
         allocator.GetCurrentLocalSurfaceIdAllocation());
 
     auto root_layer = cc::SolidColorLayer::Create();

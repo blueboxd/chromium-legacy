@@ -2238,4 +2238,33 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectExpandRebuildsPlatformNode) {
   g_object_unref(original_atk_object);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectParentChanged) {
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kListBox;
+  root_data.child_ids.push_back(2);
+
+  AXNodeData item_1_data;
+  item_1_data.id = 2;
+  item_1_data.role = ax::mojom::Role::kListBoxOption;
+
+  Init(root_data, item_1_data);
+
+  AXNode* item_1 = GetRootNode()->children()[0];
+  AtkObject* atk_object = AtkObjectFromNode(item_1);
+  AXPlatformNodeAuraLinux* node = GetPlatformNode(item_1);
+
+  bool saw_parent_changed = false;
+  g_signal_connect(
+      atk_object, "property-change::accessible-parent",
+      G_CALLBACK(+[](AtkObject*, void* property, bool* saw_parent_changed) {
+        *saw_parent_changed = true;
+      }),
+      &saw_parent_changed);
+
+  ASSERT_FALSE(saw_parent_changed);
+  node->OnParentChanged();
+  ASSERT_TRUE(saw_parent_changed);
+}
+
 }  // namespace ui

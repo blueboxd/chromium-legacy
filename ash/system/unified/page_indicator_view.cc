@@ -10,8 +10,10 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
-#include "ash/system/tray/tray_constants.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -36,12 +39,8 @@ namespace ash {
 
 namespace {
 
+constexpr int kUnifiedPageIndicatorButtonRadius = 3;
 constexpr int kInkDropRadius = 3 * kUnifiedPageIndicatorButtonRadius;
-
-constexpr SkColor kInkDropRippleColor =
-    SkColorSetA(kUnifiedPageIndicatorButtonInkDropColor, 0xF);
-constexpr SkColor kInkDropHighlightColor =
-    SkColorSetA(kUnifiedPageIndicatorButtonInkDropColor, 0x14);
 
 }  // namespace
 
@@ -54,6 +53,13 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
                                int page)
       : views::Button(this), controller_(controller), page_number_(page) {
     SetInkDropMode(InkDropMode::ON);
+
+    const AshColorProvider::RippleAttributes ripple_attributes =
+        AshColorProvider::Get()->GetRippleAttributes(
+            UnifiedSystemTrayView::GetBackgroundColor());
+    ripple_base_color_ = ripple_attributes.base_color;
+    highlight_opacity_ = ripple_attributes.highlight_opacity;
+    inkdrop_opacity_ = ripple_attributes.inkdrop_opacity;
   }
 
   ~PageIndicatorButton() override {}
@@ -68,6 +74,7 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
       NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
 
+  // views::View:
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(kInkDropRadius * 2, kInkDropRadius * 2);
   }
@@ -75,21 +82,25 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
   // views::Button:
   const char* GetClassName() const override { return "PageIndicatorView"; }
 
+  // views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override {
     gfx::Rect rect(GetContentsBounds());
 
-    SkColor current_color = selected_
-                                ? kUnifiedPageIndicatorButtonColor
-                                : SkColorSetA(kUnifiedPageIndicatorButtonColor,
-                                              kUnifiedPageIndicatorButtonAlpha);
-
+    AshColorProvider* color_provider = AshColorProvider::Get();
+    const SkColor selected_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconPrimary,
+        AshColorProvider::AshColorMode::kDark);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(current_color);
+    flags.setColor(selected_
+                       ? selected_color
+                       : color_provider->GetDisabledColor(selected_color));
     canvas->DrawCircle(rect.CenterPoint(), kUnifiedPageIndicatorButtonRadius,
                        flags);
   }
+
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(controller_);
     controller_->HandlePageSwitchAction(page_number_);
@@ -98,37 +109,42 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
   bool selected() { return selected_; }
 
  protected:
+  // views::Button:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    std::unique_ptr<views::InkDropImpl> ink_drop =
-        Button::CreateDefaultInkDropImpl();
+    auto ink_drop = TrayPopupUtils::CreateInkDrop(this);
     ink_drop->SetShowHighlightOnHover(true);
-    ink_drop->SetAutoHighlightMode(
-        views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
-    return std::move(ink_drop);
+    return ink_drop;
   }
 
+  // views::Button:
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
     return std::make_unique<views::CircleInkDropMask>(
         size(), GetLocalBounds().CenterPoint(), kInkDropRadius);
   }
 
+  // views::Button:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     gfx::Point center = GetLocalBounds().CenterPoint();
     gfx::Rect bounds(center.x() - kInkDropRadius, center.y() - kInkDropRadius,
                      2 * kInkDropRadius, 2 * kInkDropRadius);
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
-        GetInkDropCenterBasedOnLastEvent(), kInkDropRippleColor, 1.0f);
+        GetInkDropCenterBasedOnLastEvent(), ripple_base_color_,
+        inkdrop_opacity_);
   }
 
+  // views::Button:
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    return std::make_unique<views::InkDropHighlight>(
+    auto highlight = std::make_unique<views::InkDropHighlight>(
         gfx::PointF(GetLocalBounds().CenterPoint()),
-        std::make_unique<views::CircleLayerDelegate>(kInkDropHighlightColor,
+        std::make_unique<views::CircleLayerDelegate>(ripple_base_color_,
                                                      kInkDropRadius));
+    highlight->set_visible_opacity(highlight_opacity_);
+    return highlight;
   }
 
+  // views::Button:
   void NotifyClick(const ui::Event& event) override {
     Button::NotifyClick(event);
     GetInkDrop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
@@ -138,6 +154,10 @@ class PageIndicatorView::PageIndicatorButton : public views::Button,
   bool selected_ = false;
   UnifiedSystemTrayController* const controller_;
   const int page_number_ = 0;
+
+  SkColor ripple_base_color_ = gfx::kPlaceholderColor;
+  float highlight_opacity_ = 0.f;
+  float inkdrop_opacity_ = 0.f;
 
   DISALLOW_COPY_AND_ASSIGN(PageIndicatorButton);
 };

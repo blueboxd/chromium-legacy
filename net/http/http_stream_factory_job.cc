@@ -391,7 +391,9 @@ bool HttpStreamFactory::Job::CanUseExistingSpdySession() const {
   DCHECK(!using_quic_);
 
   if (proxy_info_.is_direct() &&
-      session_->http_server_properties()->RequiresHTTP11(destination_)) {
+      session_->http_server_properties()->RequiresHTTP11(
+          HttpServerProperties::GetNormalizedSchemeHostPort(request_info_.url),
+          request_info_.network_isolation_key)) {
     return false;
   }
 
@@ -841,10 +843,16 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
   HttpServerProperties* http_server_properties =
       session_->http_server_properties();
   if (http_server_properties) {
-    http_server_properties->MaybeForceHTTP11(destination_, &server_ssl_config_);
+    http_server_properties->MaybeForceHTTP11(
+        HttpServerProperties::GetNormalizedSchemeHostPort(request_info_.url),
+        request_info_.network_isolation_key, &server_ssl_config_);
     if (proxy_info_.is_https()) {
       http_server_properties->MaybeForceHTTP11(
-          proxy_info_.proxy_server().host_port_pair(), &proxy_ssl_config_);
+          url::SchemeHostPort(
+              url::kHttpsScheme,
+              proxy_info_.proxy_server().host_port_pair().host(),
+              proxy_info_.proxy_server().host_port_pair().port()),
+          request_info_.network_isolation_key, &proxy_ssl_config_);
     }
   }
 

@@ -30,6 +30,7 @@ class XRTestHookWrapper : public VRTestHook {
       unsigned int index) override;
   TrackedDeviceClass WaitGetTrackedDeviceClass(unsigned int index) override;
   ControllerFrameData WaitGetControllerData(unsigned int index) override;
+  bool WaitGetSessionStateStopping() override;
   void AttachCurrentThread() override;
   void DetachCurrentThread() override;
 

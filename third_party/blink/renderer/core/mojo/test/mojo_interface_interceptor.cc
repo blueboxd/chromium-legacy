@@ -85,13 +85,18 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
 
     BrowserInterfaceBrokerProxy* proxy =
         context->GetBrowserInterfaceBrokerProxy();
-    CHECK(proxy);
+    DCHECK(proxy);
 
     started_ = true;
-    proxy->SetBinderForTesting(
-        interface_name,
-        WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
-                           WrapWeakPersistent(this)));
+    if (!proxy->SetBinderForTesting(
+            interface_name,
+            WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                               WrapWeakPersistent(this)))) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidModificationError,
+          "Interface " + interface_name_ +
+              " is already intercepted by another MojoInterfaceInterceptor.");
+    }
     return;
   }
 
@@ -113,7 +118,7 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
 }
 
 void MojoInterfaceInterceptor::stop() {
-  if (!started_ || use_browser_interface_broker_)
+  if (!started_)
     return;
 
   started_ = false;
@@ -125,6 +130,19 @@ void MojoInterfaceInterceptor::stop() {
     return;
   }
 
+  if (use_browser_interface_broker_) {
+    ExecutionContext* context = GetExecutionContext();
+    DCHECK(context);
+
+    BrowserInterfaceBrokerProxy* proxy =
+        context->GetBrowserInterfaceBrokerProxy();
+    DCHECK(proxy);
+
+    proxy->SetBinderForTesting(interface_name, {});
+    return;
+  }
+
+  // TODO(crbug.com/994843): remove when no longer used.
   // GetInterfaceProvider() is guaranteed not to return nullptr because this
   // method is called when the context is destroyed.
   service_manager::InterfaceProvider::TestApi test_api(GetInterfaceProvider());

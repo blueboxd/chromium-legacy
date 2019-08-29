@@ -7,18 +7,18 @@
 #include "chrome/browser/ui/passwords/credential_leak_dialog_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_leak_dialog_delegate.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 using password_manager::CredentialLeakFlags;
 using password_manager::CredentialLeakType;
+using password_manager::metrics_util::LeakDialogDismissalReason;
+using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
 
 CredentialLeakDialogControllerImpl::CredentialLeakDialogControllerImpl(
     PasswordsLeakDialogDelegate* delegate,
     CredentialLeakType leak_type,
     const GURL& origin)
-    : credential_leak_dialog_(nullptr),
-      delegate_(delegate),
-      leak_type_(leak_type),
-      origin_(origin) {}
+    : delegate_(delegate), leak_type_(leak_type), origin_(origin) {}
 
 CredentialLeakDialogControllerImpl::~CredentialLeakDialogControllerImpl() {
   ResetDialog();
@@ -35,17 +35,31 @@ bool CredentialLeakDialogControllerImpl::IsShowingAccountChooser() const {
   return false;
 }
 
-void CredentialLeakDialogControllerImpl::OnCheckPasswords() {
-  delegate_->NavigateToPasswordCheckup();
-  ResetDialog();
-  OnCloseDialog();
+void CredentialLeakDialogControllerImpl::OnCancelDialog() {
+  LogLeakDialogTypeAndDismissalReason(
+      leak_dialog_utils::GetLeakDialogType(leak_type_),
+      LeakDialogDismissalReason::kClickedClose);
+  delegate_->OnLeakDialogHidden();
+}
+
+void CredentialLeakDialogControllerImpl::OnAcceptDialog() {
+  if (ShouldCheckPasswords()) {
+    LogLeakDialogTypeAndDismissalReason(
+        leak_dialog_utils::GetLeakDialogType(leak_type_),
+        LeakDialogDismissalReason::kClickedCheckPasswords);
+    delegate_->NavigateToPasswordCheckup();
+  } else {
+    LogLeakDialogTypeAndDismissalReason(
+        leak_dialog_utils::GetLeakDialogType(leak_type_),
+        LeakDialogDismissalReason::kClickedOk);
+  }
+  delegate_->OnLeakDialogHidden();
 }
 
 void CredentialLeakDialogControllerImpl::OnCloseDialog() {
-  // TODO(crbug.com/986317): Add logging metrics util.
-  if (credential_leak_dialog_) {
-    credential_leak_dialog_ = nullptr;
-  }
+  LogLeakDialogTypeAndDismissalReason(
+      leak_dialog_utils::GetLeakDialogType(leak_type_),
+      LeakDialogDismissalReason::kNoDirectInteraction);
   delegate_->OnLeakDialogHidden();
 }
 

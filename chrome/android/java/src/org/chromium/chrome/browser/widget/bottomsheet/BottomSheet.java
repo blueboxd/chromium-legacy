@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
@@ -25,7 +23,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.Supplier;
-import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -45,8 +42,6 @@ import org.chromium.content_public.common.BrowserControlsState;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class defines the bottom sheet that has multiple states and a persistently showing toolbar.
@@ -148,9 +143,6 @@ public class BottomSheet
     /** The height of the shadow that sits above the toolbar. */
     private final int mToolbarShadowHeight;
 
-    /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
-    private final BottomSheetMetrics mMetrics;
-
     /** The view that contains the sheet. */
     private ViewGroup mSheetContainer;
 
@@ -159,9 +151,6 @@ public class BottomSheet
 
     /** The animator used to move the sheet to a fixed state when released by the user. */
     private ValueAnimator mSettleAnimator;
-
-    /** The animator set responsible for swapping the bottom sheet content. */
-    private AnimatorSet mContentSwapAnimatorSet;
 
     /** The width of the view that contains the bottom sheet. */
     private float mContainerWidth;
@@ -420,9 +409,6 @@ public class BottomSheet
         mToolbarShadowHeight =
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
 
-        mMetrics = new BottomSheetMetrics();
-        addObserver(mMetrics);
-
         mGestureDetector = new BottomSheetSwipeDetector(context, this);
         mIsTouchEnabled = true;
     }
@@ -464,22 +450,12 @@ public class BottomSheet
     public void endAnimations() {
         if (mSettleAnimator != null) mSettleAnimator.end();
         mSettleAnimator = null;
-        endTransitionAnimations();
     }
 
     /**
-     * Immediately end the bottom sheet content transition animations and null the animator.
+     * @return Whether the sheet is in the process of hiding.
      */
-    public void endTransitionAnimations() {
-        if (mContentSwapAnimatorSet == null || !mContentSwapAnimatorSet.isRunning()) return;
-        mContentSwapAnimatorSet.end();
-        mContentSwapAnimatorSet = null;
-    }
-
-    /**
-     * @return Whether the sheet is in the process of closing.
-     */
-    public boolean isClosing() {
+    public boolean isHiding() {
         return mSettleAnimator != null && mTargetState == SheetState.HIDDEN;
     }
 
@@ -786,9 +762,6 @@ public class BottomSheet
      * @param content The {@link BottomSheetContent} to show, or null if no content should be shown.
      */
     public void showContent(@Nullable final BottomSheetContent content) {
-        // If an animation is already running, end it.
-        if (mContentSwapAnimatorSet != null) mContentSwapAnimatorSet.end();
-
         // If the desired content is already showing, do nothing.
         if (mSheetContent == content) return;
 
@@ -798,135 +771,14 @@ public class BottomSheet
             mSheetContent.getContentView().removeOnLayoutChangeListener(this);
         }
 
-        List<Animator> animators = new ArrayList<>();
-        mContentSwapAnimatorSet = new AnimatorSet();
-        mContentSwapAnimatorSet.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                onContentSwapAnimationEnd(content);
-            }
-        });
+        swapViews(content != null ? content.getContentView() : null,
+                mSheetContent != null ? mSheetContent.getContentView() : null,
+                mBottomSheetContentContainer);
 
-        // Add an animator for the toolbar transition if needed.
-        View newToolbar = content != null && content.getToolbarView() != null
-                ? content.getToolbarView()
-                : mDefaultToolbarView;
-        View oldToolbar = getToolbarView();
-        if (newToolbar != oldToolbar) {
-            // For the toolbar transition, make sure we don't detach the default toolbar view.
-            Animator transitionAnimator = getViewTransitionAnimator(
-                    newToolbar, oldToolbar, mToolbarHolder, mDefaultToolbarView != oldToolbar);
-            if (transitionAnimator != null) animators.add(transitionAnimator);
-        }
-
-        // Add an animator for the content transition if needed.
-        View oldContent = mSheetContent != null ? mSheetContent.getContentView() : null;
-        if (content == null) {
-            if (oldContent != null) mBottomSheetContentContainer.removeView(oldContent);
-        } else {
-            View contentView = content.getContentView();
-            Animator transitionAnimator = getViewTransitionAnimator(
-                    contentView, oldContent, mBottomSheetContentContainer, true);
-            if (transitionAnimator != null) animators.add(transitionAnimator);
-        }
-
-        // Set the the background drawable of the toolbar holder so the transition doesn't
-        // appear to show a hole in the toolbar.
-        if (!mIsSheetOpen) {
-            // If the sheet is closed, the bottom sheet content container is invisible, so
-            // background drawable is needed on the toolbar holder to prevent a blank rectangle from
-            // appearing during the content transition.
-            mToolbarHolder.setBackgroundResource(R.drawable.top_round);
-        }
-        mBottomSheetContentContainer.setBackgroundResource(R.drawable.top_round);
-
-        // Return early if there are no animators to run.
-        if (animators.isEmpty()) {
-            onContentSwapAnimationEnd(content);
-            return;
-        }
-
-        mContentSwapAnimatorSet.playTogether(animators);
-        mContentSwapAnimatorSet.start();
-
-        // If the existing content is null or the tab switcher assets are showing, end the animation
-        // immediately.
-        if (mSheetContent == null || isInOverviewMode() || SysUtils.isLowEndDevice()) {
-            mContentSwapAnimatorSet.end();
-        }
-    }
-
-    /**
-     * Called when the animation to swap BottomSheetContent ends.
-     * @param content The BottomSheetContent showing at the end of the animation.
-     */
-    private void onContentSwapAnimationEnd(BottomSheetContent content) {
-        if (mIsDestroyed) return;
+        swapViews(content != null ? content.getToolbarView() : null,
+                mSheetContent != null ? mSheetContent.getToolbarView() : null, mToolbarHolder);
 
         onSheetContentChanged(content);
-        mContentSwapAnimatorSet = null;
-    }
-
-    /**
-     * Creates a transition animation between two views. The old view is faded out completely
-     * before the new view is faded in. There is an option to detach the old view or not.
-     * @param newView The new view to transition to.
-     * @param oldView The old view to transition from.
-     * @param parent The parent for newView and oldView.
-     * @param detachOldView Whether or not to detach the old view once faded out.
-     * @return An animator that runs the specified animation or null if no animation should be run.
-     */
-    @Nullable
-    private Animator getViewTransitionAnimator(final View newView, final View oldView,
-            final ViewGroup parent, final boolean detachOldView) {
-        if (newView == oldView) return null;
-
-        AnimatorSet animatorSet = new AnimatorSet();
-        List<Animator> animators = new ArrayList<>();
-
-        newView.setVisibility(View.VISIBLE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && !ValueAnimator.areAnimatorsEnabled()) {
-            if (oldView != null) {
-                // Post a runnable to remove the old view to prevent issues related to the keyboard
-                // showing while swapping contents. See https://crbug.com/799252.
-                post(() -> { swapViews(newView, oldView, parent, detachOldView); });
-            } else {
-                if (parent != newView.getParent()) parent.addView(newView);
-            }
-
-            newView.setAlpha(1);
-
-            return null;
-        }
-
-        // Fade out the old view.
-        if (oldView != null) {
-            ValueAnimator fadeOutAnimator = ObjectAnimator.ofFloat(oldView, View.ALPHA, 0);
-            fadeOutAnimator.setDuration(TRANSITION_DURATION_MS);
-            fadeOutAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    swapViews(newView, oldView, parent, detachOldView);
-                }
-            });
-            animators.add(fadeOutAnimator);
-        } else {
-            // Normally the new view is added at the end of the fade-out animation of the old view,
-            // if there is no old view, attach the new one immediately.
-            if (parent != newView.getParent()) parent.addView(newView);
-        }
-
-        // Fade in the new view.
-        newView.setAlpha(0);
-        ValueAnimator fadeInAnimator = ObjectAnimator.ofFloat(newView, View.ALPHA, 1);
-        fadeInAnimator.setDuration(TRANSITION_DURATION_MS);
-        animators.add(fadeInAnimator);
-
-        animatorSet.playSequentially(animators);
-
-        return animatorSet;
     }
 
     /**
@@ -934,16 +786,10 @@ public class BottomSheet
      * @param newView The new view to transition to.
      * @param oldView The old view to transition from.
      * @param parent The parent for newView and oldView.
-     * @param detachOldView Whether or not to detach the old view once faded out.
      */
-    private void swapViews(final View newView, final View oldView, final ViewGroup parent,
-            final boolean detachOldView) {
-        if (detachOldView && oldView.getParent() != null) {
-            parent.removeView(oldView);
-        } else {
-            oldView.setVisibility(View.GONE);
-        }
-        if (parent != newView.getParent()) parent.addView(newView);
+    private void swapViews(final View newView, final View oldView, final ViewGroup parent) {
+        if (oldView != null && oldView.getParent() != null) parent.removeView(oldView);
+        if (newView != null && parent != newView.getParent()) parent.addView(newView);
     }
 
     /**
@@ -1364,13 +1210,6 @@ public class BottomSheet
      */
     public boolean isRunningSettleAnimation() {
         return mSettleAnimator != null;
-    }
-
-    /**
-     * @return Whether a content swap animation is in progress.
-     */
-    public boolean isRunningContentSwapAnimation() {
-        return mContentSwapAnimatorSet != null && mContentSwapAnimatorSet.isRunning();
     }
 
     /**

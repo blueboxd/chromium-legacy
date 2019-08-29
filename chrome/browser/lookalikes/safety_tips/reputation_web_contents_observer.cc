@@ -21,7 +21,7 @@ void ReputationWebContentsObserver::DidFinishNavigation(
     return;
   }
 
-  last_navigation_safety_tip_type_ = SafetyTipType::kNone;
+  last_navigation_safety_tip_status_ = security_state::SafetyTipStatus::kNone;
   last_safety_tip_navigation_entry_id_ = 0;
 
   MaybeShowSafetyTip();
@@ -32,15 +32,15 @@ void ReputationWebContentsObserver::OnVisibilityChanged(
   MaybeShowSafetyTip();
 }
 
-SafetyTipType
-ReputationWebContentsObserver::GetSafetyTipTypeForVisibleNavigation() const {
+security_state::SafetyTipStatus
+ReputationWebContentsObserver::GetSafetyTipStatusForVisibleNavigation() const {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetVisibleEntry();
   if (!entry)
-    return SafetyTipType::kNone;
+    return security_state::SafetyTipStatus::kUnknown;
   return last_safety_tip_navigation_entry_id_ == entry->GetUniqueID()
-             ? last_navigation_safety_tip_type_
-             : SafetyTipType::kNone;
+             ? last_navigation_safety_tip_status_
+             : security_state::SafetyTipStatus::kNone;
 }
 
 ReputationWebContentsObserver::ReputationWebContentsObserver(
@@ -68,10 +68,10 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip() {
 }
 
 void ReputationWebContentsObserver::HandleReputationCheckResult(
-    SafetyTipType type,
+    security_state::SafetyTipStatus safety_tip_status,
     bool user_ignored,
     const GURL& url) {
-  if (type == SafetyTipType::kNone) {
+  if (safety_tip_status == security_state::SafetyTipStatus::kNone) {
     return;
   }
 
@@ -83,7 +83,7 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   // Set this field independent of whether the feature to show the UI is
   // enabled/disabled. Metrics code uses this field and we want to record
   // metrics regardless of the feature being enabled/disabled.
-  last_navigation_safety_tip_type_ = type;
+  last_navigation_safety_tip_status_ = safety_tip_status;
   // A navigation entry should always exist because reputation checks are only
   // triggered when a committed navigation finishes.
   last_safety_tip_navigation_entry_id_ =
@@ -92,7 +92,7 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   if (!base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
     return;
   }
-  ShowSafetyTipDialog(web_contents(), type, url);
+  ShowSafetyTipDialog(web_contents(), safety_tip_status, url);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ReputationWebContentsObserver)

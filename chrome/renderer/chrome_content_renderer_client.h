@@ -61,7 +61,7 @@ class WebRtcLoggingAgentImpl;
 namespace content {
 class BrowserPluginDelegate;
 struct WebPluginInfo;
-}
+}  // namespace content
 
 namespace network_hints {
 class PrescientNetworkingDispatcher;

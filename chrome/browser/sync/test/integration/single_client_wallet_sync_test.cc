@@ -611,7 +611,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // If the server sends the same cards and addresses again, they should not
 // change on the client. We should also not overwrite existing metadata.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, SameUpdatesAreIgnored) {
+// Flaky on ASan/TSan only. http://crbug.com/997912
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_SameUpdatesAreIgnored DISABLED_SameUpdatesAreIgnored
+#else
+#define MAYBE_SameUpdatesAreIgnored SameUpdatesAreIgnored
+#endif
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       MAYBE_SameUpdatesAreIgnored) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -873,62 +880,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, OneMetricReportedOnStartup) {
   ASSERT_EQ(2uL, pdm->GetCreditCards().size());
   ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
   ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
-}
-
-// Tests that we do report age metric on startup.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       PRE_UseDateMetricReportedOnStartup) {
-  GetFakeServer()->SetWalletData(
-      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
-                            kDefaultBillingAddressID),
-       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
-       CreateDefaultSyncPaymentsCustomerData()});
-  ASSERT_TRUE(SetupSync());
-
-  // Make sure the data is present on the client.
-  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
-  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
-  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
-
-  // Here, we would ideally test that no metrics get recorded during initial
-  // sync. Due to design differences between USS&Directory, we cannot make it
-  // work (the metadata syncable service has no reliable way to tell it is
-  // initial sync).
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       UseDateMetricReportedOnStartup) {
-  // Advance the clock to get a reasonable value.
-  AdvanceAutofillClockByOneDay();
-
-  // Set the same data on the server so that we get an empty update (this is
-  // based on a hash of the data).
-  GetFakeServer()->SetWalletData(
-      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
-                            kDefaultBillingAddressID),
-       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
-       CreateDefaultSyncPaymentsCustomerData()});
-  ASSERT_TRUE(SetupSync());
-
-  // Make sure the data is still present on the client.
-  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
-  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
-  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
-
-  // The metric gets recorded.
-  histogram_tester_.ExpectTotalCount("Autofill.WalletUseDateInMinutes.Card", 1);
-  histogram_tester_.ExpectBucketCount(
-      "Autofill.WalletUseDateInMinutes.Card",
-      /*sample=*/base::TimeDelta::FromDays(1).InMinutes(),
-      /*count=*/1);
-  histogram_tester_.ExpectTotalCount("Autofill.WalletUseDateInMinutes.Address",
-                                     1);
-  histogram_tester_.ExpectBucketCount(
-      "Autofill.WalletUseDateInMinutes.Address",
-      /*sample=*/base::TimeDelta::FromDays(1).InMinutes(),
-      /*count=*/1);
 }
 
 // Wallet data should get cleared from the database when the wallet sync type

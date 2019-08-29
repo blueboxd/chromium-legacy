@@ -121,6 +121,12 @@ Polymer({
             loadTimeData.getBoolean('showTechnologyBadge');
       }
     },
+
+    /** @private */
+    hasCompletedScanSinceLastEnabled_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: ['deviceStateChanged_(deviceState)'],
@@ -176,6 +182,9 @@ Polymer({
     this.networkStateList_ = [];
     this.thirdPartyVpns_ = {};
     this.arcVpns_ = {};
+    this.hasCompletedScanSinceLastEnabled_ = false;
+    this.showSpinner = false;
+
     // Request the list of networks and start scanning if necessary.
     this.getNetworkStateList_();
     this.updateScanning_();
@@ -196,8 +205,14 @@ Polymer({
 
   /** @private */
   deviceStateChanged_: function() {
-    this.showSpinner =
-        this.deviceState !== undefined && !!this.deviceState.scanning;
+    if (this.deviceState !== undefined) {
+      // A scan has completed if the spinner was active (i.e., scanning was
+      // active) and the device is no longer scanning.
+      this.hasCompletedScanSinceLastEnabled_ = this.showSpinner &&
+          !this.deviceState.scanning &&
+          this.deviceState.deviceState == mojom.DeviceStateType.kEnabled;
+      this.showSpinner = !!this.deviceState.scanning;
+    }
 
     // Scans should only be triggered by the "networks" subpage.
     if (settings.getCurrentRoute() != settings.routes.INTERNET_NETWORKS) {
@@ -668,14 +683,23 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNoNetworksString_: function(deviceState, tetherDeviceState) {
+  getNoNetworksInnerHtml_: function(deviceState, tetherDeviceState) {
     const type = deviceState.type;
     if (type == mojom.NetworkType.kTether ||
         (type == mojom.NetworkType.kCellular && this.tetherDeviceState)) {
       return this.i18nAdvanced('internetNoNetworksMobileData');
     }
 
-    return this.i18n('internetNoNetworks');
+    // If a scan has not yet completed since the device was last enabled, it may
+    // be the case that scan results are still in the process of arriving, so
+    // display a message stating that scanning is in progress. If a scan has
+    // already completed and there are still no networks present, this implies
+    // that there has been sufficient time to find a network, so display a
+    // messages stating that there are no networks. See https://crbug.com/974169
+    // for more details.
+    return this.hasCompletedScanSinceLastEnabled_ ?
+        this.i18n('internetNoNetworks') :
+        this.i18n('networkScanningLabel');
   },
 
   /**

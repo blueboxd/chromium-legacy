@@ -9,6 +9,20 @@
   public <init>();
 }
 
+# Referenced by android.support.v7.preference.PreferenceInflater
+-keep public class android.support.v14.preference.SwitchPreference {}
+
+# Inflated via reflection
+-keep public class android.support.v7.preference.Preference {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+-keep public class android.support.v7.preference.PreferenceScreen {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+-keep public class android.support.v7.preference.PreferenceCategory {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+
 # These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
 # referenced, and we look up these services by appending a number onto the name
 # of the base class. Thus, we need to keep the base class name around so that

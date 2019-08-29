@@ -14,6 +14,10 @@ class Button;
 
 namespace media_message_center {
 
+// The name of the histogram used to record the number of concurrent media
+// notifications.
+COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) extern const char kCountHistogramName[];
+
 // Creates a string describing media session metadata intended to be read out by
 // a screen reader.
 COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
@@ -41,6 +45,10 @@ media_session::mojom::MediaSessionAction GetActionFromButtonTag(
 COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
 media_session::mojom::MediaSessionAction GetPlayPauseIgnoredAction(
     media_session::mojom::MediaSessionAction current_action);
+
+// Records the concurrent number of media notifications displayed.
+COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
+void RecordConcurrentNotificationCount(size_t count);
 
 }  // namespace media_message_center
 

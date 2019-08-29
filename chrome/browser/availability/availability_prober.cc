@@ -313,6 +313,17 @@ void AvailabilityProber::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   }
 }
 
+// static
+void AvailabilityProber::ClearData(PrefService* pref_service) {
+  for (int i = 0;
+       i <= static_cast<int>(AvailabilityProber::ClientName::kMaxValue); i++) {
+    std::string key = PrefKeyForName(
+        NameForClient(static_cast<AvailabilityProber::ClientName>(i)));
+    DictionaryPrefUpdate update(pref_service, key);
+    update.Get()->Clear();
+  }
+}
+
 void AvailabilityProber::AddSelfAsNetworkConnectionObserver(
     network::NetworkConnectionTracker* network_connection_tracker) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

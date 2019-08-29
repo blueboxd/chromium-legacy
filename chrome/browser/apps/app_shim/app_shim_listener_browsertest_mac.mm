@@ -15,7 +15,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/app_shim/app_shim_controller.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_listener_test_api_mac.h"
 #include "chrome/browser/browser_process.h"
@@ -105,7 +104,7 @@ TestShimClient::TestShimClient()
 
 // Browser Test for AppShimListener to test IPC interactions.
 class AppShimListenerBrowserTest : public InProcessBrowserTest,
-                                   public apps::AppShimHandler,
+                                   public AppShimHostBootstrap::Client,
                                    public chrome::mojom::AppShimHost {
  public:
   AppShimListenerBrowserTest() : binding_(this) {}
@@ -119,7 +118,7 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
-  // AppShimHandler overrides:
+  // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
 
@@ -164,11 +163,11 @@ void AppShimListenerBrowserTest::RunAndExitGracefully() {
 
 void AppShimListenerBrowserTest::SetUpOnMainThread() {
   // Can't do this in the constructor, it needs a BrowserProcess.
-  apps::AppShimHandler::Set(this);
+  AppShimHostBootstrap::SetClient(this);
 }
 
 void AppShimListenerBrowserTest::TearDownOnMainThread() {
-  apps::AppShimHandler::Set(nullptr);
+  AppShimHostBootstrap::SetClient(nullptr);
 }
 
 void AppShimListenerBrowserTest::OnShimProcessConnected(

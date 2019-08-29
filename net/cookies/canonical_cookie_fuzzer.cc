@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <limits>
 #include <memory>
 
@@ -12,7 +14,6 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 const base::Time getRandomTime(FuzzedDataProvider* data_provider) {

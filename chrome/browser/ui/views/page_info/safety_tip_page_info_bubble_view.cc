@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -25,14 +26,12 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
-using safety_tips::SafetyTipType;
-
 SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
     views::View* anchor_view,
     const gfx::Rect& anchor_rect,
     gfx::NativeView parent_window,
     content::WebContents* web_contents,
-    SafetyTipType type,
+    security_state::SafetyTipStatus safety_tip_status,
     const GURL& url)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
@@ -48,7 +47,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   const base::string16 safety_tip_name =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_NAME);
   const base::string16 title_text = l10n_util::GetStringFUTF16(
-      GetSafetyTipTitleId(type), safety_tip_name, &offset);
+      safety_tips::GetSafetyTipTitleId(safety_tip_status), safety_tip_name,
+      &offset);
   set_window_title(title_text);
 
   views::BubbleDialogDelegateView::CreateBubble(this);
@@ -84,8 +84,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
 
   // Add text description.
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
-  auto text_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(GetSafetyTipDescriptionId(type)));
+  auto text_label = std::make_unique<views::Label>(l10n_util::GetStringUTF16(
+      safety_tips::GetSafetyTipDescriptionId(safety_tip_status)));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -151,7 +151,7 @@ void SafetyTipPageInfoBubbleView::ButtonPressed(views::Button* button,
 namespace safety_tips {
 
 void ShowSafetyTipDialog(content::WebContents* web_contents,
-                         SafetyTipType type,
+                         security_state::SafetyTipStatus safety_tip_status,
                          const GURL& virtual_url) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
@@ -168,8 +168,8 @@ void ShowSafetyTipDialog(content::WebContents* web_contents,
   gfx::NativeView parent_view = platform_util::GetViewForWindow(parent_window);
 
   views::BubbleDialogDelegateView* bubble = new SafetyTipPageInfoBubbleView(
-      configuration.anchor_view, anchor_rect, parent_view, web_contents, type,
-      virtual_url);
+      configuration.anchor_view, anchor_rect, parent_view, web_contents,
+      safety_tip_status, virtual_url);
 
   bubble->SetHighlightedButton(configuration.highlighted_button);
   bubble->SetArrow(configuration.bubble_arrow);
@@ -181,8 +181,9 @@ void ShowSafetyTipDialog(content::WebContents* web_contents,
 PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
     gfx::NativeView parent_view,
     content::WebContents* web_contents,
-    safety_tips::SafetyTipType type,
+    security_state::SafetyTipStatus safety_tip_status,
     const GURL& virtual_url) {
   return new SafetyTipPageInfoBubbleView(nullptr, gfx::Rect(), parent_view,
-                                         web_contents, type, virtual_url);
+                                         web_contents, safety_tip_status,
+                                         virtual_url);
 }

@@ -76,6 +76,10 @@ export class StdSwitchElement extends HTMLElement {
     }
   }
 
+  formResetCallback() {
+    this.on = this.defaultOn;
+  }
+
   #initializeDOM = () => {
     const factory = this.ownerDocument;
     const root = this.attachShadow({mode: 'closed'});
@@ -170,3 +174,4 @@ delete StdSwitchElement.formAssociated;
 delete StdSwitchElement.observedAttributes;
 delete StdSwitchElement.prototype.attributeChangedCallback;
 delete StdSwitchElement.prototype.connectedCallback;
+delete StdSwitchElement.prototype.formResetCallback;

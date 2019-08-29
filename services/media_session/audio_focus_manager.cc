@@ -14,7 +14,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/audio_focus_request.h"
 #include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"

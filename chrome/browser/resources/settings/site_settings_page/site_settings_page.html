@@ -66,15 +66,13 @@
             '$i18nPolymer{siteSettingsAskBeforeAccessing}',
             '$i18nPolymer{siteSettingsBlocked}')]]"></cr-link-row>
 
-    <template is="dom-if" if="[[enableSensorsContentSetting_]]">
-      <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_SENSORS"
-          id="sensors" label="$i18n{siteSettingsSensors}"
-          on-click="onTapNavigate_" start-icon="settings:sensors"
-          sub-label="[[defaultSettingLabel_(
-              default_.sensors,
-              '$i18nPolymer{siteSettingsSensorsAllow}',
-              '$i18nPolymer{siteSettingsSensorsBlock}')]]"></cr-link-row>
-    </template>
+    <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_SENSORS"
+        id="sensors" label="$i18n{siteSettingsSensors}"
+        on-click="onTapNavigate_" start-icon="settings:sensors"
+        sub-label="[[defaultSettingLabel_(
+            default_.sensors,
+            '$i18nPolymer{siteSettingsSensorsAllow}',
+            '$i18nPolymer{siteSettingsSensorsBlock}')]]"></cr-link-row>
 
     <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_NOTIFICATIONS"
         id="notifications" label="$i18n{siteSettingsNotifications}"

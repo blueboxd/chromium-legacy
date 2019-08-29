@@ -95,22 +95,15 @@ class DWriteFontProxyLocalMatchingTest : public DWriteFontProxyImplUnitTest {
 class DWriteFontProxyTableMatchingTest
     : public DWriteFontProxyLocalMatchingTest {
  public:
-  void SetUp() override {
+  DWriteFontProxyTableMatchingTest() {
     DWriteFontLookupTableBuilder* table_builder_instance =
         DWriteFontLookupTableBuilder::GetInstance();
-    bool temp_dir_success = scoped_temp_dir_.CreateUniqueTempDir();
-    ASSERT_TRUE(temp_dir_success);
+    DCHECK(scoped_temp_dir_.CreateUniqueTempDir());
     table_builder_instance->OverrideDWriteVersionChecksForTesting();
     table_builder_instance->SetCacheDirectoryForTesting(
         scoped_temp_dir_.GetPath());
     table_builder_instance->ResetLookupTableForTesting();
     table_builder_instance->SchedulePrepareFontUniqueNameTableIfNeeded();
-  }
-
-  void TearDown() override {
-    DWriteFontLookupTableBuilder* table_builder_instance =
-        DWriteFontLookupTableBuilder::GetInstance();
-    table_builder_instance->ResetStateForTesting();
   }
 
  private:

@@ -165,7 +165,10 @@ void WorkerThread::Start(
       CrossThreadBindOnce(&WorkerThread::InitializeSchedulerOnWorkerThread,
                           CrossThreadUnretained(this),
                           CrossThreadUnretained(&waitable_event)));
-  waitable_event.Wait();
+  {
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
+    waitable_event.Wait();
+  }
 
   inspector_task_runner_ =
       InspectorTaskRunner::Create(GetTaskRunner(TaskType::kInternalInspector));
@@ -401,6 +404,7 @@ bool WorkerThread::IsForciblyTerminated() {
 
 void WorkerThread::WaitForShutdownForTesting() {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   shutdown_event_->Wait();
 }
 

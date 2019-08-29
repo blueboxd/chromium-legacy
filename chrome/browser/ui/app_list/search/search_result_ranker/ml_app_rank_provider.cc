@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ml_app_rank_provider.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
@@ -143,16 +144,124 @@ void CreateGraphExecutorCallback(CreateGraphExecutorResult result) {
   }
 }
 
+// Returns: true if preprocessor config loaded, false if it could not be loaded.
+bool LoadExamplePreprocessorConfig(
+    assist_ranker::ExamplePreprocessorConfig* preprocessor_config) {
+  DCHECK(preprocessor_config);
+
+  const int resource_id = IDR_TOP_CAT_20190722_EXAMPLE_PREPROCESSOR_CONFIG_PB;
+  const scoped_refptr<base::RefCountedMemory> raw_config =
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+          resource_id);
+  if (!raw_config || !raw_config->front()) {
+    LOG(ERROR) << "Failed to load TopCatModel example preprocessor config.";
+    return false;
+  }
+
+  if (!preprocessor_config->ParseFromArray(raw_config->front(),
+                                           raw_config->size())) {
+    LOG(ERROR) << "Failed to parse TopCatModel example preprocessor config.";
+    return false;
+  }
+  return true;
+}
+
+// Perform the inference given the |features| and |app_id| of an app.
+// Posts |callback| to |task_runner| to perform the actual inference.
+void DoInference(
+    const std::string& app_id,
+    const std::vector<float>& features,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::RepeatingCallback<void(std::map<std::string, TensorPtr> inputs,
+                                       const std::vector<std::string> outputs,
+                                       const std::string app_id)> callback) {
+  // Prepare the input tensor.
+  std::map<std::string, TensorPtr> inputs;
+  auto tensor = Tensor::New();
+  tensor->shape = Int64List::New();
+  tensor->shape->value = std::vector<int64_t>({1, features.size()});
+  tensor->data = ValueList::New();
+  tensor->data->set_float_list(FloatList::New());
+  tensor->data->get_float_list()->value =
+      std::vector<double>(std::begin(features), std::end(features));
+  inputs.emplace(std::string("input"), std::move(tensor));
+
+  const std::vector<std::string> outputs({std::string("output")});
+  DCHECK(task_runner);
+  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, std::move(inputs),
+                                                  std::move(outputs), app_id));
+}
+
+// Process the RankerExample to vectorize the feature list for inference.
+// Returns true on success.
+bool RankerExampleToVectorizedFeatures(
+    const assist_ranker::ExamplePreprocessorConfig& preprocessor_config,
+    assist_ranker::RankerExample& example,
+    std::vector<float>* vectorized_features) {
+  int preprocessor_error = assist_ranker::ExamplePreprocessor::Process(
+      preprocessor_config, &example, true);
+  // kNoFeatureIndexFound can occur normally (e.g., when the app URL
+  // isn't known to the model or a rarely seen enum value is used).
+  if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
+      preprocessor_error !=
+          assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound) {
+    // TODO: Log to UMA.
+    return false;
+  }
+
+  const auto& extracted_features =
+      example.features()
+          .at(assist_ranker::ExamplePreprocessor::kVectorizedFeatureDefaultName)
+          .float_list()
+          .float_value();
+  vectorized_features->assign(extracted_features.begin(),
+                              extracted_features.end());
+  return true;
+}
+
+// Does the CPU-intensive part of CreateRankings (preparing the Tensor inputs
+// from |app_features_map|, intended to be called on a low-priority
+// background thread. Invokes |callback| on |task_runner| once for each app in
+// |app_features_map|.
+void CreateRankingsImpl(
+    base::flat_map<std::string, AppLaunchFeatures> app_features_map,
+    int total_hours,
+    int all_clicks_last_hour,
+    int all_clicks_last_24_hours,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::RepeatingCallback<void(std::map<std::string, TensorPtr> inputs,
+                                       const std::vector<std::string> outputs,
+                                       const std::string app_id)>& callback) {
+  const base::Time now(base::Time::Now());
+  const int hour = HourOfDay(now);
+  const int day = DayOfWeek(now);
+
+  assist_ranker::ExamplePreprocessorConfig preprocessor_config;
+  if (!LoadExamplePreprocessorConfig(&preprocessor_config)) {
+    return;
+  }
+  for (auto& app : app_features_map) {
+    assist_ranker::RankerExample example(
+        CreateRankerExample(app.second,
+                            now.ToDeltaSinceWindowsEpoch().InSeconds() -
+                                app.second.time_of_last_click_sec(),
+                            total_hours, day, hour, all_clicks_last_hour,
+                            all_clicks_last_24_hours));
+    std::vector<float> vectorized_features;
+    if (RankerExampleToVectorizedFeatures(preprocessor_config, example,
+                                          &vectorized_features)) {
+      DoInference(app.first, vectorized_features, task_runner, callback);
+    }
+  }
+}
+
 }  // namespace
 
 MlAppRankProvider::MlAppRankProvider()
     : creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       background_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
-  // Constructor is not required to run on |background_task_runner_|:
-  DETACH_FROM_SEQUENCE(background_sequence_checker_);
-}
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 MlAppRankProvider::~MlAppRankProvider() = default;
 
@@ -166,59 +275,16 @@ void MlAppRankProvider::CreateRankings(
   // sequence.
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&MlAppRankProvider::CreateRankingsImpl,
-                     base::Unretained(this), app_features_map, total_hours,
-                     all_clicks_last_hour, all_clicks_last_24_hours));
+      base::BindOnce(&CreateRankingsImpl, app_features_map, total_hours,
+                     all_clicks_last_hour, all_clicks_last_24_hours,
+                     creation_task_runner_,
+                     base::BindRepeating(&MlAppRankProvider::RunExecutor,
+                                         weak_factory_.GetWeakPtr())));
 }
 
 std::map<std::string, float> MlAppRankProvider::RetrieveRankings() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
   return ranking_map_;
-}
-
-void MlAppRankProvider::CreateRankingsImpl(
-    base::flat_map<std::string, AppLaunchFeatures> app_features_map,
-    int total_hours,
-    int all_clicks_last_hour,
-    int all_clicks_last_24_hours) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
-  const base::Time now(base::Time::Now());
-  const int hour = HourOfDay(now);
-  const int day = DayOfWeek(now);
-
-  for (auto& app : app_features_map) {
-    assist_ranker::RankerExample example(
-        CreateRankerExample(app.second,
-                            now.ToDeltaSinceWindowsEpoch().InSeconds() -
-                                app.second.time_of_last_click_sec(),
-                            total_hours, day, hour, all_clicks_last_hour,
-                            all_clicks_last_24_hours));
-    std::vector<float> vectorized_features;
-    if (RankerExampleToVectorizedFeatures(example, &vectorized_features)) {
-      DoInference(app.first, vectorized_features);
-    }
-  }
-}
-
-void MlAppRankProvider::DoInference(const std::string& app_id,
-                                    const std::vector<float>& features) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
-  // Prepare the input tensor.
-  std::map<std::string, TensorPtr> inputs;
-  auto tensor = Tensor::New();
-  tensor->shape = Int64List::New();
-  tensor->shape->value = std::vector<int64_t>({1, features.size()});
-  tensor->data = ValueList::New();
-  tensor->data->set_float_list(FloatList::New());
-  tensor->data->get_float_list()->value =
-      std::vector<double>(std::begin(features), std::end(features));
-  inputs.emplace(std::string("input"), std::move(tensor));
-
-  const std::vector<std::string> outputs({std::string("output")});
-  creation_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&MlAppRankProvider::RunExecutor,
-                                weak_factory_.GetWeakPtr(), std::move(inputs),
-                                std::move(outputs), app_id));
 }
 
 void MlAppRankProvider::RunExecutor(std::map<std::string, TensorPtr> inputs,
@@ -266,57 +332,6 @@ void MlAppRankProvider::OnConnectionError() {
   LOG(WARNING) << "Mojo connection for ML service closed.";
   executor_.reset();
   model_.reset();
-}
-
-bool MlAppRankProvider::RankerExampleToVectorizedFeatures(
-    assist_ranker::RankerExample& example,
-    std::vector<float>* vectorized_features) {
-  if (!LoadExamplePreprocessorConfigIfNeeded()) {
-    return false;
-  }
-  DCHECK(preprocessor_config_);
-  int preprocessor_error = assist_ranker::ExamplePreprocessor::Process(
-      *preprocessor_config_, &example, true);
-  // kNoFeatureIndexFound can occur normally (e.g., when the app URL
-  // isn't known to the model or a rarely seen enum value is used).
-  if (preprocessor_error != assist_ranker::ExamplePreprocessor::kSuccess &&
-      preprocessor_error !=
-          assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound) {
-    // TODO: Log to UMA.
-    return false;
-  }
-
-  const auto& extracted_features =
-      example.features()
-          .at(assist_ranker::ExamplePreprocessor::kVectorizedFeatureDefaultName)
-          .float_list()
-          .float_value();
-  vectorized_features->assign(extracted_features.begin(),
-                              extracted_features.end());
-  return true;
-}
-
-bool MlAppRankProvider::LoadExamplePreprocessorConfigIfNeeded() {
-  if (preprocessor_config_) {
-    return true;
-  }
-  const int resource_id = IDR_TOP_CAT_20190722_EXAMPLE_PREPROCESSOR_CONFIG_PB;
-  const scoped_refptr<base::RefCountedMemory> raw_config =
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          resource_id);
-  if (!raw_config || !raw_config->front()) {
-    LOG(ERROR) << "Failed to load TopCatModel example preprocessor config.";
-    return false;
-  }
-
-  preprocessor_config_ =
-      std::make_unique<assist_ranker::ExamplePreprocessorConfig>();
-  if (!preprocessor_config_->ParseFromArray(raw_config->front(),
-                                            raw_config->size())) {
-    LOG(ERROR) << "Failed to parse TopCatModel example preprocessor config.";
-    return false;
-  }
-  return true;
 }
 
 }  // namespace app_list

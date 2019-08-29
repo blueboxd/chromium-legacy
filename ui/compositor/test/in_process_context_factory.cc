@@ -293,7 +293,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       compositor->frame_sink_id(), GetHostFrameSinkManager(),
       frame_sink_manager_, display, nullptr /* display_client */,
       context_provider, shared_worker_context_provider_,
-      compositor->task_runner(), &gpu_memory_buffer_manager_);
+      compositor->task_runner(), &gpu_memory_buffer_manager_,
+      features::IsVizHitTestingSurfaceLayerEnabled());
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 
   data->display->Resize(compositor->size());

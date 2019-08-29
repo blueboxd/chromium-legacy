@@ -117,6 +117,11 @@ interface XRTestHook {
   // the controller data of the device that the test has registered at the
   // given index, e.g. its current position and pressed buttons.
   [Sync] WaitGetControllerData(uint32 index) => (ControllerFrameData data);
+
+  // Called by the OpenXR test. Test can inform runtime when it should stop
+  // session by calling this function and test if such events are handled
+  // correctly.
+  [Sync] WaitGetSessionStateStopping() => (bool stopping);
 };
 
 // Interface exposed by IsolatedXRService to allow browser tests to hook VR APIs

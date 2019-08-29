@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -23,8 +24,8 @@ namespace safety_tips {
 // Callback type used for retrieving reputation status. |ignored| indicates
 // whether the user has dismissed the warning and thus should not be warned
 // again. |url| is the URL applicable for this result,
-using ReputationCheckCallback =
-    base::OnceCallback<void(SafetyTipType, bool ignored, const GURL& url)>;
+using ReputationCheckCallback = base::OnceCallback<
+    void(security_state::SafetyTipStatus, bool ignored, const GURL& url)>;
 
 // Provides reputation information on URLs for Safety Tips.
 class ReputationService : public KeyedService {
@@ -69,7 +70,7 @@ class ReputationService : public KeyedService {
 
 // Checks SafeBrowsing-style permutations of |url| against the component updater
 // blocklist and returns the match type. kNone means the URL is not blocked.
-SafetyTipType GetUrlBlockType(const GURL& url);
+security_state::SafetyTipStatus GetUrlBlockType(const GURL& url);
 
 }  // namespace safety_tips
 

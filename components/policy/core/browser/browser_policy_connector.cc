@@ -183,12 +183,6 @@ void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
       policy_prefs::kCloudManagementEnrollmentMandatory, false);
   registry->RegisterBooleanPref(
       policy_prefs::kCloudPolicyOverridesPlatformPolicy, false);
-  registry->RegisterBooleanPref(policy_prefs::kUnsafeEventsReportingEnabled,
-                                false);
-  registry->RegisterIntegerPref(policy_prefs::kBlockLargeFileTransfer, 0);
-  registry->RegisterIntegerPref(policy_prefs::kDelayDeliveryUntilVerdict, 0);
-  registry->RegisterIntegerPref(policy_prefs::kAllowPasswordProtectedFiles, 0);
-  registry->RegisterIntegerPref(policy_prefs::kCheckContentCompliance, 0);
 }
 
 }  // namespace policy

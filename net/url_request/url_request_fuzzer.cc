@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <memory>
 
 #include "base/run_loop.h"
@@ -16,7 +18,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "url/gurl.h"
 
 

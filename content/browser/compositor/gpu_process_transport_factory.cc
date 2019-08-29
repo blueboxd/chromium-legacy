@@ -494,7 +494,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       compositor->frame_sink_id(), GetHostFrameSinkManager(),
       GetFrameSinkManager(), data->display.get(), data->display_client.get(),
       context_provider, shared_worker_context_provider(),
-      compositor->task_runner(), GetGpuMemoryBufferManager());
+      compositor->task_runner(), GetGpuMemoryBufferManager(),
+      features::IsVizHitTestingSurfaceLayerEnabled());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));

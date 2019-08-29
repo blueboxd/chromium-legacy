@@ -5,11 +5,8 @@
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -44,16 +41,10 @@ class PasswordAccessoryInfoView extends LinearLayout {
         mPassword = findViewById(R.id.password_text);
     }
 
-    void setIconForBitmap(@Nullable Bitmap favicon) {
-        Drawable icon;
-        if (favicon == null) {
-            icon = AppCompatResources.getDrawable(getContext(), R.drawable.ic_globe_36dp);
-        } else {
-            icon = new BitmapDrawable(getContext().getResources(), favicon);
-        }
+    void setIconForBitmap(@Nullable Drawable icon) {
         final int kIconSize = getContext().getResources().getDimensionPixelSize(
                 R.dimen.keyboard_accessory_suggestion_icon_size);
-        icon.setBounds(0, 0, kIconSize, kIconSize);
+        if (icon != null) icon.setBounds(0, 0, kIconSize, kIconSize);
         mIcon.setImageDrawable(icon);
     }
 

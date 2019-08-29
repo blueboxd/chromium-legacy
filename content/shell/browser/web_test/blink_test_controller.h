@@ -27,6 +27,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/web_preferences.h"
@@ -40,7 +41,6 @@ namespace content {
 
 class DevToolsProtocolTestBindings;
 class RenderFrameHost;
-class RenderProcessHost;
 class Shell;
 class WebTestBluetoothChooserFactory;
 class WebTestDevToolsBindings;
@@ -304,7 +304,7 @@ class BlinkTestController : public WebContentsObserver,
 
   // Renderer processes are observed to detect crashes.
   ScopedObserver<RenderProcessHost, RenderProcessHostObserver>
-      render_process_host_observer_;
+      render_process_host_observer_{this};
   std::set<RenderProcessHost*> all_observed_render_process_hosts_;
   std::set<RenderProcessHost*> main_window_render_process_hosts_;
 

@@ -166,6 +166,15 @@ ControllerFrameData XRTestHookWrapper::WaitGetControllerData(
   return {};
 }
 
+bool XRTestHookWrapper::WaitGetSessionStateStopping() {
+  if (hook_) {
+    bool stopping = false;
+    hook_->WaitGetSessionStateStopping(&stopping);
+    return stopping;
+  }
+  return false;
+}
+
 void XRTestHookWrapper::AttachCurrentThread() {
   if (hook_info_) {
     hook_.Bind(std::move(hook_info_));

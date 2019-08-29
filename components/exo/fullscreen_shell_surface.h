@@ -23,7 +23,7 @@ class FullscreenShellSurface : public SurfaceTreeHost,
                                public views::WidgetDelegate,
                                public views::View {
  public:
-  explicit FullscreenShellSurface(Surface* surface);
+  FullscreenShellSurface();
   ~FullscreenShellSurface() override;
 
   // Set the callback to run when the user wants the shell surface to be closed.
@@ -43,6 +43,10 @@ class FullscreenShellSurface : public SurfaceTreeHost,
 
   // Set the startup ID for the surface.
   void SetStartupId(const char* startup_id);
+
+  // Set the Surface in use. Will replace root_surface_ if a surface is
+  // currently set. Will remove root_surface_ if |surface| is nullptr.
+  void SetSurface(Surface* surface);
 
   void Maximize();
 

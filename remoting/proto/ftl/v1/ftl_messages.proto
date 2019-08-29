@@ -143,7 +143,10 @@ message InboxMessage {
     CHROMOTING_MESSAGE = 29;
   }
 
-  enum MessageClass { USER = 0; }
+  enum MessageClass {
+    USER = 0;    // USER both persists the message and sends a GCM tickle
+    STATUS = 3;  // STATUS persists the message and doesn't send GCM tickle
+  }
 
   string message_id = 1;
   MessageType message_type = 2;

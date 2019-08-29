@@ -525,7 +525,7 @@ public class NfcImpl implements Nfc {
 
         try {
             mTagHandler.connect();
-            mTagHandler.write(NfcTypeConverter.toNdefMessage(mPendingPushOperation.ndefMessage));
+            mTagHandler.write(NdefMessageUtils.toNdefMessage(mPendingPushOperation.ndefMessage));
             pendingPushOperationCompleted(null);
         } catch (InvalidNdefMessageException e) {
             Log.w(TAG, "Cannot write data to NFC tag. Invalid NdefMessage.");
@@ -582,7 +582,7 @@ public class NfcImpl implements Nfc {
      */
     private void notifyMatchingWatchers(android.nfc.NdefMessage message, int compatibility) {
         try {
-            NdefMessage ndefMessage = NfcTypeConverter.toNdefMessage(message);
+            NdefMessage ndefMessage = NdefMessageUtils.toNdefMessage(message);
             List<Integer> watchIds = new ArrayList<Integer>();
             for (int i = 0; i < mWatchers.size(); i++) {
                 NfcReaderOptions options = mWatchers.valueAt(i);

@@ -11,10 +11,10 @@
 
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_test_utils.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/security_state/core/security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using safety_tips::GetUrlBlockType;
-using safety_tips::SafetyTipType;
 
 class ReputationServiceTest : public ChromeRenderViewHostTestHarness {
  protected:
@@ -31,50 +31,66 @@ TEST_F(ReputationServiceTest, BlocklistTest) {
       {"domain.test/", "directory.test/foo/", "path.test/foo/bar.html",
        "query.test/foo/bar.html?baz=test", "sub.subdomain.test/"});
 
-  const std::vector<std::pair<std::string, safety_tips::SafetyTipType>> kTests =
-      {
-          {"http://unblocked.test", SafetyTipType::kNone},
-          {"http://unblocked.test/foo", SafetyTipType::kNone},
-          {"http://unblocked.test/foo.html?bar=baz", SafetyTipType::kNone},
+  const std::vector<std::pair<std::string, security_state::SafetyTipStatus>>
+      kTests = {
+          {"http://unblocked.test", security_state::SafetyTipStatus::kNone},
+          {"http://unblocked.test/foo", security_state::SafetyTipStatus::kNone},
+          {"http://unblocked.test/foo.html?bar=baz",
+           security_state::SafetyTipStatus::kNone},
 
-          {"http://sub.domain.test", SafetyTipType::kBadReputation},
-          {"http://domain.test", SafetyTipType::kBadReputation},
-          {"http://domain.test/foo", SafetyTipType::kBadReputation},
-          {"http://domain.test/foo/bar", SafetyTipType::kBadReputation},
+          {"http://sub.domain.test",
+           security_state::SafetyTipStatus::kBadReputation},
+          {"http://domain.test",
+           security_state::SafetyTipStatus::kBadReputation},
+          {"http://domain.test/foo",
+           security_state::SafetyTipStatus::kBadReputation},
+          {"http://domain.test/foo/bar",
+           security_state::SafetyTipStatus::kBadReputation},
           {"http://domain.test/foo.html?bar=baz",
-           SafetyTipType::kBadReputation},
+           security_state::SafetyTipStatus::kBadReputation},
 
-          {"http://directory.test", SafetyTipType::kNone},
-          {"http://directory.test/bar", SafetyTipType::kNone},
-          {"http://directory.test/bar/foo.html", SafetyTipType::kNone},
-          {"http://directory.test/foo", SafetyTipType::kNone},
-          {"http://directory.test/foo/bar/", SafetyTipType::kBadReputation},
+          {"http://directory.test", security_state::SafetyTipStatus::kNone},
+          {"http://directory.test/bar", security_state::SafetyTipStatus::kNone},
+          {"http://directory.test/bar/foo.html",
+           security_state::SafetyTipStatus::kNone},
+          {"http://directory.test/foo", security_state::SafetyTipStatus::kNone},
+          {"http://directory.test/foo/bar/",
+           security_state::SafetyTipStatus::kBadReputation},
           {"http://directory.test/foo/bar.html?bar=baz",
-           SafetyTipType::kBadReputation},
+           security_state::SafetyTipStatus::kBadReputation},
 
-          {"http://path.test", SafetyTipType::kNone},
-          {"http://path.test/foo", SafetyTipType::kNone},
-          {"http://path.test/foo/bar/", SafetyTipType::kNone},
-          {"http://path.test/foo/bar.htm", SafetyTipType::kNone},
-          {"http://path.test/foo/bar.html", SafetyTipType::kBadReputation},
+          {"http://path.test", security_state::SafetyTipStatus::kNone},
+          {"http://path.test/foo", security_state::SafetyTipStatus::kNone},
+          {"http://path.test/foo/bar/", security_state::SafetyTipStatus::kNone},
+          {"http://path.test/foo/bar.htm",
+           security_state::SafetyTipStatus::kNone},
+          {"http://path.test/foo/bar.html",
+           security_state::SafetyTipStatus::kBadReputation},
           {"http://path.test/foo/bar.html?bar=baz",
-           SafetyTipType::kBadReputation},
-          {"http://path.test/bar/foo.html", SafetyTipType::kNone},
+           security_state::SafetyTipStatus::kBadReputation},
+          {"http://path.test/bar/foo.html",
+           security_state::SafetyTipStatus::kNone},
 
-          {"http://query.test", SafetyTipType::kNone},
-          {"http://query.test/foo", SafetyTipType::kNone},
-          {"http://query.test/foo/bar/", SafetyTipType::kNone},
-          {"http://query.test/foo/bar.html", SafetyTipType::kNone},
+          {"http://query.test", security_state::SafetyTipStatus::kNone},
+          {"http://query.test/foo", security_state::SafetyTipStatus::kNone},
+          {"http://query.test/foo/bar/",
+           security_state::SafetyTipStatus::kNone},
+          {"http://query.test/foo/bar.html",
+           security_state::SafetyTipStatus::kNone},
           {"http://query.test/foo/bar.html?baz=test",
-           SafetyTipType::kBadReputation},
-          {"http://query.test/foo/bar.html?baz=test&a=1", SafetyTipType::kNone},
-          {"http://query.test/foo/bar.html?baz=no", SafetyTipType::kNone},
+           security_state::SafetyTipStatus::kBadReputation},
+          {"http://query.test/foo/bar.html?baz=test&a=1",
+           security_state::SafetyTipStatus::kNone},
+          {"http://query.test/foo/bar.html?baz=no",
+           security_state::SafetyTipStatus::kNone},
 
-          {"http://subdomain.test", SafetyTipType::kNone},
-          {"http://sub.subdomain.test", SafetyTipType::kBadReputation},
-          {"http://sub.subdomain.test/foo/bar", SafetyTipType::kBadReputation},
+          {"http://subdomain.test", security_state::SafetyTipStatus::kNone},
+          {"http://sub.subdomain.test",
+           security_state::SafetyTipStatus::kBadReputation},
+          {"http://sub.subdomain.test/foo/bar",
+           security_state::SafetyTipStatus::kBadReputation},
           {"http://sub.subdomain.test/foo.html?bar=baz",
-           SafetyTipType::kBadReputation},
+           security_state::SafetyTipStatus::kBadReputation},
       };
 
   for (auto test : kTests) {

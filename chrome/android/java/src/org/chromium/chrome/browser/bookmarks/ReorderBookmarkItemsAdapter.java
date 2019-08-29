@@ -218,8 +218,10 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
             });
             // Turn on the highlight for the currently highlighted bookmark.
             if (id.equals(mHighlightedBookmark)) {
-                ViewHighlighter.turnOnHighlight(holder.itemView, false);
+                ViewHighlighter.pulseHighlight(holder.itemView, false, 1);
+                clearHighlight();
             } else {
+                // We need this in case we are change state during a pulse.
                 ViewHighlighter.turnOffHighlight(holder.itemView);
             }
         }

@@ -7,6 +7,7 @@
 
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
@@ -14,7 +15,7 @@ namespace safety_tips {
 
 class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SafetyTipInfoBarDelegate(SafetyTipType type,
+  SafetyTipInfoBarDelegate(security_state::SafetyTipStatus safety_tip_status,
                            const GURL& url,
                            content::WebContents* web_contents);
 
@@ -31,7 +32,7 @@ class SafetyTipInfoBarDelegate : public ConfirmInfoBarDelegate {
   void InfoBarDismissed() override;
 
  private:
-  SafetyTipType type_;
+  security_state::SafetyTipStatus safety_tip_status_;
   GURL url_;
   content::WebContents* web_contents_;
 };

@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
+#include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/print_messages.h"
@@ -284,18 +286,30 @@ class PrintPreviewHandlerTest : public testing::Test {
     return std::make_unique<TestPrinterHandler>(printers);
   }
 
-  void Initialize() {
-    // Set locale since the delimeters we check in VerifyInitialSettings()
-    // depend on it.
-    base::test::ScopedRestoreICUDefaultLocale scoped_locale("en");
+  void Initialize() { InitializeWithLocale("en"); }
 
+  void InitializeWithLocale(const std::string& locale) {
     // Sending this message will enable javascript, so it must always be called
     // before any other messages are sent.
     base::Value args(base::Value::Type::LIST);
     args.GetList().emplace_back("test-callback-id-0");
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
-    handler()->HandleGetInitialSettings(list_args.get());
+
+    auto* browser_process = TestingBrowserProcess::GetGlobal();
+    std::string original_locale = browser_process->GetApplicationLocale();
+    {
+      // Set locale since the delimiters checked in VerifyInitialSettings()
+      // depend on it. This has to be done in several ways to make various
+      // locale code sync up correctly.
+      browser_process->SetApplicationLocale(locale);
+      base::test::ScopedRestoreICUDefaultLocale scoped_locale(locale);
+      base::testing::ResetFormatters();
+      handler()->HandleGetInitialSettings(list_args.get());
+    }
+    // Reset again now that |scoped_locale| has been destroyed.
+    browser_process->SetApplicationLocale(original_locale);
+    base::testing::ResetFormatters();
 
     // In response to get initial settings, the initial settings are sent back.
     ASSERT_EQ(1u, web_ui()->call_data().size());
@@ -321,18 +335,33 @@ class PrintPreviewHandlerTest : public testing::Test {
     EXPECT_EQ(expect_success, success);
   }
 
+  void ValidateInitialSettings(const content::TestWebUI::CallData& data,
+                               const std::string& default_printer_name,
+                               const std::string& initiator_title,
+                               base::Optional<bool> expected_header_footer) {
+    ValidateInitialSettingsForLocale(data, default_printer_name,
+                                     initiator_title, "en", ",", ".",
+                                     expected_header_footer);
+  }
+
   // Validates the initial settings structure in the response matches the
   // print_preview.NativeInitialSettings type in
   // chrome/browser/resources/print_preview/native_layer.js. Checks that:
   //   - |default_printer_name| is the printer name returned
   //   - |initiator_title| is the initiator title returned
   //   - |expected_header_footer| is the header/footer state returned, if any
-  // Also validates that delimeters are correct for "en" locale (set in
-  // Initialize()).  Assumes "test-callback-id-0" was used as the callback id.
-  void ValidateInitialSettings(const content::TestWebUI::CallData& data,
-                               const std::string& default_printer_name,
-                               const std::string& initiator_title,
-                               base::Optional<bool> expected_header_footer) {
+  // Also validates that delimiters are correct for |locale| (set in
+  // InitializeWithLocale()) with the associated |thousands_delimiter| and
+  // |decimal_delimiter|.
+  // Assumes "test-callback-id-0" was used as the callback id.
+  void ValidateInitialSettingsForLocale(
+      const content::TestWebUI::CallData& data,
+      const std::string& default_printer_name,
+      const std::string& initiator_title,
+      const std::string& locale,
+      const std::string& thousands_delimiter,
+      const std::string& decimal_delimiter,
+      base::Optional<bool> expected_header_footer) {
     CheckWebUIResponse(data, "test-callback-id-0", true);
     const base::Value* settings = data.arg3();
     ASSERT_TRUE(settings->FindKeyOfType("isInKioskAutoPrintMode",
@@ -340,18 +369,17 @@ class PrintPreviewHandlerTest : public testing::Test {
     ASSERT_TRUE(settings->FindKeyOfType("isInAppKioskMode",
                                         base::Value::Type::BOOLEAN));
 
-    const base::Value* locale =
-        settings->FindKeyOfType("uiLocale", base::Value::Type::STRING);
-    ASSERT_TRUE(locale);
-    EXPECT_EQ("en", locale->GetString());
-    const base::Value* thousands_delimeter = settings->FindKeyOfType(
-        "thousandsDelimeter", base::Value::Type::STRING);
-    ASSERT_TRUE(thousands_delimeter);
-    EXPECT_EQ(",", thousands_delimeter->GetString());
-    const base::Value* decimal_delimeter =
-        settings->FindKeyOfType("decimalDelimeter", base::Value::Type::STRING);
-    ASSERT_TRUE(decimal_delimeter);
-    EXPECT_EQ(".", decimal_delimeter->GetString());
+    const std::string* actual_locale = settings->FindStringKey("uiLocale");
+    ASSERT_TRUE(actual_locale);
+    EXPECT_EQ(locale, *actual_locale);
+    const std::string* actual_thousands_delimiter =
+        settings->FindStringKey("thousandsDelimiter");
+    ASSERT_TRUE(actual_thousands_delimiter);
+    EXPECT_EQ(thousands_delimiter, *actual_thousands_delimiter);
+    const std::string* actual_decimal_delimiter =
+        settings->FindStringKey("decimalDelimiter");
+    ASSERT_TRUE(actual_decimal_delimiter);
+    EXPECT_EQ(decimal_delimiter, *actual_decimal_delimiter);
 
     ASSERT_TRUE(
         settings->FindKeyOfType("unitType", base::Value::Type::INTEGER));
@@ -435,6 +463,25 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsSimple) {
   // Verify initial settings were sent.
   ValidateInitialSettings(*web_ui()->call_data().back(), kDummyPrinterName,
                           kDummyInitiatorName, {});
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsHiLocale) {
+  InitializeWithLocale("hi");
+
+  // Verify initial settings were sent for Hindi.
+  // TODO(crbug.com/998039): Fix the incorrect delimiters.
+  ValidateInitialSettingsForLocale(*web_ui()->call_data().back(),
+                                   kDummyPrinterName, kDummyInitiatorName, "hi",
+                                   "3", "6", {});
+}
+
+TEST_F(PrintPreviewHandlerTest, InitialSettingsRuLocale) {
+  InitializeWithLocale("ru");
+
+  // Verify initial settings were sent for Russian.
+  ValidateInitialSettingsForLocale(*web_ui()->call_data().back(),
+                                   kDummyPrinterName, kDummyInitiatorName, "ru",
+                                   "\xC2\xA0", ",", {});
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableHeaderFooter) {

@@ -28,4 +28,15 @@ struct TabLayoutConstants {
   int tab_overlap;
 };
 
+// Inactive tabs have a smaller minimum width than the active tab. Layout has
+// different behavior when inactive tabs are smaller than the active tab
+// than it does when they are the same size.
+enum class LayoutDomain {
+  // There is not enough space for inactive tabs to match the active tab's
+  // width.
+  kInactiveWidthBelowActiveWidth,
+  // There is enough space for inactive tabs to match the active tab's width.
+  kInactiveWidthEqualsActiveWidth
+};
+
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_LAYOUT_TYPES_H_

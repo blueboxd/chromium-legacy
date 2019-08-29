@@ -119,6 +119,7 @@ def CheckoutLLVM(commit, dir):
 
   # Otherwise, do a fresh clone.
   if os.path.isdir(dir):
+    os.chdir(CHROMIUM_DIR)  # Can't remove dir if we're in it.
     print('Removing %s.' % dir)
     RmTree(dir)
   if RunCommand(clone_cmd, fail_hard=False):
@@ -239,9 +240,9 @@ def MaybeDownloadHostGcc(args):
   """Download a modern GCC host compiler on Linux."""
   if not sys.platform.startswith('linux') or args.gcc_toolchain:
     return
-  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc510trusty')
+  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc530trusty')
   if not os.path.exists(gcc_dir):
-    DownloadAndUnpack(CDS_URL + '/tools/gcc510trusty.tgz', gcc_dir)
+    DownloadAndUnpack(CDS_URL + '/tools/gcc530trusty.tgz', gcc_dir)
   args.gcc_toolchain = gcc_dir
 
 

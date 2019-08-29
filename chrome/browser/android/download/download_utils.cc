@@ -79,7 +79,7 @@ int DownloadUtils::GetAutoResumptionSizeLimit() {
 
 // static
 void DownloadUtils::OpenDownload(download::DownloadItem* item,
-                                 int open_source) {
+                                 DownloadOpenSource open_source) {
   JNIEnv* env = base::android::AttachCurrentThread();
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(item);
@@ -94,7 +94,8 @@ void DownloadUtils::OpenDownload(download::DownloadItem* item,
       ConvertUTF8ToJavaString(env, item->GetMimeType()),
       ConvertUTF8ToJavaString(env, item->GetGuid()), is_off_the_record,
       ConvertUTF8ToJavaString(env, original_url),
-      ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()), open_source);
+      ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
+      static_cast<jint>(open_source));
 }
 
 // static
@@ -121,4 +122,13 @@ bool DownloadUtils::ShouldAutoOpenDownload(download::DownloadItem* item) {
 bool DownloadUtils::IsOmaDownloadDescription(const std::string& mime_type) {
   return base::EqualsCaseInsensitiveASCII(mime_type,
                                           kOmaDownloadDescriptorMimeType);
+}
+
+// static
+void DownloadUtils::ShowDownloadManager(bool show_prefetched_content,
+                                        DownloadOpenSource open_source) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_DownloadUtils_showDownloadManager(
+      env, nullptr, nullptr, static_cast<jint>(open_source),
+      static_cast<jboolean>(show_prefetched_content));
 }

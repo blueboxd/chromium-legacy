@@ -79,7 +79,8 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
                                                 : Base::ContainingBlock();
   const ComputedStyle* container_style = container->Style();
   NGConstraintSpace constraint_space =
-      NGConstraintSpace::CreateFromLayoutObject(*this);
+      NGConstraintSpace::CreateFromLayoutObject(*this,
+                                                false /* is_layout_root */);
 
   // As this is part of the Legacy->NG bridge, the container_builder is used
   // for indicating the resolved size of the OOF-positioned containing-block

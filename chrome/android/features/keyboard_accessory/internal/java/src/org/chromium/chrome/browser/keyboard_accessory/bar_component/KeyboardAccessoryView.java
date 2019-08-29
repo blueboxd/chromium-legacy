@@ -104,6 +104,15 @@ class KeyboardAccessoryView extends LinearLayout {
     }
 
     void setBarItemsAdapter(RecyclerView.Adapter adapter) {
+        // Make sure the view updates the fallback icon padding whenever new items arrive.
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                super.onItemRangeChanged(positionStart, itemCount);
+                mBarItemsView.scrollToPosition(0);
+                mBarItemsView.invalidateItemDecorations();
+            }
+        });
         mBarItemsView.setAdapter(adapter);
     }
 

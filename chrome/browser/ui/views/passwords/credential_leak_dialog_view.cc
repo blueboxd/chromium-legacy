@@ -25,19 +25,35 @@ namespace {
 // Fixed height of the illustration shown on the top of the dialog.
 constexpr int kIllustrationHeight = 120;
 
-// Fixed background color of the illustration shown on the top of the dialog.
+// Fixed background color of the illustration shown on the top of the dialog in
+// normal mode.
 constexpr SkColor kPictureBackgroundColor = SkColorSetARGB(0x0A, 0, 0, 0);
 
+// Fixed background color of the illustration shown on the top of the dialog in
+// dark mode.
+constexpr SkColor kPictureBackgroundColorDarkMode =
+    SkColorSetARGB(0x1A, 0x00, 0x00, 0x00);
+
+// Updates the image displayed on the illustration based on the current theme.
+void UpdateImageView(NonAccessibleImageView* image_view,
+                     bool dark_mode_enabled) {
+  image_view->SetImage(
+      gfx::CreateVectorIcon(dark_mode_enabled ? kPasswordCheckWarningDarkIcon
+                                              : kPasswordCheckWarningIcon,
+                            dark_mode_enabled ? kPictureBackgroundColorDarkMode
+                                              : kPictureBackgroundColor));
+}
+
 // Creates the illustration which is rendered on top of the dialog.
-std::unique_ptr<views::View> CreateIllustration() {
+std::unique_ptr<NonAccessibleImageView> CreateIllustration(
+    bool dark_mode_enabled) {
   const gfx::Size illustration_size(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH),
       kIllustrationHeight);
   auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetImage(gfx::CreateVectorIcon(kPasswordCheckWarningIcon,
-                                             kPictureBackgroundColor));
   image_view->SetPreferredSize(illustration_size);
+  UpdateImageView(image_view.get(), dark_mode_enabled);
   image_view->SetSize(illustration_size);
   image_view->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   return image_view;
@@ -89,10 +105,9 @@ void CredentialLeakDialogView::ShowCredentialLeakPrompt() {
 }
 
 void CredentialLeakDialogView::ControllerGone() {
-  // During Widget::Close() phase some accessibility event may occur. Thus,
-  // |controller_| should be kept around.
+  // Widget::Close() synchronously calls Close() on this instance, which resets
+  // the |controller_|.
   GetWidget()->Close();
-  controller_ = nullptr;
 }
 
 ui::ModalType CredentialLeakDialogView::GetModalType() const {
@@ -112,16 +127,30 @@ base::string16 CredentialLeakDialogView::GetDialogButtonLabel(
                                         : controller_->GetCancelButtonLabel();
 }
 
-void CredentialLeakDialogView::WindowClosing() {
-  if (controller_) {
-    controller_->OnCloseDialog();
-  }
+bool CredentialLeakDialogView::Cancel() {
+  if (controller_)
+    // Since OnCancelDialog() synchronously invokes Close() on this instance, we
+    // need to clear the |controller_| before to avoid notifying the controller
+    // twice.
+    std::exchange(controller_, nullptr)->OnCancelDialog();
+  return true;
 }
 
 bool CredentialLeakDialogView::Accept() {
-  if (controller_ && controller_->ShouldCheckPasswords()) {
-    controller_->OnCheckPasswords();
-  }
+  if (controller_)
+    // Since OnAcceptDialog() synchronously invokes Close() on this instance, we
+    // need to clear the |controller_| before to avoid notifying the controller
+    // twice.
+    std::exchange(controller_, nullptr)->OnAcceptDialog();
+  return true;
+}
+
+bool CredentialLeakDialogView::Close() {
+  if (controller_)
+    // Since OnCloseDialog() synchronously invokes Close() on this instance, we
+    // need to clear the |controller_| before to avoid notifying the controller
+    // twice.
+    std::exchange(controller_, nullptr)->OnCloseDialog();
   return true;
 }
 
@@ -135,11 +164,17 @@ bool CredentialLeakDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
+void CredentialLeakDialogView::OnThemeChanged() {
+  UpdateImageView(image_view_, GetNativeTheme()->ShouldUseDarkColors());
+}
+
 void CredentialLeakDialogView::InitWindow() {
   SetLayoutManager(std::make_unique<BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       0 /* between_child_spacing */));
-  std::unique_ptr<views::View> illustration = CreateIllustration();
+  std::unique_ptr<NonAccessibleImageView> illustration =
+      CreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
+  image_view_ = illustration.get();
   std::unique_ptr<views::View> content =
       CreateContent(controller_->GetTitle(), controller_->GetDescription());
   AddChildView(std::move(illustration));

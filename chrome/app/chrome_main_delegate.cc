@@ -118,7 +118,7 @@
 #include "base/android/java_exception_reporter.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
 #include "chrome/common/chrome_descriptors.h"
-#else
+#else  // defined(OS_ANDROID)
 // Diagnostics is only available on non-android platforms.
 #include "chrome/browser/diagnostics/diagnostics_controller.h"
 #include "chrome/browser/diagnostics/diagnostics_writer.h"
@@ -958,12 +958,16 @@ void ChromeMainDelegate::PreSandboxStartup() {
       kAndroidChrome100PercentPakDescriptor,
       kAndroidUIResourcesPakDescriptor,
     };
-    for (size_t i = 0; i < base::size(extra_pak_keys); ++i) {
-      pak_fd = global_descriptors->Get(extra_pak_keys[i]);
-      pak_region = global_descriptors->GetRegion(extra_pak_keys[i]);
+    for (int extra_pak_key : extra_pak_keys) {
+      pak_fd = global_descriptors->Get(extra_pak_key);
+      pak_region = global_descriptors->GetRegion(extra_pak_key);
       ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
           base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
     }
+
+    // For Android: Native resources for DFMs should only be used by the browser
+    // process. Their file descriptors and memory mapped file region are not
+    // passed to child processes, and are therefore not loaded here.
 
     base::i18n::SetICUDefaultLocale(locale);
     const std::string loaded_locale = locale;

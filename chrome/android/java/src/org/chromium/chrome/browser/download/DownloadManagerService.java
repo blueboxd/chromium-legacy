@@ -36,7 +36,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
-import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaBackgroundDownload;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
@@ -657,7 +656,7 @@ public class DownloadManagerService
             return;
         }
         openDownloadedContent(download.getDownloadInfo(), download.getSystemDownloadId(),
-                DownloadMetrics.DownloadOpenSource.AUTO_OPEN);
+                DownloadOpenSource.AUTO_OPEN);
     }
 
     /**
@@ -985,7 +984,7 @@ public class DownloadManagerService
                         && DownloadUtils.fireOpenIntentForDownload(context, intent);
 
                 if (!didLaunchIntent) {
-                    openDownloadsPage(context);
+                    openDownloadsPage(context, source);
                     return;
                 }
 
@@ -1037,9 +1036,10 @@ public class DownloadManagerService
     /**
      * Open the Activity which shows a list of all downloads.
      * @param context Application context
+     * @param source The source where the user action coming from.
      */
-    public static void openDownloadsPage(Context context) {
-        if (DownloadUtils.showDownloadManager(null, null)) return;
+    public static void openDownloadsPage(Context context, @DownloadOpenSource int source) {
+        if (DownloadUtils.showDownloadManager(null, null, source)) return;
 
         // Open the Android Download Manager.
         Intent pageView = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
@@ -1806,20 +1806,14 @@ public class DownloadManagerService
     }
 
     @CalledByNative
-    private void showDownloadManager(boolean showPrefetchedContent) {
-        DownloadUtils.showDownloadManager(null, null, showPrefetchedContent);
-    }
-
-    @CalledByNative
-    private void openDownloadItem(
-            DownloadItem downloadItem, @DownloadMetrics.DownloadOpenSource int source) {
+    private void openDownloadItem(DownloadItem downloadItem, @DownloadOpenSource int source) {
         DownloadInfo downloadInfo = downloadItem.getDownloadInfo();
         boolean canOpen =
                 DownloadUtils.openFile(downloadInfo.getFilePath(), downloadInfo.getMimeType(),
                         downloadInfo.getDownloadGuid(), downloadInfo.isOffTheRecord(),
                         downloadInfo.getOriginalUrl(), downloadInfo.getReferrer(), source);
         if (!canOpen) {
-            openDownloadsPage(ContextUtils.getApplicationContext());
+            openDownloadsPage(ContextUtils.getApplicationContext(), source);
         }
     }
 
@@ -1828,8 +1822,7 @@ public class DownloadManagerService
      * @param id The {@link ContentId} of the download to be opened.
      * @param source The source where the user opened this download.
      */
-    public void openDownload(
-            ContentId id, boolean isOffTheRecord, @DownloadMetrics.DownloadOpenSource int source) {
+    public void openDownload(ContentId id, boolean isOffTheRecord, @DownloadOpenSource int source) {
         nativeOpenDownload(getNativeDownloadManagerService(), id.id, isOffTheRecord, source);
     }
 

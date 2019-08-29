@@ -648,7 +648,7 @@ bool ScreenOrientationController::ApplyLockForWindowIfPossible(
   // The default orientation for all chrome browser/apps windows is
   // ANY, so use the user_locked_orientation_;
   if (static_cast<AppType>(window->GetProperty(aura::client::kAppType)) !=
-      AppType::OTHERS) {
+      AppType::NON_APP) {
     LockRotationToOrientation(user_locked_orientation_);
     return true;
   }

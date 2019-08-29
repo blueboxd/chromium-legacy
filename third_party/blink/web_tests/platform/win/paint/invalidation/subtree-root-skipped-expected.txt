@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'Selection is here'",
-          "rect": [8, 30, 98, 19],
-          "reason": "geometry"
-        },
-        {
           "object": "InlineTextBox 'PASS'",
           "rect": [10, 10, 35, 18],
           "reason": "appeared"

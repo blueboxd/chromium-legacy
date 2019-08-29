@@ -4,6 +4,7 @@
 
 #include "components/media_message_center/media_notification_util.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/button.h"
 
@@ -22,7 +23,14 @@ constexpr MediaSessionAction kPreferredActions[] = {
     MediaSessionAction::kSeekBackward,  MediaSessionAction::kSeekForward,
 };
 
+// The maximum number of media notifications to count when recording the
+// Media.Notification.Count histogram. 20 was chosen because it would be very
+// unlikely to see a user with 20+ things playing at once.
+const int kMediaNotificationCountHistogramMax = 20;
+
 }  // namespace
+
+const char kCountHistogramName[] = "Media.Notification.Count";
 
 base::string16 GetAccessibleNameFromMetadata(
     media_session::MediaMetadata session_metadata) {
@@ -71,6 +79,11 @@ MediaSessionAction GetPlayPauseIgnoredAction(
   return current_action == MediaSessionAction::kPlay
              ? MediaSessionAction::kPause
              : MediaSessionAction::kPlay;
+}
+
+void RecordConcurrentNotificationCount(size_t count) {
+  UMA_HISTOGRAM_EXACT_LINEAR(kCountHistogramName, count,
+                             kMediaNotificationCountHistogramMax);
 }
 
 }  // namespace media_message_center

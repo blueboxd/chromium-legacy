@@ -17,7 +17,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
@@ -867,7 +866,6 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 
 // Verify that old orphan metadata gets deleted on startup.
 TEST_F(AutofillWalletMetadataSyncBridgeTest, DeleteOldOrphanMetadataOnStartup) {
-  base::HistogramTester histogram_tester;
   WalletMetadataSpecifics profile =
       CreateWalletMetadataSpecificsForAddressWithDetails(
           kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
@@ -889,8 +887,6 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, DeleteOldOrphanMetadataOnStartup) {
   EXPECT_CALL(*backend(), CommitChanges());
 
   ResetBridge();
-  histogram_tester.ExpectBucketCount("Sync.WalletMetadata.DeletedOldOrphans",
-                                     /*bucket=*/2, /*count=*/1);
 
   ASSERT_THAT(GetAllLocalDataInclRestart(), IsEmpty());
 }
@@ -898,7 +894,6 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest, DeleteOldOrphanMetadataOnStartup) {
 // Verify that recent orphan metadata does not get deleted on startup.
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
        DoNotDeleteOldNonOrphanMetadataOnStartup) {
-  base::HistogramTester histogram_tester;
   WalletMetadataSpecifics profile =
       CreateWalletMetadataSpecificsForAddressWithDetails(
           kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
@@ -918,8 +913,6 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
   EXPECT_CALL(*backend(), CommitChanges()).Times(0);
 
   ResetBridge();
-  histogram_tester.ExpectTotalCount("Sync.WalletMetadata.DeletedOldOrphans",
-                                    /*count=*/0);
 
   EXPECT_THAT(
       GetAllLocalDataInclRestart(),
@@ -929,7 +922,6 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 // Verify that recent orphan metadata does not get deleted on startup.
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
        DoNotDeleteRecentOrphanMetadataOnStartup) {
-  base::HistogramTester histogram_tester;
   WalletMetadataSpecifics profile =
       CreateWalletMetadataSpecificsForAddressWithDetails(
           kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
@@ -948,8 +940,6 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
   EXPECT_CALL(*backend(), CommitChanges()).Times(0);
 
   ResetBridge();
-  histogram_tester.ExpectTotalCount("Sync.WalletMetadata.DeletedOldOrphans",
-                                    /*count=*/0);
 
   EXPECT_THAT(
       GetAllLocalDataInclRestart(),

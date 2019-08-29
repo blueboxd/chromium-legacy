@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_TOUCHLESS_MEDIA_CONTROLS_TOUCHLESS_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_TOUCHLESS_MEDIA_CONTROLS_TOUCHLESS_IMPL_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom-blink.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
@@ -72,7 +73,7 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
 
   // Test functions
   void SetMediaControlsMenuHostForTesting(
-      mojom::blink::MediaControlsMenuHostPtr);
+      mojo::PendingRemote<mojom::blink::MediaControlsMenuHost>);
   void MenuHostFlushForTesting();
 
   void Trace(blink::Visitor*) override;
@@ -119,7 +120,7 @@ class MODULES_EXPORT MediaControlsTouchlessImpl final
   Member<MediaControlsTextTrackManager> text_track_manager_;
   Member<MediaControlsOrientationLockDelegate> orientation_lock_delegate_;
 
-  mojom::blink::MediaControlsMenuHostPtr media_controls_host_;
+  mojo::Remote<mojom::blink::MediaControlsMenuHost> media_controls_host_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaControlsTouchlessImpl);
 };

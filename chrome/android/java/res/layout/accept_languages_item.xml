@@ -39,7 +39,7 @@
 
     </LinearLayout>
 
-    <org.chromium.chrome.browser.widget.ListMenuButton
+    <org.chromium.chrome.browser.ui.widget.ListMenuButton
         android:id="@+id/more"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

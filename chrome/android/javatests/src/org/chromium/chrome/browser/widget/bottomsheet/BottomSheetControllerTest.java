@@ -100,8 +100,17 @@ public class BottomSheetControllerTest {
     @SmallTest
     @Feature({"BottomSheetController"})
     public void testSheetPriorityInPeekState() throws InterruptedException, TimeoutException {
+        CallbackHelper hideCallbackHelper = new CallbackHelper();
+        mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetContentChanged(BottomSheetContent content) {
+                hideCallbackHelper.notifyCalled();
+            }
+        });
         requestContentInSheet(mLowPriorityContent, true);
+        int callCount = hideCallbackHelper.getCallCount();
         requestContentInSheet(mHighPriorityContent, true);
+        hideCallbackHelper.waitForCallback(callCount);
         assertEquals("The bottom sheet is showing incorrect content.", mHighPriorityContent,
                 mBottomSheet.getCurrentSheetContent());
     }
@@ -296,7 +305,10 @@ public class BottomSheetControllerTest {
         });
         int currentCallCount = contentChangedHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(
-                () -> { mSheetController.requestShowContent(content, false); });
+                () -> {
+                    mSheetController.requestShowContent(content, false);
+                    mBottomSheet.endAnimations();
+                });
 
         if (expectContentChange) contentChangedHelper.waitForCallback(currentCallCount, 1);
     }

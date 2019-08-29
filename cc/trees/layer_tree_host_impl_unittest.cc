@@ -158,8 +158,8 @@ class LayerTreeHostImplTest : public testing::Test,
   void CreatePendingTree() {
     host_impl_->CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
-    pending_tree->SetDeviceViewportSize(
-        host_impl_->active_tree()->GetDeviceViewport().size());
+    pending_tree->SetDeviceViewportRect(
+        host_impl_->active_tree()->GetDeviceViewport());
     pending_tree->SetDeviceScaleFactor(
         host_impl_->active_tree()->device_scale_factor());
     // Normally a pending tree will not be fully painted until the commit has
@@ -274,7 +274,7 @@ class LayerTreeHostImplTest : public testing::Test,
     layer_tree_frame_sink_ = std::move(layer_tree_frame_sink);
     host_impl_->SetVisible(true);
     bool init = host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
-    host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 10));
+    host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->active_tree()->SetLocalSurfaceIdAllocationFromParent(
         viz::LocalSurfaceIdAllocation(
@@ -464,7 +464,7 @@ class LayerTreeHostImplTest : public testing::Test,
     gfx::Size scroll_content_size = gfx::Size(345, 3800);
     gfx::Size scrollbar_size = gfx::Size(15, 600);
 
-    host_impl_->active_tree()->SetDeviceViewportSize(content_size);
+    host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(content_size));
     std::unique_ptr<LayerImpl> root = LayerImpl::Create(layer_tree_impl, 1);
     root->SetBounds(content_size);
     root->test_properties()->position = gfx::PointF();
@@ -568,7 +568,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-    host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+    host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
     host_impl_->active_tree()->DidBecomeActive();
 
     return content_layer;
@@ -645,7 +645,7 @@ class LayerTreeHostImplTest : public testing::Test,
     // Create the pending tree.
     host_impl_->BeginCommit();
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
-    pending_tree->SetDeviceViewportSize(layer_size);
+    pending_tree->SetDeviceViewportRect(gfx::Rect(layer_size));
     pending_tree->SetRootLayerForTesting(
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 1,
                                                      raster_source));
@@ -670,7 +670,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void WhiteListedTouchActionTestHelper(float device_scale_factor,
                                         float page_scale_factor) {
     LayerImpl* scroll = SetupScrollAndContentsLayers(gfx::Size(200, 200));
-    host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+    host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
     DrawFrame();
     LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
 
@@ -726,7 +726,7 @@ class LayerTreeHostImplTest : public testing::Test,
     LayerImpl* scroll_layer =
         host_impl_->active_tree()->OuterViewportScrollLayer();
 
-    host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+    host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
 
     gfx::Size overflow_size(400, 400);
     EXPECT_EQ(1u, scroll_layer->test_properties()->children.size());
@@ -949,12 +949,12 @@ TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
   on_can_draw_state_changed_called_ = false;
 
   // Toggle the device viewport size to make sure it toggles can_draw.
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size());
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect());
   EXPECT_FALSE(host_impl_->CanDraw());
   EXPECT_TRUE(on_can_draw_state_changed_called_);
   on_can_draw_state_changed_called_ = false;
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
   EXPECT_TRUE(host_impl_->CanDraw());
   EXPECT_TRUE(on_can_draw_state_changed_called_);
   on_can_draw_state_changed_called_ = false;
@@ -966,7 +966,7 @@ TEST_F(LayerTreeHostImplTest, ResourcelessDrawWithEmptyViewport) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   EXPECT_TRUE(host_impl_->CanDraw());
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size());
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect());
   EXPECT_FALSE(host_impl_->CanDraw());
 
   auto* fake_layer_tree_frame_sink =
@@ -1105,7 +1105,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
@@ -1127,7 +1127,7 @@ TEST_F(LayerTreeHostImplTest, ScrollActiveOnlyAfterScrollMovement) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
@@ -1175,7 +1175,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutRenderer) {
 
 TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   // We should not crash if the tree is replaced while we are scrolling.
@@ -1203,7 +1203,7 @@ TEST_F(LayerTreeHostImplTest, ReplaceTreeWhileScrolling) {
 
 TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
   LayerImpl* scroll = SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   scroll->SetWheelEventHandlerRegion(Region(gfx::Rect(20, 20)));
   DrawFrame();
 
@@ -1230,7 +1230,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
 
 TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
   LayerImpl* scroll = SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
 
@@ -1284,7 +1284,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
 
 TEST_F(LayerTreeHostImplTest, ShouldScrollOnMainThread) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
 
   root->test_properties()->main_thread_scrolling_reasons =
@@ -1320,7 +1320,7 @@ TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
   gfx::Size scroll_content_size = gfx::Size(345, 3800);
   gfx::Size scrollbar_size = gfx::Size(15, 600);
 
-  host_impl_->active_tree()->SetDeviceViewportSize(content_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(content_size));
   std::unique_ptr<LayerImpl> root = LayerImpl::Create(layer_tree_impl, 1);
   root->SetBounds(content_size);
   root->test_properties()->position = gfx::PointF();
@@ -1376,7 +1376,7 @@ TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
 
 TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
 
   LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
   outer_scroll->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
@@ -1425,7 +1425,7 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
 
 TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
 
   LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
   outer_scroll->SetNonFastScrollableRegion(gfx::Rect(0, 0, 50, 50));
@@ -1458,7 +1458,7 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
 TEST_F(LayerTreeHostImplTest, ScrollHandlerNotPresent) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
   EXPECT_FALSE(host_impl_->active_tree()->have_scroll_event_handlers());
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
@@ -1472,7 +1472,7 @@ TEST_F(LayerTreeHostImplTest, ScrollHandlerNotPresent) {
 TEST_F(LayerTreeHostImplTest, ScrollHandlerPresent) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
   host_impl_->active_tree()->set_have_scroll_event_handlers(true);
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
@@ -1485,7 +1485,7 @@ TEST_F(LayerTreeHostImplTest, ScrollHandlerPresent) {
 
 TEST_F(LayerTreeHostImplTest, ScrollByReturnsCorrectValue) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
 
   DrawFrame();
 
@@ -1763,7 +1763,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
 
   LayerImpl* scroll_layer =
       host_impl_->active_tree()->OuterViewportScrollLayer();
-  host_impl_->active_tree()->SetDeviceViewportSize(kViewportSize);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(kViewportSize));
 
   gfx::Size overflow_size(400, 400);
   ASSERT_EQ(1u, scroll_layer->test_properties()->children.size());
@@ -1935,7 +1935,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
 
   LayerImpl* scroll_layer =
       host_impl_->active_tree()->OuterViewportScrollLayer();
-  host_impl_->active_tree()->SetDeviceViewportSize(kViewportSize);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(kViewportSize));
 
   gfx::Size overflow_size(400, 400);
   ASSERT_EQ(1u, scroll_layer->test_properties()->children.size());
@@ -2006,7 +2006,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
 
 TEST_F(LayerTreeHostImplTest, ForceMainThreadScrollWithoutScrollLayer) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
 
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   ScrollNode* scroll_node =
@@ -2028,7 +2028,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
        AnimationSchedulingPendingTree) {
   EXPECT_FALSE(host_impl_->CommitToActiveTree());
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
 
   CreatePendingTree();
   auto root_owned = LayerImpl::Create(host_impl_->pending_tree(), 1);
@@ -2088,7 +2088,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
        AnimationSchedulingActiveTree) {
   EXPECT_FALSE(host_impl_->CommitToActiveTree());
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
 
   host_impl_->active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl_->active_tree(), 1));
@@ -2155,7 +2155,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
                                        CreateLayerTreeFrameSink(), &provider);
   EXPECT_TRUE(host_impl_->CommitToActiveTree());
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
 
   auto root_owned = LayerImpl::Create(host_impl_->active_tree(), 1);
   auto* root = root_owned.get();
@@ -2178,7 +2178,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
   // CommitComplete below.
   RenderSurfaceList list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, gfx::Size(50, 50), &list);
+      root, gfx::Rect(50, 50), &list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   EXPECT_FALSE(did_request_next_frame_);
@@ -2199,7 +2199,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
 }
 
 TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
 
   host_impl_->active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl_->active_tree(), 1));
@@ -2292,7 +2292,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   EXPECT_EQ(scroll_layer, host_impl_->InnerViewportScrollLayer());
@@ -2765,7 +2765,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithSwapPromises) {
 TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
   LayerImpl* viewport_scroll =
       SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   // This is to build property tree for viewport layers. The remaining part of
   // this test is in layer list mode.
   // TODO(crbug.com/994361): Avoid PropertyTreeBuilder.
@@ -2857,7 +2857,7 @@ TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
 
 TEST_F(LayerTreeHostImplTest, PinchGesture) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
 
@@ -3032,7 +3032,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 
 TEST_F(LayerTreeHostImplTest, SyncSubpixelScrollDelta) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
 
@@ -3080,7 +3080,7 @@ TEST_F(LayerTreeHostImplTest, SyncSubpixelScrollDelta) {
 
 TEST_F(LayerTreeHostImplTest, SyncSubpixelScrollFromFractionalActiveBase) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
@@ -3116,7 +3116,7 @@ TEST_F(LayerTreeHostImplTest, SyncSubpixelScrollFromFractionalActiveBase) {
 
 TEST_F(LayerTreeHostImplTest, PinchZoomTriggersPageScaleAnimation) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   float min_page_scale = 1.f;
@@ -3239,7 +3239,7 @@ TEST_F(LayerTreeHostImplTest, PinchZoomTriggersPageScaleAnimation) {
 
 TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
@@ -3369,7 +3369,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
 
 TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
@@ -3554,7 +3554,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
 
 TEST_F(LayerTreeHostImplTest, PageScaleAnimationCompletedNotification) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   LayerImpl* scroll_layer = host_impl_->InnerViewportScrollLayer();
@@ -3604,7 +3604,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationCompletedNotification) {
 
 TEST_F(LayerTreeHostImplTest, MaxScrollOffsetAffectedByViewportBoundsDelta) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
@@ -3678,8 +3678,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
 
     SetupScrollAndContentsLayers(content_size);
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 4.f);
-    host_impl_->active_tree()->SetDeviceViewportSize(
-        gfx::Size(content_size.width() / 2, content_size.height() / 2));
+    host_impl_->active_tree()->SetDeviceViewportRect(
+        gfx::Rect(content_size.width() / 2, content_size.height() / 2));
 
     std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
         SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 400,
@@ -4000,7 +4000,7 @@ class LayerTreeHostImplTestMultiScrollable : public LayerTreeHostImplTest {
 
     CreateHostImpl(settings, CreateLayerTreeFrameSink());
     host_impl_->active_tree()->SetDeviceScaleFactor(1);
-    host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+    host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
     CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
     host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
         viewport_size);
@@ -4155,7 +4155,7 @@ TEST_F(LayerTreeHostImplTest, ScrollHitTestOnScrollbar) {
 
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->SetDeviceScaleFactor(1);
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
   CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
   host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
       viewport_size);
@@ -4566,7 +4566,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
 
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->SetDeviceScaleFactor(device_scale_factor);
-  host_impl_->active_tree()->SetDeviceViewportSize(device_viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(
+      gfx::Rect(device_viewport_size));
 
   CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
   host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
@@ -4649,7 +4650,7 @@ TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf2) {
 // |activation_dependencies|.
 TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
 
   std::vector<viz::SurfaceId> primary_surfaces = {
@@ -4732,7 +4733,7 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
 // damage.
 TEST_F(LayerTreeHostImplTest, SurfaceReferencesChangeCausesDamage) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   auto* fake_layer_tree_frame_sink =
       static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
 
@@ -4767,7 +4768,7 @@ TEST_F(LayerTreeHostImplTest, SurfaceReferencesChangeCausesDamage) {
 
 TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   DrawFrame();
   {
@@ -4892,7 +4893,7 @@ class DidDrawCheckLayer : public LayerImpl {
 };
 
 TEST_F(LayerTreeHostImplTest, DamageShouldNotCareAboutContributingLayers) {
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 10));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
   host_impl_->active_tree()->SetRootLayerForTesting(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 1));
   auto* root =
@@ -5061,7 +5062,7 @@ TEST_F(LayerTreeHostImplTest, DidDrawNotCalledOnHiddenLayer) {
 
 TEST_F(LayerTreeHostImplTest, WillDrawNotCalledOnOccludedLayer) {
   gfx::Size big_size(1000, 1000);
-  host_impl_->active_tree()->SetDeviceViewportSize(big_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(big_size));
 
   host_impl_->active_tree()->SetRootLayerForTesting(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 1));
@@ -6548,7 +6549,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonCompositedRoot) {
   scroll_container_layer->test_properties()->force_render_surface = true;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
 
   EXPECT_EQ(
@@ -6573,7 +6574,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildCallsCommitAndRedraw) {
   root->test_properties()->force_render_surface = true;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
 
   EXPECT_EQ(
@@ -6596,7 +6597,7 @@ TEST_F(LayerTreeHostImplTest, ScrollMissesChild) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
 
   // Scroll event is ignored because the input coordinate is outside the layer
@@ -6627,7 +6628,7 @@ TEST_F(LayerTreeHostImplTest, ScrollMissesBackfacingChild) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
 
   // Scroll event is ignored because the scrollable layer is not facing the
@@ -6657,7 +6658,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBlockedByContentLayer) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(scroll_layer));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
 
   // Scrolling fails because the content layer is asking to be scrolled on the
@@ -6900,7 +6901,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
                                                      gfx::ScrollOffset(3, 0));
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
   {
     gfx::Vector2d scroll_delta(-8, -7);
@@ -6956,7 +6957,7 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedLatchToChild) {
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(child_layer->element_id(),
                                                      gfx::ScrollOffset(0, 50));
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
 
   base::TimeTicks start_time =
@@ -7062,7 +7063,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   host_impl_->active_tree()->SetViewportLayersFromIds(viewport_ids);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   grand_child_layer->layer_tree_impl()
       ->property_trees()
@@ -7313,7 +7314,7 @@ TEST_F(LayerTreeHostImplTest, ScrollBeforeRedraw) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   host_impl_->active_tree()->DidBecomeActive();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
 
   // Draw one frame and then immediately rebuild the layer tree to mimic a tree
   // synchronization.
@@ -7373,7 +7374,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Size surface_size(50, 50);
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
 
   // Scroll to the right in screen coordinates with a gesture.
@@ -7449,7 +7450,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
   ElementId child_scroll_id = LayerIdToElementIdForTesting(child_layer_id);
 
   gfx::Size surface_size(50, 50);
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
   {
     // Scroll down in screen coordinates with a gesture.
@@ -7535,7 +7536,7 @@ TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Size surface_size(50, 50);
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
 
   std::unique_ptr<ScrollAndScaleSet> scroll_info;
 
@@ -7599,7 +7600,7 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   gfx::Size surface_size(50, 50);
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
 
   // Scroll down in screen coordinates with a gesture.
@@ -7662,7 +7663,7 @@ TEST_F(LayerTreeHostImplTest, ScrollViewportRounding) {
 
 TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   TestInputHandlerClient scroll_watcher;
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 20));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 20));
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   LayerImpl* clip_layer =
       scroll_layer->test_properties()->parent->test_properties()->parent;
@@ -7776,7 +7777,7 @@ void CheckLayerScrollDelta(LayerImpl* layer, gfx::Vector2dF scroll_delta) {
 
 TEST_F(LayerTreeHostImplTest,
        ExternalRootLayerScrollOffsetDelegationReflectedInNextDraw) {
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 20));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 20));
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
   LayerImpl* clip_layer =
       scroll_layer->test_properties()->parent->test_properties()->parent;
@@ -7941,7 +7942,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   DrawFrame();
   EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
@@ -8108,7 +8109,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
       ->scroll_tree.UpdateScrollOffsetBaseForTesting(
           grand_child_layer->element_id(), gfx::ScrollOffset(0, 2));
 
-  host_impl_->active_tree()->SetDeviceViewportSize(surface_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(surface_size));
   DrawFrame();
   {
     gfx::Vector2d scroll_delta(0, -10);
@@ -8220,7 +8221,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   scroll_layer->SetHitTestable(true);
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   DrawFrame();
   EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
@@ -9199,7 +9200,7 @@ static bool MayContainVideoBitSetOnFrameData(LayerTreeHostImpl* host_impl) {
 
 TEST_F(LayerTreeHostImplTest, MayContainVideo) {
   gfx::Size big_size(1000, 1000);
-  host_impl_->active_tree()->SetDeviceViewportSize(big_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(big_size));
 
   int layer_id = 1;
   host_impl_->active_tree()->SetRootLayerForTesting(
@@ -9471,8 +9472,8 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCovered) {
   bool software = false;
   CreateHostImpl(DefaultSettings(), CreateFakeLayerTreeFrameSink(software));
 
-  host_impl_->active_tree()->SetDeviceViewportSize(
-      DipSizeToPixelSize(viewport_size_));
+  host_impl_->active_tree()->SetDeviceViewportRect(
+      gfx::Rect(DipSizeToPixelSize(viewport_size_)));
   SetupActiveTreeLayers();
   EXPECT_SCOPED(TestLayerCoversFullViewport());
   EXPECT_SCOPED(TestEmptyLayer());
@@ -9487,8 +9488,8 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredScaled) {
   CreateHostImpl(DefaultSettings(), CreateFakeLayerTreeFrameSink(software));
 
   host_impl_->active_tree()->SetDeviceScaleFactor(2.f);
-  host_impl_->active_tree()->SetDeviceViewportSize(
-      DipSizeToPixelSize(viewport_size_));
+  host_impl_->active_tree()->SetDeviceViewportRect(
+      gfx::Rect(DipSizeToPixelSize(viewport_size_)));
   SetupActiveTreeLayers();
   EXPECT_SCOPED(TestLayerCoversFullViewport());
   EXPECT_SCOPED(TestEmptyLayer());
@@ -9504,8 +9505,8 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeGrowViewportInvalid) {
 
   // Pending tree to force active_tree size invalid. Not used otherwise.
   CreatePendingTree();
-  host_impl_->active_tree()->SetDeviceViewportSize(
-      DipSizeToPixelSize(viewport_size_));
+  host_impl_->active_tree()->SetDeviceViewportRect(
+      gfx::Rect(DipSizeToPixelSize(viewport_size_)));
 
   SetupActiveTreeLayers();
   EXPECT_SCOPED(TestEmptyLayerWithOnDraw());
@@ -9523,15 +9524,15 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ActiveTreeShrinkViewportInvalid) {
   CreatePendingTree();
   gfx::Size larger_viewport(viewport_size_.width() + 100,
                             viewport_size_.height() + 100);
-  host_impl_->active_tree()->SetDeviceViewportSize(
-      DipSizeToPixelSize(larger_viewport));
+  host_impl_->active_tree()->SetDeviceViewportRect(
+      gfx::Rect(DipSizeToPixelSize(larger_viewport)));
   host_impl_->ActivateSyncTree();
   EXPECT_TRUE(did_activate_pending_tree_);
 
   // Shrink pending tree viewport without activating.
   CreatePendingTree();
-  host_impl_->active_tree()->SetDeviceViewportSize(
-      DipSizeToPixelSize(viewport_size_));
+  host_impl_->active_tree()->SetDeviceViewportRect(
+      gfx::Rect(DipSizeToPixelSize(viewport_size_)));
 
   SetupActiveTreeLayers();
   EXPECT_SCOPED(TestEmptyLayerWithOnDraw());
@@ -9577,8 +9578,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->InitializeFrameSink(layer_tree_frame_sink.get());
   layer_tree_host_impl->WillBeginImplFrame(
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2));
-  layer_tree_host_impl->active_tree()->SetDeviceViewportSize(
-      gfx::Size(500, 500));
+  layer_tree_host_impl->active_tree()->SetDeviceViewportRect(
+      gfx::Rect(500, 500));
 
   std::unique_ptr<LayerImpl> root =
       FakeDrawableLayerImpl::Create(layer_tree_host_impl->active_tree(), 1);
@@ -9630,7 +9631,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   EXPECT_EQ(expected_swap_rect.ToString(),
             fake_layer_tree_frame_sink->last_swap_rect().ToString());
 
-  layer_tree_host_impl->active_tree()->SetDeviceViewportSize(gfx::Size(10, 10));
+  layer_tree_host_impl->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
   // This will damage everything.
   layer_tree_host_impl->active_tree()
       ->root_layer_for_testing()
@@ -9880,7 +9881,8 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   gfx::Size root_size(2000, 1000);
   gfx::Size device_viewport_size =
       gfx::ScaleToCeiledSize(root_size, device_scale_factor);
-  host_impl_->active_tree()->SetDeviceViewportSize(device_viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(
+      gfx::Rect(device_viewport_size));
 
   CreatePendingTree();
   host_impl_->pending_tree()->SetDeviceScaleFactor(device_scale_factor);
@@ -10202,7 +10204,7 @@ class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
     layer_tree_frame_sink_ = CreateLayerTreeFrameSink();
     host_impl_->SetVisible(true);
     host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
-    host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(10, 10));
+    host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(10, 10));
   }
 
   FakeLayerTreeHostImpl* fake_host_impl_;
@@ -11026,7 +11028,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
       BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   DrawFrame();
@@ -11100,7 +11102,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
 TEST_F(LayerTreeHostImplWithBrowserControlsTest,
        WheelUnhandledByBrowserControls) {
   SetupScrollAndContentsLayers(gfx::Size(100, 200));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 100));
   host_impl_->active_tree()->set_browser_controls_shrink_blink_size(true);
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
       BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
@@ -11143,7 +11145,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 200));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 200));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
       BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   DrawFrame();
@@ -11223,7 +11225,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
       BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   float initial_scroll_offset = 50;
@@ -11303,7 +11305,7 @@ TEST_F(LayerTreeHostImplWithBrowserControlsTest,
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
   host_impl_->browser_controls_manager()->UpdateBrowserControlsState(
       BrowserControlsState::kBoth, BrowserControlsState::kShown, false);
   DrawFrame();
@@ -11727,7 +11729,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformSetNeedsRedraw) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   const gfx::Size viewport_size(100, 100);
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   const gfx::Transform transform_for_tile_priority;
   const gfx::Transform draw_transform;
@@ -11780,7 +11782,7 @@ TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   const gfx::Size viewport_size(100, 100);
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   const gfx::Transform draw_transform;
   const gfx::Rect draw_viewport1(viewport_size);
@@ -11815,7 +11817,7 @@ TEST_F(LayerTreeHostImplTest, FullViewportDamageAfterOnDraw) {
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   const gfx::Size viewport_size(100, 100);
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   const gfx::Transform draw_transform;
   const gfx::Rect draw_viewport(gfx::Point(5, 5), viewport_size);
@@ -11826,7 +11828,7 @@ TEST_F(LayerTreeHostImplTest, FullViewportDamageAfterOnDraw) {
   EXPECT_EQ(draw_viewport, host_impl_->active_tree()->GetDeviceViewport());
 
   host_impl_->SetFullViewportDamage();
-  EXPECT_EQ(gfx::Rect(viewport_size),
+  EXPECT_EQ(host_impl_->active_tree()->internal_device_viewport(),
             host_impl_->viewport_damage_rect_for_testing());
 }
 
@@ -11843,7 +11845,7 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
   const gfx::Size viewport_size(100, 100);
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   const gfx::Transform draw_transform;
   const gfx::Rect draw_viewport(viewport_size);
@@ -11871,7 +11873,7 @@ TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
 TEST_F(ResourcelessSoftwareLayerTreeHostImplTest,
        ResourcelessSoftwareDrawSkipsUpdateTiles) {
   const gfx::Size viewport_size(100, 100);
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   CreatePendingTree();
   scoped_refptr<FakeRasterSource> raster_source(
@@ -11910,7 +11912,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
        ExternalTileConstraintReflectedInPendingTree) {
   EXPECT_FALSE(host_impl_->CommitToActiveTree());
   const gfx::Size layer_size(100, 100);
-  host_impl_->active_tree()->SetDeviceViewportSize(layer_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_size));
 
   // Set up active and pending tree.
   CreatePendingTree();
@@ -11951,7 +11953,7 @@ TEST_F(LayerTreeHostImplTest, ExternalViewportAffectsVisibleRects) {
                                  ->test_properties()
                                  ->children[0];
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(90, 90));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(90, 90));
   host_impl_->active_tree()->UpdateDrawProperties();
   EXPECT_EQ(gfx::Rect(90, 90), content_layer->visible_layer_rect());
 
@@ -11982,7 +11984,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsVisibleRects) {
                                  ->test_properties()
                                  ->children[0];
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->UpdateDrawProperties();
   EXPECT_EQ(gfx::Rect(50, 50), content_layer->visible_layer_rect());
 
@@ -12028,7 +12030,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
   test_layer->test_properties()->transform = perspective_transform;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->UpdateDrawProperties();
   EffectNode* node =
       host_impl_->active_tree()->property_trees()->effect_tree.Node(
@@ -12879,7 +12881,7 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
 
 TEST_F(LayerTreeHostImplTest, WheelScrollWithPageScaleFactorOnInnerLayer) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   DrawFrame();
 
   EXPECT_EQ(scroll_layer, host_impl_->InnerViewportScrollLayer());
@@ -13484,7 +13486,7 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
 }
 
 TEST_F(LayerTreeHostImplTest, JitterTest) {
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
 
   CreatePendingTree();
   CreateScrollAndContentsLayers(host_impl_->pending_tree(),
@@ -13597,7 +13599,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
 
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
   host_impl_->active_tree()->SetDeviceScaleFactor(1);
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
   CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
   host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
       viewport_size);
@@ -13872,7 +13874,7 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   // Create the pending tree.
   host_impl_->BeginCommit();
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
-  pending_tree->SetDeviceViewportSize(layer_size);
+  pending_tree->SetDeviceViewportRect(gfx::Rect(layer_size));
   pending_tree->SetRootLayerForTesting(
       FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 1,
                                                    raster_source));
@@ -13949,7 +13951,7 @@ TEST_F(LayerTreeHostImplTest, RasterColorSpaceSoftware) {
 TEST_F(LayerTreeHostImplTest, UpdatedTilingsForNonDrawingLayers) {
   gfx::Size layer_bounds(500, 500);
 
-  host_impl_->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   CreatePendingTree();
   std::unique_ptr<LayerImpl> scoped_root =
       LayerImpl::Create(host_impl_->pending_tree(), 1);
@@ -14008,7 +14010,7 @@ TEST_F(LayerTreeHostImplTest, UpdatedTilingsForNonDrawingLayers) {
 TEST_F(LayerTreeHostImplTest, RasterTilePrioritizationForNonDrawingLayers) {
   gfx::Size layer_bounds(500, 500);
 
-  host_impl_->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   CreatePendingTree();
   std::unique_ptr<LayerImpl> scoped_root =
       LayerImpl::Create(host_impl_->pending_tree(), 1);
@@ -14185,7 +14187,7 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
 
 TEST_F(LayerTreeHostImplTest, RenderFrameMetadata) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(50, 50));
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
 
   {
@@ -14462,7 +14464,7 @@ TEST_F(LayerTreeHostImplTest, DisabledBuildHitTestData) {
   // Setup surface layers in LayerTreeHostImpl.
   host_impl_->CreatePendingTree();
   host_impl_->ActivateSyncTree();
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(1024, 768));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(1024, 768));
 
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl_->active_tree(), 1);
@@ -14506,7 +14508,7 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, BuildHitTestData) {
   std::unique_ptr<LayerImpl> overlapping_layer =
       LayerImpl::Create(host_impl_->active_tree(), 5);
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(1024, 768));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(1024, 768));
 
   intermediate_layer->test_properties()->position = gfx::PointF(200, 300);
   intermediate_layer->SetBounds(gfx::Size(200, 200));
@@ -14621,7 +14623,7 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, PointerEvents) {
   std::unique_ptr<SurfaceLayerImpl> surface_child2 =
       SurfaceLayerImpl::Create(host_impl_->active_tree(), 3);
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(1024, 768));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(1024, 768));
 
   surface_child1->test_properties()->position = gfx::PointF(0, 0);
   surface_child1->SetBounds(gfx::Size(100, 100));
@@ -14701,7 +14703,7 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, ComplexPage) {
   std::unique_ptr<SurfaceLayerImpl> surface_child =
       SurfaceLayerImpl::Create(host_impl_->active_tree(), 2);
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(1024, 768));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(1024, 768));
 
   surface_child->test_properties()->position = gfx::PointF(0, 0);
   surface_child->SetBounds(gfx::Size(100, 100));
@@ -14784,7 +14786,7 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, InvalidFrameSinkId) {
   std::unique_ptr<SurfaceLayerImpl> surface_child1 =
       SurfaceLayerImpl::Create(host_impl_->active_tree(), 2);
 
-  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(1024, 768));
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(1024, 768));
 
   surface_child1->test_properties()->position = gfx::PointF(0, 0);
   surface_child1->SetBounds(gfx::Size(100, 100));
@@ -14914,7 +14916,7 @@ TEST_F(LayerTreeHostImplTest, TouchScrollOnAndroidScrollbar) {
   gfx::Size scroll_content_size = gfx::Size(360, 3800);
   gfx::Size scrollbar_size = gfx::Size(15, 600);
 
-  host_impl_->active_tree()->SetDeviceViewportSize(viewport_size);
+  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
   std::unique_ptr<LayerImpl> root = LayerImpl::Create(layer_tree_impl, 1);
   root->SetBounds(viewport_size);
   root->test_properties()->position = gfx::PointF();

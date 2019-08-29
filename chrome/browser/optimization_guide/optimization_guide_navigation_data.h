@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_NAVIGATION_DATA_H_
 
 #include <stdint.h>
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include "base/optional.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
@@ -74,9 +76,15 @@ class OptimizationGuideNavigationData {
     has_hint_after_commit_ = has_hint_after_commit;
   }
 
-  // Whether the hint cache had a page hint for the navigation.
-  base::Optional<bool> has_page_hint() const { return has_page_hint_; }
-  void set_has_page_hint(bool has_page_hint) { has_page_hint_ = has_page_hint; }
+  // The page hint applicable for the navigation.
+  bool has_page_hint_value() const { return !!page_hint_; }
+  const optimization_guide::proto::PageHint* page_hint() const {
+    return page_hint_.value().get();
+  }
+  void set_page_hint(
+      std::unique_ptr<optimization_guide::proto::PageHint> page_hint) {
+    page_hint_ = std::move(page_hint);
+  }
 
  private:
   // Records hint cache histograms based on data currently held in |this|.
@@ -114,8 +122,9 @@ class OptimizationGuideNavigationData {
   // Whether the hint cache had a hint for the navigation after commit.
   base::Optional<bool> has_hint_after_commit_ = base::nullopt;
 
-  // Whether there was a page hint for the navigation.
-  base::Optional<bool> has_page_hint_ = base::nullopt;
+  // The page hint for the navigation.
+  base::Optional<std::unique_ptr<optimization_guide::proto::PageHint>>
+      page_hint_ = base::nullopt;
 
   DISALLOW_ASSIGN(OptimizationGuideNavigationData);
 };

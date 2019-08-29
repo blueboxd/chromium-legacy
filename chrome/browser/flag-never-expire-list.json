@@ -34,6 +34,7 @@
   "enable-data-reduction-proxy-server-experiment",
   "enable-devtools-experiments",
   "enable-experimental-web-platform-features",
+  "enable-experimental-webassembly-features",
   "enable-future-v8-vm-features",
   "enable-gpu-rasterization",
   "enable-gpu-service-logging",

@@ -41,6 +41,7 @@
 namespace {
 
 void OnArcAppIconCompletelyLoaded(
+    apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,
     apps::IconEffects icon_effects,
     apps::mojom::Publisher::LoadIconCallback callback,
@@ -51,12 +52,28 @@ void OnArcAppIconCompletelyLoaded(
   }
 
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-  iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
-  iv->uncompressed = icon->image_skia();
+  iv->icon_compression = icon_compression;
   iv->is_placeholder_icon = false;
 
-  if (icon_effects != apps::IconEffects::kNone) {
-    apps::ApplyIconEffects(icon_effects, size_hint_in_dip, &iv->uncompressed);
+  if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
+    iv->uncompressed = icon->image_skia();
+    if (icon_effects != apps::IconEffects::kNone) {
+      apps::ApplyIconEffects(icon_effects, size_hint_in_dip, &iv->uncompressed);
+    }
+  } else {
+    auto& compressed_images = icon->compressed_images();
+    auto iter =
+        compressed_images.find(apps_util::GetPrimaryDisplayUIScaleFactor());
+    if (iter == compressed_images.end()) {
+      std::move(callback).Run(apps::mojom::IconValue::New());
+      return;
+    }
+    const std::string& data = iter->second;
+    iv->compressed = std::vector<uint8_t>(data.begin(), data.end());
+    if (icon_effects != apps::IconEffects::kNone) {
+      // TODO(crbug.com/988321): decompress the image, apply icon effects then
+      // re-compress.
+    }
   }
 
   std::move(callback).Run(std::move(iv));
@@ -513,18 +530,17 @@ void ArcApps::LoadIconFromVM(const std::string app_id,
     return;
   }
 
-  // TODO(crbug.com/826982): drop the "kUncompressed only" condition, and
-  // always use the arc_icon_once_loader_, once the ArcAppIcon class supports
-  // providing *compressed* icons (i.e. PNG-encoded bytes, not RGBA pixels).
+  // TODO(crbug.com/826982): drop the "not kUnknown" condition, and
+  // always use the arc_icon_once_loader_.
   //
   // Once that happens, we can delete the rest of this function, the LoadIcon0
   // code, the pending_load_icon_calls_ mechanism and any mention in this file
   // (or its .h) of arc::ConnectionHolder or arc::ConnectionObserver.
-  if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
+  if (icon_compression != apps::mojom::IconCompression::kUnknown) {
     arc_icon_once_loader_.LoadIcon(
-        app_id, size_hint_in_dip,
-        base::BindOnce(&OnArcAppIconCompletelyLoaded, size_hint_in_dip,
-                       icon_effects, std::move(callback)));
+        app_id, size_hint_in_dip, icon_compression,
+        base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_compression,
+                       size_hint_in_dip, icon_effects, std::move(callback)));
     return;
   }
 

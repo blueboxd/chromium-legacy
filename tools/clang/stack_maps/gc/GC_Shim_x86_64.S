@@ -6,12 +6,12 @@ GetFramePtr:
     mov (%rbp), %rax
     ret
 
-.extern StackWalk
+.extern StackWalkAndMoveObjects
 .globl BeginGC
 
 // We place the frame pointer in the first arg slot register. We jump to
-// StackWalk instead of calling it so that RET returns to BeginGC's caller
-// caller.
+// StackWalkAndMoveObjects instead of calling it so that RET returns to
+// BeginGC's caller caller.
 BeginGC:
     mov %rbp, %rdi
-    jmp StackWalk
+    jmp StackWalkAndMoveObjects

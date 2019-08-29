@@ -15,7 +15,8 @@ FakeUpdateEngineClient::FakeUpdateEngineClient()
       reboot_after_update_call_count_(0),
       request_update_check_call_count_(0),
       rollback_call_count_(0),
-      can_rollback_call_count_(0) {}
+      can_rollback_call_count_(0),
+      end_of_life_status_(update_engine::EndOfLifeStatus::kSupported) {}
 
 FakeUpdateEngineClient::~FakeUpdateEngineClient() = default;
 
@@ -88,9 +89,8 @@ void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
 void FakeUpdateEngineClient::GetEolStatus(GetEolStatusCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(base::BindOnce(std::move(callback),
-                                    update_engine::EndOfLifeStatus::kSupported),
-                     base::nullopt /* number_of_milestones */));
+      base::BindOnce(base::BindOnce(std::move(callback), end_of_life_status_),
+                     number_of_milestones_));
 }
 
 void FakeUpdateEngineClient::SetUpdateOverCellularPermission(
@@ -104,16 +104,6 @@ void FakeUpdateEngineClient::SetUpdateOverCellularOneTimePermission(
     int64_t target_size,
     const UpdateOverCellularOneTimePermissionCallback& callback) {
   callback.Run(true);
-}
-
-void FakeUpdateEngineClient::set_default_status(
-    const UpdateEngineClient::Status& status) {
-  default_status_ = status;
-}
-
-void FakeUpdateEngineClient::set_update_check_result(
-    const UpdateEngineClient::UpdateCheckResult& result) {
-  update_check_result_ = result;
 }
 
 }  // namespace chromeos

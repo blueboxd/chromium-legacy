@@ -15,7 +15,7 @@ class PeriodicBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
   PeriodicBackgroundSyncBrowserTest() {}
   ~PeriodicBackgroundSyncBrowserTest() override {}
 
-  void SetUpOnMainThread() override;
+  void SetUp() override;
   bool Register(const std::string& tag, int min_interval_ms);
   bool RegisterNoMinInterval(const std::string& tag);
   bool RegisterFromServiceWorker(const std::string& tag, int min_interval_ms);
@@ -33,9 +33,9 @@ class PeriodicBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PeriodicBackgroundSyncBrowserTest);
 };
 
-void PeriodicBackgroundSyncBrowserTest::SetUpOnMainThread() {
+void PeriodicBackgroundSyncBrowserTest::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(features::kPeriodicBackgroundSync);
-  BackgroundSyncBaseBrowserTest::SetUpOnMainThread();
+  BackgroundSyncBaseBrowserTest::SetUp();
 }
 
 bool PeriodicBackgroundSyncBrowserTest::Register(const std::string& tag,

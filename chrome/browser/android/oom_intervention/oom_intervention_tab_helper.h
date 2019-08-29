@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_TAB_HELPER_H_
 #define CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_TAB_HELPER_H_
 
+#include <memory>
+
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -16,7 +18,7 @@
 #include "components/crash/content/browser/crash_metrics_reporter_android.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/oom_intervention/oom_intervention.mojom.h"
@@ -94,7 +96,7 @@ class OomInterventionTabHelper
   // Not owned. This will be nullptr in incognito mode.
   OomInterventionDecider* decider_;
 
-  blink::mojom::OomInterventionPtr intervention_;
+  mojo::Remote<blink::mojom::OomIntervention> intervention_;
 
   enum class InterventionState {
     // Intervention isn't triggered yet.

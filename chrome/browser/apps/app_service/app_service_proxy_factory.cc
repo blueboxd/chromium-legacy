@@ -41,9 +41,7 @@ AppServiceProxyFactory* AppServiceProxyFactory::GetInstance() {
 
 // static
 bool AppServiceProxyFactory::IsEnabled() {
-  return base::FeatureList::IsEnabled(features::kAppServiceAsh) ||
-         base::FeatureList::IsEnabled(features::kAppServiceServer) ||
-         base::FeatureList::IsEnabled(features::kAppManagement);
+  return true;
 }
 
 AppServiceProxyFactory::AppServiceProxyFactory()

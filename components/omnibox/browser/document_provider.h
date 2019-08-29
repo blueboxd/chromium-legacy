@@ -154,6 +154,11 @@ class DocumentProvider : public AutocompleteProvider {
       const std::string& modified_timestamp_string,
       base::Time now);
 
+  // Don't request doc suggestions for inputs shorter than |min_query_length_|.
+  const size_t min_query_length_;
+  // Hide doc suggestions for inputs shorter than |min_query_show_length_|.
+  const size_t min_query_show_length_;
+
   // Whether a field trial has triggered for this query and this session,
   // respectively. Works similarly to BaseSearchProvider, though this class does
   // not inherit from it.

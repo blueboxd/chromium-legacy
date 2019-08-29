@@ -58,40 +58,20 @@ class FakeInfobarBadgeTabHelper : public InfobarBadgeTabHelper {
 
 // Fake of BadgeConsumer.
 @interface FakeBadgeConsumer : NSObject <BadgeConsumer>
-@property(nonatomic, strong) NSMutableArray<id<BadgeItem>>* badges;
+@property(nonatomic, strong) id<BadgeItem> displayedBadge;
 @property(nonatomic, assign) BOOL hasIncognitoBadge;
 @end
 
 @implementation FakeBadgeConsumer
-
-- (void)setupWithBadges:(NSArray*)badges {
-  self.hasIncognitoBadge = NO;
-  self.badges = [badges mutableCopy];
+- (void)setupWithDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
+                fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem {
+  self.hasIncognitoBadge = fullscreenBadgeItem != nil;
+  self.displayedBadge = displayedBadgeItem;
 }
-- (void)addBadge:(id<BadgeItem>)badgeItem {
-  if (badgeItem.badgeType == BadgeType::kBadgeTypeIncognito) {
-    self.hasIncognitoBadge = YES;
-    return;
-  }
-  [self.badges addObject:badgeItem];
-}
-
-- (void)removeBadge:(id<BadgeItem>)badgeItem {
-  for (id<BadgeItem> item in self.badges) {
-    if (item.badgeType == badgeItem.badgeType) {
-      [self.badges removeObject:item];
-      return;
-    }
-  }
-}
-- (void)updateBadge:(id<BadgeItem>)badgeItem {
-  for (id<BadgeItem> item in self.badges) {
-    if (item.badgeType == badgeItem.badgeType) {
-      NSUInteger index = [self.badges indexOfObject:item];
-      [self.badges replaceObjectAtIndex:index withObject:badgeItem];
-      return;
-    }
-  }
+- (void)updateDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
+             fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem {
+  self.hasIncognitoBadge = fullscreenBadgeItem != nil;
+  self.displayedBadge = displayedBadgeItem;
 }
 @end
 
@@ -140,11 +120,11 @@ class BadgeMediatorTest : public PlatformTest {
         InfobarType::kInfobarTypePasswordUpdate);
   }
 
-  // Removes the Infobar created in AddInfobar() to the
+  // Removes the Infobar created in AddSecondInfobar() to the
   // FakeInfoBarBadgeTabHelper.
   void RemoveInfobar() {
     GetFakeInfobarBadgeTabHelper()->RemoveInfobar(
-        InfobarType::kInfobarTypePasswordSave);
+        InfobarType::kInfobarTypePasswordUpdate);
   }
 
   // Returns the FakeInfobarBadgeTabHelper attached to the active WebState.
@@ -167,7 +147,9 @@ class BadgeMediatorTest : public PlatformTest {
 TEST_F(BadgeMediatorTest, BadgeMediatorTestAddInfobar) {
   AddAndActivateWebState(0, false);
   AddInfobar();
-  EXPECT_EQ(badge_consumer_.badges.count, 1.0);
+  ASSERT_TRUE(badge_consumer_.displayedBadge);
+  EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
+            BadgeType::kBadgeTypePasswordSave);
 }
 
 // Test that the BadgeMediator handled the removal of the correct badge when two
@@ -176,11 +158,12 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestRemoveInfobar) {
   AddAndActivateWebState(0, false);
   AddInfobar();
   AddSecondInfobar();
-  ASSERT_EQ(badge_consumer_.badges.count, 2.0);
-  RemoveInfobar();
-  EXPECT_EQ(badge_consumer_.badges.count, 1.0);
-  EXPECT_EQ(badge_consumer_.badges[0].badgeType,
+  EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
             BadgeType::kBadgeTypePasswordUpdate);
+  RemoveInfobar();
+  ASSERT_TRUE(badge_consumer_.displayedBadge);
+  EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
+            BadgeType::kBadgeTypePasswordSave);
 }
 
 // Test that the BadgeMediator updates the current badges to none when switching
@@ -188,21 +171,23 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestRemoveInfobar) {
 TEST_F(BadgeMediatorTest, BadgeMediatorTestSwitchWebState) {
   AddAndActivateWebState(0, false);
   AddInfobar();
-  ASSERT_EQ(badge_consumer_.badges.count, 1.0);
+  ASSERT_TRUE(badge_consumer_.displayedBadge);
+  EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
+            BadgeType::kBadgeTypePasswordSave);
   AddAndActivateWebState(1, false);
-  EXPECT_EQ(badge_consumer_.badges.count, 0.0);
+  EXPECT_FALSE(badge_consumer_.displayedBadge);
 }
 
 // Test that the BadgeMediator updates the badge when it is accepted.
 TEST_F(BadgeMediatorTest, BadgeMediatorTestAcceptedBadge) {
   AddAndActivateWebState(0, false);
   AddInfobar();
-  ASSERT_EQ(badge_consumer_.badges.count, 1.0);
-  EXPECT_FALSE(badge_consumer_.badges[0].accepted);
+  ASSERT_TRUE(badge_consumer_.displayedBadge);
+  EXPECT_FALSE(badge_consumer_.displayedBadge.accepted);
 
   GetFakeInfobarBadgeTabHelper()->UpdateBadgeForInfobarAccepted(
       InfobarType::kInfobarTypePasswordSave);
-  EXPECT_TRUE(badge_consumer_.badges[0].accepted);
+  EXPECT_TRUE(badge_consumer_.displayedBadge.accepted);
 }
 
 // Test that the BadgeMediator adds an incognito badge when the webstatelist
@@ -228,7 +213,9 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestRestartWithInfobar) {
   badge_mediator_ =
       [[BadgeMediator alloc] initWithConsumer:badge_consumer_
                                  webStateList:web_state_list_.get()];
-  EXPECT_EQ(badge_consumer_.badges.count, 1.0);
+  ASSERT_TRUE(badge_consumer_.displayedBadge);
+  EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
+            BadgeType::kBadgeTypePasswordSave);
 }
 
 // Test that the BadgeMediator clears its badges when the last WebState is
@@ -237,8 +224,10 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestRestartWithInfobar) {
 TEST_F(BadgeMediatorTest, BadgeMediatorTestCloseLastTab) {
   AddAndActivateWebState(0, false);
   AddInfobar();
-  ASSERT_EQ(badge_consumer_.badges.count, 1.0);
+  ASSERT_TRUE(badge_consumer_.displayedBadge);
+  EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
+            BadgeType::kBadgeTypePasswordSave);
   web_state_list_->DetachWebStateAt(0);
   AddAndActivateWebState(0, false);
-  EXPECT_EQ(badge_consumer_.badges.count, 0.0);
+  ASSERT_FALSE(badge_consumer_.displayedBadge);
 }

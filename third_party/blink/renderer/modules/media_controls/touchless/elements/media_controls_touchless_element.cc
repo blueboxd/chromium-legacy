@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_element.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_impl.h"

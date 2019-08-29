@@ -241,10 +241,6 @@ LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
 
 void TabManager::DiscardTab(LifecycleUnitDiscardReason reason,
                             TabDiscardDoneCB tab_discard_done) {
-  if (reason == LifecycleUnitDiscardReason::URGENT) {
-    stats_collector_->RecordWillDiscardUrgently(GetNumAliveTabs());
-  }
-
 #if defined(OS_CHROMEOS)
   // Call Chrome OS specific low memory handling process.
   delegate_->LowMemoryKill(reason, std::move(tab_discard_done));
@@ -720,23 +716,6 @@ bool TabManager::ComparePendingNavigations(
     return !first_is_internal_page;
 
   return false;
-}
-
-int TabManager::GetNumAliveTabs() const {
-  int tab_count = 0;
-  for (auto* browser : *BrowserList::GetInstance()) {
-    TabStripModel* tab_strip_model = browser->tab_strip_model();
-    for (int index = 0; index < tab_strip_model->count(); ++index) {
-      content::WebContents* contents = tab_strip_model->GetWebContentsAt(index);
-      if (!TabLifecycleUnitExternal::FromWebContents(contents)->IsDiscarded())
-        ++tab_count;
-    }
-  }
-
-  tab_count -= pending_navigations_.size();
-  DCHECK_GE(tab_count, 0);
-
-  return tab_count;
 }
 
 bool TabManager::IsTabLoadingForTest(content::WebContents* contents) const {

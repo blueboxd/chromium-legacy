@@ -23,11 +23,6 @@ SensorPermissionContext::~SensorPermissionContext() {}
 void SensorPermissionContext::UpdateTabContext(const PermissionRequestID& id,
                                                const GURL& requesting_frame,
                                                bool allowed) {
-  // Show location bar indicator only when the features::kSensorContentSetting
-  // feature is enabled.
-  if (!base::FeatureList::IsEnabled(features::kSensorContentSetting))
-    return;
-
   auto* content_settings = TabSpecificContentSettings::GetForFrame(
       id.render_process_id(), id.render_frame_id());
   if (!content_settings)

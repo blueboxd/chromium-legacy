@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <string>
 
 #include "base/memory/singleton.h"
@@ -16,7 +18,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 

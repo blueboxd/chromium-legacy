@@ -20,6 +20,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
+#include "components/safe_browsing/proto/webprotect.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
@@ -46,6 +47,8 @@ const char SafeBrowsingPrivateEventRouter::kKeyReason[] = "reason";
 const char SafeBrowsingPrivateEventRouter::kKeyNetErrorCode[] = "netErrorCode";
 const char SafeBrowsingPrivateEventRouter::kKeyClickedThrough[] =
     "clickedThrough";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRules[] =
+    "triggeredRules";
 
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent[] =
     "passwordReuseEvent";
@@ -55,6 +58,10 @@ const char SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent[] =
     "dangerousDownloadEvent";
 const char SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent[] =
     "interstitialEvent";
+const char SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent[] =
+    "sensitiveDataEvent";
+const char SafeBrowsingPrivateEventRouter::kKeyLargeUnscannedFileEvent[] =
+    "largeUnscannedFileEvent";
 
 SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
     content::BrowserContext* context)
@@ -258,13 +265,50 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
     const std::string& file_name,
     const std::string& download_digest_sha256) {
   if (client_) {
-    // Convert |params| to a real-time event dictionary and report it.
+    // Create a real-time event dictionary from the arguments and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, url.spec());
     event.SetStringKey(kKeyFileName, file_name);
     event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
     event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
     ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
+  }
+}
+
+void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
+    const safe_browsing::DlpDeepScanningVerdict& verdict,
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256) {
+  if (client_) {
+    // Create a real-time event dictionary from the arguments and report it.
+    base::Value event(base::Value::Type::DICTIONARY);
+    event.SetStringKey(kKeyUrl, url.spec());
+    event.SetStringKey(kKeyFileName, file_name);
+    event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
+    event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+
+    base::ListValue triggered_rules;
+    for (auto rule : verdict.triggered_rules()) {
+      triggered_rules.AppendString(rule.rule_name());
+    }
+    event.SetKey(kKeyTriggeredRules, std::move(triggered_rules));
+    ReportRealtimeEvent(kKeySensitiveDataEvent, std::move(event));
+  }
+}
+
+void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256) {
+  if (client_) {
+    // Create a real-time event dictionary from the arguments and report it.
+    base::Value event(base::Value::Type::DICTIONARY);
+    event.SetStringKey(kKeyUrl, url.spec());
+    event.SetStringKey(kKeyFileName, file_name);
+    event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
+    event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+    ReportRealtimeEvent(kKeyLargeUnscannedFileEvent, std::move(event));
   }
 }
 

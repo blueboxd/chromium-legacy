@@ -28,8 +28,8 @@ class ServiceWorkerContextClient;
 // service worker to stop and then deletes itself.
 //
 // All methods are called on the thread that creates the instance of this class.
-// Currently it's the main thread but it could be the IO thread in the future.
-// https://crbug.com/692909
+// Currently it's the main thread but it could be a background thread in the
+// future. https://crbug.com/692909
 class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
     : public blink::mojom::EmbeddedWorkerInstanceClient {
  public:

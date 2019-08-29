@@ -63,7 +63,8 @@ void FrameSequenceTrackerCollection::StartSequence(
   auto tracker = base::WrapUnique(new FrameSequenceTracker(type));
   frame_trackers_[type] = std::move(tracker);
 
-  compositor_frame_reporting_controller_->AddActiveTracker(type);
+  if (compositor_frame_reporting_controller_)
+    compositor_frame_reporting_controller_->AddActiveTracker(type);
 }
 
 void FrameSequenceTrackerCollection::StopSequence(
@@ -73,7 +74,10 @@ void FrameSequenceTrackerCollection::StopSequence(
 
   std::unique_ptr<FrameSequenceTracker> tracker =
       std::move(frame_trackers_[type]);
-  compositor_frame_reporting_controller_->RemoveActiveTracker(tracker->type_);
+
+  if (compositor_frame_reporting_controller_)
+    compositor_frame_reporting_controller_->RemoveActiveTracker(tracker->type_);
+
   frame_trackers_.erase(type);
   tracker->ScheduleTerminate();
   removal_trackers_.push_back(std::move(tracker));

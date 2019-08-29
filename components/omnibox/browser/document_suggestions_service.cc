@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
@@ -28,14 +29,16 @@
 
 namespace {
 
-// Builds a document search request body. Inputs are:
-//   |query|: Current query text.
+// Builds a document search request body. Inputs that affect the request are:
+//   |query|: Current omnibox query text, passed as an argument.
 // The format of the request is:
 //     {
-//       query: "the search text",
+//       query: "|query|",
 //       start: 0,
 //       pageSize: 10,
-//       sourceOptions: [{source: {predefinedSource: "GOOGLE_DRIVE"}}]
+//       requestOptions: {
+//            searchApplicationId: "searchapplications/chrome",
+//       }
 //     }
 std::string BuildDocumentSuggestionRequest(const base::string16& query) {
   base::Value root(base::Value::Type::DICTIONARY);
@@ -43,13 +46,10 @@ std::string BuildDocumentSuggestionRequest(const base::string16& query) {
   root.SetKey("start", base::Value(0));
   root.SetKey("pageSize", base::Value(10));
 
-  base::Value::ListStorage storage_options_list;
-  base::Value source_definition(base::Value::Type::DICTIONARY);
-  source_definition.SetPath({"source", "predefinedSource"},
-                            base::Value("GOOGLE_DRIVE"));
-  storage_options_list.emplace_back(std::move(source_definition));
-  root.SetKey("dataSourceRestrictions",
-              base::Value(std::move(storage_options_list)));
+  base::Value request_options(base::Value::Type::DICTIONARY);
+  request_options.SetKey("searchApplicationId",
+                         base::Value("searchapplications/chrome"));
+  root.SetKey("requestOptions", std::move(request_options));
 
   std::string result;
   base::JSONWriter::Write(root, &result);

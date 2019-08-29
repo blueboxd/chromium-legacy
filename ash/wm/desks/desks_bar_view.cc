@@ -275,8 +275,7 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   // Let the highlight controller know the view is destroying before it is
   // removed from the collection because it needs to know the index of the mini
   // view relative to other traversable views.
-  auto* highlight_controller = GetHighlightController();
-  highlight_controller->OnViewDestroyingOrDisabling(iter->get());
+  GetHighlightController()->OnViewDestroyingOrDisabling(iter->get());
 
   const int begin_x = GetFirstMiniViewXOffset();
   std::unique_ptr<DeskMiniView> removed_mini_view = std::move(*iter);
@@ -285,11 +284,6 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   Layout();
   UpdateMiniViewsLabels();
   new_desk_button_->UpdateButtonState();
-
-  // Once the remaining mini views have their bounds updated, notify the
-  // overview highlight controller so that it can update the focus highlight, if
-  // needed.
-  highlight_controller->OnWindowsRepositioned(removed_mini_view->root_window());
 
   std::vector<DeskMiniView*> mini_views_before;
   std::vector<DeskMiniView*> mini_views_after;
@@ -355,10 +349,6 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
   }
 
   Layout();
-
-  // Update the overview highlight if needed since adding a desk will shift the
-  // mini views from their current positions.
-  GetHighlightController()->OnWindowsRepositioned(root_window);
 
   if (!animate)
     return;

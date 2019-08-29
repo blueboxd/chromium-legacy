@@ -34,9 +34,14 @@
     "expiry_milestone": 80
   },
   {
+    "name": "aggregated-ml-app-ranking",
+    "owners": [ "pdyson", "jiameng" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "allow-popups-during-page-unload",
@@ -89,6 +94,11 @@
   },
   {
     "name": "app-service-ash",
+    "owners": [ "//chrome/services/app_service/OWNERS" ],
+    "expiry_milestone": 79
+  },
+  {
+    "name": "app-service-shelf",
     "owners": [ "//chrome/services/app_service/OWNERS" ],
     "expiry_milestone": 79
   },
@@ -1181,6 +1191,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-experimental-webassembly-features",
+    "owners": [ "adamk", "hablich" ],
+    // This flag is used by web developers to test upcoming WebAssembly
+    // features.
+    "expiry_milestone": -1
+  },
+  {
     "name": "enable-filesystem-in-incognito",
     "owners": [ "rhalavati" ],
     "expiry_milestone": 78
@@ -1213,14 +1230,9 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-generic-sensor",
-    "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 72
-  },
-  {
     "name": "enable-generic-sensor-extra-classes",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 83
   },
   {
     "name": "enable-google-branded-context-menu",
@@ -1597,11 +1609,6 @@
     "name": "enable-send-tab-to-self-when-signed-in",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 78
-  },
-  {
-    "name": "enable-sensor-content-setting",
-    "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-service-worker-imported-script-update-check",
@@ -2010,7 +2017,7 @@
   {
     "name": "extension-content-verification",
     "owners": [ "//extensions/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 86
   },
   {
     "name": "extensions-on-chrome-urls",
@@ -2022,7 +2029,7 @@
   {
     "name": "extensions-toolbar-menu",
     "owners": [ "//extensions/OWNERS", "pbos" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "fcm-invalidations",
@@ -2068,7 +2075,7 @@
   {
     "name": "focus-mode",
     "owners": [ "dfried", "pbos", "yiningwang@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "font-src-local-matching",
@@ -2249,7 +2256,7 @@
   {
     "name": "installable-ink-drop",
     "owners": [ "collinbaker", "pbos" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 82
   },
   {
     "name": "instant-tethering",
@@ -2889,6 +2896,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "scalable-app-list",
+    "owners": [ "tbarzic" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
     "expiry_milestone": 77
@@ -3101,7 +3113,7 @@
   {
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
-    "expiry_milestone":  79
+    "expiry_milestone":  82
   },
   {
     "name": "tab-switcher-longpress-menu",
@@ -3224,7 +3236,7 @@
   {
     "name": "unsafely-treat-insecure-origin-as-secure",
     "owners": [ "security-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "update-hover-at-begin-frame",

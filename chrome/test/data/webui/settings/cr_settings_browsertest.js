@@ -15,7 +15,6 @@ GEN('#endif  // defined(OS_CHROMEOS)');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
-GEN('#include "components/content_settings/core/common/features.h"');
 GEN('#include "components/omnibox/common/omnibox_features.h"');
 
 /**
@@ -1155,8 +1154,6 @@ CrSettingsPrivacyPageTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
-
-  featureList: {enabled: ['content_settings::kImprovedCookieControls']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([

@@ -1339,7 +1339,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     for (auto* quad : render_pass->quad_list)
       DCHECK(quad->shared_quad_state);
   }
-  DCHECK(frame->render_passes.back()->output_rect.origin().IsOrigin());
+  DCHECK_EQ(frame->render_passes.back()->output_rect.origin(),
+            active_tree_->GetDeviceViewport().origin());
 #endif
   bool has_transparent_background =
       SkColorGetA(active_tree_->background_color()) != SK_AlphaOPAQUE;
@@ -2035,6 +2036,10 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
                                bool resourceless_software_draw,
                                bool skip_draw) {
   DCHECK(!resourceless_software_draw_);
+  // This function is only ever called by Android WebView, in which case we
+  // expect the device viewport to be at the origin. We never expect an
+  // external viewport to be set otherwise.
+  DCHECK(active_tree_->internal_device_viewport().origin().IsOrigin());
 
   if (skip_draw) {
     client_->OnDrawForLayerTreeFrameSink(resourceless_software_draw_, true);
@@ -5195,7 +5200,14 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 }
 
 void LayerTreeHostImpl::SetFullViewportDamage() {
-  SetViewportDamage(gfx::Rect(active_tree_->GetDeviceViewport().size()));
+  // In non-Android-WebView cases, we expect GetDeviceViewport() to be the same
+  // as internal_device_viewport(), so the full-viewport damage rect is just
+  // the internal viewport rect. In the case of Android WebView,
+  // GetDeviceViewport returns the external viewport, but we still want to use
+  // the internal viewport's origin for setting the damage.
+  // See https://chromium-review.googlesource.com/c/chromium/src/+/1257555.
+  SetViewportDamage(gfx::Rect(active_tree_->internal_device_viewport().origin(),
+                              active_tree_->GetDeviceViewport().size()));
 }
 
 bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {

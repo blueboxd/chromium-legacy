@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <string>
 #include <vector>
 
@@ -21,7 +23,6 @@
 #include "net/websockets/websocket_extension.h"
 #include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_stream.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 

@@ -186,6 +186,7 @@ TEST_F(ConditionVariableImplTest,
 }
 
 TEST_F(ConditionVariableImplTest, ThreadCannotWaitIfStillOwnsLock) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   fake_lock()->set_is_held_by_current_thread(true);
   WaitOnConditionVariableFromParallelSequence(false /* should_succeed */);
 }

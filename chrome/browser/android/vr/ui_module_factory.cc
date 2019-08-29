@@ -18,12 +18,6 @@
 
 namespace vr {
 
-UiModuleFactory::~UiModuleFactory() {
-  if (ui_library_handle_ != nullptr) {
-    dlclose(ui_library_handle_);
-  }
-}
-
 std::unique_ptr<UiInterface> UiModuleFactory::Create(
     UiBrowserInterface* browser,
     PlatformInputHandler* content_input_forwarder,
@@ -31,14 +25,16 @@ std::unique_ptr<UiInterface> UiModuleFactory::Create(
     std::unique_ptr<TextInputDelegate> text_input_delegate,
     std::unique_ptr<AudioDelegate> audio_delegate,
     const UiInitialState& ui_initial_state) {
-  DCHECK(ui_library_handle_ == nullptr);
-  ui_library_handle_ =
+  // Do not dlclose() the library. Doing so causes issues with cardboard on
+  // Android M. It's not clear whether there is a use-after-free in VR code, or
+  // a linker or system issue. See https://crbug.com/994029.
+  void* ui_library_handle =
       base::android::BundleUtils::DlOpenModuleLibraryPartition("vr");
-  DCHECK(ui_library_handle_ != nullptr)
+  DCHECK(ui_library_handle != nullptr)
       << "Could not open VR UI library:" << dlerror();
 
-  CreateUiFunction* create_ui = reinterpret_cast<CreateUiFunction*>(
-      dlsym(ui_library_handle_, "CreateUi"));
+  CreateUiFunction* create_ui =
+      reinterpret_cast<CreateUiFunction*>(dlsym(ui_library_handle, "CreateUi"));
   DCHECK(create_ui != nullptr);
 
   std::unique_ptr<UiInterface> ui = base::WrapUnique(

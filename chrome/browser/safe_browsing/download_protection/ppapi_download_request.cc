@@ -45,7 +45,7 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
     const base::FilePath& default_file_path,
     const std::vector<base::FilePath::StringType>& alternate_extensions,
     Profile* profile,
-    const CheckDownloadCallback& callback,
+    CheckDownloadCallback callback,
     DownloadProtectionService* service,
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager)
     : requestor_url_(requestor_url),
@@ -55,7 +55,7 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
       tab_id_(SessionTabHelper::IdForTab(web_contents)),
       default_file_path_(default_file_path),
       alternate_extensions_(alternate_extensions),
-      callback_(callback),
+      callback_(std::move(callback)),
       service_(service),
       database_manager_(database_manager),
       start_time_(base::TimeTicks::Now()),

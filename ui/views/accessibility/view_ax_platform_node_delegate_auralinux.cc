@@ -141,7 +141,9 @@ std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
 
 ViewAXPlatformNodeDelegateAuraLinux::ViewAXPlatformNodeDelegateAuraLinux(
     View* view)
-    : ViewAXPlatformNodeDelegate(view) {}
+    : ViewAXPlatformNodeDelegate(view) {
+  view->AddObserver(this);
+}
 
 ViewAXPlatformNodeDelegateAuraLinux::~ViewAXPlatformNodeDelegateAuraLinux() =
     default;
@@ -151,6 +153,15 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegateAuraLinux::GetParent() {
   if (!parent)
     parent = AuraLinuxApplication::GetInstance()->GetNativeViewAccessible();
   return parent;
+}
+
+void ViewAXPlatformNodeDelegateAuraLinux::OnViewHierarchyChanged(
+    views::View* observed_view,
+    const views::ViewHierarchyChangedDetails& details) {
+  if (view() != details.child || !details.is_add)
+    return;
+  static_cast<ui::AXPlatformNodeAuraLinux*>(ax_platform_node())
+      ->OnParentChanged();
 }
 
 }  // namespace views

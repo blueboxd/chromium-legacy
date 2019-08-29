@@ -85,6 +85,7 @@
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_location_dialog_bridge_impl.h"
 #include "chrome/browser/android/download/download_manager_service.h"
+#include "chrome/browser/android/download/download_open_source.h"
 #include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -684,7 +685,7 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
                                          false /* show_download_in_folder */);
 
 #if defined(OS_ANDROID)
-  DownloadUtils::OpenDownload(download, 0 /* download source */);
+  DownloadUtils::OpenDownload(download, DownloadOpenSource::kUnknown);
   return;
 #endif
 

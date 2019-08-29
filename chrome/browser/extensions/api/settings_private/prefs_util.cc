@@ -238,8 +238,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Privacy page
   (*s_whitelist)[::prefs::kSigninAllowedOnNextStartup] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kCookieControlsMode] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Sync and personalization page.
   (*s_whitelist)[::prefs::kSafeBrowsingEnabled] =

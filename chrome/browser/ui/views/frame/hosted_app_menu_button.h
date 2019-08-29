@@ -34,6 +34,9 @@ class HostedAppMenuButton : public AppMenuButton,
   // AppMenuButton:
   SkColor GetInkDropBaseColor() const override;
 
+ protected:
+  BrowserView* browser_view() { return browser_view_; }
+
  private:
   void FadeHighlightOff();
 

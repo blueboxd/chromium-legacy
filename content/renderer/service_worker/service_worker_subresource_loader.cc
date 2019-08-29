@@ -169,7 +169,6 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       url_loader_binding_(this, std::move(request)),
       body_as_blob_size_(blink::BlobUtils::kUnknownSize),
       controller_connector_(std::move(controller_connector)),
-      controller_connector_observer_(this),
       fetch_request_restarted_(false),
       blob_reading_complete_(false),
       side_data_reading_complete_(false),

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
@@ -92,16 +93,16 @@ class FakeTabController : public TabController {
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabBackgroundColor(
-      TabState tab_state,
+      TabActive active,
       BrowserNonClientFrameView::ActiveState active_state =
           BrowserNonClientFrameView::kUseCurrent) const override {
-    return tab_state == TAB_ACTIVE ? tab_bg_color_active_
-                                   : tab_bg_color_inactive_;
+    return active == TabActive::kActive ? tab_bg_color_active_
+                                        : tab_bg_color_inactive_;
   }
-  SkColor GetTabForegroundColor(TabState tab_state,
+  SkColor GetTabForegroundColor(TabActive active,
                                 SkColor background_color) const override {
-    return tab_state == TAB_ACTIVE ? tab_fg_color_active_
-                                   : tab_fg_color_inactive_;
+    return active == TabActive::kActive ? tab_fg_color_active_
+                                        : tab_fg_color_inactive_;
   }
   base::Optional<int> GetCustomBackgroundId(
       BrowserNonClientFrameView::ActiveState active_state) const override {
@@ -825,11 +826,11 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
   for (const auto& colors : color_schemes) {
     controller.SetTabColors(colors.bg_active, colors.fg_active,
                             colors.bg_inactive, colors.fg_inactive);
-    for (TabState state : {TAB_INACTIVE, TAB_ACTIVE}) {
-      controller.set_active_tab(state == TAB_ACTIVE);
+    for (TabActive active : {TabActive::kInactive, TabActive::kActive}) {
+      controller.set_active_tab(active == TabActive::kActive);
       tab.UpdateForegroundColors();
       const SkColor fg_color = tab.title_->GetEnabledColor();
-      const SkColor bg_color = controller.GetTabBackgroundColor(state);
+      const SkColor bg_color = controller.GetTabBackgroundColor(active);
       const float contrast = color_utils::GetContrastRatio(fg_color, bg_color);
       EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
     }

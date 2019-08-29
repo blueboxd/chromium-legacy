@@ -193,15 +193,25 @@ void NetworkFeaturePodButton::Update() {
       ->GetConnectionStatusStrings(ActiveNetworkIcon::Type::kSingle,
                                    /*a11y_name=*/nullptr,
                                    /*a11y_desc=*/nullptr, &tooltip);
-  SetTooltipState(tooltip);
+  UpdateTooltip(tooltip);
 }
 
-void NetworkFeaturePodButton::SetTooltipState(
-    const base::string16& tooltip_state) {
+void NetworkFeaturePodButton::UpdateTooltip(
+    const base::string16& connection_state_message) {
+  // When the button is enabled, use tooltips to alert the user of the actions
+  // that will be taken when interacting with the button/toggle. However, if the
+  // button is disabled, those actions cannot be taken, so simply display the
+  // state of the connection as a tooltip
+  if (!GetEnabled()) {
+    SetIconTooltip(connection_state_message);
+    SetLabelTooltip(connection_state_message);
+    return;
+  }
+
   SetIconTooltip(l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_NETWORK_TOGGLE_TOOLTIP, tooltip_state));
+      IDS_ASH_STATUS_TRAY_NETWORK_TOGGLE_TOOLTIP, connection_state_message));
   SetLabelTooltip(l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS_TOOLTIP, tooltip_state));
+      IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS_TOOLTIP, connection_state_message));
 }
 
 }  // namespace ash

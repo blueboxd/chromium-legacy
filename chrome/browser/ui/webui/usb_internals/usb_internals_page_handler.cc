@@ -11,8 +11,8 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 UsbInternalsPageHandler::UsbInternalsPageHandler(
-    mojom::UsbInternalsPageHandlerRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::UsbInternalsPageHandler> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 UsbInternalsPageHandler::~UsbInternalsPageHandler() {}
 

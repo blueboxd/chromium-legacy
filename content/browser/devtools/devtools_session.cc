@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/devtools_session.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -38,9 +39,25 @@ bool ShouldSendOnIO(const std::string& method) {
          method == "Emulation.setScriptExecutionDisabled";
 }
 
-static const char kMethod[] = "method";
-static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
-static const char kSessionId[] = "sessionId";
+// Async control commands (such as CSS.enable) are idempotant and can
+// be safely replayed in the new render frame host. We will always forward
+// them to the new renderer on cross process navigation. Main rationale for
+// it is that the client doesn't expect such calls to fail in normal
+// circumstances.
+//
+// Ideally all non-control async commands shoulds be listed here but we
+// conservatively start with Runtime domain where the decision is more
+// clear.
+bool TerminateOnCrossProcessNavigation(const std::string& method) {
+  return method == "Runtime.evaluate" || method == "Runtime.awaitPromise" ||
+         method == "Runtime.callFunctionOn" || method == "Runtime.runScript" ||
+         method == "Runtime.terminateExecution";
+}
+
+const char kMethod[] = "method";
+const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
+const char kSessionId[] = "sessionId";
+const char kTargetClosedMessage[] = "Inspected target navigated or closed";
 }  // namespace
 
 DevToolsSession::DevToolsSession(DevToolsAgentHostClient* client)
@@ -118,6 +135,9 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
   session_.set_disconnect_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
 
+  // If we auto attached to a new oopif the session is not suspended but the
+  // render frame host may be updated during navigation, so outstanding messages
+  // are resent to the new host.
   if (!suspended_sending_messages_to_agent_) {
     for (const auto& pair : waiting_for_response_messages_) {
       int call_id = pair.first;
@@ -125,11 +145,26 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
       DispatchProtocolMessageToAgent(call_id, message.method, message.message);
     }
   } else {
-    std::vector<SuspendedMessage> temp;
-    for (const auto& pair : waiting_for_response_messages_)
-      temp.push_back({pair.first, pair.second.method, pair.second.message});
-    suspended_messages_.insert(suspended_messages_.begin(), temp.begin(),
-                               temp.end());
+    std::vector<SuspendedMessage> new_suspended_messages;
+    new_suspended_messages.reserve(waiting_for_response_messages_.size());
+    for (const auto& pair : waiting_for_response_messages_) {
+      int call_id = pair.first;
+      const WaitingMessage& message = pair.second;
+      if (TerminateOnCrossProcessNavigation(message.method)) {
+        // We'll not receive any responses from the old agent, so send errors to
+        // the client.
+        auto error = protocol::InternalResponse::createErrorResponse(
+            call_id, protocol::DispatchResponse::kServerError,
+            kTargetClosedMessage);
+        sendProtocolResponse(call_id, std::move(error));
+      } else {
+        new_suspended_messages.push_back(
+            {call_id, message.method, message.message});
+      }
+    }
+    suspended_messages_.insert(suspended_messages_.begin(),
+                               new_suspended_messages.begin(),
+                               new_suspended_messages.end());
     waiting_for_response_messages_.clear();
   }
 

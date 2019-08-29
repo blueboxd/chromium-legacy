@@ -75,6 +75,8 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
  protected:
   explicit ViewAXPlatformNodeDelegate(View* view);
 
+  ui::AXPlatformNode* ax_platform_node() { return ax_platform_node_; }
+
  private:
   // Uses Views::GetViewsInGroup to find nearby Views in the same group.
   // Searches from the View's parent to include siblings within that group.

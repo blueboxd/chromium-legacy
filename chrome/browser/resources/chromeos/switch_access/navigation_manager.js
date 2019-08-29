@@ -557,6 +557,11 @@ class NavigationManager {
     if (this.node_ === event.target)
       return;
 
+    // Exit the menu if it is open.
+    if (this.menuManager_.inMenu()) {
+      this.menuManager_.exit();
+    }
+
     // Rebuild scope stack and set scope for focused node.
     this.buildScopeStack_(event.target);
 

@@ -24,7 +24,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
@@ -83,7 +82,7 @@ class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
 
   void StartObserving() {
     observed_ = false;
-    apps::AppShimHandler::Set(this);
+    AppShimHostBootstrap::SetClient(this);
   }
 
   void Wait() {

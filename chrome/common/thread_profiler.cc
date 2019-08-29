@@ -146,8 +146,9 @@ std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
   // If running in single process mode, there may be multiple "main thread"
   // profilers created. In this case, we assume the first created one is the
   // browser one.
-  bool is_single_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSingleProcess);
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  bool is_single_process = command_line->HasSwitch(switches::kSingleProcess) ||
+                           command_line->HasSwitch(switches::kInProcessGPU);
   DCHECK(!g_main_thread_instance || is_single_process);
   auto instance = std::unique_ptr<ThreadProfiler>(
       new ThreadProfiler(CallStackProfileParams::MAIN_THREAD));

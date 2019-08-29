@@ -15,9 +15,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.widget.ListMenuButton;
-import org.chromium.chrome.browser.widget.ListMenuButton.Item;
-import org.chromium.chrome.browser.widget.ListMenuButton.PopupMenuShownListener;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton.Item;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton.PopupMenuShownListener;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -38,6 +38,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     protected BookmarkId mBookmarkId;
     private boolean mIsAttachedToWindow;
     private final boolean mReorderBookmarksEnabled;
+    private final boolean mShowInFolderEnabled;
     private PopupMenuShownListener mPopupListener;
     @Location
     private int mLocation;
@@ -57,6 +58,8 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     public BookmarkRow(Context context, AttributeSet attrs) {
         super(context, attrs);
         mReorderBookmarksEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.REORDER_BOOKMARKS);
+        mShowInFolderEnabled = mReorderBookmarksEnabled
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.BOOKMARKS_SHOW_IN_FOLDER);
     }
 
     /**
@@ -161,7 +164,9 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
                         new Item(getContext(), R.string.bookmark_item_delete, true)));
         if (mReorderBookmarksEnabled) {
             if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING) {
-                menuItems.add(new Item(getContext(), R.string.bookmark_show_in_folder, true));
+                if (mShowInFolderEnabled) {
+                    menuItems.add(new Item(getContext(), R.string.bookmark_show_in_folder, true));
+                }
             } else if (mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER
                     && mLocation != Location.SOLO) {
                 // Only add move up / move down buttons if there is more than 1 item

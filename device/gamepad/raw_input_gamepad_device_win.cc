@@ -263,8 +263,15 @@ bool RawInputGamepadDeviceWin::QueryDeviceInfo() {
   if (name_ == L"\\\\?\\VIRTUAL_DIGITIZER")
     return false;
 
+  // We can now use the name to query the OS for a file handle that is used to
+  // read the product string from the device. If the OS does not return a valid
+  // handle this gamepad is invalid.
+  auto hid_handle = OpenHidHandle();
+  if (!hid_handle.IsValid())
+    return false;
+
   // Fetch the human-friendly |product_string_|, if available.
-  if (!QueryProductString())
+  if (!QueryProductString(hid_handle))
     product_string_ = L"Unknown Gamepad";
 
   // Fetch information about the buttons and axes on this device. This sets
@@ -336,17 +343,19 @@ bool RawInputGamepadDeviceWin::QueryDeviceName() {
   return true;
 }
 
-bool RawInputGamepadDeviceWin::QueryProductString() {
-  DCHECK(hid_functions_);
-  DCHECK(hid_functions_->IsValid());
-  base::win::ScopedHandle hid_handle(::CreateFile(
-      name_.c_str(), GENERIC_READ | GENERIC_WRITE,
-      FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL));
-  if (!hid_handle.IsValid())
-    return false;
+bool RawInputGamepadDeviceWin::QueryProductString(
+    base::win::ScopedHandle& hid_handle) {
+  DCHECK(hid_handle.IsValid());
   product_string_.resize(Gamepad::kIdLengthCap);
   return hid_functions_->HidDGetProductString()(
       hid_handle.Get(), &product_string_.front(), Gamepad::kIdLengthCap);
+}
+
+base::win::ScopedHandle RawInputGamepadDeviceWin::OpenHidHandle() {
+  return base::win::ScopedHandle(::CreateFile(
+      name_.c_str(), GENERIC_READ | GENERIC_WRITE,
+      FILE_SHARE_READ | FILE_SHARE_WRITE, /*lpSecurityAttributes=*/nullptr,
+      OPEN_EXISTING, /*dwFlagsAndAttributes=*/0, /*hTemplateFile=*/nullptr));
 }
 
 bool RawInputGamepadDeviceWin::QueryDeviceCapabilities() {

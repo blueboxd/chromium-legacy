@@ -10,10 +10,67 @@
 #include <ostream>
 #include <vector>
 
+#include "objects.h"
+
 using ReturnAddress = uint64_t;
 using FramePtr = uintptr_t*;
 using RBPOffset = uint32_t;
 using DWARF = uint16_t;
+
+using HeapAddress = long*;
+
+// The place where HeapObjects live. For simplicity, the underlying data in a
+// HeapObject is always a single uintptr_t. The heap layout mocks a simple
+// semi-space collector where objects can be moved between two heap fragments.
+//
+// Note that this is a no-op collector: unreachable objects are not reclaimed
+// and allocation will keep filling the heap until its limited memory is
+// exhausted.
+class Heap {
+ public:
+  // Allocates a HeapObject's underlying data field on the heap and returns a
+  // pointer to it. This allocation will use the heap fragment returned from a
+  // fromspace() call.
+  HeapAddress AllocRaw(long value);
+
+  // Moves all values from fromspace to tospace. fromspace becomes tospace and
+  // vice versa (i.e. future allocations take place on the opposite heap
+  // fragment). Note no objects are dropped in the process.
+  void MoveObjects();
+
+  // For an arbitrary pointer into the heap, this will return a new pointer with
+  // a corresponding offset into the opposite heap fragment. E.g. a pointer to
+  // an address at offset +4 into heap fragment A would return an address at
+  // offset +4 into heap fragment B.
+  //
+  // This is used for relocating root pointer values across a collection during
+  // stack walking.
+  HeapAddress UpdatePointer(HeapAddress ptr);
+
+ private:
+  static constexpr int kHeapSize = 24;
+
+  HeapAddress fromspace() {
+    if (alloc_on_a_) {
+      return a_frag_;
+    } else {
+      return b_frag_;
+    }
+  }
+
+  HeapAddress tospace() {
+    if (alloc_on_a_) {
+      return b_frag_;
+    } else {
+      return a_frag_;
+    }
+  }
+
+  int heap_ptr = 0;
+  long a_frag_[kHeapSize];
+  long b_frag_[kHeapSize];
+  bool alloc_on_a_ = true;
+};
 
 // A FrameRoots object contains all the information needed to precisely identify
 // live roots for a given safepoint. It contains a list of registers which are
@@ -74,6 +131,7 @@ std::ostream& operator<<(std::ostream& os, const SafepointTable& st);
 SafepointTable GenSafepointTable();
 
 extern SafepointTable spt;
+extern Heap* heap;
 
 void PrintSafepointTable();
 
@@ -112,6 +170,12 @@ void PrintSafepointTable();
 // This therefore requires that the optimisation -fomit-frame-pointer is
 // disabled in order to guarantee that RBP will not be used as a
 // general-purpose register.
-extern "C" void StackWalk(FramePtr fp);
+extern "C" void StackWalkAndMoveObjects(FramePtr fp);
+
+// A very simple allocator for a HeapObject. For the purposes of this
+// experiment, a HeapObject's contents is simply a 64 bit integer. The data
+// itself is not important, what is, however, is that it can be accessed through
+// the rootset after the collector moves it.
+Handle<HeapObject> AllocateHeapObject(HeapAddress data);
 
 #endif  // TOOLS_CLANG_STACK_MAPS_GC_GC_API_H_

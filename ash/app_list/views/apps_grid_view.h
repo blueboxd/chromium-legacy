@@ -47,6 +47,7 @@ class ButtonListener;
 namespace app_list {
 
 namespace test {
+class AppsGridViewTest;
 class AppsGridViewTestApi;
 }
 
@@ -323,6 +324,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
  private:
   class FadeoutLayerDelegate;
   friend class test::AppsGridViewTestApi;
+  friend class test::AppsGridViewTest;
   friend class PagedViewStructure;
 
   enum DropTargetRegion {
@@ -487,6 +489,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void TotalPagesChanged() override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarting() override;
+  void TransitionStarted() override;
   void TransitionChanged() override;
   void TransitionEnded() override;
   void ScrollStarted() override;
@@ -701,6 +704,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Created by AppListMainView, owned by views hierarchy.
   ContentsView* contents_view_ = nullptr;
 
+  // Keeps the individual AppListItemView. Owned by views hierarchy.
+  views::View* items_container_ = nullptr;
+
   int cols_ = 0;
   int rows_per_page_ = 0;
 
@@ -770,7 +776,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Target page to switch to when |page_flip_timer_| fires.
   int page_flip_target_ = -1;
 
-  views::BoundsAnimator bounds_animator_;
+  std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
   // The most recent activated folder item view.
   AppListItemView* activated_folder_item_view_ = nullptr;

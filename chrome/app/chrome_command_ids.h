@@ -76,6 +76,12 @@
 #define IDC_SITE_SETTINGS               34062
 #define IDC_HOSTED_APP_MENU_APP_INFO    34063
 
+#if defined(OS_CHROMEOS)
+// Terminal system app commands
+#define IDC_TERMINAL_SPLIT_HORIZONTAL   34070
+#define IDC_TERMINAL_SPLIT_VERTICAL     34071
+#endif
+
 // Page-related commands
 #define IDC_BOOKMARK_THIS_TAB           35000
 #define IDC_BOOKMARK_ALL_TABS           35001

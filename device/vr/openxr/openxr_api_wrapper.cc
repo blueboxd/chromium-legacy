@@ -103,6 +103,7 @@ OpenXrApiWrapper::~OpenXrApiWrapper() {
 }
 
 void OpenXrApiWrapper::Reset() {
+  session_ended_ = false;
   local_space_ = XR_NULL_HANDLE;
   stage_space_ = XR_NULL_HANDLE;
   view_space_ = XR_NULL_HANDLE;
@@ -138,7 +139,7 @@ bool OpenXrApiWrapper::Initialize() {
   DCHECK(IsInitialized());
 
   if (test_hook_) {
-    // Allow our mock implementation of OpenXR to be controlled by tests.
+    // Allow our mock implementation of OpenXr to be controlled by tests.
     // The mock implementation of xrCreateInstance returns a pointer to the
     // service test hook (g_test_helper) as the instance.
     service_test_hook_ = reinterpret_cast<ServiceTestHook*>(instance_);
@@ -275,7 +276,7 @@ XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
 // Callers of this function must check the XrResult return value and destroy
 // this OpenXrApiWrapper object on failure to clean up any intermediate
 // objects that may have been created before the failure.
-XrResult OpenXrApiWrapper::StartSession(
+XrResult OpenXrApiWrapper::InitSession(
     const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
     std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper) {
   DCHECK(d3d_device.Get());
@@ -289,7 +290,6 @@ XrResult OpenXrApiWrapper::StartSession(
       CreateSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, &local_space_));
   RETURN_IF_XR_FAILED(CreateSpace(XR_REFERENCE_SPACE_TYPE_VIEW, &view_space_));
   RETURN_IF_XR_FAILED(CreateGamepadHelper(gamepad_helper));
-  RETURN_IF_XR_FAILED(BeginSession());
 
   // It's ok if stage_space_ fails since not all OpenXR devices are required to
   // support this reference space.
@@ -410,6 +410,8 @@ XrResult OpenXrApiWrapper::BeginFrame(
   DCHECK(HasColorSwapChain());
 
   XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(ProcessEvents());
 
   XrFrameWaitInfo wait_frame_info = {XR_TYPE_FRAME_WAIT_INFO};
   XrFrameState frame_state = {XR_TYPE_FRAME_STATE};
@@ -577,6 +579,35 @@ XrResult OpenXrApiWrapper::GetLuid(LUID* luid) const {
   luid->LowPart = graphics_requirements.adapterLuid.LowPart;
   luid->HighPart = graphics_requirements.adapterLuid.HighPart;
 
+  return xr_result;
+}
+
+XrResult OpenXrApiWrapper::ProcessEvents() {
+  XrEventDataBuffer event_data{XR_TYPE_EVENT_DATA_BUFFER};
+  XrResult xr_result = xrPollEvent(instance_, &event_data);
+
+  while (XR_SUCCEEDED(xr_result) && xr_result != XR_EVENT_UNAVAILABLE) {
+    if (event_data.type == XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED) {
+      XrEventDataSessionStateChanged* session_state_changed =
+          reinterpret_cast<XrEventDataSessionStateChanged*>(&event_data);
+      // We only have will only have one session and we should make sure the
+      // session that is having state_changed event is ours.
+      DCHECK(session_state_changed->session == session_);
+      switch (session_state_changed->state) {
+        case XR_SESSION_STATE_READY:
+          RETURN_IF_XR_FAILED(BeginSession());
+          break;
+        case XR_SESSION_STATE_STOPPING:
+          session_ended_ = true;
+          RETURN_IF_XR_FAILED(xrEndSession(session_));
+          break;
+        default:
+          break;
+      }
+    }
+    event_data.type = XR_TYPE_EVENT_DATA_BUFFER;
+    xr_result = xrPollEvent(instance_, &event_data);
+  }
   return xr_result;
 }
 

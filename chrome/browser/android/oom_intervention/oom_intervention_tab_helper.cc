@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_config.h"
@@ -14,6 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
 
 namespace {
@@ -323,8 +327,7 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
   DCHECK(main_frame);
   content::RenderProcessHost* render_process_host = main_frame->GetProcess();
   DCHECK(render_process_host);
-  content::BindInterface(render_process_host,
-                         mojo::MakeRequest(&intervention_));
+  render_process_host->BindReceiver(intervention_.BindNewPipeAndPassReceiver());
   DCHECK(!receiver_.is_bound());
   blink::mojom::DetectionArgsPtr detection_args =
       config->GetRendererOomDetectionArgs();

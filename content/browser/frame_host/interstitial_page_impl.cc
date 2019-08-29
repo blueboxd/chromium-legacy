@@ -50,7 +50,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
@@ -185,8 +184,7 @@ InterstitialPageImpl::InterstitialPageImpl(
       rvh_delegate_view_(new InterstitialPageRVHDelegateView(this)),
       create_view_(true),
       pause_throbber_(false),
-      delegate_(delegate),
-      widget_observer_(this) {
+      delegate_(delegate) {
   InitInterstitialPageMap();
 }
 

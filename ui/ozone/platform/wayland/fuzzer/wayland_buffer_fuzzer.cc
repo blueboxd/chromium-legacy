@@ -6,6 +6,7 @@
 // ozone::mojom::WaylandConnection.
 
 #include <drm_fourcc.h>
+#include <fuzzer/FuzzedDataProvider.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
@@ -19,7 +20,6 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"

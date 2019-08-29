@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchInteractionR
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.contextualsearch.EngagementSuppression;
 import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -32,6 +33,8 @@ public class ContextualSearchPanelMetrics {
     private boolean mWasActivatedByTap;
     private boolean mWasPanelOpenedBeyondPeek;
     private boolean mWasContextualCardsDataShown;
+    @ResolvedSearchTerm.CardTag
+    private int mCardTag;
     private boolean mWasQuickActionShown;
     private int mQuickActionCategory;
     private boolean mWasQuickActionClicked;
@@ -122,6 +125,7 @@ public class ContextualSearchPanelMetrics {
                 ContextualSearchUma.logContextualCardsResultsSeen(mWasSearchContentViewSeen);
                 EngagementSuppression.registerContextualCardsImpression(mWasSearchContentViewSeen);
             }
+            ContextualSearchUma.logCardTagSeen(mWasSearchContentViewSeen, mCardTag);
             if (mWasQuickActionShown) {
                 ContextualSearchUma.logQuickActionResultsSeen(mWasSearchContentViewSeen,
                         mQuickActionCategory);
@@ -221,6 +225,7 @@ public class ContextualSearchPanelMetrics {
             mWasContextualCardsDataShown = false;
             mWasQuickActionShown = false;
             mQuickActionCategory = QuickActionCategory.NONE;
+            mCardTag = ResolvedSearchTerm.CardTag.CT_NONE;
             mWasQuickActionClicked = false;
             mWasAnyHeuristicSatisfiedOnPanelShow = false;
             mPanelTriggerTimeFromTapNs = 0;
@@ -255,8 +260,10 @@ public class ContextualSearchPanelMetrics {
      * @param wasContextualCardsDataShown Whether Contextual Cards data was shown in the Contextual
      *                                    Search Bar.
      */
-    public void setWasContextualCardsDataShown(boolean wasContextualCardsDataShown) {
+    public void setWasContextualCardsDataShown(
+            boolean wasContextualCardsDataShown, @ResolvedSearchTerm.CardTag int cardTag) {
         mWasContextualCardsDataShown = wasContextualCardsDataShown;
+        mCardTag = cardTag;
     }
 
     /**

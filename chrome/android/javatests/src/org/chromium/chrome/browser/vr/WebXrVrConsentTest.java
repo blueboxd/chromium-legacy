@@ -172,6 +172,9 @@ public class WebXrVrConsentTest {
         mWebXrVrConsentTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrVrConsentTestFramework.endSessionOrFail();
 
+        // TODO(https://crbug.com/998307): Remove this once root cause of entering VRB is found.
+        SystemClock.sleep(1000);
+
         // Now request a session that requires a higher level of consent. It should still be
         // prompted for consent and the session should enter.
         mWebXrVrConsentTestFramework.runJavaScriptOrFail(

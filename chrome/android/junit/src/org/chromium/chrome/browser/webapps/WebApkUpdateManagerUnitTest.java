@@ -365,7 +365,7 @@ public class WebApkUpdateManagerUnitTest {
                 manifestData.orientation, -1, manifestData.themeColor, manifestData.backgroundColor,
                 manifestData.defaultBackgroundColor, false /* isPrimaryIconMaskable */,
                 kPackageName, -1, WEB_MANIFEST_URL, manifestData.startUrl,
-                WebApkInfo.WebApkDistributor.BROWSER, manifestData.iconUrlToMurmur2HashMap,
+                WebApkDistributor.BROWSER, manifestData.iconUrlToMurmur2HashMap,
                 new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
                         manifestData.shareTargetParamTitle, null, null,
                         manifestData.shareTargetMethod != null

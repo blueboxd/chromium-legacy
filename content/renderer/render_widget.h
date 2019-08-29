@@ -763,9 +763,9 @@ class CONTENT_EXPORT RenderWidget
   gfx::Size GetSizeForWebWidget() const;
   void ResizeWebWidget();
 
-  // Helper method to get the device_viewport_size() from the compositor, which
+  // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
-  gfx::Size CompositorViewportSize() const;
+  gfx::Rect CompositorViewportRect() const;
 
   // Just Close the WebWidget, in cases where the Close() will be deferred.
   // It is safe to call this multiple times, which happens in the case of
@@ -891,7 +891,7 @@ class CONTENT_EXPORT RenderWidget
 
   void UpdateSurfaceAndScreenInfo(
       const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
-      const gfx::Size& compositor_viewport_pixel_size,
+      const gfx::Rect& compositor_viewport_pixel_rect,
       const ScreenInfo& new_screen_info);
 
   // Used to force the size of a window when running web tests.

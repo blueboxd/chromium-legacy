@@ -119,6 +119,7 @@ class ProcessNodeImpl
 
  private:
   friend class FrozenFrameAggregatorAccess;
+  friend class ProcessMetricsDecoratorAccess;
 
   // ProcessNode implementation. These are private so that users of the impl use
   // the private getters rather than the public interface.
@@ -171,6 +172,8 @@ class ProcessNodeImpl
 
   // Inline storage for FrozenFrameAggregator user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
+
+  std::unique_ptr<NodeAttachedData> process_metrics_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessNodeImpl);
 };

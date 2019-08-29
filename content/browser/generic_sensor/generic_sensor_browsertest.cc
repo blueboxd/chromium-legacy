@@ -43,7 +43,7 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
  public:
   GenericSensorBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kGenericSensor, features::kGenericSensorExtraClasses}, {});
+        {features::kGenericSensorExtraClasses}, {});
 
     // Because Device Service also runs in this process (browser process), here
     // we can directly set our binder to intercept interface requests against

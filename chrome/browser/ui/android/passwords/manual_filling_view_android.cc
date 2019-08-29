@@ -108,12 +108,14 @@ void ManualFillingViewAndroid::OnAutomaticGenerationStatusChanged(
 void ManualFillingViewAndroid::OnFaviconRequested(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& j_origin,
     jint desired_size_in_px,
     const base::android::JavaParamRef<jobject>& j_callback) {
   controller_->GetFavicon(
-      desired_size_in_px,
+      desired_size_in_px, ConvertJavaStringToUTF8(env, j_origin),
       base::BindOnce(&ManualFillingViewAndroid::OnImageFetched,
                      base::Unretained(this),  // Outlives or cancels request.
+                     base::android::ScopedJavaGlobalRef<jstring>(j_origin),
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
@@ -136,13 +138,17 @@ void ManualFillingViewAndroid::OnOptionSelected(
 }
 
 void ManualFillingViewAndroid::OnImageFetched(
-    const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
+    base::android::ScopedJavaGlobalRef<jstring> j_origin,
+    base::android::ScopedJavaGlobalRef<jobject> j_callback,
     const gfx::Image& image) {
   base::android::ScopedJavaLocalRef<jobject> j_bitmap;
   if (!image.IsEmpty())
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
 
-  RunObjectCallbackAndroid(j_callback, j_bitmap);
+  RunObjectCallbackAndroid(
+      j_callback,
+      Java_ManualFillingComponentBridge_createFaviconResult(
+          base::android::AttachCurrentThread(), j_origin, j_bitmap));
 }
 
 ScopedJavaLocalRef<jobject>

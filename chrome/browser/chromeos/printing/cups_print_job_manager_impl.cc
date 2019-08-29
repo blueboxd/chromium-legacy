@@ -309,6 +309,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
 
     content::Details<::printing::JobEventDetails> job_details(details);
+    content::Source<::printing::PrintJob> job(source);
 
     // DOC_DONE occurs after the print job has been successfully sent to the
     // spooler which is when we begin tracking the print queue.
@@ -322,7 +323,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       }
       CreatePrintJob(base::UTF16ToUTF8(document->settings().device_name()),
                      base::UTF16ToUTF8(title), job_details->job_id(),
-                     document->page_count());
+                     document->page_count(), job->source(), job->source_id());
     }
   }
 
@@ -332,7 +333,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   bool CreatePrintJob(const std::string& printer_name,
                       const std::string& title,
                       int job_id,
-                      int total_page_number) {
+                      int total_page_number,
+                      ::printing::PrintJob::Source source,
+                      const std::string& source_id) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     auto printer =
@@ -352,8 +355,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                                20);
 
     // Create a new print job.
-    auto cpj = std::make_unique<CupsPrintJob>(*printer, job_id, title,
-                                              total_page_number);
+    auto cpj = std::make_unique<CupsPrintJob>(
+        *printer, job_id, title, total_page_number, source, source_id);
     std::string key = cpj->GetUniqueId();
     jobs_[key] = std::move(cpj);
 

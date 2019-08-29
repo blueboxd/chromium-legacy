@@ -243,24 +243,25 @@ void SearchResultRanker::InitializeRankers() {
 
   app_launch_event_logger_ = std::make_unique<app_list::AppLaunchEventLogger>();
 
-  if (app_list_features::IsAppRankerEnabled()) {
-    if (GetFieldTrialParamByFeatureAsBool(app_list_features::kEnableAppRanker,
-                                          "use_recurrence_ranker", true)) {
-      RecurrenceRankerConfigProto config;
-      config.set_min_seconds_between_saves(240u);
-      config.set_condition_limit(1u);
-      config.set_condition_decay(0.5);
-      config.set_target_limit(200);
-      config.set_target_decay(0.8);
-      config.mutable_predictor()->mutable_default_predictor();
+  bool apps_enabled = app_list_features::IsAppRankerEnabled();
+  if (app_list_features::IsAggregatedMlAppRankingEnabled() ||
+      (apps_enabled &&
+       GetFieldTrialParamByFeatureAsBool(app_list_features::kEnableAppRanker,
+                                         "use_topcat_ranker", false))) {
+    using_aggregated_app_inference_ = true;
+    app_launch_event_logger_->CreateRankings();
+  } else if (apps_enabled) {
+    RecurrenceRankerConfigProto config;
+    config.set_min_seconds_between_saves(240u);
+    config.set_condition_limit(1u);
+    config.set_condition_decay(0.5);
+    config.set_target_limit(200);
+    config.set_target_decay(0.8);
+    config.mutable_predictor()->mutable_default_predictor();
 
-      app_ranker_ = std::make_unique<RecurrenceRanker>(
-          "AppRanker", profile_->GetPath().AppendASCII("app_ranker.pb"), config,
-          chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
-    } else {
-      using_aggregated_app_inference_ = true;
-      app_launch_event_logger_->CreateRankings();
-    }
+    app_ranker_ = std::make_unique<RecurrenceRanker>(
+        "AppRanker", profile_->GetPath().AppendASCII("app_ranker.pb"), config,
+        chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
   }
 }
 

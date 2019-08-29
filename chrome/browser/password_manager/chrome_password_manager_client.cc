@@ -614,10 +614,6 @@ void ChromePasswordManagerClient::DidFinishNavigation(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 #else   // defined(OS_ANDROID)
   credential_cache_.ClearCredentials();
-  PasswordAccessoryController* accessory =
-      PasswordAccessoryController::GetIfExisting(web_contents());
-  if (accessory)
-    accessory->DidNavigateMainFrame();
 #endif  // defined(OS_ANDROID)
 }
 

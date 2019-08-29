@@ -8,6 +8,7 @@
 #include <ostream>
 
 #include "base/callback.h"
+#include "base/observer_list_types.h"
 
 namespace content {
 class WebContents;
@@ -33,13 +34,16 @@ struct DistillabilityResult {
 };
 std::ostream& operator<<(std::ostream& os, const DistillabilityResult& result);
 
+class DistillabilityObserver : public base::CheckedObserver {
+ public:
+  virtual void OnResult(const DistillabilityResult& result) = 0;
+};
+
 // Set the delegate to receive the result of whether the page is distillable.
 //
 // |web_contents| must be non-null.
-using DistillabilityDelegate =
-    base::RepeatingCallback<void(const DistillabilityResult&)>;
-void SetDelegate(content::WebContents* web_contents,
-                 DistillabilityDelegate delegate);
+void AddObserver(content::WebContents* web_contents,
+                 DistillabilityObserver* observer);
 
 }  // namespace dom_distiller
 

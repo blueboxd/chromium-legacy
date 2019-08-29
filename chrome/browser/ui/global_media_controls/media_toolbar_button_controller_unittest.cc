@@ -7,11 +7,13 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "components/media_message_center/media_notification_item.h"
+#include "components/media_message_center/media_notification_util.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -150,12 +152,18 @@ class MediaToolbarButtonControllerTest : public testing::Test {
     delegate->Open(controller_.get());
   }
 
+  void ExpectHistogramCountRecorded(int count, int size) {
+    histogram_tester_.ExpectBucketCount(
+        media_message_center::kCountHistogramName, count, size);
+  }
+
   MockMediaToolbarButtonControllerDelegate& delegate() { return delegate_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
   MockMediaToolbarButtonControllerDelegate delegate_;
   std::unique_ptr<MediaToolbarButtonController> controller_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaToolbarButtonControllerTest);
 };
@@ -175,6 +183,7 @@ TEST_F(MediaToolbarButtonControllerTest, ShowControllableOnGainAndHideOnLoss) {
   SimulateDialogOpened(&dialog_delegate);
 
   // Ensure that the session was shown.
+  ExpectHistogramCountRecorded(1, 1);
   testing::Mock::VerifyAndClearExpectations(&dialog_delegate);
 
   // Simulate the active session ending.
@@ -232,6 +241,9 @@ TEST_F(MediaToolbarButtonControllerTest, ShowsAllInitialControllableSessions) {
   EXPECT_CALL(dialog_delegate,
               ShowMediaSession(controllable2_id.ToString(), _));
   SimulateDialogOpened(&dialog_delegate);
+
+  // Ensure that we properly recorded the number of active sessions shown.
+  ExpectHistogramCountRecorded(2, 1);
 }
 
 TEST_F(MediaToolbarButtonControllerTest, HidesAfterTimeoutAndShowsAgainOnPlay) {
@@ -319,6 +331,7 @@ TEST_F(MediaToolbarButtonControllerTest, NewMediaSessionWhileDialogOpen) {
   MockMediaDialogDelegate dialog_delegate;
   EXPECT_CALL(dialog_delegate, ShowMediaSession(id.ToString(), _));
   SimulateDialogOpened(&dialog_delegate);
+  ExpectHistogramCountRecorded(1, 1);
   testing::Mock::VerifyAndClearExpectations(&dialog_delegate);
 
   // Then, have a new media session start while the dialog is opened. This
@@ -336,4 +349,6 @@ TEST_F(MediaToolbarButtonControllerTest, NewMediaSessionWhileDialogOpen) {
   EXPECT_CALL(new_dialog, ShowMediaSession(id.ToString(), _));
   EXPECT_CALL(new_dialog, ShowMediaSession(new_id.ToString(), _));
   SimulateDialogOpened(&new_dialog);
+  ExpectHistogramCountRecorded(1, 1);
+  ExpectHistogramCountRecorded(2, 1);
 }

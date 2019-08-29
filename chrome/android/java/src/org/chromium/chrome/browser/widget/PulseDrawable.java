@@ -34,6 +34,32 @@ public class PulseDrawable extends Drawable implements Animatable {
     private static final long FRAME_RATE = 60;
 
     /**
+     * Informs the PulseDrawable about whether it can continue pulsing, and specifies a callback to
+     * be run when the PulseDrawable is finished pulsing.
+     */
+    public interface PulseEndAuthority {
+        /**
+         * Called at the end of one pulse animation, to decide whether the PulseDrawable can pulse
+         * again.
+         *
+         * @return True iff the PulseDrawable can continue pulsing.
+         */
+        boolean canPulseAgain();
+    }
+
+    /**
+     * A PulseEndAuthority which allows the PulseDrawable to pulse forever.
+     */
+    private static class EndlessPulser implements PulseEndAuthority {
+        // PulseEndAuthority implementation.
+
+        @Override
+        public boolean canPulseAgain() {
+            return true;
+        }
+    }
+
+    /**
      * An interface that does the actual drawing work for this {@link Drawable}.  Not meant to be
      * stateful, as this could be shared across multiple instances of this drawable if it gets
      * copied or mutated.
@@ -80,7 +106,7 @@ public class PulseDrawable extends Drawable implements Animatable {
     }
 
     private static Painter createCirclePainter(Bounds boundsFn) {
-        return new PulseDrawable.Painter() {
+        return new Painter() {
             @Override
             public void modifyDrawable(PulseDrawable drawable, float interpolation) {
                 drawable.invalidateSelf();
@@ -93,7 +119,8 @@ public class PulseDrawable extends Drawable implements Animatable {
 
                 float minRadiusPx = boundsFn.getMinRadiusPx(bounds);
                 float maxRadiusPx = boundsFn.getMaxRadiusPx(bounds);
-                float radius = MathUtils.interpolate(minRadiusPx, maxRadiusPx, interpolation);
+                float radius =
+                        MathUtils.interpolate(minRadiusPx, maxRadiusPx, 1.0f - interpolation);
 
                 canvas.drawCircle(bounds.exactCenterX(), bounds.exactCenterY(), radius, paint);
             }
@@ -103,13 +130,15 @@ public class PulseDrawable extends Drawable implements Animatable {
     /**
      * Creates a {@link PulseDrawable} that will fill the bounds with a pulsing color.
      * @param context The {@link Context} under which the drawable is created.
+     * @param pulseEndAuthority The {@link PulseEndAuthority} associated with this drawable.
      * @return A new {@link PulseDrawable} instance.
      */
-    public static PulseDrawable createHighlight(Context context) {
-        PulseDrawable.Painter painter = new PulseDrawable.Painter() {
+    public static PulseDrawable createHighlight(
+            Context context, PulseEndAuthority pulseEndAuthority) {
+        Painter painter = new Painter() {
             @Override
             public void modifyDrawable(PulseDrawable drawable, float interpolation) {
-                drawable.setAlpha((int) MathUtils.interpolate(12, 75, 1.f - interpolation));
+                drawable.setAlpha((int) MathUtils.interpolate(12, 75, interpolation));
             }
 
             @Override
@@ -119,15 +148,28 @@ public class PulseDrawable extends Drawable implements Animatable {
             }
         };
 
-        return new PulseDrawable(context, new FastOutSlowInInterpolator(), painter);
+        return new PulseDrawable(
+                context, new FastOutSlowInInterpolator(), painter, pulseEndAuthority);
+    }
+
+    /**
+     * Creates a {@link PulseDrawable} that will fill the bounds with a pulsing color. The {@link
+     * PulseDrawable} will continue pulsing forever (if this is not the desired behavior, please use
+     * {@link PulseEndAuthority}).
+     * @param context The {@link Context} under which the drawable is created.
+     * @return A new {@link PulseDrawable} instance.
+     */
+    public static PulseDrawable createHighlight(Context context) {
+        return createHighlight(context, new EndlessPulser());
     }
 
     /**
      * Creates a {@link PulseDrawable} that will draw a pulsing circle inside the bounds.
      * @param context The {@link Context} under which the drawable is created.
+     * @param pulseEndAuthority The {@link PulseEndAuthority} associated with this drawable.
      * @return A new {@link PulseDrawable} instance.
      */
-    public static PulseDrawable createCircle(Context context) {
+    public static PulseDrawable createCircle(Context context, PulseEndAuthority pulseEndAuthority) {
         final int startingPulseRadiusPx =
                 context.getResources().getDimensionPixelSize(R.dimen.iph_pulse_baseline_radius);
 
@@ -142,7 +184,34 @@ public class PulseDrawable extends Drawable implements Animatable {
                 return Math.min(
                         startingPulseRadiusPx, Math.min(bounds.width(), bounds.height()) / 2.f);
             }
-        });
+        }, pulseEndAuthority);
+    }
+
+    /**
+     * Creates a {@link PulseDrawable} that will draw a pulsing circle inside the bounds. The {@link
+     * PulseDrawable} will continue pulsing forever (if this is not the desired behavior, please use
+     * {@link PulseEndAuthority}).
+     * @param context The {@link Context} under which the drawable is created.
+     * @return A new {@link PulseDrawable} instance.
+     */
+    public static PulseDrawable createCircle(Context context) {
+        return createCircle(context, new EndlessPulser());
+    }
+
+    /**
+     * Creates a {@link PulseDrawable} that will draw a pulsing circle as large as possible inside
+     * the bounds.
+     * @param context The {@link Context} under which the drawable is created.
+     * @return A new {@link PulseDrawable} instance.
+     */
+    public static PulseDrawable createCustomCircle(
+            Context context, Bounds boundsfn, PulseEndAuthority pulseEndAuthority) {
+        Painter painter = createCirclePainter(boundsfn);
+
+        PulseDrawable drawable = new PulseDrawable(context,
+                PathInterpolatorCompat.create(.8f, 0.f, .6f, 1.f), painter, pulseEndAuthority);
+        drawable.setAlpha(76);
+        return drawable;
     }
 
     /**
@@ -152,12 +221,7 @@ public class PulseDrawable extends Drawable implements Animatable {
      * @return A new {@link PulseDrawable} instance.
      */
     public static PulseDrawable createCustomCircle(Context context, Bounds boundsfn) {
-        Painter painter = createCirclePainter(boundsfn);
-
-        PulseDrawable drawable = new PulseDrawable(
-                context, PathInterpolatorCompat.create(.8f, 0.f, .6f, 1.f), painter);
-        drawable.setAlpha(76);
-        return drawable;
+        return createCustomCircle(context, boundsfn, new EndlessPulser());
     }
 
     private final Runnable mNextFrame = new Runnable() {
@@ -176,20 +240,30 @@ public class PulseDrawable extends Drawable implements Animatable {
     private PulseState mState;
     private boolean mMutated;
     private boolean mRunning;
+    private long mLastUpdateTime;
+
+    private final PulseEndAuthority mPulseEndAuthority;
 
     /**
      * Creates a new {@link PulseDrawable} instance.
      * @param context The {@link Context} under which the drawable is created.
      * @param interpolator An {@link Interpolator} that defines how the pulse will fade in and out.
      * @param painter      The {@link Painter} that will be responsible for drawing the pulse.
+     * @param pulseEndAuthority The {@link PulseEndAuthority} that is associated with this drawable.
      */
-    private PulseDrawable(Context context, Interpolator interpolator, Painter painter) {
-        this(new PulseState(interpolator, painter));
+    private PulseDrawable(Context context, Interpolator interpolator, Painter painter,
+            PulseEndAuthority pulseEndAuthority) {
+        this(new PulseState(interpolator, painter), pulseEndAuthority);
         setUseLightPulseColor(context.getResources(), false);
     }
 
-    private PulseDrawable(PulseState state) {
+    private PulseDrawable(PulseState state, PulseEndAuthority pulseEndAuthority) {
         mState = state;
+        mPulseEndAuthority = pulseEndAuthority;
+    }
+
+    private PulseDrawable(PulseState state) {
+        this(state, new EndlessPulser());
     }
 
     /**
@@ -222,7 +296,10 @@ public class PulseDrawable extends Drawable implements Animatable {
             scheduleSelf(mNextFrame, SystemClock.uptimeMillis() + 1000 / FRAME_RATE);
         } else {
             mRunning = true;
-            if (mState.startTime == 0) mState.startTime = SystemClock.uptimeMillis();
+            if (mState.startTime == 0) {
+                mState.startTime = SystemClock.uptimeMillis();
+                mLastUpdateTime = mState.startTime;
+            }
             mNextFrame.run();
         }
     }
@@ -312,16 +389,25 @@ public class PulseDrawable extends Drawable implements Animatable {
 
     private void stepPulse() {
         long curTime = SystemClock.uptimeMillis();
+        // If we are on a new pulse
+        if ((mLastUpdateTime - mState.startTime) / PULSE_DURATION_MS
+                != (curTime - mState.startTime) / PULSE_DURATION_MS) {
+            if (!(mPulseEndAuthority.canPulseAgain())) {
+                stop();
+                return;
+            }
+        }
         long msIntoAnim = (curTime - mState.startTime) % PULSE_DURATION_MS;
-        float progress = ((float) msIntoAnim) / ((float) PULSE_DURATION_MS);
-        mState.progress = mState.interpolator.getInterpolation(progress);
+        float timeProgress = ((float) msIntoAnim) / ((float) PULSE_DURATION_MS);
+        mState.progress = mState.interpolator.getInterpolation(timeProgress);
         mState.painter.modifyDrawable(PulseDrawable.this, mState.progress);
+        mLastUpdateTime = curTime;
     }
 
     /**
      * The {@link ConstantState} subclass for this {@link PulseDrawable}.
      */
-    private static final class PulseState extends ConstantState {
+    static final class PulseState extends ConstantState {
         // Current Paint State.
         /** The current color, including alpha, to draw. */
         public int drawColor;

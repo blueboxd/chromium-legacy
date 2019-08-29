@@ -57,11 +57,11 @@ class FakeDownloadProtectionService : public DownloadProtectionService {
       const base::FilePath& default_file_path,
       const std::vector<base::FilePath::StringType>& alternate_extensions,
       Profile* /* profile */,
-      const safe_browsing::CheckDownloadCallback& callback) override {
+      safe_browsing::CheckDownloadCallback callback) override {
     const auto iter =
         test_configuration_->result_map.find(default_file_path.Extension());
     if (iter != test_configuration_->result_map.end()) {
-      callback.Run(iter->second);
+      std::move(callback).Run(iter->second);
       return;
     }
 
@@ -69,12 +69,12 @@ class FakeDownloadProtectionService : public DownloadProtectionService {
       EXPECT_EQ(base::FilePath::kExtensionSeparator, extension[0]);
       const auto iter = test_configuration_->result_map.find(extension);
       if (iter != test_configuration_->result_map.end()) {
-        callback.Run(iter->second);
+        std::move(callback).Run(iter->second);
         return;
       }
     }
 
-    callback.Run(test_configuration_->default_result);
+    std::move(callback).Run(test_configuration_->default_result);
   }
 
  private:

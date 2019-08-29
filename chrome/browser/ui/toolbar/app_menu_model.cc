@@ -147,8 +147,7 @@ ZoomMenuModel::ZoomMenuModel(ui::SimpleMenuModel::Delegate* delegate)
   Build();
 }
 
-ZoomMenuModel::~ZoomMenuModel() {
-}
+ZoomMenuModel::~ZoomMenuModel() {}
 
 void ZoomMenuModel::Build() {
   AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
@@ -166,8 +165,7 @@ const base::Feature kIncludeBetaForumMenuItem{
 
 class AppMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
  public:
-  HelpMenuModel(ui::SimpleMenuModel::Delegate* delegate,
-                Browser* browser)
+  HelpMenuModel(ui::SimpleMenuModel::Delegate* delegate, Browser* browser)
       : SimpleMenuModel(delegate) {
     Build(browser);
   }
@@ -333,8 +331,9 @@ bool AppMenuModel::GetIconForCommandId(int command_id, gfx::Image* icon) const {
 }
 
 void AppMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
-      browser_->profile())->GetGlobalErrorByMenuItemCommandID(command_id);
+  GlobalError* error =
+      GlobalErrorServiceFactory::GetForProfile(browser_->profile())
+          ->GetGlobalErrorByMenuItemCommandID(command_id);
   if (error) {
     error->ExecuteMenuItem(browser_);
     return;
@@ -601,7 +600,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Feedback", delta);
       LogMenuAction(MENU_ACTION_FEEDBACK);
       break;
-  #endif
+#endif
 
     case IDC_TOGGLE_REQUEST_TABLET_SITE:
       if (!uma_action_recorded_) {
@@ -663,8 +662,9 @@ bool AppMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool AppMenuModel::IsCommandIdEnabled(int command_id) const {
-  GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
-      browser_->profile())->GetGlobalErrorByMenuItemCommandID(command_id);
+  GlobalError* error =
+      GlobalErrorServiceFactory::GetForProfile(browser_->profile())
+          ->GetGlobalErrorByMenuItemCommandID(command_id);
   if (error)
     return true;
 
@@ -744,8 +744,7 @@ void AppMenuModel::Build() {
 
   if (IsCommandIdVisible(IDC_UPGRADE_DIALOG))
     AddItem(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName());
-  if (AddGlobalErrorMenuItems() ||
-      IsCommandIdVisible(IDC_UPGRADE_DIALOG))
+  if (AddGlobalErrorMenuItems() || IsCommandIdVisible(IDC_UPGRADE_DIALOG))
     AddSeparator(ui::NORMAL_SEPARATOR);
 
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -812,8 +811,8 @@ void AppMenuModel::Build() {
 #endif
 
   tools_menu_model_ = std::make_unique<ToolsMenuModel>(this, browser_);
-  AddSubMenuWithStringId(
-      IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
+  AddSubMenuWithStringId(IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU,
+                         tools_menu_model_.get());
   AddSeparator(ui::LOWER_SEPARATOR);
   CreateCutCopyPasteMenu();
   AddSeparator(ui::UPPER_SEPARATOR);
@@ -824,8 +823,7 @@ void AppMenuModel::Build() {
 // Chromium builds.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   help_menu_model_ = std::make_unique<HelpMenuModel>(this, browser_);
-  AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU,
-                         help_menu_model_.get());
+  AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU, help_menu_model_.get());
 #else
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
@@ -894,8 +892,7 @@ void AppMenuModel::CreateZoomMenu() {
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
   // layout for this menu item in AppMenu.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
-  zoom_menu_item_model_.reset(
-      new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
+  zoom_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_MINUS,
                                                   IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_PLUS,

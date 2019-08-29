@@ -5,6 +5,7 @@
 #include "base/message_loop/message_pump_fuchsia.h"
 
 #include <lib/async-loop/cpp/loop.h>
+#include <lib/async-loop/default.h>
 #include <lib/fdio/io.h>
 #include <lib/fdio/unsafe.h>
 #include <lib/zx/time.h>
@@ -172,7 +173,7 @@ bool MessagePumpFuchsia::FdWatchController::StopWatchingFileDescriptor() {
 }
 
 MessagePumpFuchsia::MessagePumpFuchsia()
-    : async_loop_(new async::Loop(&kAsyncLoopConfigAttachToThread)),
+    : async_loop_(new async::Loop(&kAsyncLoopConfigAttachToCurrentThread)),
       weak_factory_(this) {}
 MessagePumpFuchsia::~MessagePumpFuchsia() = default;
 

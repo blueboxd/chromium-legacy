@@ -15,7 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -42,7 +42,7 @@ namespace apps {
 
 // This app shim handler that handles events for app shims that correspond to an
 // extension.
-class ExtensionAppShimHandler : public AppShimHandler,
+class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
                                 public AppShimHost::Client,
                                 public content::NotificationObserver,
                                 public AppLifetimeMonitor::Observer,
@@ -139,7 +139,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // Called by AppControllerMac when Chrome hides.
   void OnChromeWillHide();
 
-  // AppShimHandler:
+  // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
 

@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -1233,8 +1234,8 @@ bool TabStrip::ShouldDrawStrokes() const {
   // against the active frame color, to avoid toggling the stroke on and off as
   // the window activation state changes.
   constexpr float kMinimumContrastRatioForOutlines = 1.3f;
-  const SkColor background_color =
-      GetTabBackgroundColor(TAB_ACTIVE, BrowserNonClientFrameView::kActive);
+  const SkColor background_color = GetTabBackgroundColor(
+      TabActive::kActive, BrowserNonClientFrameView::kActive);
   const SkColor frame_color =
       controller_->GetFrameColor(BrowserNonClientFrameView::kActive);
   const float contrast_ratio =
@@ -1685,13 +1686,13 @@ SkColor TabStrip::GetTabSeparatorColor() const {
 }
 
 SkColor TabStrip::GetTabBackgroundColor(
-    TabState tab_state,
+    TabActive active,
     BrowserNonClientFrameView::ActiveState active_state) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   if (!tp)
     return SK_ColorBLACK;
 
-  if (tab_state == TAB_ACTIVE)
+  if (active == TabActive::kActive)
     return tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
 
   bool is_active_frame;
@@ -1715,7 +1716,7 @@ SkColor TabStrip::GetTabBackgroundColor(
   return color_utils::GetResultingPaintColor(background, frame);
 }
 
-SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
+SkColor TabStrip::GetTabForegroundColor(TabActive active,
                                         SkColor background_color) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
   if (!tp)
@@ -1725,7 +1726,7 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
 
   // This color varies based on the tab and frame active states.
   int color_id = ThemeProperties::COLOR_TAB_TEXT;
-  if (tab_state != TAB_ACTIVE) {
+  if (active != TabActive::kActive) {
     color_id = is_active_frame
                    ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
                    : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
@@ -1755,7 +1756,8 @@ SkColor TabStrip::GetTabForegroundColor(TabState tab_state,
                                       10.46f},  // Active tab, active frame
                                      {4.5f,     // Inactive tab, inactive frame
                                       7.98f}};  // Inactive tab, active frame
-  const float contrast = kContrast[tab_state][is_active_frame];
+  const float contrast =
+      kContrast[active == TabActive::kActive ? 0 : 1][is_active_frame];
   return color_utils::BlendForMinContrast(color, background_color, target,
                                           contrast)
       .color;
@@ -2098,9 +2100,7 @@ void TabStrip::StartInsertTabAnimation(
 
     PrepareForAnimation();
 
-    // The TabStrip can now use its entire width to lay out Tabs.
-    in_tab_close_ = false;
-    available_width_for_tabs_ = -1;
+    ExitTabClosingMode();
 
     UpdateIdealBounds();
 
@@ -2145,18 +2145,28 @@ void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
       // the TabSizer computed in the first layout phase. That might be simpler
       // to reason about than overriding standard tab size (or harder, who
       // knows).
-      StartFallbackRemoveTabAnimation(model_index, was_active);
-      return;
+      const int available_width = (available_width_for_tabs_ < 0)
+                                      ? GetTabAreaWidth()
+                                      : available_width_for_tabs_;
+      layout_helper_->EnterTabClosingMode(available_width);
     }
     if (model_index == model_count) {
       // The user closed the last tab. Override the width available for tabs so
       // that tabs take up the same total amount of space during the animation.
       // This ensures that the previous tab to the left will fall under the
       // mouse (excepting the case where tabs reach standard size).
-      // TODO(958173): Implement this case of tab removal animation.
+      // TODO(958173): Implement this case of tab removal animation. For now,
+      // fall back to the old system.
+      // In addition to moving animation responsibilities back, we must also
+      // move tab closing mode back by setting |available_width_for_tabs_|.
+      UpdateIdealBounds();
+      available_width_for_tabs_ = ideal_bounds(model_count).right();
+      layout_helper_->ExitTabClosingMode();
       StartFallbackRemoveTabAnimation(model_index, was_active);
       return;
     }
+  } else {
+    layout_helper_->ExitTabClosingMode();
   }
 
   Tab* tab = tab_at(model_index);
@@ -2224,9 +2234,14 @@ void TabStrip::StartFallbackRemoveTabAnimation(int model_index,
                              UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
+  // Destroy any tabs that |layout_helper_| is animating closed.
+  if (layout_helper_->IsAnimating())
+    layout_helper_->CompleteAnimations();
+
   layout_helper_->RemoveTabNoAnimation(model_index, tab);
   UpdateIdealBounds();
-  AnimateToIdealBounds();
+  // Don't destroy the tab that we just started animating closed.
+  AnimateToIdealBounds(ClosingTabsBehavior::kTransferOwnership);
 
   // TODO(pkasting): When closing multiple tabs, we get repeated RemoveTabAt()
   // calls, each of which closes a new tab and thus generates different ideal
@@ -2268,20 +2283,25 @@ void TabStrip::StartMoveTabAnimation() {
   AnimateToIdealBounds();
 }
 
-void TabStrip::AnimateToIdealBounds() {
+void TabStrip::AnimateToIdealBounds(ClosingTabsBehavior closing_tabs_behavior) {
   UpdateHoverCard(nullptr);
   // |bounds_animator_| and |layout_helper_| should not run
   // concurrently. |bounds_animator_| takes precedence, and can finish what the
   // other started.
   if (layout_helper_->IsAnimating()) {
-    // Move tabs to their current bounds according to |layout_helper_| so
-    // |bounds_animator_| picks up from the correct place.
-    LayoutToCurrentBounds();
     // Complete animations so |layout_helper_| will be in sync with
-    // ideal bounds instead of the current bounds. This also destroys
-    // any tabs that are currently being closed so we don't have to wrangle
-    // handing off that responsibility.
-    layout_helper_->CompleteAnimations();
+    // ideal bounds instead of the current bounds.
+    switch (closing_tabs_behavior) {
+      case ClosingTabsBehavior::kTransferOwnership:
+        layout_helper_->CompleteAnimationsWithoutDestroyingTabs();
+        break;
+      case ClosingTabsBehavior::kDestroy:
+        layout_helper_->CompleteAnimations();
+        break;
+    }
+    // Leave tab closing mode now so that |bounds_animator| can use
+    // |layout_helper_| to calculate ideal bounds without interference.
+    layout_helper_->ExitTabClosingMode();
   }
 
   for (int i = 0; i < tab_count(); ++i) {
@@ -2315,6 +2335,12 @@ void TabStrip::AnimateToIdealBounds() {
     bounds_animator_.AnimateViewTo(new_tab_button_,
                                    new_tab_button_ideal_bounds_);
   }
+}
+
+void TabStrip::ExitTabClosingMode() {
+  in_tab_close_ = false;
+  available_width_for_tabs_ = -1;
+  layout_helper_->ExitTabClosingMode();
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
@@ -2586,13 +2612,13 @@ void TabStrip::UpdateContrastRatioValues() {
   if (!controller_)
     return;
 
-  const SkColor inactive_bg = GetTabBackgroundColor(TAB_INACTIVE);
+  const SkColor inactive_bg = GetTabBackgroundColor(TabActive::kInactive);
   const auto get_blend = [inactive_bg](SkColor target, float contrast) {
     return color_utils::BlendForMinContrast(inactive_bg, inactive_bg, target,
                                             contrast);
   };
 
-  const SkColor active_bg = GetTabBackgroundColor(TAB_ACTIVE);
+  const SkColor active_bg = GetTabBackgroundColor(TabActive::kActive);
   const auto get_hover_opacity = [active_bg, &get_blend](float contrast) {
     return get_blend(active_bg, contrast).alpha / 255.0f;
   };
@@ -2612,7 +2638,8 @@ void TabStrip::UpdateContrastRatioValues() {
   constexpr float kRadialGradientContrast = 1.13728f;
   radial_highlight_opacity_ = get_hover_opacity(kRadialGradientContrast);
 
-  const SkColor inactive_fg = GetTabForegroundColor(TAB_INACTIVE, inactive_bg);
+  const SkColor inactive_fg =
+      GetTabForegroundColor(TabActive::kInactive, inactive_bg);
   // The contrast ratio for the separator between inactive tabs.
   constexpr float kTabSeparatorContrast = 2.5f;
   separator_color_ = get_blend(inactive_fg, kTabSeparatorContrast).color;
@@ -2629,8 +2656,7 @@ void TabStrip::ResizeLayoutTabs() {
   // keep spying on messages forever.
   RemoveMessageLoopObserver();
 
-  in_tab_close_ = false;
-  available_width_for_tabs_ = -1;
+  ExitTabClosingMode();
   int pinned_tab_count = GetPinnedTabCount();
   if (pinned_tab_count == tab_count()) {
     // Only pinned tabs, we know the tab widths won't have changed (all
@@ -2816,8 +2842,7 @@ void TabStrip::StartResizeLayoutAnimation() {
 }
 
 void TabStrip::StartPinnedTabAnimation() {
-  in_tab_close_ = false;
-  available_width_for_tabs_ = -1;
+  ExitTabClosingMode();
 
   PrepareForAnimation();
 

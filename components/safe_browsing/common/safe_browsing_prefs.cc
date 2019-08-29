@@ -112,6 +112,15 @@ const char kSafeBrowsingRealTimeLookupEnabled[] =
     "safebrowsing.real_time_lookup_enabled";
 const char kSafeBrowsingSendFilesForMalwareCheck[] =
     "safebrowsing.send_files_for_malware_check";
+const char kUnsafeEventsReportingEnabled[] = "policy.unsafe_events_reporting";
+const char kBlockLargeFileTransfer[] = "policy.block_large_file_transfers";
+const char kDelayDeliveryUntilVerdict[] = "policy.delay_delivery_until_verdict";
+const char kAllowPasswordProtectedFiles[] =
+    "policy.allow_password_protected_files";
+const char kCheckContentCompliance[] = "policy.check_content_compliance";
+const char kDomainsToCheckComplianceOfDownloadedContent[] =
+    "policy.domains_to_check_compliance_of_downloaded_content";
+
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -182,6 +191,11 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingTriggerEventTimestamps);
+  registry->RegisterBooleanPref(prefs::kUnsafeEventsReportingEnabled, false);
+  registry->RegisterIntegerPref(prefs::kBlockLargeFileTransfer, 0);
+  registry->RegisterIntegerPref(prefs::kDelayDeliveryUntilVerdict, 0);
+  registry->RegisterIntegerPref(prefs::kAllowPasswordProtectedFiles, 0);
+  registry->RegisterIntegerPref(prefs::kCheckContentCompliance, 0);
 }
 
 void SetExtendedReportingPrefAndMetric(

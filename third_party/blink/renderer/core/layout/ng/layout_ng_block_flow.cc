@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -33,7 +34,8 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   }
 
   NGConstraintSpace constraint_space =
-      NGConstraintSpace::CreateFromLayoutObject(*this);
+      NGConstraintSpace::CreateFromLayoutObject(
+          *this, !View()->GetLayoutState()->Next() /* is_layout_root */);
 
   scoped_refptr<const NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);

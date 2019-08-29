@@ -40,6 +40,7 @@
       "chrome/browser/resources/chromeos/chromevox/strings/chromevox_strings.grd",
       "chrome/browser/resources/chromeos/select_to_speak/strings/select_to_speak_strings.grd",
       "chrome/browser/resources/chromeos/switch_access/strings/switch_access_strings.grd",
+      "chrome/browser/ui/android/widget/java/strings/android_ui_widget_strings.grd",
       "chrome/credential_provider/gaiacp/gaia_resources.grd",
       "chromeos/chromeos_strings.grd",
       "components/autofill/android/java/strings/autofill_strings.grd",

@@ -39,6 +39,7 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
   void OnFaviconRequested(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_origin,
       jint desired_size_in_px,
       const base::android::JavaParamRef<jobject>& j_callback);
   void OnFillingTriggered(
@@ -51,9 +52,9 @@ class ManualFillingViewAndroid : public ManualFillingViewInterface {
                         jint selected_action);
 
  private:
-  void OnImageFetched(
-      const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
-      const gfx::Image& image);
+  void OnImageFetched(base::android::ScopedJavaGlobalRef<jstring> j_origin,
+                      base::android::ScopedJavaGlobalRef<jobject> j_callback,
+                      const gfx::Image& image);
 
   base::android::ScopedJavaLocalRef<jobject>
   ConvertAccessorySheetDataToJavaObject(

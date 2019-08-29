@@ -14,7 +14,6 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -33,8 +32,6 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -135,15 +132,6 @@ public class WebApkInfo extends WebappInfo {
     public static final String RESOURCE_NAME = "name";
     public static final String RESOURCE_SHORT_NAME = "short_name";
     public static final String RESOURCE_STRING_TYPE = "string";
-
-    // This enum is used to back UMA/UKM histograms, and should therefore be treated as append-only.
-    @IntDef({WebApkDistributor.BROWSER, WebApkDistributor.DEVICE_POLICY, WebApkDistributor.OTHER})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface WebApkDistributor {
-        int BROWSER = 0;
-        int DEVICE_POLICY = 1;
-        int OTHER = 2;
-    }
 
     private static final String TAG = "WebApkInfo";
 

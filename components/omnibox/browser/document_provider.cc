@@ -426,10 +426,7 @@ void DocumentProvider::Start(const AutocompleteInput& input,
   }
 
   // Experiment: don't issue queries for inputs under some length.
-  const size_t min_query_length =
-      static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
-          omnibox::kDocumentProvider, "DocumentProviderMinQueryLength", 4));
-  if (input.text().length() < min_query_length) {
+  if (input.text().length() < min_query_length_) {
     return;
   }
 
@@ -514,6 +511,16 @@ DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
                                    AutocompleteProviderListener* listener,
                                    size_t cache_size)
     : AutocompleteProvider(AutocompleteProvider::TYPE_DOCUMENT),
+      min_query_length_(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kDocumentProvider,
+              "DocumentProviderMinQueryLength",
+              4))),
+      min_query_show_length_(
+          static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+              omnibox::kDocumentProvider,
+              "DocumentProviderMinQueryShowLength",
+              min_query_length_))),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
       backoff_for_session_(false),
@@ -662,6 +669,21 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
   bool in_counterfactual_group = base::GetFieldTrialParamByFeatureAsBool(
       omnibox::kDocumentProvider, "DocumentProviderCounterfactualArm", false);
 
+  // In order to compare groups with different |min_query_length|_ values,
+  // |min_query_show_length_| specifies the min query length for which to show
+  // drive requests. Shorter queries that return drive suggestions will still
+  // log field_trials_triggered. E.g., if |min_query_length_| is 3 and
+  // |min_query_show_length_| is 5, then:
+  // - Inputs of lengths 0 to 2 will not make drive requests.
+  // - Inputs of lengths 3 to 4 will make drive requests; if drive suggestions
+  // are returned, field_trial_triggered will be logged, but the suggestions
+  // will not be shown.
+  // - Inputs of length 5 or more will make drive requests; if drive suggestions
+  // are returned, field_trial_triggered will be logged, and, if not in
+  // counterfactual, the suggestions will be shown.
+  bool show_doc_suggestions = !in_counterfactual_group &&
+                              input_.text().length() >= min_query_show_length_;
+
   // Ensure server's suggestions are added with monotonically decreasing scores.
   int previous_score = INT_MAX;
   for (size_t i = 0; i < num_results; i++) {
@@ -748,7 +770,7 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
     const std::string* snippet = result->FindStringPath("snippet.snippet");
     if (snippet)
       match.RecordAdditionalInfo("snippet", *snippet);
-    if (!in_counterfactual_group) {
+    if (show_doc_suggestions) {
       matches.push_back(match);
     }
     field_trial_triggered_ = true;

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/test/task_environment.h"
 #include "media/learning/impl/learning_task_controller_impl.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 using media::learning::FeatureValue;
 using media::learning::FeatureVector;

@@ -1,5 +1,10 @@
 specific_include_rules = {
+  # TODO(siggi): Move WebUIGraphDumpImpl into this directory and kill these
+  #     include rules.
   "discards_ui.h": [
     "+chrome/browser/performance_manager/webui_graph_dump.mojom.h",
+  ],
+  "discards_ui.cc": [
+    "+chrome/browser/performance_manager/webui_graph_dump_impl.h",
   ],
 }

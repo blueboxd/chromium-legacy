@@ -254,6 +254,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
  private:
   friend class views::test::BridgedNativeWidgetTestApi;
 
+  // Attach child windows, if the window is visible (see comment inline).
+  void OrderChildren();
+
   // Closes all child windows. NativeWidgetNSWindowBridge children will be
   // destroyed.
   void RemoveOrDestroyChildren();

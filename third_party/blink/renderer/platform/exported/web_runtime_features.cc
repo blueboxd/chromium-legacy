@@ -204,10 +204,6 @@ void WebRuntimeFeatures::EnableFormControlsRefresh(bool enable) {
   RuntimeEnabledFeatures::SetFormControlsRefreshEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableGenericSensor(bool enable) {
-  RuntimeEnabledFeatures::SetSensorEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableGenericSensorExtraClasses(bool enable) {
   RuntimeEnabledFeatures::SetSensorExtraClassesEnabled(enable);
 }

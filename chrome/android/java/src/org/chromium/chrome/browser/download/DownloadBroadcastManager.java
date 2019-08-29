@@ -330,9 +330,11 @@ public class DownloadBroadcastManager extends Service {
     }
 
     /**
-     * Called to open a particular download item.  Falls back to opening Download Home.
+     * Called to open a particular download item. Falls back to opening Download Home if
+     * the download cannot be found by android DownloadManager.
      * @param context Context of the receiver.
-     * @param intent Intent from the android DownloadManager.
+     * @param intent Intent from the notification.
+     * @param contentId Content ID of the download.
      */
     private void openDownload(Context context, Intent intent, ContentId contentId) {
         String downloadFilePath = IntentUtils.safeGetStringExtra(
@@ -344,14 +346,15 @@ public class DownloadBroadcastManager extends Service {
             long ids[] =
                     intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
             if (ids == null || ids.length == 0) {
-                DownloadManagerService.openDownloadsPage(context);
+                DownloadManagerService.openDownloadsPage(context, DownloadOpenSource.NOTIFICATION);
                 return;
             }
 
             long id = ids[0];
             DownloadManagerBridge.queryDownloadResult(id, result -> {
                 if (result.contentUri == null) {
-                    DownloadManagerService.openDownloadsPage(context);
+                    DownloadManagerService.openDownloadsPage(
+                            context, DownloadOpenSource.NOTIFICATION);
                     return;
                 }
                 openDownloadWithId(context, intent, id, contentId);
@@ -377,7 +380,7 @@ public class DownloadBroadcastManager extends Service {
         String referrer = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_REFERRER);
         DownloadManagerService.openDownloadedContent(context, downloadFilePath, isSupportedMimeType,
                 isOffTheRecord, contentId.id, id, originalUrl, referrer,
-                DownloadMetrics.DownloadOpenSource.NOTIFICATION, null);
+                DownloadOpenSource.NOTIFICATION, null);
     }
 
     @Nullable

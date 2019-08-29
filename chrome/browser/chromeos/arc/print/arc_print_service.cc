@@ -479,6 +479,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
     job_ = base::MakeRefCounted<printing::PrintJob>();
     job_->Initialize(std::move(query), base::string16() /* name */,
                      1 /* page_count */);
+    job_->SetSource(printing::PrintJob::Source::ARC, /*source_id=*/"");
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::Source<printing::PrintJob>(job_.get()));
     StartPrintingIfReady();

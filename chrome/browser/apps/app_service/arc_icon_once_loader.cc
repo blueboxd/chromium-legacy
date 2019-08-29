@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 
 namespace apps {
 
-// A part of an ArcIconOnceLoader, for a specific size_in_dip. This two-level
-// structure (an ArcIconOnceLoader contains multiple SizeSpecificLoader
-// instances) is needed because each ArcAppIcon is for a specific size_in_dip.
+// A part of an ArcIconOnceLoader, for a specific size_in_dip and
+// icon_compression. This two-level structure (an ArcIconOnceLoader contains
+// multiple SizeSpecificLoader instances) is needed because each ArcAppIcon is
+// for a specific size_in_dip and compressed-ness.
 class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
  public:
-  SizeSpecificLoader(Profile* profile, int32_t size_in_dip);
+  SizeSpecificLoader(Profile* profile,
+                     int32_t size_in_dip,
+                     apps::mojom::IconCompression icon_compression);
   ~SizeSpecificLoader() override;
 
   void LoadIcon(const std::string& app_id,
@@ -29,8 +30,10 @@ class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
  private:
   Profile* const profile_;
   const int32_t size_in_dip_;
+  const apps::mojom::IconCompression icon_compression_;
 
-  // Maps App IDs to their icon loaders (for a specific size in DIPs).
+  // Maps App IDs to their icon loaders (for a specific size_in_dip and
+  // icon_compression).
   std::map<std::string, std::unique_ptr<ArcAppIcon>> icons_;
 
   // Maps App IDs to callbacks to run when an icon is completely loaded.
@@ -39,9 +42,13 @@ class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
   DISALLOW_COPY_AND_ASSIGN(SizeSpecificLoader);
 };
 
-ArcIconOnceLoader::SizeSpecificLoader::SizeSpecificLoader(Profile* profile,
-                                                          int32_t size_in_dip)
-    : profile_(profile), size_in_dip_(size_in_dip) {}
+ArcIconOnceLoader::SizeSpecificLoader::SizeSpecificLoader(
+    Profile* profile,
+    int32_t size_in_dip,
+    apps::mojom::IconCompression icon_compression)
+    : profile_(profile),
+      size_in_dip_(size_in_dip),
+      icon_compression_(icon_compression) {}
 
 ArcIconOnceLoader::SizeSpecificLoader::~SizeSpecificLoader() {
   for (auto& kv_pair : callbacks_) {
@@ -64,12 +71,14 @@ void ArcIconOnceLoader::SizeSpecificLoader::LoadIcon(
   if (iter != icons_.end()) {
     return;
   }
+  bool compressed =
+      icon_compression_ == apps::mojom::IconCompression::kCompressed;
   iter = icons_
              .insert(std::make_pair(
-                 app_id, std::make_unique<ArcAppIcon>(profile_, app_id,
-                                                      size_in_dip_, this)))
+                 app_id, std::make_unique<ArcAppIcon>(
+                             profile_, app_id, size_in_dip_, this, compressed)))
              .first;
-  iter->second->image_skia().EnsureRepsForSupportedScales();
+  iter->second->LoadSupportedScaleFactors();
 }
 
 void ArcIconOnceLoader::SizeSpecificLoader::Remove(const std::string& app_id) {
@@ -137,13 +146,15 @@ void ArcIconOnceLoader::StopObserving(ArcAppListPrefs* prefs) {
 void ArcIconOnceLoader::LoadIcon(
     const std::string& app_id,
     int32_t size_in_dip,
+    apps::mojom::IconCompression icon_compression,
     base::OnceCallback<void(ArcAppIcon*)> callback) {
-  auto iter = size_specific_loaders_.find(size_in_dip);
+  auto key = std::make_pair(size_in_dip, icon_compression);
+  auto iter = size_specific_loaders_.find(key);
   if (iter == size_specific_loaders_.end()) {
     iter = size_specific_loaders_
                .insert(std::make_pair(
-                   size_in_dip,
-                   std::make_unique<SizeSpecificLoader>(profile_, size_in_dip)))
+                   key, std::make_unique<SizeSpecificLoader>(
+                            profile_, size_in_dip, icon_compression)))
                .first;
   }
   iter->second->LoadIcon(app_id, std::move(callback));
@@ -158,9 +169,14 @@ void ArcIconOnceLoader::OnAppRemoved(const std::string& app_id) {
 void ArcIconOnceLoader::OnAppIconUpdated(
     const std::string& app_id,
     const ArcAppIconDescriptor& descriptor) {
-  auto iter = size_specific_loaders_.find(descriptor.dip_size);
-  if (iter != size_specific_loaders_.end()) {
-    iter->second->Reload(app_id, descriptor.scale_factor);
+  for (int i = 0; i < 2; i++) {
+    auto icon_compression = i ? apps::mojom::IconCompression::kCompressed
+                              : apps::mojom::IconCompression::kUncompressed;
+    auto iter = size_specific_loaders_.find(
+        std::make_pair(descriptor.dip_size, icon_compression));
+    if (iter != size_specific_loaders_.end()) {
+      iter->second->Reload(app_id, descriptor.scale_factor);
+    }
   }
 }
 

@@ -248,15 +248,10 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   return widget;
 }
 
-std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
+std::unique_ptr<aura::Window> AshTestBase::CreateAppWindow(
     const gfx::Rect& bounds_in_screen,
-    aura::client::WindowType type,
+    AppType app_type,
     int shell_window_id) {
-  if (type != aura::client::WINDOW_TYPE_NORMAL) {
-    return base::WrapUnique(CreateTestWindowInShellWithDelegateAndType(
-        nullptr, type, shell_window_id, bounds_in_screen));
-  }
-
   // |widget| is configured to be owned by the underlying window.
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
@@ -266,10 +261,26 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
   params.bounds =
       bounds_in_screen.IsEmpty() ? gfx::Rect(0, 0, 300, 300) : bounds_in_screen;
   params.context = Shell::GetPrimaryRootWindow();
+  if (app_type != AppType::NON_APP) {
+    params.init_properties_container.SetProperty(aura::client::kAppType,
+                                                 static_cast<int>(app_type));
+  }
   widget->Init(std::move(params));
   widget->GetNativeWindow()->set_id(shell_window_id);
   widget->Show();
   return base::WrapUnique(widget->GetNativeWindow());
+}
+
+std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
+    const gfx::Rect& bounds_in_screen,
+    aura::client::WindowType type,
+    int shell_window_id) {
+  if (type != aura::client::WINDOW_TYPE_NORMAL) {
+    return base::WrapUnique(CreateTestWindowInShellWithDelegateAndType(
+        nullptr, type, shell_window_id, bounds_in_screen));
+  }
+
+  return CreateAppWindow(bounds_in_screen, AppType::NON_APP, shell_window_id);
 }
 
 std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(

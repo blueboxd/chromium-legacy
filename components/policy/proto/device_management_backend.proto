@@ -2110,6 +2110,21 @@ message SamlParametersProto {
   // Auth Session ID which the client is supposed to use in the subsequent
   // DMServer request (to be sent after SAML flow completes).
   optional string auth_session_id = 2;
+  // URL that ends the SAML flow.
+  optional string auth_acl_url = 3;
+}
+
+// Gets URLs to the SAML IdP authentication flow for using it with public
+// SAML session. Sent when a user logs in to a SAML public session account.
+message PublicSamlUserRequest {
+  // An identifier for the server IdP.
+  optional string account_id = 1;
+}
+
+// The result when a user logs in to a SAML public session account.
+message PublicSamlUserResponse {
+  // SAML flow parameters are specified in this proto.
+  optional SamlParametersProto saml_parameters = 1;
 }
 
 // Reports that a managed Google Play account is used. This makes the garbage

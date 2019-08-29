@@ -32,7 +32,7 @@
 #include "base/numerics/clamped_math.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_MACOSX)
 static_assert(sizeof(time_t) >= 8, "Y2038 problem!");
 #endif
 

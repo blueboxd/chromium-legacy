@@ -57,6 +57,7 @@
 #include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "url/scheme_host_port.h"
 #include "url/url_constants.h"
 
 namespace net {
@@ -2869,7 +2870,10 @@ void SpdySession::DoDrainSession(Error err, const std::string& description) {
 
   // Mark host_port_pair requiring HTTP/1.1 for subsequent connections.
   if (err == ERR_HTTP_1_1_REQUIRED) {
-    http_server_properties_->SetHTTP11Required(host_port_pair());
+    http_server_properties_->SetHTTP11Required(
+        url::SchemeHostPort(url::kHttpsScheme, host_port_pair().host(),
+                            host_port_pair().port()),
+        spdy_session_key_.network_isolation_key());
   }
 
   // If |err| indicates an error occurred, inform the peer that we're closing

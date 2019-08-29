@@ -2179,6 +2179,48 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
   return type;
 }
 
+void AXPlatformNodeAuraLinux::SetDocumentParentOnFrameIfNecessary() {
+  if (GetAtkRole() != ATK_ROLE_DOCUMENT_WEB)
+    return;
+
+  if (!GetDelegate()->IsWebContent())
+    return;
+
+  AtkObject* parent_atk_object = GetParent();
+  AXPlatformNodeAuraLinux* parent =
+      AtkObjectToAXPlatformNodeAuraLinux(parent_atk_object);
+  if (!parent)
+    return;
+
+  if (parent->GetDelegate()->IsWebContent())
+    return;
+
+  AXPlatformNodeAuraLinux* frame = AtkObjectToAXPlatformNodeAuraLinux(
+      FindAtkObjectParentFrame(parent_atk_object));
+  if (!frame)
+    return;
+
+  frame->SetDocumentParent(parent_atk_object);
+}
+
+AtkObject* AXPlatformNodeAuraLinux::FindFirstWebContentDocument() {
+  for (auto child_iterator_ptr = GetDelegate()->ChildrenBegin();
+       *child_iterator_ptr != *GetDelegate()->ChildrenEnd();
+       ++(*child_iterator_ptr)) {
+    AtkObject* child = child_iterator_ptr->GetNativeViewAccessible();
+    auto* child_node = AtkObjectToAXPlatformNodeAuraLinux(child);
+    if (!child_node)
+      continue;
+    if (!child_node->GetDelegate()->IsWebContent())
+      continue;
+    if (child_node->GetAtkRole() != ATK_ROLE_DOCUMENT_WEB)
+      continue;
+    return child;
+  }
+
+  return nullptr;
+}
+
 AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   EnsureGTypeInit();
   interface_mask_ = GetGTypeInterfaceMask();
@@ -2186,6 +2228,8 @@ AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   AtkObject* atk_object = static_cast<AtkObject*>(g_object_new(type, nullptr));
 
   atk_object_initialize(atk_object, this);
+
+  SetDocumentParentOnFrameIfNecessary();
 
   return ATK_OBJECT(atk_object);
 }
@@ -2795,14 +2839,21 @@ void AXPlatformNodeAuraLinux::AddRelationToSet(AtkRelationSet* relation_set,
 AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
   AtkRelationSet* relation_set = atk_relation_set_new();
 
-  if (embedded_document_) {
-    atk_relation_set_add_relation_by_type(relation_set, ATK_RELATION_EMBEDS,
-                                          embedded_document_);
+  if (GetDelegate()->IsWebContent() && GetAtkRole() == ATK_ROLE_DOCUMENT_WEB) {
+    AtkObject* parent_frame = FindAtkObjectParentFrame(GetOrCreateAtkObject());
+    if (parent_frame) {
+      atk_relation_set_add_relation_by_type(
+          relation_set, ATK_RELATION_EMBEDDED_BY, parent_frame);
+    }
   }
 
-  if (embedding_window_) {
-    atk_relation_set_add_relation_by_type(
-        relation_set, ATK_RELATION_EMBEDDED_BY, embedding_window_);
+  if (auto* document_parent =
+          AtkObjectToAXPlatformNodeAuraLinux(document_parent_)) {
+    AtkObject* document = document_parent->FindFirstWebContentDocument();
+    if (document) {
+      atk_relation_set_add_relation_by_type(relation_set, ATK_RELATION_EMBEDS,
+                                            document);
+    }
   }
 
   // For each possible relation defined by an IntAttribute, we test that
@@ -2856,8 +2907,7 @@ AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
 
   DestroyAtkObjects();
 
-  SetWeakGPtrToAtkObject(&embedded_document_, nullptr);
-  SetWeakGPtrToAtkObject(&embedding_window_, nullptr);
+  SetWeakGPtrToAtkObject(&document_parent_, nullptr);
 }
 
 void AXPlatformNodeAuraLinux::Destroy() {
@@ -3278,6 +3328,21 @@ void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
 
   g_signal_emit_by_name(GetParent(), "children-changed::remove",
                         GetIndexInParent(), GetOrCreateAtkObject());
+}
+
+void AXPlatformNodeAuraLinux::OnParentChanged() {
+  if (!atk_object_)
+    return;
+
+  AtkPropertyValues property_values;
+  property_values.property_name = "accessible-parent";
+  property_values.new_value = G_VALUE_INIT;
+  g_value_init(&property_values.new_value, G_TYPE_OBJECT);
+  g_value_set_object(&property_values.new_value, GetParent());
+  g_signal_emit_by_name(G_OBJECT(atk_object_),
+                        "property-change::accessible-parent", &property_values,
+                        nullptr);
+  g_value_unset(&property_values.new_value);
 }
 
 void AXPlatformNodeAuraLinux::OnInvalidStatusChanged() {
@@ -3792,14 +3857,10 @@ void AXPlatformNodeAuraLinux::AddAttributeToList(const char* name,
   *attributes = PrependAtkAttributeToAtkAttributeSet(name, value, *attributes);
 }
 
-void AXPlatformNodeAuraLinux::SetEmbeddedDocument(
-    AtkObject* new_embedded_document) {
-  SetWeakGPtrToAtkObject(&embedded_document_, new_embedded_document);
-}
-
-void AXPlatformNodeAuraLinux::SetEmbeddingWindow(
-    AtkObject* new_embedding_window) {
-  SetWeakGPtrToAtkObject(&embedding_window_, new_embedding_window);
+void AXPlatformNodeAuraLinux::SetDocumentParent(
+    AtkObject* new_document_parent) {
+  DCHECK(GetAtkRole() == ATK_ROLE_FRAME);
+  SetWeakGPtrToAtkObject(&document_parent_, new_document_parent);
 }
 
 base::string16 AXPlatformNodeAuraLinux::GetHypertext() const {

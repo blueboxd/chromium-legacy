@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
-import org.chromium.chrome.browser.download.DownloadMetrics;
+import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -108,7 +108,7 @@ public class DownloadGlue implements DownloadObserver {
     public void openItem(OfflineItem item) {
         // TODO(shaktisahu): May be pass metrics as a param.
         DownloadManagerService.getDownloadManagerService().openDownload(
-                item.id, item.isOffTheRecord, DownloadMetrics.DownloadOpenSource.DOWNLOAD_HOME);
+                item.id, item.isOffTheRecord, DownloadOpenSource.DOWNLOAD_HOME);
     }
 
     /** @see OfflineContentProvider#removeItem(ContentId) */

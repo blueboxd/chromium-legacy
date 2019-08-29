@@ -4,6 +4,7 @@
 
 #include "ash/wm/gestures/wm_gesture_handler.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
@@ -44,6 +45,9 @@ bool Handle3FingerVerticalScroll(float scroll_y) {
 // Handles horizontal 3-finger scroll by switching desks if possible.
 // Returns true if the gesture was handled.
 bool Handle3FingerHorizontalScroll(float scroll_x) {
+  if (!features::IsVirtualDesksEnabled())
+    return false;
+
   if (std::fabs(scroll_x) < WmGestureHandler::kHorizontalThresholdDp)
     return false;
 

@@ -62,6 +62,7 @@ HttpServerProperties::ServerInfoMapKey::ServerInfoMapKey(
     : server(server),
       network_isolation_key(use_network_isolation_key ? network_isolation_key
                                                       : NetworkIsolationKey()) {
+  // TODO(mmenke):  DCHECK that |server|'s scheme is not ws/wss.
 }
 
 HttpServerProperties::ServerInfoMapKey::~ServerInfoMapKey() = default;
@@ -135,6 +136,20 @@ HttpServerProperties::~HttpServerProperties() {
   }
 }
 
+url::SchemeHostPort HttpServerProperties::GetNormalizedSchemeHostPort(
+    const GURL& url) {
+  if (url.is_valid()) {
+    if (url.SchemeIs(url::kHttpsScheme) || url.SchemeIs(url::kWssScheme)) {
+      return url::SchemeHostPort(url::kHttpsScheme, url.host_piece(),
+                                 url.EffectiveIntPort());
+    } else if (url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kWsScheme)) {
+      return url::SchemeHostPort(url::kHttpScheme, url.host_piece(),
+                                 url.EffectiveIntPort());
+    }
+  }
+  return url::SchemeHostPort(url);
+}
+
 void HttpServerProperties::Clear(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   server_info_map_.Clear();
@@ -188,10 +203,10 @@ bool HttpServerProperties::GetSupportsSpdy(
   if (server.host().empty())
     return false;
 
-  auto spdy_info =
+  auto server_info =
       server_info_map_.Get(CreateServerInfoKey(server, network_isolation_key));
-  return spdy_info != server_info_map_.end() &&
-         spdy_info->second.supports_spdy.value_or(false);
+  return server_info != server_info_map_.end() &&
+         server_info->second.supports_spdy.value_or(false);
 }
 
 void HttpServerProperties::SetSupportsSpdy(
@@ -214,27 +229,43 @@ void HttpServerProperties::SetSupportsSpdy(
     MaybeQueueWriteProperties();
 }
 
-bool HttpServerProperties::RequiresHTTP11(const HostPortPair& host_port_pair) {
+bool HttpServerProperties::RequiresHTTP11(
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (host_port_pair.host().empty())
+  DCHECK(server.scheme() != "ws");
+  DCHECK(server.scheme() != "wss");
+  if (server.host().empty())
     return false;
 
-  return (http11_servers_.find(host_port_pair) != http11_servers_.end());
+  auto spdy_info =
+      server_info_map_.Get(CreateServerInfoKey(server, network_isolation_key));
+  return spdy_info != server_info_map_.end() &&
+         spdy_info->second.requires_http11.value_or(false);
 }
 
 void HttpServerProperties::SetHTTP11Required(
-    const HostPortPair& host_port_pair) {
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (host_port_pair.host().empty())
+  DCHECK(server.scheme() != "ws");
+  DCHECK(server.scheme() != "wss");
+  if (server.host().empty())
     return;
 
-  http11_servers_.insert(host_port_pair);
-  MaybeQueueWriteProperties();
+  server_info_map_.GetOrPut(CreateServerInfoKey(server, network_isolation_key))
+      ->second.requires_http11 = true;
+  // No need to call MaybeQueueWriteProperties(), as this information is not
+  // persisted to preferences.
 }
 
-void HttpServerProperties::MaybeForceHTTP11(const HostPortPair& server,
-                                            SSLConfig* ssl_config) {
-  if (RequiresHTTP11(server)) {
+void HttpServerProperties::MaybeForceHTTP11(
+    const url::SchemeHostPort& server,
+    const net::NetworkIsolationKey& network_isolation_key,
+    SSLConfig* ssl_config) {
+  DCHECK(server.scheme() != "ws");
+  DCHECK(server.scheme() != "wss");
+  if (RequiresHTTP11(server, network_isolation_key)) {
     ssl_config->alpn_protos.clear();
     ssl_config->alpn_protos.push_back(kProtoHTTP11);
   }
@@ -919,11 +950,15 @@ void HttpServerProperties::OnServerInfoLoaded(
     // entries.
     if (!old_entry->second.supports_spdy.has_value())
       old_entry->second.supports_spdy = it->second.supports_spdy;
-    if (!old_entry->second.alternative_services.has_value()) {
+    if (!old_entry->second.alternative_services.has_value())
       old_entry->second.alternative_services = it->second.alternative_services;
-    }
     if (!old_entry->second.server_network_stats.has_value())
       old_entry->second.server_network_stats = it->second.server_network_stats;
+
+    // |requires_http11| isn't saved to prefs, so the loaded entry should not
+    // have it set. Unconditionally copy it from the new entry.
+    DCHECK(!old_entry->second.requires_http11.has_value());
+    old_entry->second.requires_http11 = it->second.requires_http11;
   }
 
   // Attempt to find canonical servers. Canonical suffix only apply to HTTPS.

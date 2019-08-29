@@ -4,13 +4,14 @@
 
 #include "net/filter/brotli_source_stream.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/filter/fuzzed_source_stream.h"
 #include "net/filter/source_stream.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Fuzzer for BrotliSourceStream.
 //

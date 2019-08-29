@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -103,6 +104,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.tableView.accessibilityIdentifier = kAutofillProfileTableViewID;
   self.tableView.estimatedSectionFooterHeight =
       kTableViewHeaderFooterViewHeight;
+  self.tableView.tintColor = [UIColor colorNamed:kBlueColor];
   [self updateUIForEditState];
   [self loadModel];
 }

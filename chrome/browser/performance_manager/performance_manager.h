@@ -18,10 +18,8 @@
 #include "chrome/browser/performance_manager/public/graph/worker_node.h"
 #include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
-#include "chrome/browser/performance_manager/webui_graph_dump_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 class GURL;
@@ -78,10 +76,6 @@ class PerformanceManager {
   // deletion on its sequence.
   static void Destroy(std::unique_ptr<PerformanceManager> instance);
 
-  // Forwards the binding request to the implementation class.
-  template <typename Interface>
-  void BindInterface(mojo::InterfaceRequest<Interface> request);
-
   // Creates a new node of the requested type and adds it to the graph.
   // May be called from any sequence. If a |creation_callback| is provided it
   // will be run on the performance manager sequence immediately after creating
@@ -133,9 +127,6 @@ class PerformanceManager {
   }
 
  private:
-  using InterfaceRegistry = service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>;
-
   PerformanceManager();
   void PostBindInterface(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle message_pipe);
@@ -152,14 +143,6 @@ class PerformanceManager {
   void OnStart();
   void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);
   void CallOnGraphImpl(GraphCallback graph_callback);
-  void BindInterfaceImpl(const std::string& interface_name,
-                         mojo::ScopedMessagePipeHandle message_pipe);
-
-  void BindWebUIGraphDump(mojom::WebUIGraphDumpRequest request,
-                          const service_manager::BindSourceInfo& source_info);
-  void OnGraphDumpConnectionError(WebUIGraphDumpImpl* graph_dump);
-
-  InterfaceRegistry interface_registry_;
 
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -169,19 +152,11 @@ class PerformanceManager {
   // TODO(siggi): This no longer needs to go through mojo.
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
 
-  // Current graph dump instances.
-  std::vector<std::unique_ptr<WebUIGraphDumpImpl>> graph_dumps_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManager);
 };
-
-template <typename Interface>
-void PerformanceManager::BindInterface(
-    mojo::InterfaceRequest<Interface> request) {
-  PostBindInterface(Interface::Name_, request.PassMessagePipe());
-}
 
 template <typename NodeType>
 void PerformanceManager::DeleteNode(std::unique_ptr<NodeType> node) {

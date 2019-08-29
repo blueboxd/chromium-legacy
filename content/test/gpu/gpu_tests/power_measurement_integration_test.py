@@ -4,7 +4,7 @@
 """This script only works on Windows with Intel CPU. Intel Power Gadget needs
 to be installed on the machine before this script works. The software can be
 downloaded from:
-  https://software.intel.com/en-us/articles/intel-power-gadget-20
+  https://software.intel.com/en-us/articles/intel-power-gadget
 
 To run this test on a target machine without Chromium workspace checked out:
 1) inside Chromium workspace, run

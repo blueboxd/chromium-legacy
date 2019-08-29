@@ -97,7 +97,7 @@ class ArcAppListPrefs : public KeyedService,
     bool sticky;
     // Whether notifications are enabled for the app.
     bool notifications_enabled;
-    // Whether app is ready.
+    // Whether app is ready. Disabled and removed apps are not ready.
     bool ready;
     // Whether app was suspended by policy. It may have or may not have ready
     // state.
@@ -145,11 +145,27 @@ class ArcAppListPrefs : public KeyedService,
     virtual void OnAppRegistered(const std::string& app_id,
                                  const AppInfo& app_info) {}
     // Notifies an observer that app states have been changed.
+    //
+    // State includes the the following AppInfo fields:
+    //  - sticky
+    //  - notifications_enabled
+    //  - ready
+    //  - suspended
+    //  - show_in_launcher
+    //  - launchable
+    //
+    // In practice, only ready and suspended change over time.
     virtual void OnAppStatesChanged(const std::string& id,
                                     const AppInfo& app_info) {}
     // Notifies an observer that app was removed.
     virtual void OnAppRemoved(const std::string& id) {}
-    // Notifies an observer that app icon has been installed or updated.
+    // Notifies an observer that app icon has been installed or updated:
+    // 1. When default apps are registered.
+    // 2. When the new icon has been installed:
+    //  - App appears for the first time and we fetch the icon from Android.
+    //  - App icon was invalid or non-readable and we re-fetch it from Android.
+    //  - App was updated and we re-fetch.
+    //  - Framework version changed (e.g. NYC -> PI) and we re-fetch.
     virtual void OnAppIconUpdated(const std::string& id,
                                   const ArcAppIconDescriptor& descriptor) {}
     // Notifies an observer that the name of an app has changed.

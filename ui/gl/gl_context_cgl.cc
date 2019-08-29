@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gl/dual_gpu_state_mac.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -99,18 +100,12 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
     return false;
 
   // If using the discrete gpu, create a pixel format requiring it before we
-  // create the context.
+  // create the context. If switchable GPUs are unsupported, we should bias
+  // toward the discrete gpu.
   if (!GLContext::SwitchableGPUsSupported() ||
       gpu_preference == GpuPreference::kHighPerformance) {
-    std::vector<CGLPixelFormatAttribute> discrete_attribs;
-    discrete_attribs.push_back((CGLPixelFormatAttribute) 0);
-    GLint num_pixel_formats;
-    if (CGLChoosePixelFormat(&discrete_attribs.front(),
-                             &discrete_pixelformat_,
-                             &num_pixel_formats) != kCGLNoError) {
-      LOG(ERROR) << "Error choosing pixel format.";
-      return false;
-    }
+    DualGPUStateMac::GetInstance()->RegisterHighPerformanceContext();
+    is_high_performance_context_ = true;
     // The renderer might be switched after this, so ignore the saved ID.
     share_group()->SetRendererID(-1);
   }
@@ -154,18 +149,9 @@ void GLContextCGL::Destroy() {
       SetCurrentGL(current_context->GetCurrentGL());
     }
   }
-  if (discrete_pixelformat_) {
-    if (base::ThreadTaskRunnerHandle::IsSet()) {
-      // Delay releasing the pixel format for 10 seconds to reduce the number of
-      // unnecessary GPU switches.
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(&CGLReleasePixelFormat, discrete_pixelformat_),
-          base::TimeDelta::FromSeconds(10));
-    } else {
-      CGLReleasePixelFormat(discrete_pixelformat_);
-    }
-    discrete_pixelformat_ = nullptr;
+
+  if (is_high_performance_context_) {
+    DualGPUStateMac::GetInstance()->RemoveHighPerformanceContext();
   }
   if (context_) {
     CGLDestroyContext(static_cast<CGLContextObj>(context_));
@@ -183,8 +169,8 @@ bool GLContextCGL::ForceGpuSwitchIfNeeded() {
     int screen;
     CGLGetVirtualScreen(static_cast<CGLContextObj>(context_), &screen);
 
-    if (g_support_renderer_switching &&
-        !discrete_pixelformat_ && renderer_id != -1 &&
+    if (g_support_renderer_switching && !is_high_performance_context_ &&
+        renderer_id != -1 &&
         (screen != screen_ || renderer_id != renderer_id_)) {
       // Attempt to find a virtual screen that's using the requested renderer,
       // and switch the context to use that screen. Don't attempt to switch if

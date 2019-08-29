@@ -71,11 +71,6 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
   crash_keys::ScopedPrinterInfo crash_key(
       backend->GetPrinterDriverInfo(device_name));
 
-  if (!backend->IsValidPrinter(device_name)) {
-    LOG(WARNING) << "Invalid printer " << device_name;
-    return base::Value(base::Value::Type::DICTIONARY);
-  }
-
   PrinterSemanticCapsAndDefaults info;
   if (!backend->GetPrinterSemanticCapsAndDefaults(device_name, &info)) {
     LOG(WARNING) << "Failed to get capabilities for " << device_name;

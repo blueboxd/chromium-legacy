@@ -18,8 +18,7 @@ AudioFocusRequest::AudioFocusRequest(
     const std::string& source_name,
     const base::UnguessableToken& group_id,
     const base::UnguessableToken& identity)
-    : metrics_helper_(source_name),
-      session_(std::move(session)),
+    : session_(std::move(session)),
       session_info_(std::move(session_info)),
       audio_focus_type_(audio_focus_type),
       receiver_(this, std::move(receiver)),
@@ -33,10 +32,6 @@ AudioFocusRequest::AudioFocusRequest(
       &AudioFocusRequest::OnConnectionError, base::Unretained(this)));
   session_.set_connection_error_handler(base::BindOnce(
       &AudioFocusRequest::OnConnectionError, base::Unretained(this)));
-
-  metrics_helper_.OnRequestAudioFocus(
-      AudioFocusManagerMetricsHelper::AudioFocusRequestSource::kInitial,
-      audio_focus_type);
 }
 
 AudioFocusRequest::~AudioFocusRequest() = default;
@@ -62,16 +57,9 @@ void AudioFocusRequest::RequestAudioFocus(
   owner_->RequestAudioFocusInternal(std::move(row), type);
 
   std::move(callback).Run();
-
-  metrics_helper_.OnRequestAudioFocus(
-      AudioFocusManagerMetricsHelper::AudioFocusRequestSource::kUpdate,
-      audio_focus_type_);
 }
 
 void AudioFocusRequest::AbandonAudioFocus() {
-  metrics_helper_.OnAbandonAudioFocus(
-      AudioFocusManagerMetricsHelper::AudioFocusAbandonSource::kAPI);
-
   owner_->AbandonAudioFocusInternal(id_);
 }
 
@@ -200,10 +188,6 @@ void AudioFocusRequest::OnConnectionError() {
     return;
 
   encountered_error_ = true;
-
-  metrics_helper_.OnAbandonAudioFocus(
-      AudioFocusManagerMetricsHelper::AudioFocusAbandonSource::
-          kConnectionError);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&AudioFocusManager::AbandonAudioFocusInternal,

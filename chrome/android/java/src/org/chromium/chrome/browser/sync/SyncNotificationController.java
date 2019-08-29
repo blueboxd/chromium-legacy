@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -160,10 +159,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         // Make sure we don't prompt too many times.
         mProfileSyncService.setPassphrasePrompted(true);
 
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.setComponent(
-                new ComponentName(ContextUtils.getApplicationContext(), PassphraseActivity.class));
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        Intent intent = new Intent(ContextUtils.getApplicationContext(), PassphraseActivity.class);
         // This activity will become the start of a new task on this history stack.
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // Clears the task stack above this activity if it already exists.

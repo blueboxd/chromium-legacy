@@ -27,23 +27,23 @@ cr.define('print_preview', function() {
      * Measurement system of the print preview. Used to parse and serialize
      * point measurements into the system's local units (e.g. millimeters,
      * inches).
-     * @param {string} thousandsDelimeter Delimeter between thousands digits.
-     * @param {string} decimalDelimeter Delimeter between integers and decimals.
+     * @param {string} thousandsDelimiter Delimiter between thousands digits.
+     * @param {string} decimalDelimiter Delimiter between integers and decimals.
      * @param {!print_preview.MeasurementSystemUnitType} unitType Measurement
      *     unit type of the system.
      */
-    constructor(thousandsDelimeter, decimalDelimeter, unitType) {
+    constructor(thousandsDelimiter, decimalDelimiter, unitType) {
       /**
-       * The thousands delimeter to use when displaying numbers.
+       * The thousands delimiter to use when displaying numbers.
        * @private {string}
        */
-      this.thousandsDelimeter_ = thousandsDelimeter || ',';
+      this.thousandsDelimiter_ = thousandsDelimiter || ',';
 
       /**
-       * The decimal delimeter to use when displaying numbers.
+       * The decimal delimiter to use when displaying numbers.
        * @private {string}
        */
-      this.decimalDelimeter_ = decimalDelimeter || '.';
+      this.decimalDelimiter_ = decimalDelimiter || '.';
 
       assert(measurementSystemPrefs.has(unitType));
       /**
@@ -59,19 +59,19 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {string} The thousands delimeter character of the measurement
+     * @return {string} The thousands delimiter character of the measurement
      *     system.
      */
-    get thousandsDelimeter() {
-      return this.thousandsDelimeter_;
+    get thousandsDelimiter() {
+      return this.thousandsDelimiter_;
     }
 
     /**
-     * @return {string} The decimal delimeter character of the measurement
+     * @return {string} The decimal delimiter character of the measurement
      *     system.
      */
-    get decimalDelimeter() {
-      return this.decimalDelimeter_;
+    get decimalDelimiter() {
+      return this.decimalDelimiter_;
     }
 
     /**

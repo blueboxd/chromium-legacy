@@ -100,6 +100,33 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
 }  // namespace
 
 // static
+bool PreviewsService::HasURLRedirectCycle(
+    const GURL& start_url,
+    const base::MRUCache<GURL, GURL>& redirect_history) {
+  // Using an ordered set since using an unordered set requires defining
+  // comparator operator for GURL.
+  std::set<GURL> urls_seen_so_far;
+  GURL current_url = start_url;
+
+  while (true) {
+    urls_seen_so_far.insert(current_url);
+
+    // Check if |current_url| redirects to another URL that is already visited.
+    auto it = redirect_history.Peek(current_url);
+    if (it == redirect_history.end())
+      return false;
+
+    GURL redirect_target = it->second;
+    if (urls_seen_so_far.find(redirect_target) != urls_seen_so_far.end())
+      return true;
+    current_url = redirect_target;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
 blacklist::BlacklistData::AllowedTypesAndVersions
 PreviewsService::GetAllowedPreviews() {
   blacklist::BlacklistData::AllowedTypesAndVersions enabled_previews;
@@ -125,7 +152,10 @@ PreviewsService::PreviewsService(content::BrowserContext* browser_context)
       optimization_guide_url_loader_factory_(
           content::BrowserContext::GetDefaultStoragePartition(
               Profile::FromBrowserContext(browser_context))
-              ->GetURLLoaderFactoryForBrowserProcess()) {
+              ->GetURLLoaderFactoryForBrowserProcess()),
+      // Set cache size to 25 entries.  This should be sufficient since the
+      // redirect loop cache is needed for only one navigation.
+      redirect_history_(25u) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -192,4 +222,29 @@ void PreviewsService::ClearBlackList(base::Time begin_time,
 
   if (previews_lite_page_decider_)
     previews_lite_page_decider_->ClearBlacklist();
+}
+
+void PreviewsService::ReportObservedRedirectWithDeferAllScriptPreview(
+    const GURL& start_url,
+    const GURL& end_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(previews::params::IsDeferAllScriptPreviewsEnabled());
+
+  // If |start_url| has been previously marked as ineligible for the preview,
+  // then do not update the existing entry since existing entry might cause
+  // |start_url| to be no longer marked as ineligible for the preview. This may
+  // happen if marking the URL as ineligible for preview resulted in breakage of
+  // the redirect loop.
+  if (!IsUrlEligibleForDeferAllScriptPreview(start_url))
+    return;
+
+  redirect_history_.Put(start_url, end_url);
+}
+
+bool PreviewsService::IsUrlEligibleForDeferAllScriptPreview(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(previews::params::IsDeferAllScriptPreviewsEnabled());
+
+  return !HasURLRedirectCycle(url, redirect_history_);
 }

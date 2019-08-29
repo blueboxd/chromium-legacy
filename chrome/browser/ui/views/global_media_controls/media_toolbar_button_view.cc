@@ -21,7 +21,6 @@ MediaToolbarButtonView::MediaToolbarButtonView(
       controller_(connector_, this) {
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
-  EnableCanvasFlippingForRTLUI(false);
   SetTooltipText(
       l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT));
 

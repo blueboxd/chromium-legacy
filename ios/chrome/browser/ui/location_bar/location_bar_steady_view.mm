@@ -29,6 +29,9 @@ const CGFloat kLocationImageToLabelSpacing = -4.0;
 // Minimal horizontal padding between the leading edge of the location bar and
 // the content of the location bar.
 const CGFloat kLocationBarLeadingPadding = 5.0;
+// Minimal horizontal padding between the leading edge of the location bar and
+// the BadgeView.
+const CGFloat kBadgeViewLeadingSpacing = 3.0;
 // Trailing space between the trailing button and the trailing edge of the
 // location bar.
 const CGFloat kButtonTrailingSpacing = 10;
@@ -331,8 +334,9 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
     ];
 
     self.badgeViewFullScreenDisabledConstraints = @[
-      [self.badgeView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
-                                                   constant:5],
+      [self.badgeView.leadingAnchor
+          constraintEqualToAnchor:self.leadingAnchor
+                         constant:kBadgeViewLeadingSpacing],
       [self.badgeView.trailingAnchor
           constraintLessThanOrEqualToAnchor:self.locationContainerView
                                                 .leadingAnchor],

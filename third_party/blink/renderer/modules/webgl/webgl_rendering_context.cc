@@ -175,8 +175,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<OESVertexArrayObject>(oes_vertex_array_object_);
   RegisterExtension<WebGLColorBufferFloat>(webgl_color_buffer_float_);
   RegisterExtension<WebGLCompressedTextureASTC>(webgl_compressed_texture_astc_);
-  RegisterExtension<WebGLCompressedTextureETC>(webgl_compressed_texture_etc_,
-                                               kDraftExtension);
+  RegisterExtension<WebGLCompressedTextureETC>(webgl_compressed_texture_etc_);
   RegisterExtension<WebGLCompressedTextureETC1>(webgl_compressed_texture_etc1_);
   RegisterExtension<WebGLCompressedTexturePVRTC>(
       webgl_compressed_texture_pvrtc_, kApprovedExtension, kBothPrefixes);

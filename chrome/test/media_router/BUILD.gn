@@ -144,8 +144,7 @@ if (enable_downstream_media_tests) {
   group("media_router_perf_tests") {
     testonly = true
     data = [
-      "$root_out_dir/media_router/telemetry_extension/",
-      "$root_out_dir/mr_extension/release/",
+      "$root_out_dir/mr_extension/",
       "internal/",
       "telemetry/",
     ]

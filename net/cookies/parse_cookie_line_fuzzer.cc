@@ -5,9 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/logging.h"
 #include "net/cookies/parsed_cookie.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 const std::string GetArbitraryString(FuzzedDataProvider* data_provider) {
   // Adding a fudge factor to kMaxCookieSize so that both branches of the bounds

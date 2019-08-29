@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 
@@ -34,7 +35,6 @@ class ImageSkia;
 
 namespace ui {
 enum class DomCode;
-class EventHandler;
 class KeyboardHook;
 class KeyEvent;
 class MouseEvent;
@@ -47,11 +47,13 @@ class DesktopDragDropClientAuraX11;
 class DesktopWindowTreeHostObserverX11;
 class NonClientFrameView;
 class X11DesktopWindowMoveClient;
+class WindowEventFilter;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11
     : public DesktopWindowTreeHost,
       public aura::WindowTreeHost,
       public ui::PlatformEventDispatcher,
+      public ui::WmMoveResizeHandler,
       public ui::XWindow::Delegate {
  public:
   DesktopWindowTreeHostX11(
@@ -85,8 +87,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void AddObserver(DesktopWindowTreeHostObserverX11* observer);
   void RemoveObserver(DesktopWindowTreeHostObserverX11* observer);
 
-  // Swaps the current handler for events in the non client view with |handler|.
-  void SwapNonClientEventHandler(std::unique_ptr<ui::EventHandler> handler);
+  void AddNonClientEventFilter();
+  void RemoveNonClientEventFilter();
 
   // Runs the |func| callback for each content-window, and deallocates the
   // internal list of open windows.
@@ -224,6 +226,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // initialization related to talking to the X11 server.
   void InitX11Window(const Widget::InitParams& params);
 
+  // Overridden from WmMoveResizeHandler
+  void DispatchHostWindowDragMovement(
+      int hittest,
+      const gfx::Point& pointer_location) override;
+
   // Creates an aura::WindowEventDispatcher to contain the content_window()
   // along with all aura client objects that direct behavior.
   aura::WindowEventDispatcher* InitDispatcher(const Widget::InitParams& params);
@@ -296,7 +303,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   DesktopDragDropClientAuraX11* drag_drop_client_ = nullptr;
 
-  std::unique_ptr<ui::EventHandler> x11_non_client_event_filter_;
+  std::unique_ptr<WindowEventFilter> non_client_event_filter_;
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura

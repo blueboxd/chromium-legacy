@@ -21,6 +21,10 @@ table ApplicationConfig {
   /// If false, then touch input is disabled.
   /// If unset, then the caller is allowed to enable or disable input.
   4: bool touch_enabled_policy;
+
+  // If true, enable remote debugging for this application.
+  // if false or unset, remote debugging is disabled for this application.
+  5: bool enable_remote_debugging;
 };
 
 /// Service interface for working with application configurations.

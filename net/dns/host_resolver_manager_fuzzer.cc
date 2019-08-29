@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <memory>
 #include <vector>
 
@@ -22,7 +24,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/net_buildflags.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 

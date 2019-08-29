@@ -145,6 +145,7 @@ class VRTestHook {
       unsigned int index) = 0;
   virtual TrackedDeviceClass WaitGetTrackedDeviceClass(unsigned int index) = 0;
   virtual ControllerFrameData WaitGetControllerData(unsigned int index) = 0;
+  virtual bool WaitGetSessionStateStopping() = 0;
 
   virtual void AttachCurrentThread() = 0;
   virtual void DetachCurrentThread() = 0;

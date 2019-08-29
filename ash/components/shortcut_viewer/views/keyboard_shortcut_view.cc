@@ -15,6 +15,7 @@
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
@@ -158,6 +159,8 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
     // based on CalculatePreferredSize().
     views::Widget* widget = new views::Widget;
     params.context = context;
+    params.init_properties_container.SetProperty(
+        aura::client::kAppType, static_cast<int>(ash::AppType::SYSTEM_APP));
     widget->Init(std::move(params));
 
     // Set frame view Active and Inactive colors, both are SK_ColorWHITE.

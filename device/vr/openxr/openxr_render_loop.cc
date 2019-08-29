@@ -98,8 +98,8 @@ bool OpenXrRenderLoop::StartRuntime() {
   if (XR_FAILED(openxr->GetLuid(&luid)) ||
       !texture_helper_.SetAdapterLUID(luid) ||
       !texture_helper_.EnsureInitialized() ||
-      XR_FAILED(openxr->StartSession(texture_helper_.GetDevice(),
-                                     &gamepad_helper_))) {
+      XR_FAILED(
+          openxr->InitSession(texture_helper_.GetDevice(), &gamepad_helper_))) {
     texture_helper_.Reset();
     return false;
   }
@@ -131,6 +131,10 @@ void OpenXrRenderLoop::OnSessionStart() {
 
 bool OpenXrRenderLoop::PreComposite() {
   return true;
+}
+
+bool OpenXrRenderLoop::HasSessionEnded() {
+  return openxr_->session_ended();
 }
 
 bool OpenXrRenderLoop::SubmitCompositedFrame() {

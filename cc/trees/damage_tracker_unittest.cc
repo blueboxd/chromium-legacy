@@ -65,7 +65,8 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
   ASSERT_FALSE(render_surface_list->size());
 
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), device_scale_factor, render_surface_list);
+      root, gfx::Rect(root->bounds()), device_scale_factor,
+      render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   ASSERT_TRUE(GetRenderSurface(root));
 }

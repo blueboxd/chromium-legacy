@@ -87,6 +87,8 @@ XrResult XRAPI_PTR GetInstanceProcAddress(XrInstance instance,
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrLocateSpace);
   } else if (strcmp(name, "xrLocateViews") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrLocateViews);
+  } else if (strcmp(name, "xrPollEvent") == 0) {
+    *function = reinterpret_cast<PFN_xrVoidFunction>(xrPollEvent);
   } else if (strcmp(name, "xrReleaseSwapchainImage") == 0) {
     *function = reinterpret_cast<PFN_xrVoidFunction>(xrReleaseSwapchainImage);
   } else if (strcmp(name, "xrSuggestInteractionProfileBindings") == 0) {

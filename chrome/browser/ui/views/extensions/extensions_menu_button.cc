@@ -51,11 +51,9 @@ ExtensionsMenuButton::ExtensionsMenuButton(
                   true,
                   true),
       browser_(browser),
+      parent_(parent),
       controller_(controller),
-      model_(ToolbarActionsModel::Get(browser_->profile())),
-      context_menu_controller_(nullptr, controller_) {
-  set_context_menu_controller(&context_menu_controller_);
-
+      model_(ToolbarActionsModel::Get(browser_->profile())) {
   // Set so the extension button receives enter/exit on children to retain hover
   // status when hovering child views.
   set_notify_enter_exit_on_child(true);
@@ -150,7 +148,7 @@ void ExtensionsMenuButton::UpdateState() {
 }
 
 bool ExtensionsMenuButton::IsMenuRunning() const {
-  return context_menu_controller_.IsMenuRunning();
+  return parent_->IsContextMenuRunning();
 }
 
 void ExtensionsMenuButton::ConfigureSecondaryView() {
@@ -170,7 +168,6 @@ void ExtensionsMenuButton::ConfigureSecondaryView() {
 
   pin_button_ = pin_button.get();
   SetSecondaryButtonHighlightPath(pin_button_);
-  UpdatePinButton();
   container->AddChildView(std::move(pin_button));
 }
 

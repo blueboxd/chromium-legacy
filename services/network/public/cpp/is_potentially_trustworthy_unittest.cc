@@ -22,7 +22,7 @@ bool IsOriginAllowlisted(const char* str) {
 }
 
 bool IsPotentiallyTrustworthy(const char* str) {
-  return network::IsUrlPotentiallyTrustworthy(GURL(str));
+  return IsUrlPotentiallyTrustworthy(GURL(str));
 }
 
 std::vector<std::string> CanonicalizeAllowlist(
@@ -34,11 +34,11 @@ std::vector<std::string> CanonicalizeAllowlist(
 
 TEST(IsPotentiallyTrustworthy, MainTest) {
   const url::Origin unique_origin;
-  EXPECT_FALSE(network::IsOriginPotentiallyTrustworthy(unique_origin));
+  EXPECT_FALSE(IsOriginPotentiallyTrustworthy(unique_origin));
   const url::Origin opaque_origin =
       url::Origin::Create(GURL("https://www.example.com"))
           .DeriveNewOpaqueOrigin();
-  EXPECT_FALSE(network::IsOriginPotentiallyTrustworthy(opaque_origin));
+  EXPECT_FALSE(IsOriginPotentiallyTrustworthy(opaque_origin));
 
   EXPECT_TRUE(IsPotentiallyTrustworthy("about:blank"));
   EXPECT_TRUE(IsPotentiallyTrustworthy("about:blank#ref"));
@@ -59,6 +59,7 @@ TEST(IsPotentiallyTrustworthy, MainTest) {
   EXPECT_FALSE(IsPotentiallyTrustworthy("ws://example.com/fun.html"));
 
   EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost/fun.html"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost./fun.html"));
   EXPECT_TRUE(IsPotentiallyTrustworthy("http://pumpkin.localhost/fun.html"));
   EXPECT_TRUE(
       IsPotentiallyTrustworthy("http://crumpet.pumpkin.localhost/fun.html"));
@@ -78,6 +79,19 @@ TEST(IsPotentiallyTrustworthy, MainTest) {
   EXPECT_TRUE(IsPotentiallyTrustworthy("http://[::1]/fun.html"));
   EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::2]/fun.html"));
   EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::1].example.com/fun.html"));
+
+  // IPv4 mapped IPv6 literals for loopback.
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::ffff:127.0.0.1]/"));
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::ffff:7f00:1]"));
+
+  // IPv4 compatible IPv6 literal for loopback.
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://[::127.0.0.1]"));
+
+  EXPECT_FALSE(IsPotentiallyTrustworthy("http://loopback"));
+
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost6"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("ftp://localhost6.localdomain6"));
+  EXPECT_TRUE(IsPotentiallyTrustworthy("http://localhost.localdomain"));
 
   EXPECT_FALSE(
       IsPotentiallyTrustworthy("filesystem:http://www.example.com/temporary/"));

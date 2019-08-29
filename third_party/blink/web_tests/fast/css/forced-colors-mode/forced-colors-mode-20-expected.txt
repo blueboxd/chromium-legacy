@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Checks that background color alpha channels are preserved in forced colors mode. assert_equals: expected "rgba(0, 0, 0, 0.3)" but got "rgba(114, 173, 218, 0.3)"
+Harness: the test ran to completion.
+

@@ -115,6 +115,40 @@ OptimizationGuideNavigationData* GetNavigationDataForNavigationHandle(
       ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
 }
 
+// Returns the page hint for the navigation, if applicable. It will use the
+// cached page hint stored in |navigation_handle| if we have already done the
+// computation to find the page hint in a previous request to the hints manager.
+// Otherwise, we will loop through the page hints in |loaded_hint| to find the
+// one that matches and store it for subsequent calls for the navigation.
+const optimization_guide::proto::PageHint* GetPageHintForNavigation(
+    content::NavigationHandle* navigation_handle,
+    const optimization_guide::proto::Hint* loaded_hint) {
+  OptimizationGuideNavigationData* navigation_data =
+      GetNavigationDataForNavigationHandle(navigation_handle);
+
+  // If we already know we had a page hint for the navigation, then just return
+  // that.
+  if (navigation_data && navigation_data->has_page_hint_value()) {
+    return navigation_data->page_hint();
+  }
+
+  // We do not yet know the answer, so find the applicable page hint.
+  const optimization_guide::proto::PageHint* matched_page_hint =
+      optimization_guide::FindPageHintForURL(navigation_handle->GetURL(),
+                                             loaded_hint);
+
+  if (navigation_data) {
+    // Store the page hint for the next time this is called, so we do not have
+    // to loop over all page hints within a hint.
+    navigation_data->set_page_hint(
+        matched_page_hint
+            ? std::make_unique<optimization_guide::proto::PageHint>(
+                  *matched_page_hint)
+            : nullptr);
+  }
+  return matched_page_hint;
+}
+
 }  // namespace
 
 OptimizationGuideHintsManager::OptimizationGuideHintsManager(
@@ -619,7 +653,7 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
       hint_cache_->GetHintIfLoaded(host);
   bool has_hint_in_cache = hint_cache_->HasHint(host);
   const optimization_guide::proto::PageHint* matched_page_hint =
-      loaded_hint ? optimization_guide::FindPageHintForURL(url, loaded_hint)
+      loaded_hint ? GetPageHintForNavigation(navigation_handle, loaded_hint)
                   : nullptr;
 
   // Populate navigation data with hint information.
@@ -627,7 +661,6 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
       GetNavigationDataForNavigationHandle(navigation_handle);
   if (navigation_data) {
     navigation_data->set_has_hint_after_commit(has_hint_in_cache);
-    navigation_data->set_has_page_hint(matched_page_hint);
 
     if (loaded_hint)
       navigation_data->set_serialized_hint_version_string(

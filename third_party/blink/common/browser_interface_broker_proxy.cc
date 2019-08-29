@@ -37,10 +37,15 @@ void BrowserInterfaceBrokerProxy::GetInterface(
   GetInterface(mojo::GenericPendingReceiver(name, std::move(pipe)));
 }
 
-void BrowserInterfaceBrokerProxy::SetBinderForTesting(
+bool BrowserInterfaceBrokerProxy::SetBinderForTesting(
     const std::string& name,
     base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)> binder) {
-  binder_map_for_testing_[name] = std::move(binder);
-}
+  if (!binder) {
+    binder_map_for_testing_.erase(name);
+    return true;
+  }
 
+  auto result = binder_map_for_testing_.emplace(name, std::move(binder));
+  return result.second;
+}
 }  // namespace blink

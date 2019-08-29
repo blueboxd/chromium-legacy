@@ -14,7 +14,7 @@ public class WebApkUkmRecorder {
      * launch/foreground to background).
      */
     public static void recordWebApkSessionDuration(String manifestUrl,
-            @WebApkInfo.WebApkDistributor int distributor, int versionCode, long duration) {
+            @WebApkDistributor int distributor, int versionCode, long duration) {
         nativeRecordSessionDuration(manifestUrl, distributor, versionCode, duration);
     }
 

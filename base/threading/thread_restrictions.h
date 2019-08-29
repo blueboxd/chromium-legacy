@@ -113,6 +113,10 @@ namespace blink {
 class RTCVideoDecoderAdapter;
 class SourceStream;
 class VideoFrameResourceProvider;
+class WorkerThread;
+namespace scheduler {
+class WorkerThread;
+}
 }
 namespace cc {
 class CompletionEvent;
@@ -392,6 +396,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class SimpleThread;
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class blink::SourceStream;
+  friend class blink::WorkerThread;
+  friend class blink::scheduler::WorkerThread;
   friend class chrome_cleaner::SystemReportComponent;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;

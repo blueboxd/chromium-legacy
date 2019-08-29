@@ -44,7 +44,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
@@ -205,8 +204,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
       emulation_handler_(emulation_handler),
       active_file_chooser_interceptor_(active_file_chooser_interceptor),
       allow_set_download_behavior_(allow_set_download_behavior),
-      allow_file_access_(allow_file_access),
-      observer_(this) {
+      allow_file_access_(allow_file_access) {
   bool create_video_consumer = true;
 #ifdef OS_ANDROID
   // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.

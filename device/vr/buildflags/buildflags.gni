@@ -17,7 +17,9 @@ declare_args() {
 
   # To build with OpenXR support, the OpenXR Loader needs to be pulled to
   # third_party/openxr.
-  enable_openxr = checkout_openxr && is_win
+  # TODO (crbug.com/998160): there's an issue affecting the __preload macro
+  # used in DirectXMathVector.inl on Windows on Arm.
+  enable_openxr = checkout_openxr && (is_win && current_cpu != "arm64")
 
   # To build with Oculus support, the Oculus SDK for Windows will need to be
   # installed in third_party/libovr/src.  See

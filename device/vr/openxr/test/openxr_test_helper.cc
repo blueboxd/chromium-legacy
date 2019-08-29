@@ -50,10 +50,10 @@ uint32_t OpenXrTestHelper::NumViews() {
 OpenXrTestHelper::OpenXrTestHelper()
     : system_id_(0),
       session_(XR_NULL_HANDLE),
+      session_state_(XR_SESSION_STATE_UNKNOWN),
       swapchain_(XR_NULL_HANDLE),
       local_space_(XR_NULL_HANDLE),
       view_space_(XR_NULL_HANDLE),
-      session_running_(false),
       acquired_swapchain_texture_(0),
       next_action_space_(0),
       next_predicted_display_time_(0) {}
@@ -112,9 +112,14 @@ XrSystemId OpenXrTestHelper::GetSystemId() {
   return system_id_;
 }
 
-XrSession OpenXrTestHelper::GetSession() {
+XrResult OpenXrTestHelper::GetSession(XrSession* session) {
+  RETURN_IF(session_state_ != XR_SESSION_STATE_UNKNOWN,
+            XR_ERROR_VALIDATION_FAILURE,
+            "SessionState is not unknown before xrCreateSession");
   session_ = TreatIntegerAsHandle<XrSession>(2);
-  return session_;
+  *session = session_;
+  SetSessionState(XR_SESSION_STATE_READY);
+  return XR_SUCCESS;
 }
 
 XrSwapchain OpenXrTestHelper::GetSwapchain() {
@@ -232,18 +237,18 @@ XrPath OpenXrTestHelper::GetPath(const char* path_string) {
 }
 
 XrResult OpenXrTestHelper::BeginSession() {
-  RETURN_IF(session_running_, XR_ERROR_SESSION_RUNNING,
-            "Session is already running");
-
-  session_running_ = true;
+  RETURN_IF(session_state_ != XR_SESSION_STATE_READY,
+            XR_ERROR_VALIDATION_FAILURE,
+            "Session is not XR_ERROR_SESSION_NOT_READY");
+  SetSessionState(XR_SESSION_STATE_SYNCHRONIZED);
   return XR_SUCCESS;
 }
 
 XrResult OpenXrTestHelper::EndSession() {
-  RETURN_IF_FALSE(session_running_, XR_ERROR_SESSION_NOT_RUNNING,
-                  "Session is not currently running");
-
-  session_running_ = false;
+  RETURN_IF(session_state_ != XR_SESSION_STATE_STOPPING,
+            XR_ERROR_VALIDATION_FAILURE,
+            "Session state is not XR_ERROR_SESSION_NOT_STOPPING");
+  SetSessionState(XR_SESSION_STATE_IDLE);
   return XR_SUCCESS;
 }
 
@@ -364,6 +369,23 @@ XrResult OpenXrTestHelper::UpdateAction(XrAction action) {
   return XR_SUCCESS;
 }
 
+void OpenXrTestHelper::SetSessionState(XrSessionState state) {
+  session_state_ = state;
+  XrEventDataSessionStateChanged event = {
+      XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED};
+  event.session = session_;
+  event.state = session_state_;
+  event.time = next_predicted_display_time_;
+  session_state_event_queue_.push(event);
+}
+
+XrEventDataSessionStateChanged OpenXrTestHelper::GetNextSessionStateEvent() {
+  DCHECK(HasPendingSessionStateEvent());
+  XrEventDataSessionStateChanged front = session_state_event_queue_.front();
+  session_state_event_queue_.pop();
+  return front;
+}
+
 const std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>>&
 OpenXrTestHelper::GetSwapchainTextures() const {
   return textures_arr_;
@@ -377,6 +399,22 @@ uint32_t OpenXrTestHelper::NextSwapchainImageIndex() {
 
 XrTime OpenXrTestHelper::NextPredictedDisplayTime() {
   return ++next_predicted_display_time_;
+}
+
+bool OpenXrTestHelper::UpdateSessionStateEventQueue() {
+  base::AutoLock auto_lock(lock_);
+  if (test_hook_) {
+    if (test_hook_->WaitGetSessionStateStopping()) {
+      SetSessionState(XR_SESSION_STATE_STOPPING);
+    }
+    return true;
+  }
+
+  return false;
+}
+
+bool OpenXrTestHelper::HasPendingSessionStateEvent() {
+  return !session_state_event_queue_.empty();
 }
 
 void OpenXrTestHelper::GetPose(XrPosef* pose) {

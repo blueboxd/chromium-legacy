@@ -298,7 +298,6 @@ jumbo_component("gfx") {
     set_sources_assignment_filter([])
     sources += [ "scoped_cg_context_save_gstate_mac.h" ]
     set_sources_assignment_filter(sources_assignment_filter)
-    deps += [ "//third_party/google_toolbox_for_mac" ]
   } else {
     public_deps += [ "//cc/paint" ]
     deps += [ "//third_party:freetype_harfbuzz" ]

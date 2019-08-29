@@ -82,6 +82,7 @@ void NetworkFeaturePodController::UpdateButton() {
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   button_->SetEnabled(!session_controller->IsScreenLocked());
+  button_->Update();
 }
 
 }  // namespace ash

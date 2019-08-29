@@ -68,21 +68,6 @@ class PasswordAccessoryController
   virtual void OnGenerationRequested(
       autofill::password_generation::PasswordGenerationType type) = 0;
 
-  // Reacts to a navigation on the main frame, e.g. by clearing caches.
-  virtual void DidNavigateMainFrame() = 0;
-
-  // --------------------------
-  // Methods called by UI code:
-  // --------------------------
-
-  // Gets an icon for the currently focused frame and passes it to
-  // |icon_callback|. The callback is invoked with an image unless an icon for
-  // a new origin was called. In the latter case, the callback is dropped.
-  // The callback is called with an |IsEmpty()| image if there is no favicon.
-  virtual void GetFavicon(
-      int desired_size_in_pixel,
-      base::OnceCallback<void(const gfx::Image&)> icon_callback) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryController);
 };

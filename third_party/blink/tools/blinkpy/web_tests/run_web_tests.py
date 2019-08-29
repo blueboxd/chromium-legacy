@@ -479,7 +479,15 @@ def parse_args(args):
                 '--zero-tests-executed-ok',
                 action='store_true',
                 help='If set, exit with a success code when no tests are run.'
-                ' Used on trybots when web tests are retried without patch.')
+                ' Used on trybots when web tests are retried without patch.'),
+            optparse.make_option(
+                '--driver-kill-timeout-secs',
+                type=float,
+                default=1.0,
+                help=('Number of seconds to wait before killing a driver, and the main '
+                      'use case is to leave enough time to allow the process to '
+                      'finish post-run hooks, such as dumping code coverage data. '
+                      'Default is 1 second, can be overriden for specific use cases.'))
         ]))
 
     # FIXME: Move these into json_results_generator.py.

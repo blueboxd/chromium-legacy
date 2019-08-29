@@ -66,6 +66,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 #include "url/url_canon.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -324,7 +325,8 @@ void HttpNetworkTransaction::PrepareForAuthRestart(HttpAuth::Target target) {
   if (target == HttpAuth::AUTH_SERVER &&
       auth_controllers_[target]->NeedsHTTP11()) {
     session_->http_server_properties()->SetHTTP11Required(
-        HostPortPair::FromURL(request_->url));
+        HttpServerProperties::GetNormalizedSchemeHostPort(request_->url),
+        request_->network_isolation_key);
   }
 
   bool keep_alive = false;

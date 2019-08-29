@@ -32,7 +32,8 @@ bool FakeCupsPrintJobManager::CreatePrintJob(const std::string& printer_name,
   printer.set_display_name(printer_name);
   // Create a new print job.
   std::unique_ptr<CupsPrintJob> new_job = std::make_unique<CupsPrintJob>(
-      printer, next_job_id_++, title, total_page_number);
+      printer, next_job_id_++, title, total_page_number,
+      ::printing::PrintJob::Source::PRINT_PREVIEW, /*source_id=*/"");
   print_jobs_.push_back(std::move(new_job));
 
   // Show the waiting-for-printing notification immediately.

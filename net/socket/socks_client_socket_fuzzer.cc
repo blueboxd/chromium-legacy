@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <memory>
 
 #include "base/logging.h"
@@ -17,7 +19,6 @@
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/socks_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Fuzzer for SocksClientSocket.  Only covers the SOCKS4 handshake.
 //

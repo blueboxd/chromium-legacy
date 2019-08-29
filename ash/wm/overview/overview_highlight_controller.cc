@@ -12,6 +12,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
@@ -162,6 +163,48 @@ OverviewHighlightController::OverviewHighlightableView::GetRoundedCornersRadii()
   return kHighlightCornerRadii;
 }
 
+bool OverviewHighlightController::OverviewHighlightableView::
+    OnViewHighlighted() {
+  return false;
+}
+
+void OverviewHighlightController::OverviewHighlightableView::
+    OnViewUnhighlighted() {}
+
+bool OverviewHighlightController::OverviewHighlightableView::
+    IsViewHighlighted() {
+  auto* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  DCHECK(overview_session);
+  return overview_session->highlight_controller()->highlighted_view_ == this;
+}
+
+// -----------------------------------------------------------------------------
+// OverviewHighlightController::TestApi
+
+OverviewHighlightController::TestApi::TestApi(
+    OverviewHighlightController* highlight_controller)
+    : highlight_controller_(highlight_controller) {}
+
+OverviewHighlightController::TestApi::~TestApi() = default;
+
+gfx::Rect OverviewHighlightController::TestApi::GetHighlightBoundsInScreen()
+    const {
+  if (!GetHighlightWidget())
+    return gfx::Rect();
+  return GetHighlightWidget()->GetNativeWindow()->GetBoundsInScreen();
+}
+
+OverviewHighlightController::OverviewHighlightableView*
+OverviewHighlightController::TestApi::GetHighlightView() const {
+  return highlight_controller_->highlighted_view_;
+}
+
+OverviewHighlightController::HighlightWidget*
+OverviewHighlightController::TestApi::GetHighlightWidget() const {
+  return highlight_controller_->highlight_widget_.get();
+}
+
 // -----------------------------------------------------------------------------
 // OverviewHighlightController
 
@@ -300,14 +343,6 @@ void OverviewHighlightController::OnWindowsRepositioned(
       highlighted_view_->GetHighlightBoundsInScreen());
 }
 
-gfx::Rect OverviewHighlightController::GetHighlightBoundsInScreenForTesting()
-    const {
-  if (!highlight_widget_)
-    return gfx::Rect();
-
-  return highlight_widget_->GetNativeWindow()->GetBoundsInScreen();
-}
-
 std::vector<OverviewHighlightController::OverviewHighlightableView*>
 OverviewHighlightController::GetTraversableViews() const {
   std::vector<OverviewHighlightableView*> traversable_views;
@@ -342,6 +377,8 @@ void OverviewHighlightController::UpdateFocusWidget(
   highlighted_view_ = view_to_be_highlighted;
   highlighted_view_->GetView()->NotifyAccessibilityEvent(
       ax::mojom::Event::kSelection, true);
+  if (previous_view)
+    previous_view->OnViewUnhighlighted();
 
   const bool create_highlight =
       ShouldCreateHighlight(previous_view, highlighted_view_, reverse);
@@ -367,6 +404,9 @@ void OverviewHighlightController::UpdateFocusWidget(
     old_highlight_window->layer()->SetOpacity(0.f);
     old_highlight_window->SetTransform(transform);
   }
+
+  if (highlighted_view_->OnViewHighlighted())
+    return;
 
   gfx::Rect target_screen_bounds =
       highlighted_view_->GetHighlightBoundsInScreen();

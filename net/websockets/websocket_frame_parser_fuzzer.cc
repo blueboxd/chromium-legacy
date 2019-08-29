@@ -5,10 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <vector>
 
 #include "net/websockets/websocket_frame_parser.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

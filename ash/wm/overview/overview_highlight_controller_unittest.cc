@@ -12,6 +12,7 @@
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/new_desk_button.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
@@ -327,7 +328,8 @@ class DesksOverviewHighlightControllerTest
   }
 
   OverviewHighlightController::OverviewHighlightableView* GetHighlightedView() {
-    return GetHighlightController()->highlighted_view_;
+    return OverviewHighlightController::TestApi(GetHighlightController())
+        .GetHighlightView();
   }
 
   const DesksBarView* GetDesksBarViewForRoot(aura::Window* root_window) {
@@ -337,15 +339,30 @@ class DesksOverviewHighlightControllerTest
     return grid->desks_bar_view();
   }
 
-  // Checks to see if a view is completely covered by the overview highlight.
-  bool CoveredByOverviewHighlight(views::View* view) {
+  bool OverviewHighlightShown() {
     if (!Shell::Get()->overview_controller()->InOverviewSession())
       return false;
 
-    gfx::Rect view_bounds = view->GetBoundsInScreen();
-    return GetHighlightController()
-        ->GetHighlightBoundsInScreenForTesting()
-        .Contains(view_bounds);
+    OverviewHighlightController::TestApi test_api(GetHighlightController());
+    return !!test_api.GetHighlightWidget();
+  }
+
+  // Checks to see if a view is completely covered by the overview highlight.
+  bool CoveredByOverviewHighlight(views::View* view) {
+    if (!OverviewHighlightShown())
+      return false;
+
+    const gfx::Rect highlight_bounds =
+        OverviewHighlightController::TestApi(GetHighlightController())
+            .GetHighlightBoundsInScreen();
+    DCHECK(!highlight_bounds.IsEmpty());
+
+    // The highlight bounds will be a bit smaller than the view it
+    // highlights, because it is meant to highlight the visible area of the
+    // view.
+    const int tolerance = kOverviewMargin;
+    const gfx::Rect view_bounds = view->GetBoundsInScreen();
+    return highlight_bounds.ApproximatelyEqual(view_bounds, tolerance);
   }
 
  private:
@@ -354,7 +371,8 @@ class DesksOverviewHighlightControllerTest
 };
 
 // Tests that we can tab through the desk mini views, new desk button and
-// overview items in the correct order.
+// overview items in the correct order. Overview items will have the overview
+// highlight shown when highlighted, but desks items will not.
 TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow(gfx::Rect(200, 200)));
   std::unique_ptr<aura::Window> window2(CreateTestWindow(gfx::Rect(200, 200)));
@@ -367,23 +385,27 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
   // Tests that the first highlighted item is the first mini view.
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view->mini_views()[0].get(), GetHighlightedView());
+  EXPECT_FALSE(OverviewHighlightShown());
 
   // Tests that after tabbing through the mini views, we highlight the new desk
   // button.
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view->new_desk_button(), GetHighlightedView());
+  EXPECT_FALSE(OverviewHighlightShown());
 
   // Tests that the overview item gets highlighted after the new desk button.
   SendKey(ui::VKEY_TAB);
   auto* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_EQ(item2->caption_container_view(), GetHighlightedView());
+  EXPECT_TRUE(OverviewHighlightShown());
 
   // Tests that after tabbing through the overview items, we go back to the
   // first mini view.
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view->mini_views()[0].get(), GetHighlightedView());
+  EXPECT_FALSE(OverviewHighlightShown());
 }
 
 // Tests that we can reverse tab through the desk mini views, new desk button
@@ -514,39 +536,42 @@ TEST_F(DesksOverviewHighlightControllerTest,
   ToggleOverview();
   const auto* desk_bar_view1 = GetDesksBarViewForRoot(roots[0]);
   EXPECT_EQ(2u, desk_bar_view1->mini_views().size());
+  EXPECT_FALSE(OverviewHighlightShown());
 
   SendKey(ui::VKEY_TAB);
-  EXPECT_TRUE(
-      CoveredByOverviewHighlight(desk_bar_view1->mini_views()[0].get()));
   SendKey(ui::VKEY_TAB);
+  EXPECT_FALSE(OverviewHighlightShown());
+
   SendKey(ui::VKEY_TAB);
-  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view1->new_desk_button()));
+  EXPECT_EQ(desk_bar_view1->new_desk_button(), GetHighlightedView());
+  EXPECT_FALSE(OverviewHighlightShown());
+
   SendKey(ui::VKEY_TAB);
   auto* item1 = GetOverviewItemForWindow(window1.get());
   EXPECT_TRUE(CoveredByOverviewHighlight(item1->caption_container_view()));
 
   const auto* desk_bar_view2 = GetDesksBarViewForRoot(roots[1]);
   SendKey(ui::VKEY_TAB);
-  EXPECT_TRUE(
-      CoveredByOverviewHighlight(desk_bar_view2->mini_views()[0].get()));
+  EXPECT_FALSE(OverviewHighlightShown());
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
-  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view2->new_desk_button()));
+  EXPECT_EQ(desk_bar_view2->new_desk_button(), GetHighlightedView());
+  EXPECT_FALSE(OverviewHighlightShown());
   SendKey(ui::VKEY_TAB);
   auto* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
 
   const auto* desk_bar_view3 = GetDesksBarViewForRoot(roots[2]);
   SendKey(ui::VKEY_TAB);
-  EXPECT_TRUE(
-      CoveredByOverviewHighlight(desk_bar_view3->mini_views()[0].get()));
+  EXPECT_FALSE(OverviewHighlightShown());
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
-  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view3->new_desk_button()));
+  EXPECT_EQ(desk_bar_view3->new_desk_button(), GetHighlightedView());
+  EXPECT_FALSE(OverviewHighlightShown());
 }
 
 TEST_F(DesksOverviewHighlightControllerTest,
-       TabbingMDisplayHighlightLocationAfterItemRemoval) {
+       TabbingDisplayHighlightLocationAfterItemRemoval) {
   std::unique_ptr<views::Widget> widget3(CreateTestWidget());
   std::unique_ptr<aura::Window> window2(CreateTestWindow(gfx::Rect(200, 200)));
   std::unique_ptr<views::Widget> widget1(CreateTestWidget());
@@ -556,20 +581,14 @@ TEST_F(DesksOverviewHighlightControllerTest,
       GetDesksBarViewForRoot(Shell::GetAllRootWindows()[0]);
   EXPECT_EQ(2u, desk_bar_view->mini_views().size());
 
-  // Tests that if we delete desk2 while desk1 is highlighted, the overview
-  // highlight bounds still contains desk1's bounds.
-  SendKey(ui::VKEY_TAB);
-  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view->mini_views()[0].get()));
-  RemoveDesk(DesksController::Get()->desks()[1].get());
-  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view->mini_views()[0].get()));
-
-  // Tests that if we delete items on the right and left of item2, the overview
-  // highlight bounds still contains item2's bounds.
-  SendKey(ui::VKEY_TAB);
-  SendKey(ui::VKEY_TAB);
+  // Tab until we highlight |window2|.
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   auto* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
+
+  // Tests that if we delete items on the right and left of item2, the overview
+  // highlight bounds still contains item2's bounds.
   auto* item1 = GetOverviewItemForWindow(widget1->GetNativeWindow());
   item1->CloseWindow();
   EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));

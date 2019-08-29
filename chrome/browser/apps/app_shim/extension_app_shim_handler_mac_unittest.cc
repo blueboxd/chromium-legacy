@@ -172,16 +172,12 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
   TestingAppShimHostBootstrap(
       const base::FilePath& profile_path,
       const std::string& app_id,
-      base::Optional<apps::AppShimLaunchResult>* launch_result,
-      apps::AppShimHandler* handler)
+      base::Optional<apps::AppShimLaunchResult>* launch_result)
       : AppShimHostBootstrap(getpid()),
         profile_path_(profile_path),
         app_id_(app_id),
         launch_result_(launch_result),
-        handler_(handler),
         weak_factory_(this) {}
-  apps::AppShimHandler* GetHandler() override { return handler_; }
-
   void DoTestLaunch(apps::AppShimLaunchType launch_type,
                     const std::vector<base::FilePath>& files) {
     chrome::mojom::AppShimHostPtr host_ptr;
@@ -209,7 +205,6 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
   // Note that |launch_result_| is optional so that we can track whether or not
   // the callback to set it has arrived.
   base::Optional<apps::AppShimLaunchResult>* launch_result_;
-  apps::AppShimHandler* const handler_;
   base::WeakPtrFactory<TestingAppShimHostBootstrap> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(TestingAppShimHostBootstrap);
 };
@@ -256,27 +251,23 @@ class ExtensionAppShimHandlerTest : public testing::Test {
         handler_(new TestingExtensionAppShimHandler(delegate_)),
         profile_path_a_("Profile A"),
         profile_path_b_("Profile B") {
-    bootstrap_aa_ =
-        (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdA,
-                                         &bootstrap_aa_result_, handler_.get()))
-            ->GetWeakPtr();
-    bootstrap_ab_ =
-        (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdB,
-                                         &bootstrap_ab_result_, handler_.get()))
-            ->GetWeakPtr();
-    bootstrap_bb_ =
-        (new TestingAppShimHostBootstrap(profile_path_b_, kTestAppIdB,
-                                         &bootstrap_bb_result_, handler_.get()))
-            ->GetWeakPtr();
+    AppShimHostBootstrap::SetClient(handler_.get());
+    bootstrap_aa_ = (new TestingAppShimHostBootstrap(
+                         profile_path_a_, kTestAppIdA, &bootstrap_aa_result_))
+                        ->GetWeakPtr();
+    bootstrap_ab_ = (new TestingAppShimHostBootstrap(
+                         profile_path_a_, kTestAppIdB, &bootstrap_ab_result_))
+                        ->GetWeakPtr();
+    bootstrap_bb_ = (new TestingAppShimHostBootstrap(
+                         profile_path_b_, kTestAppIdB, &bootstrap_bb_result_))
+                        ->GetWeakPtr();
     bootstrap_aa_duplicate_ =
         (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdA,
-                                         &bootstrap_aa_duplicate_result_,
-                                         handler_.get()))
+                                         &bootstrap_aa_duplicate_result_))
             ->GetWeakPtr();
     bootstrap_aa_thethird_ =
         (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdA,
-                                         &bootstrap_aa_thethird_result_,
-                                         handler_.get()))
+                                         &bootstrap_aa_thethird_result_))
             ->GetWeakPtr();
 
     host_aa_unique_ = std::make_unique<TestHost>(profile_path_a_, kTestAppIdA,
@@ -357,6 +348,8 @@ class ExtensionAppShimHandlerTest : public testing::Test {
     delete bootstrap_bb_.get();
     delete bootstrap_aa_duplicate_.get();
     delete bootstrap_aa_thethird_.get();
+
+    AppShimHostBootstrap::SetClient(nullptr);
   }
 
   void DoShimLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,

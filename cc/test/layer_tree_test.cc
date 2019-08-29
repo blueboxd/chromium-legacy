@@ -847,7 +847,7 @@ void LayerTreeTest::SetupTree() {
   gfx::Size root_bounds = root_layer->bounds();
   gfx::Size device_root_bounds =
       gfx::ScaleToCeiledSize(root_bounds, initial_device_scale_factor_);
-  layer_tree_host()->SetViewportSizeAndScale(device_root_bounds,
+  layer_tree_host()->SetViewportRectAndScale(gfx::Rect(device_root_bounds),
                                              initial_device_scale_factor_,
                                              viz::LocalSurfaceIdAllocation());
   root_layer->SetIsDrawable(true);
@@ -947,8 +947,7 @@ void LayerTreeTest::DispatchSetNeedsUpdateLayers() {
 void LayerTreeTest::DispatchSetNeedsRedraw() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
-    DispatchSetNeedsRedrawRect(
-        gfx::Rect(layer_tree_host_->device_viewport_size()));
+    DispatchSetNeedsRedrawRect(layer_tree_host_->device_viewport_rect());
 }
 
 void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {

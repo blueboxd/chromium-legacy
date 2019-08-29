@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadMetrics;
 import org.chromium.chrome.browser.download.DownloadNotificationService;
+import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.metrics.FileExtensions;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
@@ -297,8 +298,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
             if (DownloadUtils.openFile(getFilePath(), getMimeType(),
                         mItem.getDownloadInfo().getDownloadGuid(), isOffTheRecord(),
                         mItem.getDownloadInfo().getOriginalUrl(),
-                        mItem.getDownloadInfo().getReferrer(),
-                        DownloadMetrics.DownloadOpenSource.DOWNLOAD_HOME)) {
+                        mItem.getDownloadInfo().getReferrer(), DownloadOpenSource.DOWNLOAD_HOME)) {
                 recordOpenSuccess();
                 DownloadMetrics.recordDownloadViewRetentionTime(
                         getMimeType(), getItem().getStartTime());

@@ -44,6 +44,38 @@ mojo::ScopedSharedBufferHandle BigBufferSharedMemoryRegion::TakeBufferHandle() {
 
 }  // namespace internal
 
+namespace {
+
+void TryCreateSharedMemory(
+    size_t size,
+    BigBuffer::StorageType* storage_type,
+    base::Optional<internal::BigBufferSharedMemoryRegion>* shared_memory) {
+  if (size > BigBuffer::kMaxInlineBytes) {
+    auto buffer = mojo::SharedBufferHandle::Create(size);
+    if (buffer.is_valid()) {
+      internal::BigBufferSharedMemoryRegion shm_region(std::move(buffer), size);
+      if (shm_region.memory()) {
+        *storage_type = BigBuffer::StorageType::kSharedMemory;
+        shared_memory->emplace(std::move(shm_region));
+        return;
+      }
+    }
+
+    if (size > kMaxFallbackInlineBytes) {
+      // The data is too large to even bother with inline fallback, so we
+      // instead produce an invalid buffer. This will always fail validation on
+      // the receiving end.
+      *storage_type = BigBuffer::StorageType::kInvalidBuffer;
+      return;
+    }
+  }
+
+  // We can use inline memory.
+  *storage_type = BigBuffer::StorageType::kBytes;
+}
+
+}  // namespace
+
 // static
 constexpr size_t BigBuffer::kMaxInlineBytes;
 
@@ -61,6 +93,15 @@ BigBuffer::BigBuffer(const std::vector<uint8_t>& data)
 BigBuffer::BigBuffer(internal::BigBufferSharedMemoryRegion shared_memory)
     : storage_type_(StorageType::kSharedMemory),
       shared_memory_(std::move(shared_memory)) {}
+
+BigBuffer::BigBuffer(size_t size) {
+  TryCreateSharedMemory(size, &storage_type_, &shared_memory_);
+  if (storage_type_ == BigBuffer::StorageType::kBytes) {
+    // Either |size| is small enough or shared memory allocation failed, and
+    // fallback to inline allocation is feasible.
+    bytes_ = std::vector<uint8_t>(size);
+  }
+}
 
 BigBuffer::~BigBuffer() = default;
 
@@ -107,31 +148,18 @@ BigBufferView::BigBufferView() = default;
 BigBufferView::BigBufferView(BigBufferView&& other) = default;
 
 BigBufferView::BigBufferView(base::span<const uint8_t> bytes) {
-  if (bytes.size() > BigBuffer::kMaxInlineBytes) {
-    auto buffer = mojo::SharedBufferHandle::Create(bytes.size());
-    if (buffer.is_valid()) {
-      storage_type_ = BigBuffer::StorageType::kSharedMemory;
-      shared_memory_.emplace(std::move(buffer), bytes.size());
-      if (shared_memory_->buffer_mapping_) {
-        std::copy(bytes.begin(), bytes.end(),
-                  static_cast<uint8_t*>(shared_memory_->buffer_mapping_.get()));
-        return;
-      }
-    }
-
-    if (bytes.size() > kMaxFallbackInlineBytes) {
-      // The data is too large to even bother with inline fallback, so we
-      // instead produce an invalid buffer. This will always fail validation on
-      // the receiving end.
-      storage_type_ = BigBuffer::StorageType::kInvalidBuffer;
-      return;
-    }
+  TryCreateSharedMemory(bytes.size(), &storage_type_, &shared_memory_);
+  if (storage_type_ == BigBuffer::StorageType::kSharedMemory) {
+    DCHECK(shared_memory_->memory());
+    std::copy(bytes.begin(), bytes.end(),
+              static_cast<uint8_t*>(shared_memory_->memory()));
+    return;
   }
-
-  // Either the data is small enough or shared memory allocation failed. Either
-  // way we fall back to directly referencing the input bytes.
-  storage_type_ = BigBuffer::StorageType::kBytes;
-  bytes_ = bytes;
+  if (storage_type_ == BigBuffer::StorageType::kBytes) {
+    // Either the data is small enough or shared memory allocation failed.
+    // Either way we fall back to directly referencing the input bytes.
+    bytes_ = bytes;
+  }
 }
 
 BigBufferView::~BigBufferView() = default;

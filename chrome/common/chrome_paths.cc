@@ -416,6 +416,17 @@ bool PathProvider(int key, base::FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("custom_wallpapers"));
       break;
+    case chrome::FILE_CHROMEOS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG:
+      if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("ansible_software_config.json"));
+      break;
+    case chrome::DIR_CHROMEOS_CROSTINI_ANSIBLE_PLAYBOOK_STAGING:
+      if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("ansible_playbook_staging"));
+      create_dir = true;
+      break;
 #endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS:

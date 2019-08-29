@@ -321,8 +321,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
             }
             mFreeSpace = Environment.getExternalStorageDirectory().getUsableSpace();
             DownloadMetrics.recordDownloadOpen(
-                    DownloadMetrics.DownloadOpenSource.ANDROID_DOWNLOAD_MANAGER,
-                    mDownloadInfo.getMimeType());
+                    DownloadOpenSource.ANDROID_DOWNLOAD_MANAGER, mDownloadInfo.getMimeType());
             return omaInfo;
         }
 

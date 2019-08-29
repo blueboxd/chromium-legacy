@@ -9,8 +9,8 @@ import android.graphics.Color;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.browser.webapps.WebApkDistributor;
 import org.chromium.chrome.browser.webapps.WebApkInfo;
-import org.chromium.chrome.browser.webapps.WebApkInfo.WebApkDistributor;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 import java.util.HashMap;

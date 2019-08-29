@@ -196,7 +196,7 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 #if defined(OS_ANDROID)
   DCHECK(!monitor_.is_bound());
   Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-      mojo::MakeRequest(&monitor_));
+      monitor_.BindNewPipeAndPassReceiver());
   monitor_->IsAutoRotateEnabledByUser(WTF::Bind(
       &MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser,
       WrapPersistent(this)));

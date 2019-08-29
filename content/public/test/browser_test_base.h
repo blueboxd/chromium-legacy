@@ -32,8 +32,21 @@ class BrowserTestBase : public testing::Test {
   BrowserTestBase();
   ~BrowserTestBase() override;
 
-  // Configures everything for an in process browser test, then invokes
-  // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
+  // Configures everything for an in process browser test (i.e. feature list,
+  // thread pool, etc.) by invoking ContentMain (or manually on OS_ANDROID). As
+  // such all single-threaded initialization (such as
+  // base::test::ScopedFeatureList) must be done before this step, i.e.:
+  //   class MyFixture : public content::BrowserTestBase {
+  //    public:
+  //     void SetUp() override {
+  //       scoped_feature_list_.InitWithFeatures(features::kMyFeature);
+  //       content::BrowserTestBase::SetUp();
+  //     }
+  //
+  //    private:
+  //     base::test::ScopedFeatureList scoped_feature_list_;
+  //   };
+  // ContentMain then ends up invoking RunTestOnMainThreadLoop.
   void SetUp() override;
 
   // Restores state configured in SetUp.

@@ -26,8 +26,8 @@ cr.define('invalid_settings_browsertest', function() {
     const initialSettings = {
       isInKioskAutoPrintMode: false,
       isInAppKioskMode: false,
-      thousandsDelimeter: ',',
-      decimalDelimeter: '.',
+      thousandsDelimiter: ',',
+      decimalDelimiter: '.',
       unitType: 1,
       previewModifiable: true,
       documentTitle: 'title',

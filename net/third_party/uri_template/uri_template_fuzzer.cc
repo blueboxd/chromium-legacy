@@ -4,7 +4,7 @@
 
 #include "net/third_party/uri_template/uri_template.h"
 
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
+#include <fuzzer/FuzzedDataProvider.h>
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

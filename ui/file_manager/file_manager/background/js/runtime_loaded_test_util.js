@@ -987,9 +987,10 @@ test.util.sync.setPreferences = preferences => {
 
 /**
  * Returns the root access allowed state of the Crostini |vmName|.
+ *
+ * @param {!ForegroundWindow} contentWindow Window to be tested.
  * @param {string} vmName Crostini virtual machine name e.g., 'termina'.
  * @return {boolean}
- * @suppress {missingProperties}
  */
 test.util.sync.getCrostiniRootAccessAllowed = (contentWindow, vmName) => {
   return contentWindow.fileManager.crostini.isRootAccessAllowed(vmName);

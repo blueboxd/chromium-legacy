@@ -18,14 +18,9 @@
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/favicon_base/favicon_types.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
-
-namespace favicon {
-class FaviconService;
-}  // namespace favicon
 
 namespace password_manager {
 class ContentPasswordManagerDriver;
@@ -53,10 +48,6 @@ class PasswordAccessoryControllerImpl
       bool is_manual_generation_available) override;
   void OnGenerationRequested(
       autofill::password_generation::PasswordGenerationType type) override;
-  void DidNavigateMainFrame() override;
-  void GetFavicon(
-      int desired_size_in_pixel,
-      base::OnceCallback<void(const gfx::Image&)> icon_callback) override;
 
   // Like |CreateForWebContents|, it creates the controller and attaches it to
   // the given |web_contents|. Upon creation, a |credential_cache| is required
@@ -67,12 +58,11 @@ class PasswordAccessoryControllerImpl
 
   // Like |CreateForWebContents|, it creates the controller and attaches it to
   // the given |web_contents|. Additionally, it allows inject a manual filling
-  // controller and a favicon service.
+  // controller.
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
       password_manager::CredentialCache* credential_cache,
-      base::WeakPtr<ManualFillingController> mf_controller,
-      favicon::FaviconService* favicon_service);
+      base::WeakPtr<ManualFillingController> mf_controller);
 
   // True if the focus event was sent for the current focused frame or if it is
   // a blur event and no frame is focused. This check avoids reacting to
@@ -85,9 +75,6 @@ class PasswordAccessoryControllerImpl
       autofill::mojom::FocusedFieldType focused_field_type);
 
  private:
-  // Data allowing to cache favicons and favicon-related requests.
-  struct FaviconRequestData;
-
   friend class content::WebContentsUserData<PasswordAccessoryControllerImpl>;
 
   // Required for construction via |CreateForWebContents|:
@@ -99,14 +86,7 @@ class PasswordAccessoryControllerImpl
   PasswordAccessoryControllerImpl(
       content::WebContents* web_contents,
       password_manager::CredentialCache* credential_cache,
-      base::WeakPtr<ManualFillingController> mf_controller,
-      favicon::FaviconService* favicon_service);
-
-  // Handles a favicon response requested by |GetFavicon| and responds to
-  // pending favicon requests with a (possibly empty) icon bitmap.
-  void OnImageFetched(
-      url::Origin origin,
-      const favicon_base::FaviconRawBitmapResult& bitmap_results);
+      base::WeakPtr<ManualFillingController> mf_controller);
 
   // Returns true if |suggestion| matches a credential for |origin|.
   bool AppearsInSuggestions(const base::string16& suggestion,
@@ -129,20 +109,8 @@ class PasswordAccessoryControllerImpl
   // Keeps track of credentials which are stored for all origins in this tab.
   password_manager::CredentialCache* credential_cache_;
 
-  // TODO(fhorschig): Find a way to use unordered_map with origin keys.
-  // A cache for all favicons that were requested. This includes all iframes
-  // for which the accessory was displayed.
-  std::map<url::Origin, FaviconRequestData> icons_request_data_;
-
-  // Used to track a requested favicon. If the set of suggestion changes, this
-  // object aborts the request. Upon destruction, requests are cancelled, too.
-  base::CancelableTaskTracker favicon_tracker_;
-
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;
-
-  // The favicon service used to make retrieve icons for a given origin.
-  favicon::FaviconService* favicon_service_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

@@ -40,8 +40,8 @@ ViewportLayersSetup::ViewportLayersSetup() {
   viewport_layers.inner_viewport_container = clip_layer_->CcLayer();
   viewport_layers.inner_viewport_scroll = graphics_layer_->CcLayer();
   layer_tree_->layer_tree_host()->RegisterViewportLayers(viewport_layers);
-  layer_tree_->layer_tree_host()->SetViewportSizeAndScale(
-      gfx::Size(1, 1), /*device_scale_factor=*/1.f,
+  layer_tree_->layer_tree_host()->SetViewportRectAndScale(
+      gfx::Rect(1, 1), /*device_scale_factor=*/1.f,
       viz::LocalSurfaceIdAllocation());
 
   graphics_layer_->SetLayerState(PropertyTreeState(PropertyTreeState::Root()),

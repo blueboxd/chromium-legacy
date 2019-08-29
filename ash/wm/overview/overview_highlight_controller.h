@@ -30,6 +30,8 @@ class OverviewSession;
 // or tab keys, or when users are tab dragging.
 class ASH_EXPORT OverviewHighlightController {
  public:
+  class HighlightWidget;
+
   // An interface that must be implemented by classes that want to be
   // highlighted in overview.
   class OverviewHighlightableView {
@@ -48,8 +50,31 @@ class ASH_EXPORT OverviewHighlightController {
     virtual void MaybeActivateHighlightedView() = 0;
     virtual void MaybeCloseHighlightedView() = 0;
 
+    // Subclasses can override these if they wish to have custom behavior when
+    // they're highlighted. They should return true if overridden, otherwise the
+    // default highlight will show up.
+    virtual bool OnViewHighlighted();
+    virtual void OnViewUnhighlighted();
+
+    // Returns true if this is the current highlighted view.
+    bool IsViewHighlighted();
+
    protected:
     virtual ~OverviewHighlightableView() {}
+  };
+
+  // TestApi is used for tests to get internal implementation details.
+  class ASH_EXPORT TestApi {
+   public:
+    explicit TestApi(OverviewHighlightController* highlight_controller);
+    ~TestApi();
+
+    gfx::Rect GetHighlightBoundsInScreen() const;
+    OverviewHighlightableView* GetHighlightView() const;
+    HighlightWidget* GetHighlightWidget() const;
+
+   private:
+    OverviewHighlightController* const highlight_controller_;
   };
 
   explicit OverviewHighlightController(OverviewSession* overview_session);
@@ -85,13 +110,7 @@ class ASH_EXPORT OverviewHighlightController {
   // highlight widget without animation.
   void OnWindowsRepositioned(aura::Window* root_window);
 
-  gfx::Rect GetHighlightBoundsInScreenForTesting() const;
-
  private:
-  class HighlightWidget;
-  friend class DesksOverviewHighlightControllerTest;
-  friend class OverviewHighlightControllerTest;
-
   // Returns a vector of views that can be traversed via overview tabbing.
   // Includes desk mini views, the new desk button and overview items.
   std::vector<OverviewHighlightableView*> GetTraversableViews() const;
@@ -106,11 +125,13 @@ class ASH_EXPORT OverviewHighlightController {
   // If an item that is selected is deleted, store its index, so the next
   // traversal can pick up where it left off.
   base::Optional<int> deleted_index_ = base::nullopt;
-  // The current view that |highlight_widget_| is highlighting. This will be
-  // non-null if |highlight_widget_| is.
+
+  // The current view that |highlight_widget_| is highlighting.
   OverviewHighlightableView* highlighted_view_ = nullptr;
+
   // A background highlight that shows up when using keyboard traversal with tab
-  // or arrow keys.
+  // or arrow keys. This may not exist if the current highlighted view has its
+  // own highlighting override.
   std::unique_ptr<HighlightWidget> highlight_widget_;
 
   // A background highlight that shows up when dragging a tab towards a chrome

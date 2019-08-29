@@ -20,6 +20,10 @@ class NetworkFeaturePodButton : public FeaturePodButton,
   explicit NetworkFeaturePodButton(FeaturePodControllerBase* controller);
   ~NetworkFeaturePodButton() override;
 
+  // Updates the button's icon and tooltip based on the current state of the
+  // system.
+  void Update();
+
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
 
@@ -30,8 +34,7 @@ class NetworkFeaturePodButton : public FeaturePodButton,
   const char* GetClassName() const override;
 
  private:
-  void Update();
-  void SetTooltipState(const base::string16& tooltip_state);
+  void UpdateTooltip(const base::string16& connection_state_message);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkFeaturePodButton);
 };

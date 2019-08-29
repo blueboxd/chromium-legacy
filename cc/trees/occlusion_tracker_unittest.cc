@@ -202,7 +202,7 @@ class OcclusionTrackerTest : public testing::Test {
     root->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_list_impl_);
+        root, gfx::Rect(root->bounds()), &render_surface_list_impl_);
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
     layer_iterator_ = std::make_unique<EffectTreeLayerListIterator>(

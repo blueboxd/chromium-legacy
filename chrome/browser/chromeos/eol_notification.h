@@ -12,6 +12,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace chromeos {
 
 // EolNotification is created when user logs in. It is
@@ -29,6 +33,11 @@ class EolNotification final {
   void CheckEolStatus();
 
  private:
+  friend class EolNotificationTest;
+
+  // Overridden for testing Milestones until EOL notifications.
+  base::Clock* clock_;
+
   // Callback invoked when |GetEolStatus()| has finished.
   // - EndOfLife status: the end of life status of the device.
   // - Optional<int32_t> number_of_milestones: the number of milestones before

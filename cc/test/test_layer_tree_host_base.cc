@@ -103,8 +103,8 @@ void TestLayerTreeHostBase::SetupPendingTree(
   host_impl()->pending_tree()->PushPageScaleFromMainThread(1.f, 0.00001f,
                                                            100000.f);
   LayerTreeImpl* pending_tree = host_impl()->pending_tree();
-  pending_tree->SetDeviceViewportSize(
-      host_impl()->active_tree()->GetDeviceViewport().size());
+  pending_tree->SetDeviceViewportRect(
+      host_impl()->active_tree()->GetDeviceViewport());
   pending_tree->SetDeviceScaleFactor(
       host_impl()->active_tree()->device_scale_factor());
 

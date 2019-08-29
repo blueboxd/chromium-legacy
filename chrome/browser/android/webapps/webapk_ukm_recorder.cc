@@ -8,11 +8,31 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/WebApkUkmRecorder_jni.h"
+#include "chrome/browser/android/webapk/webapk_types.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
+
+// static
+void WebApkUkmRecorder::RecordInstall(const GURL& manifest_url,
+                                      int version_code) {
+  if (!manifest_url.is_valid())
+    return;
+
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  ukm_recorder->UpdateSourceURL(source_id, manifest_url);
+
+  // All installs through this method are browser-installs (ie, they should all
+  // use the "browser" distributor).
+  ukm::builders::WebAPK_Install(source_id)
+      .SetDistributor(static_cast<int64_t>(WebApkDistributor::BROWSER))
+      .SetAppVersion(version_code)
+      .SetInstall(1)
+      .Record(ukm_recorder);
+}
 
 // static
 void WebApkUkmRecorder::RecordSessionDuration(const GURL& manifest_url,

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -122,7 +123,7 @@ bool BrowserNonClientFrameView::HasVisibleBackgroundTabShapes(
 
   // Background tab shapes are visible iff the tab color differs from the frame
   // color.
-  return tab_strip->GetTabBackgroundColor(TAB_INACTIVE, active_state) !=
+  return tab_strip->GetTabBackgroundColor(TabActive::kInactive, active_state) !=
          GetFrameColor(active_state);
 }
 

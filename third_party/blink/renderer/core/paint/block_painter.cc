@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 
@@ -207,6 +208,17 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   if (layout_block_.IsTruncated())
     return;
 
+  ScopedPaintTimingDetectorBlockPaintHook
+      scoped_paint_timing_detector_block_paint_hook;
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
+      RuntimeEnabledFeatures::ElementTimingEnabled(
+          &layout_block_.GetDocument())) {
+    if (paint_info.phase == PaintPhase::kForeground) {
+      scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
+          layout_block_, paint_info.context.GetPaintController()
+                             .CurrentPaintChunkProperties());
+    }
+  }
   // If we're *printing* the foreground, paint the URL.
   if (paint_phase == PaintPhase::kForeground && paint_info.IsPrinting()) {
     ObjectPainter(layout_block_)

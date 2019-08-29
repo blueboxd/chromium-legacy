@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
@@ -90,7 +89,6 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   void OnImageDownloaded(GetMediaImageBitmapCallback callback,
                          const SkBitmap& bitmap);
 
-  AudioFocusManagerMetricsHelper metrics_helper_;
   bool encountered_error_ = false;
   bool was_suspended_ = false;
 

@@ -461,7 +461,7 @@ void NavigationPredictor::MaybeSendMetricsToUkm() const {
   page_link_builder.SetNumberOfAnchors_URLIncremented(
       GetBucketMinForPageMetrics(number_of_anchors_url_incremented_));
   page_link_builder.SetTotalClickableSpace(
-      GetBucketMinForPageMetrics(total_clickable_space_));
+      GetBucketMinForPageMetrics(static_cast<int>(total_clickable_space_)));
   page_link_builder.SetMedianLinkLocation(
       GetLinearBucketForLinkLocation(median_link_location_));
   page_link_builder.SetViewport_Height(
@@ -805,7 +805,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
         static_cast<int>(metric->is_url_incremented_by_one);
 
     link_locations.push_back(metric->ratio_distance_top_to_visible_top);
-    total_clickable_space_ += metric->ratio_visible_area;
+    total_clickable_space_ += metric->ratio_visible_area * 100.0;
   }
 
   sort(link_locations.begin(), link_locations.end());
@@ -963,14 +963,15 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
   // TODO(chelu): https://crbug.com/850624/. Experiment with other heuristic
   // algorithms for computing the anchor elements score.
   double score =
-      ratio_area_scale_ * metrics.ratio_area +
-      is_in_iframe_scale_ * metrics.is_in_iframe +
-      contains_image_scale_ * metrics.contains_image + host_score +
-      is_url_incremented_scale_ * metrics.is_url_incremented_by_one +
-      source_engagement_score_scale_ * document_engagement_score +
-      target_engagement_score_scale_ * target_engagement_score +
-      area_rank_scale_ * area_rank_score +
-      ratio_distance_root_top_scale_ * metrics.ratio_distance_root_top;
+      (ratio_area_scale_ * (metrics.ratio_area * 100.0)) +
+      (metrics.is_in_iframe ? is_in_iframe_scale_ : 0.0) +
+      (metrics.contains_image ? contains_image_scale_ : 0.0) + host_score +
+      (metrics.is_url_incremented_by_one ? is_url_incremented_scale_ : 0.0) +
+      (source_engagement_score_scale_ * document_engagement_score) +
+      (target_engagement_score_scale_ * target_engagement_score) +
+      (area_rank_scale_ * area_rank_score) +
+      (ratio_distance_root_top_scale_ *
+       (metrics.ratio_distance_root_top * 100.0));
 
   if (normalize_navigation_scores_) {
     score = score / sum_link_scales_ * 100.0;
@@ -985,15 +986,15 @@ double NavigationPredictor::GetPageMetricsScore() const {
     return 0;
   } else {
     DCHECK(!viewport_size_.IsEmpty());
-    return link_total_scale_ * number_of_anchors_ +
-           iframe_link_total_scale_ * number_of_anchors_in_iframe_ +
-           increment_link_total_scale_ * number_of_anchors_url_incremented_ +
-           same_origin_link_total_scale_ * number_of_anchors_same_host_ +
-           image_link_total_scale_ * number_of_anchors_contains_image_ +
-           clickable_space_scale_ * total_clickable_space_ +
-           median_link_location_scale_ * median_link_location_ +
-           viewport_width_scale_ * viewport_size_.width() +
-           viewport_height_scale_ * viewport_size_.height();
+    return (link_total_scale_ * number_of_anchors_) +
+           (iframe_link_total_scale_ * number_of_anchors_in_iframe_) +
+           (increment_link_total_scale_ * number_of_anchors_url_incremented_) +
+           (same_origin_link_total_scale_ * number_of_anchors_same_host_) +
+           (image_link_total_scale_ * number_of_anchors_contains_image_) +
+           (clickable_space_scale_ * total_clickable_space_) +
+           (median_link_location_scale_ * median_link_location_) +
+           (viewport_width_scale_ * viewport_size_.width()) +
+           (viewport_height_scale_ * viewport_size_.height());
   }
 }
 

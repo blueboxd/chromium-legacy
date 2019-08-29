@@ -3473,8 +3473,7 @@ void RenderFrameImpl::CommitNavigationInternal(
   // Sanity check that the browser always sends us new loader factories on
   // cross-document navigations.
   DCHECK(common_params->url.SchemeIs(url::kJavaScriptScheme) ||
-         common_params->url == GURL(url::kAboutSrcdocURL) ||
-         subresource_loader_factories);
+         common_params->url.IsAboutSrcdoc() || subresource_loader_factories);
 
   // We only save metrics of the main frame's main resource to the
   // document state. In view source mode, we effectively let the user
@@ -3627,7 +3626,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
       // is more conservative and feels more cautious for now.
       // TODO(arthursonzogni): Something similar needs to be done for
       // about:blank.
-      common_params->url == url::kAboutSrcdocURL;
+      common_params->url.IsAboutSrcdoc();
 
   // TODO(lukasza): https://crbug.com/936696: No need to postpone setting the
   // |new_loader_factories| once we start swapping RenderFrame^H^H^H

@@ -302,6 +302,11 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # Target needs to exclude *xmlpull* files as already included in Android SDK.\n')
                 sb.append('  jar_excluded_patterns = [ "*xmlpull*" ]\n')
                 break
+            case 'com_android_support_preference_v7':
+                // Replace broad library -keep rules with a more limited set in
+                // chrome/android/java/proguard.flags instead.
+                sb.append('  ignore_proguard_configs = true\n')
+                break
         }
     }
 

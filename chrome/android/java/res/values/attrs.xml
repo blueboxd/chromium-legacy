@@ -73,18 +73,6 @@
         <attr name="singleLine" format="boolean" />
     </declare-styleable>
 
-    <declare-styleable name="ListMenuButton">
-        <!-- Used to customize the width of the popup menu. -->
-        <attr name="menuWidth" format="reference|dimension" />
-    </declare-styleable>
-
-    <declare-styleable name="TextViewWithCompoundDrawables">
-        <attr name="drawableWidth" format="dimension"/>
-        <attr name="drawableHeight" format="dimension"/>
-        <!-- drawableTint wasn't added in Android until API level 23. -->
-        <attr name="chromeDrawableTint" format="color"/>
-    </declare-styleable>
-
     <declare-styleable name="TileGridLayout">
         <attr name="minHorizontalSpacing" format="dimension"/>
     </declare-styleable>

@@ -74,7 +74,8 @@ void ExpectBypassLocalhost(
 // Tests calling |rules.Matches()| for link-local URLs returns |bypasses|.
 void ExpectBypassLinkLocal(const ProxyBypassRules& rules, bool bypasses) {
   const char* kHosts[] = {
-      "169.254.3.2", "169.254.100.1", "[FE80::8]", "[fe91::1]",
+      "169.254.3.2", "169.254.100.1",        "[FE80::8]",
+      "[fe91::1]",   "[::ffff:169.254.3.2]",
   };
 
   ExpectRulesMatch(rules, kHosts, base::size(kHosts), bypasses, {});
@@ -98,9 +99,6 @@ void ExpectBypassMisc(
     // ExpectBypassLocalHost().
     "[::ffff:127.0.0.1]",
     "[::ffff:127.100.0.0]",
-    // TODO(crbug.com/997359): This should be moved into
-    // ExpectBypassLinkLocal().
-    "[::ffff:169.254.3.2]",
 #if !defined(BYPASS_LOOPBACK)
     "loopback",
     "loopback.",

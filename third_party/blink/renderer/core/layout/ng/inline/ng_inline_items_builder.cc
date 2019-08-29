@@ -456,6 +456,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendText(
 
   // If not create a new item as needed.
   if (UNLIKELY(layout_text->IsWordBreak())) {
+    typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
+                                                         layout_text);
     AppendBreakOpportunity(layout_text);
     return;
   }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources>
+    <declare-styleable name="ListMenuButton">
+        <!-- Used to customize the width of the popup menu. -->
+        <attr name="menuWidth" format="reference|dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="TextViewWithCompoundDrawables">
+        <attr name="drawableWidth" format="dimension"/>
+        <attr name="drawableHeight" format="dimension"/>
+        <!-- drawableTint wasn't added in Android until API level 23. -->
+        <attr name="chromeDrawableTint" format="color"/>
+    </declare-styleable>
+</resources>

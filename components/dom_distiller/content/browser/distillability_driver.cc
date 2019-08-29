@@ -65,16 +65,16 @@ void DistillabilityDriver::CreateDistillabilityService(
       std::move(request));
 }
 
-void DistillabilityDriver::SetDelegate(const DistillabilityDelegate& delegate) {
-  m_delegate_ = delegate;
+void DistillabilityDriver::AddObserver(DistillabilityObserver* observer) {
+  if (!observers_.HasObserver(observer)) {
+    observers_.AddObserver(observer);
+  }
 }
 
 void DistillabilityDriver::OnDistillability(
     const DistillabilityResult& result) {
-  if (m_delegate_.is_null())
-    return;
-
-  m_delegate_.Run(result);
+  for (auto& observer : observers_)
+    observer.OnResult(result);
 }
 
 void DistillabilityDriver::OnInterfaceRequestFromFrame(

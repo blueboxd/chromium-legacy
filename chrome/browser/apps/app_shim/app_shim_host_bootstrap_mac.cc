@@ -8,8 +8,16 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+
+namespace {
+AppShimHostBootstrap::Client* g_client = nullptr;
+}  // namespace
+
+// static
+void AppShimHostBootstrap::SetClient(Client* client) {
+  g_client = client;
+}
 
 // static
 void AppShimHostBootstrap::CreateForChannelAndPeerID(
@@ -53,10 +61,6 @@ void AppShimHostBootstrap::ChannelError(uint32_t custom_reason,
   delete this;
 }
 
-apps::AppShimHandler* AppShimHostBootstrap::GetHandler() {
-  return apps::AppShimHandler::Get();
-}
-
 chrome::mojom::AppShimHostRequest
 AppShimHostBootstrap::GetLaunchAppShimHostRequest() {
   return std::move(app_shim_host_request_);
@@ -88,11 +92,11 @@ void AppShimHostBootstrap::LaunchApp(
   has_received_launch_app_ = true;
   std::unique_ptr<AppShimHostBootstrap> deleter(this);
 
-  // |handler| takes ownership of |this| now.
-  apps::AppShimHandler* handler = GetHandler();
-  if (handler)
-    handler->OnShimProcessConnected(std::move(deleter));
-  // |handler| can only be nullptr after AppShimListener is destroyed. Since
+  // |g_client| takes ownership of |this| now.
+  if (g_client)
+    g_client->OnShimProcessConnected(std::move(deleter));
+
+  // |g_client| can only be nullptr after AppShimListener is destroyed. Since
   // this only happens at shutdown, do nothing here.
 }
 

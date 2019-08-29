@@ -60,14 +60,9 @@
 @end
 
 // Test NSWindow that provides hooks via method overrides to verify behavior.
-@interface NativeWidgetMacTestWindow : NativeWidgetMacNSWindow {
- @private
-  int invalidateShadowCount_;
-  int orderWindowCount_;
-  bool* deallocFlag_;
-}
+@interface NativeWidgetMacTestWindow : NativeWidgetMacNSWindow
 @property(readonly, nonatomic) int invalidateShadowCount;
-@property(readonly, nonatomic) int orderWindowCount;
+@property(assign, nonatomic) BOOL fakeOnInactiveSpace;
 @property(assign, nonatomic) bool* deallocFlag;
 @end
 
@@ -483,9 +478,10 @@ TEST_F(NativeWidgetMacTest, DISABLED_OrderFrontAfterMiniaturize) {
   widget->Close();
 }
 
-// Test that ShowInactive() on already-visible child widgets is ignored, since
-// it may cause a space transition. See https://crbug.com/866760.
-TEST_F(NativeWidgetMacTest, ShowInactiveOnChildWidget) {
+// Test that a child widget is only added to its parent NSWindow when the
+// parent is on the active space. Otherwise, it may cause a space transition.
+// See https://crbug.com/866760.
+TEST_F(NativeWidgetMacTest, ChildWidgetOnInactiveSpace) {
   NativeWidgetMacTestWindow* parent_window;
   NativeWidgetMacTestWindow* child_window;
 
@@ -495,30 +491,16 @@ TEST_F(NativeWidgetMacTest, ShowInactiveOnChildWidget) {
   Widget* parent =
       CreateWidgetWithTestWindow(std::move(init_params), &parent_window);
 
-  // CreateWidgetWithTestWindow calls Show()
-  EXPECT_EQ(1, [parent_window orderWindowCount]);
+  parent_window.fakeOnInactiveSpace = YES;
 
   init_params.parent = parent->GetNativeView();
-  Widget* child =
-      CreateWidgetWithTestWindow(std::move(init_params), &child_window);
+  CreateWidgetWithTestWindow(std::move(init_params), &child_window);
 
-  // The child is ordered twice, once by Show() and again (by AppKit) when it is
-  // registered as a child window.
-  EXPECT_EQ(2, [child_window orderWindowCount]);
+  EXPECT_EQ(nil, child_window.parentWindow);
 
-  // Parent is unchanged.
-  EXPECT_EQ(1, [parent_window orderWindowCount]);
-
-  // ShowInactive() on a visible regular window may serve to raise its stacking
-  // order without taking focus, so it should invoke -[NSWindow orderWindow:..].
-  parent->ShowInactive();
-  EXPECT_EQ(2, [parent_window orderWindowCount]);  // Increases.
-
-  // However, ShowInactive() on the child should have no effect. It should
-  // already be in a correct stacking order and we must avoid a Space switch.
-  child->ShowInactive();
-  EXPECT_EQ(2, [child_window orderWindowCount]);   // No change.
-  EXPECT_EQ(2, [parent_window orderWindowCount]);  // Parent also unchanged.
+  parent_window.fakeOnInactiveSpace = NO;
+  parent->Show();
+  EXPECT_EQ(parent_window, child_window.parentWindow);
 
   parent->CloseNow();
 }
@@ -833,55 +815,44 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
 
 // Tests that CloseAllSecondaryWidgets behaves in various configurations.
 TEST_F(NativeWidgetMacTest, CloseAllSecondaryWidgetsValidState) {
-  NSWindow* last_window = nil;
+  NativeWidgetMacTestWindow* last_window = nil;
+  bool window_deallocated = false;
   {
     // First verify the behavior of CloseAllSecondaryWidgets in the normal case,
     // and how [NSApp windows] changes in response to Widget closure.
     base::mac::ScopedNSAutoreleasePool pool;
-    Widget* widget = CreateTopLevelPlatformWidget();
-    widget->Show();
+    Widget* widget = CreateWidgetWithTestWindow(
+        Widget::InitParams(Widget::InitParams::TYPE_WINDOW), &last_window);
+    last_window.deallocFlag = &window_deallocated;
     TestWidgetObserver observer(widget);
-    last_window = widget->GetNativeWindow().GetNativeNSWindow();
     EXPECT_TRUE([[NSApp windows] containsObject:last_window]);
     Widget::CloseAllSecondaryWidgets();
     EXPECT_TRUE(observer.widget_closed());
   }
 
-  {
-    // Calls to [NSApp windows] do autorelease, so ensure the pool empties.
-    base::mac::ScopedNSAutoreleasePool pool;
-
-    // [NSApp windows] updates inside dealloc, so the window should be gone.
-    EXPECT_FALSE([[NSApp windows] containsObject:last_window]);
-  }
+  EXPECT_TRUE(window_deallocated);
+  window_deallocated = false;
 
   {
     // Repeat, but now retain a reference and close the window before
     // CloseAllSecondaryWidgets().
     base::mac::ScopedNSAutoreleasePool pool;
-    Widget* widget = CreateTopLevelPlatformWidget();
-    widget->Show();
+    Widget* widget = CreateWidgetWithTestWindow(
+        Widget::InitParams(Widget::InitParams::TYPE_WINDOW), &last_window);
+    last_window.deallocFlag = &window_deallocated;
     TestWidgetObserver observer(widget);
-    last_window = [widget->GetNativeWindow().GetNativeNSWindow() retain];
-    EXPECT_TRUE([[NSApp windows] containsObject:last_window]);
+    [last_window retain];
     widget->CloseNow();
     EXPECT_TRUE(observer.widget_closed());
   }
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
-    // Reference retained, so the window should still be present.
-    EXPECT_TRUE([[NSApp windows] containsObject:last_window]);
-  }
 
+  EXPECT_FALSE(window_deallocated);
   {
     base::mac::ScopedNSAutoreleasePool pool;
     Widget::CloseAllSecondaryWidgets();
     [last_window release];
   }
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
-    EXPECT_FALSE([[NSApp windows] containsObject:last_window]);
-  }
+  EXPECT_TRUE(window_deallocated);
 
   // Repeat, with two Widgets. We can't control the order of window closure.
   // If the parent is closed first, it should tear down the child while
@@ -2519,7 +2490,7 @@ TEST_F(NativeWidgetMacTest, InitCallback) {
 @implementation NativeWidgetMacTestWindow
 
 @synthesize invalidateShadowCount = invalidateShadowCount_;
-@synthesize orderWindowCount = orderWindowCount_;
+@synthesize fakeOnInactiveSpace = fakeOnInactiveSpace_;
 @synthesize deallocFlag = deallocFlag_;
 
 - (void)dealloc {
@@ -2535,10 +2506,8 @@ TEST_F(NativeWidgetMacTest, InitCallback) {
   [super invalidateShadow];
 }
 
-- (void)orderWindow:(NSWindowOrderingMode)orderingMode
-         relativeTo:(NSInteger)otherWindowNumber {
-  ++orderWindowCount_;
-  [super orderWindow:orderingMode relativeTo:otherWindowNumber];
+- (BOOL)isOnActiveSpace {
+  return !fakeOnInactiveSpace_;
 }
 
 @end

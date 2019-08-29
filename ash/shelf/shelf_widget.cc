@@ -376,6 +376,9 @@ void ShelfWidget::CreateHotseatWidget(aura::Window* container) {
   DCHECK(!hotseat_widget_);
   hotseat_widget_ = std::make_unique<HotseatWidget>();
   hotseat_widget_->Initialize(container, shelf_);
+
+  // Show a context menu for right clicks anywhere on the shelf widget.
+  delegate_view_->set_context_menu_controller(hotseat_widget_->GetShelfView());
 }
 
 void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {

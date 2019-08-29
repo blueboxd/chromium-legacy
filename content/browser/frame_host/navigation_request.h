@@ -498,7 +498,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   // Whether this navigation was served from the back-forward cache.
   bool is_served_from_back_forward_cache() {
-    return is_served_from_back_forward_cache_;
+    return rfh_restored_from_back_forward_cache_ != nullptr;
+  }
+
+  RenderFrameHostImpl* rfh_restored_from_back_forward_cache() {
+    return rfh_restored_from_back_forward_cache_;
   }
 
   // NavigationHandle implementation:
@@ -532,7 +536,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
                     std::unique_ptr<NavigationUIData> navigation_ui_data,
                     mojom::NavigationClientAssociatedPtrInfo navigation_client,
                     blink::mojom::NavigationInitiatorPtr navigation_initiator,
-                    bool is_served_from_back_forward_cache);
+                    RenderFrameHostImpl* rfh_restored_from_back_forward_cache);
 
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
@@ -1070,8 +1074,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // TODO(clamy): Clean this up once the architecture of unit tests is better.
   scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
 
-  // Whether this navigation is being served from the back-forward cache.
-  bool is_served_from_back_forward_cache_;
+  // The RenderFrameHost that was restored from the back-forward cache. This
+  // will be null except for navigations that are restoring a page from the
+  // back-forward cache.
+  RenderFrameHostImpl* rfh_restored_from_back_forward_cache_;
 
   // These are set to the values from the FrameNavigationEntry this
   // NavigationRequest is associated with (if any).

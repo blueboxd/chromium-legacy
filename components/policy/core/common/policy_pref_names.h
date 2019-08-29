@@ -18,11 +18,6 @@ POLICY_EXPORT extern const char kUrlWhitelist[];
 POLICY_EXPORT extern const char kUserPolicyRefreshRate[];
 POLICY_EXPORT extern const char kCloudManagementEnrollmentMandatory[];
 POLICY_EXPORT extern const char kCloudPolicyOverridesPlatformPolicy[];
-POLICY_EXPORT extern const char kUnsafeEventsReportingEnabled[];
-POLICY_EXPORT extern const char kBlockLargeFileTransfer[];
-POLICY_EXPORT extern const char kDelayDeliveryUntilVerdict[];
-POLICY_EXPORT extern const char kAllowPasswordProtectedFiles[];
-POLICY_EXPORT extern const char kCheckContentCompliance[];
 
 }  // namespace policy_prefs
 }  // namespace policy

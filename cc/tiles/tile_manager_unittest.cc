@@ -98,7 +98,7 @@ class TileManagerTilePriorityQueueTest : public TestLayerTreeHostBase {
 
 TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   SetupDefaultTrees(layer_bounds);
 
   std::unique_ptr<RasterTilePriorityQueue> queue(host_impl()->BuildRasterQueue(
@@ -355,7 +355,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
        RasterTilePriorityQueueHighNonIdealTilings) {
   const gfx::Size layer_bounds(1000, 1000);
   const gfx::Size viewport(800, 800);
-  host_impl()->active_tree()->SetDeviceViewportSize(viewport);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport));
   SetupDefaultTrees(layer_bounds);
 
   pending_layer()->tilings()->AddTiling(
@@ -430,7 +430,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
        RasterTilePriorityQueueHighLowTilings) {
   const gfx::Size layer_bounds(1000, 1000);
   const gfx::Size viewport(800, 800);
-  host_impl()->active_tree()->SetDeviceViewportSize(viewport);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport));
   SetupDefaultTrees(layer_bounds);
 
   pending_layer()->tilings()->AddTiling(
@@ -503,7 +503,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
 TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(gfx::Size(500, 500));
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(500, 500));
   SetupDefaultTrees(layer_bounds);
 
   // Use a tile's content rect as an invalidation. We should inset it a bit to
@@ -624,7 +624,7 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeSoon) {
   pending_layer()->test_properties()->AddChild(std::move(pending_child));
 
   // Set a small viewport, so we have soon and eventually tiles.
-  host_impl()->active_tree()->SetDeviceViewportSize(gfx::Size(200, 200));
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(200, 200));
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   host_impl()->pending_tree()->property_trees()->needs_rebuild = true;
   host_impl()->pending_tree()->BuildLayerListAndPropertyTreesForTesting();
@@ -655,7 +655,7 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeSoon) {
 
 TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   SetupDefaultTrees(layer_bounds);
   ASSERT_TRUE(active_layer()->HighResTiling());
   ASSERT_TRUE(active_layer()->LowResTiling());
@@ -830,7 +830,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   gfx::Size layer_bounds(1000, 1000);
 
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilled(layer_bounds);
@@ -1032,7 +1032,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
 TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   SetupDefaultTrees(layer_bounds);
 
   std::unique_ptr<RasterTilePriorityQueue> queue(host_impl()->BuildRasterQueue(
@@ -1079,7 +1079,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueEmptyLayers) {
 
 TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueueEmptyLayers) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   SetupDefaultTrees(layer_bounds);
 
   std::unique_ptr<RasterTilePriorityQueue> raster_queue(
@@ -1320,7 +1320,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
 TEST_F(TileManagerTilePriorityQueueTest, SetIsLikelyToRequireADraw) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   SetupDefaultTrees(layer_bounds);
 
   // Verify that the queue has a required for draw tile at Top.
@@ -1337,7 +1337,7 @@ TEST_F(TileManagerTilePriorityQueueTest, SetIsLikelyToRequireADraw) {
 TEST_F(TileManagerTilePriorityQueueTest,
        SetIsLikelyToRequireADrawOnZeroMemoryBudget) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   SetupDefaultTrees(layer_bounds);
 
   // Verify that the queue has a required for draw tile at Top.
@@ -1358,7 +1358,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 TEST_F(TileManagerTilePriorityQueueTest,
        SetIsLikelyToRequireADrawOnLimitedMemoryBudget) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   SetupDefaultTrees(layer_bounds);
 
   // Verify that the queue has a required for draw tile at Top.
@@ -1390,7 +1390,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
 TEST_F(TileManagerTilePriorityQueueTest, DefaultMemoryPolicy) {
   const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   SetupDefaultTrees(layer_bounds);
 
   host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
@@ -1930,8 +1930,8 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
       FakeRasterSource::CreateFilled(kTileSize);
   host_impl()->CreatePendingTree();
   LayerTreeImpl* pending_tree = host_impl()->pending_tree();
-  pending_tree->SetDeviceViewportSize(
-      host_impl()->active_tree()->GetDeviceViewport().size());
+  pending_tree->SetDeviceViewportRect(
+      host_impl()->active_tree()->GetDeviceViewport());
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
@@ -2029,8 +2029,8 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
       FakeRasterSource::CreateFilled(kTileSize);
   host_impl->CreatePendingTree();
   LayerTreeImpl* pending_tree = host_impl->pending_tree();
-  pending_tree->SetDeviceViewportSize(
-      host_impl->active_tree()->GetDeviceViewport().size());
+  pending_tree->SetDeviceViewportRect(
+      host_impl->active_tree()->GetDeviceViewport());
 
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
       FakePictureLayerImpl::CreateWithRasterSource(pending_tree, kLayerId,
@@ -2113,8 +2113,8 @@ void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
 
   host_impl->CreatePendingTree();
   LayerTreeImpl* pending_tree = host_impl->pending_tree();
-  pending_tree->SetDeviceViewportSize(
-      host_impl->active_tree()->GetDeviceViewport().size());
+  pending_tree->SetDeviceViewportRect(
+      host_impl->active_tree()->GetDeviceViewport());
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
@@ -2517,7 +2517,7 @@ TEST_F(TileManagerReadyToDrawTest, TilePrioritiesUpdated) {
   // ready instead of marking them ready immediately.
   host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
   gfx::Size very_small(1, 1);
-  host_impl()->active_tree()->SetDeviceViewportSize(very_small);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(very_small));
 
   gfx::Size layer_bounds(1000, 1000);
   SetupDefaultTrees(layer_bounds);
@@ -2560,7 +2560,7 @@ TEST_F(TileManagerReadyToDrawTest, TilePrioritiesUpdated) {
   EXPECT_GT(orig_num_prepaint, 0u);
   EXPECT_GT(orig_num_required, 0u);
 
-  host_impl()->active_tree()->SetDeviceViewportSize(layer_bounds);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(layer_bounds));
   host_impl()->active_tree()->UpdateDrawProperties();
   host_impl()->pending_tree()->UpdateDrawProperties();
 
@@ -3398,8 +3398,8 @@ TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
 
   host_impl()->CreatePendingTree();
   LayerTreeImpl* pending_tree = host_impl()->pending_tree();
-  pending_tree->SetDeviceViewportSize(
-      host_impl()->active_tree()->GetDeviceViewport().size());
+  pending_tree->SetDeviceViewportRect(
+      host_impl()->active_tree()->GetDeviceViewport());
 
   // Steal from the recycled tree.
   std::unique_ptr<FakePictureLayerImpl> pending_layer =

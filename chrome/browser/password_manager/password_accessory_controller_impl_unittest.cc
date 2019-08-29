@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
@@ -25,7 +24,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
@@ -54,11 +52,9 @@ using testing::SaveArg;
 using testing::StrictMock;
 using FillingSource = ManualFillingController::FillingSource;
 
-constexpr char kExampleSite[] = "https://example.com";
-constexpr char kExampleSiteMobile[] = "https://m.example.com";
+constexpr char kExampleSite[] = "https://example.com/";
+constexpr char kExampleSiteMobile[] = "https://m.example.com/";
 constexpr char kExampleDomain[] = "example.com";
-constexpr char kExampleDomainMobile[] = "m.example.com";
-constexpr int kIconSize = 75;  // An example size for favicons (=> 3.5*20px).
 
 class MockPasswordGenerationController
     : public PasswordGenerationControllerImpl {
@@ -131,9 +127,7 @@ AccessorySheetData::Builder PasswordAccessorySheetDataBuilder(
 
 class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
  public:
-  PasswordAccessoryControllerTest()
-      : mock_favicon_service_(
-            std::make_unique<StrictMock<favicon::MockFaviconService>>()) {}
+  PasswordAccessoryControllerTest() = default;
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -146,17 +140,12 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
 
     MockPasswordGenerationController::CreateForWebContents(web_contents());
     PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
-        web_contents(), cache(), mock_manual_filling_controller_.AsWeakPtr(),
-        favicon_service());
+        web_contents(), cache(), mock_manual_filling_controller_.AsWeakPtr());
     NavigateAndCommit(GURL(kExampleSite));
   }
 
   PasswordAccessoryController* controller() {
     return PasswordAccessoryControllerImpl::FromWebContents(web_contents());
-  }
-
-  favicon::MockFaviconService* favicon_service() {
-    return mock_favicon_service_.get();
   }
 
   password_manager::CredentialCache* cache() { return &credential_cache_; }
@@ -166,8 +155,6 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   password_manager::CredentialCache credential_cache_;
-  std::unique_ptr<StrictMock<favicon::MockFaviconService>>
-      mock_favicon_service_;
 };
 
 TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
@@ -417,7 +404,7 @@ TEST_F(PasswordAccessoryControllerTest, SetsTitleForPSLMatchedOriginsInV2) {
                        /*is_obfuscated=*/false, /*selectable=*/true)
           .AppendField(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
                        /*is_obfuscated=*/true, /*selectable=*/false)
-          .AddUserInfo(kExampleDomainMobile)
+          .AddUserInfo(kExampleSiteMobile)
           .AppendField(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"),
                        /*is_obfuscated=*/false, /*selectable=*/true)
           .AppendField(ASCIIToUTF16("R4nd0m"), password_for_str("Alf"),
@@ -478,7 +465,6 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
 
   // Pretend that the focus was lost or moved to an unfillable field.
   NavigateAndCommit(GURL("https://random.other-site.org/"));
-  controller()->DidNavigateMainFrame();
 
   // Now, only the empty state message should be sent.
   EXPECT_CALL(
@@ -489,160 +475,6 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kUnfillableElement,
       /*is_manual_generation_available=*/false);
-}
-
-TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
-  base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
-
-  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions);
-  controller()->RefreshSuggestionsForField(
-      FocusedFieldType::kFillableUsernameField,
-      /*is_manual_generation_available=*/false);
-
-  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
-                                                          kIconSize, _, _, _))
-      .WillOnce([](auto, auto, auto, auto,
-                   favicon_base::FaviconRawBitmapCallback callback,
-                   base::CancelableTaskTracker* tracker) {
-        return tracker->PostTask(
-            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           favicon_base::FaviconRawBitmapResult()));
-      });
-  EXPECT_CALL(mock_callback, Run);
-  controller()->GetFavicon(kIconSize, mock_callback.Get());
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
-  base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
-
-  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions);
-  controller()->RefreshSuggestionsForField(
-      FocusedFieldType::kFillableUsernameField,
-      /*is_manual_generation_available=*/false);
-
-  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
-                                                          kIconSize, _, _, _))
-      .WillOnce([](auto, auto, auto, auto,
-                   favicon_base::FaviconRawBitmapCallback callback,
-                   base::CancelableTaskTracker* tracker) {
-        return tracker->PostTask(
-            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           favicon_base::FaviconRawBitmapResult()));
-      });
-  EXPECT_CALL(mock_callback, Run).Times(2);
-  controller()->GetFavicon(kIconSize, mock_callback.Get());
-  // The favicon service should already start to work on the request.
-  Mock::VerifyAndClearExpectations(favicon_service());
-
-  // This call is only enqueued (and the callback will be called afterwards).
-  controller()->GetFavicon(kIconSize, mock_callback.Get());
-
-  // After the async task is finished, both callbacks must be called.
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
-  base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
-
-  // We need a result with a non-empty image or it won't get cached.
-  favicon_base::FaviconRawBitmapResult non_empty_result;
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(kIconSize, kIconSize);
-  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
-  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &data->data());
-  non_empty_result.bitmap_data = data;
-  non_empty_result.expired = false;
-  non_empty_result.pixel_size = gfx::Size(kIconSize, kIconSize);
-  non_empty_result.icon_type = favicon_base::IconType::kFavicon;
-  non_empty_result.icon_url = GURL(kExampleSite);
-
-  // Populate the cache by requesting a favicon.
-  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions);
-  controller()->RefreshSuggestionsForField(
-      FocusedFieldType::kFillableUsernameField,
-      /*is_manual_generation_available=*/false);
-
-  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
-                                                          kIconSize, _, _, _))
-      .WillOnce([=](auto, auto, auto, auto,
-                    favicon_base::FaviconRawBitmapCallback callback,
-                    base::CancelableTaskTracker* tracker) {
-        return tracker->PostTask(
-            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
-            base::BindOnce(std::move(callback), non_empty_result));
-      });
-  EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(kIconSize, mock_callback.Get());
-
-  base::RunLoop().RunUntilIdle();
-  Mock::VerifyAndClearExpectations(&mock_callback);
-
-  // This call is handled by the cache - no favicon service, no async request.
-  EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(kIconSize, mock_callback.Get());
-  Mock::VerifyAndClearExpectations(&mock_callback);
-  Mock::VerifyAndClearExpectations(favicon_service());
-
-  // The navigation to another origin clears the cache.
-  NavigateAndCommit(GURL("https://random.other-site.org/"));
-  controller()->DidNavigateMainFrame();
-  NavigateAndCommit(GURL(kExampleSite));  // Same origin as intially.
-  controller()->DidNavigateMainFrame();
-  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions);
-  controller()->RefreshSuggestionsForField(
-      FocusedFieldType::kFillableUsernameField,
-      /*is_manual_generation_available=*/false);
-
-  // The cache was cleared, so now the service has to be queried again.
-  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
-                                                          kIconSize, _, _, _))
-      .WillOnce([=](auto, auto, auto, auto,
-                    favicon_base::FaviconRawBitmapCallback callback,
-                    base::CancelableTaskTracker* tracker) {
-        return tracker->PostTask(
-            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
-            base::BindOnce(std::move(callback), non_empty_result));
-      });
-  EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(kIconSize, mock_callback.Get());
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
-  base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
-
-  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestions).Times(2);
-  controller()->RefreshSuggestionsForField(
-      FocusedFieldType::kFillableUsernameField, false);
-
-  // Right after starting the favicon request for example.com, a navigation
-  // changes the URL of the focused frame. Even if the request is completed,
-  // the callback should not be called because the origin of the suggestions
-  // has changed.
-  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
-                                                          kIconSize, _, _, _))
-      .WillOnce([=](auto, auto, auto, auto,
-                    favicon_base::FaviconRawBitmapCallback callback,
-                    base::CancelableTaskTracker* tracker) {
-        // Triggering a navigation at this moment ensures that the focused
-        // frame origin changes after the original origin has been sent to the
-        // favicon service, but before checking whether the origins match (and
-        // maybe invoking the callback).
-        this->NavigateAndCommit(GURL("https://other.frame.com/"));
-        return tracker->PostTask(
-            base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           favicon_base::FaviconRawBitmapResult()));
-      });
-  EXPECT_CALL(mock_callback, Run).Times(0);
-  controller()->GetFavicon(kIconSize, mock_callback.Get());
-  controller()->RefreshSuggestionsForField(
-      FocusedFieldType::kFillableUsernameField, false);
-
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(PasswordAccessoryControllerTest, OnAutomaticGenerationRequested) {

@@ -116,12 +116,6 @@ class WPTServe(server_base.ServerBase):
             return True
 
         _log.debug('pid %d is running, killing it', self._pid)
-
-        # kill_process() kills the whole process tree on Windows, but not on
-        # POSIX, so we send SIGINT instead to allow wptserve to exit gracefully.
-        if self._platform.is_win():
-            self._executive.kill_process(self._pid)
-        else:
-            self._executive.interrupt(self._pid)
+        self._executive.kill_process(self._pid)
 
         return False

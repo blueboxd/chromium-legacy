@@ -9,6 +9,7 @@
 #include <unknwn.h>
 #include <wrl.h>
 #include <array>
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -36,7 +37,6 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   // state of the runtime.
 
   XrSystemId GetSystemId();
-  XrSession GetSession();
   XrSwapchain GetSwapchain();
   XrResult GetActionStateBoolean(XrAction action,
                                  XrActionStateBoolean* data) const;
@@ -51,6 +51,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrSpace CreateActionSpace();
   XrPath GetPath(const char* path_string);
 
+  XrResult GetSession(XrSession* session);
   XrResult BeginSession();
   XrResult EndSession();
 
@@ -66,6 +67,10 @@ class OpenXrTestHelper : public device::ServiceTestHook {
 
   uint32_t NextSwapchainImageIndex();
   XrTime NextPredictedDisplayTime();
+
+  bool UpdateSessionStateEventQueue();
+  bool HasPendingSessionStateEvent();
+  XrEventDataSessionStateChanged GetNextSessionStateEvent();
 
   // Methods that validate the parameter with the current state of the runtime.
   XrResult ValidateAction(XrAction action) const;
@@ -107,6 +112,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   };
 
   XrResult UpdateAction(XrAction action);
+  void SetSessionState(XrSessionState state);
 
   // Properties of the mock OpenXR runtime that doesn't change throughout the
   // lifetime of the instance. However, these aren't static because they are
@@ -115,12 +121,12 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   // to validate that they were queried before being used.
   XrSystemId system_id_;
   XrSession session_;
+  XrSessionState session_state_;
   XrSwapchain swapchain_;
   XrSpace local_space_;
   XrSpace view_space_;
 
   // Properties that changes depending on the state of the runtime.
-  bool session_running_;
   Microsoft::WRL::ComPtr<ID3D11Device> d3d_device_;
   std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>> textures_arr_;
   uint32_t acquired_swapchain_texture_;
@@ -148,6 +154,10 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   std::unordered_set<std::string> action_set_localized_names_;
 
   std::array<device::ControllerFrameData, device::kMaxTrackedDevices> data_arr_;
+
+  // session_state_event_queue_ is used to store XrEventDataSessionStateChanged
+  // event whenever session state changes.
+  std::queue<XrEventDataSessionStateChanged> session_state_event_queue_;
 
   device::VRTestHook* test_hook_ GUARDED_BY(lock_) = nullptr;
   base::Lock lock_;

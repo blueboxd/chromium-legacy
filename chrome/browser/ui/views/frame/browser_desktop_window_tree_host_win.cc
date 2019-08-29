@@ -359,10 +359,13 @@ bool BrowserDesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent()
 
 void BrowserDesktopWindowTreeHostWin::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
+  // If we're currently badging the window icon (>1 available profile),
+  // and this window's profile's avatar changed, update the window icon.
   if (browser_view_->browser()->profile()->GetPath() == profile_path &&
       g_browser_process->profile_manager()
               ->GetProfileAttributesStorage()
               .GetNumberOfProfiles() > 1) {
+    // If we went from 1 to 2 profiles, window icons should be badged.
     SetWindowIcon(/*badged=*/true);
   }
 }
@@ -382,6 +385,7 @@ void BrowserDesktopWindowTreeHostWin::OnProfileWasRemoved(
   if (g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
           .GetNumberOfProfiles() == 1) {
+    // If we went from 2 profiles to 1, window icons should not be badged.
     SetWindowIcon(/*badged=*/false);
   }
 }
@@ -422,6 +426,8 @@ SkBitmap GetBadgedIconBitmapForProfile(Profile* profile) {
 }
 
 void BrowserDesktopWindowTreeHostWin::SetWindowIcon(bool badged) {
+  // Hold onto the previous icon so that the currently displayed
+  // icon is valid until replaced with the new icon.
   base::win::ScopedHICON previous_icon = std::move(icon_handle_);
   if (badged) {
     icon_handle_ = IconUtil::CreateHICONFromSkBitmap(
@@ -429,9 +435,9 @@ void BrowserDesktopWindowTreeHostWin::SetWindowIcon(bool badged) {
   } else {
     icon_handle_.reset(GetAppIcon());
   }
-  PostMessage(GetHWND(), WM_SETICON, ICON_SMALL,
+  SendMessage(GetHWND(), WM_SETICON, ICON_SMALL,
               reinterpret_cast<LPARAM>(icon_handle_.get()));
-  PostMessage(GetHWND(), WM_SETICON, ICON_BIG,
+  SendMessage(GetHWND(), WM_SETICON, ICON_BIG,
               reinterpret_cast<LPARAM>(icon_handle_.get()));
 }
 

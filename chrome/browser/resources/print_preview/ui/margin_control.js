@@ -186,8 +186,8 @@ Polymer({
       return null;
     }
     assert(this.measurementSystem);
-    const decimal = this.measurementSystem.decimalDelimeter;
-    const thousands = this.measurementSystem.thousandsDelimeter;
+    const decimal = this.measurementSystem.decimalDelimiter;
+    const thousands = this.measurementSystem.thousandsDelimiter;
     const whole = `(?:0|[1-9]\\d*|[1-9]\\d{0,2}(?:[${thousands}]\\d{3})*)`;
     const fractional = `(?:[${decimal}]\\d*)`;
     const validationRegex =
@@ -214,7 +214,7 @@ Polymer({
     value = this.measurementSystem.roundValue(value);
     // Convert the dot symbol to the decimal delimiter for the locale.
     return value.toString().replace(
-        '.', this.measurementSystem.decimalDelimeter);
+        '.', this.measurementSystem.decimalDelimiter);
   },
 
   /**

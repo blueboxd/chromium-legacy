@@ -16,6 +16,8 @@
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "services/device/generic_sensor/platform_sensor_reader_win_base.h"
+#include "services/device/public/cpp/generic_sensor/sensor_reading.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
 
@@ -45,6 +47,8 @@ enum SensorWinrtCreateFailure {
 // interfaces should be passed in. The owner of this class must guarantee
 // construction and destruction occur on the same thread and that no
 // other thread is accessing it during destruction.
+// TODO(crbug.com/995594): Change Windows.Devices.Sensors based
+//   implementation of W3C sensor API to use hardware thresholding.
 template <wchar_t const* runtime_class_id,
           class ISensorWinrtStatics,
           class ISensorWinrtClass,
@@ -102,6 +106,9 @@ class PlatformSensorReaderWinrtBase : public PlatformSensorReaderWinBase {
   // Null if there is no client to notify, non-null otherwise.
   Client* client_;
 
+  // Always report the first sample received after starting the sensor.
+  bool has_received_first_sample_ = false;
+
  private:
   base::TimeDelta GetMinimumReportIntervalFromSensor();
 
@@ -128,9 +135,13 @@ class PlatformSensorReaderWinrtLightSensor final
               Microsoft::WRL::FtmBase>,
           ABI::Windows::Devices::Sensors::ILightSensorReadingChangedEventArgs> {
  public:
+  // Lux scales exponentially with perceived brightness so use a relative
+  // threshold instead of an absolute one.
+  static constexpr float kLuxPercentThreshold = 0.2f;  // 20%
+
   static std::unique_ptr<PlatformSensorReaderWinBase> Create();
 
-  PlatformSensorReaderWinrtLightSensor() = default;
+  PlatformSensorReaderWinrtLightSensor();
   ~PlatformSensorReaderWinrtLightSensor() override = default;
 
  protected:
@@ -140,6 +151,8 @@ class PlatformSensorReaderWinrtLightSensor final
           reading_changed_args) override;
 
  private:
+  float last_reported_lux_ = 0.0f;
+
   PlatformSensorReaderWinrtLightSensor(
       const PlatformSensorReaderWinrtLightSensor&) = delete;
   PlatformSensorReaderWinrtLightSensor& operator=(
@@ -161,9 +174,11 @@ class PlatformSensorReaderWinrtAccelerometer final
           ABI::Windows::Devices::Sensors::
               IAccelerometerReadingChangedEventArgs> {
  public:
+  static constexpr double kAxisThreshold = 0.1f;
+
   static std::unique_ptr<PlatformSensorReaderWinBase> Create();
 
-  PlatformSensorReaderWinrtAccelerometer() = default;
+  PlatformSensorReaderWinrtAccelerometer();
   ~PlatformSensorReaderWinrtAccelerometer() override = default;
 
  protected:
@@ -173,6 +188,10 @@ class PlatformSensorReaderWinrtAccelerometer final
           reading_changed_args) override;
 
  private:
+  double last_reported_x_ = 0.0;
+  double last_reported_y_ = 0.0;
+  double last_reported_z_ = 0.0;
+
   PlatformSensorReaderWinrtAccelerometer(
       const PlatformSensorReaderWinrtAccelerometer&) = delete;
   PlatformSensorReaderWinrtAccelerometer& operator=(
@@ -193,9 +212,11 @@ class PlatformSensorReaderWinrtGyrometer final
               Microsoft::WRL::FtmBase>,
           ABI::Windows::Devices::Sensors::IGyrometerReadingChangedEventArgs> {
  public:
+  static constexpr double kDegreeThreshold = 5.0;
+
   static std::unique_ptr<PlatformSensorReaderWinBase> Create();
 
-  PlatformSensorReaderWinrtGyrometer() = default;
+  PlatformSensorReaderWinrtGyrometer();
   ~PlatformSensorReaderWinrtGyrometer() override = default;
 
  protected:
@@ -205,6 +226,10 @@ class PlatformSensorReaderWinrtGyrometer final
           reading_changed_args) override;
 
  private:
+  double last_reported_x_ = 0.0;
+  double last_reported_y_ = 0.0;
+  double last_reported_z_ = 0.0;
+
   PlatformSensorReaderWinrtGyrometer(
       const PlatformSensorReaderWinrtGyrometer&) = delete;
   PlatformSensorReaderWinrtGyrometer& operator=(
@@ -226,9 +251,11 @@ class PlatformSensorReaderWinrtMagnetometer final
           ABI::Windows::Devices::Sensors::
               IMagnetometerReadingChangedEventArgs> {
  public:
+  static constexpr double kMicroteslaThreshold = 5.0f;
+
   static std::unique_ptr<PlatformSensorReaderWinBase> Create();
 
-  PlatformSensorReaderWinrtMagnetometer() = default;
+  PlatformSensorReaderWinrtMagnetometer();
   ~PlatformSensorReaderWinrtMagnetometer() override = default;
 
  protected:
@@ -238,6 +265,10 @@ class PlatformSensorReaderWinrtMagnetometer final
           reading_changed_args) override;
 
  private:
+  double last_reported_x_ = 0.0;
+  double last_reported_y_ = 0.0;
+  double last_reported_z_ = 0.0;
+
   PlatformSensorReaderWinrtMagnetometer(
       const PlatformSensorReaderWinrtMagnetometer&) = delete;
   PlatformSensorReaderWinrtMagnetometer& operator=(
@@ -259,9 +290,11 @@ class PlatformSensorReaderWinrtAbsOrientationEulerAngles final
           ABI::Windows::Devices::Sensors::
               IInclinometerReadingChangedEventArgs> {
  public:
+  static constexpr double kDegreeThreshold = 5.0f;
+
   static std::unique_ptr<PlatformSensorReaderWinBase> Create();
 
-  PlatformSensorReaderWinrtAbsOrientationEulerAngles() = default;
+  PlatformSensorReaderWinrtAbsOrientationEulerAngles();
   ~PlatformSensorReaderWinrtAbsOrientationEulerAngles() override = default;
 
  protected:
@@ -271,6 +304,10 @@ class PlatformSensorReaderWinrtAbsOrientationEulerAngles final
           reading_changed_args) override;
 
  private:
+  double last_reported_x_ = 0.0;
+  double last_reported_y_ = 0.0;
+  double last_reported_z_ = 0.0;
+
   PlatformSensorReaderWinrtAbsOrientationEulerAngles(
       const PlatformSensorReaderWinrtAbsOrientationEulerAngles&) = delete;
   PlatformSensorReaderWinrtAbsOrientationEulerAngles& operator=(
@@ -292,10 +329,12 @@ class PlatformSensorReaderWinrtAbsOrientationQuaternion final
           ABI::Windows::Devices::Sensors::
               IOrientationSensorReadingChangedEventArgs> {
  public:
+  static constexpr double kRadianThreshold = gfx::DegToRad(5.0);
+
   static std::unique_ptr<PlatformSensorReaderWinBase> Create();
 
-  PlatformSensorReaderWinrtAbsOrientationQuaternion() = default;
-  ~PlatformSensorReaderWinrtAbsOrientationQuaternion() override = default;
+  PlatformSensorReaderWinrtAbsOrientationQuaternion();
+  ~PlatformSensorReaderWinrtAbsOrientationQuaternion() override;
 
  protected:
   HRESULT OnReadingChangedCallback(
@@ -304,6 +343,8 @@ class PlatformSensorReaderWinrtAbsOrientationQuaternion final
           reading_changed_args) override;
 
  private:
+  SensorReading last_reported_sample{};
+
   PlatformSensorReaderWinrtAbsOrientationQuaternion(
       const PlatformSensorReaderWinrtAbsOrientationQuaternion&) = delete;
   PlatformSensorReaderWinrtAbsOrientationQuaternion& operator=(

@@ -20,13 +20,24 @@ class BLINK_COMMON_EXPORT BrowserInterfaceBrokerProxy {
   BrowserInterfaceBrokerProxy() = default;
   void Bind(mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>);
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> Reset();
+
+  // Asks the browser to bind the given receiver. If a non-null testing override
+  // was set by |SetBinderForTesting()|, the request will be intercepted by that
+  // binder instead of going to the browser.
   void GetInterface(mojo::GenericPendingReceiver) const;
 
   // TODO(crbug.com/718652): Add a presubmit check for C++ call sites
   void GetInterface(const std::string& name,
                     mojo::ScopedMessagePipeHandle pipe) const;
 
-  void SetBinderForTesting(
+  // Overrides how the named interface is bound, rather than sending its
+  // receivers to the browser. If |binder| is null, any registered override
+  // for the interface is cancelled.
+  //
+  // Returns |true| if the new binder was successfully set, or |false| if the
+  // binder was non-null and an existing binder was already registered for the
+  // named interface.
+  bool SetBinderForTesting(
       const std::string& name,
       base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)> binder);
 

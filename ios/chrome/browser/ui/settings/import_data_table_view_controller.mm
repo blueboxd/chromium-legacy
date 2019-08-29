@@ -128,7 +128,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
   item.text = l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_HEADER,
                                       base::SysNSStringToUTF16(_fromEmail));
-  item.textColor = UIColor.blackColor;
   return item;
 }
 

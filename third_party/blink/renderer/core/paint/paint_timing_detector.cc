@@ -343,12 +343,19 @@ ScopedPaintTimingDetectorBlockPaintHook*
 void ScopedPaintTimingDetectorBlockPaintHook::EmplaceIfNeeded(
     const LayoutBoxModelObject& aggregator,
     const PropertyTreeState& property_tree_state) {
+  // |reset_top_| is unset when |aggregator| is anonymous so that each
+  // aggregation corresponds to an element. See crbug.com/988593. When set,
+  // |top_| becomes |this|, and |top_| is restored to the previous value when
+  // the ScopedPaintTimingDetectorBlockPaintHook goes out of scope.
+  if (aggregator.GetNode())
+    reset_top_.emplace(&top_, this);
+
   TextPaintTimingDetector* detector = aggregator.GetFrameView()
                                           ->GetPaintTimingDetector()
                                           .GetTextPaintTimingDetector();
-  if (!detector || !detector->ShouldWalkObject(aggregator))
-    return;
-  data_.emplace(aggregator, property_tree_state, detector);
+  // Only set |data_| if we need to walk the object.
+  if (detector && detector->ShouldWalkObject(aggregator))
+    data_.emplace(aggregator, property_tree_state, detector);
 }
 
 ScopedPaintTimingDetectorBlockPaintHook::Data::Data(
@@ -361,7 +368,6 @@ ScopedPaintTimingDetectorBlockPaintHook::Data::Data(
 
 ScopedPaintTimingDetectorBlockPaintHook::
     ~ScopedPaintTimingDetectorBlockPaintHook() {
-  DCHECK_EQ(top_, this);
   if (!data_ || data_->aggregated_visual_rect_.IsEmpty())
     return;
   // TODO(crbug.com/987804): Checking |ShouldWalkObject| again is necessary

@@ -73,6 +73,8 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
 
   context_menu_button_ = context_menu_button.get();
   AddChildView(std::move(context_menu_button));
+
+  UpdatePinButton();
 }
 
 ExtensionsMenuItemView::~ExtensionsMenuItemView() = default;
@@ -89,6 +91,10 @@ void ExtensionsMenuItemView::OnMenuButtonClicked(views::Button* source,
 
 void ExtensionsMenuItemView::UpdatePinButton() {
   primary_action_button_->UpdatePinButton();
+}
+
+bool ExtensionsMenuItemView::IsContextMenuRunning() {
+  return context_menu_controller_->IsMenuRunning();
 }
 
 ExtensionsMenuButton*

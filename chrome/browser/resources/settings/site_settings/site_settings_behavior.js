@@ -193,8 +193,6 @@ const SiteSettingsBehaviorImpl = {
     };
     // These categories are gated behind flags.
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.SENSORS, 'enableSensorsContentSetting');
-    addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.SERIAL_PORTS,
         'enableExperimentalWebPlatformFeatures');
     addOrRemoveSettingWithFlag(

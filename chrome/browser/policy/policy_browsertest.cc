@@ -6924,7 +6924,10 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
 
 #if defined(OS_WIN)
 
-class ForceNetworkInProcessTest : public InProcessBrowserTest {
+class ForceNetworkInProcessTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<
+          /*policy::key::kForceNetworkInProcess=*/bool> {
  public:
   // InProcessBrowserTest implementation:
   void SetUp() override {
@@ -6933,8 +6936,8 @@ class ForceNetworkInProcessTest : public InProcessBrowserTest {
     policy::PolicyMap values;
     values.Set(policy::key::kForceNetworkInProcess,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-               policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(GetParam()), nullptr);
     policy_provider_.UpdateChromePolicy(values);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
@@ -6946,9 +6949,19 @@ class ForceNetworkInProcessTest : public InProcessBrowserTest {
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
 
-IN_PROC_BROWSER_TEST_F(ForceNetworkInProcessTest, Enabled) {
-  ASSERT_TRUE(content::IsInProcessNetworkService());
+IN_PROC_BROWSER_TEST_P(ForceNetworkInProcessTest, IsRespected) {
+  ASSERT_EQ(content::IsInProcessNetworkService(), GetParam());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    Enabled,
+    ForceNetworkInProcessTest,
+    ::testing::Values(/*policy::key::kForceNetworkInProcess=*/true));
+
+INSTANTIATE_TEST_SUITE_P(
+    Disabled,
+    ForceNetworkInProcessTest,
+    ::testing::Values(/*policy::key::kForceNetworkInProcess=*/false));
 
 #endif  // defined(OS_WIN)
 

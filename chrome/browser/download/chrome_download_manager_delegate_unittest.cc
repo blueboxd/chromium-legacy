@@ -1080,8 +1080,8 @@ class TestDownloadProtectionService
 
   void CheckClientDownload(
       DownloadItem* download_item,
-      const safe_browsing::CheckDownloadCallback& callback) override {
-    callback.Run(MockCheckClientDownload());
+      safe_browsing::CheckDownloadCallback callback) override {
+    std::move(callback).Run(MockCheckClientDownload());
   }
   MOCK_METHOD0(MockCheckClientDownload, safe_browsing::DownloadCheckResult());
 };

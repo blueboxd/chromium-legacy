@@ -1315,20 +1315,20 @@
         <message name="IDS_HOST_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when making changes to the system.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
           <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph> wants to make changes.
         </message>
-        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE" desc="The title of the prompt used to ask the user to enable the Chrome Remote Desktop service in the accessibility section of the privacy and security preferences pane.  Mac-only.">
-          Allow remote users to control this machine
+        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE" desc="The title of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Mac-only.">
+          Allow remote users to control this Mac
         </message>
-        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_BODY_TEXT" desc="The body text of the prompt used to ask the user to enable the Chrome Remote Desktop service in the accessibility section of the privacy and security preferences pane.  Mac-only.">
-An additional configuration step is required before you can control this machine remotely using <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>.
+        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_BODY_TEXT" desc="The body text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Mac-only.">
+To use <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph> on this Mac, follow these steps:
 
-To enable this functionality, select '<ph name="BUTTON_NAME">$2<ex>Open Preferences</ex></ph>' to display the Security and Privacy preferences pane, then check the box next to '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>'.
+Select '<ph name="BUTTON_NAME">$2<ex>Open Preferences</ex></ph>' below. In your Security and Privacy preferences, check the box next to '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>'.
 
-If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>' is already present and checked, you may need to uncheck and then recheck it.
+If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></ph>' is already checked, uncheck it and then check it again.
         </message>
-        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON" desc="The button text of the prompt used to ask the user to enable the Chrome Remote Desktop service in the accessibility section of the privacy and security preferences pane.  Selecting this button will open the security and preferences pane.  Mac-only.">
+        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON" desc="The button text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Selecting this button will open the 'Privacy and Security' preferences pane. Mac-only.">
           Open Preferences
         </message>
-        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_NOT_NOW_BUTTON" desc="The button text of the prompt used to ask the user to enable the Chrome Remote Desktop service in the accessibility section of the privacy and security preferences pane.  Selecting this button will close the dialog.  Mac-only.">
+        <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_NOT_NOW_BUTTON" desc="The button text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. When the user selects this button, they decline to turn on Chrome Remote Desktop and this dialog will close. Mac-only.">
           Not Now
         </message>
       </if>

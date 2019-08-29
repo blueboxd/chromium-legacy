@@ -85,10 +85,8 @@ constexpr auto kMinExpansionStepDuration =
 constexpr auto kMaxExpansionStepDuration =
     base::TimeDelta::FromMilliseconds(150);
 
-#if !defined(OS_MACOSX)
 // How long to delay before destroying an unused status bubble widget.
 constexpr auto kDestroyPopupDelay = base::TimeDelta::FromSeconds(10);
-#endif
 
 const gfx::FontList& GetFont() {
   return views::style::GetFont(views::style::CONTEXT_LABEL,
@@ -280,15 +278,8 @@ void StatusBubbleViews::StatusView::ShowInstantly() {
   CancelTimer();
   SetOpacity(1.0);
   state_ = BUBBLE_SHOWN;
-#if defined(OS_MACOSX)
-  // Don't order an already-visible window on Mac, since that may trigger a
-  // space switch. The window stacking is guaranteed by its child window status.
-  if (!GetWidget()->IsVisible())
-    GetWidget()->ShowInactive();
-#else
   GetWidget()->ShowInactive();
   destroy_popup_timer_.Stop();
-#endif
 }
 
 void StatusBubbleViews::StatusView::HideInstantly() {
@@ -297,7 +288,6 @@ void StatusBubbleViews::StatusView::HideInstantly() {
   SetOpacity(0.0);
   text_->SetText(base::string16());
   state_ = BUBBLE_HIDDEN;
-#if !defined(OS_MACOSX)
   // Don't orderOut: the window on macOS. Doing so for a child window requires
   // it to be detached/reattached, which may trigger a space switch. Instead,
   // just leave the window fully transparent and unclickable.
@@ -308,7 +298,6 @@ void StatusBubbleViews::StatusView::HideInstantly() {
   destroy_popup_timer_.SetTaskRunner(status_bubble_->task_runner_);
   destroy_popup_timer_.Start(FROM_HERE, kDestroyPopupDelay, status_bubble_,
                              &StatusBubbleViews::DestroyPopup);
-#endif
 }
 
 void StatusBubbleViews::StatusView::StartTimer(base::TimeDelta time) {
@@ -377,9 +366,7 @@ void StatusBubbleViews::StatusView::StartHiding() {
 }
 
 void StatusBubbleViews::StatusView::StartShowing() {
-#if !defined(OS_MACOSX)
   destroy_popup_timer_.Stop();
-#endif
 
   if (state_ == BUBBLE_HIDDEN) {
     GetWidget()->ShowInactive();

@@ -125,9 +125,4 @@ specific_include_rules = {
     "+content/shell/browser",
     "+content/shell/common",
   ],
-
-  # Dependencies specific for fuzz targets and other fuzzing-related code.
-  ".*fuzz.*": [
-    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
-  ]
 }

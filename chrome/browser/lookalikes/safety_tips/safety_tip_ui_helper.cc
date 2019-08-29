@@ -25,38 +25,38 @@ void LeaveSite(content::WebContents* web_contents) {
   web_contents->OpenURL(params);
 }
 
-int GetSafetyTipTitleId(SafetyTipType warning_type) {
+int GetSafetyTipTitleId(security_state::SafetyTipStatus warning_type) {
   switch (warning_type) {
-    case SafetyTipType::kBadReputation:
-    case SafetyTipType::kLookalikeUrl:
+    case security_state::SafetyTipStatus::kBadReputation:
+    case security_state::SafetyTipStatus::kLookalike:
 #if defined(OS_ANDROID)
       return IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_TITLE;
 #else
       return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE;
 #endif
-    // These don't have strings yet, so they're just an error:
-    case SafetyTipType::kUncommonDomain:
-    case SafetyTipType::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
+    case security_state::SafetyTipStatus::kNone:
       NOTREACHED();
+      return 0;
   }
   NOTREACHED();
   return 0;
 }
 
-int GetSafetyTipDescriptionId(SafetyTipType warning_type) {
+int GetSafetyTipDescriptionId(security_state::SafetyTipStatus warning_type) {
   switch (warning_type) {
-    case SafetyTipType::kBadReputation:
+    case security_state::SafetyTipStatus::kBadReputation:
 #if defined(OS_ANDROID)
       return IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_DESCRIPTION;
 #else
       return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION;
 #endif
-    case SafetyTipType::kLookalikeUrl:
+    case security_state::SafetyTipStatus::kLookalike:
       return IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH;
-    // These don't have strings yet, so they're just an error:
-    case SafetyTipType::kUncommonDomain:
-    case SafetyTipType::kNone:
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
       NOTREACHED();
+      return 0;
   }
   NOTREACHED();
   return 0;

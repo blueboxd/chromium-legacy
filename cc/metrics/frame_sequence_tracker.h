@@ -45,7 +45,8 @@ enum FrameSequenceTrackerType {
 // submitted frames.
 class CC_EXPORT FrameSequenceTrackerCollection {
  public:
-  explicit FrameSequenceTrackerCollection(CompositorFrameReportingController*);
+  explicit FrameSequenceTrackerCollection(
+      CompositorFrameReportingController* = nullptr);
   ~FrameSequenceTrackerCollection();
 
   FrameSequenceTrackerCollection(const FrameSequenceTrackerCollection&) =

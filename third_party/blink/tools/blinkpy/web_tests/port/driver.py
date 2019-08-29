@@ -242,7 +242,8 @@ class Driver(object):
         if crashed or timed_out or leaked:
             # We call stop() even if we crashed or timed out in order to get any remaining stdout/stderr output.
             # In the timeout case, we kill the hung process as well.
-            out, err = self._server_process.stop(0.0)
+            # Add a delay to allow process to finish post-run hooks, such as dumping code coverage data.
+            out, err = self._server_process.stop(self._port.get_option('driver_kill_timeout_secs'))
             if out:
                 text += out
             if err:
@@ -435,7 +436,13 @@ class Driver(object):
         # Remote drivers will override this method to return the pid on the device.
         return self._server_process.pid()
 
-    def stop(self, timeout_secs=0.0):
+    def stop(self, timeout_secs=None):
+        if timeout_secs is None:
+            # Add a delay to allow process to finish post-run hooks, such as dumping code coverage data.
+            timeout_secs = self._port.get_option('driver_kill_timeout_secs')
+
+        print self._server_process
+
         if self._server_process:
             self._server_process.stop(timeout_secs)
             self._server_process = None

@@ -197,7 +197,6 @@ public class UmaSessionStats {
      */
     private void updatePreferences() {
         PrivacyPreferencesManager prefManager = PrivacyPreferencesManager.getInstance();
-        prefManager.migrateUsageAndCrashPreferences();
 
         // Update the metrics sampling state so it's available before the native feature list is
         // available.

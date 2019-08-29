@@ -7,6 +7,7 @@
 
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
+#include "components/security_state/core/security_state.h"
 #include "ui/views/controls/button/button.h"
 
 namespace content {
@@ -35,7 +36,7 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
                               const gfx::Rect& anchor_rect,
                               gfx::NativeView parent_window,
                               content::WebContents* web_contents,
-                              safety_tips::SafetyTipType type,
+                              security_state::SafetyTipStatus safety_tip_status,
                               const GURL& url);
   ~SafetyTipPageInfoBubbleView() override;
 
@@ -60,7 +61,7 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
 PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
     gfx::NativeView parent_view,
     content::WebContents* web_contents,
-    safety_tips::SafetyTipType type,
+    security_state::SafetyTipStatus safety_tip_status,
     const GURL& virtual_url);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_SAFETY_TIP_PAGE_INFO_BUBBLE_VIEW_H_

@@ -11,13 +11,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/power_monitor_test_base.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/audio_focus_request.h"
 #include "services/media_session/media_session_service.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
@@ -186,17 +184,6 @@ class AudioFocusManagerTest
     return requests.back()->source_name.value();
   }
 
-  std::unique_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
-      const std::string& name) {
-    return histogram_tester_.GetHistogramSamplesSinceCreation(name);
-  }
-
-  int GetAudioFocusHistogramCount() {
-    return histogram_tester_
-        .GetTotalCountsForPrefix("Media.Session.AudioFocus.")
-        .size();
-  }
-
   bool IsEnforcementEnabled() const {
 #if defined(OS_CHROMEOS)
     // Enforcement is enabled by default on Chrome OS.
@@ -265,7 +252,6 @@ class AudioFocusManagerTest
   }
 
   base::test::TaskEnvironment task_environment_;
-  base::HistogramTester histogram_tester_;
 
   service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<MediaSessionService> service_;
@@ -911,104 +897,6 @@ TEST_P(AudioFocusManagerTest, Source_Updated) {
   SetSource(new_identity, kExampleSourceName2);
   EXPECT_EQ(kExampleSourceName, GetSourceNameForLastRequest());
   EXPECT_EQ(identity, GetIdentityForLastRequest());
-}
-
-TEST_P(AudioFocusManagerTest, RecordUmaMetrics) {
-  EXPECT_EQ(0, GetAudioFocusHistogramCount());
-
-  SetSource(base::UnguessableToken::Create(), kExampleSourceName);
-  test::MockMediaSession media_session;
-  RequestAudioFocus(&media_session, mojom::AudioFocusType::kGainTransient);
-
-  {
-    std::unique_ptr<base::HistogramSamples> samples(
-        GetHistogramSamplesSinceTestStart(
-            "Media.Session.AudioFocus.Request.Test"));
-    EXPECT_EQ(1, samples->TotalCount());
-    EXPECT_EQ(1, samples->GetCount(static_cast<base::HistogramBase::Sample>(
-                     AudioFocusManagerMetricsHelper::AudioFocusRequestSource::
-                         kInitial)));
-  }
-
-  {
-    std::unique_ptr<base::HistogramSamples> samples(
-        GetHistogramSamplesSinceTestStart(
-            "Media.Session.AudioFocus.Type.Test"));
-    EXPECT_EQ(1, samples->TotalCount());
-    EXPECT_EQ(
-        1,
-        samples->GetCount(static_cast<base::HistogramBase::Sample>(
-            AudioFocusManagerMetricsHelper::AudioFocusType::kGainTransient)));
-  }
-
-  EXPECT_EQ(2, GetAudioFocusHistogramCount());
-
-  RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
-
-  {
-    std::unique_ptr<base::HistogramSamples> samples(
-        GetHistogramSamplesSinceTestStart(
-            "Media.Session.AudioFocus.Request.Test"));
-    EXPECT_EQ(2, samples->TotalCount());
-    EXPECT_EQ(
-        1,
-        samples->GetCount(static_cast<base::HistogramBase::Sample>(
-            AudioFocusManagerMetricsHelper::AudioFocusRequestSource::kUpdate)));
-  }
-
-  {
-    std::unique_ptr<base::HistogramSamples> samples(
-        GetHistogramSamplesSinceTestStart(
-            "Media.Session.AudioFocus.Type.Test"));
-    EXPECT_EQ(2, samples->TotalCount());
-    EXPECT_EQ(1, samples->GetCount(static_cast<base::HistogramBase::Sample>(
-                     AudioFocusManagerMetricsHelper::AudioFocusType::kGain)));
-  }
-
-  EXPECT_EQ(2, GetAudioFocusHistogramCount());
-
-  media_session.AbandonAudioFocusFromClient();
-
-  {
-    std::unique_ptr<base::HistogramSamples> samples(
-        GetHistogramSamplesSinceTestStart(
-            "Media.Session.AudioFocus.Abandon.Test"));
-    EXPECT_EQ(1, samples->TotalCount());
-    EXPECT_EQ(
-        1, samples->GetCount(static_cast<base::HistogramBase::Sample>(
-               AudioFocusManagerMetricsHelper::AudioFocusAbandonSource::kAPI)));
-  }
-
-  EXPECT_EQ(3, GetAudioFocusHistogramCount());
-}
-
-TEST_P(AudioFocusManagerTest, RecordUmaMetrics_ConnectionError) {
-  SetSource(base::UnguessableToken::Create(), kExampleSourceName);
-
-  {
-    test::MockMediaSession media_session;
-    RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
-  }
-
-  test::MockMediaSession media_session;
-  RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
-
-  {
-    std::unique_ptr<base::HistogramSamples> samples(
-        GetHistogramSamplesSinceTestStart(
-            "Media.Session.AudioFocus.Abandon.Test"));
-    EXPECT_EQ(1, samples->TotalCount());
-    EXPECT_EQ(1, samples->GetCount(static_cast<base::HistogramBase::Sample>(
-                     AudioFocusManagerMetricsHelper::AudioFocusAbandonSource::
-                         kConnectionError)));
-  }
-}
-
-TEST_P(AudioFocusManagerTest, RecordUmaMetrics_NoSourceName) {
-  test::MockMediaSession media_session;
-  RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
-
-  EXPECT_EQ(0, GetAudioFocusHistogramCount());
 }
 
 TEST_P(AudioFocusManagerTest,

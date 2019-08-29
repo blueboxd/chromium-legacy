@@ -86,13 +86,13 @@ enum WhitelistType {
 };
 
 // Callback type which is invoked once the download request is done.
-typedef base::Callback<void(DownloadCheckResult)> CheckDownloadCallback;
+typedef base::OnceCallback<void(DownloadCheckResult)> CheckDownloadCallback;
 
 // A type of callback run on the main thread when a ClientDownloadRequest has
 // been formed for a download, or when one has not been formed for a supported
 // download.
-typedef base::Callback<void(download::DownloadItem*,
-                            const ClientDownloadRequest*)>
+typedef base::RepeatingCallback<void(download::DownloadItem*,
+                                     const ClientDownloadRequest*)>
     ClientDownloadRequestCallback;
 
 // A list of ClientDownloadRequest callbacks.
@@ -104,9 +104,22 @@ typedef base::CallbackList<void(download::DownloadItem*,
 typedef std::unique_ptr<ClientDownloadRequestCallbackList::Subscription>
     ClientDownloadRequestSubscription;
 
+// A type of callback run on the main thread when a NativeFileSystemWriteRequest
+// has been formed for a write operation.
+typedef base::Callback<void(const ClientDownloadRequest*)>
+    NativeFileSystemWriteRequestCallback;
+
+// A list of NativeFileSystemWriteRequest callbacks.
+typedef base::CallbackList<void(const ClientDownloadRequest*)>
+    NativeFileSystemWriteRequestCallbackList;
+
+// A subscription to a registered NativeFileSystemWriteRequest callback.
+typedef std::unique_ptr<NativeFileSystemWriteRequestCallbackList::Subscription>
+    NativeFileSystemWriteRequestSubscription;
+
 // A type of callback run on the main thread when a PPAPI
 // ClientDownloadRequest has been formed for a download.
-typedef base::Callback<void(const ClientDownloadRequest*)>
+typedef base::RepeatingCallback<void(const ClientDownloadRequest*)>
     PPAPIDownloadRequestCallback;
 
 // A list of PPAPI ClientDownloadRequest callbacks.

@@ -107,7 +107,8 @@ void NGOffsetMappingUnit::AssertValid() const {
   SECURITY_DCHECK(dom_start_ <= dom_end_) << dom_start_ << " vs. " << dom_end_;
   SECURITY_DCHECK(text_content_start_ <= text_content_end_)
       << text_content_start_ << " vs. " << text_content_end_;
-  if (layout_object_->IsText()) {
+  if (layout_object_->IsText() &&
+      !ToLayoutText(*layout_object_).IsWordBreak()) {
     const LayoutText& layout_text = ToLayoutText(*layout_object_);
     const unsigned text_start =
         AssociatedNode() ? layout_text.TextStartOffset() : 0;

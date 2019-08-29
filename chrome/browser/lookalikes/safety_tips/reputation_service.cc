@@ -129,17 +129,18 @@ void UrlToPatterns(const GURL& url, std::vector<std::string>* patterns) {
   }
 }
 
-safety_tips::SafetyTipType FlagTypeToSafetyTipType(FlaggedPage::FlagType type) {
+security_state::SafetyTipStatus FlagTypeToSafetyTipStatus(
+    FlaggedPage::FlagType type) {
   switch (type) {
     case FlaggedPage::FlagType::FlaggedPage_FlagType_UNKNOWN:
     case FlaggedPage::FlagType::FlaggedPage_FlagType_YOUNG_DOMAIN:
       NOTREACHED();
       break;
     case FlaggedPage::FlagType::FlaggedPage_FlagType_BAD_REP:
-      return safety_tips::SafetyTipType::kBadReputation;
+      return security_state::SafetyTipStatus::kBadReputation;
   }
   NOTREACHED();
-  return safety_tips::SafetyTipType::kNone;
+  return security_state::SafetyTipStatus::kNone;
 }
 
 }  // namespace
@@ -205,9 +206,9 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   }
 
   // 2. Server-side blocklist check.
-  SafetyTipType type = GetUrlBlockType(url);
-  if (type != SafetyTipType::kNone) {
-    std::move(callback).Run(type, IsIgnored(url), url);
+  security_state::SafetyTipStatus status = GetUrlBlockType(url);
+  if (status != security_state::SafetyTipStatus::kNone) {
+    std::move(callback).Run(status, IsIgnored(url), url);
     return;
   }
 
@@ -221,20 +222,21 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   // 4. Lookalike heuristics.
   if (ShouldTriggerSafetyTipFromLookalike(url, navigated_domain,
                                           engaged_sites)) {
-    std::move(callback).Run(SafetyTipType::kLookalikeUrl, IsIgnored(url), url);
+    std::move(callback).Run(security_state::SafetyTipStatus::kLookalike,
+                            IsIgnored(url), url);
     return;
   }
 
   // TODO(crbug/984725): 5. Additional client-side heuristics
 }
 
-SafetyTipType GetUrlBlockType(const GURL& url) {
+security_state::SafetyTipStatus GetUrlBlockType(const GURL& url) {
   std::vector<std::string> patterns;
   UrlToPatterns(url, &patterns);
 
   auto* proto = safety_tips::GetRemoteConfigProto();
   if (!proto) {
-    return SafetyTipType::kNone;
+    return security_state::SafetyTipStatus::kNone;
   }
 
   auto flagged_pages = proto->flagged_page();
@@ -249,11 +251,11 @@ SafetyTipType GetUrlBlockType(const GURL& url) {
         });
 
     if (lower != flagged_pages.end() && pattern == lower->pattern()) {
-      return FlagTypeToSafetyTipType(lower->type());
+      return FlagTypeToSafetyTipStatus(lower->type());
     }
   }
 
-  return SafetyTipType::kNone;
+  return security_state::SafetyTipStatus::kNone;
 }
 
 }  // namespace safety_tips

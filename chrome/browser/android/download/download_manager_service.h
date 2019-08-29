@@ -57,10 +57,6 @@ class DownloadManagerService
   // Called when full browser process starts.
   void OnFullBrowserStarted(JNIEnv* env, jobject obj);
 
-  // Called to show the download manager, with a choice to focus on prefetched
-  // content instead of regular downloads.
-  void ShowDownloadManager(bool show_prefetched_content);
-
   // Called to handle subsequent steps, after a download was determined as a OMA
   // download type.
   void HandleOMADownload(download::DownloadItem* download,

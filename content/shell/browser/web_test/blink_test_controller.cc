@@ -45,7 +45,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -325,8 +324,7 @@ BlinkTestController::BlinkTestController()
       devtools_window_(nullptr),
       test_phase_(BETWEEN_TESTS),
       crash_when_leak_found_(false),
-      pending_layout_dumps_(0),
-      render_process_host_observer_(this) {
+      pending_layout_dumps_(0) {
   CHECK(!instance_);
   instance_ = this;
 

@@ -605,6 +605,17 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   const float opacity = gfx::Tween::FloatValueBetween(progress, 0.f, 1.f);
   HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
   DCHECK(home_screen_delegate);
+
+  // Before updating position and opacity for home launcher, make sure its
+  // window is visible. This handles the case that HomeScreenController::Show()
+  // put launcher window hidden when it is called within an overview session.
+  // See https://crbug.com/996384
+  aura::Window* home_screen_window =
+      home_screen_delegate->GetHomeScreenWindow();
+  DCHECK(home_screen_window);
+  if (!home_screen_window->TargetVisibility())
+    home_screen_delegate->GetHomeScreenWindow()->Show();
+
   home_screen_delegate->UpdateYPositionAndOpacityForHomeLauncher(
       y_position, opacity,
       animate ? base::BindRepeating(&HomeLauncherGestureHandler::UpdateSettings,

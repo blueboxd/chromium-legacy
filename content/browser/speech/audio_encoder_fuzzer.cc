@@ -5,8 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "content/browser/speech/audio_encoder.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 using content::AudioChunk;
 

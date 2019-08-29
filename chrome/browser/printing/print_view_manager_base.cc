@@ -554,6 +554,10 @@ bool PrintViewManagerBase::CreateNewPrintJob(
   DCHECK(!print_job_);
   print_job_ = base::MakeRefCounted<PrintJob>();
   print_job_->Initialize(std::move(query), RenderSourceName(), number_pages_);
+#if defined(OS_CHROMEOS)
+  print_job_->SetSource(PrintJob::Source::PRINT_PREVIEW, /*source_id=*/"");
+#endif  // defined(OS_CHROMEOS)
+
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  content::Source<PrintJob>(print_job_.get()));
   printing_succeeded_ = false;

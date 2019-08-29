@@ -622,12 +622,6 @@ const char kWinrtSensorsImplementationDescription[] =
     "Enables usage of the Windows.Devices.Sensors WinRT APIs on Windows for "
     "sensors";
 
-const char kEnableGenericSensorName[] = "Generic Sensor";
-const char kEnableGenericSensorDescription[] =
-    "Enables motion sensor classes based on Generic Sensor API, i.e. "
-    "Accelerometer, LinearAccelerationSensor, Gyroscope, "
-    "AbsoluteOrientationSensor and RelativeOrientationSensor interfaces.";
-
 const char kEnableGenericSensorExtraClassesName[] =
     "Generic Sensor Extra Classes";
 const char kEnableGenericSensorExtraClassesDescription[] =
@@ -872,10 +866,6 @@ const char kEnableResourceLoadingHintsDescription[] =
     "Enable using server-provided resource loading hints to provide a preview "
     "over slow network connections.";
 
-const char kEnableSensorContentSettingName[] = "Sensor content setting";
-const char kEnableSensorContentSettingDescription[] =
-    "Enable UI in content settings to control access to the sensor APIs.";
-
 const char kEnableSyncUSSBookmarksName[] = "Enable USS for bookmarks sync";
 const char kEnableSyncUSSBookmarksDescription[] =
     "Enables the new, experimental implementation of bookmark sync";
@@ -932,6 +922,10 @@ const char kEnableWebAuthenticationCableSupportDescription[] =
     "Enable the cloud-assisted pairingless BLE protocol for use with "
     "the Web Authentication API.";
 
+const char kExperimentalWebAssemblyFeaturesName[] = "Experimental WebAssembly";
+const char kExperimentalWebAssemblyFeaturesDescription[] =
+    "Enable web pages to use experimental WebAssembly features.";
+
 const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";
@@ -948,7 +942,7 @@ const char kEnableWasmSimdName[] = "WebAssembly SIMD support.";
 const char kEnableWasmSimdDescription[] =
     "Enables support for the WebAssembly SIMD proposal.";
 
-const char kEnableWasmThreadsName[] = "WebAssembly threads support.";
+const char kEnableWasmThreadsName[] = "WebAssembly threads support";
 const char kEnableWasmThreadsDescription[] =
     "Enables support for the WebAssembly Threads proposal. Implies "
     "#shared-array-buffer and #enable-webassembly.";
@@ -1663,6 +1657,13 @@ const char kSaveasMenuLabelExperimentName[] =
 const char kSaveasMenuLabelExperimentDescription[] =
     "Enables an experiment to switch menu labels that use 'Save as...' to "
     "'Download'.";
+
+const char kScalableAppListName[] =
+    "App list UI configuration dependant on display size";
+const char kScalableAppListDescription[] =
+    "Adapts app list item sizing and spacing for smaller screen sizes, "
+    "instead of using single app list configuration, that is optionally "
+    "scaled down, for all screens.";
 
 const char kScrollableTabStripName[] = "Scrollable TabStrip";
 const char kScrollableTabStripDescription[] =
@@ -3038,10 +3039,17 @@ const char kAcceleratedMjpegDecodeDescription[] =
     "Enable hardware-accelerated mjpeg decode for captured frame where "
     "available.";
 
+const char kAggregatedMlAppRankingName[] = "Rank suggested apps with ML.";
+const char kAggregatedMlAppRankingDescription[] =
+    "Use the aggregated ML model to rank the suggested apps.";
+
 const char kAppServiceAshName[] = "App Service Ash";
 const char kAppServiceAshDescription[] =
-    "Use the App Service to provide data to the Ash UI, such as the shelf and "
-    "app list.";
+    "Use the App Service to provide data to the Ash UI, such as the app list.";
+
+const char kAppServiceShelfName[] = "App Service Shelf";
+const char kAppServiceShelfDescription[] =
+    "Use the App Service to provide data to the UI Shelf";
 
 const char kArcBootCompleted[] = "Load Android apps automatically";
 const char kArcBootCompletedDescription[] =

@@ -88,6 +88,11 @@ class COMPONENT_EXPORT(MOJO_BASE) BigBuffer {
   // for general-purpose use.
   explicit BigBuffer(internal::BigBufferSharedMemoryRegion shared_memory);
 
+  // Constructs a BigBuffer with the given size. The contents of buffer memory
+  // are uninitialized. Buffers constructed this way must be filled completely
+  // before transfer to avoid leaking information to less privileged processes.
+  explicit BigBuffer(size_t size);
+
   ~BigBuffer();
 
   BigBuffer& operator=(BigBuffer&& other);

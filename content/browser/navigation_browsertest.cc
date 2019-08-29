@@ -1938,10 +1938,13 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, WebViewRendererKillReload) {
 }
 
 // Test NavigationRequest::CheckAboutSrcDoc()
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocBrowserInitiated) {
+// TODO(https://crbug.com/996725): Re-enable this test.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       DISABLED_BlockedSrcDocBrowserInitiated) {
+  const char* about_srcdoc_urls[] = {"about:srcdoc", "about:srcdoc?foo",
+                                     "about:srcdoc#foo"};
   // 1. Main frame navigations to about:srcdoc and its variations are blocked.
-  for (const char* url :
-       {"about:srcdoc", "about:srcdoc?foo", "about:srcdoc#foo"}) {
+  for (const char* url : about_srcdoc_urls) {
     NavigationHandleObserver handle_observer(shell()->web_contents(),
                                              GURL(url));
     EXPECT_FALSE(NavigateToURL(shell(), GURL(url)));
@@ -1950,8 +1953,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocBrowserInitiated) {
     EXPECT_EQ(net::ERR_INVALID_URL, handle_observer.net_error_code());
   }
 
-  // 2. Subframe navigations to variations of about:srcdoc are blocked.
-  for (const char* url : {"about:srcdoc?foo", "about:srcdoc#foo"}) {
+  // 2. Subframe navigations to variations of about:srcdoc are not blocked.
+  for (const char* url : about_srcdoc_urls) {
     GURL main_url =
         embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html");
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1959,22 +1962,6 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocBrowserInitiated) {
     NavigationHandleObserver handle_observer(shell()->web_contents(),
                                              GURL(url));
     shell()->LoadURLForFrame(GURL(url), "child-name-0",
-                             ui::PAGE_TRANSITION_FORWARD_BACK);
-    WaitForLoadStop(shell()->web_contents());
-    EXPECT_TRUE(handle_observer.has_committed());
-    EXPECT_TRUE(handle_observer.is_error());
-    EXPECT_EQ(net::ERR_INVALID_URL, handle_observer.net_error_code());
-  }
-
-  // 3. Subframe navigation to about:srcdoc are not blocked.
-  {
-    GURL main_url =
-        embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html");
-    EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-    NavigationHandleObserver handle_observer(shell()->web_contents(),
-                                             GURL("about::srcdoc"));
-    shell()->LoadURLForFrame(GURL("about::srcdoc"), "child-name-0",
                              ui::PAGE_TRANSITION_FORWARD_BACK);
     WaitForLoadStop(shell()->web_contents());
     EXPECT_TRUE(handle_observer.has_committed());
@@ -1993,10 +1980,11 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
       static_cast<WebContentsImpl*>(shell()->web_contents())
           ->GetFrameTree()
           ->root();
+  const char* about_srcdoc_urls[] = {"about:srcdoc", "about:srcdoc?foo",
+                                     "about:srcdoc#foo"};
 
   // 1. Main frame navigations to about:srcdoc and its variations are blocked.
-  for (const char* url :
-       {"about:srcdoc", "about:srcdoc?foo", "about:srcdoc#foo"}) {
+  for (const char* url : about_srcdoc_urls) {
     DidStartNavigationObserver start_observer(shell()->web_contents());
     NavigationHandleObserver handle_observer(shell()->web_contents(),
                                              GURL(url));
@@ -2011,8 +1999,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
     EXPECT_EQ(net::ERR_INVALID_URL, handle_observer.net_error_code());
   }
 
-  // 2. Subframe navigations to variations of about:srcdoc are blocked.
-  for (const char* url : {"about:srcdoc?foo", "about:srcdoc#foo"}) {
+  // 2. Subframe navigations to variations of about:srcdoc are not blocked.
+  for (const char* url : about_srcdoc_urls) {
     GURL main_url =
         embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html");
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2025,28 +2013,6 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
     // about:srcdoc by executing location.href= "about:srcdoc". Other web
     // browsers like Firefox aren't allowing this.
     EXPECT_TRUE(ExecJs(subframe, JsReplace("location.href = $1", url)));
-    start_observer.Wait();
-    WaitForLoadStop(shell()->web_contents());
-    EXPECT_TRUE(handle_observer.has_committed());
-    EXPECT_TRUE(handle_observer.is_error());
-    EXPECT_EQ(net::ERR_INVALID_URL, handle_observer.net_error_code());
-  }
-
-  // 3. Subframe navigation to about:srcdoc are not blocked.
-  {
-    GURL main_url =
-        embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html");
-    EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-    DidStartNavigationObserver start_observer(shell()->web_contents());
-    NavigationHandleObserver handle_observer(shell()->web_contents(),
-                                             GURL("about:srcdoc"));
-    FrameTreeNode* subframe = main_frame->child_at(0);
-    // TODO(arthursonzogni): It shouldn't be possible to navigate to
-    // about:srcdoc by executing location.href="about:srcdoc". Other web
-    // browsers like Firefox aren't allowing this.
-    EXPECT_TRUE(ExecJs(subframe, JsReplace("location.href = 'about:srcdoc'")));
-
     start_observer.Wait();
     WaitForLoadStop(shell()->web_contents());
 
@@ -2115,6 +2081,10 @@ class TextFragmentAnchorBrowserTest : public NavigationBrowserTest {
     EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
   }
 };
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         TextFragmentAnchorBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
   GURL url(embedded_test_server()->GetURL("/target_text_link.html"));
@@ -2239,8 +2209,124 @@ IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
   EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         TextFragmentAnchorBrowserTest,
-                         ::testing::Bool());
+// Regression test for https://crbug.com/996044
+//  1) Navigate an iframe to srcdoc (about:srcdoc);
+//  2) Same-document navigation to about:srcdoc#1.
+//  3) Same-document navigation to about:srcdoc#2.
+//  4) history.back() to about:srcdoc#1.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       SrcDocWithFragmentHistoryNavigation) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  //  1) Navigate an iframe to srcdoc (about:srcdoc)
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    new Promise(async resolve => {
+      let iframe = document.createElement('iframe');
+      iframe.srcdoc = "test";
+      iframe.onload = resolve;
+      document.body.appendChild(iframe);
+    });
+  )"));
+
+  //  2) Same-document navigation to about:srcdoc#1.
+  //  3) Same-document navigation to about:srcdoc#2.
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    let subwindow = document.querySelector('iframe').contentWindow;
+    subwindow.location.hash = "1";
+    subwindow.location.hash = "2";
+  )"));
+
+  // Inspect the session history.
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  ASSERT_EQ(3, controller.GetEntryCount());
+  ASSERT_EQ(2, controller.GetCurrentEntryIndex());
+
+  FrameNavigationEntry* entry[3];
+  for (int i = 0; i < 3; ++i) {
+    entry[i] = controller.GetEntryAtIndex(i)
+                   ->root_node()
+                   ->children[0]
+                   ->frame_entry.get();
+  }
+
+  EXPECT_EQ(entry[0]->url(), "about:srcdoc");
+  EXPECT_EQ(entry[1]->url(), "about:srcdoc#1");
+  EXPECT_EQ(entry[2]->url(), "about:srcdoc#2");
+
+  //  4) history.back() to about:srcdoc#1.
+  EXPECT_TRUE(ExecJs(shell(), "history.back()"));
+
+  ASSERT_EQ(3, controller.GetEntryCount());
+  ASSERT_EQ(1, controller.GetCurrentEntryIndex());
+}
+
+// Regression test for https://crbug.com/996044.
+//  1) Navigate an iframe to srcdoc (about:srcdoc).
+//  2) Cross-document navigation to about:srcdoc?1.
+//  3) Cross-document navigation to about:srcdoc?2.
+//  4) history.back() to about:srcdoc?1.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       SrcDocWithQueryHistoryNavigation) {
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  //  1) Navigate an iframe to srcdoc (about:srcdoc).
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    new Promise(async resolve => {
+      let iframe = document.createElement('iframe');
+      iframe.srcdoc = "test";
+      iframe.onload = resolve;
+      document.body.appendChild(iframe);
+    });
+  )"));
+
+  //  2) Cross-document navigation to about:srcdoc?1.
+  {
+    TestNavigationManager commit_waiter(shell()->web_contents(),
+                                        GURL("about:srcdoc?1"));
+    EXPECT_TRUE(ExecJs(shell(), R"(
+      let subwindow = document.querySelector('iframe').contentWindow;
+      subwindow.location.search = "1";
+    )"));
+    commit_waiter.WaitForNavigationFinished();
+  }
+
+  //  3) Cross-document navigation to about:srcdoc?2.
+  {
+    TestNavigationManager commit_waiter(shell()->web_contents(),
+                                        GURL("about:srcdoc?2"));
+    EXPECT_TRUE(ExecJs(shell(), R"(
+      let subwindow = document.querySelector('iframe').contentWindow;
+      subwindow.location.search = "2";
+    )"));
+    commit_waiter.WaitForNavigationFinished();
+  }
+
+  // Inspect the session history.
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  ASSERT_EQ(3, controller.GetEntryCount());
+  ASSERT_EQ(2, controller.GetCurrentEntryIndex());
+
+  FrameNavigationEntry* entry[3];
+  for (int i = 0; i < 3; ++i) {
+    entry[i] = controller.GetEntryAtIndex(i)
+                   ->root_node()
+                   ->children[0]
+                   ->frame_entry.get();
+  }
+
+  EXPECT_EQ(entry[0]->url(), "about:srcdoc");
+  EXPECT_EQ(entry[1]->url(), "about:srcdoc?1");
+  EXPECT_EQ(entry[2]->url(), "about:srcdoc?2");
+
+  //  4) history.back() to about:srcdoc#1.
+  EXPECT_TRUE(ExecJs(shell(), "history.back()"));
+
+  ASSERT_EQ(3, controller.GetEntryCount());
+  ASSERT_EQ(1, controller.GetCurrentEntryIndex());
+}
 
 }  // namespace content

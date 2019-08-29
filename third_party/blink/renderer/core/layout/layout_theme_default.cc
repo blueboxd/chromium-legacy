@@ -97,20 +97,14 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
           ? UncompressResourceAsASCIIString(
                 IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS)
           : String();
-  String forced_colors_style_sheet =
-      RuntimeEnabledFeatures::ForcedColorsEnabled()
-          ? UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_FORCED_COLORS_CSS)
-          : String();
   StringBuilder builder;
   builder.ReserveCapacity(
       extra_style_sheet.length() + multiple_fields_style_sheet.length() +
-      windows_style_sheet.length() + controls_refresh_style_sheet.length() +
-      forced_colors_style_sheet.length());
+      windows_style_sheet.length() + controls_refresh_style_sheet.length());
   builder.Append(extra_style_sheet);
   builder.Append(multiple_fields_style_sheet);
   builder.Append(windows_style_sheet);
   builder.Append(controls_refresh_style_sheet);
-  builder.Append(forced_colors_style_sheet);
   return builder.ToString();
 }
 

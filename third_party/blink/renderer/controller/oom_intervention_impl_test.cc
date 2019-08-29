@@ -6,7 +6,11 @@
 
 #include <unistd.h>
 
+#include <utility>
+
 #include "base/files/file_util.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,8 +39,9 @@ const uint64_t kTestVmSizeThreshold = 1024 * 1024;
 
 class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
  public:
-  MockOomInterventionHost(mojom::blink::OomInterventionHostRequest request)
-      : receiver_(this, std::move(request)) {}
+  MockOomInterventionHost(
+      mojo::PendingReceiver<mojom::blink::OomInterventionHost> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~MockOomInterventionHost() override = default;
 
   void OnHighMemoryUsage() override {}

@@ -11,7 +11,6 @@
 
 #include "base/big_endian.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
@@ -233,8 +232,6 @@ bool DnsRecordParser::ReadRecord(DnsResourceRecord* out) {
       reader.ReadU16(&rdlen) &&
       reader.ReadPiece(&out->rdata, rdlen)) {
     cur_ = reader.ptr();
-    UMA_HISTOGRAM_COUNTS_10000("Net.DNS.RecordParser.DomainNameLength",
-                               out->name.length());
     return true;
   }
   return false;

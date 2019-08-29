@@ -55,11 +55,10 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
       FrameTreeNode* frame_tree_node);
 
-  // This method does not climb up to the suitable parent frame,
-  // so only use it when we are sure the frame will be a local root.
-  // Prefer GetOrCreateFor instead.
-  static scoped_refptr<DevToolsAgentHost> GetOrCreateForDangling(
-      FrameTreeNode* frame_tree_node);
+  // This method is called when new frame is created during cross process
+  // navigation.
+  static scoped_refptr<DevToolsAgentHost> CreateForCrossProcessNavigation(
+      NavigationHandleImpl* handle);
   static scoped_refptr<DevToolsAgentHost> FindForDangling(
       FrameTreeNode* frame_tree_node);
 
@@ -96,7 +95,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void UpdateRawHeadersAccess(RenderFrameHostImpl* old_rfh,
                                      RenderFrameHostImpl* new_rfh);
 
-  explicit RenderFrameDevToolsAgentHost(FrameTreeNode*);
+  RenderFrameDevToolsAgentHost(FrameTreeNode*, RenderFrameHostImpl*);
   ~RenderFrameDevToolsAgentHost() override;
 
   // DevToolsAgentHostImpl overrides.

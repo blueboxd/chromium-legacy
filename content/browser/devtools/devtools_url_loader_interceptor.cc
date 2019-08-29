@@ -399,9 +399,12 @@ class DevToolsURLLoaderInterceptor::Impl
       DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback) {
     auto it = jobs_.find(interception_id);
     if (it == jobs_.end()) {
-      std::move(callback).Run(
-          protocol::Response::InvalidParams("Invalid InterceptionId."),
-          mojo::ScopedDataPipeConsumerHandle(), std::string());
+      base::PostTask(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(
+              std::move(callback),
+              protocol::Response::InvalidParams("Invalid InterceptionId."),
+              mojo::ScopedDataPipeConsumerHandle(), std::string()));
       return;
     }
     it->second->TakeResponseBodyPipe(std::move(callback));

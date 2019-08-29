@@ -545,5 +545,4 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/test/ui/DummyUiActivity.java",
   "javatests/src/org/chromium/chrome/test/ui/DummyUiActivityTestCase.java",
   "javatests/src/org/chromium/chrome/test/ui/LoadNative.java",
-  "javatests/src/org/chromium/chrome/test/util/ChromeSigninUtilsTest.java",
 ]

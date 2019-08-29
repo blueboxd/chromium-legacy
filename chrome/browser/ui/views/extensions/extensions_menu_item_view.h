@@ -41,6 +41,8 @@ class ExtensionsMenuItemView : public views::View,
 
   void UpdatePinButton();
 
+  bool IsContextMenuRunning();
+
   ExtensionsMenuButton* primary_action_button_for_testing();
 
  private:
@@ -50,6 +52,8 @@ class ExtensionsMenuItemView : public views::View,
 
   views::MenuButton* context_menu_button_ = nullptr;
 
+  // This controller is responsible for showing the context menu for an
+  // extension.
   std::unique_ptr<ExtensionContextMenuController> context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuItemView);

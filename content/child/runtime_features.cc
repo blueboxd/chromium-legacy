@@ -291,9 +291,6 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kCompositorTouchAction))
     WebRuntimeFeatures::EnableCompositorTouchAction(true);
 
-  if (!base::FeatureList::IsEnabled(features::kGenericSensor))
-    WebRuntimeFeatures::EnableGenericSensor(false);
-
   if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses))
     WebRuntimeFeatures::EnableGenericSensorExtraClasses(true);
 

@@ -22,7 +22,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadManagerService;
-import org.chromium.chrome.browser.download.DownloadMetrics;
+import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -102,10 +102,11 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
                     protected void onPostExecute(String filePath) {
                         if (filePath != null) {
                             DownloadUtils.openFile(filePath, mimeType, null, mIsIncognito, null,
-                                    null, DownloadMetrics.DownloadOpenSource.INFO_BAR);
+                                    null, DownloadOpenSource.INFO_BAR);
                         } else {
                             DownloadManagerService.openDownloadsPage(
-                                    ContextUtils.getApplicationContext());
+                                    ContextUtils.getApplicationContext(),
+                                    DownloadOpenSource.INFO_BAR);
                         }
                     }
                 }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

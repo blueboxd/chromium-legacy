@@ -70,7 +70,7 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
     float device_scale_factor,
     Layer::LayerMaskType mask_type) {
   gfx::Size layer_size(1000, 1000);
-  gfx::Size viewport_size(1000, 1000);
+  gfx::Rect viewport_rect(1000, 1000);
   float scale_factor = 2;
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_size);
@@ -106,7 +106,7 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
   impl.host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
 
   impl.host_impl()->active_tree()->SetDeviceScaleFactor(device_scale_factor);
-  impl.host_impl()->active_tree()->SetDeviceViewportSize(viewport_size);
+  impl.host_impl()->active_tree()->SetDeviceViewportRect(viewport_rect);
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   impl.host_impl()->active_tree()->UpdateDrawProperties();
 

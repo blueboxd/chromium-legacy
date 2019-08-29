@@ -43,8 +43,10 @@ class OpenXrApiWrapper {
 
   static VRTestHook* GetTestHook();
 
-  XrResult StartSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
-                        std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
+  bool session_ended() const { return session_ended_; }
+
+  XrResult InitSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
+                       std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
@@ -70,6 +72,7 @@ class OpenXrApiWrapper {
 
   XrResult InitializeSystem();
   XrResult PickEnvironmentBlendMode(XrSystemId system);
+  XrResult ProcessEvents();
 
   XrResult CreateSession(
       const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
@@ -91,6 +94,8 @@ class OpenXrApiWrapper {
 
   uint32_t GetRecommendedSwapchainSampleCount() const;
   XrResult GetStageBounds(XrExtent2Df* stage_bounds) const;
+
+  bool session_ended_;
 
   // Testing objects
   static VRTestHook* test_hook_;

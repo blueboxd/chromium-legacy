@@ -55,11 +55,10 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
   std::map<uint64_t, std::unique_ptr<GLFence>> backpressure_fences_;
   uint64_t next_backpressure_fence_ = 0;
 
-  CGLPixelFormatObj discrete_pixelformat_ = nullptr;
-
   int screen_ = -1;
   int renderer_id_ = -1;
   bool safe_to_force_gpu_switch_ = true;
+  bool is_high_performance_context_ = false;
 
   // Debugging for https://crbug.com/863817
   bool has_switched_gpus_ = false;

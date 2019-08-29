@@ -69,6 +69,7 @@ class ASH_EXPORT AshColorProvider {
     kTextSecondary,
     kIconPrimary,
     kIconSecondary,
+    kIconRed,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and

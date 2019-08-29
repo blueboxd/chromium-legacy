@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_media_event_listener.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"

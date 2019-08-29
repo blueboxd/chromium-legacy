@@ -94,6 +94,7 @@ js_library("closure_compile_externs") {
     "../../../externs/background_window.js",
     "../../../externs/css_rule.js",
     "../../../externs/file_operation_progress_event.js",
+    "../../../externs/foreground_window.js",
     "../../../externs/launcher_search_provider.js",
     "../../../externs/platform.js",
   ]
@@ -471,7 +472,10 @@ js_library("runtime_loaded_test_util") {
     ":test_util_base",
     "//ui/file_manager/base/js:error_counter",
   ]
-  externs_list = [ "$externs_path/webview_tag.js" ]
+  externs_list = [
+    "$externs_path/webview_tag.js",
+    "//ui/file_manager/externs/foreground_window.js",
+  ]
 }
 
 js_library("volume_info_impl") {

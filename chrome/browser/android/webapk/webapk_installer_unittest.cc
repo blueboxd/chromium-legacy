@@ -76,7 +76,6 @@ class TestWebApkInstaller : public WebApkInstaller {
       : WebApkInstaller(browser_context), test_space_status_(status) {}
 
   void InstallOrUpdateWebApk(const std::string& package_name,
-                             int version,
                              const std::string& token) override {
     PostTaskToRunSuccessCallback();
   }

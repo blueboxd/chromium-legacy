@@ -32,6 +32,7 @@
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
@@ -90,6 +91,7 @@ using sessions::SerializedNavigationEntry;
 using testing::_;
 using testing::NiceMock;
 using testing::Return;
+using testing::StrictMock;
 
 namespace {
 // TODO(crbug.com/474577): Get rid of the mocked client in the client's own
@@ -764,6 +766,7 @@ class ChromePasswordManagerClientAndroidTest
 
  private:
   autofill::TestAutofillClient test_autofill_client_;
+  std::unique_ptr<StrictMock<favicon::MockFaviconService>> favicon_service_;
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
@@ -779,7 +782,7 @@ ChromePasswordManagerClientAndroidTest::CreateContentPasswordManagerDriver(
 void ChromePasswordManagerClientAndroidTest::CreateManualFillingController(
     content::WebContents* web_contents) {
   ManualFillingControllerImpl::CreateForWebContentsForTesting(
-      web_contents, mock_pwd_controller_.AsWeakPtr(),
+      web_contents, favicon_service_.get(), mock_pwd_controller_.AsWeakPtr(),
       mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
       std::make_unique<NiceMock<MockManualFillingView>>());
 }

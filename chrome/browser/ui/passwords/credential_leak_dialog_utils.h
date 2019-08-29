@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "url/gurl.h"
 
 namespace leak_dialog_utils {
@@ -31,6 +32,10 @@ bool ShouldCheckPasswords(password_manager::CredentialLeakType leak_type);
 
 // Checks whether the leak dialog should show cancel button.
 bool ShouldShowCancelButton(password_manager::CredentialLeakType leak_type);
+
+// Returns the LeakDialogType corresponding to |leak_type|.
+password_manager::metrics_util::LeakDialogType GetLeakDialogType(
+    password_manager::CredentialLeakType leak_type);
 
 // Returns the URL used to launch the password checkup.
 GURL GetPasswordCheckupURL();

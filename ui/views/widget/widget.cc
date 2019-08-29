@@ -311,7 +311,21 @@ void Widget::Init(InitParams params) {
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   }
 
-  ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);
+  {
+    // ViewsDelegate::OnBeforeWidgetInit() may change `params.delegate` either
+    // by setting it to null or assigning a different value to it, so handle
+    // both cases.
+    auto default_widget_delegate =
+        std::make_unique<DefaultWidgetDelegate>(this);
+    widget_delegate_ =
+        params.delegate ? params.delegate : default_widget_delegate.get();
+
+    ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);
+
+    widget_delegate_ =
+        params.delegate ? params.delegate : default_widget_delegate.release();
+  }
+  DCHECK(widget_delegate_);
 
   if (params.opacity == views::Widget::InitParams::INFER_OPACITY)
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
@@ -320,8 +334,6 @@ void Widget::Init(InitParams params) {
   params.activatable =
       can_activate ? InitParams::ACTIVATABLE_YES : InitParams::ACTIVATABLE_NO;
 
-  widget_delegate_ = params.delegate ?
-      params.delegate : new DefaultWidgetDelegate(this);
   widget_delegate_->SetCanActivate(can_activate);
 
   // Henceforth, ensure the delegate outlives the Widget.

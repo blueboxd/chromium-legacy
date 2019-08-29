@@ -18,12 +18,23 @@
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
-namespace apps {
-class AppShimHandler;
-}  // namespace apps
-
 class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
  public:
+  // The interface through which the AppShimHostBootstrap registers itself
+  // with the ExtensionAppShimHandler.
+  class Client {
+   public:
+    // Invoked by the AppShimHostBootstrap when a shim process has connected to
+    // the browser process. This will connect to (creating, if needed) an
+    // AppShimHost. |bootstrap| must have OnConnectedToHost or
+    // OnFailedToConnectToHost called on it to inform the shim of the result.
+    virtual void OnShimProcessConnected(
+        std::unique_ptr<AppShimHostBootstrap> bootstrap) = 0;
+  };
+
+  // Set the client interface that all objects of this class will use.
+  static void SetClient(Client* client);
+
   // Creates a new server-side mojo channel at |endpoint|, which contains a
   // a Mach port for a channel created by an MachBootstrapAcceptor, and
   // begins listening for messages on it. The PID of the sender of |endpoint|
@@ -54,7 +65,6 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   explicit AppShimHostBootstrap(base::ProcessId peer_pid);
   void ServeChannel(mojo::PlatformChannelEndpoint endpoint);
   void ChannelError(uint32_t custom_reason, const std::string& description);
-  virtual apps::AppShimHandler* GetHandler();
 
   // chrome::mojom::AppShimHostBootstrap.
   void LaunchApp(chrome::mojom::AppShimHostRequest app_shim_host_request,

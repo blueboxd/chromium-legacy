@@ -41,6 +41,18 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
       web_contents->GetVisibility() == content::Visibility::VISIBLE,
       web_contents->IsCurrentlyAudible());
 
+  // Set the initial (visible) URL of the page early. In the rare and unlikely
+  // case the main frame has been navigated, this URL will be overridden with
+  // the main frame's last committed URL and navigation ID in the loop below.
+  GURL visible_url = web_contents->GetVisibleURL();
+  if (visible_url.is_valid()) {
+    // Post the visible URL as a navigation to the zero navigation ID.
+    constexpr int64_t kZeroNavigationId = 0;
+    PostToGraph(FROM_HERE, &PageNodeImpl::OnMainFrameNavigationCommitted,
+                page_node_.get(), base::TimeTicks::Now(), kZeroNavigationId,
+                visible_url);
+  }
+
   // Dispatch creation notifications for any pre-existing frames.
   std::vector<content::RenderFrameHost*> existing_frames =
       web_contents->GetAllFrames();

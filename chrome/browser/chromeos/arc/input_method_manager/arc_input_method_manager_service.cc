@@ -441,6 +441,11 @@ void ArcInputMethodManagerService::ImeMenuListChanged() {
     return;
 
   auto* manager = chromeos::input_method::InputMethodManager::Get();
+  if (!manager || !manager->GetActiveIMEState()) {
+    LOG(WARNING) << "InputMethodManager is not ready yet";
+    return;
+  }
+
   auto new_active_ime_ids =
       manager->GetActiveIMEState()->GetActiveInputMethodIds();
 

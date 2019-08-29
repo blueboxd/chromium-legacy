@@ -91,5 +91,14 @@ void LogNotificationDbOperation(bool success) {
       "Notifications.Scheduler.NotificationDb.OperationResult", success);
 }
 
+void LogPngIconConverterEncodeResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Notifications.Scheduler.PngIconConverter.EncodeResult",
+                        success);
+}
+
+void LogPngIconConverterDecodeResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Notifications.Scheduler.PngIconConverter.DecodeResult",
+                        success);
+}
 }  // namespace stats
 }  // namespace notifications

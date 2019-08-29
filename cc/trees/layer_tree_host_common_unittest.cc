@@ -120,8 +120,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         root_layer->layer_tree_host()->elastic_overscroll();
     float page_scale_factor = 1.f;
     float device_scale_factor = 1.f;
-    gfx::Size device_viewport_size =
-        gfx::Size(root_layer->bounds().width() * device_scale_factor,
+    gfx::Rect device_viewport_rect =
+        gfx::Rect(root_layer->bounds().width() * device_scale_factor,
                   root_layer->bounds().height() * device_scale_factor);
     PropertyTrees* property_trees =
         root_layer->layer_tree_host()->property_trees();
@@ -130,7 +130,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         root_layer, page_scale_layer, inner_viewport_scroll_layer,
         outer_viewport_scroll_layer, overscroll_elasticity_element_id,
         elastic_overscroll, page_scale_factor, device_scale_factor,
-        gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
+        device_viewport_rect, gfx::Transform(), property_trees);
     draw_property_utils::UpdatePropertyTrees(root_layer->layer_tree_host(),
                                              property_trees);
     draw_property_utils::FindLayersThatNeedUpdates(
@@ -153,8 +153,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
             root_layer->layer_tree_impl()->IsActiveTree());
     float page_scale_factor = 1.f;
     float device_scale_factor = 1.f;
-    gfx::Size device_viewport_size =
-        gfx::Size(root_layer->bounds().width() * device_scale_factor,
+    gfx::Rect device_viewport_rect =
+        gfx::Rect(root_layer->bounds().width() * device_scale_factor,
                   root_layer->bounds().height() * device_scale_factor);
     update_layer_impl_list_.reset(new LayerImplList);
     root_layer->layer_tree_impl()->BuildLayerListForTesting();
@@ -164,7 +164,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         root_layer, page_scale_layer, inner_viewport_scroll_layer,
         outer_viewport_scroll_layer, overscroll_elasticity_element_id,
         elastic_overscroll, page_scale_factor, device_scale_factor,
-        gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
+        device_viewport_rect, gfx::Transform(), property_trees);
     draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(root_layer,
                                                               property_trees);
     draw_property_utils::FindLayersThatNeedUpdates(
@@ -1025,7 +1025,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceWithSublayerScale) {
   float device_scale_factor = 2.0f;
   RenderSurfaceList render_surface_list_impl;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), translate, &render_surface_list_impl);
+      root, gfx::Rect(root->bounds()), translate, &render_surface_list_impl);
   inputs.device_scale_factor = device_scale_factor;
   inputs.property_trees->needs_rebuild = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
@@ -1054,7 +1054,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), translate, &render_surface_list_impl);
+        root, gfx::Rect(root->bounds()), translate, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -1072,7 +1072,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), scale, &render_surface_list_impl);
+        root, gfx::Rect(root->bounds()), scale, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -1090,7 +1090,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), rotate, &render_surface_list_impl);
+        root, gfx::Rect(root->bounds()), rotate, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -1110,7 +1110,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), composite, &render_surface_list_impl);
+        root, gfx::Rect(root->bounds()), composite, &render_surface_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -1129,7 +1129,7 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   {
     RenderSurfaceList render_surface_list_impl;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), translate, &render_surface_list_impl);
+        root, gfx::Rect(root->bounds()), translate, &render_surface_list_impl);
     inputs.device_scale_factor = device_scale_factor;
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
@@ -1241,7 +1241,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), &render_surface_list);
+      root, gfx::Rect(root->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // Since the layer is transparent, render_surface1->GetRenderSurface() should
@@ -1276,7 +1276,7 @@ TEST_F(LayerTreeHostCommonTest,
   {
     RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_list);
+        root, gfx::Rect(root->bounds()), &render_surface_list);
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_EQ(2U, render_surface_list.size());
   }
@@ -1299,7 +1299,7 @@ TEST_F(LayerTreeHostCommonTest,
   {
     RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root, root->bounds(), &render_surface_list);
+        root, gfx::Rect(root->bounds()), &render_surface_list);
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 
@@ -1333,7 +1333,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), &render_surface_list);
+      root, gfx::Rect(root->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   ASSERT_TRUE(GetRenderSurface(parent));
@@ -2735,7 +2735,7 @@ TEST_F(LayerTreeHostCommonTest,
   RenderSurfaceList render_surface_list_impl;
   // Now set the root render surface an empty clip.
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, gfx::Size(), &render_surface_list_impl);
+      root, gfx::Rect(), &render_surface_list_impl);
 
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   ASSERT_TRUE(GetRenderSurface(root));
@@ -2882,7 +2882,7 @@ TEST_F(LayerTreeHostCommonTest, OcclusionBySiblingOfTarget) {
   LayerImpl* surface_child_ptr = surface_child.get();
   LayerImpl* surface_child_mask_ptr = surface_child_mask.get();
 
-  host_impl.active_tree()->SetDeviceViewportSize(root->bounds());
+  host_impl.active_tree()->SetDeviceViewportRect(gfx::Rect(root->bounds()));
 
   surface_child->test_properties()->SetMaskLayer(std::move(surface_child_mask));
   surface->test_properties()->AddChild(std::move(surface_child));
@@ -2932,7 +2932,7 @@ TEST_F(LayerTreeHostCommonTest, TextureLayerSnapping) {
   fractional_translate.Translate(10.5f, 20.3f);
   child->test_properties()->transform = fractional_translate;
 
-  host_impl.active_tree()->SetDeviceViewportSize(root->bounds());
+  host_impl.active_tree()->SetDeviceViewportRect(gfx::Rect(root->bounds()));
 
   root->test_properties()->AddChild(std::move(child));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
@@ -2992,7 +2992,7 @@ TEST_F(LayerTreeHostCommonTest,
   occluding_child->SetDrawsContent(true);
   occluding_child->SetContentsOpaque(true);
 
-  host_impl.active_tree()->SetDeviceViewportSize(root->bounds());
+  host_impl.active_tree()->SetDeviceViewportRect(gfx::Rect(root->bounds()));
 
   child->test_properties()->AddChild(std::move(grand_child));
   root->test_properties()->AddChild(std::move(child));
@@ -4305,7 +4305,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_list);
+      root_layer, gfx::Rect(root_layer->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have one render surface and two layers. The child
@@ -4319,7 +4319,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   RenderSurfaceList render_surface_list2;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs2(
-      root_layer, root_layer->bounds(), &render_surface_list2);
+      root_layer, gfx::Rect(root_layer->bounds()), &render_surface_list2);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs2);
 
   LayerImpl* child_ptr = root_layer->layer_tree_impl()->LayerById(2);
@@ -4335,7 +4335,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   RenderSurfaceList render_surface_list3;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs3(
-      root_layer, root_layer->bounds(), &render_surface_list3);
+      root_layer, gfx::Rect(root_layer->bounds()), &render_surface_list3);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs3);
 
   child_ptr = root_layer->layer_tree_impl()->LayerById(2);
@@ -4620,7 +4620,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_list);
+      root_layer, gfx::Rect(root_layer->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have one render surface and two layers. The grand child has
@@ -4663,7 +4663,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_list);
+      root_layer, gfx::Rect(root_layer->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have one render surface and one layer. The child has
@@ -4758,7 +4758,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_list);
+      root_layer, gfx::Rect(root_layer->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   auto& effect_tree =
@@ -4865,7 +4865,7 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   LayerImpl* root_layer = root.get();
   root_layer->layer_tree_impl()->SetRootLayerForTesting(std::move(root));
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_list);
+      root_layer, gfx::Rect(root_layer->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have two render surface, as the others are clipped out.
@@ -5639,11 +5639,11 @@ TEST_F(LayerTreeHostCommonTestWithLayerLists,
 
   float device_scale_factor = 1.5f;
   RenderSurfaceList render_surface_list_impl;
-  gfx::Size device_viewport_size =
-      gfx::Size(root->bounds().width() * device_scale_factor,
+  gfx::Rect device_viewport_rect =
+      gfx::Rect(root->bounds().width() * device_scale_factor,
                 root->bounds().height() * device_scale_factor);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, device_viewport_size, gfx::Transform(), &render_surface_list_impl);
+      root, device_viewport_rect, gfx::Transform(), &render_surface_list_impl);
   inputs.device_scale_factor = device_scale_factor;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
@@ -7104,11 +7104,11 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   float page_scale_factor = 3.f;
   float device_scale_factor = 1.0f;
   RenderSurfaceList render_surface_list;
-  gfx::Size device_viewport_size =
-      gfx::Size(root_layer->bounds().width() * device_scale_factor,
+  gfx::Rect device_viewport_rect =
+      gfx::Rect(root_layer->bounds().width() * device_scale_factor,
                 root_layer->bounds().height() * device_scale_factor);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, device_viewport_size, &render_surface_list);
+      root_layer, device_viewport_rect, &render_surface_list);
 
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_layer = page_scale_layer;
@@ -7235,10 +7235,10 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
   content->SetDrawsContent(true);
   content->test_properties()->force_render_surface = true;
 
-  gfx::Size device_viewport_size(768, 582);
+  gfx::Rect device_viewport_rect(768, 582);
   RenderSurfaceList render_surface_list_impl;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, device_viewport_size, gfx::Transform(), &render_surface_list_impl);
+      root, device_viewport_rect, gfx::Transform(), &render_surface_list_impl);
   inputs.device_scale_factor = 2.f;
   inputs.page_scale_factor = 1.f;
   inputs.page_scale_layer = nullptr;
@@ -7267,9 +7267,9 @@ TEST_F(LayerTreeHostCommonTest, ViewportBoundsDeltaAffectVisibleContentRect) {
   gfx::Size sublayer_size = gfx::Size(300, 1000);
 
   // Device viewport accomidated the root and the browser controls.
-  gfx::Size device_viewport_size = gfx::Size(300, 600);
+  gfx::Rect device_viewport_rect = gfx::Rect(300, 600);
 
-  host_impl.active_tree()->SetDeviceViewportSize(device_viewport_size);
+  host_impl.active_tree()->SetDeviceViewportRect(device_viewport_rect);
   host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));
 
@@ -7294,7 +7294,7 @@ TEST_F(LayerTreeHostCommonTest, ViewportBoundsDeltaAffectVisibleContentRect) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, device_viewport_size, &render_surface_list);
+      root, device_viewport_rect, &render_surface_list);
 
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   EXPECT_EQ(gfx::Rect(root_size), sublayer->visible_layer_rect());
@@ -9149,7 +9149,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCacheRenderSurface) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer, root_layer->bounds(), &render_surface_list);
+      root_layer, gfx::Rect(root_layer->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have four render surfaces, one for the root, one for the grand
@@ -9327,7 +9327,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTrilinearFiltering) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, root->bounds(), &render_surface_list);
+      root, gfx::Rect(root->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   ASSERT_TRUE(GetRenderSurface(parent));

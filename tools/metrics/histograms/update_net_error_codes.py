@@ -36,7 +36,16 @@ def ReadNetErrorCodes(filename, error_regex):
   for line in content:
     m = error_regex.match(line)
     if m:
-      errors[int(m.group(2))] = m.group(1)
+      name = m.group(1)
+      code = int(m.group(2))
+
+      # CERT_END is not a real NET_ERROR and does not have a stable value.
+      # Don't include it.
+      if name == 'CERT_END':
+          continue
+
+      errors[code] = name
+
   return errors
 
 

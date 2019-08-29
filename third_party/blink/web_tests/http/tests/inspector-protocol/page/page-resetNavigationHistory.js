@@ -1,8 +1,8 @@
 (async function(testRunner) {
   const {page, session, dp} = await testRunner.startBlank(
       'Tests Page.resetNavigationHistory');
-  await session.evaluate(`history.pushState({}, '', window.location.href + '&foo')`);
-  await session.evaluate(`history.pushState({}, '', window.location.href + '&bar')`);
+  await dp.Runtime.evaluate({expression: `history.pushState({}, '', window.location.href + '&foo')`});
+  await dp.Runtime.evaluate({expression: `history.pushState({}, '', window.location.href + '&bar')`});
 
   let length = await session.evaluate(`history.length`);
   testRunner.log('Length before reset: ' + length);

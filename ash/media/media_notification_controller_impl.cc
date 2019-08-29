@@ -11,9 +11,9 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/media_message_center/media_notification_item.h"
+#include "components/media_message_center/media_notification_util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
@@ -35,11 +35,6 @@ std::unique_ptr<message_center::MessageView> CreateCustomMediaNotificationView(
     return controller->CreateMediaNotification(notification);
   return nullptr;
 }
-
-// The maximum number of media notifications to count when recording the
-// Media.Notification.Count histogram. 20 was chosen because it would be very
-// unlikely to see a user with 20+ things playing at once.
-const int kMediaNotificationCountHistogramMax = 20;
 
 // MediaNotificationBlocker will block media notifications if the screen is
 // locked.
@@ -100,10 +95,6 @@ class MediaNotificationBlocker : public message_center::NotificationBlocker,
 };
 
 }  // namespace
-
-// static
-const char MediaNotificationControllerImpl::kCountHistogramName[] =
-    "Media.Notification.Count";
 
 MediaNotificationControllerImpl::MediaNotificationControllerImpl(
     service_manager::Connector* connector)
@@ -201,7 +192,10 @@ void MediaNotificationControllerImpl::ShowNotification(const std::string& id) {
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 
-  RecordConcurrentNotificationCount();
+  media_message_center::RecordConcurrentNotificationCount(
+      message_center::MessageCenter::Get()
+          ->FindNotificationsByAppId(kMediaSessionNotifierId)
+          .size());
 }
 
 void MediaNotificationControllerImpl::HideNotification(const std::string& id) {
@@ -233,15 +227,6 @@ MediaNotificationControllerImpl::CreateMediaNotification(
 bool MediaNotificationControllerImpl::HasItemForTesting(
     const std::string& id) const {
   return base::Contains(notifications_, id);
-}
-
-void MediaNotificationControllerImpl::RecordConcurrentNotificationCount() {
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      kCountHistogramName,
-      message_center::MessageCenter::Get()
-          ->FindNotificationsByAppId(kMediaSessionNotifierId)
-          .size(),
-      kMediaNotificationCountHistogramMax);
 }
 
 }  // namespace ash

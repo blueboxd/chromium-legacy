@@ -112,8 +112,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Returns the NavigationRequest which owns this NavigationHandle.
   NavigationRequest* navigation_request() { return navigation_request_; }
 
-  const std::string& GetOriginPolicy() const;
-
   // Simulates the navigation resuming. Most callers should just let the
   // deferring NavigationThrottle do the resuming.
   void CallResumeForTesting();
@@ -155,16 +153,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->nav_entry_id();
   }
 
-  typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
-      ThrottleChecksFinishedCallback;
-
   // Returns the FrameTreeNode this navigation is happening in.
   FrameTreeNode* frame_tree_node() const {
     return navigation_request_->frame_tree_node();
-  }
-
-  NavigationUIData* navigation_ui_data() const {
-    return navigation_request_->navigation_ui_data();
   }
 
   NavigationType navigation_type() {
@@ -178,10 +169,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   const base::Optional<SourceLocation>& source_location() const {
     return navigation_request_->common_params().source_location;
-  }
-
-  NavigationThrottle* GetDeferringThrottleForTesting() const {
-    return navigation_request_->GetDeferringThrottleForTesting();
   }
 
  private:

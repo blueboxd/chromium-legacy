@@ -358,13 +358,17 @@ class CC_EXPORT LayerTreeImpl {
     return new_local_surface_id_request_;
   }
 
-  void SetDeviceViewportSize(const gfx::Size& device_viewport_size);
+  void SetDeviceViewportRect(const gfx::Rect& device_viewport_rect);
 
   // TODO(fsamuel): The reason this is not a trivial accessor is because it
   // may return an external viewport specified in LayerTreeHostImpl. In the
   // future, all properties should flow through the pending and active layer
   // trees and we shouldn't need to reach out to LayerTreeHostImpl.
   gfx::Rect GetDeviceViewport() const;
+
+  // This accessor is the same as above, except it only ever returns the
+  // internal (i.e. not external) device viewport.
+  gfx::Rect internal_device_viewport() { return device_viewport_rect_; }
 
   void SetRasterColorSpace(int raster_color_space_id,
                            const gfx::ColorSpace& raster_color_space);
@@ -718,7 +722,9 @@ class CC_EXPORT LayerTreeImpl {
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
   bool new_local_surface_id_request_ = false;
-  gfx::Size device_viewport_size_;
+  // Contains the physical rect of the device viewport, to be used in
+  // determining what needs to be drawn.
+  gfx::Rect device_viewport_rect_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 

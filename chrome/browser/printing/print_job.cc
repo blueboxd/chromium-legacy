@@ -239,6 +239,22 @@ const PrintSettings& PrintJob::settings() const {
   return document()->settings();
 }
 
+#if defined(OS_CHROMEOS)
+void PrintJob::SetSource(PrintJob::Source source,
+                         const std::string& source_id) {
+  source_ = source;
+  source_id_ = source_id;
+}
+
+PrintJob::Source PrintJob::source() const {
+  return source_;
+}
+
+const std::string& PrintJob::source_id() const {
+  return source_id_;
+}
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_WIN)
 class PrintJob::PdfConversionState {
  public:

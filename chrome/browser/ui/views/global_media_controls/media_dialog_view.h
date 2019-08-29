@@ -26,6 +26,8 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   static void HideDialog();
   static bool IsShowing();
 
+  static const MediaDialogView* GetDialogViewForTesting() { return instance_; }
+
   // MediaDialogDelegate implementation.
   void ShowMediaSession(
       const std::string& id,

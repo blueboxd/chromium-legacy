@@ -412,6 +412,15 @@ bool ShouldExcludeMediaSuffix(const GURL& url) {
   return false;
 }
 
+bool DetectDeferRedirectLoopsUsingCache() {
+  if (!IsDeferAllScriptPreviewsEnabled())
+    return false;
+
+  return GetFieldTrialParamByFeatureAsBool(features::kDeferAllScriptPreviews,
+                                           "detect_redirect_loop_using_cache",
+                                           true);
+}
+
 }  // namespace params
 
 std::string GetStringNameForType(PreviewsType type) {

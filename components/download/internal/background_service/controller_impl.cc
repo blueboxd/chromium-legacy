@@ -212,6 +212,8 @@ void ControllerImpl::StartDownload(const DownloadParams& params) {
 void ControllerImpl::PauseDownload(const std::string& guid) {
   DCHECK(controller_state_ == State::READY ||
          controller_state_ == State::UNAVAILABLE);
+  stats::LogServiceApiAction(GetOwnerOfDownload(guid),
+                             stats::ServiceApiAction::PAUSE_DOWNLOAD);
   if (controller_state_ != State::READY)
     return;
 
@@ -234,6 +236,8 @@ void ControllerImpl::PauseDownload(const std::string& guid) {
 void ControllerImpl::ResumeDownload(const std::string& guid) {
   DCHECK(controller_state_ == State::READY ||
          controller_state_ == State::UNAVAILABLE);
+  stats::LogServiceApiAction(GetOwnerOfDownload(guid),
+                             stats::ServiceApiAction::RESUME_DOWNLOAD);
   if (controller_state_ != State::READY)
     return;
 
@@ -252,6 +256,8 @@ void ControllerImpl::ResumeDownload(const std::string& guid) {
 void ControllerImpl::CancelDownload(const std::string& guid) {
   DCHECK(controller_state_ == State::READY ||
          controller_state_ == State::UNAVAILABLE);
+  stats::LogServiceApiAction(GetOwnerOfDownload(guid),
+                             stats::ServiceApiAction::CANCEL_DOWNLOAD);
   if (controller_state_ != State::READY)
     return;
 
@@ -274,6 +280,8 @@ void ControllerImpl::ChangeDownloadCriteria(const std::string& guid,
                                             const SchedulingParams& params) {
   DCHECK(controller_state_ == State::READY ||
          controller_state_ == State::UNAVAILABLE);
+  stats::LogServiceApiAction(GetOwnerOfDownload(guid),
+                             stats::ServiceApiAction::CHANGE_CRITERIA);
   if (controller_state_ != State::READY)
     return;
 

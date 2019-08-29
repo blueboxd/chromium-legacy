@@ -5,11 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <list>
 #include <vector>
 
 #include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

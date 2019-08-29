@@ -73,7 +73,8 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<RasterContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      bool hit_test_data_from_surface_layer);
   ~DirectLayerTreeFrameSink() override;
 
   // LayerTreeFrameSink implementation.
@@ -148,6 +149,8 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   // Histogram metrics used to record
   // GraphicsPipeline.ClientName.SubmitCompositorFrameAfterBeginFrame
   base::HistogramBase* const submit_begin_frame_histogram_;
+
+  const bool hit_test_data_from_surface_layer_;
 
   base::WeakPtrFactory<DirectLayerTreeFrameSink> weak_factory_{this};
 

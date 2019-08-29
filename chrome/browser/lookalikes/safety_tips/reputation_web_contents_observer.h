@@ -9,6 +9,7 @@
 
 #include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -37,7 +38,8 @@ class ReputationWebContentsObserver
   // Returns the type of the Safety Tip (if any) that was assigned to the
   // currently visible navigation entry. This field will be set even if the UI
   // was not actually shown because the feature was disabled.
-  SafetyTipType GetSafetyTipTypeForVisibleNavigation() const;
+  security_state::SafetyTipStatus GetSafetyTipStatusForVisibleNavigation()
+      const;
 
  private:
   friend class content::WebContentsUserData<ReputationWebContentsObserver>;
@@ -49,17 +51,18 @@ class ReputationWebContentsObserver
 
   // A ReputationCheckCallback. Called by the reputation service when a
   // reputation result is available.
-  void HandleReputationCheckResult(safety_tips::SafetyTipType type,
-                                   bool user_ignored,
-                                   const GURL& url);
+  void HandleReputationCheckResult(
+      security_state::SafetyTipStatus safety_tip_status,
+      bool user_ignored,
+      const GURL& url);
 
   Profile* profile_;
   // Used to cache the last safety tip type (and associated navigation entry ID)
   // so that Page Info can fetch this information without performing a
   // reputation check. Resets to kNone on new top frame navigations. Set even if
   // the feature to show the UI is disabled.
-  safety_tips::SafetyTipType last_navigation_safety_tip_type_ =
-      SafetyTipType::kNone;
+  security_state::SafetyTipStatus last_navigation_safety_tip_status_ =
+      security_state::SafetyTipStatus::kNone;
   int last_safety_tip_navigation_entry_id_ = 0;
 
   base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_{this};

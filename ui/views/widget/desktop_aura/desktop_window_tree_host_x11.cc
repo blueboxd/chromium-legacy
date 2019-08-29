@@ -62,9 +62,9 @@
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
+#include "ui/views/widget/desktop_aura/window_event_filter.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
-#include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/window_util.h"
@@ -267,14 +267,19 @@ void DesktopWindowTreeHostX11::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-void DesktopWindowTreeHostX11::SwapNonClientEventHandler(
-    std::unique_ptr<ui::EventHandler> handler) {
-  wm::CompoundEventFilter* compound_event_filter =
-      desktop_native_widget_aura_->root_window_event_filter();
-  if (x11_non_client_event_filter_)
-    compound_event_filter->RemoveHandler(x11_non_client_event_filter_.get());
-  compound_event_filter->AddHandler(handler.get());
-  x11_non_client_event_filter_ = std::move(handler);
+void DesktopWindowTreeHostX11::AddNonClientEventFilter() {
+  if (non_client_event_filter_)
+    return;
+  non_client_event_filter_ = std::make_unique<WindowEventFilter>(this);
+  non_client_event_filter_->SetWmMoveResizeHandler(this);
+  window()->AddPreTargetHandler(non_client_event_filter_.get());
+}
+
+void DesktopWindowTreeHostX11::RemoveNonClientEventFilter() {
+  if (!non_client_event_filter_)
+    return;
+  window()->RemovePreTargetHandler(non_client_event_filter_.get());
+  non_client_event_filter_.reset();
 }
 
 void DesktopWindowTreeHostX11::CleanUpWindowList(
@@ -313,9 +318,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   // notify events.
   X11DesktopHandler::get();
 
-  // TODO(erg): Unify this code once the other consumer goes away.
-  SwapNonClientEventHandler(
-      std::unique_ptr<ui::EventHandler>(new X11WindowEventFilter(this)));
+  AddNonClientEventFilter();
   SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
                     !params.remove_standard_frame);
 
@@ -366,6 +369,7 @@ void DesktopWindowTreeHostX11::CloseNow() {
     return;
 
   ReleaseCapture();
+  RemoveNonClientEventFilter();
   native_widget_delegate_->OnNativeWidgetDestroying();
 
   // If we have children, close them. Use a copy for iteration because they'll
@@ -380,12 +384,6 @@ void DesktopWindowTreeHostX11::CloseNow() {
     window_parent_->window_children_.erase(this);
     window_parent_ = nullptr;
   }
-
-  // Remove the event listeners we've installed. We need to remove these
-  // because otherwise we get assert during ~WindowEventDispatcher().
-  desktop_native_widget_aura_->root_window_event_filter()->RemoveHandler(
-      x11_non_client_event_filter_.get());
-  x11_non_client_event_filter_.reset();
 
   // Destroy the compositor before destroying the |xwindow_| since shutdown
   // may try to swap, and the swap without a window causes an X error, which
@@ -1296,6 +1294,12 @@ void DesktopWindowTreeHostX11::InitX11Window(const Widget::InitParams& params) {
                           base::Unretained(this)));
   }
   OnAcceleratedWidgetAvailable();
+}
+
+void DesktopWindowTreeHostX11::DispatchHostWindowDragMovement(
+    int hittest,
+    const gfx::Point& pointer_location) {
+  x11_window_->WmMoveResize(hittest, pointer_location);
 }
 
 gfx::Size DesktopWindowTreeHostX11::AdjustSize(

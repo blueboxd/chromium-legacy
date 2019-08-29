@@ -194,9 +194,10 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   static bool IsFlex(UnitType unit) { return unit == UnitType::kFraction; }
   bool IsFlex() const;
 
-  // Returns false when |this| is a length or a math function mixing percentage
-  // with length, and relative length units are involved. Returns true in all
-  // other cases.
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#computationally-independent
+  // A property value is computationally independent if it can be converted into
+  // a computed value using only the value of the property on the element, and
+  // "global" information that cannot be changed by CSS.
   bool IsComputationallyIndependent() const;
 
   // Creates either a |CSSNumericLiteralValue| or a |CSSMathFunctionValue|,

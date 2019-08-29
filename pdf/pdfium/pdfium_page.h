@@ -155,6 +155,9 @@ class PDFiumPage {
   // Returns link type and fills target associated with a URI action. Returns
   // NONSELECTABLE_AREA if detection failed.
   Area GetURITarget(FPDF_ACTION uri_action, LinkTarget* target) const;
+  // Calculates the set of character indices on which text runs need to be
+  // broken for page objects such as links and images.
+  void CalculatePageObjectTextRunBreaks();
 
   class ScopedUnloadPreventer {
    public:
@@ -200,6 +203,10 @@ class PDFiumPage {
   std::vector<Link> links_;
   bool calculated_images_ = false;
   std::vector<Image> images_;
+  bool calculated_page_object_text_run_breaks_ = false;
+  // The set of character indices on which text runs need to be broken for page
+  // objects.
+  std::set<int> page_object_text_run_breaks_;
   bool available_;
   PDFEngine::PageFeatures page_features_;
 

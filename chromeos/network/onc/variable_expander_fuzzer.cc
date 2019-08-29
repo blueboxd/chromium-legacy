@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/logging.h"
 #include "chromeos/network/onc/variable_expander.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace chromeos {
 namespace variable_expander {

@@ -276,6 +276,10 @@ bool IPAddress::IsLinkLocal() const {
   if (IsIPv4())
     return (ip_address_[0] == 169) && (ip_address_[1] == 254);
 
+  // [::ffff:169.254.0.0]/112
+  if (IsIPv4MappedIPv6())
+    return (ip_address_[12] == 169) && (ip_address_[13] == 254);
+
   // [fe80::]/10
   if (IsIPv6())
     return (ip_address_[0] == 0xFE) && ((ip_address_[1] & 0xC0) == 0x80);

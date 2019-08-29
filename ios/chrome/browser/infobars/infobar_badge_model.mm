@@ -47,4 +47,8 @@
   }
 }
 
+- (BOOL)isFullScreen {
+  return NO;
+}
+
 @end

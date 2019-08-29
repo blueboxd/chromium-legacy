@@ -10,17 +10,13 @@
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/string_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// The width and height of the favicon ImageView.
-const CGFloat kTextCellLinkColor = 0x1A73E8;
-}  // namespace
 
 #pragma mark - TableViewTextLinkItem
 
@@ -106,7 +102,7 @@ const CGFloat kTextCellLinkColor = 0x1A73E8;
                [[weakSelf delegate] tableViewTextLinkCell:weakSelf
                                         didRequestOpenURL:URL];
              }];
-  [self.labelLinkController setLinkColor:UIColorFromRGB(kTextCellLinkColor)];
+  [self.labelLinkController setLinkColor:[UIColor colorNamed:kBlueColor]];
 
   // Remove link delimiter from text and get ranges for links. Must be parsed
   // before being added to the controller because modifying the label text

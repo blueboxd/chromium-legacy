@@ -14,6 +14,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/public/graph/graph.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/profiles/profile.h"
@@ -101,31 +103,30 @@ void WebUIGraphDumpImpl::FaviconRequestHelper::FaviconDataAvailable(
                      serialization_id, result.bitmap_data));
 }
 
-WebUIGraphDumpImpl::WebUIGraphDumpImpl(Graph* graph)
-    : graph_(graph), binding_(this) {
-  DCHECK(graph);
-}
+WebUIGraphDumpImpl::WebUIGraphDumpImpl() : binding_(this) {}
 
 WebUIGraphDumpImpl::~WebUIGraphDumpImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (change_subscriber_) {
-    graph_->RemoveFrameNodeObserver(this);
-    graph_->RemovePageNodeObserver(this);
-    graph_->RemoveProcessNodeObserver(this);
-  }
-
-  // The favicon helper must be deleted on the UI thread.
-  if (favicon_request_helper_) {
-    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                       std::move(favicon_request_helper_));
-  }
+  DCHECK(!graph_);
+  DCHECK(!change_subscriber_);
+  DCHECK(!favicon_request_helper_);
 }
 
-void WebUIGraphDumpImpl::Bind(mojom::WebUIGraphDumpRequest request,
-                              base::OnceClosure error_handler) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+// static
+void WebUIGraphDumpImpl::CreateAndBind(mojom::WebUIGraphDumpRequest request,
+                                       GraphImpl* graph) {
+  std::unique_ptr<WebUIGraphDumpImpl> dump =
+      std::make_unique<WebUIGraphDumpImpl>();
+
+  dump->BindWithGraph(graph, std::move(request));
+  graph->PassToGraph(std::move(dump));
+}
+
+void WebUIGraphDumpImpl::BindWithGraph(Graph* graph,
+                                       mojom::WebUIGraphDumpRequest request) {
   binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(std::move(error_handler));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &WebUIGraphDumpImpl::OnConnectionError, base::Unretained(this)));
 }
 
 namespace {
@@ -168,6 +169,31 @@ void WebUIGraphDumpImpl::SubscribeToChanges(
   graph_->AddFrameNodeObserver(this);
   graph_->AddPageNodeObserver(this);
   graph_->AddProcessNodeObserver(this);
+}
+
+void WebUIGraphDumpImpl::OnPassedToGraph(Graph* graph) {
+  DCHECK(!graph_);
+  graph_ = graph;
+}
+
+void WebUIGraphDumpImpl::OnTakenFromGraph(Graph* graph) {
+  DCHECK_EQ(graph_, graph);
+
+  if (change_subscriber_) {
+    graph_->RemoveFrameNodeObserver(this);
+    graph_->RemovePageNodeObserver(this);
+    graph_->RemoveProcessNodeObserver(this);
+  }
+
+  change_subscriber_.reset();
+
+  // The favicon helper must be deleted on the UI thread.
+  if (favicon_request_helper_) {
+    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
+                                       std::move(favicon_request_helper_));
+  }
+
+  graph_ = nullptr;
 }
 
 void WebUIGraphDumpImpl::OnFrameNodeAdded(const FrameNode* frame_node) {
@@ -328,6 +354,11 @@ void WebUIGraphDumpImpl::SendFaviconNotification(
       &icon_info->icon_data);
 
   change_subscriber_->FavIconDataAvailable(std::move(icon_info));
+}
+
+// static
+void WebUIGraphDumpImpl::OnConnectionError(WebUIGraphDumpImpl* impl) {
+  std::unique_ptr<GraphOwned> owned_impl = impl->graph_->TakeFromGraph(impl);
 }
 
 }  // namespace performance_manager

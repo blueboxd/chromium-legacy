@@ -57,15 +57,15 @@ std::ostream& operator<<(std::ostream& os, const DistillabilityResult& result) {
   return os;
 }
 
-void SetDelegate(content::WebContents* web_contents,
-                 DistillabilityDelegate delegate) {
+void AddObserver(content::WebContents* web_contents,
+                 DistillabilityObserver* observer) {
   CHECK(web_contents);
   DistillabilityDriver::CreateForWebContents(web_contents);
 
   DistillabilityDriver* driver =
       DistillabilityDriver::FromWebContents(web_contents);
   CHECK(driver);
-  driver->SetDelegate(delegate);
+  driver->AddObserver(observer);
 }
 
 }  // namespace dom_distiller

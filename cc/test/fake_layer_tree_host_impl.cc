@@ -45,7 +45,7 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
       notify_tile_state_changed_called_(false) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
-  active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+  active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
 
   // Start an impl frame so tests have a valid frame_time to work with.
   base::TimeTicks time_ticks =

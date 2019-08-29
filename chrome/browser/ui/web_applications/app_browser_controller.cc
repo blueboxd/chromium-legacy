@@ -117,6 +117,18 @@ bool AppBrowserController::HasTitlebarContentSettings() const {
   return !IsForSystemWebApp();
 }
 
+#if defined(OS_CHROMEOS)
+bool AppBrowserController::UseTitlebarTerminalSystemAppMenu() const {
+  // Use the Terminal System App Menu for Terminal System App only.
+  // TODO(crbug.com/846546): Generalise this as a SystemWebApp capability.
+  if (IsForSystemWebApp()) {
+    return GetAppIdForSystemWebApp(browser()->profile(),
+                                   SystemAppType::TERMINAL) == GetAppId();
+  }
+  return false;
+}
+#endif
+
 bool AppBrowserController::IsInstalled() const {
   return false;
 }

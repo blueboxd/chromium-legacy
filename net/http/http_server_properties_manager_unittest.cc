@@ -1971,6 +1971,87 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   EXPECT_EQ(4, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
+// Check the interaction of ForceHTTP11 with saving/restoring settings.
+// In particular, ForceHTTP11 is not saved, and it should not overwrite or be
+// overitten by loaded data.
+TEST_F(HttpServerPropertiesManagerTest, ForceHTTP11) {
+  const url::SchemeHostPort kServer1("https", "foo.test", 443);
+  const url::SchemeHostPort kServer2("https", "bar.test", 443);
+  const url::SchemeHostPort kServer3("https", "baz.test", 443);
+
+  // Create and initialize an HttpServerProperties with no state.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  // Set kServer1 to support H2, but require HTTP/1.1.  Set kServer2 to only
+  // require HTTP/1.1.
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->RequiresHTTP11(kServer1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->RequiresHTTP11(kServer2, NetworkIsolationKey()));
+  properties->SetSupportsSpdy(kServer1, NetworkIsolationKey(), true);
+  properties->SetHTTP11Required(kServer1, NetworkIsolationKey());
+  properties->SetHTTP11Required(kServer2, NetworkIsolationKey());
+  EXPECT_TRUE(properties->GetSupportsSpdy(kServer1, NetworkIsolationKey()));
+  EXPECT_TRUE(properties->RequiresHTTP11(kServer1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
+  EXPECT_TRUE(properties->RequiresHTTP11(kServer2, NetworkIsolationKey()));
+
+  // Wait until the data's been written to prefs, and then tear down the
+  // HttpServerProperties.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+  std::unique_ptr<base::DictionaryValue> saved_value =
+      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  properties.reset();
+
+  // Only information on kServer1 should have been saved to prefs.
+  std::string preferences_json;
+  base::JSONWriter::Write(*saved_value, &preferences_json);
+  EXPECT_EQ(
+      "{\"servers\":["
+      "{\"isolation\":[],"
+      "\"server\":\"https://foo.test\","
+      "\"supports_spdy\":true}],"
+      "\"version\":5}",
+      preferences_json);
+
+  // Create a new HttpServerProperties using the value saved to prefs above.
+  pref_delegate = std::make_unique<MockPrefDelegate>();
+  unowned_pref_delegate = pref_delegate.get();
+  properties = std::make_unique<HttpServerProperties>(
+      std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
+
+  // Before the data has loaded, set kServer1 and kServer3 as requiring
+  // HTTP/1.1.
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->RequiresHTTP11(kServer1, NetworkIsolationKey()));
+  properties->SetHTTP11Required(kServer1, NetworkIsolationKey());
+  properties->SetHTTP11Required(kServer3, NetworkIsolationKey());
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer1, NetworkIsolationKey()));
+  EXPECT_TRUE(properties->RequiresHTTP11(kServer1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->RequiresHTTP11(kServer2, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer3, NetworkIsolationKey()));
+  EXPECT_TRUE(properties->RequiresHTTP11(kServer3, NetworkIsolationKey()));
+
+  // The data loads.
+  unowned_pref_delegate->InitializePrefs(*saved_value);
+
+  // The properties should contain a combination of the old and new data.
+  EXPECT_TRUE(properties->GetSupportsSpdy(kServer1, NetworkIsolationKey()));
+  EXPECT_TRUE(properties->RequiresHTTP11(kServer1, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer2, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->RequiresHTTP11(kServer2, NetworkIsolationKey()));
+  EXPECT_FALSE(properties->GetSupportsSpdy(kServer3, NetworkIsolationKey()));
+  EXPECT_TRUE(properties->RequiresHTTP11(kServer3, NetworkIsolationKey()));
+}
+
 TEST_F(HttpServerPropertiesManagerTest, NetworkIsolationKeyServerInfo) {
   const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
   const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));

@@ -89,6 +89,7 @@ void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
 
 void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
   if (backend_texture_.isValid()) {
+    sk_surface_.reset();
     DeleteGrBackendTexture(context_state_.get(), &backend_texture_);
     backend_texture_ = GrBackendTexture();
   }
@@ -96,17 +97,18 @@ void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
 
 SkSurface* SkiaOutputDeviceOffscreen::BeginPaint() {
   DCHECK(backend_texture_.isValid());
-  sk_surface_ = SkSurface::MakeFromBackendTexture(
-      context_state_->gr_context(), backend_texture_,
-      capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
-                                           : kBottomLeft_GrSurfaceOrigin,
-      0 /* sampleCount */, kSurfaceColorType, sk_color_space_,
-      nullptr /* surfaceProps */);
+  if (!sk_surface_) {
+    sk_surface_ = SkSurface::MakeFromBackendTexture(
+        context_state_->gr_context(), backend_texture_,
+        capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
+                                             : kBottomLeft_GrSurfaceOrigin,
+        0 /* sampleCount */, kSurfaceColorType, sk_color_space_,
+        nullptr /* surfaceProps */);
+  }
   return sk_surface_.get();
 }
 
 void SkiaOutputDeviceOffscreen::EndPaint(const GrBackendSemaphore& semaphore) {
-  sk_surface_.reset();
 }
 
 }  // namespace viz

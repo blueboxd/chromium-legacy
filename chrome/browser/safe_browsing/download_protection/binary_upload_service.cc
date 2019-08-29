@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -62,6 +63,13 @@ void BinaryUploadService::UploadForDeepScanning(
                   DeepScanningClientResponse());
     return;
   }
+
+  std::string token = base::RandBytesAsString(128);
+  active_tokens_[raw_request] = token;
+  binary_fcm_service_->SetCallbackForToken(
+      token, base::BindRepeating(&BinaryUploadService::OnGetResponse,
+                                 weakptr_factory_.GetWeakPtr(), raw_request));
+  raw_request->set_request_token(std::move(token));
 
   binary_fcm_service_->GetInstanceID(
       base::BindOnce(&BinaryUploadService::OnGetInstanceID,
@@ -164,11 +172,6 @@ void BinaryUploadService::OnUploadComplete(Request* request,
     return;
   }
 
-  active_tokens_[request] = response.token();
-  binary_fcm_service_->SetCallbackForToken(
-      response.token(),
-      base::BindRepeating(&BinaryUploadService::OnGetResponse,
-                          weakptr_factory_.GetWeakPtr(), request));
   active_uploads_.erase(request);
 
   // Synchronous scans can return results in the initial response proto, so
@@ -270,6 +273,10 @@ void BinaryUploadService::Request::set_fcm_token(const std::string& token) {
 
 void BinaryUploadService::Request::set_dm_token(const std::string& token) {
   deep_scanning_request_.set_dm_token(token);
+}
+
+void BinaryUploadService::Request::set_request_token(const std::string& token) {
+  deep_scanning_request_.set_request_token(token);
 }
 
 void BinaryUploadService::Request::FinishRequest(

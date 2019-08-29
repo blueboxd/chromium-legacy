@@ -65,10 +65,10 @@ class Graph {
   virtual std::unique_ptr<GraphOwned> TakeFromGraph(
       GraphOwned* graph_owned) = 0;
 
-  // A TakeFromGraph helper that casts to a derived type. It is up to the caller
-  // to ensure that the cast is safe.
+  // A TakeFromGraph helper for taking back the ownership of a GraphOwned
+  // subclass.
   template <typename DerivedType>
-  std::unique_ptr<DerivedType> TakeFromGraphAs(GraphOwned* graph_owned) {
+  std::unique_ptr<DerivedType> TakeFromGraphAs(DerivedType* graph_owned) {
     return base::WrapUnique(
         static_cast<DerivedType*>(TakeFromGraph(graph_owned).release()));
   }

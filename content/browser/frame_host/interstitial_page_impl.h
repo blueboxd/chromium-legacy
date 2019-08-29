@@ -22,6 +22,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -322,7 +323,8 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
 
   scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
 
-  ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> widget_observer_;
+  ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> widget_observer_{
+      this};
 
   base::WeakPtrFactory<InterstitialPageImpl> weak_ptr_factory_{this};
 

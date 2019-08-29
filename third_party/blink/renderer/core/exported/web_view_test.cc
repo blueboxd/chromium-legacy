@@ -253,8 +253,8 @@ class WebViewTest : public testing::Test {
   void SetViewportSize(const WebSize& size) {
     content::LayerTreeView* layer_tree_view =
         web_view_helper_.GetLayerTreeView();
-    layer_tree_view->SetViewportSizeAndScale(
-        static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
+    layer_tree_view->SetViewportRectAndScale(
+        gfx::Rect(static_cast<gfx::Size>(size)), /*device_scale_factor=*/1.f,
         layer_tree_view->layer_tree_host()
             ->local_surface_id_allocation_from_parent());
   }

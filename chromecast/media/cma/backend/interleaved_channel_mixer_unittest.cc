@@ -74,8 +74,8 @@ TEST_P(InterleavedChannelMixerTest, Transform) {
 
   for (int f = 0; f < kNumFrames; ++f) {
     for (int c = 0; c < num_output_channels; ++c) {
-      EXPECT_EQ(interleaved_mixed[f * num_output_channels + c],
-                transformed_interleaved[f * num_output_channels + c])
+      EXPECT_FLOAT_EQ(interleaved_mixed[f * num_output_channels + c],
+                      transformed_interleaved[f * num_output_channels + c])
           << "at frame " << f << ", channel " << c;
     }
   }

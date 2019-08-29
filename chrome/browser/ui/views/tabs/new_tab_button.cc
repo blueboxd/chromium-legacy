@@ -12,6 +12,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -260,12 +261,12 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
 
 void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
   const SkColor background_color =
-      tab_strip_->GetTabBackgroundColor(TAB_INACTIVE);
+      tab_strip_->GetTabBackgroundColor(TabActive::kInactive);
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(
-      tab_strip_->GetTabForegroundColor(TAB_INACTIVE, background_color));
+  flags.setColor(tab_strip_->GetTabForegroundColor(TabActive::kInactive,
+                                                   background_color));
   flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
   constexpr int kStrokeWidth = 2;
   flags.setStrokeWidth(kStrokeWidth);
@@ -293,7 +294,7 @@ SkColor NewTabButton::GetButtonFillColor() const {
 
   return GetThemeProvider()->GetDisplayProperty(
              ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR)
-             ? tab_strip_->GetTabBackgroundColor(TAB_INACTIVE)
+             ? tab_strip_->GetTabBackgroundColor(TabActive::kInactive)
              : SK_ColorTRANSPARENT;
 }
 

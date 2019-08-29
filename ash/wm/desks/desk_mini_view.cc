@@ -15,6 +15,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -135,6 +136,8 @@ void DeskMiniView::UpdateBorderColor() {
   if (owner_bar_->dragged_item_over_bar() &&
       IsPointOnMiniView(owner_bar_->last_dragged_item_screen_location())) {
     desk_preview_->SetBorderColor(kDraggedOverColor);
+  } else if (IsViewHighlighted()) {
+    desk_preview_->SetBorderColor(gfx::kGoogleBlue300);
   } else {
     desk_preview_->SetBorderColor(desk_->is_active() ? kActiveColor
                                                      : kInactiveColor);
@@ -248,6 +251,15 @@ void DeskMiniView::MaybeActivateHighlightedView() {
 
 void DeskMiniView::MaybeCloseHighlightedView() {
   OnCloseButtonPressed();
+}
+
+bool DeskMiniView::OnViewHighlighted() {
+  UpdateBorderColor();
+  return true;
+}
+
+void DeskMiniView::OnViewUnhighlighted() {
+  UpdateBorderColor();
 }
 
 bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {

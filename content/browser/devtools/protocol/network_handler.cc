@@ -1899,6 +1899,7 @@ void NetworkHandler::OnResponseBodyPipeTaken(
     Response response,
     mojo::ScopedDataPipeConsumerHandle pipe,
     const std::string& mime_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(response.isSuccess(), pipe.is_valid());
   if (!response.isSuccess()) {
     callback->sendFailure(std::move(response));

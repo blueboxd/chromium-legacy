@@ -262,8 +262,8 @@ void PropertyTreeManager::SetupRootClipNode() {
   // correctly account for the URL bar. In fact, the visual viewport property
   // tree builder should probably be the one to create the property tree state
   // and have this created in the same way as other layers.
-  clip_node.clip = gfx::RectF(
-      gfx::SizeF(root_layer_.layer_tree_host()->device_viewport_size()));
+  clip_node.clip =
+      gfx::RectF(root_layer_.layer_tree_host()->device_viewport_rect());
   clip_node.transform_id = kRealRootNodeId;
 
   ClipPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_, clip_node.id);

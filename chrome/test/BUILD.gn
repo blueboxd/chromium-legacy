@@ -3016,6 +3016,7 @@ test("unit_tests") {
     "../browser/payments/payment_handler_permission_context_unittest.cc",
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
+    "../browser/performance_manager/decorators/process_metrics_decorator_unittest.cc",
     "../browser/performance_manager/frame_priority/frame_priority_unittest.cc",
     "../browser/performance_manager/frame_priority/max_vote_aggregator_unittest.cc",
     "../browser/performance_manager/frame_priority/override_vote_aggregator_unittest.cc",
@@ -5579,6 +5580,9 @@ if (!is_android) {
           ]
           deps += [ "//build/config/linux/gtk" ]
         }
+      }
+      if (!is_chromeos) {
+        sources += [ "../browser/ui/views/global_media_controls/media_dialog_view_interactive_browsertest.cc" ]
       }
       if (use_aura || is_mac) {
         deps += [ "//ui/touch_selection" ]

@@ -37,7 +37,7 @@ endobj
 >>
 endobj
 6 0 obj <<
- /Length 138
+  /Length 184
 >>
 stream
 BT
@@ -47,6 +47,9 @@ BT
 0 50 Td
 /F2 16 Tf
 (Goodbye, http://bing.com! nice meeting you) Tj
+0 40 Td
+/F2 16 Tf
+(Bye, http://google.com) Tj
 ET
 endstream
 endobj
@@ -64,5 +67,5 @@ trailer <<
   /Size 7
 >>
 startxref
-642
+689
 %%EOF

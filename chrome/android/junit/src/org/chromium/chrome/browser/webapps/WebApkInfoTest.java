@@ -161,7 +161,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(SHELL_APK_VERSION, info.shellApkVersion());
         Assert.assertEquals(MANIFEST_URL, info.manifestUrl());
         Assert.assertEquals(START_URL, info.manifestStartUrl());
-        Assert.assertEquals(WebApkInfo.WebApkDistributor.BROWSER, info.distributor());
+        Assert.assertEquals(WebApkDistributor.BROWSER, info.distributor());
 
         Assert.assertEquals(1, info.iconUrlToMurmur2HashMap().size());
         Assert.assertTrue(info.iconUrlToMurmur2HashMap().containsKey(ICON_URL));
@@ -459,8 +459,8 @@ public class WebApkInfoTest {
 
     /**
      * Test when a distributor is not specified, the default distributor value for a WebAPK
-     * installed by Chrome is |WebApkInfo.WebApkDistributor.BROWSER|, while for an Unbound WebAPK is
-     * |WebApkInfo.WebApkDistributor.Other|.
+     * installed by Chrome is |WebApkDistributor.BROWSER|, while for an Unbound WebAPK is
+     * |WebApkDistributor.Other|.
      */
     @Test
     public void testWebApkDistributorDefaultValue() {
@@ -473,7 +473,7 @@ public class WebApkInfoTest {
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         WebApkInfo info = WebApkInfo.create(intent);
-        Assert.assertEquals(WebApkInfo.WebApkDistributor.BROWSER, info.distributor());
+        Assert.assertEquals(WebApkDistributor.BROWSER, info.distributor());
 
         // Test Case: Unbound WebAPK
         WebApkTestHelper.registerWebApkWithMetaData(
@@ -482,7 +482,7 @@ public class WebApkInfoTest {
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, UNBOUND_WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         info = WebApkInfo.create(intent);
-        Assert.assertEquals(WebApkInfo.WebApkDistributor.OTHER, info.distributor());
+        Assert.assertEquals(WebApkDistributor.OTHER, info.distributor());
     }
 
     /**

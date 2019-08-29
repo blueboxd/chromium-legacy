@@ -18,11 +18,8 @@
 
 namespace exo {
 
-FullscreenShellSurface::FullscreenShellSurface(Surface* surface)
+FullscreenShellSurface::FullscreenShellSurface()
     : SurfaceTreeHost("FullscreenShellSurfaceHost") {
-  surface->AddSurfaceObserver(this);
-  SetRootSurface(surface);
-  host_window()->Show();
   set_owned_by_client();
   CreateFullscreenShellSurfaceWidget(ui::SHOW_STATE_FULLSCREEN);
   widget_->SetFullscreen(true);
@@ -64,6 +61,22 @@ void FullscreenShellSurface::SetStartupId(const char* startup_id) {
 
   if (widget_ && widget_->GetNativeWindow())
     SetShellStartupId(widget_->GetNativeWindow(), startup_id_);
+}
+
+void FullscreenShellSurface::SetSurface(Surface* surface) {
+  if (root_surface())
+    root_surface()->RemoveSurfaceObserver(this);
+  SetRootSurface(surface);
+  set_owned_by_client();
+  SetShellMainSurface(widget_->GetNativeWindow(), root_surface());
+  if (surface) {
+    surface->AddSurfaceObserver(this);
+    host_window()->Show();
+    widget_->Show();
+  } else {
+    host_window()->Hide();
+    widget_->Hide();
+  }
 }
 
 void FullscreenShellSurface::Maximize() {

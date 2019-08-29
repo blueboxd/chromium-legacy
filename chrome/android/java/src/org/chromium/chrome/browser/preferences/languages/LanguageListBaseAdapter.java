@@ -21,7 +21,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.dragreorder.DragReorderableListAdapter;
 import org.chromium.chrome.browser.widget.dragreorder.DragStateDelegate;
 

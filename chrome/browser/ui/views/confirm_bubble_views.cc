@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -21,6 +22,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
 ConfirmBubbleViews::ConfirmBubbleViews(
@@ -39,7 +41,9 @@ ConfirmBubbleViews::ConfirmBubbleViews(
                 kMaxMessageWidth, false);
 
   // Add the message label.
-  auto label = std::make_unique<views::Label>(model_->GetMessageText());
+  auto label = std::make_unique<views::Label>(
+      model_->GetMessageText(), views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+      views::style::STYLE_SECONDARY);
   DCHECK(!label->GetText().empty());
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);

@@ -4,10 +4,6 @@
      found in the LICENSE file. -->
 
 <resources>
-    <!-- Menu Dimensions -->
-    <!-- Necessary to align the menu icon with the actual button. -->
-    <dimen name="menu_negative_software_vertical_offset">6dp</dimen>
-
     <!-- Tab title -->
     <dimen name="tab_title_favicon_start_padding">0dp</dimen>
     <dimen name="tab_title_favicon_end_padding">5dp</dimen>

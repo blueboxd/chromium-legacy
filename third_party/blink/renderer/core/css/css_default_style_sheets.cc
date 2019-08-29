@@ -86,8 +86,13 @@ static StyleSheetContents* ParseUASheet(const String& str) {
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     : media_controls_style_sheet_loader_(nullptr) {
   // Strict-mode rules.
+  String forced_colors_style_sheet =
+      RuntimeEnabledFeatures::ForcedColorsEnabled()
+          ? UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_FORCED_COLORS_CSS)
+          : String();
   String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
-                         LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
+                         LayoutTheme::GetTheme().ExtraDefaultStyleSheet() +
+                         forced_colors_style_sheet;
 
   default_style_sheet_ = ParseUASheet(default_rules);
 

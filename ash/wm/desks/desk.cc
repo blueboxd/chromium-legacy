@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -18,6 +19,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/stl_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -47,15 +49,9 @@ bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
   if (transient_root != window)
     return false;
 
-  const bool has_transient_children =
-      !::wm::GetTransientChildren(transient_root).empty();
-
-  // Do not move non-desk windows. A transient root can be blocked by a
-  // modal transient child, in which case it will be non-activatable and
-  // will be considered a non-desk window; however it shouldn't be excluded.
-  // TODO(afakhry): We need to implement a better mechanism for excluding
-  // non-desk windows that doesn't depend on the activatability of the window.
-  return has_transient_children || CanIncludeWindowInMruList(window);
+  // Only allow app windows to move to other desks.
+  return window->GetProperty(aura::client::kAppType) !=
+         static_cast<int>(AppType::NON_APP);
 }
 
 // Used to temporarily turn off the automatic window positioning while windows

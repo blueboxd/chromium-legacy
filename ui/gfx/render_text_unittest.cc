@@ -3255,6 +3255,80 @@ TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
   SetRTL(was_rtl);
 }
 
+TEST_F(RenderTextTest, GetTextOffsetVerticalAignment) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(UTF8ToUTF16("abcdefg"));
+  render_text->SetFontList(FontList("Arial, 13px"));
+
+  // Set display area's size equal to the font size.
+  const Size font_size(render_text->GetContentWidth(),
+                       render_text->font_list().GetHeight());
+  Rect display_rect(font_size);
+  render_text->SetDisplayRect(display_rect);
+
+  Vector2d offset = render_text->GetLineOffset(0);
+  EXPECT_TRUE(offset.IsZero());
+
+  const int kEnlargementY = 10;
+  display_rect.Inset(0, 0, 0, -kEnlargementY);
+  render_text->SetDisplayRect(display_rect);
+
+  // Check the default vertical alignment (ALIGN_MIDDLE).
+  offset = render_text->GetLineOffset(0);
+  // Because the line height may be odd, and because of the way this calculation
+  // is done, we will accept a result within 1 DIP of half:
+  EXPECT_NEAR(kEnlargementY / 2, offset.y(), 1);
+
+  // Check explicitly setting the vertical alignment.
+  render_text->SetVerticalAlignment(ALIGN_TOP);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(0, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_MIDDLE);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_NEAR(kEnlargementY / 2, offset.y(), 1);
+  render_text->SetVerticalAlignment(ALIGN_BOTTOM);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargementY, offset.y());
+}
+
+TEST_F(RenderTextTest, GetTextOffsetVerticalAignment_Multiline) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  render_text->SetMaxLines(2);
+  render_text->SetText(UTF8ToUTF16("abcdefg hijklmn"));
+  render_text->SetFontList(FontList("Arial, 13px"));
+
+  // Set display area's size equal to the font size.
+  const Size font_size(render_text->GetContentWidth(),
+                       render_text->font_list().GetHeight());
+
+  // Force text onto two lines.
+  Rect display_rect(Size(font_size.width() * 2 / 3, font_size.height() * 2));
+  render_text->SetDisplayRect(display_rect);
+
+  Vector2d offset = render_text->GetLineOffset(0);
+  EXPECT_TRUE(offset.IsZero());
+
+  const int kEnlargementY = 10;
+  display_rect.Inset(0, 0, 0, -kEnlargementY);
+  render_text->SetDisplayRect(display_rect);
+
+  // Check the default vertical alignment (ALIGN_MIDDLE).
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargementY / 2, offset.y());
+
+  // Check explicitly setting the vertical alignment.
+  render_text->SetVerticalAlignment(ALIGN_TOP);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(0, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_MIDDLE);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargementY / 2, offset.y());
+  render_text->SetVerticalAlignment(ALIGN_BOTTOM);
+  offset = render_text->GetLineOffset(0);
+  EXPECT_EQ(kEnlargementY, offset.y());
+}
+
 TEST_F(RenderTextTest, SetDisplayOffset) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("abcdefg"));

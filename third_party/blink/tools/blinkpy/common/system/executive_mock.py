@@ -165,7 +165,7 @@ class MockExecutive(object):
     def cpu_count(self):
         return 2
 
-    def kill_process(self, pid):
+    def kill_process(self, pid, kill_tree=True):
         pass
 
     def interrupt(self, pid):

@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <memory>
 #include <string>
 
@@ -26,7 +28,6 @@
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/next_proto.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Fuzzer for HttpProxyClientSocket only tests establishing a connection when
 // using the proxy as a tunnel.

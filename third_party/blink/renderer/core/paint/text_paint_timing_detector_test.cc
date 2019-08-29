@@ -606,18 +606,18 @@ TEST_F(TextPaintTimingDetectorTest, CaptureFileUploadController) {
             DOMNodeIds::ExistingIdForNode(element));
 }
 
-TEST_F(TextPaintTimingDetectorTest, NotCapturingListMarkers) {
+TEST_F(TextPaintTimingDetectorTest, CapturingListMarkers) {
   SetBodyInnerHTML(R"HTML(
     <ul>
-      <li></li>
+      <li>List item</li>
     </ul>
     <ol>
-      <li></li>
+      <li>Another list item</li>
     </ol>
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  EXPECT_EQ(CountVisibleTexts(), 0u);
+  EXPECT_EQ(CountVisibleTexts(), 2u);
 }
 
 TEST_F(TextPaintTimingDetectorTest, CaptureSVGText) {

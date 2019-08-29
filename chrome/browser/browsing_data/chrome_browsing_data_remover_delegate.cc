@@ -24,6 +24,7 @@
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
+#include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -584,6 +585,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
     if (optimization_guide_keyed_service)
       optimization_guide_keyed_service->ClearData();
+
+    AvailabilityProber::ClearData(prefs);
 
 #if defined(OS_ANDROID)
     OomInterventionDecider* oom_intervention_decider =

@@ -232,7 +232,7 @@
       },
       'Android WebView N (dbg)': {
         'test_suites': {
-          'gtest_tests': 'webview_bot_system_gtests',
+          'gtest_tests': 'webview_bot_all_gtests',
         },
         'swarming': {
           'dimension_sets': [

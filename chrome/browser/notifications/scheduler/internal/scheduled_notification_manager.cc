@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_store.h"
@@ -35,19 +37,33 @@ bool CreateTimeCompare(const NotificationEntry* lhs,
   return lhs->create_time <= rhs->create_time;
 }
 
-void ValidateNotificationParams(const NotificationParams& params) {
-  // Validate time window.
-  DCHECK(params.schedule_params.deliver_time_start.has_value() &&
-         params.schedule_params.deliver_time_end.has_value())
-      << "Currently only support deliver in a time window,";
-  DCHECK(params.schedule_params.deliver_time_start.value() <=
-         params.schedule_params.deliver_time_end.value());
-
-  // Validate ihnr buttons option.
-  if (params.enable_ihnr_buttons) {
-    DCHECK(params.notification_data.buttons.empty())
-        << "Can't have custom buttons when have helpful/unhelpful buttons.";
+// Vailidates notification parameters. Returns false if the parameters are
+// invalid.
+bool ValidateNotificationParams(const NotificationParams& params) {
+  // Validate time window. Currently we only support deliver notification
+  // according to a time window.
+  if (!params.schedule_params.deliver_time_start.has_value() ||
+      !params.schedule_params.deliver_time_end.has_value() ||
+      params.schedule_params.deliver_time_start.value() >
+          params.schedule_params.deliver_time_end.value()) {
+    return false;
   }
+
+  // Validate ihnr buttons option. Custom buttons will be overwritten.
+  if (params.enable_ihnr_buttons && !params.notification_data.buttons.empty()) {
+    return false;
+  }
+  return true;
+}
+
+// Vailidates notification entry. Returns false if the entry should be deleted.
+bool ValidateNotificationEntry(const NotificationEntry& entry) {
+  // Check the deliver time window.
+  return (entry.schedule_params.deliver_time_start.has_value() &&
+          entry.schedule_params.deliver_time_end.has_value() &&
+          entry.schedule_params.deliver_time_end > base::Time::Now() &&
+          entry.schedule_params.deliver_time_end >=
+              entry.schedule_params.deliver_time_start);
 }
 
 class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
@@ -66,16 +82,16 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
         config_(config) {}
 
  private:
+  // NotificationManager implementation.
   void Init(Delegate* delegate, InitCallback callback) override {
     DCHECK(!delegate_);
     delegate_ = delegate;
 
-    notification_store_->InitAndLoad(base::BindOnce(
-        &ScheduledNotificationManagerImpl::OnNotificationStoreInitialized,
+    icon_store_->Init(base::BindOnce(
+        &ScheduledNotificationManagerImpl::OnIconStoreInitialized,
         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  // NotificationManager implementation.
   void ScheduleNotification(
       std::unique_ptr<NotificationParams> notification_params) override {
     DCHECK(notification_params);
@@ -89,7 +105,10 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       return;
     }
 
-    ValidateNotificationParams(*notification_params);
+    bool valid = ValidateNotificationParams(*notification_params);
+    DCHECK(valid) << "Invalid notification parameters.";
+    if (!valid)
+      return;
 
     if (notification_params->enable_ihnr_buttons) {
       CreateInhrButtonsPair(&notification_params->notification_data.buttons);
@@ -108,15 +127,16 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   }
 
   void DisplayNotification(const std::string& guid) override {
-    std::unique_ptr<NotificationEntry> entry;
+    NotificationEntry* entry = nullptr;
     for (auto it = notifications_.begin(); it != notifications_.end(); it++) {
       if (it->second.count(guid)) {
-        entry = std::move(it->second[guid]);
+        entry = it->second[guid].get();
         break;
       }
     }
 
-    DCHECK(entry);
+    if (!entry)
+      return;
 
     std::vector<std::string> keys;
     for (const auto& pair : entry->icons_uuid) {
@@ -125,7 +145,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     icon_store_->LoadIcons(
         std::move(keys),
         base::BindOnce(&ScheduledNotificationManagerImpl::OnIconsLoaded,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(entry)));
+                       weak_ptr_factory_.GetWeakPtr(), entry->type,
+                       entry->guid));
   }
 
   void GetAllNotifications(Notifications* notifications) const override {
@@ -160,30 +181,25 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   void DeleteNotifications(SchedulerClientType type) override {
     if (!notifications_.count(type))
       return;
+
     auto it = notifications_[type].begin();
     while (it != notifications_[type].end()) {
       const auto& entry = *it->second;
       ++it;
-      notification_store_->Delete(
-          entry.guid,
-          base::BindOnce(
-              &ScheduledNotificationManagerImpl::OnNotificationDeleted,
-              weak_ptr_factory_.GetWeakPtr()));
+      DeleteNotificationInDb(entry);
     }
     notifications_.erase(type);
   }
 
-  // Sync with registered clients. Delete entrties in |notifications_| if
-  // their clients are deprecated.
-  void SyncRegisteredClients() {
-    auto it = notifications_.begin();
-    while (it != notifications_.end()) {
-      auto type = it->first;
-      it++;
-      if (!clients_.count(type)) {
-        DeleteNotifications(type);
-      }
+  void OnIconStoreInitialized(InitCallback callback, bool success) {
+    if (!success) {
+      std::move(callback).Run(false);
+      return;
     }
+
+    notification_store_->InitAndLoad(base::BindOnce(
+        &ScheduledNotificationManagerImpl::OnNotificationStoreInitialized,
+        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnNotificationStoreInitialized(
@@ -197,30 +213,43 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       return;
     }
 
+    FilterNotificationEntries(std::move(entries));
+    std::move(callback).Run(true);
+  }
+
+  // Filters and loads notification into memory.
+  void FilterNotificationEntries(
+      CollectionStore<NotificationEntry>::Entries entries) {
     for (auto it = entries.begin(); it != entries.end(); it++) {
       auto* entry = it->get();
       // Prune expired notifications. Also delete them in db.
       bool expired = entry->create_time + config_.notification_expiration <=
                      base::Time::Now();
-      if (expired) {
-        notification_store_->Delete(
-            entry->guid,
-            base::BindOnce(
-                &ScheduledNotificationManagerImpl::OnNotificationDeleted,
-                weak_ptr_factory_.GetWeakPtr()));
-      } else if (clients_.count(entry->type)) {
+      bool valid = ValidateNotificationEntry(*entry);
+      bool deprecated_client = !base::Contains(clients_, entry->type);
+      if (expired || deprecated_client || !valid) {
+        DeleteNotificationInDb(*entry);
+      } else {
         notifications_[entry->type].emplace(entry->guid, std::move(*it));
       }
     }
-    SyncRegisteredClients();
-
-    icon_store_->Init(base::BindOnce(
-        &ScheduledNotificationManagerImpl::OnIconStoreInitialized,
-        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void OnIconStoreInitialized(InitCallback callback, bool success) {
-    std::move(callback).Run(success);
+  // Deletes a notification entry and its associated icon resources from
+  // database.
+  void DeleteNotificationInDb(const NotificationEntry& entry) {
+    // Deletes icon first.
+    std::vector<std::string> icons_to_delete;
+    for (const auto& icon_id : entry.icons_uuid) {
+      icons_to_delete.emplace_back(icon_id.second);
+    }
+    icon_store_->DeleteIcons(std::move(icons_to_delete), base::DoNothing());
+
+    // Deletes notification entry.
+    notification_store_->Delete(
+        entry.guid,
+        base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationDeleted,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void OnNotificationAdded(SchedulerClientType type,
@@ -267,24 +296,42 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
   void OnIconDeleted(bool success) { NOTIMPLEMENTED(); }
 
-  void OnIconsLoaded(std::unique_ptr<NotificationEntry> entry,
+  void OnIconsLoaded(SchedulerClientType client_type,
+                     const std::string& guid,
                      bool success,
                      IconStore::LoadedIconsMap loaded_icons_map) {
     // TODO(hesen): delete notification entry if icons failed to load.
     if (!success)
       return;
+
+    // Delete icons from database.
+    std::vector<std::string> icons_to_delete;
+    for (const auto& loaded_icon : loaded_icons_map) {
+      icons_to_delete.emplace_back(loaded_icon.first);
+    }
+    icon_store_->DeleteIcons(std::move(icons_to_delete), base::DoNothing());
+
+    // Can't find the entry.
+    if (!FindNotificationEntry(client_type, guid)) {
+      return;
+    }
+
+    // Glue the icon data to entry.
+    std::unique_ptr<NotificationEntry> entry =
+        std::move(notifications_[client_type][guid]);
+    DCHECK(entry);
     for (const auto& pair : entry->icons_uuid) {
       auto icon_bundle = IconBundle(std::move(loaded_icons_map[pair.second]));
       entry->notification_data.icons.emplace(pair.first,
                                              std::move(icon_bundle));
     }
-    auto type = entry->type;
-    auto guid = entry->guid;
-    notifications_[type].erase(guid);
-    if (notifications_[type].empty())
-      notifications_.erase(type);
+
+    // Before moving out the entry, delete it from container and disk.
+    notifications_[entry->type].erase(entry->guid);
+    if (notifications_[entry->type].empty())
+      notifications_.erase(entry->type);
     notification_store_->Delete(
-        guid,
+        entry->guid,
         base::BindOnce(&ScheduledNotificationManagerImpl::OnNotificationDeleted,
                        weak_ptr_factory_.GetWeakPtr()));
 
@@ -329,6 +376,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       this};
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerImpl);
 };
+
 }  // namespace
 
 // static

@@ -1434,11 +1434,17 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs the primary CoCa {@link CardTag} for a recent resolve, including {@codeCardTag.CT_NONE}
-     * when no card or tag, and {@codeCardTag.CT_OTHER} when it's one we do not recognize.
-     * @param cardTagEnum The primary CoCa card Tag for the result.
+     * Logs the primary CoCa {@link CardTag} for searches where the panel contents was seen,
+     * including {@codeCardTag.CT_NONE} when no card or tag, and {@codeCardTag.CT_OTHER} when it's
+     * one we do not recognize.
+     * @param wasSearchContentViewSeen Whether the panel was seen.
+     * @param cardTagEnum The primary CoCa card Tag for the result seen.
      */
-    public static void logCardTag(@CardTag int cardTagEnum) {
+    public static void logCardTagSeen(boolean wasSearchContentViewSeen, @CardTag int cardTagEnum) {
+        if (wasSearchContentViewSeen) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Search.ContextualSearch.CardTagSeen", cardTagEnum, CardTag.NUM_ENTRIES);
+        }
         RecordHistogram.recordEnumeratedHistogram(
                 "Search.ContextualSearch.CardTag", cardTagEnum, CardTag.NUM_ENTRIES);
     }

@@ -46,7 +46,7 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   layer_tree_host->SetRootLayer(scrollbar_layer);
 
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      scrollbar_layer.get(), scrollbar_layer->bounds());
+      scrollbar_layer.get(), gfx::Rect(scrollbar_layer->bounds()));
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host.get());

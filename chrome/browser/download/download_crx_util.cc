@@ -65,11 +65,6 @@ std::unique_ptr<ExtensionInstallPrompt> CreateExtensionInstallPrompt(
 }
 
 bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
-  // TODO(aa): RefererURL is cleared in some cases, for example when going
-  // between secure and non-secure URLs. It would be better if DownloadItem
-  // tracked the initiating page explicitly.
-  LOG(ERROR) << "OffStoreInstallAllowedByPrefs************"
-             << g_allow_offstore_install_for_testing;
   return g_allow_offstore_install_for_testing ||
          extensions::ExtensionManagementFactory::GetForBrowserContext(profile)
              ->IsOffstoreInstallAllowed(item.GetURL(), item.GetReferrerUrl());

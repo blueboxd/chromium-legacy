@@ -102,6 +102,7 @@ android_resources("chrome_app_java_resources") {
     ":ui_locale_string_resources",
     "//chrome/android/webapk/libs/common:splash_resources",
     "//chrome/app:java_strings_grd",
+    "//chrome/browser/ui/android/widget:ui_widget_java_resources",
     "//components/autofill/android:autofill_java_resources",
     "//components/policy:app_restrictions_resources",
     "//components/strings:components_locale_settings_grd",
@@ -565,6 +566,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
   sources = [
     "//chrome/browser/android/customtabs/detached_resource_request.h",
     "//chrome/browser/android/digital_asset_links/digital_asset_links_handler.h",
+    "//chrome/browser/android/download/download_open_source.h",
     "//chrome/browser/android/explore_sites/explore_sites_bridge.h",
     "//chrome/browser/android/explore_sites/explore_sites_feature.h",
     "//chrome/browser/android/feedback/connectivity_checker.cc",
@@ -805,6 +807,7 @@ android_library("chrome_test_java") {
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/browser/android/metrics:ukm_utils_java",
+    "//chrome/browser/ui/android/widget:java",
     "//chrome/lib/util/public/android:java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",

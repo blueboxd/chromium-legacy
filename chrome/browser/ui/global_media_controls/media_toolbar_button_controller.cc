@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "components/media_message_center/media_notification_item.h"
+#include "components/media_message_center/media_notification_util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -148,6 +149,9 @@ void MediaToolbarButtonController::SetDialogDelegate(
 
     dialog_delegate_->ShowMediaSession(id, item);
   }
+
+  media_message_center::RecordConcurrentNotificationCount(
+      active_controllable_session_ids_.size());
 }
 
 void MediaToolbarButtonController::OnReceivedAudioFocusRequests(

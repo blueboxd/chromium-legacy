@@ -142,27 +142,6 @@ TabManagerStatsCollector::~TabManagerStatsCollector() {
   SessionRestore::RemoveObserver(this);
 }
 
-void TabManagerStatsCollector::RecordWillDiscardUrgently(int num_alive_tabs) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  base::TimeTicks discard_time = NowTicks();
-
-  UMA_HISTOGRAM_COUNTS_100("Discarding.Urgent.NumAliveTabs", num_alive_tabs);
-
-  if (last_urgent_discard_time_.is_null()) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Discarding.Urgent.TimeSinceStartup", discard_time - start_time_,
-        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(1), 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Discarding.Urgent.TimeSinceLastUrgent",
-                               discard_time - last_urgent_discard_time_,
-                               base::TimeDelta::FromMilliseconds(100),
-                               base::TimeDelta::FromDays(1), 50);
-  }
-
-  last_urgent_discard_time_ = discard_time;
-}
-
 void TabManagerStatsCollector::RecordSwitchToTab(
     content::WebContents* old_contents,
     content::WebContents* new_contents) {

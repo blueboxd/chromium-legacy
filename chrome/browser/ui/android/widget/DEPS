@@ -2,4 +2,5 @@ noparent = True
 
 include_rules = [
   "+base",
+  "+ui/android",
 ]

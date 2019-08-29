@@ -17,6 +17,7 @@
 
 using password_manager::CredentialLeakFlags;
 using password_manager::CredentialLeakType;
+using password_manager::metrics_util::LeakDialogType;
 
 namespace leak_dialog_utils {
 
@@ -61,6 +62,15 @@ bool ShouldCheckPasswords(CredentialLeakType leak_type) {
 
 bool ShouldShowCancelButton(CredentialLeakType leak_type) {
   return ShouldCheckPasswords(leak_type);
+}
+
+LeakDialogType GetLeakDialogType(CredentialLeakType leak_type) {
+  if (!ShouldCheckPasswords(leak_type))
+    return LeakDialogType::kChange;
+
+  return password_manager::IsPasswordSaved(leak_type)
+             ? LeakDialogType::kCheckupAndChange
+             : LeakDialogType::kCheckup;
 }
 
 GURL GetPasswordCheckupURL() {

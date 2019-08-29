@@ -223,12 +223,12 @@ const char kIsInKioskAutoPrintMode[] = "isInKioskAutoPrintMode";
 const char kIsInAppKioskMode[] = "isInAppKioskMode";
 // Name of a dictionary field holding the UI locale.
 const char kUiLocale[] = "uiLocale";
-// Name of a dictionary field holding the thousands delimeter according to the
+// Name of a dictionary field holding the thousands delimiter according to the
 // locale.
-const char kThousandsDelimeter[] = "thousandsDelimeter";
-// Name of a dictionary field holding the decimal delimeter according to the
+const char kThousandsDelimiter[] = "thousandsDelimiter";
+// Name of a dictionary field holding the decimal delimiter according to the
 // locale.
-const char kDecimalDelimeter[] = "decimalDelimeter";
+const char kDecimalDelimiter[] = "decimalDelimiter";
 // Name of a dictionary field holding the measurement system according to the
 // locale.
 const char kUnitType[] = "unitType";
@@ -933,8 +933,8 @@ void PrintPreviewHandler::GetLocaleInformation(base::Value* settings) {
   // Getting the number formatting based on the locale and writing to
   // dictionary.
   base::string16 number_format = base::FormatDouble(123456.78, 2);
-  settings->SetStringKey(kDecimalDelimeter, number_format.substr(7, 1));
-  settings->SetStringKey(kThousandsDelimeter, number_format.substr(3, 1));
+  settings->SetStringKey(kDecimalDelimiter, number_format.substr(7, 1));
+  settings->SetStringKey(kThousandsDelimiter, number_format.substr(3, 1));
   settings->SetIntKey(kUnitType, system);
 }
 

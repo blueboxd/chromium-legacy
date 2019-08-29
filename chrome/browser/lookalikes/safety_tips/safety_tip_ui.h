@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_UI_H_
 
 #include "build/build_config.h"
+#include "components/security_state/core/security_state.h"
 
 namespace content {
 class WebContents;
@@ -15,29 +16,12 @@ class GURL;
 
 namespace safety_tips {
 
-// This enum describes the types of warnings shown by the safety tip bubble.
-enum class SafetyTipType {
-  // No safety tip is/should be shown.
-  kNone,
-
-  // This URL is suspicious according to server- or client-side logic.
-  kBadReputation,
-
-  // This domain is uncommon or the site is young.
-  kUncommonDomain,
-
-  // This URL may be trying to trick users by impersonating a trustworthy URL.
-  kLookalikeUrl,
-
-  kMax = kLookalikeUrl,
-};
-
 // Shows Safety Tip UI using the specified information if it is not already
 // showing. |virtual_url| is the virtual url of the page/frame the info applies
 // to. |safe_url| is the URL that the "Leave" action redirects to. Implemented
 // in platform-specific files.
 void ShowSafetyTipDialog(content::WebContents* web_contents,
-                         SafetyTipType type,
+                         security_state::SafetyTipStatus type,
                          const GURL& virtual_url);
 
 }  // namespace safety_tips

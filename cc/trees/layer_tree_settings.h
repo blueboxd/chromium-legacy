@@ -146,7 +146,7 @@ class CC_EXPORT LayerTreeSettings {
   // Whether to use edge anti-aliasing for all layer types that supports it.
   bool enable_edge_anti_aliasing = true;
 
-  // Whether SetViewportSizeAndScale should update the painted scale factor or
+  // Whether SetViewportRectAndScale should update the painted scale factor or
   // the device scale factor.
   bool use_painted_device_scale_factor = false;
 

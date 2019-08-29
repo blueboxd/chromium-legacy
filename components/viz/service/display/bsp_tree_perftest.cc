@@ -44,7 +44,7 @@ class BspTreePerfTest : public cc::LayerTreeTest {
 
   void SetupTree() override {
     gfx::Size viewport = gfx::Size(720, 1038);
-    layer_tree_host()->SetViewportSizeAndScale(viewport, 1.f,
+    layer_tree_host()->SetViewportRectAndScale(gfx::Rect(viewport), 1.f,
                                                LocalSurfaceIdAllocation());
     scoped_refptr<cc::Layer> root =
         ParseTreeFromJson(json_, &content_layer_client_);
@@ -107,9 +107,8 @@ class BspTreePerfTest : public cc::LayerTreeTest {
                                 cc::LayerTreeHostImpl* host_impl) {
     cc::RenderSurfaceList update_list;
     cc::LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        active_tree->root_layer_for_testing(),
-        active_tree->GetDeviceViewport().size(), host_impl->DrawTransform(),
-        active_tree->device_scale_factor(),
+        active_tree->root_layer_for_testing(), active_tree->GetDeviceViewport(),
+        host_impl->DrawTransform(), active_tree->device_scale_factor(),
         active_tree->current_page_scale_factor(),
         active_tree->InnerViewportContainerLayer(),
         active_tree->InnerViewportScrollLayer(),

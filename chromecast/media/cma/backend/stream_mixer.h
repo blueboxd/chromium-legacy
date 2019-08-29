@@ -160,7 +160,6 @@ class StreamMixer : public MixerControl {
   void CreatePostProcessors(CastMediaShlib::ResultCallback callback,
                             const std::string& override_config,
                             int expected_input_channels);
-  bool PostProcessorsHaveCorrectNumOutputs();
   void FinalizeOnMixerThread();
   void Start();
   void Stop();

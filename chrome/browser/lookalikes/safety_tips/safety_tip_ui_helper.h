@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_UI_HELPER_H_
 
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
 
 namespace safety_tips {
@@ -16,8 +17,8 @@ void LeaveSite(content::WebContents* web_contents);
 
 // Get the title and description string IDs needed to describe the applicable
 // warning type.  Handles both Android and desktop warnings.
-int GetSafetyTipTitleId(SafetyTipType warning_type);
-int GetSafetyTipDescriptionId(SafetyTipType warning_type);
+int GetSafetyTipTitleId(security_state::SafetyTipStatus warning_type);
+int GetSafetyTipDescriptionId(security_state::SafetyTipStatus warning_type);
 
 }  // namespace safety_tips
 

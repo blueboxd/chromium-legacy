@@ -15,9 +15,7 @@ namespace features {
 
 // The features should be documented alongside the definition of their values
 // in the .cc file.
-DEVICE_FEATURES_EXPORT extern const base::Feature kGenericSensor;
 DEVICE_FEATURES_EXPORT extern const base::Feature kGenericSensorExtraClasses;
-DEVICE_FEATURES_EXPORT extern const base::Feature kSensorContentSetting;
 DEVICE_FEATURES_EXPORT extern const base::Feature kWinrtSensorsImplementation;
 
 }  // namespace features

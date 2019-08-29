@@ -184,11 +184,26 @@ public class KeyboardAccessoryData {
          */
         public interface FaviconProvider {
             /**
+             * Data object containing the result of a {@link FaviconProvider#fetchFavicon} calls.
+             */
+            class FaviconResult {
+                public final String mOrigin;
+                public final Bitmap mFavicon;
+
+                public FaviconResult(String origin, Bitmap favicon) {
+                    mOrigin = origin;
+                    mFavicon = favicon;
+                }
+            }
+
+            /**
              * Starts a request for a favicon. The callback can be called either asynchronously or
              * synchronously (depending on whether the icon was cached).
-             * @param favicon The icon to be used for this Item. If null, use the default icon.
+             * @param origin The origin the icon should be requested for.
+             * @param desiredSize The size the icon should have. Used for height and width.
+             * @param favicon The callback that will be called once the icon was fetched.
              */
-            void fetchFavicon(@Px int desiredSize, Callback<Bitmap> favicon);
+            void fetchFavicon(String origin, @Px int desiredSize, Callback<FaviconResult> favicon);
         }
 
         public UserInfo(String origin, @Nullable FaviconProvider faviconProvider) {

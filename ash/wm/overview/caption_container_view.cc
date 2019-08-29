@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -42,9 +43,6 @@ constexpr int kLabelFontDelta = 2;
 // Values of the backdrop.
 constexpr int kBackdropRoundingDp = 4;
 constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
-
-constexpr int kHeaderPreferredHeightDp = 40;
-constexpr int kMarginDp = 10;
 
 // Duration of the show/hide animation of the header.
 constexpr base::TimeDelta kHeaderFadeDuration =
@@ -261,6 +259,7 @@ gfx::Rect CaptionContainerView::GetHighlightBoundsInScreen() {
   auto* window = GetWidget()->GetNativeWindow();
   gfx::Rect target_bounds = window->GetTargetBounds();
   target_bounds.set_origin(window->GetBoundsInScreen().origin());
+  target_bounds.Inset(kWindowMargin, kWindowMargin);
   return target_bounds;
 }
 
@@ -276,25 +275,25 @@ void CaptionContainerView::MaybeCloseHighlightedView() {
 
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
-  bounds.Inset(kMarginDp, kMarginDp);
+  bounds.Inset(kOverviewMargin, kOverviewMargin);
 
   if (backdrop_view_) {
     gfx::Rect backdrop_bounds = bounds;
-    backdrop_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
+    backdrop_bounds.Inset(0, kHeaderHeightDp, 0, 0);
     backdrop_view_->SetBoundsRect(backdrop_bounds);
   }
 
   if (preview_view_) {
     gfx::Rect preview_bounds = bounds;
-    preview_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
+    preview_bounds.Inset(0, kHeaderHeightDp, 0, 0);
     preview_bounds.ClampToCenteredSize(preview_view_->CalculatePreferredSize());
     preview_view_->SetBoundsRect(preview_bounds);
   }
 
   // Position the header at the top.
-  const gfx::Rect header_bounds(kMarginDp, kMarginDp,
-                                GetLocalBounds().width() - kMarginDp,
-                                kHeaderPreferredHeightDp);
+  const gfx::Rect header_bounds(kOverviewMargin, kOverviewMargin,
+                                GetLocalBounds().width() - kOverviewMargin,
+                                kHeaderHeightDp);
   header_view_->SetBoundsRect(header_bounds);
 }
 
@@ -344,7 +343,7 @@ bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
                                         ui::ET_MOUSE_PRESSED};
   if (event.IsLocatedEvent() && base::Contains(press_types, event.type())) {
     gfx::Rect inset_bounds = GetLocalBounds();
-    inset_bounds.Inset(gfx::Insets(kMarginDp));
+    inset_bounds.Inset(gfx::Insets(kOverviewMargin));
     if (!inset_bounds.Contains(event.AsLocatedEvent()->location()))
       accept_events = false;
   }

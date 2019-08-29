@@ -2058,27 +2058,31 @@ void RenderThreadImpl::CreateFrameProxy(
       replicated_state, devtools_frame_token);
 }
 
-void StartEmbeddedWorkerInstanceClientOnIOThread(
+void StartEmbeddedWorkerInstanceClientOnThreadPool(
     mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
         client_receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  DCHECK(io_task_runner->BelongsToCurrentThread());
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner) {
+  DCHECK(initiator_task_runner->BelongsToCurrentThread());
   EmbeddedWorkerInstanceClientImpl::Create(std::move(client_receiver),
-                                           std::move(io_task_runner));
+                                           std::move(initiator_task_runner));
 }
 
 void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
     mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
         client_receiver) {
-  // TODO(bashi): This is a tentative workaround to start service worker on the
-  // IO thread. We should decouple EmbeddedWorkerInstanceClient from Renderer
-  // and bind EmbeddedWorkerInstanceClient on the IO thread.
+  // TODO(bashi): This is a tentative workaround to start service worker on a
+  // background thread. We should decouple EmbeddedWorkerInstanceClient from
+  // Renderer and bind EmbeddedWorkerInstanceClient on a background thread.
   if (base::FeatureList::IsEnabled(
           blink::features::kOffMainThreadServiceWorkerStartup)) {
-    GetIOTaskRunner()->PostTask(
+    auto task_runner = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_BLOCKING,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&StartEmbeddedWorkerInstanceClientOnIOThread,
-                       std::move(client_receiver), GetIOTaskRunner()));
+        base::BindOnce(&StartEmbeddedWorkerInstanceClientOnThreadPool,
+                       std::move(client_receiver), std::move(task_runner)));
     return;
   }
 

@@ -17156,7 +17156,8 @@
         'per_profile': True,
       },
       'id': 578,
-      'supported_on': ['chrome.*:77-','chrome_os:77-'],
+      'supported_on': ['chrome.*:78-','chrome_os:78-'],
+      'future': True,
       'caption': '''Check Safe Browsing reputation of visited URLs in real time''',
       'tags': ['google-sharing'],
       'desc': '''When this policy is set to enabled, all visited URLs will be checked with Safe Browsing in real time.
@@ -17241,20 +17242,21 @@
         {
           'name': 'DoNotScan',
           'value': 0,
-          'caption': '''Do not scan downloads'''
+          'caption': '''Do not scan files'''
         },
         {
           'name': 'SendFilesDisabled',
           'value': 1,
-          'caption': '''Forbid the scanning of downloads'''
+          'caption': '''Forbid the scanning of files'''
         },
         {
-          'name': 'SendAndReport',
+          'name': 'SendDownloads',
           'value': 2,
-          'caption': '''Send user downloads for scanning and report results'''
+          'caption': '''Send user downloads for scanning'''
         }
       ],
       'supported_on': ['chrome.*:78-', 'chrome_os:78-'],
+      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -17262,11 +17264,13 @@
       'example_value': 2,
       'caption': '''Scan users downloads with Safe Browsing''',
       'tags': ['google-sharing', 'admin-sharing'],
-      'desc': '''This policy controls the deep scanning of user downloads with Safe Browsing. If set to the default, 'Do not scan downloads', user downloads will not be scanned by Safe Browsing.
+      'desc': '''This policy controls the deep scanning of user downloads with Safe Browsing. If unset, or set to the default, 'Do not scan files', user downloads will not be scanned by Safe Browsing.
 
-      If set to 'Forbids the scanning of downloads.', users will be forbidden from scanning their downloads. This differs from the default, since certain users (e.g. Advanced Protection users) are able to send their downloads for scanning. This setting will prevent these users from scanning.
+      If set to 'Forbids the scanning of files.', users will be forbidden from scanning their downloads. This differs from the default, since certain users (e.g. Advanced Protection users) are able to send their downloads for scanning. This setting will prevent these users from scanning.
 
-      If set to 'Send user downloads for scanning and reports results', users downloads will be sent over the network to Safe Browsing for malware scanning. The results will be available in the Admin Console, but not shown to the user.'''
+      If set to 'Send user downloads for scanning', users downloads will be sent over the network to Safe Browsing for malware scanning.
+
+      See the <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME">DelayDeliveryUntilVerdict</ph> and <ph name="UNSAFE_EVENTS_REPORTING_ENABLED">UnsafeEventsReportingEnabled</ph> policies for details of how the results of scanning are displayed to the user and admin.'''
     },
     {
       'name': 'UnsafeEventsReportingEnabled',

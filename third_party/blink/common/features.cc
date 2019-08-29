@@ -105,7 +105,7 @@ const base::Feature kNavigationPredictor {
 #endif
 };
 
-// Start service workers on the IO thread.
+// Start service workers on a background thread.
 // https://crbug.com/692909
 const base::Feature kOffMainThreadServiceWorkerStartup{
     "OffMainThreadServiceWorkerStartup", base::FEATURE_DISABLED_BY_DEFAULT};

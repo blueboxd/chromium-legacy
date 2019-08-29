@@ -8,11 +8,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 
 class ArcAppIcon;
 class Profile;
@@ -41,6 +43,7 @@ class ArcIconOnceLoader : public ArcAppListPrefs::Observer {
   // loaded.
   void LoadIcon(const std::string& app_id,
                 int32_t size_in_dip,
+                apps::mojom::IconCompression icon_compression,
                 base::OnceCallback<void(ArcAppIcon*)> callback);
 
   // ArcAppListPrefs::Observer overrides.
@@ -51,8 +54,11 @@ class ArcIconOnceLoader : public ArcAppListPrefs::Observer {
  private:
   class SizeSpecificLoader;
 
+  using SizeAndCompression = std::pair<int32_t, apps::mojom::IconCompression>;
+
   Profile* const profile_;
-  std::map<int32_t, std::unique_ptr<SizeSpecificLoader>> size_specific_loaders_;
+  std::map<SizeAndCompression, std::unique_ptr<SizeSpecificLoader>>
+      size_specific_loaders_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcIconOnceLoader);
 };

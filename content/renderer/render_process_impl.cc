@@ -118,6 +118,8 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfHasSwitch(switches::kDisableJavaScriptHarmonyShipping,
                        "--noharmony-shipping");
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
+  SetV8FlagIfHasSwitch(switches::kEnableExperimentalWebAssemblyFeatures,
+                       "--wasm-staging");
 
   constexpr char kModuleFlags[] =
       "--harmony-dynamic-import --harmony-import-meta";

@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -154,7 +153,6 @@ void TabStripLayoutHelper::RemoveTabNoAnimation(int model_index, Tab* tab) {
           .animation.get();
   animation->AnimateTo(animation->target_state().WithOpenness(
       TabAnimationState::TabOpenness::kClosed));
-  animation->CompleteAnimation();
 }
 
 void TabStripLayoutHelper::RemoveTab(int model_index, Tab* tab) {
@@ -162,6 +160,18 @@ void TabStripLayoutHelper::RemoveTab(int model_index, Tab* tab) {
   AnimateSlot(slot_index,
               slots_[slot_index].animation->target_state().WithOpenness(
                   TabAnimationState::TabOpenness::kClosed));
+}
+
+void TabStripLayoutHelper::EnterTabClosingMode(int available_width) {
+  if (!cached_sizer_.has_value()) {
+    cached_sizer_ = base::make_optional(CalculateSpaceFractionAvailable(
+        GetTabLayoutConstants(), GetCurrentTabWidthConstraints(),
+        available_width));
+  }
+}
+
+void TabStripLayoutHelper::ExitTabClosingMode() {
+  cached_sizer_ = base::nullopt;
 }
 
 void TabStripLayoutHelper::OnTabDestroyed(Tab* tab) {
@@ -306,8 +316,8 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
                                              layout_constants, size_info));
   }
 
-  const std::vector<gfx::Rect> bounds =
-      CalculateTabBounds(layout_constants, tab_widths, available_width);
+  const std::vector<gfx::Rect> bounds = CalculateTabBounds(
+      layout_constants, tab_widths, available_width, cached_sizer_);
   DCHECK_EQ(slots_.size(), bounds.size());
 
   int current_tab_model_index = 0;
@@ -359,9 +369,9 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs() {
 }
 
 int TabStripLayoutHelper::LayoutTabs(int available_width) {
-  std::vector<gfx::Rect> bounds =
-      CalculateTabBounds(GetTabLayoutConstants(),
-                         GetCurrentTabWidthConstraints(), available_width);
+  std::vector<gfx::Rect> bounds = CalculateTabBounds(
+      GetTabLayoutConstants(), GetCurrentTabWidthConstraints(), available_width,
+      cached_sizer_);
 
   if (DCHECK_IS_ON()) {
     views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();

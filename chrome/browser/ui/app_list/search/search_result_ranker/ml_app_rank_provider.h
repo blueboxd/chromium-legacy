@@ -48,24 +48,12 @@ class MlAppRankProvider {
   std::map<std::string, float> RetrieveRankings();
 
  private:
-  // Does the CPU-intensive part of CreateRankings (perparing the Tensor inputs
-  // from |app_features_map|, intended to be called on a low-priority
-  // background thread.
-  void CreateRankingsImpl(
-      base::flat_map<std::string, AppLaunchFeatures> app_features_map,
-      int total_hours,
-      int all_clicks_last_hour,
-      int all_clicks_last_24_hours);
-
-  void DoInference(const std::string& app_id,
-                   const std::vector<float>& features);
-
   // Execute the |executor_| on the creation thread.
   void RunExecutor(
       std::map<std::string, ::chromeos::machine_learning::mojom::TensorPtr>
           inputs,
-      const std::vector<std::string> outputs,
-      const std::string app_id);
+      std::vector<std::string> outputs,
+      std::string app_id);
 
   // Stores the ranking score for an |app_id| in the |ranking_map_|.
   // Executed by the ML Service when an Execute call is complete.
@@ -81,23 +69,9 @@ class MlAppRankProvider {
 
   void OnConnectionError();
 
-  // Process the RankerExample to vectorize the feature list for inference.
-  // Returns true on success.
-  bool RankerExampleToVectorizedFeatures(
-      assist_ranker::RankerExample& example,
-      std::vector<float>* vectorized_features);
-
-  // Loads the preprocessor config if it is not already loaded.
-  // Returns: true if preprocessor config is loaded, false if
-  // it could not be loaded.
-  bool LoadExamplePreprocessorConfigIfNeeded();
-
   // Remotes used to execute functions in the ML service server end.
   mojo::Remote<::chromeos::machine_learning::mojom::Model> model_;
   mojo::Remote<::chromeos::machine_learning::mojom::GraphExecutor> executor_;
-
-  std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
-      preprocessor_config_;
 
   // Map from app id to ranking score.
   std::map<std::string, float> ranking_map_;
@@ -110,9 +84,6 @@ class MlAppRankProvider {
 
   // Sequence checker for methods that must run on the creation sequence.
   SEQUENCE_CHECKER(creation_sequence_checker_);
-
-  // Sequence checker for background_task_runner_.
-  SEQUENCE_CHECKER(background_sequence_checker_);
 
   base::WeakPtrFactory<MlAppRankProvider> weak_factory_{this};
 

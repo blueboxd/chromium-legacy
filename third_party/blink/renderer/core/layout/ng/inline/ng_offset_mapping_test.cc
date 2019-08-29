@@ -1452,6 +1452,26 @@ TEST_F(NGOffsetMappingTest, EndOfLastNonCollapsedContentWithPseudo) {
   EXPECT_EQ(Position(),
             GetOffsetMapping().EndOfLastNonCollapsedContent(position));
 }
+
+TEST_F(NGOffsetMappingTest, WordBreak) {
+  SetupHtml("t", "<div id=t>a<wbr>b</div>");
+
+  const LayoutObject& text_a = *layout_object_;
+  const LayoutObject& wbr = *text_a.NextSibling();
+  const LayoutObject& text_b = *wbr.NextSibling();
+  const NGOffsetMapping& result = GetOffsetMapping();
+
+  EXPECT_EQ((Vector<NGOffsetMappingUnit>{
+                NGOffsetMappingUnit(kIdentity, text_a, 0u, 1u, 0u, 1u),
+                NGOffsetMappingUnit(kIdentity, wbr, 0u, 1u, 1u, 2u),
+                NGOffsetMappingUnit(kIdentity, text_b, 0u, 1u, 2u, 3u)}),
+            result.GetUnits());
+
+  EXPECT_EQ((Vector<NGOffsetMappingUnit>{
+                NGOffsetMappingUnit(kIdentity, wbr, 0u, 1u, 1u, 2u)}),
+            result.GetMappingUnitsForLayoutObject(wbr));
+}
+
 // Test |GetOffsetMapping| which is available both for LayoutNG and for legacy.
 class NGOffsetMappingGetterTest : public RenderingTest,
                                   public testing::WithParamInterface<bool>,

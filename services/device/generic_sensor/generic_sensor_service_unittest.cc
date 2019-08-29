@@ -151,7 +151,7 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {features::kGenericSensor, features::kGenericSensorExtraClasses}, {});
+        {features::kGenericSensorExtraClasses}, {});
     DeviceServiceTestBase::SetUp();
 
     fake_platform_sensor_provider_ = new FakePlatformSensorProvider();

@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 
+#include <set>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -132,23 +134,24 @@ scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
   RenderFrameDevToolsAgentHost* result = FindAgentHost(frame_tree_node);
   if (!result)
-    result = new RenderFrameDevToolsAgentHost(frame_tree_node);
+    result = new RenderFrameDevToolsAgentHost(
+        frame_tree_node, frame_tree_node->current_frame_host());
   return result;
 }
 
 // static
 scoped_refptr<DevToolsAgentHost>
-RenderFrameDevToolsAgentHost::GetOrCreateForDangling(
-    FrameTreeNode* frame_tree_node) {
+RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
+    NavigationHandleImpl* handle) {
   // Note that this method does not use FrameTreeNode::current_frame_host(),
   // since it is used while the frame host may not be set as current yet,
-  // for example right before commit time.
-  // So the caller must be sure that passed frame will indeed be a correct
-  // devtools target (see ShouldCreateDevToolsForNode above).
-  RenderFrameDevToolsAgentHost* result = FindAgentHost(frame_tree_node);
-  if (!result)
-    result = new RenderFrameDevToolsAgentHost(frame_tree_node);
-  return result;
+  // for example right before commit time. Instead target frame from the
+  // navigation handle is used. When this method is invoked it's already known
+  // that the navigation will commit to the new frame host.
+  FrameTreeNode* frame_tree_node = handle->frame_tree_node();
+  DCHECK(!FindAgentHost(frame_tree_node));
+  return new RenderFrameDevToolsAgentHost(frame_tree_node,
+                                          handle->GetRenderFrameHost());
 }
 
 // static
@@ -234,11 +237,12 @@ void RenderFrameDevToolsAgentHost::UpdateRawHeadersAccess(
 }
 
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
-    FrameTreeNode* frame_tree_node)
+    FrameTreeNode* frame_tree_node,
+    RenderFrameHostImpl* frame_host)
     : DevToolsAgentHostImpl(frame_tree_node->devtools_frame_token().ToString()),
       frame_tree_node_(nullptr) {
   SetFrameTreeNode(frame_tree_node);
-  frame_host_ = frame_tree_node->current_frame_host();
+  frame_host_ = frame_host;
   render_frame_alive_ = frame_host_ && frame_host_->IsRenderFrameLive();
   AddRef();  // Balanced in DestroyOnRenderFrameGone.
   NotifyCreated();
@@ -392,8 +396,9 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
   if (handle->frame_tree_node() != frame_tree_node_) {
     if (ShouldForceCreation() && handle->GetRenderFrameHost() &&
         handle->GetRenderFrameHost()->IsCrossProcessSubframe()) {
-      RenderFrameDevToolsAgentHost::GetOrCreateForDangling(
-          handle->frame_tree_node());
+      // An agent may have been created earlier if auto attach is on.
+      if (!FindAgentHost(handle->frame_tree_node()))
+        CreateForCrossProcessNavigation(handle);
     }
     return;
   }
@@ -541,7 +546,7 @@ device::mojom::WakeLock* RenderFrameDevToolsAgentHost::GetWakeLock() {
 
 void RenderFrameDevToolsAgentHost::RenderProcessGone(
     base::TerminationStatus status) {
-  switch(status) {
+  switch (status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
 #if defined(OS_CHROMEOS)

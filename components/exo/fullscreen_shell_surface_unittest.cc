@@ -47,7 +47,8 @@ void Close(int* close_call_count) {
 TEST_F(FullscreenShellSurfaceTest, SurfaceDestroyedCallback) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
 
   fullscreen_surface->set_surface_destroyed_callback(base::BindOnce(
       &DestroyFullscreenShellSurface, base::Unretained(&fullscreen_surface)));
@@ -68,7 +69,8 @@ TEST_F(FullscreenShellSurfaceTest, CloseCallback) {
       CreateGpuMemoryBuffer(buffer_size, gfx::BufferFormat::RGBA_8888)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
 
   int close_call_count = 0;
   fullscreen_surface->set_close_callback(
@@ -85,7 +87,8 @@ TEST_F(FullscreenShellSurfaceTest, CloseCallback) {
 TEST_F(FullscreenShellSurfaceTest, ShouldShowWindowTitle) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
 
   EXPECT_FALSE(fullscreen_surface->ShouldShowWindowTitle());
 }
@@ -96,7 +99,8 @@ TEST_F(FullscreenShellSurfaceTest, SetApplicationId) {
       CreateGpuMemoryBuffer(buffer_size, gfx::BufferFormat::RGBA_8888)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
 
   EXPECT_TRUE(fullscreen_surface->GetWidget());
   fullscreen_surface->SetApplicationId("test-id");
@@ -118,7 +122,8 @@ TEST_F(FullscreenShellSurfaceTest, SetStartupId) {
       CreateGpuMemoryBuffer(buffer_size, gfx::BufferFormat::RGBA_8888)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
 
   EXPECT_TRUE(fullscreen_surface->GetWidget());
   fullscreen_surface->SetStartupId("test-id");
@@ -140,7 +145,8 @@ TEST_F(FullscreenShellSurfaceTest, Maximize) {
       CreateGpuMemoryBuffer(buffer_size, gfx::BufferFormat::RGBA_8888)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
 
   surface->Attach(buffer.get());
   surface->Commit();
@@ -154,7 +160,8 @@ TEST_F(FullscreenShellSurfaceTest, Minimize) {
       CreateGpuMemoryBuffer(buffer_size, gfx::BufferFormat::RGBA_8888)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
 
   surface->Attach(buffer.get());
   surface->Commit();
@@ -173,7 +180,8 @@ TEST_F(FullscreenShellSurfaceTest, Bounds) {
       CreateGpuMemoryBuffer(buffer_size, gfx::BufferFormat::RGBA_8888)));
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
 
   surface->Attach(buffer.get());
   surface->Commit();
@@ -186,7 +194,8 @@ TEST_F(FullscreenShellSurfaceTest, Bounds) {
 TEST_F(FullscreenShellSurfaceTest, SetAXChildTree) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
-      new FullscreenShellSurface(surface.get()));
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
   ui::AXNodeData node_data;
   fullscreen_surface->GetAccessibleNodeData(&node_data);
   EXPECT_FALSE(
@@ -197,6 +206,48 @@ TEST_F(FullscreenShellSurfaceTest, SetAXChildTree) {
   fullscreen_surface->GetAccessibleNodeData(&node_data);
   EXPECT_TRUE(
       node_data.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
+}
+
+TEST_F(FullscreenShellSurfaceTest, SwapSurface) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
+  fullscreen_surface->SetEnabled(true);
+  fullscreen_surface->set_surface_destroyed_callback(base::BindOnce(
+      &DestroyFullscreenShellSurface, base::Unretained(&fullscreen_surface)));
+  EXPECT_EQ(surface.get(), fullscreen_surface->root_surface());
+  std::unique_ptr<Surface> surface2(new Surface);
+  fullscreen_surface->SetSurface(surface2.get());
+  EXPECT_EQ(surface2.get(), fullscreen_surface->root_surface());
+  EXPECT_NE(surface.get(), fullscreen_surface->root_surface());
+  // RootWindow->FullscreenShellSurface->FullscreenShellSurfaceHost->ExoSurface
+  EXPECT_EQ(1ul, WMHelper::GetInstance()
+                     ->GetRootWindowForNewWindows()
+                     ->children()[0]
+                     ->children()[0]
+                     ->children()
+                     .size());
+}
+
+TEST_F(FullscreenShellSurfaceTest, RemoveSurface) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
+      new FullscreenShellSurface());
+  fullscreen_surface->SetSurface(surface.get());
+  fullscreen_surface->SetEnabled(true);
+  fullscreen_surface->set_surface_destroyed_callback(base::BindOnce(
+      &DestroyFullscreenShellSurface, base::Unretained(&fullscreen_surface)));
+  EXPECT_EQ(surface.get(), fullscreen_surface->root_surface());
+  fullscreen_surface->SetSurface(nullptr);
+  EXPECT_FALSE(fullscreen_surface->root_surface());
+  // RootWindow->FullscreenShellSurface->FullscreenShellSurfaceHost->null
+  EXPECT_EQ(0ul, WMHelper::GetInstance()
+                     ->GetRootWindowForNewWindows()
+                     ->children()[0]
+                     ->children()[0]
+                     ->children()
+                     .size());
 }
 
 }  // namespace

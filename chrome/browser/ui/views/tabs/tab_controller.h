@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -149,13 +150,13 @@ class TabController {
   // Returns the tab background color based on both the |tab_state| and the
   // |active_state| of the window.
   virtual SkColor GetTabBackgroundColor(
-      TabState tab_state,
+      TabActive active,
       BrowserNonClientFrameView::ActiveState active_state =
           BrowserNonClientFrameView::kUseCurrent) const = 0;
 
   // Returns the tab foreground color of the the text based on the |tab_state|,
   // the activation state of the window, and the current |background_color|.
-  virtual SkColor GetTabForegroundColor(TabState tab_state,
+  virtual SkColor GetTabForegroundColor(TabActive active,
                                         SkColor background_color) const = 0;
 
   // Returns the background tab image resource ID if the image has been

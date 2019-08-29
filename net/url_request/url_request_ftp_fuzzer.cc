@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "net/base/request_priority.h"
@@ -21,7 +23,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "url/gurl.h"
 
 namespace {

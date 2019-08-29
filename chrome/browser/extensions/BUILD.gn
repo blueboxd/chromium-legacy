@@ -758,6 +758,7 @@ jumbo_static_library("extensions") {
     "//chrome/common",
     "//chrome/common/extensions/api",
     "//components/safe_browsing:csd_proto",
+    "//components/safe_browsing:webprotect_proto",
     "//components/safe_browsing/db:util",
     "//components/signin/core/browser",
     "//content/public/browser",

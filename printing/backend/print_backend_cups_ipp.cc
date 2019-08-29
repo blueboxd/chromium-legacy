@@ -79,7 +79,7 @@ bool PrintBackendCupsIpp::GetPrinterSemanticCapsAndDefaults(
     PrinterSemanticCapsAndDefaults* printer_info) {
   std::unique_ptr<CupsPrinter> printer(
       cups_connection_->GetPrinter(printer_name));
-  if (!printer)
+  if (!printer || !printer->IsAvailable())
     return false;
 
   CapsAndDefaultsFromPrinter(*printer, printer_info);

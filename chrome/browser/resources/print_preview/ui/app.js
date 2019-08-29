@@ -272,7 +272,7 @@ Polymer({
       this.$.model.setPolicySettings(
           settings.headerFooter, settings.isHeaderFooterManaged);
       this.measurementSystem_ = new print_preview.MeasurementSystem(
-          settings.thousandsDelimeter, settings.decimalDelimeter,
+          settings.thousandsDelimiter, settings.decimalDelimiter,
           settings.unitType);
       this.setSetting('selectionOnly', settings.shouldPrintSelectionOnly);
       this.$.sidebar.init(

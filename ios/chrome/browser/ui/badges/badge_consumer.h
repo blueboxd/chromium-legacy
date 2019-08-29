@@ -7,18 +7,16 @@
 
 @protocol BadgeItem;
 
-// Consumer for the BadgeMediator
+// Consumer protocol for the view controller that displays badges.
 @protocol BadgeConsumer <NSObject>
-// Notifies the consumer to reset with |badges|.
-- (void)setupWithBadges:(NSArray*)badges;
-// Notifies the consumer to add a badge with configurations matching
-// |badgeItem|.
-- (void)addBadge:(id<BadgeItem>)badgeItem;
-// Notifies the consumer to remove |badgeItem|.
-- (void)removeBadge:(id<BadgeItem>)badgeItem;
-// Notifies the consumer to update a badge with new configurations in
-// |badgeItem|. If |badgeItem| does not exist, then consumer does nothing.
-- (void)updateBadge:(id<BadgeItem>)badgeItem;
+// Notifies the consumer to reset with |displayedBadgeItem| and
+// |fullscreenBadgeItem|.
+- (void)setupWithDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
+                fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem;
+// Notifies the consumer to update its badges with the configurations of
+// |displayedBadgeItem| and |fullscreenBadgeItem|.
+- (void)updateDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
+             fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem;
 
 @end
 

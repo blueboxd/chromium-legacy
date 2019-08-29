@@ -67,7 +67,8 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
   // |gfx::kFaviconSize| x |gfx::kFaviconSize| DIP. GetFaviconForURL() should
   // be updated if this changes.
   base::RefCountedMemory* GetFaviconResourceBytes(
-      const GURL& page_url, ui::ScaleFactor scale_factor) const;
+      const GURL& page_url,
+      ui::ScaleFactor scale_factor) const;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebUIControllerFactory);
 };

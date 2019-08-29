@@ -111,7 +111,7 @@ class MediaControlsTouchlessImplTest : public PageTestBase {
     test_media_controls_host_ = std::make_unique<TestMediaControlsMenuHost>();
 
     media_controls_->SetMediaControlsMenuHostForTesting(
-        test_media_controls_host_->CreateMediaControlsMenuHostPtr());
+        test_media_controls_host_->CreateMediaControlsMenuHostRemote());
 
     // Scripts are disabled by default which forces controls to be on.
     GetFrame().GetSettings()->SetScriptEnabled(true);

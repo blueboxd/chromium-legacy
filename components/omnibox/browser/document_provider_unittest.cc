@@ -259,6 +259,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
   ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 2u);
 
@@ -319,6 +320,7 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
   ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
@@ -374,6 +376,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
   ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
@@ -429,6 +432,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
   ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
@@ -486,6 +490,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
   ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
@@ -745,7 +750,7 @@ TEST_F(DocumentProviderTest, Scoring) {
           {"title": "Document 2", "score": 900, "url": "url"},
           {"title": "Document 3", "score": 900, "url": "url"}
         ]})",
-      "", {1000, 900, 899});
+      "input", {1000, 900, 899});
 
   // Server scoring with rank caps.
   CheckScoring(
@@ -760,7 +765,7 @@ TEST_F(DocumentProviderTest, Scoring) {
           {"title": "Document 2", "score": 1150, "url": "url"},
           {"title": "Document 3", "score": 1150, "url": "url"}
         ]})",
-      "", {1150, 1100, 900});
+      "input", {1150, 1100, 900});
 
   // Server scoring with owner boosting.
   CheckScoring(
@@ -776,7 +781,7 @@ TEST_F(DocumentProviderTest, Scoring) {
           {"title": "Document 2", "score": 1150, "url": "url"},
           {"title": "Document 3", "score": 1150, "url": "url"}
         ]})",
-      "", {1150, 950, 949});
+      "input", {1150, 950, 949});
 
   // Client scoring should match each input word at most once.
   CheckScoring(
@@ -787,12 +792,12 @@ TEST_F(DocumentProviderTest, Scoring) {
           {"DocumentBoostOwned", "false"},
       },
       R"({"results": [
-          {"title": "rainbow", "score": 1000, "url": "url"},
-          {"title": "rain bow", "score": 900, "url": "url"},
-          {"title": "rain bows bow bow", "score": 900, "url": "bow",
-            "snippet": {"snippet": "bow bow"}}
+          {"title": "rainbows", "score": 1000, "url": "url"},
+          {"title": "rain bows", "score": 900, "url": "url"},
+          {"title": "rain bowss bows bows", "score": 900, "url": "bows",
+            "snippet": {"snippet": "bows bows"}}
         ]})",
-      "bow", {0, 540, 540});
+      "bows", {0, 669, 669});
 
   // Client scoring should consider snippet but not URL matches
   CheckScoring(
@@ -834,14 +839,15 @@ TEST_F(DocumentProviderTest, Caching) {
   };
 
   // Partially fill the cache as setup for following tests.
-  auto matches = GetTestProviderMatches("", MakeTestResponse({"0", "1", "2"}));
+  auto matches =
+      GetTestProviderMatches("input", MakeTestResponse({"0", "1", "2"}));
   EXPECT_EQ(matches.size(), size_t(3));
   EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 0"));
   EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 1"));
   EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 2"));
 
   // Cache should remove duplicates.
-  matches = GetTestProviderMatches("", MakeTestResponse({"1", "2", "3"}));
+  matches = GetTestProviderMatches("input", MakeTestResponse({"1", "2", "3"}));
   EXPECT_EQ(matches.size(), size_t(4));
   EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 1"));
   EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 2"));
@@ -850,7 +856,7 @@ TEST_F(DocumentProviderTest, Caching) {
 
   // Cache size (4) should not restrict number of matches from the current
   // response.
-  matches = GetTestProviderMatches("", MakeTestResponse({"3", "4", "5"}));
+  matches = GetTestProviderMatches("input", MakeTestResponse({"3", "4", "5"}));
   EXPECT_EQ(matches.size(), size_t(6));
   EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 3"));
   EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
@@ -860,7 +866,7 @@ TEST_F(DocumentProviderTest, Caching) {
   EXPECT_EQ(matches[5].contents, base::UTF8ToUTF16("Document 0"));
 
   // Cache size (4) should restrict number of cached matches appended.
-  matches = GetTestProviderMatches("", MakeTestResponse({"0", "4", "6"}));
+  matches = GetTestProviderMatches("input", MakeTestResponse({"0", "4", "6"}));
   EXPECT_EQ(matches.size(), size_t(6));
   EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 0"));
   EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
@@ -871,42 +877,42 @@ TEST_F(DocumentProviderTest, Caching) {
 
   // Cached results should update match |additional_info|, |relevance|, and
   // |contents_class|.
-  matches = GetTestProviderMatches("doc", MakeTestResponse({"5", "4", "7"}));
+  matches = GetTestProviderMatches("docum", MakeTestResponse({"5", "4", "7"}));
   EXPECT_EQ(matches.size(), size_t(6));
   EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 5"));
   EXPECT_EQ(matches[0].GetAdditionalInfo("from cache"), "");
   EXPECT_EQ(matches[0].relevance, 1150);
   EXPECT_THAT(matches[0].contents_class,
               testing::ElementsAre(ACMatchClassification{0, 2},
-                                   ACMatchClassification{3, 0}));
+                                   ACMatchClassification{5, 0}));
   EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
   EXPECT_EQ(matches[1].GetAdditionalInfo("from cache"), "");
   EXPECT_EQ(matches[1].relevance, 1149);
   EXPECT_THAT(matches[1].contents_class,
               testing::ElementsAre(ACMatchClassification{0, 2},
-                                   ACMatchClassification{3, 0}));
+                                   ACMatchClassification{5, 0}));
   EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 7"));
   EXPECT_EQ(matches[2].GetAdditionalInfo("from cache"), "");
   EXPECT_EQ(matches[2].relevance, 1148);
   EXPECT_THAT(matches[2].contents_class,
               testing::ElementsAre(ACMatchClassification{0, 2},
-                                   ACMatchClassification{3, 0}));
+                                   ACMatchClassification{5, 0}));
   EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 0"));
   EXPECT_EQ(matches[3].GetAdditionalInfo("from cache"), "true");
   EXPECT_EQ(matches[3].relevance, 0);
   EXPECT_THAT(matches[3].contents_class,
               testing::ElementsAre(ACMatchClassification{0, 2},
-                                   ACMatchClassification{3, 0}));
+                                   ACMatchClassification{5, 0}));
   EXPECT_EQ(matches[4].contents, base::UTF8ToUTF16("Document 6"));
   EXPECT_EQ(matches[4].GetAdditionalInfo("from cache"), "true");
   EXPECT_EQ(matches[4].relevance, 0);
   EXPECT_THAT(matches[4].contents_class,
               testing::ElementsAre(ACMatchClassification{0, 2},
-                                   ACMatchClassification{3, 0}));
+                                   ACMatchClassification{5, 0}));
   EXPECT_EQ(matches[5].contents, base::UTF8ToUTF16("Document 3"));
   EXPECT_EQ(matches[5].GetAdditionalInfo("from cache"), "true");
   EXPECT_EQ(matches[5].relevance, 0);
   EXPECT_THAT(matches[5].contents_class,
               testing::ElementsAre(ACMatchClassification{0, 2},
-                                   ACMatchClassification{3, 0}));
+                                   ACMatchClassification{5, 0}));
 }

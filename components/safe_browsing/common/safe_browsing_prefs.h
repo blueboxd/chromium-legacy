@@ -91,6 +91,28 @@ extern const char kSafeBrowsingRealTimeLookupEnabled[];
 // Whether or not to send downloads to Safe Browsing for deep scanning. This
 // is configured by enterprise policy.
 extern const char kSafeBrowsingSendFilesForMalwareCheck[];
+
+// Boolean that indidicates if Chrome reports unsafe events to Google.
+extern const char kUnsafeEventsReportingEnabled[];
+
+// Integer that specifies if large files are blocked form either uploads or
+// downloads or both.
+extern const char kBlockLargeFileTransfer[];
+
+// Integer that specifies if delivery to the user of potentially unsafe data
+// is delayed until a verdict about the data is known.
+extern const char kDelayDeliveryUntilVerdict[];
+
+// Integer that specifies if password protected files can be either uploaded
+// or downloaded or both.
+extern const char kAllowPasswordProtectedFiles[];
+
+// Integer that indidicates if Chrome checks data for content compliance.
+extern const char kCheckContentCompliance[];
+
+// List of domains where Chrome should check compliance of downloaded files.
+extern const char kDomainsToCheckComplianceOfDownloadedContent[];
+
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -136,6 +158,23 @@ enum PasswordProtectionTrigger {
   PHISHING_REUSE = 2,
   // New triggers must be added before PASSWORD_PROTECTION_TRIGGER_MAX.
   PASSWORD_PROTECTION_TRIGGER_MAX,
+};
+
+// Enum representing possible values of the SendFilesForMalwareCheck policy.
+// This must be kept in sync with policy_templates.json
+enum SendFilesForMalwareCheckValues {
+  DO_NOT_SCAN = 0,
+  SEND_FILES_DISABLED = 1,
+  SEND_DOWNLOADS = 2,
+};
+
+// Enum representing possible values of the CheckContentCompliance policy. This
+// must be kept in sync with policy_templates.json
+enum CheckContentComplianceValues {
+  NONE = 0,
+  CHECK_DOWNLOADS = 1,
+  CHECK_UPLOADS = 2,
+  CHECK_UPLOADS_AND_DOWNLOADS = 3,
 };
 
 // Returns whether the currently active Safe Browsing Extended Reporting

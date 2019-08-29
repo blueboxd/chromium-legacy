@@ -17,7 +17,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "ipc/ipc_message.h"
@@ -106,7 +105,7 @@ const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestProfileDir[] = "Profile 1";
 
 class AppShimHostTest : public testing::Test,
-                        public apps::AppShimHandler,
+                        public AppShimHostBootstrap::Client,
                         public AppShimHost::Client {
  public:
   AppShimHostTest() { task_runner_ = base::ThreadTaskRunnerHandle::Get(); }
@@ -136,7 +135,7 @@ class AppShimHostTest : public testing::Test,
   void SimulateDisconnect() { host_ptr_.reset(); }
 
  protected:
-  // AppShimHandler:
+  // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
     ++launch_count_;
@@ -200,7 +199,7 @@ class AppShimHostTest : public testing::Test,
 }  // namespace
 
 TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
-  apps::AppShimHandler::Set(this);
+  AppShimHostBootstrap::SetClient(this);
   LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(kTestAppId, host()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
@@ -222,11 +221,11 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
   RunUntilIdle();
   EXPECT_EQ(1, close_count_);
   EXPECT_EQ(nullptr, host());
-  apps::AppShimHandler::Set(nullptr);
+  AppShimHostBootstrap::SetClient(nullptr);
 }
 
 TEST_F(AppShimHostTest, TestNoLaunchNow) {
-  apps::AppShimHandler::Set(this);
+  AppShimHostBootstrap::SetClient(this);
   LaunchApp(apps::APP_SHIM_LAUNCH_REGISTER_ONLY);
   EXPECT_EQ(kTestAppId, host()->GetAppId());
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
@@ -234,13 +233,13 @@ TEST_F(AppShimHostTest, TestNoLaunchNow) {
   EXPECT_EQ(0, launch_now_count_);
   EXPECT_EQ(0, focus_count_);
   EXPECT_EQ(0, close_count_);
-  apps::AppShimHandler::Set(nullptr);
+  AppShimHostBootstrap::SetClient(nullptr);
 }
 
 TEST_F(AppShimHostTest, TestFailLaunch) {
-  apps::AppShimHandler::Set(this);
+  AppShimHostBootstrap::SetClient(this);
   launch_result_ = apps::APP_SHIM_LAUNCH_APP_NOT_FOUND;
   LaunchApp(apps::APP_SHIM_LAUNCH_NORMAL);
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND, GetLaunchResult());
-  apps::AppShimHandler::Set(nullptr);
+  AppShimHostBootstrap::SetClient(nullptr);
 }

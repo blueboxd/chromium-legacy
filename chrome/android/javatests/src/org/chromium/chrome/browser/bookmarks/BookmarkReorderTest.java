@@ -10,7 +10,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.doesNotExis
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightOff;
-import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightOn;
+import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightPulse;
 
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -29,7 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
-import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.ListMenuButton;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.Features;
@@ -609,47 +609,49 @@ public class BookmarkReorderTest extends BookmarkTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.BOOKMARKS_SHOW_IN_FOLDER)
+    public void testShowInFolderDisabled() throws Exception {
+        addFolder(TEST_FOLDER_TITLE);
+        forceSyncHeaderState();
+        openBookmarkManager();
+        enterSearch();
+        clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
+
+        onView(withText("Show in folder")).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
     public void testShowInFolder_NoScroll() throws Exception {
         addFolder(TEST_FOLDER_TITLE);
         forceSyncHeaderState();
         openBookmarkManager();
 
         // Enter search mode.
-        View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
-        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
-        CriteriaHelper.pollUiThread(
-                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+        enterSearch();
 
         // Click "Show in folder".
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
-        View more = testFolder.findViewById(R.id.more);
-        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) testFolder).getTitle());
-        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
+        clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
         onView(withText("Show in folder")).perform(click());
 
-        Assert.assertTrue(
-                "Expected bookmark row to be highlighted after clicking \"show in folder\"",
-                checkHighlightOn(testFolder));
+        // Assert that the view pulses.
+        Assert.assertTrue("Expected bookmark row to pulse after clicking \"show in folder\"!",
+                checkHighlightPulse(testFolder));
 
         // Enter search mode again.
-        searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
-        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
-        CriteriaHelper.pollUiThread(
-                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+        enterSearch();
 
         Assert.assertTrue("Expected bookmark row to not be highlighted "
                         + "after entering search mode",
                 checkHighlightOff(testFolder));
 
         // Click "Show in folder" again.
-        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
+        clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
         onView(withText("Show in folder")).perform(click());
-
-        // Check that the highlight is on.
-        Assert.assertTrue("Expected highlight to successfully come back on"
-                        + " after clicking \"show in folder\" a 2nd time",
-                checkHighlightOn(testFolder));
+        Assert.assertTrue(
+                "Expected bookmark row to pulse after clicking \"show in folder\" a 2nd time!",
+                checkHighlightPulse(testFolder));
     }
 
     @Test
@@ -667,22 +669,16 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         // Enter search mode.
-        View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
-        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
-        CriteriaHelper.pollUiThread(
-                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+        enterSearch();
+
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mManager.onSearchTextChanged(TEST_FOLDER_TITLE));
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
         // This should be the only (& therefore 0-indexed) item.
-        View testFolderInSearch = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
-        View more = testFolderInSearch.findViewById(R.id.more);
-        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) testFolderInSearch).getTitle());
+        clickMoreButtonOnFirstItem(TEST_FOLDER_TITLE);
 
         // Show in folder.
-        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
         onView(withText("Show in folder")).perform(click());
 
         // This should be in the 8th position now.
@@ -691,8 +687,8 @@ public class BookmarkReorderTest extends BookmarkTest {
                 "Expected list to scroll bookmark item into view", testFolderInList == null);
         Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
                 ((BookmarkFolderRow) testFolderInList.itemView).getTitle());
-        Assert.assertTrue("Expected bookmark item to be highlighted after scrolling to it.",
-                checkHighlightOn(testFolderInList.itemView));
+        Assert.assertTrue("Expected highlight to pulse on after scrolling to the item!",
+                checkHighlightPulse(testFolderInList.itemView));
     }
 
     @Test
@@ -705,30 +701,23 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         // Enter search mode.
-        View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
-        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
-        CriteriaHelper.pollUiThread(
-                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+        enterSearch();
         TestThreadUtils.runOnUiThreadBlocking(() -> mManager.onSearchTextChanged(TEST_URL_A));
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
         // This should be the only (& therefore 0-indexed) item.
-        View itemAInSearch = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
-        View more = itemAInSearch.findViewById(R.id.more);
-        Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
-                ((BookmarkItemRow) itemAInSearch).getTitle());
+        clickMoreButtonOnFirstItem(TEST_TITLE_A);
 
         // Show in folder.
-        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
         onView(withText("Show in folder")).perform(click());
 
         // Make sure that we're in the right folder (index 1 because of promo).
         View itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
                 ((BookmarkItemRow) itemA).getTitle());
-        Assert.assertTrue(
-                "Expected bookmark item to be highlighted after opening it in new folder.",
-                checkHighlightOn(itemA));
+
+        Assert.assertTrue("Expected highlight to pulse after opening an item in another folder!",
+                checkHighlightPulse(itemA));
 
         // Open mobile bookmarks folder, then go back to the subfolder.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -737,12 +726,12 @@ public class BookmarkReorderTest extends BookmarkTest {
         });
         RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
 
-        itemA = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        View itemASecondView = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
         Assert.assertEquals("Wrong bookmark item selected.", TEST_TITLE_A,
-                ((BookmarkItemRow) itemA).getTitle());
-        Assert.assertTrue("Expected bookmark item to not be highlighted after "
-                        + "exiting and re-entering folder.",
-                checkHighlightOff(itemA));
+                ((BookmarkItemRow) itemASecondView).getTitle());
+        Assert.assertTrue(
+                "Expected highlight to not be highlighted after exiting and re-entering folder!",
+                checkHighlightOff(itemASecondView));
     }
 
     @Override
@@ -808,6 +797,22 @@ public class BookmarkReorderTest extends BookmarkTest {
 
     private ReorderBookmarkItemsAdapter getReorderAdapter() {
         return (ReorderBookmarkItemsAdapter) getAdapter();
+    }
+
+    private void enterSearch() throws Exception {
+        View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
+        TestThreadUtils.runOnUiThreadBlocking(searchButton::performClick);
+        CriteriaHelper.pollUiThread(
+                () -> mManager.getToolbarForTests().isSearching(), "Expected to enter search mode");
+    }
+
+    private void clickMoreButtonOnFirstItem(String expectedBookmarkItemTitle) throws Exception {
+        View firstItem = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", expectedBookmarkItemTitle,
+                firstItem instanceof BookmarkItemRow ? ((BookmarkItemRow) firstItem).getTitle()
+                                                     : ((BookmarkFolderRow) firstItem).getTitle());
+        View more = firstItem.findViewById(R.id.more);
+        TestThreadUtils.runOnUiThreadBlocking(more::performClick);
     }
 
     @Override

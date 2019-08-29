@@ -4,13 +4,19 @@
 
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller_impl.h"
 
+#include <memory>
+
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_leak_dialog_delegate_mock.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
+using password_manager::CreateLeakTypeFromBools;
+using password_manager::metrics_util::LeakDialogDismissalReason;
 using testing::StrictMock;
 
 class MockCredentialLeakPrompt : public CredentialLeakPrompt {
@@ -26,40 +32,111 @@ class MockCredentialLeakPrompt : public CredentialLeakPrompt {
 
 class CredentialLeakDialogControllerTest : public testing::Test {
  public:
-  CredentialLeakDialogControllerTest()
-      : controller_(&ui_controller_mock_,
-                    password_manager::CreateLeakTypeFromBools(true, true, true),
-                    GURL("https://example.com")) {}
+  void SetUpController(password_manager::CredentialLeakType leak_type) {
+    controller_ = std::make_unique<CredentialLeakDialogControllerImpl>(
+        &ui_controller_mock_, leak_type, GURL("https://example.com"));
+  }
+
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
   PasswordsLeakDialogDelegateMock& ui_controller_mock() {
     return ui_controller_mock_;
   }
 
-  CredentialLeakDialogControllerImpl& controller() { return controller_; }
+  MockCredentialLeakPrompt& leak_prompt() { return leak_prompt_; }
+
+  CredentialLeakDialogControllerImpl& controller() { return *controller_; }
 
  private:
+  base::HistogramTester histogram_tester_;
   StrictMock<PasswordsLeakDialogDelegateMock> ui_controller_mock_;
-  CredentialLeakDialogControllerImpl controller_;
+  StrictMock<MockCredentialLeakPrompt> leak_prompt_;
+  std::unique_ptr<CredentialLeakDialogControllerImpl> controller_;
 };
 
 TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogClose) {
-  StrictMock<MockCredentialLeakPrompt> prompt;
-  EXPECT_CALL(prompt, ShowCredentialLeakPrompt());
-  controller().ShowCredentialLeakPrompt(&prompt);
+  SetUpController(CreateLeakTypeFromBools(
+      /*is_saved=*/false, /*is_reused=*/false, /*is_syncing=*/false));
+
+  EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
+  controller().ShowCredentialLeakPrompt(&leak_prompt());
 
   EXPECT_CALL(ui_controller_mock(), OnLeakDialogHidden());
   controller().OnCloseDialog();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.DialogDismissalReason",
+      LeakDialogDismissalReason::kNoDirectInteraction, 1);
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.DialogDismissalReason.Change",
+      LeakDialogDismissalReason::kNoDirectInteraction, 1);
+
+  EXPECT_CALL(leak_prompt(), ControllerGone());
+}
+
+TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogOk) {
+  SetUpController(CreateLeakTypeFromBools(
+      /*is_saved=*/true, /*is_reused=*/true, /*is_syncing=*/false));
+
+  EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
+  controller().ShowCredentialLeakPrompt(&leak_prompt());
+
+  EXPECT_CALL(ui_controller_mock(), OnLeakDialogHidden());
+  controller().OnAcceptDialog();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.DialogDismissalReason",
+      LeakDialogDismissalReason::kClickedOk, 1);
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.DialogDismissalReason.Change",
+      LeakDialogDismissalReason::kClickedOk, 1);
+
+  EXPECT_CALL(leak_prompt(), ControllerGone());
+}
+
+TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogCancel) {
+  SetUpController(CreateLeakTypeFromBools(
+      /*is_saved=*/false, /*is_reused=*/true, /*is_syncing=*/true));
+
+  EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
+  controller().ShowCredentialLeakPrompt(&leak_prompt());
+
+  EXPECT_CALL(ui_controller_mock(), OnLeakDialogHidden());
+  controller().OnCancelDialog();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.DialogDismissalReason",
+      LeakDialogDismissalReason::kClickedClose, 1);
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.DialogDismissalReason.Checkup",
+      LeakDialogDismissalReason::kClickedClose, 1);
+
+  EXPECT_CALL(leak_prompt(), ControllerGone());
 }
 
 TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogCheckPasswords) {
-  StrictMock<MockCredentialLeakPrompt> prompt;
-  EXPECT_CALL(prompt, ShowCredentialLeakPrompt());
-  controller().ShowCredentialLeakPrompt(&prompt);
+  SetUpController(CreateLeakTypeFromBools(
+      /*is_saved=*/true, /*is_reused=*/true, /*is_syncing=*/true));
 
-  EXPECT_CALL(prompt, ControllerGone());
+  EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
+  controller().ShowCredentialLeakPrompt(&leak_prompt());
+
   EXPECT_CALL(ui_controller_mock(), NavigateToPasswordCheckup());
   EXPECT_CALL(ui_controller_mock(), OnLeakDialogHidden());
-  controller().OnCheckPasswords();
+  controller().OnAcceptDialog();
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.DialogDismissalReason",
+      LeakDialogDismissalReason::kClickedCheckPasswords, 1);
+
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.LeakDetection.DialogDismissalReason.CheckupAndChange",
+      LeakDialogDismissalReason::kClickedCheckPasswords, 1);
+
+  EXPECT_CALL(leak_prompt(), ControllerGone());
 }
 
 }  // namespace

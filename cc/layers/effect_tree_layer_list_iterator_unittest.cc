@@ -110,7 +110,7 @@ TEST_F(EffectTreeLayerListIteratorTest, TreeWithNoDrawnLayers) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_list);
+      root_ptr, gfx::Rect(root_ptr->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack();
@@ -139,7 +139,7 @@ TEST_F(EffectTreeLayerListIteratorTest, SimpleTree) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_list);
+      root_ptr, gfx::Rect(root_ptr->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack();
@@ -184,7 +184,7 @@ TEST_F(EffectTreeLayerListIteratorTest, ComplexTree) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_list);
+      root_ptr, gfx::Rect(root_ptr->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack();
@@ -237,7 +237,7 @@ TEST_F(EffectTreeLayerListIteratorTest, ComplexTreeMultiSurface) {
 
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_ptr, root_ptr->bounds(), &render_surface_list);
+      root_ptr, gfx::Rect(root_ptr->bounds()), &render_surface_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   IterateFrontToBack();

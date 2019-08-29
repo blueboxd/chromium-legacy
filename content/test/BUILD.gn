@@ -130,6 +130,8 @@ jumbo_static_library("test_support") {
     "../public/test/hit_test_region_observer.h",
     "../public/test/javascript_test_observer.cc",
     "../public/test/javascript_test_observer.h",
+    "../public/test/media_start_stop_observer.cc",
+    "../public/test/media_start_stop_observer.h",
     "../public/test/mock_browsing_data_remover_delegate.cc",
     "../public/test/mock_browsing_data_remover_delegate.h",
     "../public/test/mock_download_manager.cc",

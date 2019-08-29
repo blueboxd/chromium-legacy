@@ -33,6 +33,7 @@
 #include <stdint.h>
 
 #include "base/stl_util.h"
+#include "net/base/url_util.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
@@ -95,65 +96,86 @@ TEST_F(SecurityOriginTest, LocalAccess) {
 
 TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
   struct TestCase {
-    bool access_granted;
+    bool is_potentially_trustworthy;
+    bool is_localhost;
     const char* url;
   };
 
   TestCase inputs[] = {
       // Access is granted to webservers running on localhost.
-      {true, "http://localhost"},
-      {true, "http://LOCALHOST"},
-      {true, "http://localhost:100"},
-      {true, "http://a.localhost"},
-      {true, "http://127.0.0.1"},
-      {true, "http://127.0.0.2"},
-      {true, "http://127.1.0.2"},
-      {true, "http://0177.00.00.01"},
-      {true, "http://[::1]"},
-      {true, "http://[0:0::1]"},
-      {true, "http://[0:0:0:0:0:0:0:1]"},
-      {true, "http://[::1]:21"},
-      {true, "http://127.0.0.1:8080"},
-      {true, "ftp://127.0.0.1"},
-      {true, "ftp://127.0.0.1:443"},
-      {true, "ws://127.0.0.1"},
+      {true, true, "http://localhost"},
+      {true, true, "http://localhost."},
+      {true, true, "http://LOCALHOST"},
+      {true, true, "http://localhost:100"},
+      {true, true, "http://a.localhost"},
+      {true, true, "http://a.b.localhost"},
+      {true, true, "http://127.0.0.1"},
+      {true, true, "http://127.0.0.2"},
+      {true, true, "http://127.1.0.2"},
+      {true, true, "http://0177.00.00.01"},
+      {true, true, "http://[::1]"},
+      {true, true, "http://[0:0::1]"},
+      {true, true, "http://[0:0:0:0:0:0:0:1]"},
+      {true, true, "http://[::1]:21"},
+      {true, true, "http://127.0.0.1:8080"},
+      {true, true, "ftp://127.0.0.1"},
+      {true, true, "ftp://127.0.0.1:443"},
+      {true, true, "ws://127.0.0.1"},
 
-      // Access is denied to non-localhost over HTTP
-      {false, "http://[1::]"},
-      {false, "http://[::2]"},
-      {false, "http://[1::1]"},
-      {false, "http://[1:2::3]"},
-      {false, "http://[::127.0.0.1]"},
-      {false, "http://a.127.0.0.1"},
-      {false, "http://127.0.0.1.b"},
-      {false, "http://localhost.a"},
+      // Non-localhost over HTTP
+      {false, false, "http://[1::]"},
+      {false, false, "http://[::2]"},
+      {false, false, "http://[1::1]"},
+      {false, false, "http://[1:2::3]"},
+      {false, false, "http://[::127.0.0.1]"},
+      {false, false, "http://a.127.0.0.1"},
+      {false, false, "http://127.0.0.1.b"},
+      {false, false, "http://localhost.a"},
 
-      // Access is granted to all secure transports.
-      {true, "https://foobar.com"},
-      {true, "wss://foobar.com"},
+      // loopback resolves to localhost on Windows, but not
+      // recognized generically here.
+      {false, false, "http://loopback"},
 
-      // Access is denied to insecure transports.
-      {false, "ftp://foobar.com"},
-      {false, "http://foobar.com"},
-      {false, "http://foobar.com:443"},
-      {false, "ws://foobar.com"},
+      // IPv4 mapped IPv6 literals for 127.0.0.1.
+      {false, false, "http://[::ffff:127.0.0.1]"},
+      {false, false, "http://[::ffff:7f00:1]"},
 
-      // Access is granted to local files
-      {true, "file:///home/foobar/index.html"},
+      // IPv4 compatible IPv6 literal for 127.0.0.1.
+      {false, false, "http://[::127.0.0.1]"},
+
+      // TODO(eroman): Not documented why these are recognized.
+      {true, true, "http://localhost6"},
+      {true, true, "ftp://localhost6.localdomain6"},
+      {true, true, "http://localhost.localdomain"},
+
+      // Secure transports are considered trustworthy.
+      {true, false, "https://foobar.com"},
+      {true, false, "wss://foobar.com"},
+
+      // Insecure transports are not considered trustworthy.
+      {false, false, "ftp://foobar.com"},
+      {false, false, "http://foobar.com"},
+      {false, false, "http://foobar.com:443"},
+      {false, false, "ws://foobar.com"},
+
+      // Local files are considered trustworthy.
+      {true, false, "file:///home/foobar/index.html"},
 
       // blob: URLs must look to the inner URL's origin, and apply the same
       // rules as above. Spot check some of them
-      {true, "blob:http://localhost:1000/578223a1-8c13-17b3-84d5-eca045ae384a"},
-      {true, "blob:https://foopy:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
-      {false, "blob:http://baz:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
-      {false, "blob:ftp://evil:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
+      {true, true,
+       "blob:http://localhost:1000/578223a1-8c13-17b3-84d5-eca045ae384a"},
+      {true, false,
+       "blob:https://foopy:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
+      {false, false, "blob:http://baz:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
+      {false, false, "blob:ftp://evil:99/578223a1-8c13-17b3-84d5-eca045ae384a"},
 
       // filesystem: URLs work the same as blob: URLs, and look to the inner
       // URL for security origin.
-      {true, "filesystem:http://localhost:1000/foo"},
-      {true, "filesystem:https://foopy:99/foo"},
-      {false, "filesystem:http://baz:99/foo"},
-      {false, "filesystem:ftp://evil:99/foo"},
+      {true, true, "filesystem:http://localhost:1000/foo"},
+      {true, false, "filesystem:https://foopy:99/foo"},
+      {false, false, "filesystem:http://baz:99/foo"},
+      {false, false, "filesystem:ftp://evil:99/foo"},
   };
 
   for (size_t i = 0; i < base::size(inputs); ++i) {
@@ -161,7 +183,17 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(inputs[i].url);
     String error_message;
-    EXPECT_EQ(inputs[i].access_granted, origin->IsPotentiallyTrustworthy());
+    EXPECT_EQ(inputs[i].is_potentially_trustworthy,
+              origin->IsPotentiallyTrustworthy());
+    EXPECT_EQ(inputs[i].is_localhost, origin->IsLocalhost());
+
+    GURL test_gurl(inputs[i].url);
+    if (!(test_gurl.SchemeIsBlob() || test_gurl.SchemeIsFileSystem())) {
+      // Check that the origin's notion of localhost matches //net's notion of
+      // localhost. This is skipped for blob: and filesystem: URLs since
+      // SecurityOrigin uses their inner URL's origin.
+      EXPECT_EQ(net::IsLocalhost(GURL(inputs[i].url)), origin->IsLocalhost());
+    }
   }
 
   // Anonymous opaque origins are not considered secure.

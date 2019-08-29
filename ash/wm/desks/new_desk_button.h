@@ -44,8 +44,12 @@ class ASH_EXPORT NewDeskButton
   gfx::RoundedCornersF GetRoundedCornersRadii() const override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
+  bool OnViewHighlighted() override;
+  void OnViewUnhighlighted() override;
 
  private:
+  void UpdateBorderState();
+
   DISALLOW_COPY_AND_ASSIGN(NewDeskButton);
 };
 

@@ -203,7 +203,10 @@ class AppsGridViewTest : public views::ViewsTestBase,
   AppListItemView* GetItemViewForPoint(const gfx::Point& point) const {
     for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i) {
       AppListItemView* view = GetItemViewAt(i);
-      if (view->bounds().Contains(point))
+      gfx::Point view_origin = view->origin();
+      views::View::ConvertPointToTarget(view->parent(), apps_grid_view_,
+                                        &view_origin);
+      if (gfx::Rect(view_origin, view->size()).Contains(point))
         return view;
     }
     return nullptr;
@@ -272,13 +275,22 @@ class AppsGridViewTest : public views::ViewsTestBase,
     const views::ViewModelT<AppListItemView>* view_model =
         apps_grid_view_->view_model();
     DCHECK_GT(view_model->view_size(), 0);
-    auto app_iter = apps_grid_view_->FindChild(view_model->view_at(0));
-    DCHECK(app_iter != apps_grid_view_->children().cend());
+    views::View* items_container = apps_grid_view_->items_container_;
+    auto app_iter = items_container->FindChild(view_model->view_at(0));
+    DCHECK(app_iter != items_container->children().cend());
     for (int i = 1; i < view_model->view_size(); ++i) {
       ++app_iter;
-      ASSERT_NE(apps_grid_view_->children().cend(), app_iter);
+      ASSERT_NE(items_container->children().cend(), app_iter);
       EXPECT_EQ(view_model->view_at(i), *app_iter);
     }
+  }
+
+  gfx::Point GetDragViewCenter() {
+    gfx::Point drag_view_center =
+        apps_grid_view_->drag_view()->GetLocalBounds().CenterPoint();
+    views::View::ConvertPointToTarget(apps_grid_view_->drag_view(),
+                                      apps_grid_view_, &drag_view_center);
+    return drag_view_center;
   }
 
   AppListView* app_list_view_ = nullptr;    // Owned by native widget.
@@ -1618,6 +1630,8 @@ TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   page_flip_waiter.Reset();
   SimulateDrag(AppsGridView::MOUSE, from, to);
 
+  EXPECT_EQ(to, GetDragViewCenter());
+
   // Page should be flipped after sometime to hit page 1 and 2 then stop.
   while (test_api_->HasPendingPageFlip()) {
     page_flip_waiter.Wait();
@@ -1627,6 +1641,7 @@ TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   // created at the end.
   EXPECT_EQ("1,2,3", page_flip_waiter.selected_pages());
   EXPECT_EQ(3, GetPaginationModel()->selected_page());
+  EXPECT_EQ(to, GetDragViewCenter());
 
   // Cancel drag and put the dragged view back to its ideal position so that
   // the next drag would pick it up.
@@ -1639,12 +1654,15 @@ TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   page_flip_waiter.Reset();
   SimulateDrag(AppsGridView::MOUSE, from, to);
 
+  EXPECT_EQ(to, GetDragViewCenter());
+
   while (test_api_->HasPendingPageFlip()) {
     page_flip_waiter.Wait();
   }
 
   EXPECT_EQ("1,0", page_flip_waiter.selected_pages());
   EXPECT_EQ(0, GetPaginationModel()->selected_page());
+  EXPECT_EQ(to, GetDragViewCenter());
 
   apps_grid_view_->EndDrag(true);
 }

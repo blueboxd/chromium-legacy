@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/public/graph/frame_node.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
 #include "chrome/browser/performance_manager/webui_graph_dump.mojom.h"
@@ -18,25 +19,34 @@
 
 namespace performance_manager {
 
-class Graph;
+class GraphImpl;
 
 // TODO(siggi): Add workers to the WebUI graph.
-// TODO(siggi, https://crbug.com/966840): Make the WebUI dumper GraphOwned.
 class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
+                           public GraphOwned,
                            public FrameNodeObserver,
                            public PageNodeObserver,
                            public ProcessNodeObserver {
  public:
-  explicit WebUIGraphDumpImpl(Graph* graph);
+  WebUIGraphDumpImpl();
   ~WebUIGraphDumpImpl() override;
 
-  // Bind this instance to |request| with the |error_handler|.
-  void Bind(mojom::WebUIGraphDumpRequest request,
-            base::OnceClosure error_handler);
+  // Creates a new WebUIGraphDumpImpl to service |request| and passes its
+  // ownership to |graph|.
+  static void CreateAndBind(mojom::WebUIGraphDumpRequest request,
+                            GraphImpl* graph);
 
+  // Exposed for testing.
+  void BindWithGraph(Graph* graph, mojom::WebUIGraphDumpRequest request);
+
+ protected:
   // WebUIGraphDump implementation.
   void SubscribeToChanges(
       mojom::WebUIGraphChangeStreamPtr change_subscriber) override;
+
+  // GraphOwned implementation.
+  void OnPassedToGraph(Graph* graph) override;
+  void OnTakenFromGraph(Graph* graph) override;
 
   // FrameNodeObserver implementation:
   void OnFrameNodeAdded(const FrameNode* frame_node) override;
@@ -99,7 +109,11 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump,
       int64_t serialization_id,
       scoped_refptr<base::RefCountedMemory> bitmap_data);
 
-  Graph* graph_;
+  static void BindOnPMSequence(mojom::WebUIGraphDumpRequest request,
+                               GraphImpl* graph);
+  static void OnConnectionError(WebUIGraphDumpImpl* impl);
+
+  Graph* graph_ = nullptr;
 
   std::unique_ptr<FaviconRequestHelper> favicon_request_helper_;
 

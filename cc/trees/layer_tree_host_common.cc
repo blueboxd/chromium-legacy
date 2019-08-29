@@ -30,7 +30,7 @@ namespace cc {
 
 LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       float device_scale_factor,
                                       float page_scale_factor,
@@ -39,7 +39,7 @@ LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
                                       const Layer* outer_viewport_scroll_layer,
                                       TransformNode* page_scale_transform_node)
     : root_layer(root_layer),
-      device_viewport_size(device_viewport_size),
+      device_viewport_rect(device_viewport_rect),
       device_transform(device_transform),
       device_scale_factor(device_scale_factor),
       page_scale_factor(page_scale_factor),
@@ -50,10 +50,10 @@ LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
 
 LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform)
     : CalcDrawPropsMainInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         device_transform,
                                         1.f,
                                         1.f,
@@ -64,14 +64,14 @@ LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
 
 LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting::
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
-                                      const gfx::Size& device_viewport_size)
+                                      const gfx::Rect& device_viewport_rect)
     : CalcDrawPropsMainInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         gfx::Transform()) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     LayerImpl* root_layer,
-    const gfx::Size& device_viewport_size,
+    const gfx::Rect& device_viewport_rect,
     const gfx::Transform& device_transform,
     float device_scale_factor,
     float page_scale_factor,
@@ -85,7 +85,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     PropertyTrees* property_trees,
     TransformNode* page_scale_transform_node)
     : root_layer(root_layer),
-      device_viewport_size(device_viewport_size),
+      device_viewport_rect(device_viewport_rect),
       device_transform(device_transform),
       device_scale_factor(device_scale_factor),
       page_scale_factor(page_scale_factor),
@@ -101,12 +101,12 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       float device_scale_factor,
                                       RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputs(root_layer,
-                              device_viewport_size,
+                              device_viewport_rect,
                               device_transform,
                               device_scale_factor,
                               1.f,
@@ -125,32 +125,32 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       const gfx::Transform& device_transform,
                                       RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         device_transform,
                                         1.f,
                                         render_surface_list) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         gfx::Transform(),
                                         1.f,
                                         render_surface_list) {}
 
 LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
     CalcDrawPropsImplInputsForTesting(LayerImpl* root_layer,
-                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Rect& device_viewport_rect,
                                       float device_scale_factor,
                                       RenderSurfaceList* render_surface_list)
     : CalcDrawPropsImplInputsForTesting(root_layer,
-                                        device_viewport_size,
+                                        device_viewport_rect,
                                         gfx::Transform(),
                                         device_scale_factor,
                                         render_surface_list) {}
@@ -534,7 +534,7 @@ void CalculateDrawPropertiesInternal(
           inputs->outer_viewport_scroll_layer,
           inputs->elastic_overscroll_element_id, inputs->elastic_overscroll,
           inputs->page_scale_factor, inputs->device_scale_factor,
-          gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
+          inputs->device_viewport_rect, inputs->device_transform,
           inputs->property_trees);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees);
@@ -574,7 +574,7 @@ void CalculateDrawPropertiesInternal(
       // by both trees.
       PropertyTrees* property_trees = inputs->property_trees;
       property_trees->clip_tree.SetViewportClip(
-          gfx::RectF(gfx::SizeF(inputs->device_viewport_size)));
+          gfx::RectF(inputs->device_viewport_rect));
       property_trees->transform_tree.SetRootScaleAndTransform(
           inputs->device_scale_factor, inputs->device_transform);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
@@ -629,8 +629,7 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
         inputs->inner_viewport_scroll_layer,
         inputs->outer_viewport_scroll_layer, ElementId(), elastic_overscroll,
         inputs->page_scale_factor, inputs->device_scale_factor,
-        gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-        property_trees);
+        inputs->device_viewport_rect, inputs->device_transform, property_trees);
   }
   draw_property_utils::UpdatePropertyTrees(
       inputs->root_layer->layer_tree_host(), property_trees);

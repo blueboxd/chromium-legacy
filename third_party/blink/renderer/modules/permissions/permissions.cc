@@ -102,12 +102,7 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_SYNC);
   if (name == "ambient-light-sensor" || name == "accelerometer" ||
       name == "gyroscope" || name == "magnetometer") {
-    if (!RuntimeEnabledFeatures::SensorEnabled()) {
-      exception_state.ThrowTypeError("GenericSensor flag is not enabled.");
-      return nullptr;
-    }
-
-    // Magnetometer and ALS require an extra flag.
+    // ALS requires an extra flag.
     if (name == "ambient-light-sensor") {
       if (!RuntimeEnabledFeatures::SensorExtraClassesEnabled()) {
         exception_state.ThrowTypeError(

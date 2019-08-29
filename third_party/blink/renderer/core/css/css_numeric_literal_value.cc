@@ -126,6 +126,14 @@ bool CSSNumericLiteralValue::AccumulateLengthArray(CSSLengthArray& length_array,
   return true;
 }
 
+bool CSSNumericLiteralValue::IsComputationallyIndependent() const {
+  if (!IsLength())
+    return true;
+  if (IsViewportPercentageLength())
+    return true;
+  return !IsRelativeUnit(GetType());
+}
+
 static String FormatNumber(double number, const char* suffix) {
 #if defined(OS_WIN) && _MSC_VER < 1900
   unsigned oldFormat = _set_output_format(_TWO_DIGIT_EXPONENT);

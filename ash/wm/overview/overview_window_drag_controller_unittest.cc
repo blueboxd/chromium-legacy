@@ -102,7 +102,7 @@ class NoDesksNoSplitViewTest : public AshTestBase {
 };
 
 TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
   auto* overview_controller = Shell::Get()->overview_controller();
@@ -131,7 +131,7 @@ TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
 }
 
 TEST_F(NoDesksNoSplitViewTest, CanDoDragToClose) {
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
   auto* overview_controller = Shell::Get()->overview_controller();
@@ -169,7 +169,7 @@ TEST_F(NoDesksNoSplitViewTest, CanDoDragToClose) {
 using OverviewWindowDragControllerTest = AshTestBase;
 
 TEST_F(OverviewWindowDragControllerTest, NoDragToCloseUsingMouse) {
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
@@ -226,7 +226,7 @@ TEST_F(OverviewWindowDragControllerWithDesksTest,
   controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, controller->desks().size());
 
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 

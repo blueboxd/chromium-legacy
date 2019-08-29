@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_width_constraints.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view_model.h"
@@ -74,6 +75,16 @@ class TabStripLayoutHelper {
 
   // Marks the tab at |model_index| as closing and animates it closed.
   void RemoveTab(int model_index, Tab* tab);
+
+  // Called when the tabstrip enters tab closing mode, wherein tabs should
+  // resize differently to control which tab ends up under the cursor.
+  // Assumes that the available width will never be smaller than this value
+  // for the duration of this tab closing session, i.e. that resizing the
+  // tabstrip will only happen after ExitTabClosingMode().
+  void EnterTabClosingMode(int available_width);
+
+  // Notifies this that the tabstrip has left tab closing mode.
+  void ExitTabClosingMode();
 
   // Invoked when |tab| has been destroyed by TabStrip (i.e. the remove
   // animation has completed).
@@ -184,6 +195,10 @@ class TabStripLayoutHelper {
   // Current collation of tabs and group headers, along with necessary data to
   // run layout and animations for those Views.
   std::vector<TabSlot> slots_;
+
+  // When in tab closing mode, tabs sometimes need to keep a fixed width. When
+  // defined, this TabSizer specifies that width.
+  base::Optional<TabSizer> cached_sizer_;
 
   // The current widths of tabs. If the space for tabs is not evenly divisible
   // into these widths, the initial tabs in the strip will be 1 px larger.

@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "build/build_config.h"
 #include "components/exo/data_device.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/input_method_surface_manager.h"
@@ -110,9 +111,13 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
   // Using zero-copy for optimal performance.
   bool use_zero_copy = true;
 
+#if defined(ARCH_CPU_X86_FAMILY)
   // TODO(dcastagna): Re-enable NV12 format as HW overlay once b/113362843
   // is addressed.
   bool is_overlay_candidate = format != gfx::BufferFormat::YUV_420_BIPLANAR;
+#else
+  bool is_overlay_candidate = true;
+#endif
 
   return std::make_unique<Buffer>(
       std::move(gpu_memory_buffer),

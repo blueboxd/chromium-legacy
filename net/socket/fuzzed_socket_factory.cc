@@ -4,6 +4,8 @@
 
 #include "net/socket/fuzzed_socket_factory.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/logging.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
@@ -15,7 +17,6 @@
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 

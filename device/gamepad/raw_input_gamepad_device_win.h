@@ -75,6 +75,10 @@ class RawInputGamepadDeviceWin final : public AbstractHapticGamepad {
   // AbstractHapticGamepad implementation.
   void DoShutdown() override;
 
+  // "Returns an open handle for the HID device, or an invalid handle if the
+  // device could not be opened."
+  base::win::ScopedHandle OpenHidHandle();
+
   // Fetch information about this device. Returns true if the device appears to
   // be a valid gamepad.
   bool QueryDeviceInfo();
@@ -86,7 +90,7 @@ class RawInputGamepadDeviceWin final : public AbstractHapticGamepad {
   bool QueryDeviceName();
 
   // Fetch the product string. Returns false if none is available.
-  bool QueryProductString();
+  bool QueryProductString(base::win::ScopedHandle& hid_handle);
 
   // These methods fetch information about the capabilities of buttons and axes
   // on the device.

@@ -24,6 +24,7 @@
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
@@ -238,7 +239,7 @@ class PageHandler : public DevToolsDomainHandler,
   const bool allow_file_access_;
 
   std::unique_ptr<Page::Frontend> frontend_;
-  ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> observer_;
+  ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> observer_{this};
   JavaScriptDialogCallback pending_dialog_;
   scoped_refptr<DevToolsDownloadManagerDelegate> download_manager_delegate_;
   base::flat_map<base::UnguessableToken, std::unique_ptr<NavigateCallback>>

@@ -1588,6 +1588,7 @@ jumbo_component("base") {
     deps += [
       "//third_party/fuchsia-sdk/sdk:async_default",
       "//third_party/fuchsia-sdk/sdk:async_loop_cpp",
+      "//third_party/fuchsia-sdk/sdk:async_loop_default",
       "//third_party/fuchsia-sdk/sdk:deprecatedtimezone",
       "//third_party/fuchsia-sdk/sdk:fidl",
       "//third_party/fuchsia-sdk/sdk:sys",
@@ -1969,7 +1970,6 @@ jumbo_component("base") {
       "task/thread_pool/thread_group_native_mac.mm",
       "threading/platform_thread_mac.mm",
       "time/time_conversion_posix.cc",
-      "time/time_exploded_posix.cc",
       "time/time_mac.cc",
     ]
 
@@ -2071,6 +2071,8 @@ buildflag_header("debugging_buildflags") {
   header_dir = "base/debug"
   enable_gdbinit_warning =
       is_debug && (strip_absolute_paths_from_debug_symbols || use_custom_libcxx)
+  enable_lldbinit_warning =
+      is_debug && strip_absolute_paths_from_debug_symbols && is_mac
 
   flags = [
     "ENABLE_LOCATION_SOURCE=$enable_location_source",
@@ -2079,6 +2081,7 @@ buildflag_header("debugging_buildflags") {
     "UNSAFE_DEVELOPER_BUILD=$is_unsafe_developer_build",
     "CAN_UNWIND_WITH_CFI_TABLE=$can_unwind_with_cfi_table",
     "ENABLE_GDBINIT_WARNING=$enable_gdbinit_warning",
+    "ENABLE_LLDBINIT_WARNING=$enable_lldbinit_warning",
   ]
 }
 

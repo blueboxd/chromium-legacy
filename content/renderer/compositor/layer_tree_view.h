@@ -43,7 +43,6 @@ class UkmRecorderFactory;
 
 namespace gfx {
 class ColorSpace;
-class Size;
 }  // namespace gfx
 
 namespace ui {
@@ -108,8 +107,8 @@ class CONTENT_EXPORT LayerTreeView
   void SetExternalPageScaleFactor(float page_scale_factor,
                                   bool is_external_pinch_gesture_active);
   void ClearCachesOnNextCommit();
-  void SetViewportSizeAndScale(
-      const gfx::Size& device_viewport_size,
+  void SetViewportRectAndScale(
+      const gfx::Rect& device_viewport_rect,
       float device_scale_factor,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void RequestNewLocalSurfaceId();

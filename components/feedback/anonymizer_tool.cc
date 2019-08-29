@@ -58,10 +58,13 @@ CustomPatternWithAlias kCustomPatternsWithContext[] = {
 
     // Serial numbers. The actual serial number itself can include any alphanum
     // char as well as dashes, periods, colons, slashes and unprintable ASCII
-    // chars (except newline).
+    // chars (except newline). The second one is for a special case in
+    // edid-decode, where if we genericized it further then we would catch too
+    // many other cases that we don't want to anonymize.
     {"Serial",
      "(?i-s)(\\bserial\\s*_?(?:number)?['\"]?\\s*[:=]\\s*['\"]?)"
      "([0-9a-zA-Z\\-.:\\/\\\\\\x00-\\x09\\x0B-\\x1F]+)(\\b)"},
+    {"Serial", "( Serial Number )(\\d+)(\\b)"},
 
     // GAIA IDs
     {"GAIA", R"xxx((\"?\bgaia_id\"?[=:]['\"])(\d+)(\b['\"]))xxx"},

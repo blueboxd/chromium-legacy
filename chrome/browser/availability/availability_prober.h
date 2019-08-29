@@ -152,6 +152,9 @@ class AvailabilityProber
   // Registers the prefs used in this class.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // Clears the prefs used in this class.
+  static void ClearData(PrefService* pref_service);
+
   // Sends a probe now if the prober is currently inactive. If the probe is
   // active (i.e.: there are probes in flight), this is a no-op. If
   // |send_only_in_foreground| is set, the probe will only be sent when the app
@@ -269,6 +272,8 @@ class AvailabilityProber
   // Caches past probe results in a mapping of one tuple to another:
   //   (network_id, url_) -> (last_probe_status, last_modification_time).
   // No more than |max_cache_entries_| will be kept in this dictionary.
+  // |cached_probe_results_| may differ from what is on disk in the event
+  // browsing history is cleared during the limetime of |this|.
   std::unique_ptr<base::DictionaryValue> cached_probe_results_;
 
   // The tick clock used within this class.

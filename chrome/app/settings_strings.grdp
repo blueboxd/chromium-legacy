@@ -3000,12 +3000,6 @@
   <message name="IDS_SETTINGS_SYNC_AND_GOOGLE_SERVICES_PRIVACY_DESC_UNIFIED_CONSENT" desc="The description of the 'Sync and Google services' row in the privacy section">
     More settings that relate to privacy, security, and data collection
   </message>
-  <message name="IDS_SETTINGS_COOKIE_CONTROLS" desc="Text for cookie control button in Privacy options">
-    Tracking protection
-  </message>
-  <message name="IDS_SETTINGS_COOKIE_CONTROLS_DESCRIPTION" desc="The description of the 'Cookie control' row in the privacy section">
-    Blocks cookies that are used for cross-site tracking in Incognito. Some sites may stop working.
-  </message>
 
   <!-- Reset Settings Page -->
   <message name="IDS_SETTINGS_RESET" desc="Title for an item in the 'Reset and clean up' section of Chrome Settings. If the user clicks this option, browser settings will be returned to their default values, after a confirmation by the user." meaning="Chrome Cleanup feature. Try to use the same translation for 'Reset' in 'Reset and cleanup' string.">

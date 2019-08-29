@@ -248,9 +248,8 @@ namespace {
 // Whitelist PPAPI for Android Runtime for Chromium. (See crbug.com/383937)
 #if BUILDFLAG(ENABLE_PLUGINS)
 const char* const kPredefinedAllowedCameraDeviceOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A"
-};
+    "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
+    "4EB74897CB187C7633357C2FE832E0AD6A44883A"};
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -336,8 +335,7 @@ ChromeContentRendererClient::ChromeContentRendererClient()
 #endif
 }
 
-ChromeContentRendererClient::~ChromeContentRendererClient() {
-}
+ChromeContentRendererClient::~ChromeContentRendererClient() {}
 
 void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
@@ -758,7 +756,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   chrome::mojom::PluginStatus status = plugin_info.status;
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mime_type.Utf8();
-  ChromePluginPlaceholder* placeholder = NULL;
+  ChromePluginPlaceholder* placeholder = nullptr;
 
   // If the browser plugin is to be enabled, this should be handled by the
   // renderer, so the code won't reach here due to the early exit in
@@ -1041,10 +1039,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
       case chrome::mojom::PluginStatus::kRestartRequired: {
 #if defined(OS_LINUX)
-        placeholder = create_blocked_plugin(
-            IDR_BLOCKED_PLUGIN_HTML,
-            l10n_util::GetStringFUTF16(IDS_PLUGIN_RESTART_REQUIRED,
-                                       group_name));
+        placeholder =
+            create_blocked_plugin(IDR_BLOCKED_PLUGIN_HTML,
+                                  l10n_util::GetStringFUTF16(
+                                      IDS_PLUGIN_RESTART_REQUIRED, group_name));
 #endif
         break;
       }
@@ -1101,20 +1099,22 @@ bool ChromeContentRendererClient::IsNativeNaClAllowed(
   bool is_extension_from_webstore = extension && extension->from_webstore();
 
   bool is_invoked_by_extension = app_url.SchemeIs(extensions::kExtensionScheme);
-  bool is_invoked_by_hosted_app = extension &&
-      extension->is_hosted_app() &&
-      extension->web_extent().MatchesURL(app_url);
+  bool is_invoked_by_hosted_app = extension && extension->is_hosted_app() &&
+                                  extension->web_extent().MatchesURL(app_url);
 
-  is_invoked_by_webstore_installed_extension = is_extension_from_webstore &&
+  is_invoked_by_webstore_installed_extension =
+      is_extension_from_webstore &&
       (is_invoked_by_extension || is_invoked_by_hosted_app);
 
   // Allow built-in extensions and developer mode extensions.
-  is_extension_unrestricted = extension &&
-       (extensions::Manifest::IsUnpackedLocation(extension->location()) ||
-        extensions::Manifest::IsComponentLocation(extension->location()));
+  is_extension_unrestricted =
+      extension &&
+      (extensions::Manifest::IsUnpackedLocation(extension->location()) ||
+       extensions::Manifest::IsComponentLocation(extension->location()));
   // Allow extensions force installed by admin policy.
-  is_extension_force_installed = extension &&
-       extensions::Manifest::IsPolicyLocation(extension->location());
+  is_extension_force_installed =
+      extension &&
+      extensions::Manifest::IsPolicyLocation(extension->location());
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   // Allow NaCl under any of the following circumstances:
@@ -1123,10 +1123,9 @@ bool ChromeContentRendererClient::IsNativeNaClAllowed(
   //  3) An extension is installed from the webstore, and invoked in that
   //     context (hosted app URL or chrome-extension:// scheme).
   //  4) --enable-nacl is set.
-  bool is_nacl_allowed_by_location =
-      is_extension_unrestricted ||
-      is_extension_force_installed ||
-      is_invoked_by_webstore_installed_extension;
+  bool is_nacl_allowed_by_location = is_extension_unrestricted ||
+                                     is_extension_force_installed ||
+                                     is_invoked_by_webstore_installed_extension;
   bool is_nacl_allowed = is_nacl_allowed_by_location || is_nacl_unrestricted;
   return is_nacl_allowed;
 }

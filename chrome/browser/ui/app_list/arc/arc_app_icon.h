@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_ICON_H_
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_APP_ICON_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -51,15 +52,30 @@ class ArcAppIcon {
   ArcAppIcon(content::BrowserContext* context,
              const std::string& app_id,
              int resource_size_in_dip,
-             Observer* observer);
+             Observer* observer,
+             bool serve_compressed_icons = false);
   ~ArcAppIcon();
+
+  // Starts loading the icon at every supported scale factor. The |observer_|
+  // will be notified as progress is made. "Supported" is in the same sense as
+  // ui::GetSupportedScaleFactors().
+  void LoadSupportedScaleFactors();
 
   // Whether every supported scale factor was successfully loaded. "Supported"
   // is in the same sense as ui::GetSupportedScaleFactors().
   bool EverySupportedScaleFactorIsLoaded() const;
 
   const std::string& app_id() const { return app_id_; }
-  const gfx::ImageSkia& image_skia() const { return image_skia_; }
+  // Valid if the |serve_compressed_icons_| is false.
+  const gfx::ImageSkia& image_skia() const {
+    DCHECK(!serve_compressed_icons_);
+    return image_skia_;
+  }
+  // Valid if the |serve_compressed_icons_| is true.
+  const std::map<ui::ScaleFactor, std::string>& compressed_images() const {
+    DCHECK(serve_compressed_icons_);
+    return compressed_images_;
+  }
 
   // Disables async safe decoding requests when unit tests are executed. This is
   // done to avoid two problems. Problems come because icons are decoded at a
@@ -105,7 +121,8 @@ class ArcAppIcon {
       const base::FilePath& path,
       const base::FilePath& default_app_path);
   void OnIconRead(std::unique_ptr<ArcAppIcon::ReadResult> read_result);
-  void Update(ui::ScaleFactor scale_factor, const SkBitmap& bitmap);
+  void UpdateUncompressed(ui::ScaleFactor scale_factor, const SkBitmap& bitmap);
+  void UpdateCompressed(ui::ScaleFactor scale_factor, std::string data);
   void DiscardDecodeRequest(DecodeRequest* request);
 
   content::BrowserContext* const context_;
@@ -115,8 +132,10 @@ class ArcAppIcon {
   const std::string mapped_app_id_;
   const int resource_size_in_dip_;
   Observer* const observer_;
+  const bool serve_compressed_icons_;
 
   gfx::ImageSkia image_skia_;
+  std::map<ui::ScaleFactor, std::string> compressed_images_;
   std::set<ui::ScaleFactor> incomplete_scale_factors_;
 
   // Contains pending image decode requests.

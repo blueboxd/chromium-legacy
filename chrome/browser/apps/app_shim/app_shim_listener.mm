@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
@@ -30,7 +29,7 @@ void AppShimListener::Init() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!extension_app_shim_handler_);
   extension_app_shim_handler_.reset(new apps::ExtensionAppShimHandler());
-  apps::AppShimHandler::Set(extension_app_shim_handler_.get());
+  AppShimHostBootstrap::SetClient(extension_app_shim_handler_.get());
   // Initialize the instance of AppShimTerminationManager, to ensure that it
   // registers for its notifications.
   apps::AppShimTerminationManager::Get();
@@ -54,7 +53,7 @@ AppShimListener::~AppShimListener() {
   if (!extension_app_shim_handler_)
     return;
 
-  apps::AppShimHandler::Set(nullptr);
+  AppShimHostBootstrap::SetClient(nullptr);
 
   base::FilePath user_data_dir;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {

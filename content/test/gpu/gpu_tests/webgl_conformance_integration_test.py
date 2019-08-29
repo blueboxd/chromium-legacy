@@ -156,6 +156,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'OES_vertex_array_object',
         'WEBGL_color_buffer_float',
         'WEBGL_compressed_texture_astc',
+        'WEBGL_compressed_texture_etc',
         'WEBGL_compressed_texture_etc1',
         'WEBGL_compressed_texture_pvrtc',
         'WEBGL_compressed_texture_s3tc',

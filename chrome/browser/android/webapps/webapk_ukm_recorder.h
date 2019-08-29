@@ -19,6 +19,8 @@ class GURL;
 // avoid having to instantiate this class and deal with object lifetimes.
 class WebApkUkmRecorder {
  public:
+  static void RecordInstall(const GURL& manifest_url, int version_code);
+
   static void RecordSessionDuration(const GURL& manifest_url,
                                     int64_t distributor,
                                     int64_t version_code,

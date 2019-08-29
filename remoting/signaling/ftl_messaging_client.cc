@@ -103,7 +103,7 @@ void FtlMessagingClient::SendMessage(
   request.mutable_message()->set_message_type(
       ftl::InboxMessage_MessageType_CHROMOTING_MESSAGE);
   request.mutable_message()->set_message_class(
-      ftl::InboxMessage_MessageClass_USER);
+      ftl::InboxMessage_MessageClass_STATUS);
   if (!destination_registration_id.empty()) {
     request.add_dest_registration_ids(destination_registration_id);
   }

@@ -111,6 +111,8 @@ class PLATFORM_EXPORT BMPImageReader final {
     uint16_t bit_count;
     CompressionType compression;
     uint32_t clr_used;
+    uint32_t profile_data;
+    uint32_t profile_size;
   };
   struct RGBTriple {
     DISALLOW_NEW();
@@ -149,14 +151,20 @@ class PLATFORM_EXPORT BMPImageReader final {
   // of header values from the byte stream.  Returns false on error.
   bool ReadInfoHeader();
 
+  // Returns true if this BMP has color space information in the info header
+  // (BITMAPV4HEADER+).  See comments in ReadInfoHeader() for more.
+  inline bool HasColorSpaceInfoInHeader() const {
+    return (info_header_.size == 108) ||  // BITMAPV4HEADER
+           (info_header_.size == 124);    // BITMAPV5HEADER
+  }
+
   // Returns true if this BMP has an alpha mask in the info header
   // (BITMAPV3HEADER+).  See comments in ReadInfoHeader() for more.
   inline bool HasAlphaMaskInHeader() const {
     // BITMAPV3HEADER is 56 bytes; this is also a valid OS/2 2.x header size, so
     // exclude that case.
     return (info_header_.size == 56 && !is_os22x_) ||  // BITMAPV3HEADER
-           (info_header_.size == 108) ||               // BITMAPV4HEADER
-           (info_header_.size == 124);                 // BITMAPV5HEADER
+           HasColorSpaceInfoInHeader();                // BITMAPV4HEADER+
   }
 
   // Returns true if this BMP has RGB masks in the info header
@@ -170,6 +178,9 @@ class PLATFORM_EXPORT BMPImageReader final {
 
   // Returns false if consistency errors are found in the info header.
   bool IsInfoHeaderValid() const;
+
+  // Processes any embedded ICC color profile.
+  bool ProcessEmbeddedColorProfile();
 
   // For BI_[ALPHA]BITFIELDS images, initializes the bit_masks_[] and
   // bit_offsets_[] arrays.  ProcessInfoHeader() will initialize these for
@@ -290,10 +301,14 @@ class PLATFORM_EXPORT BMPImageReader final {
       SetRGBA(red, green, blue, alpha);
   }
 
-  // Resets the relevant local variables to start drawing at the left edge
-  // of the "next" row, where "next" is above or below the current row
-  // depending on the value of |is_top_down_|.
+  // Resets the relevant local variables to start drawing at the left edge of
+  // the "next" row, where "next" is above or below the current row depending on
+  // the value of |is_top_down_|.
   void MoveBufferToNextRow();
+
+  // Applies color profile correction to the pixel data for the current row, if
+  // desired.
+  void ColorCorrectCurrentRow();
 
   // The decoder that owns us.
   ImageDecoder* parent_;

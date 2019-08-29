@@ -340,7 +340,7 @@ void Compositor::ScheduleFullRedraw() {
   // will also commit.  This should probably just redraw the screen
   // from damage and not commit.  ScheduleDraw/ScheduleRedraw need
   // better names.
-  host_->SetNeedsRedrawRect(gfx::Rect(host_->device_viewport_size()));
+  host_->SetNeedsRedrawRect(host_->device_viewport_rect());
   host_->SetNeedsCommit();
 }
 
@@ -389,7 +389,7 @@ void Compositor::SetScaleAndSize(
   if (!size_in_pixel.IsEmpty()) {
     bool size_changed = size_ != size_in_pixel;
     size_ = size_in_pixel;
-    host_->SetViewportSizeAndScale(size_in_pixel, scale,
+    host_->SetViewportRectAndScale(gfx::Rect(size_in_pixel), scale,
                                    local_surface_id_allocation);
     root_web_layer_->SetBounds(size_in_pixel);
     // TODO(fsamuel): Get rid of ContextFactoryPrivate.

@@ -7674,6 +7674,225 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
   EXPECT_TRUE(data1.AllWriteDataConsumed());
 }
 
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+
+// Variant of above test using WebSockets.
+TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2WithWebsockets) {
+  const GURL kInitialUrl("https://server/");
+  const GURL kWebSocketUrl("wss://server/");
+  HttpAuthHandlerNTLM::ScopedProcSetter proc_setter(
+      MockGetMSTime, MockGenerateRandom, MockGetHostName);
+
+  // Initial request establishes an H2 connection, which will then be reused for
+  // WebSockets. This is needed since WebSockets will reuse H2 connections, but
+  // it won't create a new one.
+  spdy::SpdyHeaderBlock initial_request_headers(
+      spdy_util_.ConstructGetHeaderBlock(kInitialUrl.spec()));
+  spdy::SpdySerializedFrame initial_request(spdy_util_.ConstructSpdyHeaders(
+      1, std::move(initial_request_headers), DEFAULT_PRIORITY, true));
+  spdy::SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+
+  // Settings frame, indicating WebSockets is supported.
+  spdy::SettingsMap settings;
+  settings[spdy::SETTINGS_ENABLE_CONNECT_PROTOCOL] = 1;
+  spdy::SpdySerializedFrame settings_frame(
+      spdy_util_.ConstructSpdySettings(settings));
+
+  // Response headers for first request. Body is never received, but that
+  // shouldn't matter for the purposes of this test.
+  spdy::SpdySerializedFrame initial_response(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+
+  // First WebSocket request, which has no credentials.
+  spdy::SpdyHeaderBlock websocket_request_headers;
+  websocket_request_headers[spdy::kHttp2MethodHeader] = "CONNECT";
+  websocket_request_headers[spdy::kHttp2AuthorityHeader] = "server";
+  websocket_request_headers[spdy::kHttp2SchemeHeader] = "https";
+  websocket_request_headers[spdy::kHttp2PathHeader] = "/";
+  websocket_request_headers[spdy::kHttp2ProtocolHeader] = "websocket";
+  websocket_request_headers["origin"] = "http://server";
+  websocket_request_headers["sec-websocket-version"] = "13";
+  websocket_request_headers["sec-websocket-extensions"] =
+      "permessage-deflate; client_max_window_bits";
+  spdy::SpdySerializedFrame websocket_request(spdy_util_.ConstructSpdyHeaders(
+      3, std::move(websocket_request_headers), MEDIUM, false));
+
+  // Auth challenge to WebSocket request.
+  spdy::SpdyHeaderBlock auth_challenge_headers;
+  auth_challenge_headers[spdy::kHttp2StatusHeader] = "401";
+  auth_challenge_headers["www-authenticate"] = "NTLM";
+  spdy::SpdySerializedFrame websocket_auth_challenge(
+      spdy_util_.ConstructSpdyResponseHeaders(
+          3, std::move(auth_challenge_headers), true));
+
+  MockWrite writes0[] = {CreateMockWrite(initial_request, 0),
+                         CreateMockWrite(settings_ack, 2),
+                         CreateMockWrite(websocket_request, 4),
+                         MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 7)};
+  MockRead reads0[] = {CreateMockRead(settings_frame, 1),
+                       CreateMockRead(initial_response, 3),
+                       CreateMockRead(websocket_auth_challenge, 5),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6)};
+
+  // Generate the NTLM messages based on known test data.
+  std::string negotiate_msg;
+  std::string challenge_msg;
+  std::string authenticate_msg;
+  base::Base64Encode(
+      base::StringPiece(
+          reinterpret_cast<const char*>(ntlm::test::kExpectedNegotiateMsg),
+          base::size(ntlm::test::kExpectedNegotiateMsg)),
+      &negotiate_msg);
+  base::Base64Encode(
+      base::StringPiece(
+          reinterpret_cast<const char*>(ntlm::test::kChallengeMsgFromSpecV2),
+          base::size(ntlm::test::kChallengeMsgFromSpecV2)),
+      &challenge_msg);
+  base::Base64Encode(
+      base::StringPiece(
+          reinterpret_cast<const char*>(
+              ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2),
+          base::size(
+              ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)),
+      &authenticate_msg);
+
+  // Retry yet again using HTTP/1.1.
+  MockWrite writes1[] = {
+      // After restarting with a null identity, this is the
+      // request we should be issuing -- the final header line contains a Type
+      // 1 message.
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: server\r\n"
+                "Connection: Upgrade\r\n"
+                "Authorization: NTLM "),
+      MockWrite(negotiate_msg.c_str()),
+      MockWrite("\r\n"),
+      MockWrite("Origin: http://server\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Upgrade: websocket\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n"),
+
+      // After calling trans.RestartWithAuth(), we should send a Type 3 message
+      // (the credentials for the origin server).  The second request continues
+      // on the same connection.
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: server\r\n"
+                "Connection: Upgrade\r\n"
+                "Authorization: NTLM "),
+      MockWrite(authenticate_msg.c_str()),
+      MockWrite("\r\n"),
+      MockWrite("Origin: http://server\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Upgrade: websocket\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n"),
+  };
+
+  MockRead reads1[] = {
+      // The origin server responds with a Type 2 message.
+      MockRead("HTTP/1.1 401 Access Denied\r\n"),
+      MockRead("WWW-Authenticate: NTLM "),
+      MockRead(challenge_msg.c_str()),
+      MockRead("\r\n"),
+      MockRead("Content-Length: 42\r\n"),
+      MockRead("Content-Type: text/html\r\n\r\n"),
+      MockRead("You are not authorized to view this page\r\n"),
+
+      // Lastly we get the desired content.
+      MockRead("HTTP/1.1 101 Switching Protocols\r\n"
+               "Upgrade: websocket\r\n"
+               "Connection: Upgrade\r\n"
+               "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n"),
+  };
+  SequencedSocketData data0(reads0, writes0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data0);
+  SSLSocketDataProvider ssl0(ASYNC, OK);
+  ssl0.next_proto = kProtoHTTP2;
+  ssl0.next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP2, kProtoHTTP11};
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl0);
+
+  StaticSocketDataProvider data1(reads1, writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  // When creating the second connection, only HTTP/1.1 should be allowed.
+  ssl1.next_protos_expected_in_ssl_config = NextProtoVector{};
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+
+  session_deps_.enable_websocket_over_http2 = true;
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpRequestInfo initial_request_info;
+  initial_request_info.method = "GET";
+  initial_request_info.url = kInitialUrl;
+  initial_request_info.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  HttpNetworkTransaction initial_trans(DEFAULT_PRIORITY, session.get());
+  TestCompletionCallback initial_callback;
+  int rv = initial_trans.Start(&initial_request_info,
+                               initial_callback.callback(), NetLogWithSource());
+  EXPECT_THAT(initial_callback.GetResult(rv), IsOk());
+
+  EXPECT_FALSE(session->http_server_properties()->RequiresHTTP11(
+      url::SchemeHostPort(kInitialUrl), NetworkIsolationKey()));
+
+  HttpRequestInfo websocket_request_info;
+  websocket_request_info.method = "GET";
+  websocket_request_info.url = kWebSocketUrl;
+  websocket_request_info.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_TRUE(HostPortPair::FromURL(initial_request_info.url)
+                  .Equals(HostPortPair::FromURL(websocket_request_info.url)));
+  websocket_request_info.extra_headers.SetHeader("Origin", "http://server");
+  websocket_request_info.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
+  // The following two headers must be removed by WebSocketHttp2HandshakeStream.
+  websocket_request_info.extra_headers.SetHeader("Connection", "Upgrade");
+  websocket_request_info.extra_headers.SetHeader("Upgrade", "websocket");
+
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
+  HttpNetworkTransaction websocket_trans(MEDIUM, session.get());
+  websocket_trans.SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback websocket_callback;
+  rv = websocket_trans.Start(&websocket_request_info,
+                             websocket_callback.callback(), NetLogWithSource());
+  EXPECT_THAT(websocket_callback.GetResult(rv), IsOk());
+
+  EXPECT_FALSE(websocket_trans.IsReadyToRestartForAuth());
+
+  const HttpResponseInfo* response = websocket_trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge));
+
+  rv = websocket_trans.RestartWithAuth(
+      AuthCredentials(ntlm::test::kDomainUserCombined, ntlm::test::kPassword),
+      websocket_callback.callback());
+  EXPECT_THAT(websocket_callback.GetResult(rv), IsOk());
+
+  EXPECT_TRUE(websocket_trans.IsReadyToRestartForAuth());
+
+  response = websocket_trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->auth_challenge.has_value());
+
+  rv = websocket_trans.RestartWithAuth(AuthCredentials(),
+                                       websocket_callback.callback());
+  EXPECT_THAT(websocket_callback.GetResult(rv), IsOk());
+
+  // The server should have been marked as requiring HTTP/1.1. The important
+  // part here is that the scheme that requires HTTP/1.1 should be HTTPS, not
+  // WSS.
+  EXPECT_TRUE(session->http_server_properties()->RequiresHTTP11(
+      url::SchemeHostPort(kInitialUrl), NetworkIsolationKey()));
+}
+
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
+
 // Test that, if we have an NTLM proxy and the origin resets the connection, we
 // do no retry forever checking for TLS version interference. This is a
 // regression test for https://crbug.com/823387. The version interference probe

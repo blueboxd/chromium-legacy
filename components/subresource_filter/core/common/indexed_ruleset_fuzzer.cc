@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <string>
 #include <vector>
 
@@ -16,7 +18,6 @@
 #include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "components/url_pattern_index/url_pattern_index.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "url/gurl.h"
 #include "url/origin.h"

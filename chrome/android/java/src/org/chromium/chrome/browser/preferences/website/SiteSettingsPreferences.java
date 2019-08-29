@@ -10,7 +10,6 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -88,9 +87,6 @@ public class SiteSettingsPreferences
             if (!SiteSettingsCategory.adsCategoryEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.ADS));
             }
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SENSOR_CONTENT_SETTING)) {
-                getPreferenceScreen().removePreference(findPreference(Type.SENSORS));
-            }
             // We don't have clipboard support in touchless mode (crbug/963515).
             if (FeatureUtilities.isNoTouchModeEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
@@ -130,9 +126,7 @@ public class SiteSettingsPreferences
             websitePrefs.add(Type.MICROPHONE);
             websitePrefs.add(Type.NOTIFICATIONS);
             websitePrefs.add(Type.POPUPS);
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.SENSOR_CONTENT_SETTING)) {
-                websitePrefs.add(Type.SENSORS);
-            }
+            websitePrefs.add(Type.SENSORS);
             websitePrefs.add(Type.SOUND);
             websitePrefs.add(Type.USB);
         }

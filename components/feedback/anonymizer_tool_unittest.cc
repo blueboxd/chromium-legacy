@@ -193,6 +193,12 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
             AnonymizeCustomPatterns("SerialNumber: 5:00:14.0"));
   EXPECT_EQ("Serial: <Serial: 6>",
             AnonymizeCustomPatterns("Serial: ABCEFG\x01kjmn-as:342/234\\432"));
+  // Don't overly anonymize serial numbers, we only do this for a specific
+  // formatting case for edid-decode.
+  EXPECT_EQ("Foo serial number 123",
+            AnonymizeCustomPatterns("Foo serial number 123"));
+  EXPECT_EQ("Foo Serial Number <Serial: 7>",
+            AnonymizeCustomPatterns("Foo Serial Number 123"));
 
   EXPECT_EQ("\"gaia_id\":\"<GAIA: 1>\"",
             AnonymizeCustomPatterns("\"gaia_id\":\"1234567890\""));

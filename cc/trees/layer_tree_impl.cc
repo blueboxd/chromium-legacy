@@ -618,7 +618,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->set_painted_device_scale_factor(painted_device_scale_factor());
   target_tree->SetDeviceScaleFactor(device_scale_factor());
-  target_tree->SetDeviceViewportSize(device_viewport_size_);
+  target_tree->SetDeviceViewportRect(device_viewport_rect_);
 
   if (TakeNewLocalSurfaceIdRequest())
     target_tree->RequestNewLocalSurfaceId();
@@ -1215,11 +1215,11 @@ bool LayerTreeImpl::TakeNewLocalSurfaceIdRequest() {
   return new_local_surface_id_request;
 }
 
-void LayerTreeImpl::SetDeviceViewportSize(
-    const gfx::Size& device_viewport_size) {
-  if (device_viewport_size == device_viewport_size_)
+void LayerTreeImpl::SetDeviceViewportRect(
+    const gfx::Rect& device_viewport_rect) {
+  if (device_viewport_rect == device_viewport_rect_)
     return;
-  device_viewport_size_ = device_viewport_size;
+  device_viewport_rect_ = device_viewport_rect;
 
   set_needs_update_draw_properties();
   if (!IsActiveTree())
@@ -1232,10 +1232,10 @@ void LayerTreeImpl::SetDeviceViewportSize(
 
 gfx::Rect LayerTreeImpl::GetDeviceViewport() const {
   // TODO(fsamuel): We should plumb |external_viewport| similar to the
-  // way we plumb |device_viewport_size_|.
+  // way we plumb |device_viewport_rect_|.
   const gfx::Rect& external_viewport = host_impl_->external_viewport();
   if (external_viewport.IsEmpty())
-    return gfx::Rect(device_viewport_size_);
+    return device_viewport_rect_;
   return external_viewport;
 }
 
@@ -1389,7 +1389,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
     // calculations except when this function is explicitly passed a flag asking
     // us to skip it.
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        layer_list_[0], GetDeviceViewport().size(), host_impl_->DrawTransform(),
+        layer_list_[0], GetDeviceViewport(), host_impl_->DrawTransform(),
         device_scale_factor(), current_page_scale_factor(), PageScaleLayer(),
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),

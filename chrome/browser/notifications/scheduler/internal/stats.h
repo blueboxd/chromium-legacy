@@ -64,6 +64,12 @@ void LogNotificationDbInit(bool success, int entry_count);
 // Logs notification db operations result except the initialization.
 void LogNotificationDbOperation(bool success);
 
+// Logs png icon converter encode result.
+void LogPngIconConverterEncodeResult(bool success);
+
+// Logs png icon converter decode result.
+void LogPngIconConverterDecodeResult(bool success);
+
 }  // namespace stats
 }  // namespace notifications
 

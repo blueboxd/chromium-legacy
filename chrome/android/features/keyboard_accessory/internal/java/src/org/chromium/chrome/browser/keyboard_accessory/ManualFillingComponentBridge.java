@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo.FaviconProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.content_public.browser.WebContents;
@@ -125,8 +126,8 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
-    private Object addUserInfoToAccessorySheetData(Object objAccessorySheetData, String title) {
-        UserInfo userInfo = new UserInfo(title, this::fetchFavicon);
+    private Object addUserInfoToAccessorySheetData(Object objAccessorySheetData, String origin) {
+        UserInfo userInfo = new UserInfo(origin, this::fetchFavicon);
         ((AccessorySheetData) objAccessorySheetData).getUserInfoList().add(userInfo);
         return userInfo;
     }
@@ -160,9 +161,15 @@ class ManualFillingComponentBridge {
                 }));
     }
 
-    public void fetchFavicon(@Px int desiredSize, Callback<Bitmap> faviconCallback) {
+    private void fetchFavicon(String origin, @Px int desiredSize,
+            Callback<FaviconProvider.FaviconResult> faviconCallback) {
         assert mNativeView != 0 : "Favicon was requested after the bridge was destroyed!";
-        nativeOnFaviconRequested(mNativeView, desiredSize, faviconCallback);
+        nativeOnFaviconRequested(mNativeView, origin, desiredSize, faviconCallback);
+    }
+
+    @CalledByNative
+    public static Object createFaviconResult(String origin, Bitmap favicon) {
+        return new FaviconProvider.FaviconResult(origin, favicon);
     }
 
     @VisibleForTesting
@@ -181,8 +188,8 @@ class ManualFillingComponentBridge {
         nativeSignalAutoGenerationStatusForTesting(webContents, available);
     }
 
-    private native void nativeOnFaviconRequested(long nativeManualFillingViewAndroid,
-            int desiredSizeInPx, Callback<Bitmap> faviconCallback);
+    private native void nativeOnFaviconRequested(long nativeManualFillingViewAndroid, String origin,
+            int desiredSizeInPx, Callback<FaviconProvider.FaviconResult> faviconCallback);
     private native void nativeOnFillingTriggered(
             long nativeManualFillingViewAndroid, int tabType, UserInfoField userInfoField);
     private native void nativeOnOptionSelected(

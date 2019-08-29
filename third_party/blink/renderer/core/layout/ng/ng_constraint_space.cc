@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 
 namespace blink {
@@ -34,7 +35,8 @@ static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
 }  // namespace
 
 NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
-    const LayoutBlock& block) {
+    const LayoutBlock& block,
+    bool is_layout_root) {
   // We should only ever create a constraint space from legacy layout if the
   // object is a new formatting context.
   DCHECK(block.CreatesNewFormattingContext());
@@ -75,7 +77,18 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
                                    /* is_new_fc */ true,
                                    !parallel_containing_block);
 
-  if (!block.IsWritingModeRoot() || block.IsGridItem()) {
+  auto* previous_result = block.GetCachedLayoutResult();
+  if (is_layout_root && previous_result) {
+    // Due to layout-roots (starting layout at an arbirary node, instead of the
+    // |LayoutView|), we can end up with a situation where we'll miss our cache
+    // due to baseline-requests not matching.
+    //
+    // For the case where we start at a layout-root, the baselines don't
+    // particularly matter, so we just request exactly the same as the previous
+    // layout.
+    builder.AddBaselineRequests(
+        previous_result->GetConstraintSpaceForCaching().BaselineRequests());
+  } else if (!block.IsWritingModeRoot() || block.IsGridItem()) {
     // Add all types because we don't know which baselines will be requested.
     FontBaseline baseline_type = style.GetFontBaseline();
     bool synthesize_inline_block_baseline =

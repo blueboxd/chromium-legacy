@@ -26,6 +26,9 @@ crbug.com/angleproject/2672 [ vulkan passthrough ] WebglExtension_WEBGL_multi_dr
 [ win ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
 [ mac ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ win ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ linux ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
 [ mac ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
@@ -421,6 +424,7 @@ crbug.com/479260 [ linux amd no-angle ] conformance/extensions/angle-instanced-a
 
 # Linux passthrough AMD
 crbug.com/960808 [ linux amd passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
+crbug.com/998498 [ linux amd passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 
 # Linux passthrough AMD OpenGL
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/quickCheckAPI-S_V.html [ RetryOnFailure ]

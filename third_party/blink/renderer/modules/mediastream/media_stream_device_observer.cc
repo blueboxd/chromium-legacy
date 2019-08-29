@@ -42,8 +42,7 @@ struct MediaStreamDeviceObserver::Stream {
   MediaStreamDevices video_devices;
 };
 
-MediaStreamDeviceObserver::MediaStreamDeviceObserver(WebLocalFrame* frame)
-    : binding_(this) {
+MediaStreamDeviceObserver::MediaStreamDeviceObserver(WebLocalFrame* frame) {
   // There is no frame on unit tests.
   if (!frame)
     return;
@@ -135,8 +134,8 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
 }
 
 void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest(
-    mojom::blink::MediaStreamDeviceObserverRequest request) {
-  binding_.Bind(std::move(request));
+    mojo::PendingReceiver<mojom::blink::MediaStreamDeviceObserver> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void MediaStreamDeviceObserver::AddStream(

@@ -299,8 +299,7 @@ void StreamMixer::CreatePostProcessors(CastMediaShlib::ResultCallback callback,
 
   // Attempt to fall back to built-in cast_audio.json, unless we were reset with
   // an override config.
-  if ((!mixer_pipeline_ || !PostProcessorsHaveCorrectNumOutputs()) &&
-      override_config.empty()) {
+  if (!mixer_pipeline_ && override_config.empty()) {
     LOG(WARNING) << "Invalid cast_audio.json config loaded. Retrying with "
                     "read-only config";
     callback(false,
@@ -315,7 +314,15 @@ void StreamMixer::CreatePostProcessors(CastMediaShlib::ResultCallback callback,
   }
 
   CHECK(mixer_pipeline_) << "Unable to load post processor config!";
-  CHECK(PostProcessorsHaveCorrectNumOutputs());
+  if (fixed_num_output_channels_ != kInvalidNumChannels &&
+      fixed_num_output_channels_ != mixer_pipeline_->GetOutputChannelCount()) {
+    // Just log a warning, but this is still fine because we will remap the
+    // channels prior to output.
+    LOG(WARNING) << "PostProcessor configuration output channel count does not "
+                 << "match command line flag: "
+                 << mixer_pipeline_->GetOutputChannelCount() << " vs "
+                 << fixed_num_output_channels_ << ". Channels will be remapped";
+  }
 
   if (state_ == kStateRunning) {
     mixer_pipeline_->Initialize(output_samples_per_second_, frames_per_write_);
@@ -924,30 +931,6 @@ void StreamMixer::SetPostProcessorConfig(const std::string& name,
   MAKE_SURE_MIXER_THREAD(SetPostProcessorConfig, name, config);
 
   mixer_pipeline_->SetPostProcessorConfig(name, config);
-}
-
-bool StreamMixer::PostProcessorsHaveCorrectNumOutputs() {
-  if (enable_dynamic_channel_count_) {
-    return true;
-  }
-
-  if (fixed_num_output_channels_ != kInvalidNumChannels &&
-      fixed_num_output_channels_ != mixer_pipeline_->GetOutputChannelCount()) {
-    // Just log a warning, but this is still fine because we will remap the
-    // channels prior to output (so don't return false).
-    LOG(WARNING) << "PostProcessor configuration output channel count does not "
-                 << "match command line flag: "
-                 << mixer_pipeline_->GetOutputChannelCount() << " vs "
-                 << fixed_num_output_channels_ << ". Channels will be remapped";
-  }
-
-  if (mixer_pipeline_->GetLoopbackChannelCount() > 2) {
-    LOG(WARNING) << "PostProcessor configuration has "
-                 << mixer_pipeline_->GetLoopbackChannelCount()
-                 << " channels after 'mix' group, but only 1 or 2 are allowed.";
-    return false;
-  }
-  return true;
 }
 
 int StreamMixer::GetSampleRateForDeviceId(const std::string& device) {

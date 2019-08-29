@@ -179,6 +179,8 @@ public class ScrimView extends View implements View.OnClickListener {
         mDefaultBackgroundColor = ApiCompatibilityUtils.getColor(
                 getResources(), R.color.omnibox_focused_fading_background_color);
         mFadeDurationMs = FADE_DURATION_MS;
+        setFocusable(false);
+        setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
 
         setAlpha(0.0f);
         setVisibility(View.GONE);

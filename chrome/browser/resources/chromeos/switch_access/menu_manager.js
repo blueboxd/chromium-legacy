@@ -454,6 +454,15 @@ class MenuManager {
   }
 
   /**
+   * Whether or not the menu is currently open.
+   * @return {boolean}
+   * @public
+   */
+  inMenu() {
+    return this.inMenu_;
+  }
+
+  /**
    * TODO(rosalindag): Add functionality to catch when clipboardHasData_ needs
    * to be set to false.
    * Set the clipboardHasData variable to true and reload the menu.

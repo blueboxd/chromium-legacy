@@ -51,10 +51,6 @@ class DWriteFontLookupTableBuilderTest : public testing::Test {
         scoped_temp_dir_.GetPath());
   }
 
-  void TearDown() override {
-    font_lookup_table_builder_->ResetStateForTesting();
-  }
-
   void TestMatchFonts() {
     base::ReadOnlySharedMemoryRegion font_table_memory =
         font_lookup_table_builder_->DuplicateMemoryRegion();

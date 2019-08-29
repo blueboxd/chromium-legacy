@@ -69,7 +69,7 @@ void AppsGridViewTestApi::LayoutToIdealBounds() {
     view_->folder_dropping_timer_.Stop();
     view_->OnFolderDroppingTimer();
   }
-  view_->bounds_animator_.Cancel();
+  view_->bounds_animator_->Cancel();
   view_->Layout();
 }
 
@@ -119,7 +119,7 @@ gfx::Rect AppsGridViewTestApi::GetItemTileRectAtVisualIndex(int page,
 }
 
 void AppsGridViewTestApi::WaitForItemMoveAnimationDone() {
-  BoundsAnimatorWaiter waiter(&view_->bounds_animator_);
+  BoundsAnimatorWaiter waiter(view_->bounds_animator_.get());
   waiter.Wait();
 }
 

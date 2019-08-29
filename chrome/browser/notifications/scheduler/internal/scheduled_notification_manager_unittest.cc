@@ -34,7 +34,12 @@ const char kSmallIconUuid[] = "test_small_icon_uuid";
 const char kLargeIconUuid[] = "test_large_icon_uuid";
 
 NotificationEntry CreateNotificationEntry(SchedulerClientType type) {
-  return NotificationEntry(type, base::GenerateGUID());
+  NotificationEntry entry(type, base::GenerateGUID());
+  entry.schedule_params.deliver_time_start =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+  entry.schedule_params.deliver_time_end =
+      base::Time::Now() + base::TimeDelta::FromDays(2);
+  return entry;
 }
 
 IconStore::IconTypeBundleMap CreateIcons() {
@@ -111,9 +116,7 @@ class ScheduledNotificationManagerTest : public testing::Test {
     config_.notification_expiration = base::TimeDelta::FromDays(1);
     manager_ = ScheduledNotificationManager::Create(
         std::move(notification_store), std::move(icon_store),
-        {SchedulerClientType::kTest1, SchedulerClientType::kTest2,
-         SchedulerClientType::kTest3},
-        config_);
+        {SchedulerClientType::kTest1, SchedulerClientType::kTest2}, config_);
   }
 
  protected:
@@ -122,6 +125,7 @@ class ScheduledNotificationManagerTest : public testing::Test {
   MockIconStore* icon_store() { return icon_store_; }
   MockDelegate* delegate() { return delegate_.get(); }
   const SchedulerConfig& config() const { return config_; }
+
   // Initializes the manager with predefined data in the store.
   void InitWithData(std::vector<NotificationEntry> data) {
     Entries entries;
@@ -165,11 +169,42 @@ class ScheduledNotificationManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerTest);
 };
 
-// Verify that error is received when initialization failed.
-TEST_F(ScheduledNotificationManagerTest, InitFailed) {
+// Verify that error is received when notification database failed to
+// initialize.
+TEST_F(ScheduledNotificationManagerTest, NotificationDbInitFailed) {
   EXPECT_CALL(*notification_store(), InitAndLoad(_))
-      .WillOnce(Invoke([](base::OnceCallback<void(bool, Entries)> cb) {
-        std::move(cb).Run(false, Entries());
+      .WillOnce(Invoke([](base::OnceCallback<void(bool, Entries)> callback) {
+        std::move(callback).Run(false, Entries());
+      }));
+
+  EXPECT_CALL(*icon_store(), Init(_))
+      .WillOnce(Invoke([](base::OnceCallback<void(bool)> callback) {
+        std::move(callback).Run(true);
+      }));
+
+  base::RunLoop loop;
+  manager()->Init(delegate(),
+                  base::BindOnce(
+                      [](base::RepeatingClosure closure, bool success) {
+                        // Expected to receive error.
+                        EXPECT_FALSE(success);
+                        std::move(closure).Run();
+                      },
+                      loop.QuitClosure()));
+  loop.Run();
+}
+
+// Verify that error is received when icon database failed to initialize.
+TEST_F(ScheduledNotificationManagerTest, IconDbInitFailed) {
+  ON_CALL(*notification_store(), InitAndLoad(_))
+      .WillByDefault(
+          Invoke([](base::OnceCallback<void(bool, Entries)> callback) {
+            std::move(callback).Run(true, Entries());
+          }));
+
+  EXPECT_CALL(*icon_store(), Init(_))
+      .WillOnce(Invoke([](base::OnceCallback<void(bool)> callback) {
+        std::move(callback).Run(false);
       }));
 
   base::RunLoop loop;
@@ -293,6 +328,7 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotification) {
         std::move(callback).Run(true, {});
       }));
   EXPECT_CALL(*notification_store(), Delete(kGuid, _));
+  EXPECT_CALL(*icon_store(), DeleteIcons(_, _));
   EXPECT_CALL(*delegate(), DisplayNotification(NotificationEntryIs(entry)));
   manager()->DisplayNotification(kGuid);
 
@@ -349,23 +385,21 @@ TEST_F(ScheduledNotificationManagerTest, GetNotifications) {
 TEST_F(ScheduledNotificationManagerTest, DeleteNotifications) {
   // Type1: entry0
   // Type2: entry1, entry2
-  // Type3: entry3
   auto entry0 = CreateNotificationEntry(SchedulerClientType::kTest1);
   auto entry1 = CreateNotificationEntry(SchedulerClientType::kTest2);
   auto entry2 = CreateNotificationEntry(SchedulerClientType::kTest2);
-  auto entry3 = CreateNotificationEntry(SchedulerClientType::kTest3);
-  InitWithData(
-      std::vector<NotificationEntry>({entry0, entry1, entry2, entry3}));
+  InitWithData(std::vector<NotificationEntry>({entry0, entry1, entry2}));
   ScheduledNotificationManager::Notifications notifications;
   manager()->GetAllNotifications(&notifications);
-  EXPECT_EQ(notifications.size(), 3u);
+  EXPECT_EQ(notifications.size(), 2u);
 
   EXPECT_CALL(*notification_store(), Delete(_, _))
       .Times(2)
       .RetiresOnSaturation();
+  EXPECT_CALL(*icon_store(), DeleteIcons(_, _)).Times(2).RetiresOnSaturation();
   manager()->DeleteNotifications(SchedulerClientType::kTest2);
   manager()->GetAllNotifications(&notifications);
-  EXPECT_EQ(notifications.size(), 2u);
+  EXPECT_EQ(notifications.size(), 1u);
 
   // Ensure deleting non-existing key will not crash, and store will not call
   // Delete.
@@ -374,48 +408,50 @@ TEST_F(ScheduledNotificationManagerTest, DeleteNotifications) {
       .RetiresOnSaturation();
   manager()->DeleteNotifications(SchedulerClientType::kTest2);
   manager()->GetAllNotifications(&notifications);
-  EXPECT_EQ(notifications.size(), 2u);
-
-  EXPECT_CALL(*notification_store(), Delete(_, _)).RetiresOnSaturation();
-  manager()->DeleteNotifications(SchedulerClientType::kTest1);
-  manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 1u);
 
   EXPECT_CALL(*notification_store(), Delete(_, _)).RetiresOnSaturation();
+  EXPECT_CALL(*icon_store(), DeleteIcons(_, _)).RetiresOnSaturation();
+  manager()->DeleteNotifications(SchedulerClientType::kTest1);
+  manager()->GetAllNotifications(&notifications);
+  EXPECT_EQ(notifications.size(), 0u);
+
+  // Unregistered client.
+  EXPECT_CALL(*notification_store(), Delete(_, _)).Times(0);
   manager()->DeleteNotifications(SchedulerClientType::kTest3);
   manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 0u);
 }
 
-TEST_F(ScheduledNotificationManagerTest, PruneExpiredNotifications) {
+// Verifies that unused notifications will be deleted during initialization.
+TEST_F(ScheduledNotificationManagerTest, PruneNotifications) {
   // Type1: entry0
-  // Type2: entry1, entry2(expired), entry3
-  // Type3: entry4(expired), entry5(expired)
+  // Type2: entry1(invalid), entry2(expired), entry3
+  // Type3: entry4(unregistered client)
   auto now = base::Time::Now();
   auto entry0 = CreateNotificationEntry(SchedulerClientType::kTest1);
   entry0.create_time = now - base::TimeDelta::FromHours(12);
   auto entry1 = CreateNotificationEntry(SchedulerClientType::kTest2);
   entry1.create_time = now - base::TimeDelta::FromHours(14);
+  entry1.schedule_params.deliver_time_start =
+      base::Time::Now() - base::TimeDelta::FromDays(2);
+  entry1.schedule_params.deliver_time_end =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
   auto entry2 = CreateNotificationEntry(SchedulerClientType::kTest2);
   entry2.create_time = now - base::TimeDelta::FromHours(24);
   auto entry3 = CreateNotificationEntry(SchedulerClientType::kTest2);
   entry3.create_time = now - base::TimeDelta::FromHours(23);
   auto entry4 = CreateNotificationEntry(SchedulerClientType::kTest3);
-  entry4.create_time = now - base::TimeDelta::FromHours(25);
-  auto entry5 = CreateNotificationEntry(SchedulerClientType::kTest3);
-  entry5.create_time =
-      now - base::TimeDelta::FromDays(1) - base::TimeDelta::FromMicroseconds(1);
 
-  EXPECT_CALL(*notification_store(), Delete(_, _))
-      .Times(3)
-      .RetiresOnSaturation();
-  InitWithData(std::vector<NotificationEntry>(
-      {entry0, entry1, entry2, entry3, entry4, entry5}));
+  EXPECT_CALL(*notification_store(), Delete(_, _)).Times(3);
+  EXPECT_CALL(*icon_store(), DeleteIcons(_, _)).Times(3);
+  InitWithData(
+      std::vector<NotificationEntry>({entry0, entry1, entry2, entry3, entry4}));
   ScheduledNotificationManager::Notifications notifications;
   manager()->GetAllNotifications(&notifications);
   EXPECT_EQ(notifications.size(), 2u);
   EXPECT_EQ(notifications[SchedulerClientType::kTest1].size(), 1u);
-  EXPECT_EQ(notifications[SchedulerClientType::kTest2].size(), 2u);
+  EXPECT_EQ(notifications[SchedulerClientType::kTest2].size(), 1u);
 }
 
 // Test to schedule a notification with two icons in notification data.
@@ -519,6 +555,8 @@ TEST_F(ScheduledNotificationManagerTest, DisplayNotificationWithIcons) {
         std::move(callback).Run(true, std::move(result));
       }));
   EXPECT_CALL(*notification_store(), Delete(kGuid, _));
+  EXPECT_CALL(*icon_store(), DeleteIcons(_, _));
+
   auto expected_entry(entry);
   expected_entry.notification_data.icons = icons;
   EXPECT_CALL(*delegate(),

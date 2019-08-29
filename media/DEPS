@@ -49,9 +49,4 @@ specific_include_rules = {
   "null_video_sink_unittest.cc": [
     "+components/viz/common/frame_sinks/begin_frame_args.h",
   ],
-
-  # Dependencies specific for fuzz targets and other fuzzing-related code.
-  ".*fuzz.*": [
-    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
-  ],
 }

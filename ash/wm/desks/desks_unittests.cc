@@ -438,8 +438,8 @@ TEST_F(DesksTest, TestWindowPositioningPaused) {
   // Create two windows whose window positioning is managed.
   const auto win0_bounds = gfx::Rect{10, 20, 250, 100};
   const auto win1_bounds = gfx::Rect{50, 50, 200, 200};
-  auto win0 = CreateTestWindow(win0_bounds);
-  auto win1 = CreateTestWindow(win1_bounds);
+  auto win0 = CreateAppWindow(win0_bounds);
+  auto win1 = CreateAppWindow(win1_bounds);
   WindowState* window_state = WindowState::Get(win0.get());
   window_state->SetWindowPositionManaged(true);
   window_state = WindowState::Get(win1.get());
@@ -510,7 +510,7 @@ TEST_F(DesksTest, TransientWindows) {
   EXPECT_TRUE(desk_1->is_active());
 
   // Create two windows, one is a transient child of the other.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTransientWindow(win0.get(), gfx::Rect(100, 100, 100, 100));
 
   EXPECT_EQ(2u, desk_1->windows().size());
@@ -567,10 +567,10 @@ TEST_F(DesksTest, TransientModalChildren) {
   EXPECT_TRUE(desk_1->is_active());
 
   // Create three windows, one of them is a modal transient child.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTransientModalChildWindow(win0.get());
   EXPECT_EQ(win1.get(), ::wm::GetModalTransient(win0.get()));
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 200, 100));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 200, 100));
   ASSERT_EQ(3u, desk_1->windows().size());
   auto* root = Shell::GetPrimaryRootWindow();
   auto* desk_1_container = desk_1->GetDeskContainerForRoot(root);
@@ -608,9 +608,9 @@ TEST_F(DesksTest, TransientModalChildren) {
 
 TEST_F(DesksTest, WindowActivation) {
   // Create three windows.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
-  auto win2 = CreateTestWindow(gfx::Rect(100, 100, 100, 100));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(100, 100, 100, 100));
 
   EXPECT_TRUE(DoesActiveDeskContainWindow(win0.get()));
   EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
@@ -646,8 +646,8 @@ TEST_F(DesksTest, WindowActivation) {
   EXPECT_TRUE(wm::CanActivateWindow(win2.get()));
 
   // Create two new windows, they should now go to desk_2.
-  auto win3 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
-  auto win4 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
+  auto win3 = CreateAppWindow(gfx::Rect(0, 0, 300, 200));
+  auto win4 = CreateAppWindow(gfx::Rect(10, 30, 400, 200));
   wm::ActivateWindow(win3.get());
   EXPECT_EQ(2u, desk_2->windows().size());
   EXPECT_TRUE(DoesActiveDeskContainWindow(win3.get()));
@@ -709,8 +709,8 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   ASSERT_EQ(4u, controller->desks().size());
 
   // Create two windows on desk_1.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win1.get());
   EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
 
@@ -753,7 +753,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
 
   // Create one window in desk_4 and enter overview mode. Expect the grid is
   // showing exactly one window.
-  auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win2.get());
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -823,8 +823,8 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   ASSERT_EQ(4u, controller->desks().size());
 
   // Create two windows on desk_1.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win0.get());
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
@@ -900,15 +900,15 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
 
   // Create two windows on desk_1.
   Desk* desk_1 = controller->desks()[0].get();
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win0.get());
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
   // Activate desk_2 and create one more window.
   Desk* desk_2 = controller->desks()[1].get();
   ActivateDesk(desk_2);
-  auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win2.get());
   EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
 
@@ -1000,7 +1000,7 @@ TEST_F(DesksTest, MinimizedWindow) {
   const Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
 
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(win0.get());
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
@@ -1036,8 +1036,8 @@ TEST_P(DesksTest, DragWindowToDesk) {
   const Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
 
-  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 200, 150));
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 200, 150));
   wm::ActivateWindow(win1.get());
   EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
 
@@ -1123,7 +1123,7 @@ TEST_P(DesksTest, DragMinimizedWindowToDesk) {
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_2 = controller->desks()[1].get();
 
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
@@ -1174,7 +1174,7 @@ TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
   NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
 
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
@@ -1220,16 +1220,16 @@ TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
 
 TEST_F(DesksTest, MruWindowTracker) {
   // Create two desks with two windows in each.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   auto* controller = DesksController::Get();
   NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_2 = controller->desks()[1].get();
   ActivateDesk(desk_2);
   EXPECT_EQ(desk_2, controller->active_desk());
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
-  auto win3 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 300, 200));
+  auto win3 = CreateAppWindow(gfx::Rect(10, 30, 400, 200));
 
   // Build active desk's MRU window list.
   auto* mru_window_tracker = Shell::Get()->mru_window_tracker();
@@ -1265,16 +1265,16 @@ TEST_F(DesksTest, MruWindowTracker) {
 
 TEST_F(DesksTest, NextActivatable) {
   // Create two desks with two windows in each.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   auto* controller = DesksController::Get();
   NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_2 = controller->desks()[1].get();
   ActivateDesk(desk_2);
   EXPECT_EQ(desk_2, controller->active_desk());
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
-  auto win3 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 300, 200));
+  auto win3 = CreateAppWindow(gfx::Rect(10, 30, 400, 200));
   EXPECT_EQ(win3.get(), window_util::GetActiveWindow());
 
   // When deactivating a window, the next activatable window should be on the
@@ -1301,8 +1301,8 @@ TEST_F(DesksTest, NoMiniViewsUpdateOnOverviewEnter) {
   auto* desk_1 = controller->desks()[0].get();
   auto* desk_2 = controller->desks()[1].get();
 
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win1.get());
   EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
 
@@ -1398,7 +1398,7 @@ TEST_F(TabletModeDesksTest, Backdrops) {
   const Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
 
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
@@ -1470,7 +1470,7 @@ TEST_F(TabletModeDesksTest, NoDesksBarInTabletModeWithOneDesk) {
   auto* controller = DesksController::Get();
   ASSERT_EQ(1u, controller->desks().size());
 
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
@@ -1504,7 +1504,7 @@ TEST_F(TabletModeDesksTest, NoDesksBarInTabletModeWithOneDesk) {
 }
 
 TEST_F(TabletModeDesksTest, DesksCreationRemovalCycle) {
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
@@ -1549,8 +1549,8 @@ TEST_F(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
   Desk* desk_1 = desks_controller->desks()[0].get();
   Desk* desk_2 = desks_controller->desks()[1].get();
 
-  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
@@ -1568,8 +1568,8 @@ TEST_F(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
   EXPECT_TRUE(WindowState::Get(win2.get())->IsSnapped());
 
   // Snap two other windows in desk 2.
-  auto win3 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win4 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   split_view_controller->SnapWindow(win3.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(win4.get(), SplitViewController::RIGHT);
   EXPECT_EQ(win3.get(), split_view_controller->left_window());
@@ -1587,8 +1587,8 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   auto* desks_controller = DesksController::Get();
   NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
-  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
@@ -1619,8 +1619,8 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   // Snap two other windows in desk_2, and switch back to desk_1 from overview.
   // The snapped state should be retained for windows in both source and
   // destination desks.
-  auto win3 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win4 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   split_view_controller->SnapWindow(win3.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(win4.get(), SplitViewController::RIGHT);
   EXPECT_EQ(win3.get(), split_view_controller->left_window());
@@ -1652,8 +1652,8 @@ TEST_F(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_1 = desks_controller->desks()[0].get();
   Desk* desk_2 = desks_controller->desks()[1].get();
-  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
@@ -1664,7 +1664,7 @@ TEST_F(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
   ActivateDesk(desk_2);
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  auto win3 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   split_view_controller->SnapWindow(win3.get(), SplitViewController::LEFT);
   EXPECT_EQ(win3.get(), split_view_controller->left_window());
   EXPECT_EQ(nullptr, split_view_controller->right_window());
@@ -1685,14 +1685,14 @@ TEST_F(TabletModeDesksTest, RemovingDesksWithSplitView) {
   NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_2 = desks_controller->desks()[1].get();
-  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
   EXPECT_EQ(win1.get(), split_view_controller->left_window());
   EXPECT_EQ(nullptr, split_view_controller->right_window());
   ActivateDesk(desk_2);
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   split_view_controller->SnapWindow(win2.get(), SplitViewController::RIGHT);
   EXPECT_EQ(nullptr, split_view_controller->left_window());
   EXPECT_EQ(win2.get(), split_view_controller->right_window());
@@ -1709,14 +1709,14 @@ TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
   NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_2 = desks_controller->desks()[1].get();
-  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
   EXPECT_EQ(win1.get(), split_view_controller->left_window());
   EXPECT_EQ(nullptr, split_view_controller->right_window());
   ActivateDesk(desk_2);
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   EXPECT_EQ(nullptr, split_view_controller->left_window());
   EXPECT_EQ(nullptr, split_view_controller->right_window());
   EXPECT_TRUE(WindowState::Get(win2.get())->IsMaximized());
@@ -1737,8 +1737,8 @@ TEST_F(TabletModeDesksTest, BackdropsStacking) {
   Desk* desk_1 = desks_controller->desks()[0].get();
   Desk* desk_2 = desks_controller->desks()[1].get();
 
-  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(win1.get(), SplitViewController::LEFT);
@@ -1765,8 +1765,8 @@ TEST_F(TabletModeDesksTest, BackdropsStacking) {
 
   // Snapping new windows in desk_2 should update the backdrop state of desk_2,
   // but should not affect desk_1.
-  auto win3 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win4 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   split_view_controller->SnapWindow(win3.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(win4.get(), SplitViewController::RIGHT);
   ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
@@ -1852,7 +1852,7 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   auto* controller = DesksController::Get();
   NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
@@ -1971,11 +1971,11 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
   ASSERT_EQ(2u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   Desk* desk_2 = controller->desks()[1].get();
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   multi_user_window_manager()->SetWindowOwner(win0.get(), GetUser1AccountId());
   EXPECT_TRUE(win0->IsVisible());
   ActivateDesk(desk_2);
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   multi_user_window_manager()->SetWindowOwner(win1.get(), GetUser1AccountId());
   EXPECT_FALSE(win0->IsVisible());
   EXPECT_TRUE(win1->IsVisible());
@@ -1986,11 +1986,11 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
   EXPECT_FALSE(win0->IsVisible());
   EXPECT_FALSE(win1->IsVisible());
 
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
   multi_user_window_manager()->SetWindowOwner(win2.get(), GetUser2AccountId());
   EXPECT_TRUE(win2->IsVisible());
   ActivateDesk(desk_1);
-  auto win3 = CreateTestWindow(gfx::Rect(0, 0, 250, 200));
+  auto win3 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
   multi_user_window_manager()->SetWindowOwner(win3.get(), GetUser2AccountId());
   EXPECT_FALSE(win0->IsVisible());
   EXPECT_FALSE(win1->IsVisible());
@@ -2007,6 +2007,78 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
   EXPECT_FALSE(win0->IsVisible());
   EXPECT_TRUE(win1->IsVisible());
   EXPECT_FALSE(win2->IsVisible());
+  EXPECT_FALSE(win3->IsVisible());
+}
+
+TEST_F(DesksMultiUserTest, RemoveDesks) {
+  // Create two desks with several windows with different app types that belong
+  // to different users.
+  auto* controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  multi_user_window_manager()->SetWindowOwner(win0.get(), GetUser1AccountId());
+  EXPECT_TRUE(win0->IsVisible());
+  ActivateDesk(desk_2);
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(50, 50, 200, 200), AppType::ARC_APP);
+  // Non-app window.
+  auto win3 = CreateAppWindow(gfx::Rect(50, 50, 200, 200), AppType::NON_APP);
+  multi_user_window_manager()->SetWindowOwner(win2.get(), GetUser1AccountId());
+  multi_user_window_manager()->SetWindowOwner(win1.get(), GetUser1AccountId());
+  multi_user_window_manager()->SetWindowOwner(win3.get(), GetUser1AccountId());
+  EXPECT_FALSE(win0->IsVisible());
+  EXPECT_TRUE(win1->IsVisible());
+  EXPECT_TRUE(win2->IsVisible());
+  EXPECT_TRUE(win3->IsVisible());
+
+  // Switch to user_2 and expect no windows from user_1 is visible regardless of
+  // the desk.
+  SwitchActiveUser(GetUser2AccountId());
+  EXPECT_FALSE(win0->IsVisible());
+  EXPECT_FALSE(win1->IsVisible());
+  EXPECT_FALSE(win2->IsVisible());
+  EXPECT_FALSE(win3->IsVisible());
+
+  auto win4 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
+  multi_user_window_manager()->SetWindowOwner(win4.get(), GetUser2AccountId());
+  EXPECT_TRUE(win4->IsVisible());
+  ActivateDesk(desk_1);
+  auto win5 = CreateAppWindow(gfx::Rect(0, 0, 250, 200));
+  multi_user_window_manager()->SetWindowOwner(win5.get(), GetUser2AccountId());
+  EXPECT_FALSE(win0->IsVisible());
+  EXPECT_FALSE(win1->IsVisible());
+  EXPECT_FALSE(win2->IsVisible());
+  EXPECT_FALSE(win3->IsVisible());
+  EXPECT_FALSE(win4->IsVisible());
+  EXPECT_TRUE(win5->IsVisible());
+
+  // Delete desk_2, and expect all app windows move to desk_1.
+  RemoveDesk(desk_2);
+  auto* desk_1_container =
+      desk_1->GetDeskContainerForRoot(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(desk_1_container, win0->parent());
+  EXPECT_EQ(desk_1_container, win1->parent());
+  EXPECT_EQ(desk_1_container, win2->parent());
+  // The non-app window didn't move.
+  EXPECT_NE(desk_1_container, win3->parent());
+  EXPECT_EQ(desk_1_container, win4->parent());
+  EXPECT_EQ(desk_1_container, win5->parent());
+
+  // Only user_2's window are visible.
+  EXPECT_TRUE(win4->IsVisible());
+  EXPECT_TRUE(win5->IsVisible());
+
+  // The non-app window will always be hidden.
+  EXPECT_FALSE(win3->IsVisible());
+
+  // Switch to user_1 and expect the correct windows' visibility.
+  SwitchActiveUser(GetUser1AccountId());
+  EXPECT_TRUE(win0->IsVisible());
+  EXPECT_TRUE(win1->IsVisible());
+  EXPECT_TRUE(win2->IsVisible());
   EXPECT_FALSE(win3->IsVisible());
 }
 
@@ -2186,7 +2258,7 @@ TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDesk) {
   Desk* desk_2 = controller->desks()[1].get();
   EXPECT_TRUE(desk_1->is_active());
 
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
@@ -2229,8 +2301,8 @@ TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDeskOverview) {
   Desk* desk_2 = controller->desks()[1].get();
   EXPECT_TRUE(desk_1->is_active());
 
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(win0.get());
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
@@ -2280,7 +2352,7 @@ TEST_F(DesksAcceleratorsTest, CannotMoveAlwaysOnTopWindows) {
 
   // An always-on-top window does not belong to any desk and hence cannot be
   // removed.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   win0->SetProperty(aura::client::kZOrderingKey,
                     ui::ZOrderLevel::kFloatingWindow);
   wm::ActivateWindow(win0.get());

@@ -147,6 +147,9 @@ bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     PrinterSemanticCapsAndDefaults* printer_info) {
   PrinterCapsAndDefaults info;
+  if (!IsValidPrinter(printer_name))
+    return false;
+
   if (!GetPrinterCapsAndDefaults(printer_name, &info))
     return false;
 

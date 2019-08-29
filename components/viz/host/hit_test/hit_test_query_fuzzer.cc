@@ -6,11 +6,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <vector>
 
 #include "base/command_line.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 

@@ -40,10 +40,6 @@ class ASH_EXPORT MediaNotificationControllerImpl
     : public media_session::mojom::AudioFocusObserver,
       public media_message_center::MediaNotificationController {
  public:
-  // The name of the histogram used to record the number of concurrent media
-  // notifications.
-  static const char kCountHistogramName[];
-
   explicit MediaNotificationControllerImpl(
       service_manager::Connector* connector);
   ~MediaNotificationControllerImpl() override;
@@ -76,10 +72,6 @@ class ASH_EXPORT MediaNotificationControllerImpl
   }
 
  private:
-  // Called when we display a new media notification. It will record the
-  // concurrent number of media notifications displayed.
-  void RecordConcurrentNotificationCount();
-
   mojo::Remote<media_session::mojom::MediaControllerManager>
       controller_manager_remote;
 

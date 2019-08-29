@@ -40,7 +40,18 @@ OptimizationGuideNavigationData::OptimizationGuideNavigationData(
 OptimizationGuideNavigationData::~OptimizationGuideNavigationData() = default;
 
 OptimizationGuideNavigationData::OptimizationGuideNavigationData(
-    const OptimizationGuideNavigationData& other) = default;
+    const OptimizationGuideNavigationData& other)
+    : navigation_id_(other.navigation_id_),
+      serialized_hint_version_string_(other.serialized_hint_version_string_),
+      optimization_type_decisions_(other.optimization_type_decisions_),
+      optimization_target_decisions_(other.optimization_target_decisions_),
+      has_hint_before_commit_(other.has_hint_before_commit_),
+      has_hint_after_commit_(other.has_hint_after_commit_) {
+  if (other.has_page_hint_value()) {
+    page_hint_ = std::make_unique<optimization_guide::proto::PageHint>(
+        *other.page_hint());
+  }
+}
 
 void OptimizationGuideNavigationData::RecordMetrics(bool has_committed) const {
   RecordHintCacheMatch(has_committed);
@@ -71,7 +82,7 @@ void OptimizationGuideNavigationData::RecordHintCacheMatch(
                         had_hint_loaded);
   if (had_hint_loaded) {
     UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.PageMatch.AtCommit",
-                          has_page_hint_.has_value() && has_page_hint_.value());
+                          has_page_hint_value() && page_hint());
   }
 }
 

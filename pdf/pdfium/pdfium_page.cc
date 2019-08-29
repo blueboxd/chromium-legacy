@@ -251,6 +251,28 @@ FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
   return text_page();
 }
 
+void PDFiumPage::CalculatePageObjectTextRunBreaks() {
+  if (calculated_page_object_text_run_breaks_)
+    return;
+
+  calculated_page_object_text_run_breaks_ = true;
+  int chars_count = FPDFText_CountChars(GetTextPage());
+  if (chars_count == 0)
+    return;
+
+  CalculateLinks();
+  for (const auto& link : links_) {
+    if (link.start_char_index >= 0 && link.start_char_index < chars_count) {
+      page_object_text_run_breaks_.insert(link.start_char_index);
+      int next_text_run_break_index = link.start_char_index + link.char_count;
+      // Don't insert a break if the link is at the end of the page text.
+      if (next_text_run_break_index < chars_count) {
+        page_object_text_run_breaks_.insert(next_text_run_break_index);
+      }
+    }
+  }
+}
+
 base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumPage::GetTextRunInfo(
     int start_char_index) {
   FPDF_PAGE page = GetPage();
@@ -308,9 +330,21 @@ base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumPage::GetTextRunInfo(
   // ending at the current last character center-point.
   double text_run_angle = 0;
 
+  CalculatePageObjectTextRunBreaks();
+  const auto breakpoint_iter =
+      std::lower_bound(page_object_text_run_breaks_.begin(),
+                       page_object_text_run_breaks_.end(), char_index);
+  int breakpoint_index = breakpoint_iter != page_object_text_run_breaks_.end()
+                             ? *breakpoint_iter
+                             : -1;
+
   // Continue adding characters until heuristics indicate we should end the text
   // run.
   while (char_index < chars_count) {
+    // Split a text run when it encounters a page object like links or images.
+    if (char_index == breakpoint_index)
+      break;
+
     unsigned int character = FPDFText_GetUnicode(text_page, char_index);
     pp::FloatRect char_rect =
         GetFloatCharRectInPixels(page, text_page, char_index);

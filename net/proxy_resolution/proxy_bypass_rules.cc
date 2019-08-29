@@ -39,10 +39,9 @@ const char kBypassSimpleHostnames[] = "<local>";
 
 bool IsLinkLocalIP(const GURL& url) {
   // Quick fail if definitely not link-local, to avoid doing unnecessary work in
-  // common case. The |url| should be canonicalized, which for IPv6 literals
-  // means lowercase.
+  // common case.
   if (!(url.host_piece().starts_with("169.254.") ||
-        url.host_piece().starts_with("[fe"))) {
+        url.host_piece().starts_with("["))) {
     return false;
   }
 

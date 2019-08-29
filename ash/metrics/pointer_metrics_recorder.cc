@@ -20,7 +20,7 @@ namespace {
 
 int GetDestination(views::Widget* target) {
   if (!target)
-    return static_cast<int>(AppType::OTHERS);
+    return static_cast<int>(AppType::NON_APP);
 
   aura::Window* window = target->GetNativeWindow();
   DCHECK(window);

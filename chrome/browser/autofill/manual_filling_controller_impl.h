@@ -6,19 +6,26 @@
 #define CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_CONTROLLER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
 class AddressAccessoryController;
 class CreditCardAccessoryController;
-}
+}  // namespace autofill
+
+namespace favicon {
+class FaviconService;
+}  // namespace favicon
 
 class AccessoryController;
 class PasswordAccessoryController;
@@ -44,9 +51,9 @@ class ManualFillingControllerImpl
                           const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(
       autofill::AccessoryAction selected_action) const override;
-  void GetFavicon(
-      int desired_size_in_pixel,
-      base::OnceCallback<void(const gfx::Image&)> icon_callback) override;
+  void GetFavicon(int desired_size_in_pixel,
+                  const std::string& credential_origin,
+                  IconCallback icon_callback) override;
   gfx::NativeView container_view() const override;
 
   // Returns a weak pointer for this object.
@@ -54,9 +61,10 @@ class ManualFillingControllerImpl
 
   // Like |CreateForWebContents|, it creates the controller and attaches it to
   // the given |web_contents|. Additionally, it allows injecting a fake/mock
-  // view and type-specific controllers.
+  // view, a mock favicon service and type-specific controllers.
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
+      favicon::FaviconService* favicon_service,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
       base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
@@ -82,9 +90,10 @@ class ManualFillingControllerImpl
   // Required for construction via |CreateForWebContents|:
   explicit ManualFillingControllerImpl(content::WebContents* contents);
 
-  // Constructor that allows to inject a mock or fake view.
+  // Constructor that allows to inject a mock favicon service and a mock view.
   ManualFillingControllerImpl(
       content::WebContents* web_contents,
+      favicon::FaviconService* favicon_service,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
       base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
@@ -95,6 +104,12 @@ class ManualFillingControllerImpl
 
   // Adjusts visibility based on focused field type and available suggestions.
   void UpdateVisibility();
+
+  // Handles a favicon response requested by |GetFavicon| and responds to the
+  // given callback with a (possibly empty) icon bitmap.
+  void OnImageFetched(
+      IconCallback icon_callback,
+      const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Returns the controller that is responsible for a tab of given |type|.
   AccessoryController* GetControllerForTab(autofill::AccessoryTabType type);
@@ -107,7 +122,10 @@ class ManualFillingControllerImpl
   PasswordAccessoryController* GetPasswordController() const;
 
   // The tab for which this class is scoped.
-  content::WebContents* web_contents_;
+  content::WebContents* web_contents_ = nullptr;
+
+  // The favicon service used to retrieve icons for a given origin.
+  favicon::FaviconService* favicon_service_ = nullptr;
 
   // This set contains sources to be shown to the user.
   base::flat_set<FillingSource> available_sources_;
@@ -115,6 +133,9 @@ class ManualFillingControllerImpl
   // Type of the last known selected field. Helps to determine UI visibility.
   autofill::mojom::FocusedFieldType focused_field_type_ =
       autofill::mojom::FocusedFieldType::kUnknown;
+
+  // Used to track requested favicons. On destruction, requests are cancelled.
+  base::CancelableTaskTracker favicon_tracker_;
 
   // Controllers which handle events relating to a specific tab and the
   // associated data.

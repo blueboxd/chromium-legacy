@@ -833,6 +833,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
               TabStyleViews::GetMinimumActiveWidth());
     tab_strip_->CloseTab(tab_strip_->tab_at(active_index),
                          CLOSE_TAB_FROM_MOUSE);
+    CompleteAnimationAndLayout();
   }
 }
 

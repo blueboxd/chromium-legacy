@@ -71,7 +71,6 @@ specific_include_rules = {
 
   # Dependencies specific for fuzz targets and other fuzzing-related code.
   ".*fuzz.*": [
-    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
     "+third_party/libprotobuf-mutator",  # This is needed for LPM-based fuzzers.
   ]
 }

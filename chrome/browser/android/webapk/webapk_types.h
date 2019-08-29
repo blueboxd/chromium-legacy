@@ -27,4 +27,17 @@ enum class WebApkUpdateReason {
   MANUALLY_TRIGGERED,
 };
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.webapps
+//
+// This enum is used to back UMA/UKM histograms, and should therefore be treated
+// as append-only.
+//
+// Indicates the distributor or "install source" of a WebAPK.
+enum class WebApkDistributor {
+  BROWSER = 0,
+  DEVICE_POLICY = 1,
+  OTHER = 2,
+};
+
 #endif  // CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_TYPES_H_

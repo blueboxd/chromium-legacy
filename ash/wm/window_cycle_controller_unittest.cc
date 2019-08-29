@@ -694,16 +694,16 @@ class DesksWindowCyclingTest : public WindowCycleControllerTest {
 
 TEST_F(DesksWindowCyclingTest, CycleShowsAllDesksWindows) {
   // Create two desks with two windows in each.
-  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   auto* desks_controller = DesksController::Get();
   desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, desks_controller->desks().size());
   const Desk* desk_2 = desks_controller->desks()[1].get();
   ActivateDesk(desk_2);
   EXPECT_EQ(desk_2, desks_controller->active_desk());
-  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
-  auto win3 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(0, 0, 300, 200));
+  auto win3 = CreateAppWindow(gfx::Rect(10, 30, 400, 200));
 
   WindowCycleController* cycle_controller =
       Shell::Get()->window_cycle_controller();

@@ -152,12 +152,12 @@ bool LayerTreeView::SendMessageToMicroBenchmark(
   return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
 }
 
-void LayerTreeView::SetViewportSizeAndScale(
-    const gfx::Size& device_viewport_size,
+void LayerTreeView::SetViewportRectAndScale(
+    const gfx::Rect& device_viewport_rect,
     float device_scale_factor,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
-  layer_tree_host_->SetViewportSizeAndScale(
-      device_viewport_size, device_scale_factor, local_surface_id_allocation);
+  layer_tree_host_->SetViewportRectAndScale(
+      device_viewport_rect, device_scale_factor, local_surface_id_allocation);
 }
 
 void LayerTreeView::RequestNewLocalSurfaceId() {

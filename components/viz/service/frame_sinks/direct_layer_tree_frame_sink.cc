@@ -72,7 +72,8 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<RasterContextProvider> worker_context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    bool hit_test_data_from_surface_layer)
     : LayerTreeFrameSink(std::move(context_provider),
                          std::move(worker_context_provider),
                          std::move(compositor_task_runner),
@@ -87,7 +88,8 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
                             cc::GetClientNameForMetrics())),
       submit_begin_frame_histogram_(GetHistogramNamed(
           "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
-          cc::GetClientNameForMetrics())) {
+          cc::GetClientNameForMetrics())),
+      hit_test_data_from_surface_layer_(hit_test_data_from_surface_layer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -164,13 +166,19 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
                          TRACE_EVENT_FLAG_FLOW_OUT, "step",
                          "SubmitHitTestData");
 
-  base::Optional<HitTestRegionList> hit_test_region_list(
-      HitTestDataBuilder::CreateHitTestData(
-          frame, /*root_accepts_events=*/true,
-          /*should_ask_for_child_region=*/false));
+  base::Optional<HitTestRegionList> hit_test_region_list;
+  if (!hit_test_data_from_surface_layer_) {
+    hit_test_region_list = HitTestDataBuilder::CreateHitTestData(
+        frame, /*root_accepts_events=*/true,
+        /*should_ask_for_child_region=*/false);
+  } else {
+    hit_test_region_list = client_->BuildHitTestData();
+  }
 
-  // Do not send duplicate hit-test data.
-  if (!hit_test_data_changed) {
+  if (!hit_test_region_list) {
+    last_hit_test_data_ = HitTestRegionList();
+  } else if (!hit_test_data_changed) {
+    // Do not send duplicate hit-test data.
     if (HitTestRegionList::IsEqual(*hit_test_region_list,
                                    last_hit_test_data_)) {
       DCHECK(!HitTestRegionList::IsEqual(*hit_test_region_list,
@@ -180,7 +188,7 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
       last_hit_test_data_ = *hit_test_region_list;
     }
   } else {
-    last_hit_test_data_ = HitTestRegionList();
+    last_hit_test_data_ = *hit_test_region_list;
   }
 
   support_->SubmitCompositorFrame(

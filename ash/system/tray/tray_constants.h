@@ -8,12 +8,13 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ash {
+
+// Do not add constant colors in this file. Get the colors from AshColorProvider
+// instead.
 
 // The size delta between the default font and the font size found in tray
 // items like labels and buttons.
@@ -71,8 +72,7 @@ constexpr int kMenuSeparatorWidth = 1;
 // in tray detailed views.
 constexpr int kTraySeparatorWidth = 0;
 
-// The size and foreground color of the icons appearing in the material design
-// system tray.
+// The size of the icons appearing in the material design system tray.
 constexpr int kTrayIconSize = 16;
 extern const int kTrayIconBackgroundAlpha;
 
@@ -80,8 +80,7 @@ extern const int kTrayIconBackgroundAlpha;
 constexpr int kTrayNetworkIconPadding = 2;
 constexpr int kUnifiedTrayNetworkIconPadding = 4;
 
-// The size and foreground color of the icons appearing in the material design
-// system menu.
+// The size of the icons appearing in the material design system menu.
 extern const int kMenuIconSize;
 // The size of buttons in the system menu.
 ASH_EXPORT extern const int kMenuButtonSize;
@@ -100,7 +99,6 @@ extern const int kTrayPopupInkDropInset;
 extern const int kTrayPopupInkDropCornerRadius;
 
 constexpr float kUnifiedMenuBackgroundBlur = 30.f;
-constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRed300;
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(4, 16, 16, 16);
@@ -166,14 +164,6 @@ constexpr int kUnifiedNotificationSeparatorThickness = 1;
 constexpr int kUnifiedSystemTrayPageTransitionDurationMs = 250;
 constexpr int kUnifiedSystemTrayOverScrollPageTransitionDurationMs = 50;
 constexpr double kCollapseThreshold = 0.3;
-
-// Constants used in PageIndicatorView of UnifiedSystemTray.
-constexpr int kUnifiedPageIndicatorButtonRadius = 3;
-constexpr SkColor kUnifiedPageIndicatorButtonColor =
-    SkColorSetRGB(0xF1, 0xF3, 0xF4);
-constexpr SkColor kUnifiedPageIndicatorButtonAlpha = 0x6E;
-constexpr SkColor kUnifiedPageIndicatorButtonInkDropColor =
-    SkColorSetRGB(0xFF, 0xFF, 0xFF);
 
 // Separators between multiple users are shorter than the full width.
 constexpr int kUnifiedUserChooserSeparatorSideMargin = 64;

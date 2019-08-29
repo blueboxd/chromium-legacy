@@ -5,10 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <vector>
 
 #include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

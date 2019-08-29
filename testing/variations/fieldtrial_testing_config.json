@@ -4419,6 +4419,21 @@
             ]
         }
     ],
+    "PlatformFontSkiaOnWindows": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PlatformFontSkiaOnWindows"
+                    ]
+                }
+            ]
+        }
+    ],
     "PolicyAtomicGroup": [
         {
             "platforms": [

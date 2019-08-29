@@ -61,16 +61,15 @@ class ExtensionsMenuButton : public HoverButton,
 
   Browser* const browser_;
 
+  // The container containing this view.
+  ExtensionsMenuItemView* const parent_;
+
   // Responsible for executing the extension's actions.
   ToolbarActionViewController* const controller_;
 
   ToolbarActionsModel* const model_;
 
   views::ImageButton* pin_button_ = nullptr;
-
-  // This controller is responsible for showing the context menu for an
-  // extension.
-  ExtensionContextMenuController context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuButton);
 };

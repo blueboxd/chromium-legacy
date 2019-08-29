@@ -17,6 +17,7 @@ from contrib.media_router_benchmarks import media_router_pages
                 component='Internals>Cast')
 class MediaRouterCPUMemoryCast(perf_benchmark.PerfBenchmark):
   """Obtains media performance for key user scenarios on desktop."""
+
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
   options = {'pageset_repeat': 1}
   page_set = media_router_pages.MediaRouterCPUMemoryPageSet
@@ -30,7 +31,7 @@ class MediaRouterCPUMemoryCast(perf_benchmark.PerfBenchmark):
     options.AppendExtraBrowserArgs([
         '--load-extension=' + ','.join(
             [os.path.join(path_util.GetChromiumSrcDir(), 'out',
-             'Release', 'mr_extension', 'release'),
+             'Release', 'mr_extension'),
              os.path.join(path_util.GetChromiumSrcDir(), 'out',
              'Release', 'media_router', 'telemetry_extension')]),
         '--disable-features=ViewsCastDialog',

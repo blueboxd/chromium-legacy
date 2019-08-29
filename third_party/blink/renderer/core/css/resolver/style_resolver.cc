@@ -1672,7 +1672,6 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
     ApplyProperty(GetCSSPropertyColor(), state, *unset, apply_mask);
   } else {
     DCHECK(priority == kLowPropertyPriority);
-    ApplyProperty(GetCSSPropertyBackgroundColor(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyBorderBottomColor(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyBorderLeftColor(), state, *unset, apply_mask);
     ApplyProperty(GetCSSPropertyBorderRightColor(), state, *unset, apply_mask);
@@ -1689,6 +1688,19 @@ void StyleResolver::ApplyForcedColors(StyleResolverState& state,
                   apply_mask);
     ApplyProperty(GetCSSPropertyWebkitTextEmphasisColor(), state, *unset,
                   apply_mask);
+
+    // Background colors compute to the Window system color for all values
+    // except for the alpha channel.
+    RGBA32 sys_bg_color =
+        LayoutTheme::GetTheme()
+            .SystemColor(CSSValueID::kWindow, WebColorScheme::kLight)
+            .Rgb();
+    RGBA32 current_bg_color = state.Style()->BackgroundColor().GetColor().Rgb();
+    RGBA32 bg_color =
+        MakeRGBA(RedChannel(sys_bg_color), GreenChannel(sys_bg_color),
+                 BlueChannel(sys_bg_color), AlphaChannel(current_bg_color));
+    ApplyProperty(GetCSSPropertyBackgroundColor(), state,
+                  *cssvalue::CSSColorValue::Create(bg_color), apply_mask);
   }
 
   auto force_colors = ForcedColorFilter::kEnabled;

@@ -83,6 +83,15 @@ std::unique_ptr<views::StyledLabel> CreateHelpText(
   return label;
 }
 
+// TODO(himanshujaju): This is almost same as self share, we could unify these
+// methods once we unify our architecture and dialog views.
+base::string16 GetLastUpdatedTimeInDays(base::Time last_updated_timestamp) {
+  int time_in_days = (base::Time::Now() - last_updated_timestamp).InDays();
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_BROWSER_SHARING_DIALOG_DEVICE_SUBTITLE_LAST_ACTIVE_DAYS,
+      time_in_days);
+}
+
 }  // namespace
 
 ClickToCallDialogView::ClickToCallDialogView(
@@ -208,7 +217,7 @@ void ClickToCallDialogView::InitListView() {
     auto dialog_button = std::make_unique<HoverButton>(
         this, CreateDeviceIcon(device->device_type()),
         base::UTF8ToUTF16(device->client_name()),
-        /* subtitle= */ base::string16());
+        GetLastUpdatedTimeInDays(device->last_updated_timestamp()));
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
     dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));

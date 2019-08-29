@@ -4,6 +4,8 @@
 
 #include "net/filter/gzip_source_stream.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -11,7 +13,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/filter/fuzzed_source_stream.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 // Fuzzer for GzipSourceStream.
 //

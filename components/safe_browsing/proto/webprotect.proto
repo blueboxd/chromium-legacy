@@ -47,6 +47,10 @@ message DeepScanningClientRequest {
 
   // DLP scan specific request info.
   optional DlpDeepScanningClientRequest dlp_scan_request = 4;
+
+  // Token used to correlate requests and responses. This is different than the
+  // FCM token, in that it is unique for each request.
+  optional string request_token = 5;
 }
 
 // Malware-specific response given back for scanned content.

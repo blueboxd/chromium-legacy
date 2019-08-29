@@ -84,7 +84,9 @@ class PageNode : public Node {
   // are no main frames at the moment, returns the empty set.
   virtual const base::flat_set<const FrameNode*> GetMainFrameNodes() const = 0;
 
-  // Returns the URL the main frame last committed a navigation to.
+  // Returns the URL the main frame last committed a navigation to, or the
+  // initial URL of the page before navigation. The latter case is distinguished
+  // by a zero navigation ID.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual const GURL& GetMainFrameUrl() const = 0;
 
@@ -133,7 +135,11 @@ class PageNodeObserver {
   virtual void OnPageAlmostIdleChanged(const PageNode* page_node) = 0;
 
   // This is fired when a main frame navigation commits. It indicates that the
-  // |navigation_id| and |main_frame_url| properties have changed.
+  // |main_frame_url| and possibly the |navigation_id| properties have changed.
+  // Prior to loading and initial navigation of page, the |main_frame_url| can
+  // change, while the |navigation_id| stays zero.
+  // TODO(siggi): Maybe #hash navigation can work the same way, or perhaps the
+  //     two each properties deserve their own notification?
   virtual void OnMainFrameNavigationCommitted(const PageNode* page_node) = 0;
 
   // Events with no property changes.

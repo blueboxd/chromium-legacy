@@ -239,10 +239,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Viewport-related metrics for anchor elements: the viewport size,
   // the median distance down the viewport of all the links, and the
-  // total clickable space for first viewport links.
+  // total clickable space for first viewport links. |total_clickable_space_| is
+  // a percent (between 0 and 100).
   gfx::Size viewport_size_;
   int median_link_location_ = 0;
-  int total_clickable_space_ = 0;
+  float total_clickable_space_ = 0;
 
   // Anchor-specific scaling factors used to compute navigation scores.
   const int ratio_area_scale_;

@@ -32,7 +32,7 @@ public class TouchRestrictingFrameLayout extends FrameLayout {
      * @return Whether touch is enabled.
      */
     private boolean isTouchDisabled() {
-        return mBottomSheet == null || mBottomSheet.isRunningContentSwapAnimation()
+        return mBottomSheet == null
                 || mBottomSheet.getSheetState() == BottomSheet.SheetState.SCROLLING;
     }
 

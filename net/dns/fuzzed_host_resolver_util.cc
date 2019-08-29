@@ -5,6 +5,9 @@
 #include "net/dns/fuzzed_host_resolver_util.h"
 
 #include <stdint.h>
+
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -38,7 +41,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
 #include "net/socket/fuzzed_socket_factory.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 

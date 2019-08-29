@@ -6,6 +6,7 @@ package org.chromium.weblayer;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.view.View;
 
 import org.chromium.weblayer_private.BrowserControllerClient;
 import org.chromium.weblayer_private.BrowserControllerImpl;
@@ -32,6 +33,10 @@ public final class BrowserController {
 
     public NavigationController getNavigationController() {
         return mNavigationController;
+    }
+
+    public void setTopView(View view) {
+        mBrowserController.setTopView(view);
     }
 
     public void addObserver(BrowserObserver observer) {

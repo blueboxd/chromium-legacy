@@ -464,9 +464,6 @@ source_set("fuzzer_test_support") {
     "//base/test:test_support",
     "//net",
   ]
-  public_deps = [
-    "//third_party/libFuzzer:fuzzed_data_provider",
-  ]
 }
 
 fuzzer_test("net_dns_hosts_parse_fuzzer") {

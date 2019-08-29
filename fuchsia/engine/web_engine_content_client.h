@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/common/content_client.h"
+#include "fuchsia/engine/common.h"
 
 class WebEngineContentClient : public content::ContentClient {
  public:
@@ -20,6 +21,7 @@ class WebEngineContentClient : public content::ContentClient {
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) override;
   gfx::Image& GetNativeImageNamed(int resource_id) override;
   blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
+  void AddAdditionalSchemes(Schemes* schemes) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentClient);

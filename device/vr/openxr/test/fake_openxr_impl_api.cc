@@ -73,6 +73,7 @@ XrResult xrBeginSession(XrSession session,
             "XrSessionBeginInfo primaryViewConfigurationType invalid");
 
   RETURN_IF_XR_FAILED(g_test_helper.BeginSession());
+
   return XR_SUCCESS;
 }
 
@@ -200,7 +201,7 @@ XrResult xrCreateSession(XrInstance instance,
             "D3D11Device is null");
 
   g_test_helper.SetD3DDevice(binding->device);
-  *session = g_test_helper.GetSession();
+  RETURN_IF_XR_FAILED(g_test_helper.GetSession(session));
 
   return XR_SUCCESS;
 }
@@ -466,10 +467,9 @@ XrResult xrGetActionStateBoolean(XrSession session,
   return XR_SUCCESS;
 }
 
-XrResult XRAPI_CALL
-xrGetActionStateVector2f(XrSession session,
-                         const XrActionStateGetInfo* get_info,
-                         XrActionStateVector2f* state) {
+XrResult xrGetActionStateVector2f(XrSession session,
+                                  const XrActionStateGetInfo* get_info,
+                                  XrActionStateVector2f* state) {
   DLOG(INFO) << __FUNCTION__;
   XrResult xr_result;
 
@@ -584,6 +584,28 @@ XrResult xrLocateViews(XrSession session,
   RETURN_IF_XR_FAILED(g_test_helper.ValidateSpace(view_locate_info->space));
 
   return XR_SUCCESS;
+}
+
+XrResult xrPollEvent(XrInstance instance, XrEventDataBuffer* event_data) {
+  DLOG(INFO) << __FUNCTION__;
+  XrResult xr_result;
+
+  RETURN_IF_XR_FAILED(g_test_helper.ValidateInstance(instance));
+
+  RETURN_IF_FALSE(event_data->type == XR_TYPE_EVENT_DATA_BUFFER,
+                  XR_ERROR_VALIDATION_FAILURE,
+                  "xrPollEvent event_data type invalid");
+  RETURN_IF_FALSE(g_test_helper.UpdateSessionStateEventQueue(),
+                  XR_ERROR_VALIDATION_FAILURE,
+                  "Update SessionStateEventQueue failed.");
+  if (g_test_helper.HasPendingSessionStateEvent()) {
+    XrEventDataSessionStateChanged* event_data_ptr =
+        reinterpret_cast<XrEventDataSessionStateChanged*>(event_data);
+    *event_data_ptr = g_test_helper.GetNextSessionStateEvent();
+    return XR_SUCCESS;
+  }
+
+  return XR_EVENT_UNAVAILABLE;
 }
 
 XrResult xrReleaseSwapchainImage(

@@ -27,8 +27,8 @@ cr.define('print_preview_app_test', function() {
     const initialSettings = {
       isInKioskAutoPrintMode: false,
       isInAppKioskMode: false,
-      thousandsDelimeter: ',',
-      decimalDelimeter: '.',
+      thousandsDelimiter: ',',
+      decimalDelimiter: '.',
       unitType: 1,
       previewModifiable: true,
       documentTitle: 'DocumentABC123',

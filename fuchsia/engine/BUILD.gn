@@ -111,6 +111,8 @@ component("web_engine_core") {
   ]
   configs += [ ":web_engine_implementation" ]
   sources = [
+    "browser/content_directory_loader_factory.cc",
+    "browser/content_directory_loader_factory.h",
     "browser/context_impl.cc",
     "browser/context_impl.h",
     "browser/cookie_manager_impl.cc",
@@ -218,6 +220,7 @@ source_set("browsertest_core") {
 
 test("web_engine_browsertests") {
   sources = [
+    "browser/content_directory_browsertest.cc",
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
   ]

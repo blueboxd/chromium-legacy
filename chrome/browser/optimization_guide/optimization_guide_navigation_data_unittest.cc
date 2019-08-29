@@ -125,7 +125,7 @@ TEST(OptimizationGuideNavigationDataTest,
   data.set_has_hint_before_commit(true);
   data.set_has_hint_after_commit(true);
   data.set_serialized_hint_version_string("abc");
-  data.set_has_page_hint(true);
+  data.set_page_hint(std::make_unique<optimization_guide::proto::PageHint>());
   data.RecordMetrics(/*has_committed=*/true);
 
   histogram_tester.ExpectUniqueSample(
@@ -166,7 +166,7 @@ TEST(OptimizationGuideNavigationDataTest,
   data.set_has_hint_before_commit(true);
   data.set_has_hint_after_commit(true);
   data.set_serialized_hint_version_string("abc");
-  data.set_has_page_hint(false);
+  data.set_page_hint(nullptr);
   data.RecordMetrics(/*has_committed=*/true);
 
   histogram_tester.ExpectUniqueSample(
@@ -478,7 +478,7 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
                 optimization_guide::OptimizationTarget::kPainfulPageLoad));
   EXPECT_EQ(base::nullopt, data->has_hint_before_commit());
   EXPECT_EQ(base::nullopt, data->has_hint_after_commit());
-  EXPECT_EQ(base::nullopt, data->has_page_hint());
+  EXPECT_FALSE(data->has_page_hint_value());
 
   data->set_serialized_hint_version_string("123abc");
   data->SetDecisionForOptimizationType(
@@ -490,7 +490,10 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   data->set_serialized_hint_version_string("123abc");
   data->set_has_hint_before_commit(true);
   data->set_has_hint_after_commit(true);
-  data->set_has_page_hint(false);
+  optimization_guide::proto::PageHint page_hint;
+  page_hint.set_page_pattern("pagepattern");
+  data->set_page_hint(
+      std::make_unique<optimization_guide::proto::PageHint>(page_hint));
 
   OptimizationGuideNavigationData data_copy(*data);
   EXPECT_EQ(3, data_copy.navigation_id());
@@ -503,5 +506,6 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   EXPECT_TRUE(data_copy.has_hint_before_commit().value());
   EXPECT_TRUE(data_copy.has_hint_after_commit().value());
   EXPECT_EQ("123abc", *(data_copy.serialized_hint_version_string()));
-  EXPECT_FALSE(data_copy.has_page_hint().value());
+  EXPECT_TRUE(data_copy.has_page_hint_value());
+  EXPECT_EQ("pagepattern", data_copy.page_hint()->page_pattern());
 }

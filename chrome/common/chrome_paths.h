@@ -104,6 +104,13 @@ enum {
                                       // wallpaper thumbnails reside.
   DIR_CHROMEOS_CUSTOM_WALLPAPERS,     // Directory where custom wallpapers
                                       // reside.
+  // Managed Crostini deployments.
+  FILE_CHROMEOS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG,  // A file with JSON
+                                                   // configuration for Ansible
+                                                   // package management.
+  DIR_CHROMEOS_CROSTINI_ANSIBLE_PLAYBOOK_STAGING,  // Directory where Ansible
+                                                   // playbooks pending
+                                                   // execution reside.
 #endif
   DIR_SUPERVISED_USER_INSTALLED_WHITELISTS,  // Directory where sanitized
                                              // supervised user whitelists are

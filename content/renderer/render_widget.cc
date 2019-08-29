@@ -577,7 +577,7 @@ void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
   popup_screen_origin_for_emulation_ =
       emulator->original_screen_rect().origin();
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportSize(),
+                             CompositorViewportRect(),
                              emulator->original_screen_info());
 }
 
@@ -890,7 +890,8 @@ void RenderWidget::OnEnableDeviceEmulation(
     VisualProperties visual_properties;
     visual_properties.screen_info = screen_info_;
     visual_properties.new_size = size_;
-    visual_properties.compositor_viewport_pixel_size = CompositorViewportSize();
+    visual_properties.compositor_viewport_pixel_size =
+        CompositorViewportRect().size();
     visual_properties.local_surface_id_allocation =
         local_surface_id_allocation_from_parent_;
     visual_properties.visible_viewport_size = visible_viewport_size_;
@@ -1601,8 +1602,8 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
   return size_;
 }
 
-gfx::Size RenderWidget::CompositorViewportSize() const {
-  return layer_tree_view_->layer_tree_host()->device_viewport_size();
+gfx::Rect RenderWidget::CompositorViewportRect() const {
+  return layer_tree_view_->layer_tree_host()->device_viewport_rect();
 }
 
 void RenderWidget::UpdateZoom(double zoom_level) {
@@ -1636,7 +1637,8 @@ void RenderWidget::SynchronizeVisualProperties(
   UpdateSurfaceAndScreenInfo(
       visual_properties.local_surface_id_allocation.value_or(
           viz::LocalSurfaceIdAllocation()),
-      new_compositor_viewport_pixel_size, visual_properties.screen_info);
+      gfx::Rect(new_compositor_viewport_pixel_size),
+      visual_properties.screen_info);
   UpdateCaptureSequenceNumber(visual_properties.capture_sequence_number);
   layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
       visual_properties.top_controls_height,
@@ -1806,7 +1808,7 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_->CreateUkmRecorderFactory());
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportSize(), screen_info_);
+                             CompositorViewportRect(), screen_info_);
   // If the widget is hidden, delay starting the compositor until the user shows
   // it. Also if the RenderWidget is frozen, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
@@ -2218,7 +2220,7 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
 
 void RenderWidget::UpdateSurfaceAndScreenInfo(
     const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
-    const gfx::Size& compositor_viewport_pixel_size,
+    const gfx::Rect& compositor_viewport_pixel_rect,
     const ScreenInfo& new_screen_info) {
   bool orientation_changed =
       screen_info_.orientation_angle != new_screen_info.orientation_angle ||
@@ -2232,8 +2234,8 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
 
   // Note carefully that the DSF specified in |new_screen_info| is not the
   // DSF used by the compositor during device emulation!
-  layer_tree_view_->SetViewportSizeAndScale(
-      compositor_viewport_pixel_size,
+  layer_tree_view_->SetViewportRectAndScale(
+      compositor_viewport_pixel_rect,
       GetOriginalScreenInfo().device_scale_factor,
       local_surface_id_allocation_from_parent_);
   // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
@@ -2700,7 +2702,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
     UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                               new_compositor_viewport_pixel_size,
+                               gfx::Rect(new_compositor_viewport_pixel_size),
                                screen_info_);
   }
 }
@@ -3765,7 +3767,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   info.device_scale_factor = factor;
   gfx::Size viewport_pixel_size = gfx::ScaleToCeiledSize(size_, factor);
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             viewport_pixel_size, info);
+                             gfx::Rect(viewport_pixel_size), info);
 
   ResizeWebWidget();  // This picks up the new device scale factor in |info|.
 
@@ -3794,7 +3796,7 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
   ScreenInfo info = screen_info_;
   info.color_space = color_space;
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportSize(), info);
+                             CompositorViewportRect(), info);
 }
 
 void RenderWidget::SetWindowRectSynchronouslyForTesting(
@@ -3824,7 +3826,8 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
   visual_properties.auto_resize_enabled = false;
   visual_properties.screen_info = screen_info_;
   visual_properties.new_size = new_size;
-  visual_properties.compositor_viewport_pixel_size = CompositorViewportSize();
+  visual_properties.compositor_viewport_pixel_size =
+      CompositorViewportRect().size();
   visual_properties.browser_controls_shrink_blink_size =
       browser_controls_shrink_blink_size_;
   visual_properties.top_controls_height = top_controls_height_;
@@ -3871,7 +3874,7 @@ PepperPluginInstanceImpl* RenderWidget::GetFocusedPepperPluginInsideWidget() {
 gfx::Rect RenderWidget::ViewportVisibleRect() {
   if (for_child_local_root_frame_)
     return compositor_visible_rect_;
-  return gfx::Rect(CompositorViewportSize());
+  return CompositorViewportRect();
 }
 
 // static

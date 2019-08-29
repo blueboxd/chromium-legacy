@@ -144,7 +144,7 @@ def InstallSysroot(target_platform, target_arch):
       with open(tarball, "wb") as f:
         f.write(response.read())
       break
-    except:
+    except Exception:  # Ignore exceptions.
       pass
   else:
     raise Error('Failed to download %s' % url)

@@ -9,10 +9,10 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/unified/custom_shape_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
@@ -38,12 +38,11 @@ constexpr int kScrollpadStrokeWidthDips = 2;
 constexpr int kScrollPadButtonHypotenuseDips = 192;
 constexpr int kScrollPadIconPadding = 30;
 
-// TODO(crbug.com/982950): Get color from AshColorProvider::GetRippleAttributes
-// instead.
 SkColor HoveredButtonColor() {
-  return AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-      SkColorSetA(kUnifiedMenuButtonColor, 0x29));
+  const AshColorProvider::RippleAttributes attributes =
+      AshColorProvider::Get()->GetRippleAttributes(
+          UnifiedSystemTrayView::GetBackgroundColor());
+  return SkColorSetA(attributes.base_color, 255 * attributes.highlight_opacity);
 }
 
 }  // namespace

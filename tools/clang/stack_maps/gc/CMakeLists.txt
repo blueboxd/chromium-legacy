@@ -8,3 +8,4 @@ SET(CMAKE_BUILD_TYPE Debug)
 add_library(GC gc_api.h gc_api.cc stack_map_parser.h stack_map_parser.cc
     GC_Shim_x86_64.S)
 target_compile_options(GC PUBLIC -fno-omit-frame-pointer)
+target_include_directories(GC PUBLIC "../")

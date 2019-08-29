@@ -18,6 +18,7 @@
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -267,10 +268,10 @@ class TabStrip : public views::AccessiblePaneView,
   SkColor GetToolbarTopSeparatorColor() const override;
   SkColor GetTabSeparatorColor() const override;
   SkColor GetTabBackgroundColor(
-      TabState tab_state,
+      TabActive active,
       BrowserNonClientFrameView::ActiveState active_state =
           BrowserNonClientFrameView::kUseCurrent) const override;
-  SkColor GetTabForegroundColor(TabState tab_state,
+  SkColor GetTabForegroundColor(TabActive active,
                                 SkColor background_color) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   base::Optional<int> GetCustomBackgroundId(
@@ -339,6 +340,17 @@ class TabStrip : public views::AccessiblePaneView,
     DISALLOW_COPY_AND_ASSIGN(DropArrow);
   };
 
+  // Specifies how to handle tabs that are midway through closing when falling
+  // back from |layout_helper_| to |bounds_animator_|.
+  enum class ClosingTabsBehavior {
+    // Keep the tabs alive, because responsibilities for destroying them lie
+    // with |bounds_animator_|.
+    kTransferOwnership,
+    // Destroy the tabs, because responsibilities for destroying them lie with
+    // |layout_helper_|.
+    kDestroy
+  };
+
   void Init();
 
   views::ViewModelT<Tab>* tabs_view_model() { return &tabs_; }
@@ -367,7 +379,10 @@ class TabStrip : public views::AccessiblePaneView,
   // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
   // currently set in ideal_bounds.
   // TODO(958173): The notion of ideal bounds is going away. Delete this.
-  void AnimateToIdealBounds();
+  void AnimateToIdealBounds(ClosingTabsBehavior closing_tabs_behavior =
+                                ClosingTabsBehavior::kDestroy);
+
+  void ExitTabClosingMode();
 
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();

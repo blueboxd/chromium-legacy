@@ -38,6 +38,10 @@
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/hit_test_utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/frame/terminal_system_app_menu_button_chromeos.h"
+#endif
+
 namespace {
 
 bool g_animation_disabled_for_testing = false;
@@ -243,8 +247,19 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   views::SetHitTestComponent(browser_actions_container_,
                              static_cast<int>(HTCLIENT));
 
+// TODO(crbug.com/998900): Create AppControllerUi class to contain this logic.
+#if defined(OS_CHROMEOS)
+  if (app_controller->UseTitlebarTerminalSystemAppMenu()) {
+    app_menu_button_ = AddChildView(
+        std::make_unique<TerminalSystemAppMenuButton>(browser_view));
+  } else {
+    app_menu_button_ =
+        AddChildView(std::make_unique<HostedAppMenuButton>(browser_view));
+  }
+#else
   app_menu_button_ =
       AddChildView(std::make_unique<HostedAppMenuButton>(browser_view));
+#endif
 
   UpdateChildrenColor();
   UpdateStatusIconsVisibility();

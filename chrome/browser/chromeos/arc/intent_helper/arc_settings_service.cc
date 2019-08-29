@@ -62,7 +62,7 @@ constexpr char kSetFontScaleAction[] =
 constexpr char kSetPageZoomAction[] =
     "org.chromium.arc.intent_helper.SET_PAGE_ZOOM";
 
-constexpr char kArcProxyBypassListDelimeter[] = ",";
+constexpr char kArcProxyBypassListDelimiter[] = ",";
 
 bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
                         std::string* host,
@@ -560,7 +560,7 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
             bypass_list, net::ProxyBypassRules::kBypassListDelimeter,
             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
         bypass_list =
-            base::JoinString(bypassed_hosts, kArcProxyBypassListDelimeter);
+            base::JoinString(bypassed_hosts, kArcProxyBypassListDelimiter);
         extras.SetString("bypassList", bypass_list);
       }
       break;

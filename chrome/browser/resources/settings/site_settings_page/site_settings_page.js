@@ -44,15 +44,6 @@ Polymer({
     },
 
     /** @private */
-    enableSensorsContentSetting_: {
-      type: Boolean,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getBoolean('enableSensorsContentSetting');
-      }
-    },
-
-    /** @private */
     enableExperimentalWebPlatformFeatures_: {
       type: Boolean,
       value: function() {

@@ -28,6 +28,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 namespace {
 
 void GetStubResolverConfig(
@@ -46,6 +50,10 @@ void GetStubResolverConfig(
 // various DoH modes and DoH template strings and makes sure the settings are
 // respected.
 void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
+  // Mark as not enterprise managed.
+#if defined(OS_WIN)
+  base::win::ScopedDomainStateForTesting scoped_domain(false);
+#endif
   // Check initial state.
   bool insecure_stub_resolver_enabled = !async_dns_feature_enabled;
   net::DnsConfig::SecureDnsMode secure_dns_mode;
@@ -284,7 +292,7 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerStubResolverBrowsertest,
 
 INSTANTIATE_TEST_SUITE_P(,
                          SystemNetworkContextManagerStubResolverBrowsertest,
-                         ::testing::Values(false, true));
+                         ::testing::Bool());
 
 class SystemNetworkContextManagerFreezeQUICUaBrowsertest
     : public SystemNetworkContextManagerBrowsertest,
@@ -326,4 +334,27 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerFreezeQUICUaBrowsertest,
 
 INSTANTIATE_TEST_SUITE_P(,
                          SystemNetworkContextManagerFreezeQUICUaBrowsertest,
-                         ::testing::Values(true, false));
+                         ::testing::Bool());
+
+class SystemNetworkContextManagerWPADQuickCheckBrowsertest
+    : public SystemNetworkContextManagerBrowsertest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SystemNetworkContextManagerWPADQuickCheckBrowsertest() = default;
+  ~SystemNetworkContextManagerWPADQuickCheckBrowsertest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerWPADQuickCheckBrowsertest,
+                       WPADQuickCheckPref) {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(prefs::kQuickCheckEnabled, GetParam());
+
+  network::mojom::NetworkContextParamsPtr network_context_params =
+      g_browser_process->system_network_context_manager()
+          ->CreateDefaultNetworkContextParams();
+  EXPECT_EQ(GetParam(), network_context_params->pac_quick_check_enabled);
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SystemNetworkContextManagerWPADQuickCheckBrowsertest,
+                         ::testing::Bool());

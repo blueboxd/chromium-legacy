@@ -36,7 +36,7 @@ void ArcAppIconLoader::FetchImage(const std::string& app_id) {
   // |icon_size_in_dip_| differs from this size, re-scale is required.
   std::unique_ptr<ArcAppIcon> icon =
       std::make_unique<ArcAppIcon>(profile(), app_id, icon_size_in_dip(), this);
-  icon->image_skia().EnsureRepsForSupportedScales();
+  icon->LoadSupportedScaleFactors();
   icon_map_[app_id] = std::move(icon);
   UpdateImage(app_id);
 }

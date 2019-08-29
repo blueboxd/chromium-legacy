@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
 import java.util.Iterator;
@@ -98,7 +99,7 @@ public class BottomSheetController implements Destroyable {
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
-                (content1, content2) -> content2.getPriority() - content1.getPriority());
+                (content1, content2) -> content1.getPriority() - content2.getPriority());
 
         lifecycleDispatcher.register(this);
 
@@ -193,9 +194,22 @@ public class BottomSheetController implements Destroyable {
 
                 scrim.hideScrim(false);
 
-                // If not using a custom lifecycle, notify the controller that the sheet's content
-                // has been dismissed.
-                hideContent(mBottomSheet.getCurrentSheetContent(), false);
+                // If the sheet is closed, it is an opportunity for another content to try to take
+                // its place if it is a higher priority.
+                BottomSheetContent content = mBottomSheet.getCurrentSheetContent();
+                BottomSheetContent nextContent = mContentQueue.peek();
+                if (content != null && nextContent != null
+                        && nextContent.getPriority() < content.getPriority()) {
+                    mContentQueue.add(content);
+                    mBottomSheet.setSheetState(SheetState.HIDDEN, true);
+                }
+            }
+
+            @Override
+            public void onSheetStateChanged(@SheetState int state) {
+                if (state != SheetState.HIDDEN || mIsSuppressed) return;
+                mIsProcessingHideRequest = false;
+                showNextContent(true);
             }
 
             @Override
@@ -263,7 +277,7 @@ public class BottomSheetController implements Destroyable {
             mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
         } else {
             // In the event the previous content was hidden, try to show the next one.
-            showNextContent();
+            showNextContent(true);
         }
     }
 
@@ -290,41 +304,29 @@ public class BottomSheetController implements Destroyable {
      *         state, or the browser is in a mode that does not support showing the sheet.
      */
     public boolean requestShowContent(BottomSheetContent content, boolean animate) {
-        // If load failed, do nothing. The content will automatically be queued.
-        if (!loadInternal(content)) return false;
-        if (!mBottomSheet.isSheetOpen() && !isOtherUIObscuring()) {
-            mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, animate);
-        }
-        return true;
-    }
-
-    /**
-     * Handles loading or suppressing of content based on priority.
-     * @param content The content to load.
-     * @return True if the content started loading.
-     */
-    private boolean loadInternal(BottomSheetContent content) {
+        // If already showing the requested content, do nothing.
         if (content == mBottomSheet.getCurrentSheetContent()) return true;
+
+        // Showing the sheet requires a tab.
         if (mTabProvider.get() == null) return false;
 
-        BottomSheetContent shownContent = mBottomSheet.getCurrentSheetContent();
-        boolean shouldSuppressExistingContent = shownContent != null
-                && content.getPriority() < shownContent.getPriority()
+        boolean shouldSuppressExistingContent = mBottomSheet.getCurrentSheetContent() != null
+                && content.getPriority() < mBottomSheet.getCurrentSheetContent().getPriority()
                 && canBottomSheetSwitchContent();
 
-        if (shouldSuppressExistingContent) {
+        // Always add the content to the queue, it will be handled after the sheet closes if
+        // necessary. If already hidden, |showNextContent| will handle the request.
+        mContentQueue.add(content);
+
+        if (mBottomSheet.getCurrentSheetContent() == null) {
+            showNextContent(animate);
+            return true;
+        } else if (shouldSuppressExistingContent) {
             mContentQueue.add(mBottomSheet.getCurrentSheetContent());
-            shownContent = content;
-        } else if (mBottomSheet.getCurrentSheetContent() == null) {
-            shownContent = content;
-        } else {
-            mContentQueue.add(content);
+            mBottomSheet.setSheetState(SheetState.HIDDEN, animate);
+            return true;
         }
-
-        assert shownContent != null;
-        mBottomSheet.showContent(shownContent);
-
-        return shownContent == content;
+        return false;
     }
 
     /**
@@ -339,29 +341,14 @@ public class BottomSheetController implements Destroyable {
             return;
         }
 
-        // If the sheet is already processing a request to hide visible content, do nothing.
         if (mIsProcessingHideRequest) return;
 
         // Handle showing the next content if it exists.
         if (mBottomSheet.getSheetState() == BottomSheet.SheetState.HIDDEN) {
             // If the sheet is already hidden, simply show the next content.
-            showNextContent();
+            showNextContent(animate);
         } else {
-            // If the sheet wasn't hidden, wait for it to be before showing the next content.
-            BottomSheetObserver hiddenSheetObserver = new EmptyBottomSheetObserver() {
-                @Override
-                public void onSheetStateChanged(int currentState) {
-                    // Don't do anything until the sheet is completely hidden.
-                    if (currentState != BottomSheet.SheetState.HIDDEN) return;
-
-                    showNextContent();
-                    mBottomSheet.removeObserver(this);
-                    mIsProcessingHideRequest = false;
-                }
-            };
-
             mIsProcessingHideRequest = true;
-            mBottomSheet.addObserver(hiddenSheetObserver);
             mBottomSheet.setSheetState(BottomSheet.SheetState.HIDDEN, animate);
         }
     }
@@ -383,8 +370,9 @@ public class BottomSheetController implements Destroyable {
     /**
      * Show the next {@link BottomSheetContent} if it is available and peek the sheet. If no content
      * is available the sheet's content is set to null.
+     * @param animate Whether the sheet should animate opened.
      */
-    private void showNextContent() {
+    private void showNextContent(boolean animate) {
         if (mContentQueue.isEmpty()) {
             mBottomSheet.showContent(null);
             return;
@@ -392,7 +380,7 @@ public class BottomSheetController implements Destroyable {
 
         BottomSheetContent nextContent = mContentQueue.poll();
         mBottomSheet.showContent(nextContent);
-        mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, true);
+        mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, animate);
     }
 
     /**
@@ -430,9 +418,11 @@ public class BottomSheetController implements Destroyable {
     }
 
     /**
+     * The bottom sheet cannot change content while it is open. If the user has the bottom sheet
+     * open, they are currently engaged in a task and shouldn't be interrupted.
      * @return Whether the sheet currently supports switching its content.
      */
-    protected boolean canBottomSheetSwitchContent() {
+    private boolean canBottomSheetSwitchContent() {
         return !mBottomSheet.isSheetOpen();
     }
 }

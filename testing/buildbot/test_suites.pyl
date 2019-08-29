@@ -4436,11 +4436,13 @@
     },
 
     'pixel_browser_tests_gtests': {
-      'pixel_browser_tests': {
+      'browser_tests': {
         'name': 'pixel_browser_tests',
         'args': [
           '--build-revision=${got_revision}',
-          '--gtest_filter=SkiaGold*',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
+          '--browser-ui-tests-verify-pixels',
+          '--enable-pixel-output-in-tests',
         ],
         'experiment_percentage': 100,
         'swarming': {

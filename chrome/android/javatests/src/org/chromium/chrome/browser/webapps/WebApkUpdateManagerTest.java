@@ -163,7 +163,7 @@ public class WebApkUpdateManagerTest {
                     creationData.orientation, 0, creationData.themeColor,
                     creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable, "",
                     WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
-                    creationData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
+                    creationData.startUrl, WebApkDistributor.BROWSER,
                     creationData.iconUrlToMurmur2HashMap, null, null /*shareTargetActivityName*/,
                     false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
                     null /* shareData */, 1 /* webApkVersionCode */

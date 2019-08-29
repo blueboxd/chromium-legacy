@@ -114,7 +114,6 @@ public class PasswordEntryViewer
 
         mException = (name == null);
         final String url = mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_URL);
-        getActivity().setTitle(R.string.password_entry_viewer_title);
         mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
                 Context.CLIPBOARD_SERVICE);
         View inflatedView =
@@ -132,6 +131,7 @@ public class PasswordEntryViewer
 
         hookupCopySiteButton(mView.findViewById(R.id.url_row));
         if (!mException) {
+            getActivity().setTitle(R.string.password_entry_viewer_title);
             setRowText(R.id.username_row, name);
             hookupCopyUsernameButton(mView.findViewById(R.id.username_row));
             if (ReauthenticationManager.isReauthenticationApiAvailable()) {
@@ -179,6 +179,7 @@ public class PasswordEntryViewer
             }
 
         } else {
+            getActivity().setTitle(R.string.section_saved_passwords_exceptions);
             RecordHistogram.recordEnumeratedHistogram(
                     "PasswordManager.Android.PasswordExceptionEntry", PASSWORD_ENTRY_ACTION_VIEWED,
                     PASSWORD_ENTRY_ACTION_BOUNDARY);
@@ -214,8 +215,8 @@ public class PasswordEntryViewer
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.password_entry_viewer_action_bar_menu, menu);
         menu.findItem(R.id.action_edit_saved_password)
-                .setVisible(
-                        ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_EDITING_ANDROID));
+                .setVisible(ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+                        && !mException);
     }
 
     @Override
@@ -429,6 +430,7 @@ public class PasswordEntryViewer
 
     @Override
     public void passwordListAvailable(int count) {
+        if (mException) return;
         TextView passwordsLinkTextView = mView.findViewById(R.id.passwords_link);
         SavedPasswordEntry SavedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
                                                         .getPasswordManagerHandler()

@@ -1452,12 +1452,7 @@
       status: "experimental",
     },
     {
-      name: "Sensor",
-      status: "stable",
-    },
-    {
       name: "SensorExtraClasses",
-      depends_on: ["Sensor"],
       status: "experimental",
     },
     {

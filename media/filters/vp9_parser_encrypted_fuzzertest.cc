@@ -5,14 +5,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/numerics/safe_conversions.h"
 
 #include "media/base/decrypt_config.h"
 #include "media/base/subsample_entry.h"
 #include "media/filters/ivf_parser.h"
 #include "media/filters/vp9_parser.h"
-
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 struct Environment {
   Environment() {

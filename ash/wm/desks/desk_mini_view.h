@@ -81,6 +81,8 @@ class ASH_EXPORT DeskMiniView
   gfx::Rect GetHighlightBoundsInScreen() override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
+  bool OnViewHighlighted() override;
+  void OnViewUnhighlighted() override;
 
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 

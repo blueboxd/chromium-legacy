@@ -27,8 +27,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/snapshot/snapshot.h"
 
-// This may change to a different bucket in the future.
-const char* kSkiaGoldInstance = "chrome-gpu";
+const char* kSkiaGoldInstance = "chrome";
 
 #if defined(OS_WIN)
 const wchar_t* kSkiaGoldCtl = L"tools/skia_goldctl/goldctl.exe";
@@ -201,6 +200,7 @@ bool SkiaGoldPixelDiff::UploadToSkiaGoldServer(
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::CommandLine cmd(GetAbsoluteSrcRelativePath(kSkiaGoldCtl));
   cmd.AppendSwitchASCII("test-name", remote_golden_image_name);
+  cmd.AppendSwitchASCII("add-test-key", "source_type:gtest-pixeltests");
   cmd.AppendSwitchPath("png-file", local_file_path);
   cmd.AppendSwitchPath("work-dir", working_dir_);
   AppendArgsJustAfterProgram(

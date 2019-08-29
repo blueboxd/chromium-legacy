@@ -11,8 +11,6 @@ source_set("lib") {
   sources = [
     "audio_focus_manager.cc",
     "audio_focus_manager.h",
-    "audio_focus_manager_metrics_helper.cc",
-    "audio_focus_manager_metrics_helper.h",
     "audio_focus_request.cc",
     "audio_focus_request.h",
     "media_controller.cc",

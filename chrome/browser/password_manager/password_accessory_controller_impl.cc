@@ -15,7 +15,6 @@
 #include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_utils.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,8 +25,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/favicon/core/favicon_service.h"
-#include "components/favicon_base/favicon_types.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -57,7 +54,7 @@ autofill::UserInfo TranslateCredentials(bool current_field_is_password,
   // have a path but empty hosts. Since they are treated as first-party
   // credentials, they will have an empty origin.
   if (data.is_public_suffix_match)
-    user_info_origin = data.origin_url.host();
+    user_info_origin = data.origin_url.spec();
   UserInfo user_info(user_info_origin);
 
   base::string16 username = GetDisplayUsername(data);
@@ -136,14 +133,6 @@ PasswordAccessoryController* PasswordAccessoryController::GetIfExisting(
   return PasswordAccessoryControllerImpl::FromWebContents(web_contents);
 }
 
-struct PasswordAccessoryControllerImpl::FaviconRequestData {
-  // List of requests waiting for favicons to be available.
-  std::vector<base::OnceCallback<void(const gfx::Image&)>> pending_requests;
-
-  // Cached image for this origin. |IsEmpty()| unless a favicon was found.
-  gfx::Image cached_icon;
-};
-
 // static
 void PasswordAccessoryControllerImpl::CreateForWebContents(
     content::WebContents* web_contents,
@@ -162,16 +151,15 @@ void PasswordAccessoryControllerImpl::CreateForWebContents(
 void PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
     password_manager::CredentialCache* credential_cache,
-    base::WeakPtr<ManualFillingController> mf_controller,
-    favicon::FaviconService* favicon_service) {
+    base::WeakPtr<ManualFillingController> mf_controller) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(mf_controller);
 
   web_contents->SetUserData(
-      UserDataKey(), base::WrapUnique(new PasswordAccessoryControllerImpl(
-                         web_contents, credential_cache,
-                         std::move(mf_controller), favicon_service)));
+      UserDataKey(),
+      base::WrapUnique(new PasswordAccessoryControllerImpl(
+          web_contents, credential_cache, std::move(mf_controller))));
 }
 
 // static
@@ -285,87 +273,19 @@ void PasswordAccessoryControllerImpl::OnGenerationRequested(
   pwd_generation_controller->OnGenerationRequested(type);
 }
 
-void PasswordAccessoryControllerImpl::DidNavigateMainFrame() {
-  favicon_tracker_.TryCancelAll();  // If there is a request pending, cancel it.
-  icons_request_data_.clear();
-}
-
-void PasswordAccessoryControllerImpl::GetFavicon(
-    int desired_size_in_pixel,
-    base::OnceCallback<void(const gfx::Image&)> icon_callback) {
-  url::Origin origin =
-      GetFocusedFrameOrigin();  // Copy origin in case it changes.
-  if (origin.opaque())
-    return;  // Don't proceed for invalid origins.
-  // Check whether this request can be immediately answered with a cached icon.
-  // It is empty if there wasn't at least one request that found an icon yet.
-  FaviconRequestData* icon_request = &icons_request_data_[origin];
-  if (!icon_request->cached_icon.IsEmpty()) {
-    std::move(icon_callback).Run(icon_request->cached_icon);
-    return;
-  }
-  if (!favicon_service_) {  // This might happen in tests.
-    std::move(icon_callback).Run(gfx::Image());
-    return;
-  }
-
-  // The cache is empty. Queue the callback.
-  icon_request->pending_requests.emplace_back(std::move(icon_callback));
-  if (icon_request->pending_requests.size() > 1)
-    return;  // The favicon for this origin was already requested.
-
-  favicon_service_->GetRawFaviconForPageURL(
-      origin.GetURL(),
-      {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
-       favicon_base::IconType::kTouchPrecomposedIcon,
-       favicon_base::IconType::kWebManifestIcon},
-      desired_size_in_pixel,
-      /* fallback_to_host = */ true,
-      base::BindRepeating(  // FaviconService doesn't support BindOnce yet.
-          &PasswordAccessoryControllerImpl::OnImageFetched,
-          base::AsWeakPtr<PasswordAccessoryControllerImpl>(this), origin),
-      &favicon_tracker_);
-}
-
 PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
     content::WebContents* web_contents,
     password_manager::CredentialCache* credential_cache)
-    : web_contents_(web_contents),
-      credential_cache_(credential_cache),
-      favicon_service_(FaviconServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-          ServiceAccessType::EXPLICIT_ACCESS)) {}
+    : web_contents_(web_contents), credential_cache_(credential_cache) {}
 
 // Additional creation functions in unit tests only:
 PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
     content::WebContents* web_contents,
     password_manager::CredentialCache* credential_cache,
-    base::WeakPtr<ManualFillingController> mf_controller,
-    favicon::FaviconService* favicon_service)
+    base::WeakPtr<ManualFillingController> mf_controller)
     : web_contents_(web_contents),
       credential_cache_(credential_cache),
-      mf_controller_(std::move(mf_controller)),
-      favicon_service_(favicon_service) {}
-
-void PasswordAccessoryControllerImpl::OnImageFetched(
-    url::Origin origin,
-    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  FaviconRequestData* icon_request = &icons_request_data_[origin];
-
-  favicon_base::FaviconImageResult image_result;
-  if (bitmap_result.is_valid()) {
-    image_result.image = gfx::Image::CreateFrom1xPNGBytes(
-        bitmap_result.bitmap_data->front(), bitmap_result.bitmap_data->size());
-  }
-  icon_request->cached_icon = image_result.image;
-  // Only trigger all the callbacks if they still affect a displayed origin.
-  if (origin == GetFocusedFrameOrigin()) {
-    for (auto& callback : icon_request->pending_requests) {
-      std::move(callback).Run(icon_request->cached_icon);
-    }
-  }
-  icon_request->pending_requests.clear();
-}
+      mf_controller_(std::move(mf_controller)) {}
 
 bool PasswordAccessoryControllerImpl::AppearsInSuggestions(
     const base::string16& suggestion,

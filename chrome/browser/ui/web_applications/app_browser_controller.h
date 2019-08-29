@@ -70,6 +70,11 @@ class AppBrowserController : public TabStripModelObserver,
   // Whether to show content settings in the titlebar toolbar.
   virtual bool HasTitlebarContentSettings() const;
 
+#if defined(OS_CHROMEOS)
+  // Whether to use the Terminal System App menu rather than the default menu.
+  virtual bool UseTitlebarTerminalSystemAppMenu() const;
+#endif
+
   // Returns the app icon for the window to use in the task list.
   virtual gfx::ImageSkia GetWindowAppIcon() const = 0;
 

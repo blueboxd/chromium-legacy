@@ -474,7 +474,7 @@ void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
     resource_manager_.Init(host_->GetUIResourceManager());
   }
   host_->SetRootLayer(root_window_->GetLayer());
-  host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+  host_->SetViewportRectAndScale(gfx::Rect(size_), root_window_->GetDipScale(),
                                  GenerateLocalSurfaceId());
 }
 
@@ -561,7 +561,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
   DCHECK(!host_->IsVisible());
-  host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+  host_->SetViewportRectAndScale(gfx::Rect(size_), root_window_->GetDipScale(),
                                  GenerateLocalSurfaceId());
 
   if (needs_animate_)
@@ -633,7 +633,8 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   size_ = size;
   if (host_) {
     // TODO(ccameron): Ensure a valid LocalSurfaceId here.
-    host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+    host_->SetViewportRectAndScale(gfx::Rect(size_),
+                                   root_window_->GetDipScale(),
                                    GenerateLocalSurfaceId());
   }
 
@@ -872,7 +873,8 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
                             DISPLAY_METRIC_DEVICE_SCALE_FACTOR) {
     // TODO(ccameron): This is transiently incorrect -- |size_| must be
     // recalculated here as well. Is the call in SetWindowBounds sufficient?
-    host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
+    host_->SetViewportRectAndScale(gfx::Rect(size_),
+                                   root_window_->GetDipScale(),
                                    GenerateLocalSurfaceId());
   }
 

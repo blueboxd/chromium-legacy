@@ -5,7 +5,7 @@
 #ifndef NET_QUIC_PLATFORM_IMPL_QUIC_FUZZED_DATA_PROVIDER_IMPL_H_
 #define NET_QUIC_PLATFORM_IMPL_QUIC_FUZZED_DATA_PROVIDER_IMPL_H_
 
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
+#include <fuzzer/FuzzedDataProvider.h>
 
 namespace quic {
 

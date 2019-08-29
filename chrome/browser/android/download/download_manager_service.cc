@@ -241,12 +241,6 @@ void DownloadManagerService::Observe(
   }
 }
 
-void DownloadManagerService::ShowDownloadManager(bool show_prefetched_content) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_DownloadManagerService_showDownloadManager(
-      env, java_ref_, static_cast<jboolean>(show_prefetched_content));
-}
-
 void DownloadManagerService::OpenDownload(download::DownloadItem* download,
                                           int source) {
   if (java_ref_.is_null())

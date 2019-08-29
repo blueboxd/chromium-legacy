@@ -54,4 +54,31 @@ TEST(MlAppRankProviderTest, MlInferenceTest) {
   EXPECT_NEAR(expected_value, it->second, 0.001);
 }
 
+TEST(MlAppRankProviderTest, ExecutionAfterDestructorTest) {
+  base::test::TaskEnvironment task_environment_;
+
+  chromeos::machine_learning::FakeServiceConnectionImpl fake_service_connection;
+
+  const double expected_value = 1.234;
+  fake_service_connection.SetOutputValue(std::vector<int64_t>{1L},
+                                         std::vector<double>{expected_value});
+
+  chromeos::machine_learning::ServiceConnection::
+      UseFakeServiceConnectionForTesting(&fake_service_connection);
+
+  {
+    MlAppRankProvider ml_app_rank_provider;
+
+    base::flat_map<std::string, AppLaunchFeatures> app_features_map;
+    AppLaunchFeatures features;
+    features.set_app_id(kAppId);
+    features.set_app_type(AppLaunchEvent_AppType_CHROME);
+    app_features_map[kAppId] = features;
+    ml_app_rank_provider.CreateRankings(app_features_map, 3, 1, 7);
+  }
+  // Run the background tasks after ml_app_rank_provider has been destroyed.
+  // If this does not crash it is a success.
+  task_environment_.RunUntilIdle();
+}
+
 }  // namespace app_list

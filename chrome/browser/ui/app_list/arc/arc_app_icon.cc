@@ -210,13 +210,13 @@ void ArcAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
               << "x" << bitmap.height() << ". Expected " << expected_dim << ".";
       host_->MaybeRequestIcon(descriptor_.scale_factor);
     } else {
-      host_->Update(descriptor_.scale_factor,
-                    skia::ImageOperations::Resize(
-                        bitmap, skia::ImageOperations::RESIZE_BEST,
-                        expected_dim, expected_dim));
+      host_->UpdateUncompressed(descriptor_.scale_factor,
+                                skia::ImageOperations::Resize(
+                                    bitmap, skia::ImageOperations::RESIZE_BEST,
+                                    expected_dim, expected_dim));
     }
   } else {
-    host_->Update(descriptor_.scale_factor, bitmap);
+    host_->UpdateUncompressed(descriptor_.scale_factor, bitmap);
   }
 
   host_->DiscardDecodeRequest(this);
@@ -248,17 +248,22 @@ bool ArcAppIcon::IsSafeDecodingDisabledForTesting() {
 ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
                        const std::string& app_id,
                        int resource_size_in_dip,
-                       Observer* observer)
+                       Observer* observer,
+                       bool serve_compressed_icons)
     : context_(context),
       app_id_(app_id),
       mapped_app_id_(GetAppFromAppOrGroupId(context, app_id)),
       resource_size_in_dip_(resource_size_in_dip),
-      observer_(observer) {
+      observer_(observer),
+      serve_compressed_icons_(serve_compressed_icons) {
   CHECK(observer_ != nullptr);
-  auto source = std::make_unique<Source>(weak_ptr_factory_.GetWeakPtr(),
-                                         resource_size_in_dip);
-  gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
-  image_skia_ = gfx::ImageSkia(std::move(source), resource_size);
+
+  if (!serve_compressed_icons_) {
+    auto source = std::make_unique<Source>(weak_ptr_factory_.GetWeakPtr(),
+                                           resource_size_in_dip);
+    gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
+    image_skia_ = gfx::ImageSkia(std::move(source), resource_size);
+  }
 
   const std::vector<ui::ScaleFactor>& scale_factors =
       ui::GetSupportedScaleFactors();
@@ -266,6 +271,19 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
 }
 
 ArcAppIcon::~ArcAppIcon() {
+}
+
+void ArcAppIcon::LoadSupportedScaleFactors() {
+  if (serve_compressed_icons_) {
+    for (auto scale_factor : incomplete_scale_factors_)
+      LoadForScaleFactor(scale_factor);
+  } else {
+    // Calling GetRepresentation indirectly calls LoadForScaleFactor but also
+    // first initializes image_skia_ with the placeholder icons (e.g.
+    // IDR_APP_DEFAULT_ICON), via ArcAppIcon::Source::GetImageForScale.
+    for (auto scale_factor : incomplete_scale_factors_)
+      image_skia_.GetRepresentation(ui::GetScaleForScaleFactor(scale_factor));
+  }
 }
 
 bool ArcAppIcon::EverySupportedScaleFactorIsLoaded() const {
@@ -360,6 +378,12 @@ void ArcAppIcon::OnIconRead(
     MaybeRequestIcon(read_result->scale_factor);
 
   if (!read_result->unsafe_icon_data.empty()) {
+    if (serve_compressed_icons_) {
+      UpdateCompressed(read_result->scale_factor,
+                       std::move(read_result->unsafe_icon_data));
+      return;
+    }
+
     decode_requests_.emplace_back(std::make_unique<DecodeRequest>(
         weak_ptr_factory_.GetWeakPtr(),
         ArcAppIconDescriptor(resource_size_in_dip_, read_result->scale_factor),
@@ -383,7 +407,8 @@ void ArcAppIcon::OnIconRead(
   }
 }
 
-void ArcAppIcon::Update(ui::ScaleFactor scale_factor, const SkBitmap& bitmap) {
+void ArcAppIcon::UpdateUncompressed(ui::ScaleFactor scale_factor,
+                                    const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   gfx::ImageSkiaRep image_rep(bitmap, ui::GetScaleForScaleFactor(scale_factor));
@@ -395,6 +420,14 @@ void ArcAppIcon::Update(ui::ScaleFactor scale_factor, const SkBitmap& bitmap) {
 
   incomplete_scale_factors_.erase(scale_factor);
 
+  observer_->OnIconUpdated(this);
+}
+
+void ArcAppIcon::UpdateCompressed(ui::ScaleFactor scale_factor,
+                                  std::string data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  compressed_images_[scale_factor] = std::move(data);
+  incomplete_scale_factors_.erase(scale_factor);
   observer_->OnIconUpdated(this);
 }
 

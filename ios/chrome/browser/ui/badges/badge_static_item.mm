@@ -39,4 +39,8 @@
   return _badgeType;
 }
 
+- (BOOL)isFullScreen {
+  return self.badgeType == BadgeType::kBadgeTypeIncognito;
+}
+
 @end

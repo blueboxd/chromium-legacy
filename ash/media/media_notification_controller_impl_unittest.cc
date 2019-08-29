@@ -19,6 +19,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/unguessable_token.h"
 #include "components/media_message_center/media_notification_item.h"
+#include "components/media_message_center/media_notification_util.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/message_center/message_center.h"
 
@@ -84,7 +85,7 @@ class MediaNotificationControllerImplTest : public AshTestBase {
 
   void ExpectHistogramCountRecorded(int count, int size) {
     histogram_tester_.ExpectBucketCount(
-        MediaNotificationControllerImpl::kCountHistogramName, count, size);
+        media_message_center::kCountHistogramName, count, size);
   }
 
   void ExpectHistogramSourceRecorded(

@@ -4,12 +4,14 @@
 
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
@@ -61,9 +63,10 @@ void UpdateStateCrashKey(OomInterventionState next_state) {
 }  // namespace
 
 // static
-void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<OomInterventionImpl>(),
-                          std::move(request));
+void OomInterventionImpl::Create(
+    mojo::PendingReceiver<mojom::blink::OomIntervention> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<OomInterventionImpl>(),
+                              std::move(receiver));
 }
 
 OomInterventionImpl::OomInterventionImpl()

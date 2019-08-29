@@ -28,8 +28,7 @@ const base::FilePath& AppShimListenerTestApi::directory_in_tmp() {
 
 void AppShimListenerTestApi::SetExtensionAppShimHandler(
     std::unique_ptr<apps::ExtensionAppShimHandler> handler) {
-  apps::AppShimHandler::Set(nullptr);
-  apps::AppShimHandler::Set(handler.get());
+  AppShimHostBootstrap::SetClient(handler.get());
   listener_->extension_app_shim_handler_.swap(handler);
 
   // Remove old handler from all AppLifetimeMonitors. Usually this is done at

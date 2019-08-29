@@ -11,11 +11,16 @@ namespace chromeos {
 CupsPrintJob::CupsPrintJob(const Printer& printer,
                            int job_id,
                            const std::string& document_title,
-                           int total_page_number)
+                           int total_page_number,
+                           ::printing::PrintJob::Source source,
+                           const std::string& source_id)
     : printer_(printer),
       job_id_(job_id),
       document_title_(document_title),
-      total_page_number_(total_page_number) {}
+      total_page_number_(total_page_number),
+      source_(source),
+      source_id_(source_id),
+      creation_time_(base::Time::Now()) {}
 
 CupsPrintJob::~CupsPrintJob() = default;
 

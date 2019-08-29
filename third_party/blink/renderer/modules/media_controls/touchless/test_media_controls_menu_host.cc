@@ -6,16 +6,14 @@
 
 namespace blink {
 
-mojom::blink::MediaControlsMenuHostPtr
-TestMediaControlsMenuHost::CreateMediaControlsMenuHostPtr() {
-  mojom::blink::MediaControlsMenuHostPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-  return ptr;
+mojo::PendingRemote<mojom::blink::MediaControlsMenuHost>
+TestMediaControlsMenuHost::CreateMediaControlsMenuHostRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 void TestMediaControlsMenuHost::ShowMediaMenu(
     const WTF::Vector<mojom::MenuItem>& menu_items,
-    mojom::blink::VideoStatePtr video_state,
+    mojo::PendingRemote<mojom::blink::VideoState> video_state,
     base::Optional<WTF::Vector<mojom::blink::TextTrackMetadataPtr>> text_tracks,
     ShowMediaMenuCallback callback) {
   arg_list_.menu_items = WTF::Vector<mojom::MenuItem>(menu_items);

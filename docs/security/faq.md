@@ -262,43 +262,46 @@ mislead the user. For instance, navigating to
 `http://evil.example.com` after the page loads.
 
 <a name="TOC-Why-isn-t-passive-browser-fingerprinting-including-passive-cookies-in-Chrome-s-threat-model-"></a>
-## Why isn't passive browser fingerprinting (including passive cookies) in Chrome's threat model?
+<a name="TOC-What-is-Chrome-s-threat-model-for-fingerprinting-"></a>
+## What is Chrome's threat model for fingerprinting?
 
-As discussed in [Issue 49075](https://crbug.com/49075), we currently do not
-attempt to defeat "passive fingerprinting" or
-"[evercookies](https://en.wikipedia.org/wiki/Evercookie)" or [ETag
-cookies](https://en.wikipedia.org/wiki/HTTP_ETag#Tracking_using_ETags), because
-defeating such fingerprinting is likely not practical without fundamental
-changes to how the Web works. One needs roughly 33 bits of non-correlated,
-distinguishing information to have a good chance of telling apart most user
-agents on the planet (see
-[Arvind Narayanan's site](https://33bits.wordpress.com/about/)
-and [Peter Eckersley's discussion of the information theory behind
-Panopticlick](https://www.eff.org/deeplinks/2010/01/primer-information-theory-and-privacy).)
+> **Update, August 2019:** Please note that this answer has changed. We have
+> updated our threat model to include fingerprinting.
 
-Although Chrome developers could try to reduce the fingerprintability of the
-browser by taking away (e.g.) JavaScript APIs, doing so would not achieve the
-security goal for a few reasons: (a) we could not likely get the
-distinguishability below 33 bits; (b) reducing fingerprintability requires
-breaking many (or even most) useful web features; and (c) so few people would
-tolerate the breakage that it would likely be easier to distinguish people who
-use the fingerprint-defense configuration. (See "[Anonymity Loves Company:
-Usability and the Network
-Effect](https://freehaven.net/anonbib/cache/usability:weis2006.pdf)" by
-Dingledine and Mathewson for more information.)
+Although [we do not consider fingerprinting issues to be *security
+vulnerabilities*](#TOC-Are-privacy-issues-considered-security-bugs-), we do now
+consider them to be privacy bugs that we will try to resolve. We distinguish two
+forms of fingerprinting.
 
-There is a pretty good analysis of in-browser fingerprinting vectors on [this
-wiki
-page](https://dev.chromium.org/Home/chromium-security/client-identification-mechanisms).
-Browser vectors aside, it's possible that the browser could be accurately
-fingerprinted entirely passively, without access to JavaScript or other web
-features or APIs, by its network traffic profile alone. (See e.g. *[Silence on
-the Wire](http://lcamtuf.coredump.cx/silence.shtml#/)* by Michal Zalewski
-generally.)
+* **Passive fingerprinting** refers to fingerprinting techniques that do not
+require a JavaScript API call to achieve. This includes (but is not limited to)
+mechanisms like [ETag
+cookies](https://en.wikipedia.org/wiki/HTTP_ETag#Tracking_using_ETags) and [HSTS
+cookies](https://security.stackexchange.com/questions/79518/what-are-hsts-super-cookies).
+* **Active fingerprinting** refers to fingerprinting techniques that do require
+a JavaScript API call to achieve. Examples include most of the techniques in
+[EFF's Panopticlick proof of concept](https://panopticlick.eff.org).
 
-Since we don't believe it's feasible to provide some mode of Chrome that can
-truly prevent passive fingerprinting, we will mark all related bugs and feature
-requests as WontFix.
+For passive fingerprinting, our ultimate goal is (to the extent possible) to
+reduce the information content available to below the threshold for usefulness.
+
+For active fingerprinting, our ultimate goal is to establish a [privacy
+budget](https://github.com/bslassey/privacy-budget) and to keep web origins
+below the budget (such as by rejecting some API calls when the origin exceeds
+its budget). To avoid breaking rich web applications that people want to use,
+Chrome may increase an origin's budget when it detects that a person is using
+the origin heavily. As with passive fingerprinting, our goal is to set the
+default budget below the threshold of usefulness for fingerprinting.
+
+These are both long-term goals. As of this writing (August 2019) we do not
+expect that Chrome will immediately achieve them.
+
+For background on fingerprinting and the difficulty of stopping it, see [Arvind
+Narayanan's site](https://33bits.wordpress.com/about/) and [Peter Eckersley's
+discussion of the information theory behind
+Panopticlick](https://www.eff.org/deeplinks/2010/01/primer-information-theory-and-privacy).
+There is also [a pretty good analysis of in-browser fingerprinting
+vectors](https://dev.chromium.org/Home/chromium-security/client-identification-mechanisms).
 
 <a name="TOC-Where-are-the-security-indicators-located-in-the-browser-window-"></a>
 ## Where are the security indicators located in the browser window?

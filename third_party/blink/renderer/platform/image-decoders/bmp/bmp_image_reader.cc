@@ -92,6 +92,14 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
   if ((decoded_offset_ < header_end) && !ProcessInfoHeader())
     return false;
 
+  // If there is an applicable color profile, it must be processed now, since
+  // once the image size is available, the decoding machinery assumes the color
+  // space is as well.  Unfortunately, since the profile appears after
+  // everything else, this may delay processing until all data is received.
+  // Luckily, few BMPs have an embedded color profile.
+  if (info_header_.profile_data && !ProcessEmbeddedColorProfile())
+    return false;
+
   // Set our size if we haven't already.  In ICO files, IsDecodedSizeAvailable()
   // always returns true (since it reflects the size in the directory, which has
   // already been read); call SetSize() anyway, since it sanity-checks that the
@@ -246,6 +254,8 @@ bool BMPImageReader::ReadInfoHeader() {
   // Pre-initialize some fields that not all headers set.
   info_header_.compression = RGB;
   info_header_.clr_used = 0;
+  info_header_.profile_data = 0;
+  info_header_.profile_size = 0;
 
   if (is_os21x_) {
     info_header_.width = ReadUint16(4);
@@ -310,6 +320,40 @@ bool BMPImageReader::ReadInfoHeader() {
   }
   if (HasAlphaMaskInHeader())
     bit_masks_[3] = ReadUint32(52);
+
+  // Read color space information, if present and desirable.
+  if (HasColorSpaceInfoInHeader() && !parent_->IgnoresColorSpace()) {
+    enum {
+      kLcsCalibratedRGB = 0x00000000,
+      kLcssRGB = 0x73524742,               // "sRGB"
+      kLcsWindowsColorSpace = 0x57696E20,  // "Win "
+      kProfileLinked = 0x4c494e4b,         // "LINK"
+      kProfileEmbedded = 0x4d424544,       // "MBED"
+    };
+
+    uint32_t cs_type = ReadUint32(56);
+    switch (cs_type) {
+      case kLcssRGB:               // sRGB
+      case kLcsWindowsColorSpace:  // "The Windows default color space" (sRGB)
+        parent_->SetEmbeddedColorProfile(
+            std::make_unique<ColorProfile>(*skcms_sRGB_profile()));
+        break;
+
+      case kProfileEmbedded:  // Embedded ICC profile
+        if (info_header_.size >= 120) {
+          info_header_.profile_data = header_offset_ + ReadUint32(112);
+          info_header_.profile_size = ReadUint32(116);
+        }
+        break;
+
+      case kLcsCalibratedRGB:  // Endpoints and gamma specified directly.
+                               // Unsupported for now.  TODO(pkasting): Support.
+      case kProfileLinked:     // Linked ICC profile.  Unsupported; presents
+                               // security concerns.
+      default:                 // Unknown.
+        break;
+    }
+  }
 
   return true;
 }
@@ -412,6 +456,27 @@ bool BMPImageReader::IsInfoHeaderValid() const {
   if (info_header_.compression == HUFFMAN1D)
     return false;
 
+  return true;
+}
+
+bool BMPImageReader::ProcessEmbeddedColorProfile() {
+  // Ensure we have received the whole profile.
+  if ((info_header_.profile_data > data_->size()) ||
+      ((data_->size() - info_header_.profile_data) < info_header_.profile_size))
+    return false;
+
+  // Parse the profile.
+  auto owned_buffer = std::make_unique<char[]>(info_header_.profile_size);
+  const char* buffer = fast_reader_.GetConsecutiveData(
+      info_header_.profile_data, info_header_.profile_size, owned_buffer.get());
+  auto profile = ColorProfile::Create(buffer, info_header_.profile_size);
+  if (!profile)
+    return parent_->SetFailed();
+  parent_->SetEmbeddedColorProfile(std::move(profile));
+
+  // Zero |profile_data| so we don't try to process the profile again in the
+  // future.
+  info_header_.profile_data = 0;
   return true;
 }
 
@@ -606,9 +671,9 @@ bool BMPImageReader::InitFrame() {
 
   buffer_->ZeroFillPixelData();
   buffer_->SetStatus(ImageFrame::kFramePartial);
-  // SetSize() calls EraseARGB(), which resets the alpha flag, so we force
-  // it back to false here.  We'll set it true below in all cases where
-  // these 0s could actually show through.
+  // SetSize() calls EraseARGB(), which resets the alpha flag, so we force it
+  // back to false here.  We'll set it to true later in all cases where these 0s
+  // could actually show through.
   buffer_->SetHasAlpha(false);
 
   // For BMPs, the frame always fills the entire image.
@@ -674,6 +739,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
           // Skip any remaining pixels in this row.
           if (coord_.X() < parent_->Size().Width())
             buffer_->SetHasAlpha(true);
+          ColorCorrectCurrentRow();
           MoveBufferToNextRow();
 
           decoded_offset_ += 2;
@@ -685,6 +751,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
               (is_top_down_ ? (coord_.Y() < (parent_->Size().Height() - 1))
                             : (coord_.Y() > 0)))
             buffer_->SetHasAlpha(true);
+          ColorCorrectCurrentRow();
           // There's no need to move |coord_| here to trigger the caller
           // to call SetPixelsChanged().  If the only thing that's changed
           // is the alpha state, that will be properly written into the
@@ -701,8 +768,11 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
           // past the end of the image.
           const uint8_t dx = ReadUint8(2);
           const uint8_t dy = ReadUint8(3);
-          if (dx || dy)
+          if (dx || dy) {
             buffer_->SetHasAlpha(true);
+            if (dy)
+              ColorCorrectCurrentRow();
+          }
           if (((coord_.X() + dx) > parent_->Size().Width()) ||
               PastEndOfImage(dy))
             return kFailure;
@@ -874,6 +944,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
     decoded_offset_ += (padded_num_bytes - unpadded_num_bytes);
     if (in_rle)
       return kSuccess;
+    ColorCorrectCurrentRow();
     MoveBufferToNextRow();
   }
 
@@ -883,6 +954,26 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
 
 void BMPImageReader::MoveBufferToNextRow() {
   coord_.Move(-coord_.X(), is_top_down_ ? 1 : -1);
+}
+
+void BMPImageReader::ColorCorrectCurrentRow() {
+  if (decoding_and_mask_)
+    return;
+  // Postprocess the image data according to the profile.
+  const ColorProfileTransform* const transform = parent_->ColorTransform();
+  if (!transform)
+    return;
+  ImageFrame::PixelData* const row = buffer_->GetAddr(0, coord_.Y());
+  const skcms_PixelFormat fmt = XformColorFormat();
+  const skcms_AlphaFormat alpha =
+      (buffer_->HasAlpha() && buffer_->PremultiplyAlpha())
+          ? skcms_AlphaFormat_PremulAsEncoded
+          : skcms_AlphaFormat_Unpremul;
+  const bool success =
+      skcms_Transform(row, fmt, alpha, transform->SrcProfile(), row, fmt, alpha,
+                      transform->DstProfile(), parent_->Size().Width());
+  DCHECK(success);
+  buffer_->SetPixelsChanged(true);
 }
 
 }  // namespace blink

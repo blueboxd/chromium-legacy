@@ -245,8 +245,13 @@ def _ProcessInfo(java_file, package_name, class_names, source, chromium_code):
       _CheckPathMatchesClassName(java_file, package_name, class_names[0])
 
 
+def _ShouldIncludeInJarInfo(fully_qualified_name, excluded_globs):
+  name_as_class_glob = fully_qualified_name.replace('.', '/') + '.class'
+  return not build_utils.MatchesGlob(name_as_class_glob, excluded_globs)
+
+
 def _CreateInfoFile(java_files, jar_path, chromium_code, srcjar_files,
-                    classes_dir, generated_java_dir):
+                    classes_dir, generated_java_dir, excluded_globs):
   """Writes a .jar.info file.
 
   This maps fully qualified names for classes to either the java file that they
@@ -269,7 +274,8 @@ def _CreateInfoFile(java_files, jar_path, chromium_code, srcjar_files,
     source = srcjar_files.get(java_file, java_file)
     for fully_qualified_name in _ProcessInfo(
         java_file, package_name, class_names, source, chromium_code):
-      all_info_data[fully_qualified_name] = java_file
+      if _ShouldIncludeInJarInfo(fully_qualified_name, excluded_globs):
+        all_info_data[fully_qualified_name] = java_file
   logging.info('Writing info file: %s', output_path)
   with build_utils.AtomicOutput(output_path) as f:
     jar_info_utils.WriteJarInfoFile(f, all_info_data, srcjar_files)
@@ -364,7 +370,8 @@ def _OnStaleMd5(options, javac_cmd, java_files, classpath):
 
     if save_outputs:
       _CreateInfoFile(java_files, options.jar_path, options.chromium_code,
-                      srcjar_files, classes_dir, generated_java_dir)
+                      srcjar_files, classes_dir, generated_java_dir,
+                      options.jar_info_exclude_globs)
     else:
       build_utils.Touch(options.jar_path + '.info')
 
@@ -431,6 +438,9 @@ def _ParseOptions(argv):
            'files are packaged into the jar. Files should be specified in '
            'format <filename>:<path to be placed in jar>.')
   parser.add_option(
+      '--jar-info-exclude-globs',
+      help='GN list of exclude globs to filter from generated .info files.')
+  parser.add_option(
       '--chromium-code',
       type='int',
       help='Whether code being compiled should be built with stricter '
@@ -458,6 +468,8 @@ def _ParseOptions(argv):
   options.processorpath = build_utils.ParseGnList(options.processorpath)
   options.processors = build_utils.ParseGnList(options.processors)
   options.java_srcjars = build_utils.ParseGnList(options.java_srcjars)
+  options.jar_info_exclude_globs = build_utils.ParseGnList(
+      options.jar_info_exclude_globs)
 
   if options.java_version == '1.8' and options.bootclasspath:
     # Android's boot jar doesn't contain all java 8 classes.
@@ -579,14 +591,15 @@ def main(argv):
       options.jar_path + '.info',
   ]
 
-  # List python deps in input_strings rather than input_paths since the contents
-  # of them does not change what gets written to the depsfile.
+  input_strings = javac_cmd + classpath
+  if options.jar_info_exclude_globs:
+    input_strings.append(options.jar_info_exclude_globs)
   build_utils.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(options, javac_cmd, java_files, classpath),
       options,
       depfile_deps=depfile_deps,
       input_paths=input_paths,
-      input_strings=javac_cmd + classpath,
+      input_strings=input_strings,
       output_paths=output_paths,
       add_pydeps=False)
   logging.info('Script complete: %s', __file__)

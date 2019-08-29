@@ -184,7 +184,7 @@ TEST(SolidColorLayerImplTest, VerifyNeedsBlending) {
   host->SetRootLayer(root);
 
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(), gfx::Size(500, 500));
+      root.get(), gfx::Rect(500, 500));
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   EXPECT_FALSE(layer->contents_opaque());

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -49,6 +50,8 @@ class ManualFillingController {
     ADDRESS_FALLBACKS,
     TOUCH_TO_FILL,
   };
+
+  using IconCallback = base::OnceCallback<void(const gfx::Image&)>;
 
   ManualFillingController() = default;
   virtual ~ManualFillingController() = default;
@@ -107,17 +110,14 @@ class ManualFillingController {
   virtual void OnOptionSelected(
       autofill::AccessoryAction selected_action) const = 0;
 
-  // Gets an icon for the currently focused frame and passes it to
-  // |icon_callback|. The callback is invoked with an image unless an icon for
-  // a new origin was called. In the latter case, the callback is dropped.
-  // The callback is called with an |IsEmpty()| image if there is no favicon.
-  //
-  // TODO(crbug.com/905669): This controller doesn't need to know about
-  // favicons. Generalize this to forward an icon requests from the UI to a
-  // type-specific accessory controller.
-  virtual void GetFavicon(
-      int desired_size_in_pixel,
-      base::OnceCallback<void(const gfx::Image&)> icon_callback) = 0;
+  // The given |credential_origin| can be empty if the UI doesn't display it. An
+  // empty |credential_origin| means, that requested favicon originates from the
+  // same origin that the currently focused points to.
+  // In either case, the callback is invoked with a favicon image or with an
+  // |IsEmpty()| image if a favicon could not be retrieved.
+  virtual void GetFavicon(int desired_size_in_pixel,
+                          const std::string& credential_origin,
+                          IconCallback icon_callback) = 0;
 
   // -----------------
   // Member accessors:

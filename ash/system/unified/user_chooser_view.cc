@@ -245,8 +245,10 @@ UserItemButton::UserItemButton(int user_index,
   AddChildView(vertical_labels);
   layout->SetFlexForView(vertical_labels, 1);
 
-  capture_icon_->SetImage(gfx::CreateVectorIcon(kSystemTrayRecordingIcon,
-                                                kUnifiedRecordingIconColor));
+  capture_icon_->SetImage(gfx::CreateVectorIcon(
+      kSystemTrayRecordingIcon,
+      AshColorProvider::Get()->GetContentLayerColor(ContentLayerType::kIconRed,
+                                                    AshColorMode::kDark)));
   if (!has_close_button) {
     // Add a padding with the same size as the close button,
     // so as to align all media indicators in a column.

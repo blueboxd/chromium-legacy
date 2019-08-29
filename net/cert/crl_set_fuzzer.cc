@@ -5,8 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "net/cert/crl_set.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 32 + 32 + 20)

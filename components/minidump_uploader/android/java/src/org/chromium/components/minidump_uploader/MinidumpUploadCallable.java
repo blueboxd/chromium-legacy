@@ -4,10 +4,8 @@
 
 package org.chromium.components.minidump_uploader;
 
-import android.content.SharedPreferences;
 import android.support.annotation.IntDef;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
@@ -40,11 +38,9 @@ import java.util.zip.GZIPOutputStream;
 public class MinidumpUploadCallable implements Callable<Integer> {
     private static final String TAG = "MDUploadCallable";
 
-    // These preferences are obsolete and are kept only for removing from user preferences.
-    protected static final String PREF_DAY_UPLOAD_COUNT = "crash_day_dump_upload_count";
-    protected static final String PREF_LAST_UPLOAD_DAY = "crash_dump_last_upload_day";
-    protected static final String PREF_LAST_UPLOAD_WEEK = "crash_dump_last_upload_week";
-    protected static final String PREF_WEEK_UPLOAD_SIZE = "crash_dump_week_upload_size";
+    // "crash_day_dump_upload_count", "crash_dump_last_upload_day", "crash_dump_last_upload_week",
+    // "crash_dump_week_upload_size" - Deprecated prefs used for limiting crash report uploads over
+    // cellular network. Last used in M47, removed in M78.
 
     @VisibleForTesting
     protected static final String CRASH_URL_STRING = "https://clients2.google.com/cr/report";
@@ -70,7 +66,6 @@ public class MinidumpUploadCallable implements Callable<Integer> {
     public MinidumpUploadCallable(
             File fileToUpload, File logfile, CrashReportingPermissionManager permissionManager) {
         this(fileToUpload, logfile, new HttpURLConnectionFactoryImpl(), permissionManager);
-        removeOutdatedPrefs(ContextUtils.getAppSharedPreferences());
     }
 
     public MinidumpUploadCallable(File fileToUpload, File logfile,
@@ -311,15 +306,5 @@ public class MinidumpUploadCallable implements Callable<Integer> {
         }
         inStream.close();
         outStream.close();
-    }
-
-    // TODO(gayane): Remove this function and unused prefs in M51. crbug.com/555022
-    private void removeOutdatedPrefs(SharedPreferences sharedPreferences) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.remove(PREF_DAY_UPLOAD_COUNT)
-                .remove(PREF_LAST_UPLOAD_DAY)
-                .remove(PREF_LAST_UPLOAD_WEEK)
-                .remove(PREF_WEEK_UPLOAD_SIZE)
-                .apply();
     }
 }

@@ -45,7 +45,8 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     @Override
     public void onAction(Object actionData) {
         if (!(actionData instanceof ActionDataInfo)) {
-            DownloadManagerService.openDownloadsPage(ContextUtils.getApplicationContext());
+            DownloadManagerService.openDownloadsPage(
+                    ContextUtils.getApplicationContext(), DownloadOpenSource.SNACK_BAR);
             return;
         }
 
@@ -58,7 +59,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } else {
                 manager.openDownloadedContent(download.downloadInfo, download.systemDownloadId,
-                        DownloadMetrics.DownloadOpenSource.SNACK_BAR);
+                        DownloadOpenSource.SNACK_BAR);
             }
         } else {
             OfflineContentAggregatorNotificationBridgeUiFactory.instance().openItem(

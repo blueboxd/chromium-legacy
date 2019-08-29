@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <vector>
 
 #include "base/command_line.h"
@@ -16,7 +18,6 @@
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 

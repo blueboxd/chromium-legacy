@@ -7,6 +7,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +55,7 @@ class SafetyTipPageInfoBubbleViewTest : public testing::Test {
 
     bubble_ = CreateSafetyTipBubbleForTesting(
         parent_window_->GetNativeView(), web_contents,
-        safety_tips::SafetyTipType::kBadReputation,
+        security_state::SafetyTipStatus::kBadReputation,
         GURL("https://www.fakegoogle.tld"));
   }
 

@@ -21271,7 +21271,9 @@
       {
         "args": [
           "--build-revision=${got_revision}",
-          "--gtest_filter=SkiaGold*"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter",
+          "--browser-ui-tests-verify-pixels",
+          "--enable-pixel-output-in-tests"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -21288,7 +21290,7 @@
           ],
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "pixel_browser_tests"
+        "test": "browser_tests"
       }
     ]
   },

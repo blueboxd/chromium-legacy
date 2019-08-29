@@ -220,9 +220,6 @@ const char kDisableNotifications[]          = "disable-notifications";
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
 
-// Enable partial raster in the renderer.
-const char kEnablePartialRaster[] = "enable-partial-raster";
-
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
@@ -348,6 +345,10 @@ const char kEnableCanvas2dSwapChain[] = "enable-canvas2d-swap-chain";
 // page, allowing a user to select and navigate through non-editable text using
 // just a keyboard. See https://crbug.com/977390 for links to i2i.
 const char kEnableCaretBrowsing[] = "enable-caret-browsing";
+
+// Enables experimental WebAssembly features.
+const char kEnableExperimentalWebAssemblyFeatures[] =
+    "enable-experimental-webassembly-features";
 
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =

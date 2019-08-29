@@ -70,14 +70,11 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
 
-  if (!print_backend->IsValidPrinter(device_name)) {
+  PrinterBasicInfo basic_info;
+  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info)) {
     LOG(WARNING) << "Invalid printer " << device_name;
     return base::Value();
   }
-
-  PrinterBasicInfo basic_info;
-  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info))
-    return base::Value();
 
   return GetSettingsOnBlockingPool(device_name, basic_info, additional_papers,
                                    /* has_secure_protocol */ false,

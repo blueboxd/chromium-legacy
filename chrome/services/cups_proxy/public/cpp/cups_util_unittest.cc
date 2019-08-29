@@ -56,7 +56,7 @@ TEST(GetPrinterIdTest, MissingPrinterUri) {
 }
 
 // Embedded 'printer-uri' attribute must contain a '/'.
-TEST(GetPrinterIdTest, MissingPathDelimeter) {
+TEST(GetPrinterIdTest, MissingPathDelimiter) {
   ipp_t* ret = ippNewRequest(IPP_GET_PRINTER_ATTRIBUTES);
   if (!ret) {
     return;
@@ -82,7 +82,7 @@ TEST(ParseEndpointForPrinterIdTest, EmptyPrinterId) {
 }
 
 // Endpoints must contain a '/'.
-TEST(ParseEndpointForPrinterIdTest, MissingPathDelimeter) {
+TEST(ParseEndpointForPrinterIdTest, MissingPathDelimiter) {
   EXPECT_FALSE(ParseEndpointForPrinterId(kDefaultPrinterId));
 }
 

@@ -24,10 +24,13 @@ import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
  * Reads, writes, and migrates preferences related to network usage and privacy.
  */
 public class PrivacyPreferencesManager implements CrashReportingPermissionManager{
-    static final String DEPRECATED_PREF_CRASH_DUMP_UPLOAD = "crash_dump_upload";
-    static final String DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR =
-            "crash_dump_upload_no_cellular";
-    private static final String DEPRECATED_PREF_CELLULAR_EXPERIMENT = "cellular_experiment";
+    // "crash_dump_upload", "crash_dump_upload_no_cellular" - Deprecated prefs used for
+    // 3-option setting for usage and crash reporting. Last used in M55, removed in M78.
+
+    // "cellular_experiment" - Deprecated pref corresponding to the finch experiment
+    // controlling migration from 3-option setting to ON/OFF toggle for usage and crash
+    // reporting. Last used in M55, removed in M78.
+
     private static final String DEPRECATED_PREF_PHYSICAL_WEB = "physical_web";
     private static final String DEPRECATED_PREF_PHYSICAL_WEB_SHARING = "physical_web_sharing";
     private static final String DEPRECATED_PREF_PHYSICAL_WEB_HAS_DEFERRED_METRICS_KEY =
@@ -80,7 +83,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
 
         migratePhysicalWebPreferences();
-        migrateUsageAndCrashPreferences();
     }
 
     public static PrivacyPreferencesManager getInstance() {
@@ -111,34 +113,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
                 .remove(DEPRECATED_PREF_PHYSICAL_WEB_ACTIVITY_REFERRALS)
                 .remove(DEPRECATED_PREF_PHYSICAL_WEB_PHYSICAL_WEB_STATE)
                 .apply();
-    }
-
-    public void migrateUsageAndCrashPreferences() {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-
-        if (mSharedPreferences.contains(DEPRECATED_PREF_CRASH_DUMP_UPLOAD)) {
-            String crashDumpNeverUpload = "crash_dump_never_upload";
-            setUsageAndCrashReporting(
-                    !mSharedPreferences
-                             .getString(DEPRECATED_PREF_CRASH_DUMP_UPLOAD, crashDumpNeverUpload)
-                             .equals(crashDumpNeverUpload));
-
-            // Remove both this preference and the related one. If the related one is not removed
-            // now, later migrations could read from it and clobber the state.
-            editor.remove(DEPRECATED_PREF_CRASH_DUMP_UPLOAD);
-            if (mSharedPreferences.contains(DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR)) {
-                editor.remove(DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR);
-            }
-        } else if (mSharedPreferences.contains(DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR)) {
-            setUsageAndCrashReporting(mSharedPreferences.getBoolean(
-                    DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false));
-            editor.remove(DEPRECATED_PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR);
-        }
-
-        if (mSharedPreferences.contains(DEPRECATED_PREF_CELLULAR_EXPERIMENT)) {
-            editor.remove(DEPRECATED_PREF_CELLULAR_EXPERIMENT);
-        }
-        editor.apply();
     }
 
     /**

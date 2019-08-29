@@ -719,7 +719,6 @@ jumbo_component("views") {
           "widget/desktop_aura/x11_move_loop_delegate.h",
           "widget/desktop_aura/x11_topmost_window_finder.h",
           "widget/desktop_aura/x11_whole_screen_move_loop.h",
-          "widget/desktop_aura/x11_window_event_filter.h",
         ]
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.cc",
@@ -729,7 +728,6 @@ jumbo_component("views") {
           "widget/desktop_aura/x11_desktop_window_move_client.cc",
           "widget/desktop_aura/x11_topmost_window_finder.cc",
           "widget/desktop_aura/x11_whole_screen_move_loop.cc",
-          "widget/desktop_aura/x11_window_event_filter.cc",
         ]
         if (use_atk) {
           sources += [

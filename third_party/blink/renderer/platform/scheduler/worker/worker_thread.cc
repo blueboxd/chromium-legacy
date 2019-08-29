@@ -52,6 +52,7 @@ WorkerThread::~WorkerThread() {
         const_cast<scheduler::WorkerThread*>(this));
   }
   thread_->Quit();
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   thread_->Join();
 }
 
@@ -118,6 +119,7 @@ void WorkerThread::SimpleThreadImpl::WaitForInit() {
   internal_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
                                 base::Unretained(&initialized)));
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   initialized.Wait();
 }
 

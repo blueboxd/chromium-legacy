@@ -29,12 +29,10 @@
     {
       name: "Accelerometer",
       feature_policy_name: "accelerometer",
-      depends_on: ["Sensor"],
     },
     {
       name: "AmbientLightSensor",
       feature_policy_name: "ambient-light-sensor",
-      depends_on: ["Sensor"],
     },
     {
       name: "Autoplay",
@@ -168,7 +166,6 @@
     {
       name: "Gyroscope",
       feature_policy_name: "gyroscope",
-      depends_on: ["Sensor"],
     },
     {
       name: "Hid",
@@ -198,7 +195,6 @@
     {
       name: "Magnetometer",
       feature_policy_name: "magnetometer",
-      depends_on: ["Sensor"],
     },
     {
       name: "Microphone",

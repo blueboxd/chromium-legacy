@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -13,7 +15,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/printing/zeroconf_printer_detector.h"
 #include "chrome/browser/local_discovery/service_discovery_device_lister.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 

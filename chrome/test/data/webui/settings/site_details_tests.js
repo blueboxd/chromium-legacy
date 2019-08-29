@@ -135,9 +135,6 @@ suite('SiteDetails', function() {
         'enableSafeBrowsingSubresourceFilter';
 
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
-                                                .SENSORS] =
-        'enableSensorsContentSetting';
-    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .PAYMENT_HANDLER] =
         'enablePaymentHandlerContentSetting';
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
@@ -295,7 +292,6 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
     // Make sure all the possible content settings are shown for this test.
     loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
-    loadTimeData.overrideValues({enableSensorsContentSetting: true});
     loadTimeData.overrideValues({enablePaymentHandlerContentSetting: true});
     loadTimeData.overrideValues(
         {enableNativeFileSystemWriteContentSetting: true});

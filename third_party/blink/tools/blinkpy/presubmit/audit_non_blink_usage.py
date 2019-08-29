@@ -570,6 +570,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/workers/worker_thread.cc'],
+        'allowed': [
+            'base::ScopedAllowBaseSyncPrimitives',
+        ],
+    },
+    {
         'paths': [
             'third_party/blink/renderer/modules/device_orientation/',
             'third_party/blink/renderer/modules/gamepad/',

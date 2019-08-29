@@ -7,6 +7,9 @@ package org.chromium.weblayer_private;
 import android.app.Activity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.LinearLayout;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.embedder_support.view.ContentViewRenderView;
@@ -21,10 +24,14 @@ public final class BrowserControllerImpl {
     private long mNativeBrowserController;
 
     private ActivityWindowAndroid mWindowAndroid;
+    // This is set as the content view of the activity. It contains mContentView.
+    private LinearLayout mLinearLayout;
+    // This is parented to mLinearLayout.
     private ContentViewRenderView mContentView;
     private ProfileImpl mProfile;
     private WebContents mWebContents;
     private BrowserObserverProxy mBrowserObserverProxy;
+    private View mTopView;
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -51,9 +58,12 @@ public final class BrowserControllerImpl {
             Activity activity, ProfileImpl profile, BrowserControllerClient client) {
         mProfile = profile;
 
+        mLinearLayout = new LinearLayout(activity);
+        mLinearLayout.setOrientation(LinearLayout.VERTICAL);
+
         mWindowAndroid = new ActivityWindowAndroid(activity);
         mContentView = new ContentViewRenderView(activity);
-        activity.setContentView(mContentView);
+        activity.setContentView(mLinearLayout);
         mWindowAndroid.setAnimationPlaceholderView(mContentView.getSurfaceView());
 
         mContentView.onNativeLibraryLoaded(mWindowAndroid);
@@ -65,6 +75,9 @@ public final class BrowserControllerImpl {
                 WebContents.createDefaultInternalsHolder());
 
         mContentView.setCurrentWebContents(mWebContents);
+        mLinearLayout.addView(mContentView,
+                new LinearLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1f));
         mWebContents.onShow();
         mBrowserObserverProxy = new BrowserObserverProxy(mNativeBrowserController, client);
     }
@@ -73,6 +86,17 @@ public final class BrowserControllerImpl {
         mBrowserObserverProxy.destroy();
         nativeDeleteBrowserController(mNativeBrowserController);
         mNativeBrowserController = 0;
+    }
+
+    public void setTopView(View view) {
+        if (mTopView == view) return;
+        if (mTopView != null) mLinearLayout.removeView(mTopView);
+        mTopView = view;
+        if (mTopView != null) {
+            mLinearLayout.addView(mTopView, 0,
+                    new LinearLayout.LayoutParams(
+                            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 0f));
+        }
     }
 
     // TODO: this is temporary, move to NavigationControllerImpl.

@@ -134,10 +134,13 @@ TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
   auto* main_frame = mock_graph.page->GetMainFrameNodeImpl();
   main_frame->OnNavigationCommitted(kExampleUrl, /* same_document */ false);
 
-  WebUIGraphDumpImpl impl(&graph_);
+  std::unique_ptr<WebUIGraphDumpImpl> impl =
+      std::make_unique<WebUIGraphDumpImpl>();
+  WebUIGraphDumpImpl* impl_raw = impl.get();
   // Create a mojo proxy to the impl.
   mojom::WebUIGraphDumpPtr impl_proxy;
-  impl.Bind(mojo::MakeRequest(&impl_proxy), base::OnceClosure());
+  impl->BindWithGraph(&graph_, mojo::MakeRequest(&impl_proxy));
+  graph_.PassToGraph(std::move(impl));
 
   TestChangeStream change_stream;
   impl_proxy->SubscribeToChanges(change_stream.GetProxy());
@@ -202,6 +205,12 @@ TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
   EXPECT_EQ(kAnotherURL, main_page_it->second->main_frame_url);
 
   task_environment.RunUntilIdle();
+
+  // Make sure the Dump impl is torn down when the proxy closes.
+  impl_proxy.reset();
+  task_environment.RunUntilIdle();
+
+  EXPECT_EQ(nullptr, graph_.TakeFromGraph(impl_raw));
 }
 
 }  // namespace performance_manager

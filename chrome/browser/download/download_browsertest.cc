@@ -1134,8 +1134,8 @@ class FakeDownloadProtectionService
 
   void CheckClientDownload(
       DownloadItem* download_item,
-      const safe_browsing::CheckDownloadCallback& callback) override {
-    callback.Run(safe_browsing::DownloadCheckResult::UNCOMMON);
+      safe_browsing::CheckDownloadCallback callback) override {
+    std::move(callback).Run(safe_browsing::DownloadCheckResult::UNCOMMON);
   }
 };
 

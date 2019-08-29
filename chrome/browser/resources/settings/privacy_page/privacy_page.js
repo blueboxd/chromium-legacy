@@ -119,15 +119,6 @@ Polymer({
     },
 
     /** @private */
-    enableSensorsContentSetting_: {
-      type: Boolean,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getBoolean('enableSensorsContentSetting');
-      }
-    },
-
-    /** @private */
     enableExperimentalWebPlatformFeatures_: {
       type: Boolean,
       value: function() {
@@ -203,19 +194,6 @@ Polymer({
       type: Boolean,
       value: function() {
         return loadTimeData.getBoolean('unifiedConsentEnabled');
-      },
-    },
-
-    /**
-     * Whether the ImprovedCookieControls flag is enabled.
-     * Controls whether or not to expose the cookie controls toggle in the
-     * privacy settings page.
-     * @private
-     */
-    improvedCookieControlsEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('improvedCookieControlsEnabled');
       },
     },
 

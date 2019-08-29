@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_prefs.h"
@@ -2060,6 +2062,34 @@ TEST_F(TabletModeWindowManagerWithClamshellSplitViewTest,
   EXPECT_EQ(window->bounds().width(),
             1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
   EXPECT_EQ(window2->bounds().width(), 1200 - window->bounds().width());
+}
+
+// Test that when switching from clamshell mode to tablet mode, if overview mode
+// is active, home launcher is hidden. And after overview mode is dismissed,
+// home launcher will be shown again.
+TEST_F(TabletModeWindowManagerWithClamshellSplitViewTest,
+       HomeLauncherVisibilityTest) {
+  gfx::Rect rect(10, 10, 200, 50);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+
+  // Clamshell -> Tablet mode transition. If overview is active, it will remain
+  // in overview.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->StartOverview());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  TabletModeWindowManager* manager = CreateTabletModeWindowManager();
+  EXPECT_TRUE(manager);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  aura::Window* home_screen_window =
+      Shell::Get()->app_list_controller()->GetHomeScreenWindow();
+  EXPECT_FALSE(home_screen_window->TargetVisibility());
+
+  // Simulate tapping on the home button to go to home launcher.
+  Shell::Get()->home_screen_controller()->GoHome(GetPrimaryDisplay().id());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(home_screen_window->TargetVisibility());
 }
 
 }  // namespace ash

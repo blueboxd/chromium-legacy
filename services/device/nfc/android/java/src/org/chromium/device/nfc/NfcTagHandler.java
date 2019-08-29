@@ -109,7 +109,7 @@ public class NfcTagHandler {
 
         @Override
         public NdefMessage read() throws FormatException {
-            return NfcTypeConverter.emptyNdefMessage();
+            return NdefMessageUtils.emptyNdefMessage();
         }
     }
 

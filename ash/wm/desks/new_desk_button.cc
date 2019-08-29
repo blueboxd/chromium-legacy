@@ -23,6 +23,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/style/platform_style.h"
 
@@ -43,6 +44,10 @@ constexpr float kInkDropHighlightVisibleOpacity = 0.3f;
 constexpr SkColor kTextAndIconColor = gfx::kGoogleGrey200;
 constexpr SkColor kDisabledTextAndIconColor =
     SkColorSetA(kTextAndIconColor, 0x61);
+
+// The color of the highlight when this button is selected via
+// tabbing.
+constexpr int kHighlightThicknessDp = 2;
 
 }  // namespace
 
@@ -65,6 +70,7 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
   SetFocusPainter(nullptr);
   UpdateButtonState();
+  UpdateBorderState();
 }
 
 void NewDeskButton::UpdateButtonState() {
@@ -151,5 +157,27 @@ void NewDeskButton::MaybeActivateHighlightedView() {
 }
 
 void NewDeskButton::MaybeCloseHighlightedView() {}
+
+bool NewDeskButton::OnViewHighlighted() {
+  UpdateBorderState();
+  return true;
+}
+
+void NewDeskButton::OnViewUnhighlighted() {
+  UpdateBorderState();
+}
+
+void NewDeskButton::UpdateBorderState() {
+  if (IsViewHighlighted()) {
+    SetBorder(views::CreateRoundedRectBorder(
+        kHighlightThicknessDp, kCornerRadius,
+        GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_FocusedBorderColor)));
+  } else {
+    // Use an empty border when this view is not highlighted otherwise the text
+    // will shift when unhighlighted.
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kHighlightThicknessDp)));
+  }
+}
 
 }  // namespace ash

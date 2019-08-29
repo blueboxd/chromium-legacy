@@ -5,13 +5,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <string>
 #include <vector>
 
 #include "base/containers/span.h"
 #include "net/ntlm/ntlm_client.h"
 #include "net/ntlm/ntlm_test_data.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 base::string16 ConsumeRandomLengthString16(FuzzedDataProvider& data_provider,
                                            size_t max_chars) {

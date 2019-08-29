@@ -4,6 +4,8 @@
 
 #include "net/socket/fuzzed_socket.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -13,7 +15,6 @@
 #include "net/base/io_buffer.h"
 #include "net/log/net_log_source_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_SESSION_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 

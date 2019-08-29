@@ -213,9 +213,11 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // page have transition to frozen.
   bool has_nonempty_beforeunload_ = false;
 
-  // The URL the main frame last committed a navigation to and the unique ID of
-  // the associated navigation handle.
+  // The URL the main frame last committed, or the initial URL a page was
+  // initialized with. The latter case is distinguished by a zero navigation ID.
   GURL main_frame_url_;
+  // The unique ID of the navigation handle the main frame last committed, or
+  // zero if the page has never committed a navigation.
   int64_t navigation_id_ = 0;
 
   // The aggregate intervention policy states for this page. These are

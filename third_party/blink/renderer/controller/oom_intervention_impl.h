@@ -5,6 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CONTROLLER_OOM_INTERVENTION_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CONTROLLER_OOM_INTERVENTION_IMPL_H_
 
+#include <memory>
+
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
 #include "third_party/blink/public/mojom/oom_intervention/oom_intervention.mojom-blink.h"
@@ -23,7 +27,8 @@ class CONTROLLER_EXPORT OomInterventionImpl
     : public mojom::blink::OomIntervention,
       public MemoryUsageMonitor::Observer {
  public:
-  static void Create(mojom::blink::OomInterventionRequest);
+  static void Create(
+      mojo::PendingReceiver<mojom::blink::OomIntervention> receiver);
 
   OomInterventionImpl();
   ~OomInterventionImpl() override;

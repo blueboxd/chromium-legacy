@@ -28,7 +28,8 @@ class CredentialLeakDialogControllerImpl
 
   // CredentialLeakDialogController:
   bool IsShowingAccountChooser() const override;
-  void OnCheckPasswords() override;
+  void OnCancelDialog() override;
+  void OnAcceptDialog() override;
   void OnCloseDialog() override;
   base::string16 GetAcceptButtonLabel() const override;
   base::string16 GetCancelButtonLabel() const override;
@@ -41,7 +42,7 @@ class CredentialLeakDialogControllerImpl
   // Release |credential_leak_dialog_| and close the open dialog.
   void ResetDialog();
 
-  CredentialLeakPrompt* credential_leak_dialog_;
+  CredentialLeakPrompt* credential_leak_dialog_ = nullptr;
   PasswordsLeakDialogDelegate* delegate_;
   const password_manager::CredentialLeakType leak_type_;
   const GURL origin_;

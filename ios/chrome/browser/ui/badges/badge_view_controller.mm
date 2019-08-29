@@ -60,57 +60,48 @@
 
 #pragma mark BadgeConsumer
 
-- (void)setupWithBadges:(NSArray*)badges {
-  if (!self.badges) {
-    self.badges = [[NSMutableArray alloc] init];
-  }
-  self.fullScreenBadge = nil;
+- (void)setupWithDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
+                fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem {
   self.displayedBadge = nil;
-  [self.badges removeAllObjects];
-  for (id<BadgeItem> item in badges) {
-    BadgeButton* newButton =
-        [self.buttonFactory getBadgeButtonForBadgeType:item.badgeType];
-    // No need to animate this change since it is the initial state.
-    [newButton setAccepted:item.accepted animated:NO];
-    [self.badges addObject:newButton];
+  self.fullScreenBadge = nil;
+  if (displayedBadgeItem) {
+    BadgeButton* newButton = [self.buttonFactory
+        getBadgeButtonForBadgeType:displayedBadgeItem.badgeType];
+    [newButton setAccepted:displayedBadgeItem.accepted animated:NO];
+    self.displayedBadge = newButton;
   }
-  [self updateDisplayedBadges];
+  if (fullscreenBadgeItem) {
+    self.fullScreenBadge = [self.buttonFactory
+        getBadgeButtonForBadgeType:fullscreenBadgeItem.badgeType];
+  }
 }
 
-- (void)addBadge:(id<BadgeItem>)badgeItem {
-  BadgeButton* newButton =
-      [self.buttonFactory getBadgeButtonForBadgeType:badgeItem.badgeType];
-  // The incognito badge is one that must be visible at all times and persist
-  // when fullscreen is expanded and collapsed.
-  if (badgeItem.badgeType == BadgeType::kBadgeTypeIncognito) {
-    self.fullScreenBadge = newButton;
-    return;
-  }
-  if (!self.badges) {
-    self.badges = [[NSMutableArray alloc] init];
-  }
-  // No need to animate this change since it is the initial state.
-  [newButton setAccepted:badgeItem.accepted animated:NO];
-  [self.badges addObject:newButton];
-  [self updateDisplayedBadges];
-}
-
-- (void)removeBadge:(id<BadgeItem>)badgeItem {
-  for (BadgeButton* button in self.badges) {
-    if (button.badgeType == badgeItem.badgeType) {
-      [self.badges removeObject:button];
-      break;
+- (void)updateDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
+             fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem {
+  if (fullscreenBadgeItem) {
+    if (!self.fullScreenBadge ||
+        self.fullScreenBadge.badgeType != fullscreenBadgeItem.badgeType) {
+      BadgeButton* newButton = [self.buttonFactory
+          getBadgeButtonForBadgeType:fullscreenBadgeItem.badgeType];
+      self.fullScreenBadge = newButton;
     }
+  } else {
+    self.fullScreenBadge = nil;
   }
-  [self updateDisplayedBadges];
-}
 
-- (void)updateBadge:(id<BadgeItem>)badgeItem {
-  for (BadgeButton* button in self.badges) {
-    if (button.badgeType == badgeItem.badgeType) {
-      [button setAccepted:badgeItem.accepted animated:YES];
-      return;
+  if (displayedBadgeItem) {
+    if (self.displayedBadge &&
+        self.displayedBadge.badgeType == displayedBadgeItem.badgeType) {
+      [self.displayedBadge setAccepted:displayedBadgeItem.accepted
+                              animated:YES];
+    } else {
+      BadgeButton* newButton = [self.buttonFactory
+          getBadgeButtonForBadgeType:displayedBadgeItem.badgeType];
+      [newButton setAccepted:displayedBadgeItem.accepted animated:NO];
+      self.displayedBadge = newButton;
     }
+  } else {
+    self.displayedBadge = nil;
   }
 }
 

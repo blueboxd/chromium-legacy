@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -62,9 +63,9 @@ const CGFloat kEditIconLength = 18;
   cell.textField.enabled = self.textFieldEnabled;
 
   if (self.hideEditIcon) {
-    cell.textField.textColor =
-        self.textFieldEnabled ? UIColorFromRGB(kTableViewTextLabelColorBlue)
-                              : UIColor.cr_secondaryLabelColor;
+    cell.textField.textColor = self.textFieldEnabled
+                                   ? [UIColor colorNamed:kBlueColor]
+                                   : UIColor.cr_secondaryLabelColor;
   } else {
     cell.textField.textColor = UIColor.cr_secondaryLabelColor;
     cell.editIconDisplayed = self.textFieldEnabled;

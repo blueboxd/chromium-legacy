@@ -581,6 +581,11 @@
     "args": ["--enable-features=OffMainThreadServiceWorkerStartup"]
   },
   {
+    "prefix": "omt-service-worker-startup",
+    "base": "external/wpt/shape-detection",
+    "args": ["--enable-features=OffMainThreadServiceWorkerStartup"]
+  },
+  {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/content-security-policy/inside-worker",
     "args": ["--enable-features=PlzDedicatedWorker"]

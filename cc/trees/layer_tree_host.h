@@ -386,7 +386,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return event_listener_properties_[static_cast<size_t>(event_class)];
   }
 
-  void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
+  void SetViewportRectAndScale(const gfx::Rect& device_viewport_rect,
                                float device_scale_factor,
                                const viz::LocalSurfaceIdAllocation&
                                    local_surface_id_allocation_from_parent);
@@ -395,7 +395,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   gfx::Rect viewport_visible_rect() const { return viewport_visible_rect_; }
 
-  gfx::Size device_viewport_size() const { return device_viewport_size_; }
+  gfx::Rect device_viewport_rect() const { return device_viewport_rect_; }
 
   void SetBrowserControlsHeight(float top_height,
                                 float bottom_height,
@@ -818,7 +818,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   LayerSelection selection_;
 
-  gfx::Size device_viewport_size_;
+  gfx::Rect device_viewport_rect_;
 
   gfx::Rect viewport_visible_rect_;
 

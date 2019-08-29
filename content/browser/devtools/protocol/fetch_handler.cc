@@ -14,6 +14,7 @@
 #include "content/browser/devtools/devtools_stream_pipe.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/network_handler.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -324,6 +325,7 @@ void FetchHandler::OnResponseBodyPipeTaken(
     Response response,
     mojo::ScopedDataPipeConsumerHandle pipe,
     const std::string& mime_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(response.isSuccess(), pipe.is_valid());
   if (!response.isSuccess()) {
     callback->sendFailure(std::move(response));

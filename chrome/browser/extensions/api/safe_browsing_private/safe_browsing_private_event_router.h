@@ -31,6 +31,10 @@ namespace policy {
 class CloudPolicyClient;
 }
 
+namespace safe_browsing {
+class DlpDeepScanningVerdict;
+}
+
 namespace extensions {
 
 // An event router that observes Safe Browsing events and notifies listeners.
@@ -52,11 +56,14 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyReason[];
   static const char kKeyNetErrorCode[];
   static const char kKeyClickedThrough[];
+  static const char kKeyTriggeredRules[];
 
   static const char kKeyPasswordReuseEvent[];
   static const char kKeyPasswordChangedEvent[];
   static const char kKeyDangerousDownloadEvent[];
   static const char kKeyInterstitialEvent[];
+  static const char kKeySensitiveDataEvent[];
+  static const char kKeyLargeUnscannedFileEvent[];
 
   explicit SafeBrowsingPrivateEventRouter(content::BrowserContext* context);
 
@@ -90,6 +97,18 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   void OnDangerousDeepScanningResult(const GURL& url,
                                      const std::string& file_name,
                                      const std::string& download_digest_sha256);
+
+  // Notifies listeners that scanning for sensitive data detected a violation.
+  void OnSensitiveDataEvent(
+      const safe_browsing::DlpDeepScanningVerdict& verdict,
+      const GURL& url,
+      const std::string& file_name,
+      const std::string& download_digest_sha256);
+
+  // Notifies listeners that deep scanning failed, since the file was too large.
+  void OnLargeUnscannedFileEvent(const GURL& url,
+                                 const std::string& file_name,
+                                 const std::string& download_digest_sha256);
 
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);

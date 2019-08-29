@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_stream_factory.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/stl_util.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
@@ -26,7 +28,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 

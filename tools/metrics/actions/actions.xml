@@ -1464,12 +1464,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.Closed">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>User closed the Chrome Home bottom sheet.</description>
 </action>
 
 <action name="Android.ChromeHome.ClosedByBackPress">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1478,6 +1480,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.ClosedByNavigation">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1497,6 +1500,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.ClosedBySwipe">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1505,6 +1509,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.ClosedByTapScrim">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1513,6 +1518,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.FullState">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1521,6 +1527,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.HalfState">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1529,6 +1536,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.IPHMenuItemClicked">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1538,6 +1546,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.NativeNTPShown">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1602,6 +1611,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.OptOutSnackbarClicked">
+  <obsolete>Unused as of 7/2019</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -21750,6 +21760,15 @@ should be able to be added at any place in this file.
 <action name="TaskManager">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="TerminalSystemAppMenuButtonButton_Clicked">
+  <owner>alancutter@chromium.org</owner>
+  <owner>calamity@chromium.org</owner>
+  <owner>joelhockey@chromium.org</owner>
+  <description>
+    User clicked on the terminal system app menu button. Chrome OS only.
+  </description>
 </action>
 
 <action name="Terminate_ProcessMismatch_CreateNewWidget">

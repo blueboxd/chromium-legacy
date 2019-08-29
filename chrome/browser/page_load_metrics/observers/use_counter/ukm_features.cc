@@ -126,6 +126,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kSMSReceiverStart,
           WebFeature::kRequestFileSystem,
           WebFeature::kMediaCapabilitiesFramerateRatio,
+          WebFeature::kBaseElement,
+          WebFeature::kBaseWithCrossOriginHref,
       }));
   return *opt_in_features;
 }

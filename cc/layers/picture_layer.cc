@@ -64,7 +64,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SetUseTransformedRasterization(
       ShouldUseTransformedRasterization());
   layer_impl->set_gpu_raster_max_texture_size(
-      layer_tree_host()->device_viewport_size());
+      layer_tree_host()->device_viewport_rect().size());
 
   // TODO(enne): http://crbug.com/918126 debugging
   CHECK(this);

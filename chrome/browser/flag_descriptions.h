@@ -386,9 +386,6 @@ extern const char kEnableTLS13EarlyDataDescription[];
 extern const char kWinrtSensorsImplementationName[];
 extern const char kWinrtSensorsImplementationDescription[];
 
-extern const char kEnableGenericSensorName[];
-extern const char kEnableGenericSensorDescription[];
-
 extern const char kEnableGenericSensorExtraClassesName[];
 extern const char kEnableGenericSensorExtraClassesDescription[];
 
@@ -519,9 +516,6 @@ extern const char kEnableResamplingScrollEventsDescription[];
 extern const char kEnableResourceLoadingHintsName[];
 extern const char kEnableResourceLoadingHintsDescription[];
 
-extern const char kEnableSensorContentSettingName[];
-extern const char kEnableSensorContentSettingDescription[];
-
 extern const char kEnableSubresourceRedirectName[];
 extern const char kEnableSubresourceRedirectDescription[];
 
@@ -560,6 +554,9 @@ extern const char kEnableWebAuthenticationCableSupportDescription[];
 
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
+
+extern const char kExperimentalWebAssemblyFeaturesName[];
+extern const char kExperimentalWebAssemblyFeaturesDescription[];
 
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
@@ -997,6 +994,9 @@ extern const char kSameSiteByDefaultCookiesDescription[];
 
 extern const char kSaveasMenuLabelExperimentName[];
 extern const char kSaveasMenuLabelExperimentDescription[];
+
+extern const char kScalableAppListName[];
+extern const char kScalableAppListDescription[];
 
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
@@ -1808,8 +1808,14 @@ extern const char kPermissionPromptPersistenceToggleDescription[];
 extern const char kAcceleratedMjpegDecodeName[];
 extern const char kAcceleratedMjpegDecodeDescription[];
 
+extern const char kAggregatedMlAppRankingName[];
+extern const char kAggregatedMlAppRankingDescription[];
+
 extern const char kAppServiceAshName[];
 extern const char kAppServiceAshDescription[];
+
+extern const char kAppServiceShelfName[];
+extern const char kAppServiceShelfDescription[];
 
 extern const char kArcBootCompleted[];
 extern const char kArcBootCompletedDescription[];

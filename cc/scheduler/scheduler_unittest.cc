@@ -4056,10 +4056,10 @@ TEST_F(SchedulerTest, WaitForAllPipelineStagesAlwaysObservesBeginFrames) {
   EXPECT_TRUE(client_->IsInsideBeginImplFrame());
   client_->Reset();
 
-  // BeginFrame deadline is blocked because commits are deferred.
+  // BeginFrame deadline is not blocked because commits are deferred.
   task_runner_->RunPendingTasks();
   EXPECT_ACTIONS();
-  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
+  EXPECT_TRUE(!client_->IsInsideBeginImplFrame());
   client_->Reset();
 }
 

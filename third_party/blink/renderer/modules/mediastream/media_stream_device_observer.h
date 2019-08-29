@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
@@ -76,9 +76,9 @@ class MODULES_EXPORT MediaStreamDeviceObserver
                        const MediaStreamDevice& new_device) override;
 
   void BindMediaStreamDeviceObserverRequest(
-      mojom::blink::MediaStreamDeviceObserverRequest request);
+      mojo::PendingReceiver<mojom::blink::MediaStreamDeviceObserver> receiver);
 
-  mojo::Binding<mojom::blink::MediaStreamDeviceObserver> binding_;
+  mojo::Receiver<mojom::blink::MediaStreamDeviceObserver> receiver_{this};
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
   THREAD_CHECKER(thread_checker_);

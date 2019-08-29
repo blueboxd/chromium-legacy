@@ -161,8 +161,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // to the controller. If a broken connection is observed, this loader attempts
   // to restart the controller and dispatch the event again.
   ScopedObserver<ControllerServiceWorkerConnector,
-                 ServiceWorkerSubresourceLoader>
-      controller_connector_observer_;
+                 ControllerServiceWorkerConnector::Observer>
+      controller_connector_observer_{this};
   bool fetch_request_restarted_;
   bool blob_reading_complete_;
   bool side_data_reading_complete_;

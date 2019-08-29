@@ -78,8 +78,8 @@ class PictureLayerImplPerfTest : public testing::Test {
 
   void RunRasterQueueConstructAndIterateTest(const std::string& test_name,
                                              int num_tiles,
-                                             const gfx::Size& viewport_size) {
-    host_impl_.active_tree()->SetDeviceViewportSize(viewport_size);
+                                             const gfx::Rect& viewport_rect) {
+    host_impl_.active_tree()->SetDeviceViewportRect(viewport_rect);
     host_impl_.pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
@@ -102,7 +102,7 @@ class PictureLayerImplPerfTest : public testing::Test {
 
   void RunRasterQueueConstructTest(const std::string& test_name,
                                    const gfx::Rect& viewport) {
-    host_impl_.active_tree()->SetDeviceViewportSize(viewport.size());
+    host_impl_.active_tree()->SetDeviceViewportRect(viewport);
     host_impl_.pending_tree()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
@@ -122,11 +122,10 @@ class PictureLayerImplPerfTest : public testing::Test {
                            timer_.LapsPerSecond(), "runs/s", true);
   }
 
-  void RunEvictionQueueConstructAndIterateTest(
-      const std::string& test_name,
-      int num_tiles,
-      const gfx::Size& viewport_size) {
-    host_impl_.active_tree()->SetDeviceViewportSize(viewport_size);
+  void RunEvictionQueueConstructAndIterateTest(const std::string& test_name,
+                                               int num_tiles,
+                                               const gfx::Rect& viewport_rect) {
+    host_impl_.active_tree()->SetDeviceViewportRect(viewport_rect);
     host_impl_.pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
@@ -150,7 +149,7 @@ class PictureLayerImplPerfTest : public testing::Test {
 
   void RunEvictionQueueConstructTest(const std::string& test_name,
                                      const gfx::Rect& viewport) {
-    host_impl_.active_tree()->SetDeviceViewportSize(viewport.size());
+    host_impl_.active_tree()->SetDeviceViewportRect(viewport);
     host_impl_.pending_tree()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
@@ -191,10 +190,10 @@ TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {
   pending_layer_->AddTiling(gfx::AxisTransform2d(1.0f, gfx::Vector2dF()));
   pending_layer_->AddTiling(gfx::AxisTransform2d(2.0f, gfx::Vector2dF()));
 
-  RunRasterQueueConstructAndIterateTest("32_100x100", 32, gfx::Size(100, 100));
-  RunRasterQueueConstructAndIterateTest("32_500x500", 32, gfx::Size(500, 500));
-  RunRasterQueueConstructAndIterateTest("64_100x100", 64, gfx::Size(100, 100));
-  RunRasterQueueConstructAndIterateTest("64_500x500", 64, gfx::Size(500, 500));
+  RunRasterQueueConstructAndIterateTest("32_100x100", 32, gfx::Rect(100, 100));
+  RunRasterQueueConstructAndIterateTest("32_500x500", 32, gfx::Rect(500, 500));
+  RunRasterQueueConstructAndIterateTest("64_100x100", 64, gfx::Rect(100, 100));
+  RunRasterQueueConstructAndIterateTest("64_500x500", 64, gfx::Rect(500, 500));
 }
 
 TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstruct) {
@@ -229,14 +228,14 @@ TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstructAndIterate) {
   ASSERT_TRUE(host_impl_.tile_manager() != nullptr);
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
-  RunEvictionQueueConstructAndIterateTest(
-      "32_100x100", 32, gfx::Size(100, 100));
-  RunEvictionQueueConstructAndIterateTest(
-      "32_500x500", 32, gfx::Size(500, 500));
-  RunEvictionQueueConstructAndIterateTest(
-      "64_100x100", 64, gfx::Size(100, 100));
-  RunEvictionQueueConstructAndIterateTest(
-      "64_500x500", 64, gfx::Size(500, 500));
+  RunEvictionQueueConstructAndIterateTest("32_100x100", 32,
+                                          gfx::Rect(100, 100));
+  RunEvictionQueueConstructAndIterateTest("32_500x500", 32,
+                                          gfx::Rect(500, 500));
+  RunEvictionQueueConstructAndIterateTest("64_100x100", 64,
+                                          gfx::Rect(100, 100));
+  RunEvictionQueueConstructAndIterateTest("64_500x500", 64,
+                                          gfx::Rect(500, 500));
 }
 
 TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstruct) {

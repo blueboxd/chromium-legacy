@@ -233,8 +233,8 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
     return nullptr;
 
   if (new_cross_process) {
-    agent_host =
-        RenderFrameDevToolsAgentHost::GetOrCreateForDangling(frame_tree_node);
+    agent_host = RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
+        navigation_handle);
     DCHECK(auto_attached_hosts_.find(agent_host) == auto_attached_hosts_.end());
     attach_callback_.Run(agent_host.get(), wait_for_debugger_on_start_);
     auto_attached_hosts_.insert(agent_host);

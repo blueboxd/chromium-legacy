@@ -17,9 +17,4 @@ specific_include_rules = {
   "run_all_unittests\.cc": [
     "+mojo/core/embedder/embedder.h",
   ],
-
-  # Dependencies specific for fuzz targets and other fuzzing-related code.
-  ".*fuzz.*": [
-    "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
-  ],
 }

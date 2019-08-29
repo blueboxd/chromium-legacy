@@ -174,6 +174,40 @@ class RequestBlockingNavigationThrottle : public NavigationThrottle {
   DISALLOW_COPY_AND_ASSIGN(RequestBlockingNavigationThrottle);
 };
 
+// Helper function for error page navigations that makes sure that the last
+// committed origin on |node| is an opaque origin with a precursor that matches
+// |url|'s origin.
+// Returns true if the frame has an opaque origin with the expected precursor
+// information. Otherwise returns false.
+bool IsOriginOpaqueAndCompatibleWithURL(FrameTreeNode* node, const GURL& url) {
+  url::Origin frame_origin =
+      node->current_frame_host()->GetLastCommittedOrigin();
+
+  if (!frame_origin.opaque()) {
+    LOG(ERROR) << "Frame origin was not opaque. " << frame_origin;
+    return false;
+  }
+
+  const GURL url_origin = url.GetOrigin();
+  const GURL precursor_origin =
+      frame_origin.GetTupleOrPrecursorTupleIfOpaque().GetURL();
+  if (url_origin != precursor_origin) {
+    LOG(ERROR) << "url_origin '" << url_origin << "' !=  precursor_origin '"
+               << precursor_origin << "'";
+    return false;
+  }
+  return true;
+}
+
+bool IsMainFrameOriginOpaqueAndCompatibleWithURL(Shell* shell,
+                                                 const GURL& url) {
+  return IsOriginOpaqueAndCompatibleWithURL(
+      static_cast<WebContentsImpl*>(shell->web_contents())
+          ->GetFrameTree()
+          ->root(),
+      url);
+}
+
 }  // anonymous namespace
 
 class RenderFrameHostManagerTest : public ContentBrowserTest {
@@ -4377,6 +4411,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(
         GURL(kUnreachableWebDataURL),
         policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
+    EXPECT_TRUE(
+        IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
 
   // Navigate successfully again to a document, then perform a
@@ -4450,6 +4486,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       child->current_frame_host()->GetSiteInstance();
   EXPECT_EQ(success_site_instance, error_site_instance);
   EXPECT_NE(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+  EXPECT_TRUE(IsOriginOpaqueAndCompatibleWithURL(child, error_url));
 }
 
 // Test to verify that navigations in new window, which result in an error
@@ -4488,6 +4525,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(GURL(kUnreachableWebDataURL),
             ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
                 error_site_instance->GetProcess()->GetID()));
+  EXPECT_TRUE(
+      IsMainFrameOriginOpaqueAndCompatibleWithURL(new_shell, error_url));
 }
 
 // Test to verify that windows that are not part of the same
@@ -4513,6 +4552,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_TRUE(observer.is_error());
     EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
     EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+    EXPECT_TRUE(
+        IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
 
   // Creat a new, unrelated, window, navigate it to an error page and
@@ -4526,6 +4567,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_TRUE(observer.is_error());
     EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
     EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+    EXPECT_TRUE(
+        IsMainFrameOriginOpaqueAndCompatibleWithURL(new_shell, error_url));
   }
 
   // Verify the two SiteInstanes are not related, but they end up using the
@@ -4607,6 +4650,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   int process_id =
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
   EXPECT_EQ(GURL(kUnreachableWebDataURL), policy->GetOriginLock(process_id));
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 
   // Reload while it will still fail to ensure it stays in the same process.
   {
@@ -4619,6 +4663,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   }
   EXPECT_EQ(process_id,
             shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 
   // Reload the error page after clearing the error condition, such that the
   // navigation is successful and verify that no new entry was added to
@@ -4670,6 +4715,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
       GURL(kUnreachableWebDataURL),
       policy->GetOriginLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 
   url_interceptor.reset();
   {
@@ -4756,10 +4802,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(test_url, child->current_frame_host()->GetLastCommittedURL());
 
     // Error pages should commit in an opaque origin.
-    url::Origin origin = child->current_frame_host()->GetLastCommittedOrigin();
-    EXPECT_TRUE(origin.opaque());
-    EXPECT_EQ(test_url.GetOrigin(),
-              origin.GetTupleOrPrecursorTupleIfOpaque().GetURL());
+    EXPECT_TRUE(IsOriginOpaqueAndCompatibleWithURL(child, test_url));
 
     // Error page isolation should apply only to the main frame - subframes
     // should commit in their usual process / SiteInstance.
@@ -4846,13 +4889,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(test_url, child1->current_frame_host()->GetLastCommittedURL());
 
     // Error pages should commit in an opaque origin.
-    url::Origin error_origin =
-        child1->current_frame_host()->GetLastCommittedOrigin();
-    url::Origin initiator_origin =
-        child2->current_frame_host()->GetLastCommittedOrigin();
-    EXPECT_TRUE(error_origin.opaque());
-    EXPECT_EQ(initiator_origin.GetURL(),
-              error_origin.GetTupleOrPrecursorTupleIfOpaque().GetURL());
+    EXPECT_TRUE(IsOriginOpaqueAndCompatibleWithURL(child1, test_url));
 
     // net::ERR_BLOCKED_BY_CLIENT errors in subframes should commit in their
     // initiator's process (not in their parent's process).
@@ -5033,9 +5070,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
           shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_EQ(2, nav_controller.GetEntryCount());
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 
   // Navigate again to the initial successful document, expecting a new
-  // navigation and new SiteInstance.
+  // navigation and new SiteInstance. A new SiteInstance is expected here
+  // because we are doing a cross-site navigation from |kUnreachableWebDataURL|
+  // to a site for |url|. This triggers the creation of a new BrowsingInstance
+  // and therefore a new SiteInstance.
   EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_NE(
       GURL(kUnreachableWebDataURL),
@@ -5046,21 +5087,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_TRUE(static_cast<SiteInstanceImpl*>(
                     shell()->web_contents()->GetMainFrame()->GetSiteInstance())
                     ->IsDefaultSiteInstance());
-    // TODO(acolwell): This should be changed to EXPECT_EQ() once the initial
-    // navigation is able to use the default SiteInstance . Right now they
-    // are not equal because the initial navigation converts an empty
-    // SiteInstance into one specifically for the initial URL.
-    EXPECT_NE(success_site_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
-  } else {
-    EXPECT_EQ(success_site_instance->GetSiteURL(), shell()
-                                                       ->web_contents()
-                                                       ->GetMainFrame()
-                                                       ->GetSiteInstance()
-                                                       ->GetSiteURL());
-    EXPECT_NE(success_site_instance,
-              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
   }
+  EXPECT_EQ(
+      success_site_instance->GetSiteURL(),
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_NE(success_site_instance,
+            shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+
   EXPECT_EQ(3, nav_controller.GetEntryCount());
 
   // Repeat again using a renderer-initiated navigation for the successful one.
@@ -5118,6 +5151,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
                 web_contents->GetSiteInstance()->GetProcess()->GetID()));
   EXPECT_EQ(2, nav_controller.GetEntryCount());
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 
   // Terminate the renderer process.
   {
@@ -5184,6 +5218,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(GURL(kUnreachableWebDataURL),
             ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
                 web_contents->GetSiteInstance()->GetProcess()->GetID()));
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), url1));
 }
 
 // Test to verify that a successful navigation to existing history entry,
@@ -5213,6 +5248,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(GURL(kUnreachableWebDataURL),
             ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
                 web_contents->GetSiteInstance()->GetProcess()->GetID()));
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), url2));
 
   // There should be two NavigationEntries.
   NavigationControllerImpl& nav_controller =
@@ -5277,6 +5313,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                 error_site_instance->GetProcess()->GetID()));
   EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
       error_site_instance->GetProcess()->GetID()));
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 }
 
 // A test ContentBrowserClient implementation which enforces
@@ -5338,6 +5375,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(GURL(kUnreachableWebDataURL), initial_instance->GetSiteURL());
   EXPECT_TRUE(
       success_site_instance->IsRelatedSiteInstance(initial_instance.get()));
+  EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
 
   // Reload of the error page that still results in an error should stay in
   // the same SiteInstance. Ensure this works for both browser-initiated
@@ -5350,6 +5388,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(2, nav_controller.GetEntryCount());
     EXPECT_EQ(initial_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    EXPECT_TRUE(
+        IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
   {
     TestNavigationObserver reload_observer(shell()->web_contents());
@@ -5359,6 +5399,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(2, nav_controller.GetEntryCount());
     EXPECT_EQ(initial_instance,
               shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+    EXPECT_TRUE(
+        IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
   }
 
   // Allow the navigation to succeed and ensure it swapped to a non-related

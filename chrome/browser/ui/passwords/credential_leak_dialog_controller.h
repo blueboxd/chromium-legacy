@@ -12,10 +12,14 @@
 // the state.
 class CredentialLeakDialogController : public PasswordBaseDialogController {
  public:
-  // Called when user clicks "Check passwords" in the credential leak dialog.
-  virtual void OnCheckPasswords() = 0;
+  // Called when the user cancels the dialog by clicking a button.
+  virtual void OnCancelDialog() = 0;
 
-  // Called when the dialog was closed by user clicking one of the buttons.
+  // Called when the user accepts the dialog by clicking a button.
+  virtual void OnAcceptDialog() = 0;
+
+  // Called when the user closes the dialog without clicking a button,
+  // e.g. by pressing the Esc key.
   virtual void OnCloseDialog() = 0;
 
   // Returns the label for the accept button.

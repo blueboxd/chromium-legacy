@@ -133,7 +133,8 @@ class CORE_EXPORT NGConstraintSpace final {
   // Creates NGConstraintSpace representing LayoutObject's containing block.
   // This should live on NGBlockNode or another layout bridge and probably take
   // a root NGConstraintSpace.
-  static NGConstraintSpace CreateFromLayoutObject(const LayoutBlock&);
+  static NGConstraintSpace CreateFromLayoutObject(const LayoutBlock&,
+                                                  bool is_layout_root);
 
   const NGExclusionSpace& ExclusionSpace() const { return exclusion_space_; }
 

@@ -133,7 +133,9 @@ class NET_EXPORT HttpServerProperties
     virtual void WaitForPrefLoad(base::OnceClosure pref_loaded_callback) = 0;
   };
 
-  // Contains metadata about a particular server.
+  // Contains metadata about a particular server. Note that all methods that
+  // take a "SchemeHostPort" expect schemes of ws and wss to be mapped to http
+  // and https, respectively. See GetNormalizedSchemeHostPort().
   struct NET_EXPORT ServerInfo {
     ServerInfo();
     ServerInfo(const ServerInfo& server_info);
@@ -158,11 +160,12 @@ class NET_EXPORT HttpServerProperties
     // priority over a not set value.
     base::Optional<bool> supports_spdy;
 
+    // True if the server has previously indicated it required HTTP/1.1. Unlike
+    // other fields, not persisted to disk.
+    base::Optional<bool> requires_http11;
+
     base::Optional<AlternativeServiceInfoVector> alternative_services;
     base::Optional<ServerNetworkStats> server_network_stats;
-
-    // TODO(mmenke):  Add other per-server data as well
-    // (Http11ServerHostPortSet, QUIC server info).
   };
 
   struct NET_EXPORT ServerInfoMapKey {
@@ -214,6 +217,10 @@ class NET_EXPORT HttpServerProperties
 
   ~HttpServerProperties() override;
 
+  // Returns the SchemeHostPort for |url|, with the exception that it replaces
+  // "wss" with "https" and "ws" with "http", so they're grouped together.
+  static url::SchemeHostPort GetNormalizedSchemeHostPort(const GURL& url);
+
   // Deletes all data. If |callback| is non-null, flushes data to disk
   // and invokes the callback asynchronously once changes have been written to
   // disk.
@@ -241,14 +248,20 @@ class NET_EXPORT HttpServerProperties
                        const net::NetworkIsolationKey& network_isolation_key,
                        bool supports_spdy);
 
-  // Returns true if |server| has required HTTP/1.1 via HTTP/2 error code.
-  bool RequiresHTTP11(const HostPortPair& server);
+  // Returns true if |server| has required HTTP/1.1 via HTTP/2 error code, in
+  // the context of |network_isolation_key|.
+  bool RequiresHTTP11(const url::SchemeHostPort& server,
+                      const net::NetworkIsolationKey& network_isolation_key);
 
-  // Require HTTP/1.1 on subsequent connections.  Not persisted.
-  void SetHTTP11Required(const HostPortPair& server);
+  // Require HTTP/1.1 on subsequent connections, in the context of
+  // |network_isolation_key|.  Not persisted.
+  void SetHTTP11Required(const url::SchemeHostPort& server,
+                         const net::NetworkIsolationKey& network_isolation_key);
 
   // Modify SSLConfig to force HTTP/1.1 if necessary.
-  void MaybeForceHTTP11(const HostPortPair& server, SSLConfig* ssl_config);
+  void MaybeForceHTTP11(const url::SchemeHostPort& server,
+                        const net::NetworkIsolationKey& network_isolation_key,
+                        SSLConfig* ssl_config);
 
   // Return all alternative services for |origin|, learned in the context of
   // |network_isolation_key|, including broken ones. Returned alternative
@@ -416,7 +429,6 @@ class NET_EXPORT HttpServerProperties
   typedef base::flat_map<HostPortPair, quic::QuicServerId>
       CanonicalServerInfoMap;
   typedef std::vector<std::string> CanonicalSuffixList;
-  typedef std::set<HostPortPair> Http11ServerHostPortSet;
 
   // Helper function to use the passed in parameters and
   // |use_network_isolation_key_| to create a ServerInfoMapKey.
@@ -510,8 +522,6 @@ class NET_EXPORT HttpServerProperties
   std::unique_ptr<HttpServerPropertiesManager> properties_manager_;
 
   ServerInfoMap server_info_map_;
-
-  Http11ServerHostPortSet http11_servers_;
 
   BrokenAlternativeServices broken_alternative_services_;
 

@@ -217,9 +217,11 @@ class ScopedPaintTimingDetectorBlockPaintHook {
   STACK_ALLOCATED();
 
  public:
-  // This sets |top_| to |this|, and will restore |top_| to the previous
-  // value when this object destructs.
-  ScopedPaintTimingDetectorBlockPaintHook() : reset_top_(&top_, this) {}
+  // This constructor does nothing by itself. It will only set relevant
+  // variables when EmplaceIfNeeded() is called successfully. The lifetime of
+  // the object helps keeping the lifetime of |reset_top_| and |data_| to the
+  // appropriate scope.
+  ScopedPaintTimingDetectorBlockPaintHook() {}
 
   void EmplaceIfNeeded(const LayoutBoxModelObject&, const PropertyTreeState&);
   ~ScopedPaintTimingDetectorBlockPaintHook();
@@ -227,12 +229,18 @@ class ScopedPaintTimingDetectorBlockPaintHook {
  private:
   friend class PaintTimingDetector;
   inline static void AggregateTextPaint(const IntRect& visual_rect) {
-    DCHECK(top_);
-    if (top_->data_)
+    // Ideally we'd assert that |top_| exists, but there may be text nodes that
+    // do not have an ancestor non-anonymous block layout objects in the layout
+    // tree. An example of this is a multicol div, since the
+    // LayoutMultiColumnFlowThread is in a different layer from the DIV. In
+    // these cases, |top_| will be null. This is a known bug, see the related
+    // crbug.com/933479.
+    if (top_ && top_->data_)
       top_->data_->aggregated_visual_rect_.Unite(visual_rect);
   }
 
-  base::AutoReset<ScopedPaintTimingDetectorBlockPaintHook*> reset_top_;
+  base::Optional<base::AutoReset<ScopedPaintTimingDetectorBlockPaintHook*>>
+      reset_top_;
   struct Data {
     STACK_ALLOCATED();
 

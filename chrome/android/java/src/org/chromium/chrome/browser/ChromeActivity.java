@@ -1359,7 +1359,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
         boolean useBottomSheetContainer = mBottomSheetController != null
                 && mBottomSheetController.getBottomSheet().isSheetOpen()
-                && !mBottomSheetController.getBottomSheet().isClosing();
+                && !mBottomSheetController.getBottomSheet().isHiding();
         return useBottomSheetContainer ? mBottomSheetController.getSnackbarManager()
                                        : mSnackbarManager;
     }

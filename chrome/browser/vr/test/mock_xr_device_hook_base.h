@@ -40,6 +40,9 @@ class MockXRDeviceHookBase : public device_test::mojom::XRTestHook {
       unsigned int index,
       device_test::mojom::XRTestHook::WaitGetControllerDataCallback callback)
       override;
+  void WaitGetSessionStateStopping(
+      device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
+          callback) override;
 
   // MockXRDeviceHookBase
   void TerminateDeviceServiceProcessForTesting();

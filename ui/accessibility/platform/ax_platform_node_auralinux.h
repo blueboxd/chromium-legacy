@@ -164,6 +164,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnDocumentTitleChanged();
   void OnSubtreeCreated();
   void OnSubtreeWillBeDeleted();
+  void OnParentChanged();
   void OnWindowVisibilityChanged();
 
   bool SupportsSelectionWithAtkSelection();
@@ -186,8 +187,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   size_t UTF16ToUnicodeOffsetInText(size_t utf16_offset);
   size_t UnicodeToUTF16OffsetInText(int unicode_offset);
 
-  void SetEmbeddedDocument(AtkObject* new_document);
-  void SetEmbeddingWindow(AtkObject* new_embedding_window);
+  // Called on a toplevel frame to set the document parent, which is the parent
+  // of the toplevel document. This is used to properly express the ATK embeds
+  // relationship between a toplevel frame and its embedded document.
+  void SetDocumentParent(AtkObject* new_document_parent);
 
   int GetCaretOffset();
   bool SetCaretOffset(int offset);
@@ -277,6 +280,13 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // Activate a find in page result for the toplevel document of this node.
   void ActivateFindInPageInParent(int start_offset, int end_offset);
 
+  // If this node is the toplevel document node, find its parent and set it on
+  // the toplevel frame which contains the node.
+  void SetDocumentParentOnFrameIfNecessary();
+
+  // Find the first child which is a document containing web content.
+  AtkObject* FindFirstWebContentDocument();
+
   // If the given argument can be found as a child of this node, return its
   // hypertext extents, otherwise return base::nullopt;
   base::Optional<std::pair<int, int>> GetHypertextExtentsOfChild(
@@ -293,9 +303,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   AtkObject* atk_object_ = nullptr;
   AtkHyperlink* atk_hyperlink_ = nullptr;
 
-  // Some weak pointers which help us track ATK embeds / embedded by relations.
-  AtkObject* embedded_document_ = nullptr;
-  AtkObject* embedding_window_ = nullptr;
+  // A weak pointers which help us track the ATK embeds relation.
+  AtkObject* document_parent_ = nullptr;
 
   // Whether or not this node (if it is a frame or a window) was
   // minimized the last time it's visibility changed.

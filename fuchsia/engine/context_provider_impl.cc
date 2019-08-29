@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <zircon/processargs.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -28,6 +29,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/content_switches.h"
@@ -53,6 +55,45 @@ zx::channel ValidateDirectoryAndTakeChannel(
 
   // Not a directory.
   return zx::channel();
+}
+
+// Populates a CommandLine with content directory name/handle pairs.
+bool SetContentDirectoriesInCommandLine(
+    std::vector<fuchsia::web::ContentDirectoryProvider> directories,
+    base::CommandLine* command_line,
+    base::LaunchOptions* launch_options) {
+  DCHECK(command_line);
+  DCHECK(launch_options);
+
+  std::vector<std::string> directory_pairs;
+  for (size_t i = 0; i < directories.size(); ++i) {
+    fuchsia::web::ContentDirectoryProvider& directory = directories[i];
+
+    if (directory.name().find('=') != std::string::npos ||
+        directory.name().find(',') != std::string::npos) {
+      DLOG(ERROR) << "Invalid character in directory name: "
+                  << directory.name();
+      return false;
+    }
+
+    if (!directory.directory().is_valid()) {
+      DLOG(ERROR) << "Service directory handle not valid for directory: "
+                  << directory.name();
+      return false;
+    }
+
+    uint32_t directory_handle_id = base::LaunchOptions::AddHandleToTransfer(
+        &launch_options->handles_to_transfer,
+        directory.mutable_directory()->TakeChannel().release());
+    directory_pairs.emplace_back(
+        base::StrCat({directory.name().c_str(), "=",
+                      base::NumberToString(directory_handle_id)}));
+  }
+
+  command_line->AppendSwitchASCII(kContentDirectories,
+                                  base::JoinString(directory_pairs, ","));
+
+  return true;
 }
 
 }  // namespace
@@ -181,6 +222,14 @@ void ContextProviderImpl::Create(
                                       std::move(product_tag));
   } else if (params.has_user_agent_version()) {
     DLOG(ERROR) << "Embedder version without product.";
+    context_request.Close(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
+  if (params.has_content_directories() &&
+      !SetContentDirectoriesInCommandLine(
+          std::move(*params.mutable_content_directories()), &launch_command,
+          &launch_options)) {
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }

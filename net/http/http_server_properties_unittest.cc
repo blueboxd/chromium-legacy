@@ -121,6 +121,53 @@ class HttpServerPropertiesTest : public TestWithTaskEnvironment {
   HttpServerProperties impl_;
 };
 
+TEST_F(HttpServerPropertiesTest, GetNormalizedSchemeHostPort) {
+  url::SchemeHostPort server =
+      HttpServerProperties::GetNormalizedSchemeHostPort(
+          GURL("https://foo.test/"));
+  EXPECT_EQ("https", server.scheme());
+  EXPECT_EQ("foo.test", server.host());
+  EXPECT_EQ(443, server.port());
+
+  server = HttpServerProperties::GetNormalizedSchemeHostPort(
+      GURL("wss://foo.test/"));
+  EXPECT_EQ("https", server.scheme());
+  EXPECT_EQ("foo.test", server.host());
+  EXPECT_EQ(443, server.port());
+
+  server = HttpServerProperties::GetNormalizedSchemeHostPort(
+      GURL("wss://bar.test:7/"));
+  EXPECT_EQ("https", server.scheme());
+  EXPECT_EQ("bar.test", server.host());
+  EXPECT_EQ(7, server.port());
+
+  server = HttpServerProperties::GetNormalizedSchemeHostPort(
+      GURL("http://foo.test/"));
+  EXPECT_EQ("http", server.scheme());
+  EXPECT_EQ("foo.test", server.host());
+  EXPECT_EQ(80, server.port());
+
+  server =
+      HttpServerProperties::GetNormalizedSchemeHostPort(GURL("ws://foo.test/"));
+  EXPECT_EQ("http", server.scheme());
+  EXPECT_EQ("foo.test", server.host());
+  EXPECT_EQ(80, server.port());
+
+  server = HttpServerProperties::GetNormalizedSchemeHostPort(
+      GURL("ws://bar.test:7/"));
+  EXPECT_EQ("http", server.scheme());
+  EXPECT_EQ("bar.test", server.host());
+  EXPECT_EQ(7, server.port());
+
+  // Neither of these should happen, except possibly when loading a bad
+  // properties file, but neither should crash.
+  server = HttpServerProperties::GetNormalizedSchemeHostPort(GURL());
+  EXPECT_EQ("", server.host());
+  server = HttpServerProperties::GetNormalizedSchemeHostPort(
+      GURL("file:///foo/bar"));
+  EXPECT_EQ(server, url::SchemeHostPort(GURL("file:///foo/bar")));
+}
+
 TEST_F(HttpServerPropertiesTest, SetSupportsSpdy) {
   // Check spdy servers are correctly set with SchemeHostPort key.
   url::SchemeHostPort https_www_server("https", "www.google.com", 443);

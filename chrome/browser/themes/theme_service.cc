@@ -123,6 +123,17 @@ int GetIncognitoId(int id) {
   }
 }
 
+// Heuristic to determine if color is grayscale. This is used to decide whether
+// to use the colorful or white logo, if a theme fails to specify which.
+bool IsColorGrayscale(SkColor color) {
+  const int kChannelTolerance = 9;
+  int r = SkColorGetR(color);
+  int g = SkColorGetG(color);
+  int b = SkColorGetB(color);
+  int range = std::max(r, std::max(g, b)) - std::min(r, std::min(g, b));
+  return range < kChannelTolerance;
+}
+
 }  // namespace
 
 
@@ -861,8 +872,14 @@ int ThemeService::GetDisplayProperty(int id) const {
     case ThemeProperties::NTP_BACKGROUND_TILING:
       return ThemeProperties::NO_REPEAT;
 
-    case ThemeProperties::NTP_LOGO_ALTERNATE:
-      return 0;
+    case ThemeProperties::NTP_LOGO_ALTERNATE: {
+      if (UsingDefaultTheme() || UsingSystemTheme())
+        return 0;
+      if (HasCustomImage(IDR_THEME_NTP_BACKGROUND))
+        return 1;
+      return IsColorGrayscale(
+          GetColor(ThemeProperties::COLOR_NTP_BACKGROUND, false)) ? 0 : 1;
+    }
 
     case ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR:
       return 1;

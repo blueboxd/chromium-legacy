@@ -335,6 +335,7 @@ class CORE_EXPORT StyleEngine final
   }
   void ClearWhitespaceReattachSet() { whitespace_reattach_set_.clear(); }
   void MarkForWhitespaceReattachment();
+  void MarkAllElementsForStyleRecalc(const StyleChangeReasonForTracing& reason);
 
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);

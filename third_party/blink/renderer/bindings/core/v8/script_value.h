@@ -100,11 +100,6 @@ class CORE_EXPORT ScriptValue final {
                          : v8::Isolate::GetCurrent();
   }
 
-  v8::Local<v8::Context> GetContext() const {
-    DCHECK(script_state_);
-    return script_state_->GetContext();
-  }
-
   ScriptValue& operator=(const ScriptValue& value) {
     if (this != &value) {
       script_state_ = value.script_state_;

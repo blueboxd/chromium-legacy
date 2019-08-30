@@ -139,9 +139,9 @@ class PLATFORM_EXPORT CompositingReason {
         kScrollDependentPosition | kOverflowScrollingTouch,
 
     kComboCompositedDescendants =
-        kTransformWithCompositedDescendants | kIsolateCompositedDescendants |
-        kOpacityWithCompositedDescendants | kMaskWithCompositedDescendants |
-        kFilterWithCompositedDescendants | kBlendingWithCompositedDescendants |
+        kIsolateCompositedDescendants | kOpacityWithCompositedDescendants |
+        kMaskWithCompositedDescendants | kFilterWithCompositedDescendants |
+        kBlendingWithCompositedDescendants |
         kReflectionWithCompositedDescendants | kClipsCompositingDescendants,
 
     kCombo3DDescendants =

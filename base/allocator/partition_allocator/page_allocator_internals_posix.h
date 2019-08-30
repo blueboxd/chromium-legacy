@@ -36,7 +36,17 @@ namespace base {
 #if defined(OS_ANDROID)
 namespace {
 const char* PageTagToName(PageTag tag) {
+  // Important: All the names should be string literals. As per prctl.h in
+  // //third_party/android_ndk the kernel keeps a pointer to the name instead
+  // of copying it.
+  //
+  // Having the name in .rodata ensures that the pointer remains valid as
+  // long as the mapping is alive.
   switch (tag) {
+    case PageTag::kBlinkGC:
+      return "blink_gc";
+    case PageTag::kPartitionAlloc:
+      return "partition_alloc";
     case PageTag::kChromium:
       return "chromium";
     case PageTag::kV8:

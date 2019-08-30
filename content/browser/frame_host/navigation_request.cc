@@ -943,12 +943,10 @@ NavigationRequest::~NavigationRequest() {
     navigation_handle_proxy_->DidFinish();
 #endif
 
-  if (navigation_handle())
+  if (navigation_handle()) {
     GetDelegate()->DidFinishNavigation(navigation_handle());
-
-  // This is done manually here because the NavigationHandleImpl uses
-  // NavigationRequest in its destructor.
-  navigation_handle_.reset();
+    TraceNavigationHandleEnd();
+  }
 }
 
 void NavigationRequest::BeginNavigation() {
@@ -1166,7 +1164,9 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
     return;
   }
 
+  DCHECK(!navigation_handle_);
   navigation_handle_ = std::move(navigation_handle);
+  TraceNavigationHandleStart();
 
   throttle_runner_ = base::WrapUnique(
       new NavigationThrottleRunner(this, navigation_handle_.get()));
@@ -1196,6 +1196,7 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   // |navigation_handle_proxy_|. See https://crbug.com/958396.
   if (navigation_handle()) {
     GetDelegate()->DidFinishNavigation(navigation_handle());
+    TraceNavigationHandleEnd();
     navigation_handle_.reset();
   }
 
@@ -3400,6 +3401,39 @@ bool NavigationRequest::WasResponseCached() {
 
 bool NavigationRequest::HasPrefetchedAlternativeSubresourceSignedExchange() {
   return !commit_params_->prefetched_signed_exchanges.empty();
+}
+
+void NavigationRequest::TraceNavigationHandleStart() {
+  DCHECK(navigation_handle_);
+  TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle",
+                           navigation_handle_.get(), "frame_tree_node",
+                           GetFrameTreeNodeId(), "url",
+                           common_params_->url.possibly_invalid_spec());
+  DCHECK(!common_params_->navigation_start.is_null());
+  DCHECK(!IsRendererDebugURL(common_params_->url));
+
+  if (IsInMainFrame()) {
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "navigation", "Navigation StartToCommit", navigation_handle_.get(),
+        common_params_->navigation_start, "Initial URL",
+        common_params_->url.spec());
+  }
+
+  if (IsSameDocument()) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
+                                 navigation_handle_.get(), "Same document");
+  }
+}
+
+void NavigationRequest::TraceNavigationHandleEnd() {
+  DCHECK(navigation_handle_);
+  if (IsInMainFrame()) {
+    TRACE_EVENT_ASYNC_END2(
+        "navigation", "Navigation StartToCommit", navigation_handle_.get(),
+        "URL", common_params_->url.spec(), "Net Error Code", net_error_);
+  }
+  TRACE_EVENT_ASYNC_END0("navigation", "NavigationHandle",
+                         navigation_handle_.get());
 }
 
 }  // namespace content

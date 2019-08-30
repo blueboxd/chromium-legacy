@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/files/file.h"
+#include "base/files/platform_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"

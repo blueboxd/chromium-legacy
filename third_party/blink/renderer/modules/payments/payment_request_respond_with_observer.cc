@@ -42,16 +42,17 @@ void PaymentRequestRespondWithObserver::OnResponseRejected(
 }
 
 void PaymentRequestRespondWithObserver::OnResponseFulfilled(
+    ScriptState* script_state,
     const ScriptValue& value,
     ExceptionState::ContextType context_type,
     const char* interface_name,
     const char* property_name) {
   DCHECK(GetExecutionContext());
-  ExceptionState exception_state(value.GetIsolate(), context_type,
+  ExceptionState exception_state(script_state->GetIsolate(), context_type,
                                  interface_name, property_name);
   PaymentHandlerResponse* response =
       NativeValueTraits<PaymentHandlerResponse>::NativeValue(
-          value.GetIsolate(), value.V8Value(), exception_state);
+          script_state->GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     OnResponseRejected(mojom::ServiceWorkerResponseError::kNoV8Instance);
@@ -87,7 +88,7 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
   }
 
   v8::Local<v8::String> details_value;
-  if (!v8::JSON::Stringify(response->details().GetContext(),
+  if (!v8::JSON::Stringify(script_state->GetContext(),
                            response->details().V8Value().As<v8::Object>())
            .ToLocal(&details_value)) {
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(

@@ -153,6 +153,7 @@ def method_context(interface, method, component_info, is_visible=True):
     if is_check_security_for_receiver or is_check_security_for_return_value:
         includes.add('bindings/core/v8/binding_security.h')
     if is_check_security_for_return_value:
+        includes.add('core/frame/web_feature.h')
         includes.add('platform/instrumentation/use_counter.h')
 
     is_ce_reactions = 'CEReactions' in extended_attributes

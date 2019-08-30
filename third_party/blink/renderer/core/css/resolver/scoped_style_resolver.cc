@@ -171,10 +171,11 @@ void ScopedStyleResolver::AddKeyframeStyle(StyleRuleKeyframes* rule) {
   }
 }
 
-ContainerNode& ScopedStyleResolver::InvalidationRootForTreeScope(
+Element& ScopedStyleResolver::InvalidationRootForTreeScope(
     const TreeScope& tree_scope) {
+  DCHECK(tree_scope.GetDocument().documentElement());
   if (tree_scope.RootNode() == tree_scope.GetDocument())
-    return tree_scope.GetDocument();
+    return *tree_scope.GetDocument().documentElement();
   return To<ShadowRoot>(tree_scope.RootNode()).host();
 }
 

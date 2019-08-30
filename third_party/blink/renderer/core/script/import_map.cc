@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"

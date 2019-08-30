@@ -248,12 +248,17 @@ public class WebApkUpdateManagerUnitTest {
         }
     }
 
-    private static String getWebApkId(String packageName) {
-        return WebApkConstants.WEBAPK_ID_PREFIX + packageName;
+    private void registerStorageForWebApkPackage(String webApkPackageName) {
+        WebappRegistry.getInstance().register(WebappRegistry.webApkIdForPackage(webApkPackageName),
+                new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
+                });
     }
 
     private WebappDataStorage getStorage(String packageName) {
-        return WebappRegistry.getInstance().getWebappDataStorage(getWebApkId(packageName));
+        return WebappRegistry.getInstance().getWebappDataStorage(
+                WebappRegistry.webApkIdForPackage(packageName));
     }
 
     /**
@@ -488,12 +493,7 @@ public class WebApkUpdateManagerUnitTest {
 
         registerWebApk(
                 WEBAPK_PACKAGE_NAME, defaultManifestData(), REQUEST_UPDATE_FOR_SHELL_APK_VERSION);
-
-        WebappRegistry.getInstance().register(getWebApkId(WEBAPK_PACKAGE_NAME),
-                new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
-                });
+        registerStorageForWebApkPackage(WEBAPK_PACKAGE_NAME);
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateTimeOfLastCheckForUpdatedWebManifest();
@@ -1168,11 +1168,7 @@ public class WebApkUpdateManagerUnitTest {
     public void testForceUpdateUnboundWebApk() throws Exception {
         registerWebApk(UNBOUND_WEBAPK_PACKAGE_NAME, defaultManifestData(),
                 REQUEST_UPDATE_FOR_SHELL_APK_VERSION);
-        WebappRegistry.getInstance().register(getWebApkId(UNBOUND_WEBAPK_PACKAGE_NAME),
-                new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
-                });
+        registerStorageForWebApkPackage(UNBOUND_WEBAPK_PACKAGE_NAME);
         WebappDataStorage storage = getStorage(UNBOUND_WEBAPK_PACKAGE_NAME);
         storage.updateWebApkPackageNameForTests(UNBOUND_WEBAPK_PACKAGE_NAME);
         // Should no-op for an unbound WebAPK.

@@ -126,6 +126,7 @@ void ProcessNodeImpl::SetProcessImpl(base::Process process,
   // Also clear the measurement data (if any), as it references the previous
   // process.
   private_footprint_kb_ = 0;
+  resident_set_kb_ = 0;
   cumulative_cpu_usage_ = base::TimeDelta();
 
   process_id_ = new_pid;
@@ -198,6 +199,11 @@ base::TimeDelta ProcessNodeImpl::GetCumulativeCpuUsage() const {
 uint64_t ProcessNodeImpl::GetPrivateFootprintKb() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return private_footprint_kb();
+}
+
+uint64_t ProcessNodeImpl::GetResidentSetKb() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return resident_set_kb();
 }
 
 const RenderProcessHostProxy& ProcessNodeImpl::GetRenderProcessHostProxy()

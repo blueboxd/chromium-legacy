@@ -57,6 +57,7 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate,
     : isolate_(isolate),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
+      lifecycle_state_(mojom::FrameLifecycleState::kRunning),
       is_context_destroyed_(false),
       csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       agent_(agent),
@@ -153,6 +154,10 @@ bool ExecutionContext::DispatchErrorEventInternal(
   target->DispatchEvent(*error_event);
   in_dispatch_error_event_ = false;
   return error_event->defaultPrevented();
+}
+
+bool ExecutionContext::IsContextPaused() const {
+  return lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
 }
 
 int ExecutionContext::CircularSequentialID() {

@@ -13,7 +13,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
  * Java counterpart to webapk_installer.h
@@ -80,7 +79,7 @@ public class WebApkInstaller {
 
                 // Stores the source info of WebAPK in WebappDataStorage.
                 WebappRegistry.getInstance().register(
-                        WebApkConstants.WEBAPK_ID_PREFIX + packageName,
+                        WebappRegistry.webApkIdForPackage(packageName),
                         new WebappRegistry.FetchWebappDataStorageCallback() {
                             @Override
                             public void onWebappDataStorageRetrieved(WebappDataStorage storage) {

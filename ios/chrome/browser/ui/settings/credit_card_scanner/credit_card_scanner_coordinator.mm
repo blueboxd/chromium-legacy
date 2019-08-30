@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_coordinator.h"
 
 #import "ios/chrome/browser/ui/scanner/scanner_presenting.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_mediator.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,7 +15,12 @@
 @interface CreditCardScannerCoordinator () <ScannerPresenting>
 
 // The view controller attached to this coordinator.
-@property(nonatomic, strong) UIViewController* viewController;
+@property(nonatomic, strong)
+    CreditCardScannerViewController* creditCardScannerViewController;
+
+// The mediator for credit card scanner.
+@property(nonatomic, strong)
+    CreditCardScannerMediator* creditCardScannerMediator;
 
 @end
 
@@ -25,22 +31,28 @@
 - (void)start {
   [super start];
 
-  CreditCardScannerViewController* creditCardScannerViewController =
+  self.creditCardScannerMediator = [[CreditCardScannerMediator alloc] init];
+  self.creditCardScannerViewController =
       [[CreditCardScannerViewController alloc]
-          initWithPresentationProvider:self];
+          initWithPresentationProvider:self
+                              delegate:self.creditCardScannerMediator];
 
-  creditCardScannerViewController.modalPresentationStyle =
+  self.creditCardScannerViewController.modalPresentationStyle =
       UIModalPresentationFullScreen;
-  self.viewController = creditCardScannerViewController;
-  [self.baseViewController presentViewController:creditCardScannerViewController
-                                        animated:YES
-                                      completion:nil];
+  [self.baseViewController
+      presentViewController:self.creditCardScannerViewController
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)stop {
   [super stop];
-  [self.viewController dismissViewControllerAnimated:YES completion:nil];
-  self.viewController = nil;
+
+  self.creditCardScannerViewController.cameraController = nil;
+  [self.creditCardScannerViewController dismissViewControllerAnimated:YES
+                                                           completion:nil];
+  self.creditCardScannerViewController = nil;
+  self.creditCardScannerMediator = nil;
 }
 
 #pragma mark - ScannerPresenting

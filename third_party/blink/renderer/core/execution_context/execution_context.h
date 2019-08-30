@@ -35,7 +35,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
@@ -57,19 +59,7 @@ namespace service_manager {
 class InterfaceProvider;
 }
 
-namespace network {
-namespace mojom {
-enum class ReferrerPolicy : int32_t;
-}  // namespace mojom
-}  // namespace network
-
 namespace blink {
-
-namespace mojom {
-namespace blink {
-class DocumentInterfaceBroker;
-}  // namespace blink
-}  // namespace mojom
 
 class Agent;
 class BrowserInterfaceBrokerProxy;
@@ -234,9 +224,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual void TasksWerePaused() {}
   virtual void TasksWereUnpaused() {}
 
-  bool IsContextPaused() const {
-    return lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
-  }
+  bool IsContextPaused() const;
   bool IsContextDestroyed() const { return is_context_destroyed_; }
   mojom::FrameLifecycleState ContextPauseState() const {
     return lifecycle_state_;
@@ -347,8 +335,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool in_dispatch_error_event_;
   HeapVector<Member<ErrorEvent>> pending_exceptions_;
 
-  mojom::FrameLifecycleState lifecycle_state_ =
-      mojom::FrameLifecycleState::kRunning;
+  mojom::FrameLifecycleState lifecycle_state_;
   bool is_context_destroyed_;
 
   Member<PublicURLManager> public_url_manager_;

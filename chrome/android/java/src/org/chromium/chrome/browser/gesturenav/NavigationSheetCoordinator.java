@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -52,8 +53,8 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     private final NavigationSheetMediator mMediator;
     private final BottomSheetObserver mSheetObserver = new EmptyBottomSheetObserver() {
         @Override
-        public void onSheetStateChanged(int newState) {
-            if (newState == BottomSheet.SheetState.HIDDEN) hide(false);
+        public void onSheetClosed(@StateChangeReason int reason) {
+            close(false);
         }
     };
 
@@ -103,7 +104,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
                 (NavigationSheetView) mLayoutInflater.inflate(R.layout.navigation_sheet, null);
         mMediator = new NavigationSheetMediator(context, mModelList, (position, index) -> {
             mDelegate.navigateToIndex(index);
-            hide(false);
+            close(false);
             GestureNavMetrics.recordHistogram("GestureNavigation.Sheet.Used", mForward);
 
             // Logs position of the clicked item. Back navigation has negative value,
@@ -134,7 +135,6 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         mForward = forward;
         mShowCloseIndicator = showCloseIndicator;
         setVisible(false);
-        mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
         mSheetTriggered = false;
     }
 
@@ -148,7 +148,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
                 mHandler.postDelayed(mSheetPeekRunnable, PEEK_HOLD_DELAY_MS);
             }
         } else if (isPeeked()) {
-            hide(true);
+            close(true);
         }
     }
 
@@ -172,21 +172,21 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
      */
     private void peek(boolean forward) {
         mMediator.populateEntries(mDelegate.getHistory(forward));
+        mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
         mBottomSheetController.get().requestShowContent(this, true);
         setVisible(true);
         mSheetTriggered = true;
     }
 
     /**
-     * Hide the navigation sheet.
+     * Hide the sheet and reset its model.
      * @param animation {@code true} if animation effect is to be made.
      */
-    private void hide(boolean animate) {
+    private void close(boolean animate) {
         if (!isHidden()) mBottomSheetController.get().hideContent(this, animate);
         setVisible(false);
         mBottomSheetController.get().getBottomSheet().removeObserver(mSheetObserver);
         mMediator.clear();
-        mModelAdapter.notifyDataSetChanged();
     }
 
     /**

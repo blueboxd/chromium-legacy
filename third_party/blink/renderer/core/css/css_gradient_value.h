@@ -139,6 +139,9 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   void AddDeprecatedStops(GradientDesc&,
                           const Document&,
                           const ComputedStyle&) const;
+  void AddComputedStops(const ComputedStyle&,
+                        bool allow_visited_style,
+                        const HeapVector<CSSGradientColorStop, 2>& stops);
 
   void AppendCSSTextForColorStops(StringBuilder&,
                                   bool requires_separator) const;
@@ -176,6 +179,9 @@ class CSSLinearGradientValue final : public CSSGradientValue {
                                          const ComputedStyle&) const;
 
   bool Equals(const CSSLinearGradientValue&) const;
+
+  CSSLinearGradientValue* ComputedCSSValue(const ComputedStyle&,
+                                           bool allow_visited_style);
 
   void TraceAfterDispatch(blink::Visitor*);
 
@@ -259,6 +265,9 @@ class CSSRadialGradientValue final : public CSSGradientValue {
 
   bool Equals(const CSSRadialGradientValue&) const;
 
+  CSSRadialGradientValue* ComputedCSSValue(const ComputedStyle&,
+                                           bool allow_visited_style);
+
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
@@ -283,10 +292,10 @@ class CSSRadialGradientValue final : public CSSGradientValue {
 
 class CSSConicGradientValue final : public CSSGradientValue {
  public:
-  static CSSGradientValue* Create(const CSSValue* x,
-                                  const CSSValue* y,
-                                  const CSSPrimitiveValue* from_angle,
-                                  CSSGradientRepeat repeat) {
+  static CSSConicGradientValue* Create(const CSSValue* x,
+                                       const CSSValue* y,
+                                       const CSSPrimitiveValue* from_angle,
+                                       CSSGradientRepeat repeat) {
     return MakeGarbageCollected<CSSConicGradientValue>(x, y, from_angle,
                                                        repeat);
   }
@@ -309,6 +318,9 @@ class CSSConicGradientValue final : public CSSGradientValue {
                                          const ComputedStyle&) const;
 
   bool Equals(const CSSConicGradientValue&) const;
+
+  CSSConicGradientValue* ComputedCSSValue(const ComputedStyle&,
+                                          bool allow_visited_style);
 
   void TraceAfterDispatch(blink::Visitor*);
 

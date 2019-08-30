@@ -146,11 +146,6 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
            << selected_protocol << "\""
            << " extensions=\"" << extensions << "\"";
 
-  mojom::WebSocketPtr websocket_to_pass;
-  impl_->binding_.Bind(mojo::MakeRequest(&websocket_to_pass));
-  impl_->binding_.set_connection_error_handler(base::BindOnce(
-      &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
-
   impl_->handshake_succeeded_ = true;
   impl_->pending_connection_tracker_.OnCompleteHandshake();
 
@@ -185,8 +180,11 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
   impl_->handshake_client_->OnConnectionEstablished(
-      std::move(websocket_to_pass), impl_->client_.BindNewPipeAndPassReceiver(),
-      selected_protocol, extensions, std::move(readable));
+      impl_->receiver_.BindNewPipeAndPassRemote(),
+      impl_->client_.BindNewPipeAndPassReceiver(), selected_protocol,
+      extensions, std::move(readable));
+  impl_->receiver_.set_disconnect_handler(base::BindOnce(
+      &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
   impl_->handshake_client_.reset();
   impl_->auth_handler_.reset();
   impl_->header_client_.reset();
@@ -379,7 +377,6 @@ WebSocket::WebSocket(
     WebSocketThrottler::PendingConnection pending_connection_tracker,
     base::TimeDelta delay)
     : factory_(factory),
-      binding_(this),
       handshake_client_(std::move(handshake_client)),
       auth_handler_(std::move(auth_handler)),
       header_client_(std::move(header_client)),
@@ -693,7 +690,7 @@ void WebSocket::Reset() {
   client_.reset();
   auth_handler_.reset();
   header_client_.reset();
-  binding_.Close();
+  receiver_.reset();
 
   // net::WebSocketChannel requires that we delete it at this point.
   channel_.reset();

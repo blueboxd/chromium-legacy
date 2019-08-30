@@ -78,6 +78,7 @@ class LenientMockObserver : public SystemNodeImpl::Observer {
 
   MOCK_METHOD1(OnSystemNodeAdded, void(const SystemNode*));
   MOCK_METHOD1(OnBeforeSystemNodeRemoved, void(const SystemNode*));
+  MOCK_METHOD1(OnProcessMemoryMetricsAvailable, void(const SystemNode*));
 
   void SetNotifiedSystemNode(const SystemNode* system_node) {
     notified_system_node_ = system_node;
@@ -110,7 +111,10 @@ TEST_F(SystemNodeImplTest, ObserverWorks) {
   const SystemNode* system_node = graph()->FindOrCreateSystemNode();
   EXPECT_EQ(system_node, obs.TakeNotifiedSystemNode());
 
-  // "OnProcessCPUUsageReady" is tested explicitly in the above unittests.
+  EXPECT_CALL(obs, OnProcessMemoryMetricsAvailable(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedSystemNode));
+  SystemNodeImpl::FromNode(system_node)->OnProcessMemoryMetricsAvailable();
+  EXPECT_EQ(system_node, obs.TakeNotifiedSystemNode());
 
   // Release the system node and expect a call to "OnBeforeSystemNodeRemoved".
   EXPECT_CALL(obs, OnBeforeSystemNodeRemoved(_))

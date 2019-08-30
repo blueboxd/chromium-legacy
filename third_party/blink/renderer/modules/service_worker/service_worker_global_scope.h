@@ -83,12 +83,12 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   static ServiceWorkerGlobalScope* Create(
       ServiceWorkerThread*,
       std::unique_ptr<GlobalScopeCreationParams>,
-      mojom::blink::CacheStoragePtrInfo,
+      mojo::PendingRemote<mojom::blink::CacheStorage>,
       base::TimeTicks time_origin);
 
   ServiceWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                            ServiceWorkerThread*,
-                           mojom::blink::CacheStoragePtrInfo,
+                           mojo::PendingRemote<mojom::blink::CacheStorage>,
                            base::TimeTicks time_origin);
   ~ServiceWorkerGlobalScope() override;
 
@@ -273,7 +273,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void DidHandleContentDeleteEvent(int event_id,
                                    mojom::ServiceWorkerEventStatus);
 
-  mojom::blink::CacheStoragePtrInfo TakeCacheStorage();
+  mojo::PendingRemote<mojom::blink::CacheStorage> TakeCacheStorage();
 
   mojom::blink::ServiceWorkerHost* GetServiceWorkerHost();
 
@@ -469,7 +469,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // May be provided in the constructor as an optimization so InterfaceProvider
   // doesn't need to be used. Taken at the initial call to
   // ServiceWorkerGlobalScope#caches.
-  mojom::blink::CacheStoragePtrInfo cache_storage_info_;
+  mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote_;
 
   // Bound by the first Mojo call received on the service worker thread
   // mojom::blink::ServiceWorker::InitializeGlobalScope().

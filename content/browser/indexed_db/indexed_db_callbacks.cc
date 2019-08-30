@@ -30,6 +30,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -320,11 +321,10 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
       std::make_unique<DatabaseImpl>(std::move(wrapper.connection_), origin_,
                                      dispatcher_host_.get(), idb_runner_);
 
-  blink::mojom::IDBDatabaseAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-
-  dispatcher_host_->AddDatabaseBinding(std::move(database), std::move(request));
-  callbacks_->UpgradeNeeded(std::move(ptr_info), old_version,
+  mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase> pending_remote;
+  dispatcher_host_->AddDatabaseBinding(
+      std::move(database), pending_remote.InitWithNewEndpointAndPassReceiver());
+  callbacks_->UpgradeNeeded(std::move(pending_remote), old_version,
                             data_loss_info.status, data_loss_info.message,
                             metadata);
 }
@@ -352,17 +352,17 @@ void IndexedDBCallbacks::OnSuccess(
     OnConnectionError();
     return;
   }
-  blink::mojom::IDBDatabaseAssociatedPtrInfo ptr_info;
+
+  mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase> pending_remote;
   if (wrapper.connection_) {
     auto database =
         std::make_unique<DatabaseImpl>(std::move(wrapper.connection_), origin_,
                                        dispatcher_host_.get(), idb_runner_);
-
-    auto request = mojo::MakeRequest(&ptr_info);
-    dispatcher_host_->AddDatabaseBinding(std::move(database),
-                                         std::move(request));
+    dispatcher_host_->AddDatabaseBinding(
+        std::move(database),
+        pending_remote.InitWithNewEndpointAndPassReceiver());
   }
-  callbacks_->SuccessDatabase(std::move(ptr_info), metadata);
+  callbacks_->SuccessDatabase(std::move(pending_remote), metadata);
   complete_ = true;
 }
 

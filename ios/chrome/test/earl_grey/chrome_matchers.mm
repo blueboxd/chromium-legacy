@@ -55,6 +55,10 @@ id<GREYMatcher> HeaderWithAccessibilityLabel(NSString* label) {
   return [ChromeMatchersAppInterface headerWithAccessibilityLabel:label];
 }
 
+id<GREYMatcher> PrimaryToolbar() {
+  return [ChromeMatchersAppInterface primaryToolbar];
+}
+
 id<GREYMatcher> CancelButton() {
   return [ChromeMatchersAppInterface cancelButton];
 }

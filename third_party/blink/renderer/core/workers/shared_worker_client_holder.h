@@ -35,6 +35,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
@@ -76,7 +77,7 @@ class CORE_EXPORT SharedWorkerClientHolder final
   void Connect(SharedWorker*,
                MessagePortChannel,
                const KURL&,
-               mojom::blink::BlobURLTokenPtr,
+               mojo::PendingRemote<mojom::blink::BlobURLToken>,
                const String& name);
 
   // Overrides ContextLifecycleObserver.

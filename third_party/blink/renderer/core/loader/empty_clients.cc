@@ -107,7 +107,7 @@ void EmptyLocalFrameClient::BeginNavigation(
     WebTriggeringEventInfo,
     HTMLFormElement*,
     ContentSecurityPolicyDisposition,
-    mojom::blink::BlobURLTokenPtr,
+    mojo::PendingRemote<mojom::blink::BlobURLToken>,
     base::TimeTicks,
     const String&,
     WebContentSecurityPolicyList,

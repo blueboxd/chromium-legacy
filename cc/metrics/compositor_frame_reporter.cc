@@ -10,6 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/rolling_time_delta_history.h"
+#include "cc/metrics/frame_sequence_tracker.h"
 
 namespace cc {
 namespace {
@@ -51,14 +52,6 @@ static_assert(sizeof(kStageNames) / sizeof(kStageNames[0]) == kStageTypeCount,
 constexpr const char* kReportTypeNames[]{"", "MissedFrame.",
                                          "MissedFrameLatencyIncrease."};
 
-constexpr const char* kFrameSequenceTrackerTypeNames[]{"CompositorAnimation.",
-                                                       "MainThreadAnimation.",
-                                                       "PinchZoom.",
-                                                       "RAF.",
-                                                       "TouchScroll.",
-                                                       "WheelScroll.",
-                                                       ""};
-
 static_assert(sizeof(kReportTypeNames) / sizeof(kReportTypeNames[0]) ==
                   kMissedFrameReportTypeCount,
               "Compositor latency report types has changed.");
@@ -77,11 +70,13 @@ std::string HistogramName(const char* compositor_type,
                           const int report_type_index,
                           const int frame_sequence_tracker_type_index,
                           const int stage_type_index) {
-  return base::StrCat(
-      {compositor_type, "CompositorLatency.",
-       kReportTypeNames[report_type_index],
-       kFrameSequenceTrackerTypeNames[frame_sequence_tracker_type_index],
-       kStageNames[stage_type_index]});
+  std::string tracker_type_name = FrameSequenceTracker::
+      kFrameSequenceTrackerTypeNames[frame_sequence_tracker_type_index];
+  if (!tracker_type_name.empty())
+    tracker_type_name += ".";
+  return base::StrCat({compositor_type, "CompositorLatency.",
+                       kReportTypeNames[report_type_index], tracker_type_name,
+                       kStageNames[stage_type_index]});
 }
 }  // namespace
 

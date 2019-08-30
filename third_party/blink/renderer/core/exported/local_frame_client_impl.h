@@ -124,7 +124,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       WebTriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition should_bypass_main_world_csp,
-      mojom::blink::BlobURLTokenPtr,
+      mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks input_start_time,
       const String& href_translate,
       WebContentSecurityPolicyList,

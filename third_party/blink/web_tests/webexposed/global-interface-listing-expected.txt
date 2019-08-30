@@ -5051,8 +5051,7 @@ interface NFCReader : EventTarget
     getter onerror
     getter onreading
     method constructor
-    method start
-    method stop
+    method scan
     setter onerror
     setter onreading
 interface NFCReadingEvent : Event

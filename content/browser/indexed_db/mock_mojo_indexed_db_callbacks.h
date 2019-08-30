@@ -38,7 +38,8 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
   MOCK_METHOD1(Blocked, void(int64_t existing_version));
 
   MOCK_METHOD5(MockedUpgradeNeeded,
-               void(blink::mojom::IDBDatabaseAssociatedPtrInfo* database_info,
+               void(mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase>*
+                        pending_database,
                     int64_t old_version,
                     blink::mojom::IDBDataLoss data_loss,
                     const std::string& data_loss_message,
@@ -46,22 +47,23 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
 
   // Move-only types not supported by mock methods.
   void UpgradeNeeded(
-      blink::mojom::IDBDatabaseAssociatedPtrInfo database_info,
+      mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase> pending_database,
       int64_t old_version,
       blink::mojom::IDBDataLoss data_loss,
       const std::string& data_loss_message,
       const blink::IndexedDBDatabaseMetadata& metadata) override {
-    MockedUpgradeNeeded(&database_info, old_version, data_loss,
+    MockedUpgradeNeeded(&pending_database, old_version, data_loss,
                         data_loss_message, metadata);
   }
 
   MOCK_METHOD2(MockedSuccessDatabase,
-               void(blink::mojom::IDBDatabaseAssociatedPtrInfo* database_info,
+               void(mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase>*
+                        pending_database,
                     const blink::IndexedDBDatabaseMetadata& metadata));
   void SuccessDatabase(
-      blink::mojom::IDBDatabaseAssociatedPtrInfo database_info,
+      mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase> pending_database,
       const blink::IndexedDBDatabaseMetadata& metadata) override {
-    MockedSuccessDatabase(&database_info, metadata);
+    MockedSuccessDatabase(&pending_database, metadata);
   }
 
   MOCK_METHOD1(SuccessInteger, void(int64_t value));

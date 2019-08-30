@@ -29,6 +29,7 @@
 #include <bitset>
 #include <memory>
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -54,7 +55,8 @@ class MODULES_EXPORT WebIDBTransaction {
                    Vector<IDBIndexKeys>) = 0;
   virtual void Commit(int64_t num_errors_handled) = 0;
 
-  virtual mojom::blink::IDBTransactionAssociatedRequest CreateRequest() = 0;
+  virtual mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+  CreateReceiver() = 0;
 
  protected:
   WebIDBTransaction() = default;

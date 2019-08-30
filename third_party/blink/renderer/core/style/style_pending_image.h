@@ -53,7 +53,8 @@ class StylePendingImage final : public StyleImage {
 
   CSSValue* CssValue() const override { return value_; }
 
-  CSSValue* ComputedCSSValue() const override {
+  CSSValue* ComputedCSSValue(const ComputedStyle&,
+                             bool allow_visited_style) const override {
     NOTREACHED();
     return nullptr;
   }

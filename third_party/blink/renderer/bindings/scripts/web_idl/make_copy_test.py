@@ -4,6 +4,8 @@
 
 import unittest
 
+from .composition_parts import Component
+from .composition_parts import Identifier
 from .make_copy import make_copy
 
 
@@ -15,6 +17,16 @@ class MakeCopyTest(unittest.TestCase):
         self.assertEqual(42, make_copy(42))
         self.assertEqual(3.14, make_copy(3.14))
         self.assertEqual('abc', make_copy('abc'))
+
+    def test_primitives_subclasses(self):
+        # Identifier and Component are subclasses of str.  Copies of them
+        # shouldn't change their type.
+        original = (Identifier('x'), Component('x'))
+        copy = make_copy(original)
+        self.assertEqual(original[0], copy[0])
+        self.assertEqual(original[1], copy[1])
+        self.assertIsInstance(copy[0], Identifier)
+        self.assertIsInstance(copy[1], Component)
 
     def test_object_identity(self):
         # A diamond structure must be preserved when making a copy.

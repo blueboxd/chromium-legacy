@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.app.Activity;
-import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -192,7 +191,7 @@ public class BottomSheetController implements Destroyable {
                     return;
                 }
 
-                scrim.hideScrim(false);
+                scrim.hideScrim(true);
 
                 // If the sheet is closed, it is an opportunity for another content to try to take
                 // its place if it is a higher priority.
@@ -210,19 +209,6 @@ public class BottomSheetController implements Destroyable {
                 if (state != SheetState.HIDDEN || mIsSuppressed) return;
                 mIsProcessingHideRequest = false;
                 showNextContent(true);
-            }
-
-            @Override
-            public void onTransitionPeekToHalf(float transitionFraction) {
-                if (mBottomSheet.getCurrentSheetContent() != null
-                        && mBottomSheet.getCurrentSheetContent().hasCustomScrimLifecycle()) {
-                    return;
-                }
-
-                // TODO(mdjones): This event should not occur after the bottom sheet is closed.
-                if (scrim.getVisibility() == View.VISIBLE) {
-                    scrim.setViewAlpha(transitionFraction);
-                }
             }
 
             @Override

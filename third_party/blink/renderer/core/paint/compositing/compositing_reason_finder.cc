@@ -93,10 +93,6 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   if (style.HasBackdropFilter())
     reasons |= CompositingReason::kBackdropFilter;
 
-  // See Layer::updateTransform for an explanation of why we check both.
-  if (layout_object.HasTransformRelatedProperty() && style.HasTransform())
-    reasons |= CompositingReason::kTransformWithCompositedDescendants;
-
   if (style.HasOpacity())
     reasons |= CompositingReason::kOpacityWithCompositedDescendants;
 

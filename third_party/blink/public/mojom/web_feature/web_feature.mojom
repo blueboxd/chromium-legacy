@@ -2392,6 +2392,9 @@ enum WebFeature {
   kHTMLFrameSetElement = 3009,
   kMediaCapabilitiesFramerateRatio = 3010,
   kMediaCapabilitiesFramerateNumber = 3011,
+  kFetchRedirectError = 3012,
+  kFetchRedirectManual = 3013,
+  kFetchCacheReload = 3014,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

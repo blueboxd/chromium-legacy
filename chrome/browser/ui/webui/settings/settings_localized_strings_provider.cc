@@ -1060,8 +1060,6 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"storageDeleteAllButtonTitle",
        IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE},
       {"storageExternal", IDS_SETTINGS_STORAGE_EXTERNAL},
-      {"storageAndroidAppsExternalDrives",
-       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES},
       {"storageAndroidAppsExternalDrivesNote",
        IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE},
       {"storageExternalStorageListHeader",

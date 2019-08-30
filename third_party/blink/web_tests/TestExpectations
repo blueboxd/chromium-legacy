@@ -6538,3 +6538,9 @@ crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-mai
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
+
+# Disable tests with expectation mismatch
+crbug.com/999473 external/wpt/streams/writable-streams/properties.any.sharedworker.html [ Pass Failure ]
+crbug.com/999473 external/wpt/streams/writable-streams/properties.any.serviceworker.html [ Pass Failure ]
+crbug.com/999473 external/wpt/streams/writable-streams/properties.any.html [ Pass Failure ]
+crbug.com/999473 external/wpt/streams/writable-streams/properties.any.worker.html [ Pass Failure ]

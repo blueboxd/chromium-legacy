@@ -17,6 +17,7 @@
 namespace blink {
 
 class Document;
+class NFCScanOptions;
 class NFCReader;
 class NFCWriter;
 
@@ -47,7 +48,7 @@ class MODULES_EXPORT NFCProxy final
   // collected.
   void AddWriter(NFCWriter*);
 
-  void StartReading(NFCReader*);
+  void StartReading(NFCReader*, const NFCScanOptions*);
   void StopReading(NFCReader*);
   bool IsReading(const NFCReader*);
   void Push(device::mojom::blink::NDEFMessagePtr,

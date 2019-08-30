@@ -756,9 +756,6 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
     // Store the local bounds of the Layer subtree before applying the offset.
     layers[i].composited_bounds = squashed_bounds;
 
-    DCHECK(&layers[i].paint_layer->TransformAncestorOrRoot() ==
-           common_transform_ancestor);
-
     PhysicalOffset squashed_layer_offset_from_transformed_ancestor =
         layers[i].paint_layer->ComputeOffsetFromAncestor(
             *common_transform_ancestor);

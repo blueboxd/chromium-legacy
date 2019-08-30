@@ -35,9 +35,8 @@ public class OnboardingDialogBridge {
 
     @CalledByNative
     public void showDialog(String onboardingTitle, String onboardingDetails) {
-        // TODO(crbug.com/983445): Replace the drawable once the real image is available.
         mOnboardingDialog.showDialog(onboardingTitle, onboardingDetails,
-                R.drawable.data_reduction_illustration,
+                R.drawable.password_manager_onboarding_illustration01,
                 mResources.getString(R.string.continue_button),
                 mResources.getString(R.string.cancel), this::onClick);
     }

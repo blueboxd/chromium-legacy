@@ -127,8 +127,8 @@ void FakeGaiaMixin::SetUpCommandLine(base::CommandLine* command_line) {
   // This needs to happen after the embedded test server is initialized, which
   // happens after FakeGaiaMixin::SetUp() but before
   // FakeGaiaMixin::SetUpCommandLine().
-  ASSERT_TRUE(gaia_https_forwarder_.Initialize(
-      kGAIAHost, embedded_test_server_->base_url()));
+  CHECK(gaia_https_forwarder_.Initialize(kGAIAHost,
+                                         embedded_test_server_->base_url()));
 
   GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost(std::string());
   command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());

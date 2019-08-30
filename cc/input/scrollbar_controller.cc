@@ -27,11 +27,11 @@ ScrollbarController::ScrollbarController(
       scrollbar_scroll_is_active_(false),
       currently_captured_scrollbar_(nullptr),
       previous_pointer_position_(gfx::PointF(0, 0)),
+      drag_processed_for_current_frame_(false),
       cancelable_autoscroll_task_(nullptr) {}
 
 void ScrollbarController::WillBeginImplFrame() {
-  // Since this function deals only with autoscrolling (for now), early out if
-  // there's no autoscroll in progress.
+  drag_processed_for_current_frame_ = false;
   if (!autoscroll_state_.has_value())
     return;
 
@@ -167,8 +167,11 @@ InputHandlerPointerResult ScrollbarController::HandleMouseMove(
   previous_pointer_position_ = position_in_widget;
   InputHandlerPointerResult scroll_result;
 
-  // If a thumb drag is not in progress, there's no point in continuing on.
-  if (!drag_anchor_relative_to_thumb_.has_value())
+  // If a thumb drag is not in progress or if a GSU was already produced for a
+  // thumb drag in this frame, there's no point in continuing on. Please see the
+  // header file for details.
+  if (!drag_anchor_relative_to_thumb_.has_value() ||
+      drag_processed_for_current_frame_)
     return scroll_result;
 
   const ScrollNode* currently_scrolling_node =
@@ -197,6 +200,7 @@ InputHandlerPointerResult ScrollbarController::HandleMouseMove(
       ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_result.type = PointerResultType::kScrollbarScroll;
   scroll_result.scroll_offset = gfx::ScrollOffset(clamped_scroll_offset);
+  drag_processed_for_current_frame_ = true;
 
   return scroll_result;
 }

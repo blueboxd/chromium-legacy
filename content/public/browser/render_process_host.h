@@ -25,6 +25,8 @@
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -473,11 +475,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void LockToOrigin(const IsolationContext& isolation_context,
                             const GURL& lock_url) = 0;
 
-  // Binds |request| to the CacheStorageDispatcherHost instance. The binding is
+  // Binds |receiver| to the CacheStorageDispatcherHost instance. The binding is
   // sent to the IO thread. This is for internal use only, and is only exposed
   // here to support MockRenderProcessHost usage in tests.
-  virtual void BindCacheStorage(blink::mojom::CacheStorageRequest request,
-                                const url::Origin& origin) = 0;
+  virtual void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+      const url::Origin& origin) = 0;
 
   // Binds |receiver| to the FileSystemManager instance. The receiver is sent to
   // the IO thread. This is for internal use only, and is only exposed here to

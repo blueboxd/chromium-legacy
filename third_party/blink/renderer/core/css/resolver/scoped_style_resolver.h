@@ -85,7 +85,7 @@ class CORE_EXPORT ScopedStyleResolver final
   bool NeedsAppendAllSheets() const { return needs_append_all_sheets_; }
   void SetNeedsAppendAllSheets() { needs_append_all_sheets_ = true; }
   static void KeyframesRulesAdded(const TreeScope&);
-  static ContainerNode& InvalidationRootForTreeScope(const TreeScope&);
+  static Element& InvalidationRootForTreeScope(const TreeScope&);
   void V0ShadowAddedOnV1Document();
 
   void Trace(blink::Visitor*);

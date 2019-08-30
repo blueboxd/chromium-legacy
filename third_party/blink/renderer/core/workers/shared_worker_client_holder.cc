@@ -79,7 +79,7 @@ void SharedWorkerClientHolder::Connect(
     SharedWorker* worker,
     MessagePortChannel port,
     const KURL& url,
-    mojom::blink::BlobURLTokenPtr blob_url_token,
+    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
     const String& name) {
   DCHECK(IsMainThread());
   DCHECK(!name.IsNull());
@@ -130,9 +130,8 @@ void SharedWorkerClientHolder::Connect(
           ? mojom::SharedWorkerCreationContextType::kSecure
           : mojom::SharedWorkerCreationContextType::kNonsecure,
       port.ReleaseHandle(),
-      mojom::blink::BlobURLTokenPtr(mojom::blink::BlobURLTokenPtrInfo(
-          blob_url_token.PassInterface().PassHandle(),
-          mojom::blink::BlobURLToken::Version_)));
+      mojo::PendingRemote<mojom::blink::BlobURLToken>(
+          blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_));
 }
 
 void SharedWorkerClientHolder::ContextDestroyed(ExecutionContext*) {

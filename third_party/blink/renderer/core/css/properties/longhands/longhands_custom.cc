@@ -497,7 +497,8 @@ const CSSValue* BackgroundImage::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   const FillLayer& fill_layer = style.BackgroundLayers();
-  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(fill_layer);
+  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(
+      style, allow_visited_style, fill_layer);
 }
 
 const CSSValue* BackgroundOrigin::ParseSingleValue(
@@ -866,8 +867,10 @@ const CSSValue* BorderImageSource::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.BorderImageSource())
-    return style.BorderImageSource()->ComputedCSSValue();
+  if (style.BorderImageSource()) {
+    return style.BorderImageSource()->ComputedCSSValue(style,
+                                                       allow_visited_style);
+  }
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
@@ -1912,7 +1915,7 @@ const CSSValue* Content::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForContentData(style);
+  return ComputedStyleUtils::ValueForContentData(style, allow_visited_style);
 }
 
 void Content::ApplyInitial(StyleResolverState& state) const {
@@ -2120,8 +2123,8 @@ const CSSValue* Cursor::CSSValueFromComputedStyleInternal(
     for (const CursorData& cursor : *cursors) {
       if (StyleImage* image = cursor.GetImage()) {
         list->Append(*MakeGarbageCollected<cssvalue::CSSCursorImageValue>(
-            *image->ComputedCSSValue(), cursor.HotSpotSpecified(),
-            cursor.HotSpot()));
+            *image->ComputedCSSValue(style, allow_visited_style),
+            cursor.HotSpotSpecified(), cursor.HotSpot()));
       }
     }
   }
@@ -3710,7 +3713,7 @@ const CSSValue* ListStyleImage::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   if (style.ListStyleImage())
-    return style.ListStyleImage()->ComputedCSSValue();
+    return style.ListStyleImage()->ComputedCSSValue(style, allow_visited_style);
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
@@ -5471,7 +5474,8 @@ const CSSValue* ShapeOutside::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForShape(style, style.ShapeOutside());
+  return ComputedStyleUtils::ValueForShape(style, allow_visited_style,
+                                           style.ShapeOutside());
 }
 
 const CSSValue* ShapeRendering::CSSValueFromComputedStyleInternal(
@@ -6702,7 +6706,8 @@ const CSSValue* WebkitBorderImage::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForNinePieceImage(style.BorderImage(), style);
+  return ComputedStyleUtils::ValueForNinePieceImage(style.BorderImage(), style,
+                                                    allow_visited_style);
 }
 
 void WebkitBorderImage::ApplyValue(StyleResolverState& state,
@@ -6849,7 +6854,8 @@ const CSSValue* WebkitBoxReflect::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForReflection(style.BoxReflect(), style);
+  return ComputedStyleUtils::ValueForReflection(style.BoxReflect(), style,
+                                                allow_visited_style);
 }
 
 const CSSValue* WebkitFontSizeDelta::ParseSingleValue(
@@ -7055,8 +7061,10 @@ const CSSValue* WebkitMaskBoxImageSource::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.MaskBoxImageSource())
-    return style.MaskBoxImageSource()->ComputedCSSValue();
+  if (style.MaskBoxImageSource()) {
+    return style.MaskBoxImageSource()->ComputedCSSValue(style,
+                                                        allow_visited_style);
+  }
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
@@ -7139,7 +7147,8 @@ const CSSValue* WebkitMaskImage::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   const FillLayer& fill_layer = style.MaskLayers();
-  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(fill_layer);
+  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(
+      style, allow_visited_style, fill_layer);
 }
 
 const CSSValue* WebkitMaskOrigin::ParseSingleValue(

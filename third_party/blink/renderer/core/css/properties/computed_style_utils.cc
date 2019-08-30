@@ -131,14 +131,18 @@ const blink::Color ComputedStyleUtils::BorderSideColor(
 }
 
 const CSSValue* ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(
+    const ComputedStyle& style,
+    bool allow_visited_style,
     const FillLayer& fill_layer) {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &fill_layer;
   for (; curr_layer; curr_layer = curr_layer->Next()) {
-    if (curr_layer->GetImage())
-      list->Append(*curr_layer->GetImage()->ComputedCSSValue());
-    else
+    if (curr_layer->GetImage()) {
+      list->Append(*curr_layer->GetImage()->ComputedCSSValue(
+          style, allow_visited_style));
+    } else {
       list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
+    }
   }
   return list;
 }
@@ -234,7 +238,8 @@ const CSSValueList* ComputedStyleUtils::ValuesForBackgroundShorthand(
       before_slash->Append(*value);
     }
     before_slash->Append(curr_layer->GetImage()
-                             ? *curr_layer->GetImage()->ComputedCSSValue()
+                             ? *curr_layer->GetImage()->ComputedCSSValue(
+                                   style, allow_visited_style)
                              : *CSSIdentifierValue::Create(CSSValueID::kNone));
     before_slash->Append(
         *ValueForFillRepeat(curr_layer->RepeatX(), curr_layer->RepeatY()));
@@ -445,14 +450,17 @@ CSSValue* ComputedStyleUtils::ValueForNinePieceImageRepeat(
 
 CSSValue* ComputedStyleUtils::ValueForNinePieceImage(
     const NinePieceImage& image,
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    bool allow_visited_style) {
   if (!image.HasImage())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   // Image first.
   CSSValue* image_value = nullptr;
-  if (image.GetImage())
-    image_value = image.GetImage()->ComputedCSSValue();
+  if (image.GetImage()) {
+    image_value =
+        image.GetImage()->ComputedCSSValue(style, allow_visited_style);
+  }
 
   // Create the image slice.
   CSSBorderImageSliceValue* image_slices = ValueForNinePieceImageSlice(image);
@@ -473,7 +481,8 @@ CSSValue* ComputedStyleUtils::ValueForNinePieceImage(
 
 CSSValue* ComputedStyleUtils::ValueForReflection(
     const StyleReflection* reflection,
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    bool allow_visited_style) {
   if (!reflection)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
@@ -504,7 +513,8 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
   }
 
   return MakeGarbageCollected<CSSReflectValue>(
-      direction, offset, ValueForNinePieceImage(reflection->Mask(), style));
+      direction, offset,
+      ValueForNinePieceImage(reflection->Mask(), style, allow_visited_style));
 }
 
 CSSValue* ComputedStyleUtils::MinWidthOrMinHeightAuto(
@@ -1733,7 +1743,8 @@ CSSValueID ValueForQuoteType(const QuoteType quote_type) {
   return CSSValueID::kInvalid;
 }
 
-CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
+CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style,
+                                                  bool allow_visited_style) {
   CSSValueList* outer_list = CSSValueList::CreateSlashSeparated();
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
@@ -1764,7 +1775,7 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style) {
     } else if (content_data->IsImage()) {
       const StyleImage* image = To<ImageContentData>(content_data)->GetImage();
       DCHECK(image);
-      list->Append(*image->ComputedCSSValue());
+      list->Append(*image->ComputedCSSValue(style, allow_visited_style));
     } else if (content_data->IsText()) {
       list->Append(*MakeGarbageCollected<CSSStringValue>(
           To<TextContentData>(content_data)->GetText()));
@@ -1819,14 +1830,17 @@ CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
 }
 
 CSSValue* ComputedStyleUtils::ValueForShape(const ComputedStyle& style,
+                                            bool allow_visited_style,
                                             ShapeValue* shape_value) {
   if (!shape_value)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   if (shape_value->GetType() == ShapeValue::kBox)
     return CSSIdentifierValue::Create(shape_value->CssBox());
   if (shape_value->GetType() == ShapeValue::kImage) {
-    if (shape_value->GetImage())
-      return shape_value->GetImage()->ComputedCSSValue();
+    if (shape_value->GetImage()) {
+      return shape_value->GetImage()->ComputedCSSValue(style,
+                                                       allow_visited_style);
+    }
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 

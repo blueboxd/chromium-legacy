@@ -281,6 +281,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
+  // Do not change the class member order here. watchdog_thread_ should be the
+  // last one to be destroyed before main_runner_ and io_runner_.
   std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
   const gpu::GpuPreferences gpu_preferences_;

@@ -1,9 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="browser_proxy.html">
-<link rel="import" href="metadata_view.html">
 <link rel="import" href="permission_item.html">
-<link rel="import" href="permission_view_header.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="pin_to_shelf_item.html">
@@ -14,11 +12,7 @@
   <template>
     <style include="app-management-shared-css">
     </style>
-
-    <app-management-permission-view-header>
-    </app-management-permission-view-header>
-
-    <div class="permission-list card-container">
+    <div class="permission-list">
       <app-management-pin-to-shelf-item
         id="pin-to-shelf-setting"
         class="permission-card-row separated-row header-text"
@@ -48,15 +42,16 @@
             permission-label="$i18n{microphone}"
             permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC">
           </app-management-permission-item>
-          <div class="subpermission-row separated-row clickable"
-            on-click="onClickSiteSettingsButton_">
-            <div class="header-text">$i18n{moreSettings}</div>
-            <div class="permission-row-controls">
-              <cr-icon-button class="native-settings-icon icon-external"
-                tabindex="0">
-              </cr-icon-button>
-            </div>
-          </div>
+        </div>
+      </div>
+      <div id="more-settings"
+        class="permission-card-row separated-row header-text clickable"
+        on-click="onClickSiteSettingsButton_">
+        <div class="header-text">$i18n{moreSettings}</div>
+        <div class="permission-row-controls">
+          <cr-icon-button class="native-settings-icon icon-external"
+            tabindex="0">
+          </cr-icon-button>
         </div>
       </div>
     </div>

@@ -174,7 +174,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       HTMLFormElement*,
       ContentSecurityPolicyDisposition
           should_check_main_world_content_security_policy,
-      mojom::blink::BlobURLTokenPtr,
+      mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks input_start_time,
       const String& href_translate,
       WebContentSecurityPolicyList,

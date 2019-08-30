@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 // The coordinator for the Credit Card Scanner screen.
+API_AVAILABLE(ios(13.0))
 @interface CreditCardScannerCoordinator : ChromeCoordinator
 
 @end

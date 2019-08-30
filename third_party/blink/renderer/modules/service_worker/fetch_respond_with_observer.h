@@ -43,7 +43,8 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
       WaitUntilObserver*);
 
   void OnResponseRejected(mojom::ServiceWorkerResponseError) override;
-  void OnResponseFulfilled(const ScriptValue&,
+  void OnResponseFulfilled(ScriptState*,
+                           const ScriptValue&,
                            ExceptionState::ContextType context_type,
                            const char* interface_name,
                            const char* property_name) override;

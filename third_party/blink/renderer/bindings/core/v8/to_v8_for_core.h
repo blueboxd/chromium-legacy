@@ -10,7 +10,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -73,11 +72,6 @@ inline v8::Local<v8::Value> ToV8(const ScriptValue& value,
 template <typename T>
 inline ScriptValue ScriptValue::From(ScriptState* script_state, T&& value) {
   return ScriptValue(script_state, ToV8(std::forward<T>(value), script_state));
-}
-
-template <typename T>
-v8::Local<v8::Value> ToV8(V8TestingScope* scope, T value) {
-  return blink::ToV8(value, scope->GetContext()->Global(), scope->GetIsolate());
 }
 
 }  // namespace blink

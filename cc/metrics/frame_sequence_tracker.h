@@ -113,6 +113,8 @@ class CC_EXPORT FrameSequenceTracker {
     kReadyForTermination,
   };
 
+  static const char* const kFrameSequenceTrackerTypeNames[];
+
   ~FrameSequenceTracker();
 
   FrameSequenceTracker(const FrameSequenceTracker&) = delete;

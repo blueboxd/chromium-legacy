@@ -74,8 +74,10 @@ class VideoDecoderTest : public ::testing::Test {
           media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     }
 
-    // Write decoded video frames to the '<testname>' folder.
-    if (g_env->IsFramesOutputEnabled()) {
+    // Write decoded video frames to the '<testname>' folder if import mode is
+    // supported and enabled.
+    if (g_env->IsFramesOutputEnabled() &&
+        config.allocation_mode == AllocationMode::kImport) {
       base::FilePath output_folder =
           base::FilePath(g_env->OutputFolder())
               .Append(base::FilePath(g_env->GetTestName()));

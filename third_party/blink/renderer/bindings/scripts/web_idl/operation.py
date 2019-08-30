@@ -43,6 +43,8 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
                 self, component=component, components=components)
             WithDebugInfo.__init__(self, debug_info)
 
+            self.is_stringifier = False
+
     def __init__(self, ir, owner):
         assert isinstance(ir, Operation.IR)
 
@@ -53,6 +55,12 @@ class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
         WithOwner.__init__(self, owner)
         WithComponent.__init__(self, components=ir.components)
         WithDebugInfo.__init__(self, ir.debug_info)
+
+        self._is_stringifier = ir.is_stringifier
+
+    @property
+    def is_stringifier(self):
+        return self._is_stringifier
 
 
 class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithOwner,

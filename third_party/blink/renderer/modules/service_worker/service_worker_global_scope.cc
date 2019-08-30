@@ -180,7 +180,7 @@ static std::string MojoEnumToString(T mojo_enum) {
 ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     ServiceWorkerThread* thread,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    mojom::blink::CacheStoragePtrInfo cache_storage_info,
+    mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin) {
   DCHECK_EQ(creation_params->off_main_thread_fetch_option,
             OffMainThreadWorkerScriptFetchOption::kEnabled);
@@ -199,17 +199,17 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
   }
 
   return MakeGarbageCollected<ServiceWorkerGlobalScope>(
-      std::move(creation_params), thread, std::move(cache_storage_info),
+      std::move(creation_params), thread, std::move(cache_storage_remote),
       time_origin);
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     ServiceWorkerThread* thread,
-    mojom::blink::CacheStoragePtrInfo cache_storage_info,
+    mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
-      cache_storage_info_(std::move(cache_storage_info)) {
+      cache_storage_remote_(std::move(cache_storage_remote)) {
   // Create the idle timer. At this point the timer is not started. It will be
   // started by DidEvaluateScript().
   timeout_timer_ =
@@ -1221,8 +1221,9 @@ void ServiceWorkerGlobalScope::SetIsInstalling(bool is_installing) {
   }
 }
 
-mojom::blink::CacheStoragePtrInfo ServiceWorkerGlobalScope::TakeCacheStorage() {
-  return std::move(cache_storage_info_);
+mojo::PendingRemote<mojom::blink::CacheStorage>
+ServiceWorkerGlobalScope::TakeCacheStorage() {
+  return std::move(cache_storage_remote_);
 }
 
 mojom::blink::ServiceWorkerHost*

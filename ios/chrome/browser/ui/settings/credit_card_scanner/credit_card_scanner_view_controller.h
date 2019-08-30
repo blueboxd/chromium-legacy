@@ -8,11 +8,18 @@
 #import "ios/chrome/browser/ui/scanner/scanner_view_controller.h"
 #include "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_camera_controller.h"
 
+@protocol CreditCardScannedImageDelegate;
 @protocol LoadQueryCommands;
 
 // View controller for the Credit Card Scanner
 @interface CreditCardScannerViewController
     : ScannerViewController <CreditCardScannerCameraControllerDelegate>
+
+// Arguments |presentationProvider| and |delegate| should not be nil.
+- (instancetype)
+    initWithPresentationProvider:(id<ScannerPresenting>)presentationProvider
+                        delegate:(id<CreditCardScannedImageDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithPresentationProvider:
                     (id<ScannerPresenting>)presentationProvider
@@ -20,7 +27,7 @@
     NS_UNAVAILABLE;
 
 - (instancetype)initWithPresentationProvider:
-    (id<ScannerPresenting>)presentationProvider NS_DESIGNATED_INITIALIZER;
+    (id<ScannerPresenting>)presentationProvider NS_UNAVAILABLE;
 
 - (instancetype)initWithNibName:(NSString*)name
                          bundle:(NSBundle*)bundle NS_UNAVAILABLE;

@@ -20,6 +20,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -47,9 +48,10 @@ const uint64_t kTestBlobStorageMaxDiskSpace = 4000;
 const uint64_t kTestBlobStorageMinFileSizeBytes = 10;
 const uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
 
-void BindBytesProvider(std::unique_ptr<MockBytesProvider> impl,
-                       blink::mojom::BytesProviderRequest request) {
-  mojo::MakeStrongBinding(std::move(impl), std::move(request));
+void BindBytesProvider(
+    std::unique_ptr<MockBytesProvider> impl,
+    mojo::PendingReceiver<blink::mojom::BytesProvider> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::move(impl), std::move(receiver));
 }
 
 }  // namespace
@@ -140,24 +142,25 @@ class BlobRegistryImplTest : public testing::Test {
     loop.Run();
   }
 
-  blink::mojom::BytesProviderPtrInfo CreateBytesProvider(
+  mojo::PendingRemote<blink::mojom::BytesProvider> CreateBytesProvider(
       const std::string& bytes) {
     if (!bytes_provider_runner_) {
       bytes_provider_runner_ = base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock()});
     }
-    blink::mojom::BytesProviderPtrInfo result;
+    mojo::PendingRemote<blink::mojom::BytesProvider> result;
     auto provider = std::make_unique<MockBytesProvider>(
         std::vector<uint8_t>(bytes.begin(), bytes.end()), &reply_request_count_,
         &stream_request_count_, &file_request_count_);
     bytes_provider_runner_->PostTask(
         FROM_HERE, base::BindOnce(&BindBytesProvider, std::move(provider),
-                                  MakeRequest(&result)));
+                                  result.InitWithNewPipeAndPassReceiver()));
     return result;
   }
 
-  void CreateBytesProvider(const std::string& bytes,
-                           blink::mojom::BytesProviderRequest request) {
+  void CreateBytesProvider(
+      const std::string& bytes,
+      mojo::PendingReceiver<blink::mojom::BytesProvider> receiver) {
     if (!bytes_provider_runner_) {
       bytes_provider_runner_ = base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock()});
@@ -167,7 +170,7 @@ class BlobRegistryImplTest : public testing::Test {
         &stream_request_count_, &file_request_count_);
     bytes_provider_runner_->PostTask(
         FROM_HERE, base::BindOnce(&BindBytesProvider, std::move(provider),
-                                  std::move(request)));
+                                  std::move(receiver)));
   }
 
   size_t BlobsUnderConstruction() {
@@ -842,13 +845,13 @@ TEST_F(BlobRegistryImplTest, Register_ValidBytesAsFile) {
 TEST_F(BlobRegistryImplTest, Register_BytesProviderClosedPipe) {
   const std::string kId = "id";
 
-  blink::mojom::BytesProviderPtrInfo bytes_provider_info;
-  MakeRequest(&bytes_provider_info);
+  mojo::PendingRemote<blink::mojom::BytesProvider> bytes_provider_remote;
+  ignore_result(bytes_provider_remote.InitWithNewPipeAndPassReceiver());
 
   std::vector<blink::mojom::DataElementPtr> elements;
   elements.push_back(
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
-          32, base::nullopt, std::move(bytes_provider_info))));
+          32, base::nullopt, std::move(bytes_provider_remote))));
 
   blink::mojom::BlobPtr blob;
   EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
@@ -867,13 +870,13 @@ TEST_F(BlobRegistryImplTest,
        Register_DefereferencedWhileBuildingBeforeBreaking) {
   const std::string kId = "id";
 
-  blink::mojom::BytesProviderPtrInfo bytes_provider_info;
-  auto request = MakeRequest(&bytes_provider_info);
+  mojo::PendingRemote<blink::mojom::BytesProvider> bytes_provider_remote;
+  auto receiver = bytes_provider_remote.InitWithNewPipeAndPassReceiver();
 
   std::vector<blink::mojom::DataElementPtr> elements;
   elements.push_back(
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
-          32, base::nullopt, std::move(bytes_provider_info))));
+          32, base::nullopt, std::move(bytes_provider_remote))));
 
   blink::mojom::BlobPtr blob;
   EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
@@ -891,7 +894,7 @@ TEST_F(BlobRegistryImplTest,
   EXPECT_FALSE(context_->registry().HasEntry(kId));
 
   // Now cause construction to fail, if it would still be going on.
-  request = nullptr;
+  receiver.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
@@ -945,13 +948,13 @@ TEST_F(BlobRegistryImplTest,
   const std::string kId = "id";
   const std::string kData = "hello world";
 
-  blink::mojom::BytesProviderPtrInfo bytes_provider_info;
-  auto request = MakeRequest(&bytes_provider_info);
+  mojo::PendingRemote<blink::mojom::BytesProvider> bytes_provider_remote;
+  auto receiver = bytes_provider_remote.InitWithNewPipeAndPassReceiver();
 
   std::vector<blink::mojom::DataElementPtr> elements;
   elements.push_back(
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
-          kData.size(), base::nullopt, std::move(bytes_provider_info))));
+          kData.size(), base::nullopt, std::move(bytes_provider_remote))));
 
   blink::mojom::BlobPtr blob;
   EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
@@ -969,7 +972,7 @@ TEST_F(BlobRegistryImplTest,
   EXPECT_FALSE(context_->registry().HasEntry(kId));
 
   // Now cause construction to complete, if it would still be going on.
-  CreateBytesProvider(kData, std::move(request));
+  CreateBytesProvider(kData, std::move(receiver));
   task_environment_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, BlobsUnderConstruction());
@@ -981,13 +984,13 @@ TEST_F(BlobRegistryImplTest,
   const std::string kData =
       base::RandBytesAsString(kTestBlobStorageMaxBlobMemorySize + 42);
 
-  blink::mojom::BytesProviderPtrInfo bytes_provider_info;
-  auto request = MakeRequest(&bytes_provider_info);
+  mojo::PendingRemote<blink::mojom::BytesProvider> bytes_provider_remote;
+  auto receiver = bytes_provider_remote.InitWithNewPipeAndPassReceiver();
 
   std::vector<blink::mojom::DataElementPtr> elements;
   elements.push_back(
       blink::mojom::DataElement::NewBytes(blink::mojom::DataElementBytes::New(
-          kData.size(), base::nullopt, std::move(bytes_provider_info))));
+          kData.size(), base::nullopt, std::move(bytes_provider_remote))));
 
   blink::mojom::BlobPtr blob;
   EXPECT_TRUE(registry_->Register(MakeRequest(&blob), kId, "", "",
@@ -1005,7 +1008,7 @@ TEST_F(BlobRegistryImplTest,
   EXPECT_FALSE(context_->registry().HasEntry(kId));
 
   // Now cause construction to complete, if it would still be going on.
-  CreateBytesProvider(kData, std::move(request));
+  CreateBytesProvider(kData, std::move(receiver));
   task_environment_.RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, BlobsUnderConstruction());

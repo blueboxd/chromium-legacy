@@ -16,7 +16,6 @@
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -65,7 +64,7 @@ class WebRequestProxyingWebSocket
   void OnResponseReceived(
       network::mojom::WebSocketHandshakeResponsePtr response) override;
   void OnConnectionEstablished(
-      network::mojom::WebSocketPtr websocket,
+      mojo::PendingRemote<network::mojom::WebSocket> websocket,
       mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
       const std::string& selected_protocol,
       const std::string& extensions,

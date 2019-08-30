@@ -8,8 +8,9 @@
 #include <stdint.h>
 
 #include "content/browser/cache_storage/cache_storage_handle.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 
 namespace url {
@@ -29,17 +30,17 @@ class CacheStorageDispatcherHost {
   CacheStorageDispatcherHost();
   ~CacheStorageDispatcherHost();
 
-  // Must be called before AddBinding().
+  // Must be called before AddReceiver().
   void Init(CacheStorageContextImpl* context);
 
-  // Binds the CacheStorage Mojo request to this instance.
+  // Binds the CacheStorage Mojo receiver to this instance.
   // NOTE: The same CacheStorageDispatcherHost instance may be bound to
   // different clients on different origins. Each context is kept on
   // BindingSet's context. This guarantees that the browser process uses the
   // origin of the client known at the binding time, instead of relying on the
   // client to provide its origin at every method call.
-  void AddBinding(blink::mojom::CacheStorageRequest request,
-                  const url::Origin& origin);
+  void AddReceiver(mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+                   const url::Origin& origin);
 
  private:
   class CacheStorageImpl;
@@ -53,7 +54,7 @@ class CacheStorageDispatcherHost {
 
   scoped_refptr<CacheStorageContextImpl> context_;
 
-  mojo::StrongBindingSet<blink::mojom::CacheStorage> bindings_;
+  mojo::UniqueReceiverSet<blink::mojom::CacheStorage> receivers_;
   mojo::StrongAssociatedBindingSet<blink::mojom::CacheStorageCache>
       cache_bindings_;
 

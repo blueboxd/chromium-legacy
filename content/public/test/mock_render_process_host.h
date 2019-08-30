@@ -26,6 +26,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/network_isolation_key.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -161,8 +162,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool HostHasNotBeenUsed() override;
   void LockToOrigin(const IsolationContext& isolation_context,
                     const GURL& lock_url) override;
-  void BindCacheStorage(blink::mojom::CacheStorageRequest request,
-                        const url::Origin& origin) override;
+  void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+      const url::Origin& origin) override;
   void BindFileSystemManager(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver)
@@ -241,7 +243,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   service_manager::Identity child_identity_;
   bool is_renderer_locked_to_site_ = false;
   network::mojom::URLLoaderFactory* url_loader_factory_;
-  blink::mojom::CacheStorageRequest cache_storage_request_;
+  mojo::PendingReceiver<blink::mojom::CacheStorage> cache_storage_receiver_;
   blink::mojom::IDBFactoryRequest idb_factory_request_;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_{this};
 

@@ -1306,7 +1306,12 @@ enum AuthenticationState {
 - (void)unifiedConsentCoordinatorDidReachBottom:
     (UnifiedConsentCoordinator*)coordinator {
   DCHECK_EQ(_unifiedConsentCoordinator, coordinator);
-  DCHECK_EQ(IDENTITY_PICKER_STATE, _currentState);
+  if (_currentState != IDENTITY_PICKER_STATE) {
+    // While signing in with rotation, the unified consent view controller,
+    // might trigger "reach bottom" notification. Those notification should
+    // be ignored if the sign-in already started.
+    return;
+  }
   [self didReachBottom];
 }
 

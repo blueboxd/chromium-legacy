@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -14,6 +15,7 @@ class LayoutBoxModelObject;
 class LineBoxList;
 struct PaintInfo;
 struct PhysicalOffset;
+struct PhysicalRect;
 
 class LineBoxListPainter {
   STACK_ALLOCATED();
@@ -25,9 +27,20 @@ class LineBoxListPainter {
   void Paint(const LayoutBoxModelObject&,
              const PaintInfo&,
              const PhysicalOffset& paint_offset) const;
+  void PaintBackplate(const LayoutBoxModelObject& layout_object,
+                      const PaintInfo&,
+                      const PhysicalOffset& paint_offset) const;
 
  private:
   const LineBoxList& line_box_list_;
+
+  bool ShouldPaint(const LayoutBoxModelObject& layout_object,
+                   const PaintInfo& paint_info,
+                   const PhysicalOffset& paint_offset) const;
+
+  // Returns a vector of backplates that surround the paragraphs of text within
+  // line_box_list_.
+  Vector<PhysicalRect> GetBackplates(const PhysicalOffset& paint_offset) const;
 };
 
 }  // namespace blink

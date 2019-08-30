@@ -176,13 +176,15 @@ bool PaymentsValidators::IsValidMethodFormat(const String& identifier) {
 }
 
 void PaymentsValidators::ValidateAndStringifyObject(
+    v8::Isolate* isolate,
     const String& input_name,
     const ScriptValue& input,
     String& output,
     ExceptionState& exception_state) {
   v8::Local<v8::String> value;
   if (input.IsEmpty() || !input.V8Value()->IsObject() ||
-      !v8::JSON::Stringify(input.GetContext(), input.V8Value().As<v8::Object>())
+      !v8::JSON::Stringify(isolate->GetCurrentContext(),
+                           input.V8Value().As<v8::Object>())
            .ToLocal(&value)) {
     exception_state.ThrowTypeError(input_name +
                                    " should be a JSON-serializable object");

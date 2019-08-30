@@ -159,7 +159,6 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                     View selectedItemView = selectedViewHolder.itemView;
                     onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
                     mRecyclerView.getLayoutManager().removeView(selectedItemView);
-                    RecordUserAction.record("GridTabSwitcher.Drag.AddToGroupOrCreateGroup");
                 }
             }
             mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
@@ -180,7 +179,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                     filter.moveTabOutOfGroup(
                             mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
                     mRecyclerView.getLayoutManager().removeView(ungroupItemView);
-                    RecordUserAction.record("TabGridDialog.Drag.RemoveFromGroup");
+                    RecordUserAction.record("TabGrid.Drag.RemoveFromGroup." + mComponentName);
                 }
             }
             mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;

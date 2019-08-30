@@ -654,12 +654,12 @@ void CacheStorageDispatcherHost::Init(CacheStorageContextImpl* context) {
   context_ = context;
 }
 
-void CacheStorageDispatcherHost::AddBinding(
-    blink::mojom::CacheStorageRequest request,
+void CacheStorageDispatcherHost::AddReceiver(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto impl = std::make_unique<CacheStorageImpl>(this, origin);
-  bindings_.AddBinding(std::move(impl), std::move(request));
+  receivers_.Add(std::move(impl), std::move(receiver));
 }
 
 void CacheStorageDispatcherHost::AddCacheBinding(

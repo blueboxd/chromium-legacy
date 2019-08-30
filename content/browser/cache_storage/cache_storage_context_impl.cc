@@ -93,8 +93,8 @@ void CacheStorageContextImpl::Shutdown() {
       base::BindOnce(&CacheStorageContextImpl::ShutdownOnTaskRunner, this));
 }
 
-void CacheStorageContextImpl::AddBinding(
-    blink::mojom::CacheStorageRequest request,
+void CacheStorageContextImpl::AddReceiver(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!dispatcher_host_) {
@@ -103,8 +103,8 @@ void CacheStorageContextImpl::AddBinding(
     dispatcher_host_.Post(FROM_HERE, &CacheStorageDispatcherHost::Init,
                           base::RetainedRef(this));
   }
-  dispatcher_host_.Post(FROM_HERE, &CacheStorageDispatcherHost::AddBinding,
-                        std::move(request), origin);
+  dispatcher_host_.Post(FROM_HERE, &CacheStorageDispatcherHost::AddReceiver,
+                        std::move(receiver), origin);
 }
 
 scoped_refptr<CacheStorageManager> CacheStorageContextImpl::CacheManager() {

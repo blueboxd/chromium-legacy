@@ -114,6 +114,11 @@ void ValidationMessageOverlayDelegate::PaintFrameOverlay(
   }
 }
 
+void ValidationMessageOverlayDelegate::ServiceScriptedAnimations(
+    base::TimeTicks monotonic_frame_begin_time) {
+  page_->Animator().ServiceScriptedAnimations(monotonic_frame_begin_time);
+}
+
 void ValidationMessageOverlayDelegate::UpdateFrameViewState(
     const FrameOverlay& overlay,
     const IntSize& view_size) {

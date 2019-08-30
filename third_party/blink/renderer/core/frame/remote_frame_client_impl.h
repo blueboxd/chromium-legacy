@@ -38,7 +38,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                 bool is_opener_navigation,
                 bool prevent_sandboxed_download,
                 bool initiator_frame_is_ad,
-                mojom::blink::BlobURLTokenPtr) override;
+                mojo::PendingRemote<mojom::blink::BlobURLToken>) override;
   unsigned BackForwardLength() override;
   void CheckCompleted() override;
   void ForwardPostMessage(MessageEvent*,

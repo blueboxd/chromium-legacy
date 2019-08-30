@@ -153,11 +153,12 @@ class MockFrameHost : public mojom::FrameHost {
     last_commit_params_ = std::move(params);
   }
 
-  void BeginNavigation(mojom::CommonNavigationParamsPtr common_params,
-                       mojom::BeginNavigationParamsPtr begin_params,
-                       blink::mojom::BlobURLTokenPtr blob_url_token,
-                       mojom::NavigationClientAssociatedPtrInfo,
-                       blink::mojom::NavigationInitiatorPtr) override {}
+  void BeginNavigation(
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::BeginNavigationParamsPtr begin_params,
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
+      mojom::NavigationClientAssociatedPtrInfo,
+      blink::mojom::NavigationInitiatorPtr) override {}
 
   void SubresourceResponseStarted(const GURL& url,
                                   net::CertStatus cert_status) override {}

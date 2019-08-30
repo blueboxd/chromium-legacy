@@ -255,8 +255,8 @@
   },
   {
     "name": "autofill-keyboard-accessory-view",
-    "owners": [ "ftirelo" ],
-    "expiry_milestone": 74
+    "owners": [ "fhorschig@chromium.org" ],
+    "expiry_milestone": 79
   },
   {
     "name": "autofill-no-local-save-on-unmask-success",
@@ -946,8 +946,8 @@
   },
   {
     "name": "enable-autofill-manual-fallback",
-    "owners": [ "tmartino@chromium.org" ],
-    "expiry_milestone": 78
+    "owners": [ "fhorschig@chromium.org" ],
+    "expiry_milestone": 79
   },
   {
     "name": "enable-autofill-refresh-style",
@@ -2469,11 +2469,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "ntp-zero-suggest",
-    "owners": ["dbeam", "mahmadi"],
-    "expiry_milestone": 85
-  },
-  {
     "name": "oculus-vr",
     "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79
@@ -2705,7 +2700,7 @@
   },
   {
     "name": "omnibox-zero-suggestions-on-ntp",
-    "owners": [ "chrome-android-omnibox-team@google.com" ],
+    "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 81
   },
   {
@@ -2836,9 +2831,14 @@
     "expiry_milestone": 76
   },
   {
+    "name": "prefetch-main-resource-network-isolation-key",
+    "owners": [ "dom", "yhirano" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "prefetch-redirect-error",
     "owners": [ "dom", "yhirano" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
   },
   {
     "name": "proactive-tab-freeze-and-discard",

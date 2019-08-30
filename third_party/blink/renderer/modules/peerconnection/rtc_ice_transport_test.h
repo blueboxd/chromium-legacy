@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class V8TestingScope;
+
 class MockEventListener final : public NativeEventListener {
  public:
   MOCK_METHOD2(Invoke, void(ExecutionContext*, Event*));

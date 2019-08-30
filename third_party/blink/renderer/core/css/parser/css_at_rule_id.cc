@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_at_rule_id.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {

@@ -17,6 +17,7 @@
 #include "media/gpu/image_processor.h"
 #include "media/gpu/test/image.h"
 #include "media/gpu/test/image_processor/image_processor_client.h"
+#include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/gpu/test/video_frame_validator.h"
 #include "media/gpu/test/video_test_environment.h"
@@ -26,6 +27,25 @@
 
 namespace media {
 namespace {
+
+const char* usage_msg =
+    "usage: image_processor_test\n"
+    "[--gtest_help] [--help] [-v=<level>] [--vmodule=<config>] "
+    "[--save_images]\n";
+
+const char* help_msg =
+    "Run the image processor tests.\n\n"
+    "The following arguments are supported:\n"
+    "  --gtest_help          display the gtest help and exit.\n"
+    "  --help                display this help and exit.\n"
+    "   -v                   enable verbose mode, e.g. -v=2.\n"
+    "  --vmodule             enable verbose mode for the specified module.\n"
+    "  --save_images         write images processed by a image processor to\n"
+    "                        the \"<testname>\" folder.\n";
+
+bool g_save_images = false;
+
+media::test::VideoTestEnvironment* g_env;
 
 // Files for pixel format conversion test.
 // TODO(crbug.com/944822): Use kI420Image for I420 -> NV12 test case. It is
@@ -89,6 +109,19 @@ class ImageProcessorParamTest
           {output_image.Checksum()}, output_image.PixelFormat());
       frame_processors.push_back(std::move(vf_validator));
     }
+
+    if (g_save_images) {
+      base::FilePath output_dir =
+          base::FilePath(base::FilePath::kCurrentDirectory)
+              .Append(base::FilePath(g_env->GetTestName()));
+      test::VideoFrameFileWriter::OutputFormat saved_file_format =
+          IsYuvPlanar(output_format)
+              ? test::VideoFrameFileWriter::OutputFormat::kYUV
+              : test::VideoFrameFileWriter::OutputFormat::kPNG;
+      frame_processors.push_back(
+          test::VideoFrameFileWriter::Create(output_dir, saved_file_format));
+    }
+
     auto ip_client = test::ImageProcessorClient::Create(
         input_config, output_config, kNumBuffers, std::move(frame_processors));
     LOG_ASSERT(ip_client) << "Failed to create ImageProcessorClient";
@@ -201,15 +234,42 @@ INSTANTIATE_TEST_SUITE_P(
 // TODO(hiroh): Add more tests.
 // MEM->DMABUF (V4L2VideoEncodeAccelerator),
 #endif
-
 }  // namespace
 }  // namespace media
 
 int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);
   base::CommandLine::Init(argc, argv);
 
+  // Print the help message if requested. This needs to be done before
+  // initializing gtest, to overwrite the default gtest help message.
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  LOG_ASSERT(cmd_line);
+  if (cmd_line->HasSwitch("help")) {
+    std::cout << media::usage_msg << "\n" << media::help_msg;
+    return 0;
+  }
+
+  base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
+  for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
+       it != switches.end(); ++it) {
+    if (it->first.find("gtest_") == 0 ||               // Handled by GoogleTest
+        it->first == "v" || it->first == "vmodule") {  // Handled by Chrome
+      continue;
+    }
+
+    if (it->first == "save_images") {
+      media::g_save_images = true;
+    } else {
+      std::cout << "unknown option: --" << it->first << "\n"
+                << media::usage_msg;
+      return EXIT_FAILURE;
+    }
+  }
+
+  testing::InitGoogleTest(&argc, argv);
+
   auto* const test_environment = new media::test::VideoTestEnvironment;
-  testing::AddGlobalTestEnvironment(test_environment);
+  media::g_env = reinterpret_cast<media::test::VideoTestEnvironment*>(
+      testing::AddGlobalTestEnvironment(test_environment));
   return RUN_ALL_TESTS();
 }

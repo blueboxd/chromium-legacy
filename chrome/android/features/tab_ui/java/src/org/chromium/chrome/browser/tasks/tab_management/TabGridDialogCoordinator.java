@@ -24,7 +24,7 @@ import java.util.List;
  * objects.
  */
 public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHandler {
-    final static String COMPONENT_NAME = "TabGridDialog";
+    private final String mComponentName;
     private final Context mContext;
     private final TabListCoordinator mTabListCoordinator;
     private final TabGridDialogMediator mMediator;
@@ -39,15 +39,19 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
             TabGridDialogMediator.AnimationParamsProvider animationParamsProvider) {
         mContext = context;
 
+        mComponentName = animationParamsProvider == null ? "TabGridDialogFromStrip"
+                                                         : "TabGridDialogInSwitcher";
+
         mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
 
-        mMediator = new TabGridDialogMediator(context, this, mToolbarPropertyModel,
-                tabModelSelector, tabCreatorManager, resetHandler, animationParamsProvider);
+        mMediator =
+                new TabGridDialogMediator(context, this, mToolbarPropertyModel, tabModelSelector,
+                        tabCreatorManager, resetHandler, animationParamsProvider, mComponentName);
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager::getTabThumbnailWithCallback, null, false, null,
                 gridCardOnClickListenerProvider, mMediator.getTabGridDialogHandler(), null, null,
-                containerView, null, false, COMPONENT_NAME);
+                containerView, null, false, mComponentName);
 
         mParentLayout = new TabGridDialogParent(context, containerView);
 

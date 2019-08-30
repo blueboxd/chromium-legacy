@@ -24,29 +24,19 @@
 
 using content::WebContents;
 
-// static
-TouchToFillController* TouchToFillController::GetOrCreate(
-    WebContents* web_contents) {
-  DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
-  DCHECK(TouchToFillController::AllowedForWebContents(web_contents));
-
-  TouchToFillController::CreateForWebContents(web_contents);
-  return TouchToFillController::FromWebContents(web_contents);
+TouchToFillController::TouchToFillController(WebContents* web_contents)
+    : web_contents_(web_contents) {
+  DCHECK(web_contents);
 }
 
-// static
-std::unique_ptr<TouchToFillController> TouchToFillController::CreateForTesting(
-    base::WeakPtr<ManualFillingController> mf_controller) {
-  // Using `new` to access a non-public constructor.
-  return base::WrapUnique(new TouchToFillController(mf_controller));
+TouchToFillController::TouchToFillController(
+    base::WeakPtr<ManualFillingController> mf_controller,
+    util::PassKey<TouchToFillControllerTest>)
+    : mf_controller_(std::move(mf_controller)) {
+  DCHECK(mf_controller_);
 }
 
 TouchToFillController::~TouchToFillController() = default;
-
-// static
-bool TouchToFillController::AllowedForWebContents(WebContents* web_contents) {
-  return autofill::IsTouchToFillEnabled();
-}
 
 void TouchToFillController::Show(
     base::span<const password_manager::CredentialPair> credentials,
@@ -118,20 +108,9 @@ void TouchToFillController::OnOptionSelected(
   NOTREACHED();
 }
 
-TouchToFillController::TouchToFillController(WebContents* web_contents)
-    : web_contents_(web_contents) {}
-
-TouchToFillController::TouchToFillController(
-    base::WeakPtr<ManualFillingController> mf_controller)
-    : mf_controller_(std::move(mf_controller)) {
-  DCHECK(mf_controller_);
-}
-
 ManualFillingController* TouchToFillController::GetManualFillingController() {
   if (!mf_controller_)
     mf_controller_ = ManualFillingController::GetOrCreate(web_contents_);
   DCHECK(mf_controller_);
   return mf_controller_.get();
 }
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(TouchToFillController)

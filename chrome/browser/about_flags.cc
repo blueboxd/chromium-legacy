@@ -2887,12 +2887,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUISwapTitleAndUrlDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentSwapTitleAndUrl)},
 
-#if defined(OS_ANDROID)
     {"omnibox-zero-suggestions-on-ntp",
      flag_descriptions::kOmniboxZeroSuggestionsOnNTPName,
-     flag_descriptions::kOmniboxZeroSuggestionsOnNTPDescription, kOsAndroid,
+     flag_descriptions::kOmniboxZeroSuggestionsOnNTPDescription,
+     kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnNTP)},
-#endif
 
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
@@ -2938,6 +2937,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"prefetch-redirect-error", flag_descriptions::kPrefetchRedirectErrorName,
      flag_descriptions::kPrefetchRedirectErrorDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPrefetchRedirectError)},
+
+    {"prefetch-main-resource-network-isolation-key",
+     flag_descriptions::kPrefetchMainResourceNetworkIsolationKeyName,
+     flag_descriptions::kPrefetchMainResourceNetworkIsolationKeyDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         network::features::kPrefetchMainResourceNetworkIsolationKey)},
 
 #if defined(OS_ANDROID)
     {"omnibox-spare-renderer", flag_descriptions::kOmniboxSpareRendererName,
@@ -3020,10 +3026,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-realbox", flag_descriptions::kNtpRealboxName,
      flag_descriptions::kNtpRealboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpRealbox)},
-
-    {"ntp-zero-suggest", flag_descriptions::kNtpZeroSuggestName,
-     flag_descriptions::kNtpZeroSuggestDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kNtpZeroSuggest)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)

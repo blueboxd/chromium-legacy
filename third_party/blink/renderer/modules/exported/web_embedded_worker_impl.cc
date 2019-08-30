@@ -33,7 +33,6 @@
 #include <memory>
 #include <utility>
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
@@ -87,8 +86,8 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
           // TODO(falken): Is that comment about versioning correct?
           mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
               std::move(content_settings_handle), 0u)),
-      mojom::blink::CacheStoragePtrInfo(std::move(cache_storage),
-                                        mojom::blink::CacheStorage::Version_),
+      mojo::PendingRemote<mojom::blink::CacheStorage>(
+          std::move(cache_storage), mojom::blink::CacheStorage::Version_),
       service_manager::mojom::blink::InterfaceProviderPtrInfo(
           std::move(interface_provider),
           service_manager::mojom::blink::InterfaceProvider::Version_),
@@ -106,7 +105,8 @@ std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
       client, nullptr /* installed_scripts_manager_params */,
       std::make_unique<ServiceWorkerContentSettingsProxy>(
           mojo::NullRemote() /* host_info */),
-      nullptr /* cache_storage_info */, nullptr /* interface_provider_info */,
+      mojo::NullRemote() /* cache_storage */,
+      nullptr /* interface_provider_info */,
       mojo::NullRemote() /* browser_interface_broker */);
   worker_impl->installed_scripts_manager_ =
       std::move(installed_scripts_manager);
@@ -118,7 +118,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
     std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
-    mojom::blink::CacheStoragePtrInfo cache_storage_info,
+    mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
         interface_provider_info,
     mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
@@ -126,7 +126,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     : worker_context_client_(client),
       content_settings_client_(std::move(content_settings_client)),
       pause_after_download_state_(kDontPauseAfterDownload),
-      cache_storage_info_(std::move(cache_storage_info)),
+      cache_storage_remote_(std::move(cache_storage_remote)),
       interface_provider_info_(std::move(interface_provider_info)),
       browser_interface_broker_(std::move(browser_interface_broker)) {
   if (installed_scripts_manager_params) {
@@ -279,7 +279,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       std::make_unique<ServiceWorkerGlobalScopeProxy>(
           *this, *worker_context_client_, initiator_thread_task_runner),
-      std::move(installed_scripts_manager_), std::move(cache_storage_info_),
+      std::move(installed_scripts_manager_), std::move(cache_storage_remote_),
       initiator_thread_task_runner);
 
   auto devtools_params = std::make_unique<WorkerDevToolsParams>();

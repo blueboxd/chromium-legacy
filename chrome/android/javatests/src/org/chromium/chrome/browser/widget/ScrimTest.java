@@ -117,6 +117,7 @@ public class ScrimTest {
     @SmallTest
     @Feature({"Scrim"})
     public void testBottomSheetScrim() throws InterruptedException, TimeoutException {
+        mScrim.disableAnimationForTesting(true);
         assertScrimVisibility(false);
         assertFalse("Nothing should be obscuring the tab.",
                 mActivityTestRule.getActivity().isViewObscuringAllTabs());
@@ -131,7 +132,7 @@ public class ScrimTest {
         assertScrimVisibility(true);
         assertTrue("A view should be obscuring the tab.",
                 mActivityTestRule.getActivity().isViewObscuringAllTabs());
-        assertEquals("The scrim alpha should be 1.", 1f, mScrim.getAlpha(), MathUtils.EPSILON);
+        assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mBottomSheet.setSheetState(BottomSheet.SheetState.PEEK, false));

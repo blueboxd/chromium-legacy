@@ -40,6 +40,9 @@ const char kArcDataRemoveRequested[] = "arc.data.remove_requested";
 // SetArcPlayStoreEnabledForProfile()) in chrome/browser/chromeos/arc/arc_util.
 const char kArcEnabled[] = "arc.enabled";
 // A preference to control if ARC can access removable media on the host side.
+// TODO(fukino): Remove this pref once "Play Store applications can't access
+// this device" toast in Files app becomes aware of kArcVisibleExternalStorages.
+// crbug.com/998512.
 const char kArcHasAccessToRemovableMedia[] =
     "arc.has_access_to_removable_media";
 // A preference to keep list of external storages which are visible to Android

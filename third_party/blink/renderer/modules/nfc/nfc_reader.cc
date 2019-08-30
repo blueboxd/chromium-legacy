@@ -7,26 +7,26 @@
 #include <utility>
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_error_event.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_reader_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reading_event.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_scan_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
 // static
-NFCReader* NFCReader::Create(ExecutionContext* context,
-                             NFCReaderOptions* options) {
-  return MakeGarbageCollected<NFCReader>(context, options);
+NFCReader* NFCReader::Create(ExecutionContext* context) {
+  return MakeGarbageCollected<NFCReader>(context);
 }
 
-NFCReader::NFCReader(ExecutionContext* context, NFCReaderOptions* options)
-    : ContextLifecycleObserver(context), options_(options) {}
+NFCReader::NFCReader(ExecutionContext* context)
+    : ContextLifecycleObserver(context) {}
 
 NFCReader::~NFCReader() = default;
 
@@ -43,32 +43,39 @@ bool NFCReader::HasPendingActivity() const {
          HasEventListeners();
 }
 
-void NFCReader::start() {
+// https://w3c.github.io/web-nfc/#the-scan-method
+void NFCReader::scan(const NFCScanOptions* options) {
   if (!CheckSecurity())
     return;
 
-  // https://w3c.github.io/web-nfc/#dom-nfcreader-start (Step 3.4)
-  if (options_->hasURL() && !options_->url().IsEmpty()) {
-    KURL pattern_url(options_->url());
+  if (options->hasSignal()) {
+    // 6. If reader.[[Signal]]'s aborted flag is set, then return.
+    if (options->signal()->aborted())
+      return;
+
+    // 7. If reader.[[Signal]] is not null, then add the following abort steps
+    // to reader.[[Signal]]:
+    options->signal()->AddAlgorithm(
+        WTF::Bind(&NFCReader::Abort, WrapPersistent(this)));
+  }
+
+  // Step 8.4, if the url is not an empty string and it is not a valid URL
+  // pattern, fire a NFCErrorEvent with "SyntaxError" DOMException, then return.
+  if (options->hasURL() && !options->url().IsEmpty()) {
+    KURL pattern_url(options->url());
     if (!pattern_url.IsValid() || pattern_url.Protocol() != kNfcProtocolHttps) {
       DispatchEvent(*MakeGarbageCollected<NFCErrorEvent>(
           event_type_names::kError,
           MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
                                              kNfcUrlPatternError)));
+      return;
     }
   }
 
-  GetNfcProxy()->StartReading(this);
-}
-
-void NFCReader::stop() {
-  if (!CheckSecurity())
-    return;
-  GetNfcProxy()->StopReading(this);
+  GetNfcProxy()->StartReading(this, options);
 }
 
 void NFCReader::Trace(blink::Visitor* visitor) {
-  visitor->Trace(options_);
   EventTargetWithInlineData::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
@@ -88,6 +95,10 @@ void NFCReader::OnError(device::mojom::blink::NFCErrorType error) {
 }
 
 void NFCReader::ContextDestroyed(ExecutionContext*) {
+  GetNfcProxy()->StopReading(this);
+}
+
+void NFCReader::Abort() {
   GetNfcProxy()->StopReading(this);
 }
 

@@ -296,7 +296,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                        WebTriggeringEventInfo,
                        HTMLFormElement*,
                        ContentSecurityPolicyDisposition,
-                       mojom::blink::BlobURLTokenPtr,
+                       mojo::PendingRemote<mojom::blink::BlobURLToken>,
                        base::TimeTicks,
                        const String&,
                        WebContentSecurityPolicyList,
@@ -458,7 +458,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                 bool is_opener_navigation,
                 bool prevent_sandboxed_download,
                 bool initiator_frame_is_ad,
-                mojom::blink::BlobURLTokenPtr) override {}
+                mojo::PendingRemote<mojom::blink::BlobURLToken>) override {}
   unsigned BackForwardLength() override { return 0; }
   void CheckCompleted() override {}
   void ForwardPostMessage(MessageEvent*,

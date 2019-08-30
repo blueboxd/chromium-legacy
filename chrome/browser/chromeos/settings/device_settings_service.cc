@@ -122,8 +122,12 @@ void DeviceSettingsService::UnsetSessionManager() {
 }
 
 void DeviceSettingsService::SetDeviceMode(policy::DeviceMode device_mode) {
-  // Device mode can only change once.
-  DCHECK_EQ(policy::DEVICE_MODE_PENDING, device_mode_);
+  if (device_mode_ == device_mode)
+    return;
+
+  // Device mode can only change if was not set yet.
+  DCHECK(policy::DEVICE_MODE_PENDING == device_mode_ ||
+         policy::DEVICE_MODE_NOT_SET == device_mode_);
   device_mode_ = device_mode;
   if (GetOwnershipStatus() != OWNERSHIP_UNKNOWN) {
     RunPendingOwnershipStatusCallbacks();

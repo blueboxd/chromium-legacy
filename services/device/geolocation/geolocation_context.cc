@@ -22,8 +22,9 @@ void GeolocationContext::Create(mojom::GeolocationContextRequest request) {
                           std::move(request));
 }
 
-void GeolocationContext::BindGeolocation(mojom::GeolocationRequest request) {
-  GeolocationImpl* impl = new GeolocationImpl(std::move(request), this);
+void GeolocationContext::BindGeolocation(
+    mojo::PendingReceiver<mojom::Geolocation> receiver) {
+  GeolocationImpl* impl = new GeolocationImpl(std::move(receiver), this);
   impls_.push_back(base::WrapUnique<GeolocationImpl>(impl));
   if (geoposition_override_)
     impl->SetOverride(*geoposition_override_);

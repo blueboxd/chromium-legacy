@@ -189,13 +189,13 @@ Timing::CalculatedTiming Timing::CalculateTimings(
     const double start_offset =
         MultiplyZeroAlwaysGivesZero(iteration_start, iteration_duration);
     DCHECK_GE(start_offset, 0);
-    const double offset_active_time =
+    const base::Optional<double> offset_active_time =
         CalculateOffsetActiveTime(active_duration, active_time, start_offset);
-    const double iteration_time = CalculateIterationTime(
+    const base::Optional<double> iteration_time = CalculateIterationTime(
         iteration_duration, active_duration, offset_active_time, start_offset,
         current_phase, *this);
-    if (!IsNull(iteration_time)) {
-      time_to_next_iteration = iteration_duration - iteration_time;
+    if (iteration_time) {
+      time_to_next_iteration = iteration_duration - iteration_time.value();
       if (active_duration - active_time < time_to_next_iteration)
         time_to_next_iteration = std::numeric_limits<double>::infinity();
     }

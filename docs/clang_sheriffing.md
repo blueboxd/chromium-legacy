@@ -15,6 +15,9 @@ determining if any compile or test failures are due to an upstream compiler
 change, filing bugs upstream, and often reverting bad changes in LLVM. This
 document describes some of the processes and techniques for doing that.
 
+https://sheriff-o-matic.appspot.com/chromium.clang is the sheriff-o-matic
+view of that waterfall, which can be easier to work with.
+
 [TOC]
 
 ## Is it the compiler?
@@ -61,15 +64,23 @@ things:
    upstream regression range
 1. File a crbug documenting the crash. Include the range, and any other bots
    displaying the same symptoms.
-1. Collect the crash reproduction files and reproduce the crash locally. When
-   clang crashes, it prints something like this:
-   ```
-   PLEASE ATTACH THE FOLLOWING FILES TO THE BUG REPORT:
-   Preprocessed source(s) and associated run script(s) are located at:
-   clang: note: diagnostic msg: C:\src\tmp\t-8f292b.cpp
-   clang: note: diagnostic msg: C:\src\tmp\t-8f292b.sh
-   ```
-   If you re-run the shell script, it should reproduce the crash.
+1. All clang crashes on the Chromium bots are automatically uploaded to
+   Cloud Storage. On the failing build, click the "stdout" link of the
+   "process clang crashes" step right after the red compile step. It will
+   print something like
+
+       processing heap_page-65b34d... compressing... uploading... done
+           gs://chrome-clang-crash-reports/v1/2019/08/27/chromium.clang-ToTMac-20955-heap_page-65b34d.tgz
+       removing heap_page-65b34d.sh
+       removing heap_page-65b34d.cpp
+
+   Use
+   `gsutil.py cp gs://chrome-clang-crash-reports/v1/2019/08/27/chromium.clang-ToTMac-20955-heap_page-65b34d.tgz .`
+   to copy it to your local machine. Untar with
+   `tar xzf chromium.clang-ToTMac-20955-heap_page-65b34d.tgz` and change the
+   included shell script to point to a locally-built clang. Remove the
+   `-Xclang -plugin` flags.  If you re-run the shell script, it should
+   reproduce the crash.
 1. Identify the revision that introduced the crash. First, look at the commit
    messages in the LLVM revision range to see if one modifies the code near the
    point of the crash. If so, try reverting it locally, rebuild, and run the
@@ -81,18 +92,23 @@ things:
    #!/bin/bash
    cd $(dirname $0)  # get into llvm build dir
    ninja -j900 clang || exit 125 # skip revisions that don't compile
-   ./t-8f292b.sh   # exit 0 if good, 0 if bad
+   ./t-8f292b.sh || exit 1  # exit 0 if good, 1 if bad
    ```
-1. Reply to the commit on `llvm-commits` or on the code review on
-   [Phabricator](https://reviews.llvm.org/) letting the author know that you
-   believe they introduced a regression, and that you will revert the patch and
-   provide a reduced reproducer.
-1. Revert the upstream LLVM change once you are confident that you have the
-   right culprit. Tell the patch author that you will provide a reproduction.
-1. Start a reduction using [CReduce](https://embed.cs.utah.edu/creduce/using/).
-   Follow the docs there for writing an interestingness test and use it to
-   reduce the input to something that can be provided upstream. Send the reduced
-   reproducer to the patch author.
+1. File an upstream bug like http://llvm.org/PR43016. Usually the unminimized repro
+   is too large for LLVM's bugzilla, so attach it to a (public) crbug and link
+   to that from the LLVM bug. Then revert with a commit message like
+   "Revert r368987, it caused PR43016."
+1. If you want, make a reduced repro using CReduce.  Clang contains a handy wrapper around
+   CReduce that you can invoke like so:
+
+       clang/utils/creduce-clang-crash.py --llvm-bin bin \
+           angle_deqp_gtest-d421b0.sh angle_deqp_gtest-d421b0.cpp
+
+   Attach the reproducer to the llvm bug you filed in the previous step.
+
+   If you need to do something the wrapper doesn't support,
+   follow the [official CReduce docs](https://embed.cs.utah.edu/creduce/using/)
+   for writing an interestingness test and use creduce directly.
 
 ## Compiler warning change
 

@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unit tests for results_processor.
+
+These tests mostly test that argument parsing and processing work as expected.
+They mock out accesses to the operating system, so no files are actually read
+nor written.
+"""
+
 import datetime
 import posixpath
 import re
@@ -26,14 +33,14 @@ class ProcessOptionsTestCase(unittest.TestCase):
     # depend on the file system of the test environment.
     mock_os = mock.patch(module('os')).start()
 
-    def abspath(path):
-      return posixpath.join(mock_os.getcwd(), path)
+    def realpath(path):
+      return posixpath.normpath(posixpath.join(mock_os.getcwd(), path))
 
     def expanduser(path):
       return re.sub(r'~', '/path/to/home', path)
 
     mock_os.getcwd.return_value = '/path/to/curdir'
-    mock_os.path.abspath.side_effect = abspath
+    mock_os.path.realpath.side_effect = realpath
     mock_os.path.expanduser.side_effect = expanduser
     mock_os.path.dirname.side_effect = posixpath.dirname
     mock_os.path.join.side_effect = posixpath.join

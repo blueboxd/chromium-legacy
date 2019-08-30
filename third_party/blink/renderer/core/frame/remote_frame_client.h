@@ -34,7 +34,7 @@ class RemoteFrameClient : public FrameClient {
                         bool is_opener_navigation,
                         bool has_download_sandbox_flag,
                         bool initiator_frame_is_ad,
-                        mojom::blink::BlobURLTokenPtr) = 0;
+                        mojo::PendingRemote<mojom::blink::BlobURLToken>) = 0;
   unsigned BackForwardLength() override = 0;
 
   // Notifies the remote frame to check whether it is done loading, after one

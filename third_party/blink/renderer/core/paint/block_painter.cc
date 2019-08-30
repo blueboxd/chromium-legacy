@@ -270,8 +270,11 @@ void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
   } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
     ObjectPainter(layout_block_).PaintInlineChildrenOutlines(paint_info);
   } else {
-    LineBoxListPainter(To<LayoutBlockFlow>(layout_block_).LineBoxes())
-        .Paint(layout_block_, paint_info, paint_offset);
+    LineBoxListPainter painter(To<LayoutBlockFlow>(layout_block_).LineBoxes());
+    // Draw a backplate behind all text if forced colors mode is enabled.
+    if (layout_block_.GetFrame()->GetDocument()->InForcedColorsMode())
+      painter.PaintBackplate(layout_block_, paint_info, paint_offset);
+    painter.Paint(layout_block_, paint_info, paint_offset);
   }
 
   // If we don't have any floats to paint, or we're in the wrong paint phase,

@@ -28,7 +28,8 @@ class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
   // Creates a new instance, and binds it on a new SequencedTaskRunner. The
   // returned instance should only be considered valid as long as the request
   // passed in to this method is still known to be valid.
-  static BlobBytesProvider* CreateAndBind(mojom::blink::BytesProviderRequest);
+  static BlobBytesProvider* CreateAndBind(
+      mojo::PendingReceiver<mojom::blink::BytesProvider>);
   static std::unique_ptr<BlobBytesProvider> CreateForTesting(
       scoped_refptr<base::SequencedTaskRunner>);
 

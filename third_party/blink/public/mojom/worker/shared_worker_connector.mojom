@@ -25,5 +25,5 @@ interface SharedWorkerConnector {
           pending_remote<SharedWorkerClient> client,
           SharedWorkerCreationContextType creation_context_type,
           handle<message_pipe> message_port,
-          BlobURLToken? blob_url_token);
+          pending_remote<BlobURLToken>? blob_url_token);
 };

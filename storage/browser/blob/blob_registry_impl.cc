@@ -58,8 +58,8 @@ class BlobRegistryImpl::BlobUnderConstruction {
 
  private:
   // Holds onto a blink::mojom::DataElement struct and optionally a bound
-  // blink::mojom::BytesProviderPtr or blink::mojom::BlobPtr, if the element
-  // encapsulates a large byte array or a blob.
+  // mojo::Remote<blink::mojom::BytesProvider> or blink::mojom::BlobPtr, if the
+  // element encapsulates a large byte array or a blob.
   struct ElementEntry {
     explicit ElementEntry(blink::mojom::DataElementPtr e)
         : element(std::move(e)) {
@@ -75,7 +75,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
     ElementEntry& operator=(ElementEntry&& other) = default;
 
     blink::mojom::DataElementPtr element;
-    blink::mojom::BytesProviderPtr bytes_provider;
+    mojo::Remote<blink::mojom::BytesProvider> bytes_provider;
     blink::mojom::BlobPtr blob;
   };
 
@@ -228,7 +228,7 @@ void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
           base::BindOnce(&BlobUnderConstruction::ReceivedBlobUUID,
                          weak_ptr_factory_.GetWeakPtr(), blob_count++));
     } else if (element->is_bytes()) {
-      entry.bytes_provider.set_connection_error_handler(base::BindOnce(
+      entry.bytes_provider.set_disconnect_handler(base::BindOnce(
           &BlobUnderConstruction::MarkAsBroken, weak_ptr_factory_.GetWeakPtr(),
           BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT, ""));
     }

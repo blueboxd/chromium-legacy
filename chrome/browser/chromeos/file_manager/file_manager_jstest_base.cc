@@ -24,6 +24,12 @@
 
 namespace {
 
+base::FilePath GetGenRoot() {
+  base::FilePath executable_path;
+  CHECK(base::PathService::Get(base::DIR_EXE, &executable_path));
+  return executable_path.AppendASCII("gen");
+}
+
 // URLDataSource for the test URL chrome://file_manager_test/. It reads files
 // directly from repository source.
 class TestFilesDataSource : public content::URLDataSource {
@@ -52,21 +58,30 @@ class TestFilesDataSource : public content::URLDataSource {
     if (source_root_.empty()) {
       CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_));
     }
-    base::FilePath root =
-        source_root_.Append(FILE_PATH_LITERAL("ui/file_manager"));
+    if (gen_root_.empty()) {
+      CHECK(base::PathService::Get(base::DIR_EXE, &gen_root_));
+      gen_root_ = GetGenRoot();
+    }
+
     std::string content;
 
-    base::FilePath file_path =
-        root.Append(base::FilePath::FromUTF8Unsafe(path));
+    base::FilePath src_file_path =
+        source_root_.Append(base::FilePath::FromUTF8Unsafe(path));
+    base::FilePath gen_file_path =
+        gen_root_.Append(base::FilePath::FromUTF8Unsafe(path));
 
     // Do some basic validation of the file extension.
-    CHECK(file_path.Extension() == ".html" || file_path.Extension() == ".js" ||
-          file_path.Extension() == ".css")
+    CHECK(src_file_path.Extension() == ".html" ||
+          src_file_path.Extension() == ".js" ||
+          src_file_path.Extension() == ".css")
         << "chrome://file_manager_test/ only supports .html/.js/.css extension "
            "files";
 
-    CHECK(base::PathExists(file_path)) << file_path.value();
-    CHECK(base::ReadFileToString(file_path, &content)) << file_path.value();
+    CHECK(base::PathExists(src_file_path) || base::PathExists(gen_file_path))
+        << src_file_path << " or: " << gen_file_path << " input path: " << path;
+    CHECK(base::ReadFileToString(src_file_path, &content) ||
+          base::ReadFileToString(gen_file_path, &content))
+        << src_file_path << " or: " << gen_file_path;
 
     scoped_refptr<base::RefCountedString> response =
         base::RefCountedString::TakeString(&content);
@@ -87,8 +102,15 @@ class TestFilesDataSource : public content::URLDataSource {
     return "application/javascript";
   }
 
+  std::string GetContentSecurityPolicyScriptSrc() override {
+    // Add 'unsafe-inline' to CSP to allow the inline <script> in the generated
+    // HTML to run see js_test_gen_html.py.
+    return "script-src chrome://resources 'self'  'unsafe-inline'; ";
+  }
+
   // Root of repository source, where files are served directly from.
   base::FilePath source_root_;
+  base::FilePath gen_root_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFilesDataSource);
 };
@@ -138,9 +160,7 @@ void FileManagerJsTestBase::RunTest(const base::FilePath& file) {
 }
 
 void FileManagerJsTestBase::RunGeneratedTest(const std::string& file) {
-  base::FilePath path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &path));
-  path = path.AppendASCII("gen");
+  base::FilePath path = GetGenRoot();
 
   // Serve the generated html file from out/gen. It references files from
   // DIR_SOURCE_ROOT, so serve from there as well. An alternative would be to
@@ -154,7 +174,8 @@ void FileManagerJsTestBase::RunGeneratedTest(const std::string& file) {
 }
 
 void FileManagerJsTestBase::RunTestURL(const std::string& file) {
-  RunTestImpl(GURL("chrome://file_manager_test" + file));
+  RunTestImpl(
+      GURL("chrome://file_manager_test/" + base_path_.Append(file).value()));
 }
 
 void FileManagerJsTestBase::RunTestImpl(const GURL& url) {

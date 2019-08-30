@@ -22,8 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_USE_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_USE_ELEMENT_H_
 
-#include "base/gtest_prod_util.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/resource/document_resource.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
@@ -107,7 +105,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   Element* ResolveTargetElement(ObserveBehavior);
   void AttachShadowTree(SVGElement& target);
   void DetachShadowTree();
-  CORE_EXPORT SVGElement* InstanceRoot() const;
+  void ClearInstanceRoot();
   SVGElement* CreateInstanceTree(SVGElement& target_root) const;
   void ClearResourceReference();
   bool HasCycleUseReferencing(const ContainerNode& target_instance,
@@ -134,12 +132,8 @@ class SVGUseElement final : public SVGGraphicsElement,
   bool element_url_is_local_;
   bool have_fired_load_event_;
   bool needs_shadow_tree_recreation_;
+  Member<SVGElement> target_element_instance_;
   Member<IdTargetObserver> target_id_observer_;
-
-  FRIEND_TEST_ALL_PREFIXES(SVGUseElementTest,
-                           NullInstanceRootWhenNotConnectedToDocument);
-  FRIEND_TEST_ALL_PREFIXES(SVGUseElementTest,
-                           NullInstanceRootWhenShadowTreePendingRebuild);
 };
 
 }  // namespace blink

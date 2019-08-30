@@ -22,19 +22,19 @@ namespace content {
 
 namespace {
 
-bool VerifyBlobToken(
-    int process_id,
-    mojo::MessagePipeHandle received_token,
-    const GURL& received_url,
-    blink::mojom::BlobURLTokenPtrInfo* out_blob_url_token_info) {
+bool VerifyBlobToken(int process_id,
+                     mojo::MessagePipeHandle received_token,
+                     const GURL& received_url,
+                     mojo::PendingRemote<blink::mojom::BlobURLToken>*
+                         out_blob_url_token_remote) {
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
-  DCHECK(out_blob_url_token_info);
+  DCHECK(out_blob_url_token_remote);
 
   mojo::ScopedMessagePipeHandle blob_url_token_handle(
       std::move(received_token));
-  blink::mojom::BlobURLTokenPtrInfo blob_url_token_info(
+  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token_remote(
       std::move(blob_url_token_handle), blink::mojom::BlobURLToken::Version_);
-  if (blob_url_token_info) {
+  if (blob_url_token_remote) {
     if (!received_url.SchemeIsBlob()) {
       bad_message::ReceivedBadMessage(
           process_id, bad_message::BLOB_URL_TOKEN_FOR_NON_BLOB_URL);
@@ -42,7 +42,7 @@ bool VerifyBlobToken(
     }
   }
 
-  *out_blob_url_token_info = std::move(blob_url_token_info);
+  *out_blob_url_token_remote = std::move(blob_url_token_remote);
   return true;
 }
 
@@ -64,18 +64,18 @@ bool VerifyInitiatorOrigin(int process_id,
 
 }  // namespace
 
-bool VerifyDownloadUrlParams(
-    int process_id,
-    const FrameHostMsg_DownloadUrl_Params& params,
-    blink::mojom::BlobURLTokenPtrInfo* out_blob_url_token_info) {
+bool VerifyDownloadUrlParams(int process_id,
+                             const FrameHostMsg_DownloadUrl_Params& params,
+                             mojo::PendingRemote<blink::mojom::BlobURLToken>*
+                                 out_blob_url_token_remote) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
-  DCHECK(out_blob_url_token_info);
+  DCHECK(out_blob_url_token_remote);
 
-  // Verify |params.blob_url_token| and populate |out_blob_url_token_info|.
+  // Verify |params.blob_url_token| and populate |out_blob_url_token_remote|.
   if (!VerifyBlobToken(process_id, params.blob_url_token, params.url,
-                       out_blob_url_token_info)) {
+                       out_blob_url_token_remote)) {
     return false;
   }
 
@@ -104,17 +104,15 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
   process->FilterURL(false, out_validated_url);
 
   // Verify |params.blob_url_token| and populate |out_blob_url_loader_factory|.
-  blink::mojom::BlobURLTokenPtrInfo blob_url_token_info;
+  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token_remote;
   if (!VerifyBlobToken(process_id, params.blob_url_token, params.url,
-                       &blob_url_token_info)) {
+                       &blob_url_token_remote)) {
     return false;
   }
-  if (blob_url_token_info) {
-    blink::mojom::BlobURLTokenPtr blob_url_token(
-        std::move(blob_url_token_info));
+  if (blob_url_token_remote) {
     *out_blob_url_loader_factory =
         ChromeBlobStorageContext::URLLoaderFactoryForToken(
-            process->GetBrowserContext(), std::move(blob_url_token));
+            process->GetBrowserContext(), std::move(blob_url_token_remote));
   }
 
   // Verify |params.resource_request_body|.

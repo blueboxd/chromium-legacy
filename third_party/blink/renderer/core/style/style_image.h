@@ -60,7 +60,8 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   // Returns a CSSValue suitable for using as part of a computed style
   // value. This often means that any URLs have been made absolute, and similar
   // actions described by a "Computed value" in the relevant specification.
-  virtual CSSValue* ComputedCSSValue() const = 0;
+  virtual CSSValue* ComputedCSSValue(const ComputedStyle&,
+                                     bool allow_visited_style) const = 0;
 
   // An Image can be provided for rendering by GetImage.
   virtual bool CanRender() const { return true; }

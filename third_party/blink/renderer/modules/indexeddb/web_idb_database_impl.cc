@@ -17,10 +17,10 @@
 namespace blink {
 
 WebIDBDatabaseImpl::WebIDBDatabaseImpl(
-    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+    mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)) {
-  database_.Bind(std::move(database_info), task_runner_);
+  database_.Bind(std::move(pending_database), task_runner_);
 }
 
 WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;
@@ -32,11 +32,12 @@ void WebIDBDatabaseImpl::RenameObjectStore(int64_t transaction_id,
 }
 
 void WebIDBDatabaseImpl::CreateTransaction(
-    mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+    mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+        transaction_receiver,
     int64_t transaction_id,
     const Vector<int64_t>& object_store_ids,
     mojom::IDBTransactionMode mode) {
-  database_->CreateTransaction(std::move(transaction_request), transaction_id,
+  database_->CreateTransaction(std::move(transaction_receiver), transaction_id,
                                object_store_ids, mode);
 }
 

@@ -37,6 +37,7 @@ namespace blink {
 
 class AffineTransform;
 class Document;
+class FloatRect;
 class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAnimatedString;

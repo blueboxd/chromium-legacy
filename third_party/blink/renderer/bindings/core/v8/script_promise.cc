@@ -65,7 +65,7 @@ class PromiseAllHandler final
     }
   }
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(resolver_); }
 
  private:
   class AdapterFunction : public ScriptFunction {
@@ -133,8 +133,7 @@ class PromiseAllHandler final
     if (--number_of_pending_promises_ > 0)
       return;
 
-    v8::Local<v8::Value> values =
-        ToV8(values_, value.GetContext()->Global(), value.GetIsolate());
+    v8::Local<v8::Value> values = ToV8(values_, resolver_.GetScriptState());
     MarkPromiseSettled();
     resolver_.Resolve(values);
   }
@@ -166,7 +165,8 @@ class PromiseAllHandler final
 }  // namespace
 
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* script_state)
-    : resolver_(script_state,
+    : script_state_(script_state),
+      resolver_(script_state,
                 v8::Promise::Resolver::New(script_state->GetContext())) {
   // |resolver| can be empty when the thread is being terminated. We ignore such
   // errors.
@@ -189,7 +189,7 @@ void ScriptPromise::InternalResolver::Resolve(v8::Local<v8::Value> value) {
     return;
   v8::Maybe<bool> result =
       resolver_.V8Value().As<v8::Promise::Resolver>()->Resolve(
-          resolver_.GetContext(), value);
+          script_state_->GetContext(), value);
   // |result| can be empty when the thread is being terminated. We ignore such
   // errors.
   ALLOW_UNUSED_LOCAL(result);
@@ -202,7 +202,7 @@ void ScriptPromise::InternalResolver::Reject(v8::Local<v8::Value> value) {
     return;
   v8::Maybe<bool> result =
       resolver_.V8Value().As<v8::Promise::Resolver>()->Reject(
-          resolver_.GetContext(), value);
+          script_state_->GetContext(), value);
   // |result| can be empty when the thread is being terminated. We ignore such
   // errors.
   ALLOW_UNUSED_LOCAL(result);

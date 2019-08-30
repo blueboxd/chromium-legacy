@@ -2055,7 +2055,7 @@
     ],
     'modifications': {
       'Oreo Phone Tester': {
-        # TODO(crbug.com/863089): Enable this once it's passing.
+        # TODO(crbug.com/997362): Enable this once it's passing.
         # TODO(https://crbug.com/884413): Re-enable this once the tests are
         # either passing or there is more capacity.
         'experiment_percentage': 0,
@@ -2064,6 +2064,12 @@
         #TODO(crbug.com/998926): Remove test filters once bug is resolved.
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_nougat.filter',
+        ],
+      },
+      'Android WebView O (dbg)': {
+        #TODO(crbug.com/997362): Remove test filters once bug is resolved.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter',
         ],
       },
     },

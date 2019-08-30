@@ -67,7 +67,6 @@
 #include "base/base_export.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"

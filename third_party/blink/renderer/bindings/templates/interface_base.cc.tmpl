@@ -156,7 +156,6 @@ static const struct {
   const GetterCallback getter;
   const SetterCallback setter;
 } kCrossOriginAttributeTable[] = {
-  {##### Cross-origin attributes #####}
   {% for attribute in attributes if attribute.has_cross_origin_getter or attribute.has_cross_origin_setter %}
   {
     "{{attribute.name}}",
@@ -172,10 +171,17 @@ static const struct {
     {%+ if attribute.has_cross_origin_setter %}&{{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter{% else %}nullptr{% endif %},
   },
   {% endfor %}
-  {##### Cross-origin methods #####}
+};
+
+static const struct {
+  using ValueCallback = void(*)(const v8::PropertyCallbackInfo<v8::Value>&);
+
+  const char* const name;
+  const ValueCallback value;
+} kCrossOriginOperationTable[] = {
   {% for method in methods if method.is_cross_origin and
         (not method.overload_index or method.overloads) %}
-  {"{{method.name}}", &{{internal_namespace}}::{{method.camel_case_name}}OriginSafeMethodGetter, nullptr},
+  {"{{method.name}}", &{{internal_namespace}}::{{method.camel_case_name}}OriginSafeMethodGetter},
   {% endfor %}
 };
 {% endif %}
@@ -273,6 +279,12 @@ void {{v8_class_or_partial}}::CrossOriginNamedGetter(v8::Local<v8::Name> name, c
       return;
     }
   }
+  for (const auto& operation : {{internal_namespace}}::kCrossOriginOperationTable) {
+    if (property_name == operation.name) {
+      operation.value(info);
+      return;
+    }
+  }
 
   {% if named_property_getter and named_property_getter.is_cross_origin %}
   {% if named_property_getter.is_custom %}
@@ -330,6 +342,8 @@ void {{v8_class_or_partial}}::CrossOriginNamedEnumerator(const v8::PropertyCallb
   Vector<String> names;
   for (const auto& attribute : {{internal_namespace}}::kCrossOriginAttributeTable)
     names.push_back(attribute.name);
+  for (const auto& operation : {{internal_namespace}}::kCrossOriginOperationTable)
+    names.push_back(operation.name);
 
   // Use the current context as the creation context, as a cross-origin access
   // may involve an object that does not have a creation context.

@@ -537,8 +537,10 @@ void AutoEnrollmentClientImpl::NextStep() {
   const DeviceStateMode device_state_mode = GetDeviceStateMode();
   switch (device_state_mode) {
     case RESTORE_MODE_NONE:
-    case RESTORE_MODE_DISABLED:
       ReportProgress(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+      break;
+    case RESTORE_MODE_DISABLED:
+      ReportProgress(AUTO_ENROLLMENT_STATE_DISABLED);
       break;
     case RESTORE_MODE_REENROLLMENT_REQUESTED:
     case RESTORE_MODE_REENROLLMENT_ENFORCED:

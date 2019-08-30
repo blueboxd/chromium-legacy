@@ -49,6 +49,7 @@ TEST_F(LeakDetectionCheckFactoryImplTest, DisabledFeature) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(features::kLeakDetection);
 
+  identity_env().SetPrimaryAccount(kTestAccount);
   EXPECT_FALSE(request_factory().TryCreateLeakCheck(
       &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }

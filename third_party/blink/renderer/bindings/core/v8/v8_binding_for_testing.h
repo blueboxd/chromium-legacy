@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_BINDING_FOR_TESTING_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_BINDING_FOR_TESTING_H_
 
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -43,6 +45,40 @@ class V8TestingScope {
   v8::Context::Scope context_scope_;
   v8::TryCatch try_catch_;
   DummyExceptionStateForTesting exception_state_;
+};
+
+// Similar to other ToV8 helpers in to_v8_for_core.h.
+template <typename T>
+v8::Local<v8::Value> ToV8(V8TestingScope* scope, T value) {
+  return blink::ToV8(value, scope->GetContext()->Global(), scope->GetIsolate());
+}
+
+// Test supporting different kinds of GCs.
+class BindingTestSupportingGC : public testing::Test {
+ public:
+  void SetIsolate(v8::Isolate* isolate) {
+    CHECK(isolate);
+    CHECK_EQ(isolate, ThreadState::Current()->GetIsolate());
+    isolate_ = isolate;
+  }
+  v8::Isolate* GetIsolate() const { return isolate_; }
+
+  void PreciselyCollectGarbage() {
+    ThreadState::Current()->CollectAllGarbageForTesting();
+  }
+
+  void RunV8MinorGC() {
+    isolate_->RequestGarbageCollectionForTesting(
+        v8::Isolate::GarbageCollectionType::kMinorGarbageCollection);
+  }
+
+  void RunV8FullGC(v8::EmbedderHeapTracer::EmbedderStackState stack_state =
+                       v8::EmbedderHeapTracer::EmbedderStackState::kEmpty) {
+    V8GCController::CollectAllGarbageForTesting(isolate_, stack_state);
+  }
+
+ private:
+  v8::Isolate* isolate_;
 };
 
 }  // namespace blink

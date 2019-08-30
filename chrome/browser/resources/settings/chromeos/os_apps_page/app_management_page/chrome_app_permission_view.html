@@ -29,9 +29,7 @@
       }
 
     </style>
-    <app-management-permission-view-header>
-    </app-management-permission-view-header>
-    <div class="card-container">
+    <div>
       <div id="app-description" class="permission-card-row secondary-text">
         [[app_.description]]
       </div>
@@ -73,19 +71,21 @@
             replaced, but in the mean time it might be necessary to change the
             text of the button depending on whether or not it is a hosted
             app. -->
-          <!-- TODO:(crbug.com/958269) Change behaviour of "more settings"
-            based on the app. -->
-          <div id="more-settings"
-            class="subpermission-row separated-row clickable"
-            on-click="onClickExtensionsSettingsButton_"
-            hidden$="[[app_.hideMoreSettings]]">
-            <div class="header-text">$i18n{moreSettings}</div>
+            <!-- TODO:(crbug.com/958269) Change behaviour of "more settings"
+              based on the app. -->
+          </div>
+        </div>
+
+        <div id="more-settings"
+          class="permission-card-row separated-row header-text clickable"
+          on-click="onClickExtensionsSettingsButton_">
+          <div class="header-text">$i18n{moreSettings}</div>
+          <div class="permission-row-controls">
             <cr-icon-button class="native-settings-icon icon-external"
               tabindex="0">
             </cr-icon-button>
           </div>
         </div>
-      </div>
     </div>
   </template>
   <script src="chrome_app_permission_view.js"></script>

@@ -1945,7 +1945,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/task_queue_factory_unittest.cc",
     "../renderer/media/webrtc/transceiver_state_surfacer_unittest.cc",
     "../renderer/media/webrtc/transmission_encoding_info_handler_unittest.cc",
-    "../renderer/media/webrtc/two_keys_adapter_map_unittest.cc",
     "../renderer/media/webrtc/webrtc_audio_renderer_unittest.cc",
     "../renderer/media/webrtc/webrtc_media_stream_track_adapter_map_unittest.cc",
     "../renderer/media/webrtc/webrtc_media_stream_track_adapter_unittest.cc",

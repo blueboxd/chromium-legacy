@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
@@ -108,11 +109,11 @@ struct CORE_EXPORT FrameLoadRequest {
   // actual fetch happens, which would result in incorrect failures to fetch.
   // The token lets the browser process securely resolves the blob URL even
   // after the url has been revoked.
-  mojom::blink::BlobURLTokenPtr GetBlobURLToken() const {
+  mojo::PendingRemote<mojom::blink::BlobURLToken> GetBlobURLToken() const {
     if (!blob_url_token_)
-      return nullptr;
-    mojom::blink::BlobURLTokenPtr result;
-    blob_url_token_->data->Clone(MakeRequest(&result));
+      return mojo::NullRemote();
+    mojo::PendingRemote<mojom::blink::BlobURLToken> result;
+    blob_url_token_->data->Clone(result.InitWithNewPipeAndPassReceiver());
     return result;
   }
 
@@ -151,7 +152,7 @@ struct CORE_EXPORT FrameLoadRequest {
   ShouldSendReferrer should_send_referrer_;
   ContentSecurityPolicyDisposition
       should_check_main_world_content_security_policy_;
-  scoped_refptr<base::RefCountedData<mojom::blink::BlobURLTokenPtr>>
+  scoped_refptr<base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>
       blob_url_token_;
   base::TimeTicks input_start_time_;
   network::mojom::RequestContextFrameType frame_type_ =

@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "base/base_paths_fuchsia.h"
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
@@ -33,13 +32,10 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/engine/common.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
-#include "ui/gl/gl_switches.h"
 
 namespace {
 
@@ -196,21 +192,14 @@ void ContextProviderImpl::Create(
                                       base::JoinString(handles_ids, ","));
   }
 
-  fuchsia::web::ContextFeatureFlags features = {};
-  if (params.has_features())
-    features = params.features();
-
-  bool enable_vulkan = (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
-                       fuchsia::web::ContextFeatureFlags::VULKAN;
-
-  if (enable_vulkan) {
-    launch_command.AppendSwitch(switches::kUseVulkan);
-    launch_command.AppendSwitchASCII(switches::kEnableFeatures,
-                                     features::kUseSkiaRenderer.name);
-    launch_command.AppendSwitch(switches::kEnableOopRasterization);
-    launch_command.AppendSwitchASCII(switches::kUseGL,
-                                     gl::kGLImplementationStubName);
-  }
+#if defined(WEB_ENGINE_ENABLE_VULKAN)
+  // TODO(fbx/35009): Add a flag in CreateContextParams to enable/disable Vulkan
+  // and use it here.
+  launch_command.AppendSwitchASCII(
+      "--enable-features", "DefaultEnableOopRasterization,UseSkiaRenderer");
+  launch_command.AppendSwitch("--use-vulkan");
+  launch_command.AppendSwitchASCII("--use-gl", "stub");
+#endif  // WEB_ENGINE_ENABLE_VULKAN
 
   // Validate embedder-supplied product, and optional version, and pass it to
   // the Context to include in the UserAgent.

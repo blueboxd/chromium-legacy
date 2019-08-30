@@ -62,7 +62,7 @@ void ConnectToSharedWorker(
                      blink::mojom::FetchClientSettingsObject::New(),
                      std::move(client_proxy),
                      blink::mojom::SharedWorkerCreationContextType::kSecure,
-                     std::move(message_pipe.handle1), nullptr);
+                     std::move(message_pipe.handle1), mojo::NullRemote());
 }
 
 // Helper to delete the given WebContents and shut down its process. This is

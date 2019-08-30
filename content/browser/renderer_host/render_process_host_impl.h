@@ -240,8 +240,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool HostHasNotBeenUsed() override;
   void LockToOrigin(const IsolationContext& isolation_context,
                     const GURL& lock_url) override;
-  void BindCacheStorage(blink::mojom::CacheStorageRequest request,
-                        const url::Origin& origin) override;
+  void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+      const url::Origin& origin) override;
   void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
                      const url::Origin& origin) override;
   void ForceCrash() override;

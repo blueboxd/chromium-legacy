@@ -20,25 +20,20 @@
         {
           "object": "LayoutNGBlockFlow (positioned) UL id='submenu'",
           "rect": [48, 92, 40, 18],
-          "reason": "chunk disappeared"
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment '\u25E6 '",
+          "rect": [71, 92, 7, 18],
+          "reason": "disappeared"
         }
       ]
-    },
-    {
-      "name": "LayoutNGListItem (floating) LI id='watches'",
-      "position": [31, 42],
-      "bounds": [7, 18]
     },
     {
       "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
       "position": [48, 42],
       "drawsContent": false,
       "backfaceVisibility": "hidden"
-    },
-    {
-      "name": "LayoutNGListItem (relative positioned) (floating) LI id='menu'",
-      "position": [31, 42],
-      "bounds": [7, 18]
     }
   ]
 }

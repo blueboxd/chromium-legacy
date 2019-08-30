@@ -44,7 +44,7 @@ class FrameHostInterceptor : public WebContentsObserver {
       RenderFrameHost* render_frame_host,
       mojom::CommonNavigationParamsPtr* common_params,
       mojom::BeginNavigationParamsPtr* begin_params,
-      blink::mojom::BlobURLTokenPtr* blob_url_token,
+      mojo::PendingRemote<blink::mojom::BlobURLToken>* blob_url_token,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client,
       blink::mojom::NavigationInitiatorPtr* navigation_initiator);
 

@@ -142,13 +142,24 @@ String CSSCrossfadeValue::CustomCSSText() const {
   return result.ToString();
 }
 
-CSSCrossfadeValue* CSSCrossfadeValue::ValueWithURLsMadeAbsolute() {
+CSSCrossfadeValue* CSSCrossfadeValue::ComputedCSSValue(
+    const ComputedStyle& style,
+    bool allow_visited_style) {
   CSSValue* from_value = from_value_;
-  if (auto* from_image_value = DynamicTo<CSSImageValue>(from_value_.Get()))
+  if (auto* from_image_value = DynamicTo<CSSImageValue>(from_value_.Get())) {
     from_value = from_image_value->ValueWithURLMadeAbsolute();
+  } else if (auto* from_generator_value =
+                 DynamicTo<CSSImageGeneratorValue>(from_value_.Get())) {
+    from_value =
+        from_generator_value->ComputedCSSValue(style, allow_visited_style);
+  }
   CSSValue* to_value = to_value_;
-  if (auto* to_image_value = DynamicTo<CSSImageValue>(to_value_.Get()))
+  if (auto* to_image_value = DynamicTo<CSSImageValue>(to_value_.Get())) {
     to_value = to_image_value->ValueWithURLMadeAbsolute();
+  } else if (auto* to_generator_value =
+                 DynamicTo<CSSImageGeneratorValue>(to_value_.Get())) {
+    to_value = to_generator_value->ComputedCSSValue(style, allow_visited_style);
+  }
   return MakeGarbageCollected<CSSCrossfadeValue>(from_value, to_value,
                                                  percentage_value_);
 }

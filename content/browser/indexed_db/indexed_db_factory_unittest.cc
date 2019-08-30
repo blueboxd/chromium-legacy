@@ -35,6 +35,7 @@
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
@@ -705,8 +706,8 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
 
   auto callbacks = base::MakeRefCounted<LookingForQuotaErrorMockCallbacks>();
   auto dummy_database_callbacks =
-      base::MakeRefCounted<IndexedDBDatabaseCallbacks>(nullptr, nullptr,
-                                                       context()->TaskRunner());
+      base::MakeRefCounted<IndexedDBDatabaseCallbacks>(
+          nullptr, mojo::NullAssociatedRemote(), context()->TaskRunner());
   const Origin origin = Origin::Create(GURL("http://localhost:81"));
   const base::string16 name(ASCIIToUTF16("name"));
   auto create_transaction_callback =

@@ -65,8 +65,6 @@ class ArcVolumeMounterBridge
 
   void SendMountEventForMyFiles();
 
-  bool HasAccessToRemovableMedia() const;
-  void OnPrefChanged();
   bool IsVisibleToAndroidApps(const std::string& uuid) const;
   void OnVisibleStoragesChanged();
 

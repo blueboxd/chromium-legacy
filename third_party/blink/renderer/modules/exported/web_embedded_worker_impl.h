@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
@@ -64,7 +65,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
       WebServiceWorkerContextClient*,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       std::unique_ptr<ServiceWorkerContentSettingsProxy>,
-      mojom::blink::CacheStoragePtrInfo,
+      mojo::PendingRemote<mojom::blink::CacheStorage>,
       service_manager::mojom::blink::InterfaceProviderPtrInfo,
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>);
   ~WebEmbeddedWorkerImpl() override;
@@ -118,7 +119,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   WebEmbeddedWorkerStartData::WaitForDebuggerMode wait_for_debugger_mode_ =
       WebEmbeddedWorkerStartData::kDontWaitForDebugger;
 
-  mojom::blink::CacheStoragePtrInfo cache_storage_info_;
+  mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_info_;

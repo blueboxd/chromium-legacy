@@ -84,7 +84,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 // used to constraint any presented view. iPad always presents in a separate
 // popover.
 - (BOOL)canPresentView {
-  return KeyboardObserverHelper.keyboardLayoutGuide || IsIPadIdiom();
+  return IsIPadIdiom() || KeyboardObserverHelper.keyboardLayoutGuide;
 }
 
 #pragma mark - Public

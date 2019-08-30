@@ -6,6 +6,7 @@
 
 #include <utility>
 #include "base/feature_list.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
@@ -234,10 +235,10 @@ void DedicatedWorker::Start() {
       DCHECK(result);
     }
 
-    mojom::blink::BlobURLTokenPtr blob_url_token;
+    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token;
     if (script_request_url_.ProtocolIs("blob")) {
       GetExecutionContext()->GetPublicURLManager().Resolve(
-          script_request_url_, MakeRequest(&blob_url_token));
+          script_request_url_, blob_url_token.InitWithNewPipeAndPassReceiver());
     }
 
     factory_client_->CreateWorkerHost(
@@ -249,7 +250,7 @@ void DedicatedWorker::Start() {
         outside_fetch_client_settings_object_->GetReferrerPolicy(),
         KURL(outside_fetch_client_settings_object_->GetOutgoingReferrer()),
         outside_fetch_client_settings_object_->GetInsecureRequestsPolicy(),
-        blob_url_token.PassInterface().PassHandle());
+        blob_url_token.PassPipe());
     // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
     return;
   }

@@ -1453,4 +1453,151 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
 }
 
+// The test is simulating a race condition. The scheduler tracked features are
+// updated during the "freeze" event in a way that would have prevented the
+// document from entering the BackForwardCache in the first place.
+//
+// TODO(https://crbug.com/996267): The document should be evicted.
+//
+// ┌───────┐                     ┌────────┐
+// │browser│                     │renderer│
+// └───┬───┘                     └────┬───┘
+//  (enter cache)                     │
+//     │           Freeze()           │
+//     │─────────────────────────────>│
+//     │                          (onfreeze)
+//     │OnSchedulerTrackedFeaturesUsed│
+//     │<─────────────────────────────│
+//     │                           (frozen)
+//     │                              │
+// ┌───┴───┐                     ┌────┴───┐
+// │browser│                     │renderer│
+// └───────┘                     └────────┘
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       SchedulerTrackedFeaturesUpdatedWhileStoring) {
+  net::test_server::ControllableHttpResponse send_beacon_request(
+      embedded_test_server(), "/beacon");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // When the page will enter the BackForwardCache, just before being frozen,
+  // use a feature that would have been prevented the document from being
+  // cached.
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    document.addEventListener('freeze', event => {
+      let canvas = document.createElement('canvas');
+      document.body.appendChild(canvas);
+      gl = canvas.getContext('webgl');
+      navigator.sendBeacon('/beacon');
+    });
+  )"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // Wait for the sendBeacon request. This is used to wait for the scheduler
+  // tracked features to be updated. This is not guaranteed to work in theory,
+  // but works in practise.
+  // TODO(https://crbug.com/996267): Evict the document and wait for its
+  // destruction here instead.
+  send_beacon_request.WaitForRequest();
+
+  // The scheduler tracked features have been updated. The document cannot stay
+  // in the BackForwardCache anymore.
+  // TODO(arthursonzogni): Evict the page when it happens.
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_a->scheduler_tracked_features() &
+              (1 << static_cast<uint32_t>(
+                   blink::scheduler::WebSchedulerTrackedFeature::kWebGL)));
+  EXPECT_FALSE(
+      web_contents()->GetController().back_forward_cache().CanStoreDocument(
+          rfh_a));
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // TODO(https://crbug.com/996267): The document should have been evicted
+  // instead of being restored.
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(current_frame_host(), rfh_a);
+}
+
+// A fetch request starts during the "freeze" event. The current behavior is to
+// send the request anyway. However evicting the page from the BackForwardCache
+// might be a better behavior.
+//
+// ┌───────┐┌────────┐       ┌───────────────┐
+// │browser││renderer│       │network service│
+// └───┬───┘└───┬────┘       └───────┬───────┘
+//     │Freeze()│                    │
+//     │───────>│                    │
+//     │     (onfreeze)              │
+//     │        │CreateLoaderAndStart│
+//     │        │───────────────────>│
+//     │      (frozen)               │
+// ┌───┴───┐┌───┴────┐       ┌───────┴───────┐
+// │browser││renderer│       │network service│
+// └───────┘└────────┘       └───────────────┘
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, FetchWhileStoring) {
+  net::test_server::ControllableHttpResponse fetch_response(
+      embedded_test_server(), "/fetch");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // Use "fetch" immediately before being frozen.
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    document.addEventListener('freeze', event => {
+      my_fetch = fetch('/fetch', { keepalive: true});
+    });
+  )"));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  fetch_response.WaitForRequest();
+  fetch_response.Send(net::HTTP_OK, "text/html", "TheResponse");
+  fetch_response.Done();
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(current_frame_host(), rfh_a);
+
+  // TODO(https://crbug.com/996267). Consider evicting the page or closing the
+  // connection.
+  EXPECT_EQ("TheResponse", EvalJs(rfh_a, R"(
+    new Promise(async resolve => {
+      if (my_fetch == undefined) {
+        resolve("undefined");
+        return;
+      }
+
+      try {
+        response = await my_fetch;
+        text = await response.text();
+        resolve(text);
+      } catch (exception) {
+        resolve("error");
+      }
+    });
+  )"));
+}
+
 }  // namespace content

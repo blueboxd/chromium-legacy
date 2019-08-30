@@ -208,6 +208,16 @@ class AssociatedReceiver {
   DISALLOW_COPY_AND_ASSIGN(AssociatedReceiver);
 };
 
+// Constructs an invalid PendingAssociatedReceiver of any arbitrary interface
+// type. Useful as short-hand for a default constructed value.
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) NullAssociatedReceiver {
+ public:
+  template <typename Interface>
+  operator PendingAssociatedReceiver<Interface>() const {
+    return PendingAssociatedReceiver<Interface>();
+  }
+};
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_RECEIVER_H_

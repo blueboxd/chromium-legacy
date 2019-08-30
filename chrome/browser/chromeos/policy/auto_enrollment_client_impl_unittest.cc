@@ -648,7 +648,7 @@ TEST_P(AutoEnrollmentClientImplTest, DeviceDisabled) {
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
             auto_enrollment_job_type_);
   EXPECT_EQ(GetExpectedStateRetrievalJobType(), state_retrieval_job_type_);
-  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_DISABLED, state_);
   VerifyCachedResult(true, 8);
   VerifyServerBackedState("example.com", kDeviceStateRestoreModeDisabled,
                           kDisabledMessage);

@@ -409,7 +409,7 @@ public class BottomSheet
         mMinHalfFullDistance =
                 getResources().getDimensionPixelSize(R.dimen.bottom_sheet_min_full_half_distance);
         mToolbarShadowHeight =
-                getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
+                getResources().getDimensionPixelOffset(R.dimen.bottom_sheet_toolbar_shadow_height);
 
         mGestureDetector = new BottomSheetSwipeDetector(context, this);
         mIsTouchEnabled = true;

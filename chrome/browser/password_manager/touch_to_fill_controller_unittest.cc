@@ -29,31 +29,18 @@ class TouchToFillControllerTest : public testing::Test {
 
   MockPasswordManagerDriver& driver() { return driver_; }
 
-  TouchToFillController* touch_to_fill_controller() {
-    return touch_to_fill_controller_.get();
+  TouchToFillController& touch_to_fill_controller() {
+    return touch_to_fill_controller_;
   }
 
  private:
   testing::StrictMock<MockManualFillingController>
       mock_manual_filling_controller_;
   MockPasswordManagerDriver driver_;
-  std::unique_ptr<TouchToFillController> touch_to_fill_controller_ =
-      TouchToFillController::CreateForTesting(
-          mock_manual_filling_controller_.AsWeakPtr());
+  TouchToFillController touch_to_fill_controller_{
+      mock_manual_filling_controller_.AsWeakPtr(),
+      util::PassKey<TouchToFillControllerTest>()};
 };
-
-TEST_F(TouchToFillControllerTest, AllowedForWebContents) {
-  for (bool is_touch_to_fill_enabled : {false, true}) {
-    SCOPED_TRACE(testing::Message()
-                 << "is_touch_to_fill_enabled: " << std::boolalpha
-                 << is_touch_to_fill_enabled);
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatureState(
-        autofill::features::kTouchToFillAndroid, is_touch_to_fill_enabled);
-    EXPECT_EQ(is_touch_to_fill_enabled,
-              TouchToFillController::AllowedForWebContents(nullptr));
-  }
-}
 
 TEST_F(TouchToFillControllerTest, Show_Empty) {
   EXPECT_CALL(manual_filling_controller(),
@@ -61,7 +48,7 @@ TEST_F(TouchToFillControllerTest, Show_Empty) {
                                      autofill::AccessoryTabType::TOUCH_TO_FILL,
                                      base::ASCIIToUTF16("Touch to Fill"))
                                      .Build()));
-  touch_to_fill_controller()->Show({}, driver().AsWeakPtr());
+  touch_to_fill_controller().Show({}, driver().AsWeakPtr());
 }
 
 TEST_F(TouchToFillControllerTest, Show_And_Fill) {
@@ -83,8 +70,8 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill) {
                            base::ASCIIToUTF16("p4ssw0rd"), "0",
                            /*is_obfuscated=*/true, /*is_selectable=*/false)
               .Build()));
-  touch_to_fill_controller()->Show(std::vector<CredentialPair>{alice},
-                                   driver().AsWeakPtr());
+  touch_to_fill_controller().Show(std::vector<CredentialPair>{alice},
+                                  driver().AsWeakPtr());
 
   // Test that OnFillingTriggered() with the right id results in the appropriate
   // call to FillSuggestion() and UpdateSourceAvailability().
@@ -97,7 +84,7 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill) {
 
   // Test that we correctly log the absence of an Android credential.
   base::HistogramTester tester;
-  touch_to_fill_controller()->OnFillingTriggered(autofill::UserInfo::Field(
+  touch_to_fill_controller().OnFillingTriggered(autofill::UserInfo::Field(
       base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("alice"), "0",
       /*is_obfuscated=*/false, /*is_selectable=*/true));
   tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
@@ -125,8 +112,8 @@ TEST_F(TouchToFillControllerTest, Show_PSL_Credential) {
                            base::ASCIIToUTF16("p4ssw0rd"), "0",
                            /*is_obfuscated=*/true, /*is_selectable=*/false)
               .Build()));
-  touch_to_fill_controller()->Show(std::vector<CredentialPair>{alice},
-                                   driver().AsWeakPtr());
+  touch_to_fill_controller().Show(std::vector<CredentialPair>{alice},
+                                  driver().AsWeakPtr());
 }
 
 TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
@@ -159,8 +146,8 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
                            base::ASCIIToUTF16("s3cr3t"), "1",
                            /*is_obfuscated=*/true, /*is_selectable=*/false)
               .Build()));
-  touch_to_fill_controller()->Show(std::vector<CredentialPair>{alice, bob},
-                                   driver().AsWeakPtr());
+  touch_to_fill_controller().Show(std::vector<CredentialPair>{alice, bob},
+                                  driver().AsWeakPtr());
 
   EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("bob"),
                                        base::ASCIIToUTF16("s3cr3t")));
@@ -171,7 +158,7 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
 
   // Test that we correctly log the presence of an Android credential.
   base::HistogramTester tester;
-  touch_to_fill_controller()->OnFillingTriggered(autofill::UserInfo::Field(
+  touch_to_fill_controller().OnFillingTriggered(autofill::UserInfo::Field(
       base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("bob"), "1",
       /*is_obfuscated=*/false, /*is_selectable=*/true));
   tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",

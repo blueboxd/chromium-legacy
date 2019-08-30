@@ -44,7 +44,8 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   WrappedImagePtr Data() const override { return image_generator_value_.Get(); }
 
   CSSValue* CssValue() const override;
-  CSSValue* ComputedCSSValue() const override;
+  CSSValue* ComputedCSSValue(const ComputedStyle&,
+                             bool allow_visited_style) const override;
 
   FloatSize ImageSize(const Document&,
                       float multiplier,

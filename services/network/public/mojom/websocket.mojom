@@ -65,7 +65,7 @@ interface WebSocketHandshakeClient {
   // |extensions| is the list of extensions negotiated for the connection.
   // default threshold value
   // |readable| is readable datapipe to receive data from browser.
-  OnConnectionEstablished(WebSocket socket,
+  OnConnectionEstablished(pending_remote<WebSocket> socket,
                           pending_receiver<WebSocketClient> client_receiver,
                           string selected_protocol,
                           string extensions,

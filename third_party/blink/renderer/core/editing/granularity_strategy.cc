@@ -148,6 +148,8 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
     new_offset_extent_point = extent_point;
     new_offset_extent_position = CreateVisiblePosition(
         PositionForContentsPointRespectingEditingBoundary(extent_point, frame));
+    if (new_offset_extent_position.IsNull())
+      return selection.AsSelection();
   }
 
   const VisiblePosition base = selection.VisibleBase();

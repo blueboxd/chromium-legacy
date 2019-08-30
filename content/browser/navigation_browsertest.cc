@@ -740,12 +740,12 @@ IN_PROC_BROWSER_TEST_P(NavigationDisableWebSecurityTest,
     auto navigation_client_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client);
     rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
-        std::move(common_params), std::move(begin_params), nullptr,
+        std::move(common_params), std::move(begin_params), mojo::NullRemote(),
         navigation_client.PassInterface(), nullptr);
   } else {
     rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
-        std::move(common_params), std::move(begin_params), nullptr, nullptr,
-        nullptr);
+        std::move(common_params), std::move(begin_params), mojo::NullRemote(),
+        nullptr, nullptr);
   }
   EXPECT_EQ(bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED,
             process_kill_waiter.Wait());

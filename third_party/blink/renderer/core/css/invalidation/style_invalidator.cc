@@ -204,7 +204,7 @@ void StyleInvalidator::PushInvalidationSetsForContainerNode(
     }
   }
 
-  if (node.GetStyleChangeType() >= kSubtreeStyleChange)
+  if (node.GetStyleChangeType() == kSubtreeStyleChange)
     return;
 
   if (!pending_invalidations.Descendants().IsEmpty()) {
@@ -284,7 +284,7 @@ void StyleInvalidator::Invalidate(Element& element, SiblingData& sibling_data) {
   // sets or to continue to accumulate new invalidation sets as we descend the
   // tree.
   if (!WholeSubtreeInvalid()) {
-    if (element.GetStyleChangeType() >= kSubtreeStyleChange) {
+    if (element.GetStyleChangeType() == kSubtreeStyleChange) {
       SetWholeSubtreeInvalid();
     } else if (CheckInvalidationSetsAgainstElement(element, sibling_data)) {
       element.SetNeedsStyleRecalc(kLocalStyleChange,

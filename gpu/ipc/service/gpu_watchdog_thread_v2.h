@@ -26,6 +26,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnBackgrounded() override;
   void OnForegrounded() override;
   void OnInitComplete() override;
+  void OnGpuProcessTearDown() override;
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
   bool IsGpuHangDetectedForTesting() override;
   void WaitForPowerObserverAddedForTesting() override;

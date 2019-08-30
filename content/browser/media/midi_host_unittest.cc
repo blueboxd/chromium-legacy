@@ -135,12 +135,6 @@ class MidiHostTest : public testing::Test {
     service_ = std::make_unique<midi::MidiService>(std::move(factory));
     host_ = std::make_unique<MidiHostForTesting>(rph_->GetID(), service_.get());
     mojo::PendingRemote<midi::mojom::MidiSessionClient> client_remote;
-    // mojo::PendingReceiver<midi::mojom::MidiSessionClient> receiver =
-    //     client_remote.InitWithNewPipeAndPassReceiver();
-    // mojo::MakeStrongBinding(
-    //     std::make_unique<MidiSessionClientForTesting>(),
-    //     mojo::InterfaceRequest<midi::mojom::MidiSessionClient>(
-    //         std::move(receiver)));
     mojo::MakeSelfOwnedReceiver(std::make_unique<MidiSessionClientForTesting>(),
                                 client_remote.InitWithNewPipeAndPassReceiver());
     midi::mojom::MidiSessionRequest session_request =

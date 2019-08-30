@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/two_keys_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
+#include "third_party/blink/public/platform/modules/peerconnection/two_keys_adapter_map.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
@@ -127,13 +127,13 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
   // The adapter keeps the |webrtc::MediaStreamTrackInterface| alive with ref
   // counting making it safe to use a raw pointer for key.
   using LocalTrackAdapterMap =
-      TwoKeysAdapterMap<int,  // blink::WebMediaStreamTrack::UniqueId()
-                        webrtc::MediaStreamTrackInterface*,
-                        scoped_refptr<WebRtcMediaStreamTrackAdapter>>;
+      blink::TwoKeysAdapterMap<int,  // blink::WebMediaStreamTrack::UniqueId()
+                               webrtc::MediaStreamTrackInterface*,
+                               scoped_refptr<WebRtcMediaStreamTrackAdapter>>;
   using RemoteTrackAdapterMap =
-      TwoKeysAdapterMap<webrtc::MediaStreamTrackInterface*,
-                        int,  // blink::WebMediaStreamTrack::UniqueId()
-                        scoped_refptr<WebRtcMediaStreamTrackAdapter>>;
+      blink::TwoKeysAdapterMap<webrtc::MediaStreamTrackInterface*,
+                               int,  // blink::WebMediaStreamTrack::UniqueId()
+                               scoped_refptr<WebRtcMediaStreamTrackAdapter>>;
 
   // Invoke on the main thread.
   virtual ~WebRtcMediaStreamTrackAdapterMap();

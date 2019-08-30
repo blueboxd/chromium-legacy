@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_switch_element.h"
 
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"

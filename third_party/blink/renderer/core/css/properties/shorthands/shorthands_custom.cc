@@ -518,7 +518,8 @@ const CSSValue* BorderImage::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForNinePieceImage(style.BorderImage(), style);
+  return ComputedStyleUtils::ValueForNinePieceImage(style.BorderImage(), style,
+                                                    allow_visited_style);
 }
 
 bool BorderInlineColor::ParseShorthand(
@@ -3034,8 +3035,8 @@ const CSSValue* WebkitMaskBoxImage::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForNinePieceImage(style.MaskBoxImage(),
-                                                    style);
+  return ComputedStyleUtils::ValueForNinePieceImage(style.MaskBoxImage(), style,
+                                                    allow_visited_style);
 }
 
 bool WebkitMask::ParseShorthand(

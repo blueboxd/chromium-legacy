@@ -54,15 +54,14 @@ void NFCProxy::Trace(blink::Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
 }
 
-void NFCProxy::StartReading(NFCReader* reader) {
+void NFCProxy::StartReading(NFCReader* reader, const NFCScanOptions* options) {
   DCHECK(reader);
   if (readers_.Contains(reader))
     return;
 
   EnsureMojoConnection();
   nfc_remote_->Watch(
-      device::mojom::blink::NFCReaderOptions::From(reader->options()),
-      next_watch_id_,
+      device::mojom::blink::NFCScanOptions::From(options), next_watch_id_,
       WTF::Bind(&NFCProxy::OnReaderRegistered, WrapPersistent(this),
                 WrapPersistent(reader), next_watch_id_));
   readers_.insert(reader, next_watch_id_);

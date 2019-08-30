@@ -284,12 +284,13 @@ TEST_F(BlobURLStoreImplTest, ResolveForNavigation) {
   BlobURLStoreImpl url_store(context_->AsWeakPtr(), &delegate_);
   RegisterURL(&url_store, std::move(blob), kValidUrl);
 
-  blink::mojom::BlobURLTokenPtr token_ptr;
-  url_store.ResolveForNavigation(kValidUrl, MakeRequest(&token_ptr));
+  mojo::Remote<blink::mojom::BlobURLToken> token_remote;
+  url_store.ResolveForNavigation(kValidUrl,
+                                 token_remote.BindNewPipeAndPassReceiver());
 
   base::UnguessableToken token;
   base::RunLoop loop;
-  token_ptr->GetToken(base::BindLambdaForTesting(
+  token_remote->GetToken(base::BindLambdaForTesting(
       [&](const base::UnguessableToken& received_token) {
         token = received_token;
         loop.Quit();

@@ -34,6 +34,7 @@
 namespace media {
 
 class V4L2DecodeSurface;
+class ImageProcessor;
 
 // An implementation of VideoDecodeAccelerator that utilizes the V4L2 slice
 // level codec API for decoding. The slice level API provides only a low-level
@@ -83,16 +84,19 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     OutputRecord();
     OutputRecord(OutputRecord&&);
     ~OutputRecord();
-    size_t num_times_sent_to_client;
 
     // Final output frame (i.e. processed if an image processor is used).
     // Used only when OutputMode is IMPORT.
     scoped_refptr<VideoFrame> output_frame;
 
+    // The members below are referring to the displayed buffer - this may
+    // be the decoder buffer, or the IP buffer if an IP is in use. In this case,
+    // ip_buffer_index contains the entry number of the IP buffer.
     int32_t picture_id;
     GLuint client_texture_id;
     GLuint texture_id;
     bool cleared;
+    size_t num_times_sent_to_client;
 
     bool at_client() const { return num_times_sent_to_client > 0; }
   };
@@ -167,6 +171,10 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Set input and output formats in hardware.
   bool SetupFormats();
+  // Reset image processor and drop all processing frames.
+  bool ResetImageProcessor();
+
+  bool CreateImageProcessor();
 
   // Create input and output buffers.
   bool CreateInputBuffers();
@@ -337,6 +345,15 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   size_t GetNumOfOutputRecordsAtClient() const;
   size_t GetNumOfOutputRecordsAtDevice() const;
 
+  // Image processor notifies an error.
+  void ImageProcessorError();
+
+  bool ProcessFrame(V4L2ReadableBufferRef buffer,
+                    scoped_refptr<V4L2DecodeSurface>);
+  void FrameProcessed(scoped_refptr<V4L2DecodeSurface> surface,
+                      size_t ip_buffer_index,
+                      scoped_refptr<VideoFrame> frame);
+
   size_t input_planes_count_;
   size_t output_planes_count_;
 
@@ -381,6 +398,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   std::map<int32_t, V4L2WritableBufferRef> output_wait_map_;
   // Mapping of int index to an output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
+  // Maps a decoded buffer index to the output record of the buffer to be
+  // displayed. Both indices are the same in most cases, except when we use
+  // an image processor in ALLOCATE mode in which case the index of the IP
+  // buffer may not match the one of the decoder.
+  std::map<int32_t, int32_t> decoded_buffer_map_;
   // FIFO queue of requests, only used if supports_requests_ == true.
   std::queue<base::ScopedFD> requests_;
 
@@ -426,6 +448,10 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Surfaces queued to device to keep references to them while decoded.
   std::queue<scoped_refptr<V4L2DecodeSurface>> surfaces_at_device_;
 
+  // Surfaces currently being processed by IP.
+  std::queue<std::pair<scoped_refptr<V4L2DecodeSurface>, V4L2ReadableBufferRef>>
+      surfaces_at_ip_;
+
   // Surfaces sent to client to keep references to them while displayed.
   using V4L2DecodeSurfaceByPictureBufferId =
       std::map<int32_t, scoped_refptr<V4L2DecodeSurface>>;
@@ -458,6 +484,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   BindGLImageCallback bind_image_cb_;
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
+
+  // Image processor device, if one is in use.
+  scoped_refptr<V4L2Device> image_processor_device_;
+  // Image processor. Accessed on |decoder_thread_|.
+  std::unique_ptr<ImageProcessor> image_processor_;
 
   // The V4L2Device GLImage is created from.
   scoped_refptr<V4L2Device> gl_image_device_;

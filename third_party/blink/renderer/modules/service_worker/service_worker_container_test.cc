@@ -77,7 +77,7 @@ struct StubScriptFunction {
 class ScriptValueTest {
  public:
   virtual ~ScriptValueTest() = default;
-  virtual void operator()(ScriptValue) const = 0;
+  virtual void operator()(ScriptState*, ScriptValue) const = 0;
 };
 
 // Runs microtasks and expects |promise| to be rejected. Calls
@@ -92,7 +92,7 @@ void ExpectRejected(ScriptState* script_state,
   EXPECT_EQ(0ul, resolved.CallCount());
   EXPECT_EQ(1ul, rejected.CallCount());
   if (rejected.CallCount())
-    value_test(rejected.Arg());
+    value_test(script_state, rejected.Arg());
 }
 
 // DOM-related test support.
@@ -106,7 +106,7 @@ class ExpectDOMException : public ScriptValueTest {
 
   ~ExpectDOMException() override = default;
 
-  void operator()(ScriptValue value) const override {
+  void operator()(ScriptState* state, ScriptValue value) const override {
     DOMException* exception = V8DOMException::ToImplWithTypeCheck(
         value.GetIsolate(), value.V8Value());
     EXPECT_TRUE(exception) << "the value should be a DOMException";
@@ -129,9 +129,9 @@ class ExpectTypeError : public ScriptValueTest {
 
   ~ExpectTypeError() override = default;
 
-  void operator()(ScriptValue value) const override {
+  void operator()(ScriptState* state, ScriptValue value) const override {
     v8::Isolate* isolate = value.GetIsolate();
-    v8::Local<v8::Context> context = value.GetContext();
+    v8::Local<v8::Context> context = state->GetContext();
     v8::Local<v8::Object> error_object =
         value.V8Value()->ToObject(context).ToLocalChecked();
     v8::Local<v8::Value> name =

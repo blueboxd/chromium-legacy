@@ -45,7 +45,10 @@ class ComputedStyleUtils {
                                             bool visited_link);
   static CSSValue* ZoomAdjustedPixelValueForLength(const Length&,
                                                    const ComputedStyle&);
-  static const CSSValue* BackgroundImageOrWebkitMaskImage(const FillLayer&);
+  static const CSSValue* BackgroundImageOrWebkitMaskImage(
+      const ComputedStyle&,
+      bool allow_visited_style,
+      const FillLayer&);
   static const CSSValue* ValueForFillSize(const FillSize&,
                                           const ComputedStyle&);
   static const CSSValue* BackgroundImageOrWebkitMaskSize(const ComputedStyle&,
@@ -76,9 +79,11 @@ class ComputedStyleUtils {
                                                   const ComputedStyle&);
   static CSSValue* ValueForNinePieceImageRepeat(const NinePieceImage&);
   static CSSValue* ValueForNinePieceImage(const NinePieceImage&,
-                                          const ComputedStyle&);
+                                          const ComputedStyle&,
+                                          bool allow_visited_style);
   static CSSValue* ValueForReflection(const StyleReflection*,
-                                      const ComputedStyle&);
+                                      const ComputedStyle&,
+                                      bool allow_visited_style);
   static CSSValue* ValueForPosition(const LengthPoint& position,
                                     const ComputedStyle&);
 
@@ -148,10 +153,13 @@ class ComputedStyleUtils {
   static CSSValue* CreateTransitionPropertyValue(
       const CSSTransitionData::TransitionProperty&);
   static CSSValue* ValueForTransitionProperty(const CSSTransitionData*);
-  static CSSValue* ValueForContentData(const ComputedStyle&);
+  static CSSValue* ValueForContentData(const ComputedStyle&,
+                                       bool allow_visited_style);
   static CSSValue* ValueForCounterDirectives(const ComputedStyle&,
                                              bool is_increment);
-  static CSSValue* ValueForShape(const ComputedStyle&, ShapeValue*);
+  static CSSValue* ValueForShape(const ComputedStyle&,
+                                 bool allow_visited_style,
+                                 ShapeValue*);
   static CSSValueList* ValueForBorderRadiusShorthand(const ComputedStyle&);
   static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray&,
                                                  const ComputedStyle&);

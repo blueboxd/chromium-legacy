@@ -164,7 +164,7 @@ public class TabGridDialogMediatorUnitTest {
         mModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
         mMediator =
                 new TabGridDialogMediator(mContext, mDialogResetHandler, mModel, mTabModelSelector,
-                        mTabCreatorManager, mTabSwitcherResetHandler, mAnimationParamsProvider);
+                        mTabCreatorManager, mTabSwitcherResetHandler, mAnimationParamsProvider, "");
     }
 
     @After
@@ -417,7 +417,7 @@ public class TabGridDialogMediatorUnitTest {
         // For strip we don't play zoom-in/zoom-out for show/hide dialog, and thus
         // the animationParamsProvider is null.
         mMediator = new TabGridDialogMediator(mContext, mDialogResetHandler, mModel,
-                mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null);
+                mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null, "");
         // Mock that the dialog is hidden and animation source Rect and header title are all null.
         mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
         mModel.set(TabGridSheetProperties.ANIMATION_PARAMS, null);

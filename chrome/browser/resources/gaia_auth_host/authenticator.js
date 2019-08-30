@@ -596,6 +596,9 @@ cr.define('cr.login', function() {
       if (data.ignoreCrOSIdpSetting === true) {
         url = appendParam(url, 'ignoreCrOSIdpSetting', 'true');
       }
+      if (data.enableGaiaActionButtons) {
+        url = appendParam(url, 'use_native_navigation', 1);
+      }
       return url;
     }
 

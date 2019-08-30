@@ -214,6 +214,7 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_DISABLED:
       return false;
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
       if (!ShouldBlockOnServerError())
@@ -282,6 +283,7 @@ bool AutoEnrollmentCheckScreen::IsCompleted() const {
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_DISABLED:
       // Decision made, ready to proceed.
       return true;
   }

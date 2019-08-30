@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanned_image_delegate.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_camera_controller.h"
 #include "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view.h"
 
@@ -16,13 +17,24 @@
 
 using base::UserMetricsAction;
 
+@interface CreditCardScannerViewController ()
+
+// The delegate notified when there is a new image from the the scanner.
+@property(nonatomic, weak) id<CreditCardScannedImageDelegate> delegate;
+
+@end
+
 @implementation CreditCardScannerViewController
 
 #pragma mark Lifecycle
 
-- (instancetype)initWithPresentationProvider:
-    (id<ScannerPresenting>)presentationProvider {
+- (instancetype)
+    initWithPresentationProvider:(id<ScannerPresenting>)presentationProvider
+                        delegate:(id<CreditCardScannedImageDelegate>)delegate {
   self = [super initWithPresentationProvider:presentationProvider];
+  if (self) {
+    _delegate = delegate;
+  }
   return self;
 }
 
@@ -61,7 +73,7 @@ using base::UserMetricsAction;
 #pragma mark - CreditCardScannerCameraControllerDelegate
 
 - (void)receiveCreditCardScannerResult:(CMSampleBufferRef)sampleBuffer {
-  // TODO(crbug.com/986275):Implement method.
+  [self.delegate processOutputSampleBuffer:sampleBuffer];
 }
 
 @end

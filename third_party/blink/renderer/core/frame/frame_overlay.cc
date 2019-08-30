@@ -109,6 +109,11 @@ void FrameOverlay::PaintContents(const GraphicsLayer* graphics_layer,
   Paint(context);
 }
 
+void FrameOverlay::ServiceScriptedAnimations(
+    base::TimeTicks monotonic_frame_begin_time) {
+  delegate_->ServiceScriptedAnimations(monotonic_frame_begin_time);
+}
+
 String FrameOverlay::DebugName(const GraphicsLayer*) const {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   return "Frame Overlay Content Layer";

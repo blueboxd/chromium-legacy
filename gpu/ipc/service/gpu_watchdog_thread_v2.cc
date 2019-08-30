@@ -86,10 +86,20 @@ void GpuWatchdogThreadImplV2::OnForegrounded() {
                      base::Unretained(this)));
 }
 
-// Called from the gpu thread when gpu init has completed
+// Called from the gpu thread when gpu init has completed.
 void GpuWatchdogThreadImplV2::OnInitComplete() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
   Disarm();
+}
+
+// Called from the gpu thread in viz::GpuServiceImpl::~GpuServiceImpl().
+// After this, no Disarm() will be called before the watchdog thread is
+// destroyed. If this destruction takes too long, the watchdog timeout
+// will be triggered.
+void GpuWatchdogThreadImplV2::OnGpuProcessTearDown() {
+  DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
+
+  Arm();
 }
 
 // Running on the watchdog thread.
@@ -200,6 +210,9 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
   }
 }
 
+// Called from the gpu main thread.
+// The watchdog is armed only in these three functions -
+// GpuWatchdogThreadImplV2(), WillProcessTask(), and OnGpuProcessTearDown()
 void GpuWatchdogThreadImplV2::Arm() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
 

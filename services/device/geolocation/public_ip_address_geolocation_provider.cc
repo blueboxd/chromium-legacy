@@ -25,25 +25,25 @@ PublicIpAddressGeolocationProvider::PublicIpAddressGeolocationProvider(
 PublicIpAddressGeolocationProvider::~PublicIpAddressGeolocationProvider() {}
 
 void PublicIpAddressGeolocationProvider::Bind(
-    mojom::PublicIpAddressGeolocationProviderRequest request) {
+    mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(public_ip_address_location_notifier_);
-  provider_binding_set_.AddBinding(this, std::move(request));
+  provider_receiver_set_.Add(this, std::move(receiver));
 }
 
 void PublicIpAddressGeolocationProvider::CreateGeolocation(
     const net::MutablePartialNetworkTrafficAnnotationTag& tag,
-    mojom::GeolocationRequest request) {
+    mojo::PendingReceiver<mojom::Geolocation> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(public_ip_address_location_notifier_);
-  geolocation_binding_set_.AddBinding(
+  geolocation_receiver_set_.Add(
       std::make_unique<PublicIpAddressGeolocator>(
           static_cast<net::PartialNetworkTrafficAnnotationTag>(tag),
           public_ip_address_location_notifier_.get(),
           base::Bind(
-              &mojo::StrongBindingSet<mojom::Geolocation>::ReportBadMessage,
-              base::Unretained(&geolocation_binding_set_))),
-      std::move(request));
+              &mojo::UniqueReceiverSet<mojom::Geolocation>::ReportBadMessage,
+              base::Unretained(&geolocation_receiver_set_))),
+      std::move(receiver));
 }
 
 }  // namespace device

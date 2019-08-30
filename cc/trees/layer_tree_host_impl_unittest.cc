@@ -12238,6 +12238,98 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimatedWhileZoomed) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, SingleGSUForScrollbarThumbDragPerFrame) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  CreateBasicVirtualViewportLayers(viewport_size, content_size);
+  LayerImpl* scroll_layer = host_impl_->OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  std::unique_ptr<PaintedScrollbarLayerImpl> scrollbar =
+      PaintedScrollbarLayerImpl::Create(layer_tree_impl, 99, VERTICAL, false,
+                                        true);
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+  scrollbar->test_properties()->position = gfx::PointF(345, 0);
+  scrollbar->SetScrollElementId(scroll_layer->element_id());
+  scrollbar->SetDrawsContent(true);
+  scrollbar->SetHitTestable(true);
+  scrollbar->test_properties()->opacity = 1.f;
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(50);
+  scrollbar->SetTrackStart(15);
+  scrollbar->SetTrackLength(575);
+
+  // Set up scrollbar arrows.
+  scrollbar->SetBackButtonRect(
+      gfx::Rect(gfx::Point(345, 0), gfx::Size(15, 15)));
+  scrollbar->SetForwardButtonRect(
+      gfx::Rect(gfx::Point(345, 570), gfx::Size(15, 15)));
+
+  // Add the scrollbar to the outer viewport.
+  scroll_layer->test_properties()->AddChild(std::move(scrollbar));
+
+  host_impl_->active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  host_impl_->ScrollBegin(BeginState(gfx::Point(350, 18)).get(),
+                          InputHandler::SCROLLBAR);
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client);
+
+  // ------------------------- Start frame 0 -------------------------
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(200);
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  begin_frame_args.frame_time = start_time;
+  begin_frame_args.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+
+  // MouseDown on the thumb should not produce a scroll.
+  InputHandlerPointerResult result =
+      host_impl_->MouseDown(gfx::PointF(350, 18));
+  EXPECT_EQ(result.scroll_offset.y(), 0u);
+
+  // The first request for a GSU should be processed as expected.
+  result = host_impl_->MouseMoveAt(gfx::Point(350, 19));
+  EXPECT_GT(result.scroll_offset.y(), 0u);
+
+  // A second request for a GSU within the same frame should be ignored as it
+  // will cause the thumb drag to become jittery. The reason this happens is
+  // because when the first GSU is processed, it gets queued in the compositor
+  // thread event queue. So a second request within the same frame will end up
+  // calculating an incorrect delta (as ComputeThumbQuadRect would not have
+  // accounted for the delta in the first GSU that was not yet dispatched).
+  result = host_impl_->MouseMoveAt(gfx::Point(350, 20));
+  EXPECT_EQ(result.scroll_offset.y(), 0u);
+  host_impl_->DidFinishImplFrame();
+
+  // ------------------------- Start frame 1 -------------------------
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(250);
+  begin_frame_args.sequence_number++;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+
+  // MouseMove for a new frame gets processed as usual.
+  result = host_impl_->MouseMoveAt(gfx::Point(350, 21));
+  EXPECT_GT(result.scroll_offset.y(), 0u);
+
+  // MouseUp is not expected to have a delta.
+  result = host_impl_->MouseUp(gfx::PointF(350, 21));
+  EXPECT_EQ(result.scroll_offset.y(), 0u);
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
 TEST_F(LayerTreeHostImplTest, SecondScrollAnimatedBeginNotIgnored) {
   const gfx::Size content_size(1000, 1000);
   const gfx::Size viewport_size(50, 100);

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 
+#include "base/logging.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -83,8 +84,22 @@
   return nil;
 }
 
-+ (id<LayoutGuideProvider>)keyboardLayoutGuide {
-  return [self keyboardLayoutGuideInHostView:self.keyboardView];
++ (id<EdgeLayoutGuideProvider>)keyboardLayoutGuide {
+  // [iOS 13] Sometimes there is an input assistant provided by the system.
+  // I.e. autocorrection or passwords. A composed guide is needed because
+  // there isn't a view "hugging" the accessory and the keyboard. This used to
+  // be merged with the keyboard < iOS 13.
+  //
+  // [iOS 13][iOS 12][iPhone][iPhoneX]: "Backdrop" works even when a picker is
+  // present.
+  for (NSString* name in @[ @"InputAssistant", @"Backdrop" ]) {
+    id<EdgeLayoutGuideProvider> layout =
+        [self keyboardLayoutGuideInHostView:self.keyboardView withName:name];
+    if (layout) {
+      return layout;
+    }
+  }
+  return nil;
 }
 
 #pragma mark - Keyboard Notifications
@@ -108,23 +123,32 @@
 
 #pragma mark - Private
 
+// Returns a layout guide defined by the top edge of |view| and its window.
++ (id<EdgeLayoutGuideProvider>)topEdgeLayoutGuideForView:(UIView*)view {
+  ComposedEdgeLayoutGuide* layoutGuide = [[ComposedEdgeLayoutGuide alloc] init];
+  layoutGuide.baseLayoutGuide = view.window;
+  layoutGuide.topAnchorProvider = view;
+  return layoutGuide;
+}
+
 // This searches in the passed view hierarchy for the best Layout Guide for the
-// keyboard.
-+ (id<LayoutGuideProvider>)keyboardLayoutGuideInHostView:(UIView*)hostView {
+// keyboard. Unexpected behaviour on iPad.
++ (id<EdgeLayoutGuideProvider>)keyboardLayoutGuideInHostView:(UIView*)hostView
+                                                    withName:(NSString*)name {
+  DCHECK(!IsIPadIdiom());
+
   for (UIView* subview in hostView.subviews) {
-    // Currently only tested on X-iOS12, 6+-iOS11 and 7+-iOS10. iPhoneX, iOS 11
-    // and 12 uses "Dock" and iOS 10 uses "Backdrop". iPhone6+, iOS 11 uses
-    // "Dock".
-    if ([NSStringFromClass([subview class]) containsString:@"Dock"] ||
-        [NSStringFromClass([subview class]) containsString:@"Backdrop"]) {
-      return subview;
+    if ([NSStringFromClass([subview class]) containsString:name]) {
+      return [self topEdgeLayoutGuideForView:subview];
     }
-    id<LayoutGuideProvider> found =
-        [self keyboardLayoutGuideInHostView:subview];
+    // Continue searching recursively.
+    id<EdgeLayoutGuideProvider> found =
+        [self keyboardLayoutGuideInHostView:subview withName:name];
     if (found) {
       return found;
     }
   }
+
   return nil;
 }
 

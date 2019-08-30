@@ -30,6 +30,7 @@
  *   this.$['view-selector'].route = 'view-two';
  */
 
+// TODO(crbug.com/992795) Merge with cr-view-manager.
 Polymer({
   is: 'app-management-dom-switch',
 
@@ -90,6 +91,12 @@ Polymer({
     const children = this.instance_.root.children;
     for (const child of children) {
       this.children_[child.getAttribute('route-id')] = child;
+    }
+
+    if (this.route) {
+      // TODO(crbug.com/999523): Add test coverage for this case.
+      // If attached is called after the route has been set.
+      this.onRouteChanged_(this.route);
     }
   },
 

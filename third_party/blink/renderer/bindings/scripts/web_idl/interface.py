@@ -8,6 +8,7 @@ from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithExtendedAttributes
+from .composition_parts import WithOwner
 from .constant import Constant
 from .idl_type import IdlType
 from .ir_map import IRMap
@@ -32,6 +33,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                      attributes=None,
                      constants=None,
                      operations=None,
+                     stringifier=None,
                      iterable=None,
                      maplike=None,
                      setlike=None,
@@ -46,6 +48,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert attributes is None or isinstance(attributes, (list, tuple))
             assert constants is None or isinstance(constants, (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
+            assert stringifier is None or isinstance(stringifier,
+                                                     Stringifier.IR)
             assert iterable is None or isinstance(iterable, Iterable)
             assert maplike is None or isinstance(maplike, Maplike)
             assert setlike is None or isinstance(setlike, Setlike)
@@ -87,6 +91,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.constants = list(constants)
             self.operations = list(operations)
             self.operation_groups = []
+            self.stringifier = stringifier
             self.iterable = iterable
             self.maplike = maplike
             self.setlike = setlike
@@ -123,6 +128,21 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                        self._operations),
                 owner=self) for operation_group_ir in ir.operation_groups
         ])
+        self._stringifier = None
+        if ir.stringifier:
+            operations = filter(lambda x: x.is_stringifier, self._operations)
+            assert len(operations) == 1
+            attributes = [None]
+            if ir.stringifier.attribute:
+                attr_id = ir.stringifier.attribute.identifier
+                attributes = filter(lambda x: x.identifier == attr_id,
+                                    self._attributes)
+            assert len(attributes) == 1
+            self._stringifier = Stringifier(
+                ir.stringifier,
+                operation=operations[0],
+                attribute=attributes[0],
+                owner=self)
         self._iterable = ir.iterable
         self._maplike = ir.maplike
         self._setlike = ir.setlike
@@ -201,11 +221,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
 
     @property
     def stringifier(self):
-        """
-        Returns stringifier if it is defined. Returns None otherwise.
-        @return TBD?
-        """
-        assert False, "Not implemented yet."
+        """Returns a Stringifier or None."""
+        return self._stringifier
 
     @property
     def iterable(self):
@@ -226,6 +243,39 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     @property
     def is_interface(self):
         return True
+
+
+class Stringifier(WithOwner, WithDebugInfo):
+    """https://heycam.github.io/webidl/#idl-stringifiers"""
+
+    class IR(WithDebugInfo):
+        def __init__(self, operation=None, attribute=None, debug_info=None):
+            assert isinstance(operation, Operation.IR)
+            assert attribute is None or isinstance(attribute, Attribute.IR)
+
+            WithDebugInfo.__init__(self, debug_info)
+
+            self.operation = operation
+            self.attribute = attribute
+
+    def __init__(self, ir, operation, attribute, owner):
+        assert isinstance(ir, Stringifier.IR)
+        assert isinstance(operation, Operation)
+        assert attribute is None or isinstance(attribute, Attribute)
+
+        WithOwner.__init__(self, owner)
+        WithDebugInfo.__init__(self, ir.debug_info)
+
+        self._operation = operation
+        self._attribute = attribute
+
+    @property
+    def operation(self):
+        return self._operation
+
+    @property
+    def attribute(self):
+        return self._attribute
 
 
 class Iterable(WithDebugInfo):

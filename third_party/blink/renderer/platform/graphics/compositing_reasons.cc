@@ -64,10 +64,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Parent with composited negative z-index content"},
     {CompositingReason::kSquashingDisallowed, "squashingDisallowed",
      "Layer was separately composited because it could not be squashed."},
-    {CompositingReason::kTransformWithCompositedDescendants,
-     "transformWithCompositedDescendants",
-     "Has a transform that needs to be known by compositor because of "
-     "composited descendants"},
     {CompositingReason::kOpacityWithCompositedDescendants,
      "opacityWithCompositedDescendants",
      "Has opacity that needs to be applied by compositor because of composited "

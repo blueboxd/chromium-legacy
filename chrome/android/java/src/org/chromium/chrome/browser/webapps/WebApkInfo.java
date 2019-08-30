@@ -427,7 +427,7 @@ public class WebApkInfo extends WebappInfo {
             @WebApkDistributor int distributor, Map<String, String> iconUrlToMurmur2HashMap,
             ShareTarget shareTarget, String shareTargetActivityName, boolean forceNavigation,
             boolean isSplashProvidedByWebApk, ShareData shareData, int webApkVersionCode) {
-        super(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope, primaryIcon, name,
+        super(WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope, primaryIcon, name,
                 shortName, displayMode, orientation, source, themeColor, backgroundColor,
                 defaultBackgroundColor, false /* isIconGenerated */,
                 isPrimaryIconMaskable /* isIconAdaptive */, forceNavigation);

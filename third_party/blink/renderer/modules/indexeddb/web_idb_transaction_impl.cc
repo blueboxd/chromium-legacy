@@ -27,9 +27,9 @@ WebIDBTransactionImpl::WebIDBTransactionImpl(
 
 WebIDBTransactionImpl::~WebIDBTransactionImpl() = default;
 
-mojom::blink::IDBTransactionAssociatedRequest
-WebIDBTransactionImpl::CreateRequest() {
-  return mojo::MakeRequest(&transaction_, task_runner_);
+mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+WebIDBTransactionImpl::CreateReceiver() {
+  return transaction_.BindNewEndpointAndPassReceiver(task_runner_);
 }
 
 void WebIDBTransactionImpl::CreateObjectStore(int64_t object_store_id,

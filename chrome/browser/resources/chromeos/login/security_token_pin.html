@@ -2,8 +2,6 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- TODO(crbug.com/964069): Make string localized, once they are finalized. -->
-
 <dom-module id="security-token-pin">
   <link rel="stylesheet" href="oobe_dialog_host.css">
   <link rel="stylesheet" href="oobe_flex_layout.css">
@@ -12,9 +10,16 @@
   <template>
 
     <oobe-dialog class="gaia-dialog" has-buttons>
-      <h1 slot="title">Enter your smart card PIN</h1>
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'securityTokenPinDialogTitle')]]
+      </h1>
       <div slot="subtitle">
-        <p>Provide the PIN that's associated with your smart card.</p>
+        <p>
+          [[i18nDynamic(locale, 'securityTokenPinDialogSubtitle')]]
+          <a href="#" id="learnMore">
+            [[i18nDynamic(locale, 'learnMoreButton')]]
+          </a>
+        </p>
       </div>
       <div slot="footer">
         <div id="pinKeyboardContainer">

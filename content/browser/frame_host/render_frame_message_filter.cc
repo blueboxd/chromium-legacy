@@ -111,7 +111,7 @@ void CreateChildFrameOnUI(
 void DownloadUrlOnUIThread(
     std::unique_ptr<download::DownloadUrlParameters> parameters,
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-    blink::mojom::BlobURLTokenPtrInfo blob_url_token) {
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderProcessHost* render_process_host =
@@ -125,8 +125,7 @@ void DownloadUrlOnUIThread(
   if (blob_url_token) {
     blob_url_loader_factory =
         ChromeBlobStorageContext::URLLoaderFactoryForToken(
-            browser_context,
-            blink::mojom::BlobURLTokenPtr(std::move(blob_url_token)));
+            browser_context, std::move(blob_url_token));
   }
 
   DownloadManager* download_manager =
@@ -317,7 +316,7 @@ void RenderFrameMessageFilter::DownloadUrl(
     const base::string16& suggested_name,
     const bool use_prompt,
     const bool follow_cross_origin_redirects,
-    blink::mojom::BlobURLTokenPtrInfo blob_url_token) const {
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) const {
   if (!resource_context_)
     return;
 
@@ -427,7 +426,7 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
 
 void RenderFrameMessageFilter::OnDownloadUrl(
     const FrameHostMsg_DownloadUrl_Params& params) {
-  blink::mojom::BlobURLTokenPtrInfo blob_url_token;
+  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token;
   if (!VerifyDownloadUrlParams(render_process_id_, params, &blob_url_token))
     return;
 
@@ -450,7 +449,7 @@ void RenderFrameMessageFilter::OnSaveImageFromDataURL(
     return;
 
   DownloadUrl(render_view_id, render_frame_id, data_url, Referrer(),
-              url::Origin(), base::string16(), true, true, nullptr);
+              url::Origin(), base::string16(), true, true, mojo::NullRemote());
 }
 
 void RenderFrameMessageFilter::OnAre3DAPIsBlocked(int render_frame_id,

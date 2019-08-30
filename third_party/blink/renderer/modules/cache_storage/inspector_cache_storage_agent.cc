@@ -121,11 +121,11 @@ ProtocolResponse AssertCacheStorage(
   auto it = caches->find(security_origin);
 
   if (it == caches->end()) {
-    mojom::blink::CacheStoragePtr cache_storage_ptr;
+    mojo::Remote<mojom::blink::CacheStorage> cache_storage_remote;
     context->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&cache_storage_ptr));
-    *result = cache_storage_ptr.get();
-    caches->Set(security_origin, std::move(cache_storage_ptr));
+        cache_storage_remote.BindNewPipeAndPassReceiver());
+    *result = cache_storage_remote.get();
+    caches->Set(security_origin, std::move(cache_storage_remote));
   } else {
     *result = it->value.get();
   }

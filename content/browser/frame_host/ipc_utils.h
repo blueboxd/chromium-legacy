@@ -21,7 +21,7 @@ class SiteInstance;
 // Verifies that |params| are valid and can be accessed by |process_id|.
 //
 // Returns true if the |params| are valid.  As a side-effect of the verification
-// |out_blob_url_token_info| will be populated.
+// |out_blob_url_token_remote| will be populated.
 //
 // Terminates the renderer with the given |process_id| and returns false if the
 // |params| are invalid.
@@ -31,7 +31,7 @@ class SiteInstance;
 bool VerifyDownloadUrlParams(
     int process_id,
     const FrameHostMsg_DownloadUrl_Params& params,
-    blink::mojom::BlobURLTokenPtrInfo* out_blob_url_token_info);
+    mojo::PendingRemote<blink::mojom::BlobURLToken>* out_blob_url_token_remote);
 
 // Verifies that |params| are valid and can be accessed by the renderer process
 // associated with |site_instance|.

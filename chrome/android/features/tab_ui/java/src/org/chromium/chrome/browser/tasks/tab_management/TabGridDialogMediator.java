@@ -11,6 +11,7 @@ import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -79,12 +80,13 @@ public class TabGridDialogMediator {
     private final TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     private final AnimationParamsProvider mAnimationParamsProvider;
     private final DialogHandler mTabGridDialogHandler;
+    private final String mComponentName;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
 
     TabGridDialogMediator(Context context, ResetHandler dialogResetHandler, PropertyModel model,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
-            AnimationParamsProvider animationParamsProvider) {
+            AnimationParamsProvider animationParamsProvider, String componentName) {
         mContext = context;
         mModel = model;
         mTabModelSelector = tabModelSelector;
@@ -93,6 +95,7 @@ public class TabGridDialogMediator {
         mTabSwitcherResetHandler = tabSwitcherResetHandler;
         mAnimationParamsProvider = animationParamsProvider;
         mTabGridDialogHandler = new DialogHandler();
+        mComponentName = componentName;
 
         // Register for tab model.
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -255,6 +258,7 @@ public class TabGridDialogMediator {
             @Override
             public void onScrimClick() {
                 hideDialog(true);
+                RecordUserAction.record("TabGridDialog.Exit");
             }
             @Override
             public void onScrimVisibilityChanged(boolean visible) {}
@@ -265,6 +269,7 @@ public class TabGridDialogMediator {
     private View.OnClickListener getCollapseButtonClickListener() {
         return view -> {
             hideDialog(true);
+            RecordUserAction.record("TabGridDialog.Exit");
         };
     }
 
@@ -287,6 +292,7 @@ public class TabGridDialogMediator {
             mTabCreatorManager.getTabCreator(currentTab.isIncognito())
                     .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
                             TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
+            RecordUserAction.record("MobileNewTabOpened." + mComponentName);
         };
     }
 

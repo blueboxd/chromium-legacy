@@ -45,7 +45,8 @@ class MODULES_EXPORT RespondWithObserver
   virtual void OnResponseRejected(mojom::ServiceWorkerResponseError) = 0;
 
   // Called when the respondWith() promise was fulfilled.
-  virtual void OnResponseFulfilled(const ScriptValue&,
+  virtual void OnResponseFulfilled(ScriptState*,
+                                   const ScriptValue&,
                                    ExceptionState::ContextType,
                                    const char* interface_name,
                                    const char* property_name) = 0;
@@ -65,7 +66,8 @@ class MODULES_EXPORT RespondWithObserver
 
   void ResponseWasRejected(mojom::ServiceWorkerResponseError,
                            const ScriptValue&);
-  void ResponseWasFulfilled(ExceptionState::ContextType,
+  void ResponseWasFulfilled(ScriptState* state,
+                            ExceptionState::ContextType,
                             const char* interface_name,
                             const char* property_name,
                             const ScriptValue&);

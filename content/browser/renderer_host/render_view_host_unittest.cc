@@ -304,16 +304,16 @@ class TestSaveImageFromDataURL : public RenderFrameMessageFilter {
 
  protected:
   ~TestSaveImageFromDataURL() override {}
-  void DownloadUrl(
-      int render_view_id,
-      int render_frame_id,
-      const GURL& url,
-      const Referrer& referrer,
-      const url::Origin& initiator,
-      const base::string16& suggested_name,
-      const bool use_prompt,
-      const bool follow_cross_origin_redirects,
-      blink::mojom::BlobURLTokenPtrInfo blob_url_token) const override {
+  void DownloadUrl(int render_view_id,
+                   int render_frame_id,
+                   const GURL& url,
+                   const Referrer& referrer,
+                   const url::Origin& initiator,
+                   const base::string16& suggested_name,
+                   const bool use_prompt,
+                   const bool follow_cross_origin_redirects,
+                   mojo::PendingRemote<blink::mojom::BlobURLToken>
+                       blob_url_token) const override {
     url_string_ = url.spec();
     is_downloaded_ = true;
   }

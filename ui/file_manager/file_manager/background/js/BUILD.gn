@@ -4,6 +4,7 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
+import("//ui/file_manager/base/gn/js_test_gen_html.gni")
 
 # TODO(tapted): This folder should be restricted to file_manager, but related
 # apps currently depend on background_base, which depends on
@@ -22,8 +23,8 @@ group("closure_compile") {
   testonly = true
   deps = [
     ":closure_compile_module",
+    ":js_test_gen_html_type_check_auto",
     ":test_support_type_check",
-    ":unit_tests_type_check",
   ]
 }
 
@@ -545,7 +546,7 @@ js_library("volume_manager_util") {
   ]
 }
 
-js_unit_tests("unit_tests") {
+js_test_gen_html("js_test_gen_html") {
   deps = [
     ":crostini_unittest",
     ":device_handler_unittest",

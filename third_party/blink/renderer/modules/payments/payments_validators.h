@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -71,7 +72,8 @@ class MODULES_EXPORT PaymentsValidators final {
   //
   // If the |input| is invalid, throws a TypeError through the |exception_state|
   // and uses the |input_name| to better describe what was being validated.
-  static void ValidateAndStringifyObject(const String& input_name,
+  static void ValidateAndStringifyObject(v8::Isolate* isolate,
+                                         const String& input_name,
                                          const ScriptValue& input,
                                          String& output,
                                          ExceptionState& exception_state);

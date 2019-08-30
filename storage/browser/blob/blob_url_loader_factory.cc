@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_loader.h"
@@ -14,9 +15,10 @@ namespace storage {
 
 namespace {
 
-// The BlobURLTokenPtr parameter is passed in to make sure the connection stays
-// alive until this method is called, it is not otherwise used by this method.
-void CreateFactoryForToken(blink::mojom::BlobURLTokenPtr,
+// The mojo::Remote<BlobURLToken> parameter is passed in to make sure the
+// connection stays alive until this method is called, it is not otherwise used
+// by this method.
+void CreateFactoryForToken(mojo::Remote<blink::mojom::BlobURLToken>,
                            const base::WeakPtr<BlobStorageContext>& context,
                            network::mojom::URLLoaderFactoryRequest request,
                            const base::UnguessableToken& token) {
@@ -42,16 +44,17 @@ void BlobURLLoaderFactory::Create(
 
 // static
 void BlobURLLoaderFactory::Create(
-    blink::mojom::BlobURLTokenPtr token,
+    mojo::PendingRemote<blink::mojom::BlobURLToken> token,
     base::WeakPtr<BlobStorageContext> context,
     network::mojom::URLLoaderFactoryRequest request) {
   // Not every URLLoaderFactory user deals with the URLLoaderFactory simply
   // disconnecting very well, so make sure we always at least bind the request
   // to some factory that can then fail with a network error. Hence the callback
   // is wrapped in WrapCallbackWithDefaultInvokeIfNotRun.
-  auto* raw_token = token.get();
+  mojo::Remote<blink::mojom::BlobURLToken> token_remote(std::move(token));
+  auto* raw_token = token_remote.get();
   raw_token->GetToken(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      base::BindOnce(&CreateFactoryForToken, std::move(token),
+      base::BindOnce(&CreateFactoryForToken, std::move(token_remote),
                      std::move(context), std::move(request)),
       base::UnguessableToken()));
 }

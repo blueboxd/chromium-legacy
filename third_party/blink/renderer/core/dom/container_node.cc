@@ -1414,7 +1414,7 @@ void ContainerNode::CheckForSiblingStyleChanges(SiblingCheckType change_type,
                                                 Node* node_before_change,
                                                 Node* node_after_change) {
   if (!InActiveDocument() || GetDocument().HasPendingForcedStyleRecalc() ||
-      GetStyleChangeType() >= kSubtreeStyleChange)
+      GetStyleChangeType() == kSubtreeStyleChange)
     return;
 
   if (!HasRestyleFlag(DynamicRestyleFlags::kChildrenAffectedByStructuralRules))

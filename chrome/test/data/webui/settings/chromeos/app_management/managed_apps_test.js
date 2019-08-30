@@ -42,7 +42,8 @@ suite('<app-management-managed-apps>', () => {
     await test_util.flushTasks();
   });
 
-  test('Uninstall button affected by policy', () => {
+  // TODO(crbug.com/999412): rewrite test.
+  test.skip('Uninstall button affected by policy', () => {
     const uninstallWrapper =
         appDetailView.$$('app-management-permission-view-header')
             .$$('#uninstall-wrapper');

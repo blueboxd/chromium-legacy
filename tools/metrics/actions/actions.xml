@@ -6268,6 +6268,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GridTabSwitcher.Drag.AddToGroupOrCreateGroup">
+  <obsolete>
+    Deprecated as of 8/2019. Replaced with TabGroup.Created.DropToMerge.
+  </obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>
@@ -12416,6 +12419,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileNewTabOpenedTabStrip">
+  <obsolete>
+    Deprecated as of 8/2019. Replaced with MobileNewTabOpened.TabStrip.
+  </obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>
@@ -21577,7 +21583,16 @@ should be able to be added at any place in this file.
   <description>User drags a tab to reorder it.</description>
 </action>
 
+<action name="TabGridDialog">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>User took an action on the TabGridDialog.</description>
+</action>
+
 <action name="TabGridDialog.Drag.RemoveFromGroup">
+  <obsolete>
+    Deprecated as of 8/2019. Replaced with TabGrid.Drag.RemoveFromGroup.
+  </obsolete>
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>
@@ -21604,8 +21619,8 @@ should be able to be added at any place in this file.
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <description>
-    Users tapped &quot;^&quot; button on the tab strip, causing tab group bottom
-    sheet to be shown.
+    Users tapped &quot;^&quot; button on the tab strip, causing tab group
+    component to be shown.
   </description>
 </action>
 
@@ -23133,6 +23148,9 @@ should be able to be added at any place in this file.
 <action-suffix separator="." ordering="suffix">
   <suffix name="DeveloperRequestedNewTab"
       label="Users tapped on a link with a target=_blank"/>
+  <suffix name="DropToMerge"
+      label="Users dragged a single tab and dropped it on another single tab
+             to create a group."/>
   <suffix name="OpenInNewTab"
       label="Users long pressed a link and opened in new tab."/>
   <suffix name="TabMultiSelect"
@@ -23145,6 +23163,10 @@ should be able to be added at any place in this file.
 <action-suffix separator="." ordering="suffix">
   <suffix name="GridTabSwitcher"
       label="Users switched tabs from the grid layout TabSwitcher."/>
+  <suffix name="TabGridDialogFromStrip"
+      label="Users switched tabs within the tab grid dialog."/>
+  <suffix name="TabGridDialogInSwitcher"
+      label="Users switched tabs between groups using tab grid dialog."/>
   <suffix name="TabGridSheet"
       label="Users switched tabs from the tab group in the bottom sheet
              switcher."/>
@@ -23153,6 +23175,14 @@ should be able to be added at any place in this file.
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">
+  <suffix name="TabGridDialogFromStrip"
+      label="Users tapped '+' button on the tab group dialog toolbar, causing
+             a new tab to be created in the group. The dialog is expanded
+             from tab strip"/>
+  <suffix name="TabGridDialogInSwitcher"
+      label="Users tapped '+' button on the tab group dialog toolbar, causing
+             a new tab to be created in the group. The dialog is in tab
+             switcher."/>
   <suffix name="TabGridSheet"
       label="Users tapped '+' button on the tab group bottom sheet toolbar
              causes a new tab to be created in the group."/>
@@ -23196,25 +23226,47 @@ should be able to be added at any place in this file.
 <action-suffix separator="." ordering="suffix">
   <suffix name="GridTabSwitcher"
       label="Users swipe to close a tab in grid layout TabSwitcher."/>
-  <suffix name="TabGridDialog"
-      label="Users swipe to close a tab in tab grid dialog."/>
+  <suffix name="TabGridDialogFromStrip"
+      label="Users swipe to close a tab in tab grid dialog from tab strip."/>
+  <suffix name="TabGridDialogInSwitcher"
+      label="Users swipe to close a tab in tab grid dialog from grid tab
+             switcher."/>
   <suffix name="TabGridSheet"
       label="Users swipe to close a tab in tab group bottom sheet."/>
   <affected-action name="MobileStackViewSwipeCloseTab"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">
+  <suffix name="DropToMerge"
+      label="Users use drop-to-merge to combine a single tab and a group or
+             two groups."/>
+  <suffix name="RemoveFromGroup.TabGridDialogFromStrip"
+      label="Users ungroup a tab by dropping it on the ungroup bar in tab
+             grid dialog from tab strip."/>
+  <suffix name="RemoveFromGroup.TabGridDialogInSwitcher"
+      label="Users ungroup a tab by dropping it on the ungroup bar in tab
+             grid dialog from grid tab switcher."/>
   <suffix name="Reordered.GridTabSwitcher"
-      label="Users drag to reorder tabs in grid layout TabSwitcher."/>
-  <suffix name="Reordered.TabGridDialog"
-      label="Users drag to reorder tabs in tab grid dialog."/>
+      label="Users drag to reorder tabs in grid layout TabSwitcher. Recorded
+             at each mini reordering during the gesture."/>
+  <suffix name="Reordered.TabGridDialogFromStrip"
+      label="Users drag to reorder tabs in tab grid dialog from tab strip.
+             Recorded at each mini reordering during the gesture."/>
+  <suffix name="Reordered.TabGridDialogInSwitcher"
+      label="Users drag to reorder tabs in tab grid dialog from grid tab
+             switcher. Recorded at each mini reordering during the gesture."/>
   <suffix name="Reordered.TabGridSheet"
-      label="Users drag to reorder tabs in tab group bottom sheet."/>
+      label="Users drag to reorder tabs in tab group bottom sheet. Recorded
+             at each mini reordering during the gesture."/>
   <suffix name="Start.GridTabSwitcher"
       label="Users long tap on a tab to trigger dragging in grid layout
              TabSwitcher."/>
-  <suffix name="Start.TabGridDialog"
-      label="Users long tap on a tab to trigger dragging in tab grid dialog."/>
+  <suffix name="Start.TabGridDialogFromStrip"
+      label="Users long tap on a tab to trigger dragging in tab grid dialog
+             from tab strip."/>
+  <suffix name="Start.TabGridDialogInSwitcher"
+      label="Users long tap on a tab to trigger dragging in tab grid dialog
+             from grid tab switcher."/>
   <suffix name="Start.TabGridSheet"
       label="Users long tap on a tab to trigger dragging in tab group bottom
              sheet."/>
@@ -23250,6 +23302,26 @@ should be able to be added at any place in this file.
   <suffix name="LongTapMenu"
       label="Users opened a new incognito tab by long tap menu"/>
   <affected-action name="MobileMenuNewIncognitoTab"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="TabGridDialog"
+      label="Users tapped expand button on the tab strip, causing tab grid
+             dialog to be shown."/>
+  <suffix name="TabGridSheet"
+      label="Users tapped expand button on the tab strip, causing tab grid
+             sheet to be shown."/>
+  <affected-action name="TabGroup.ExpandedFromStrip"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="Exit"
+      label="Users click the back button or the scrim to exit the tab group
+             dialog."/>
+  <suffix name="ExpandedFromSwitcher"
+      label="Users click a card in TabSwitcher to open a dialog. See also
+             TabGroup.ExpandedFromStrip.TabGridDialog."/>
+  <affected-action name="TabGridDialog"/>
 </action-suffix>
 
 </actions>

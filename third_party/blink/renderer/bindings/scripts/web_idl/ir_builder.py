@@ -23,6 +23,7 @@ from .interface import Interface
 from .interface import Iterable
 from .interface import Maplike
 from .interface import Setlike
+from .interface import Stringifier
 from .literal_constant import LiteralConstant
 from .namespace import Namespace
 from .operation import Operation
@@ -105,11 +106,10 @@ class _IRBuilder(object):
 
         child_nodes = list(node.GetChildren())
         inherited = self._take_inheritance(child_nodes)
+        stringifier = self._take_stringifier(child_nodes)
         iterable = self._take_iterable(child_nodes)
         maplike = self._take_maplike(child_nodes)
         setlike = self._take_setlike(child_nodes)
-        # TODO(peria): Implement stringifier.
-        _ = self._take_stringifier(child_nodes)
         extended_attributes = self._take_extended_attributes(child_nodes)
 
         members = map(self._build_interface_or_namespace_member, child_nodes)
@@ -126,8 +126,12 @@ class _IRBuilder(object):
                 constants.append(member)
             else:
                 assert False
-        # TODO(peria): Implement indexed/named property handlers from
-        # |property_handlers|.
+
+        if stringifier:
+            operations.append(stringifier.operation)
+            if stringifier.attribute:
+                attributes.append(stringifier.attribute)
+        # TODO(peria): Create indexed/named property handlers from |operations|.
 
         return Interface.IR(
             identifier=Identifier(node.GetName()),
@@ -137,6 +141,7 @@ class _IRBuilder(object):
             attributes=attributes,
             constants=constants,
             operations=operations,
+            stringifier=stringifier,
             iterable=iterable,
             maplike=maplike,
             setlike=setlike,
@@ -152,11 +157,13 @@ class _IRBuilder(object):
             component=self._component,
             debug_info=self._build_debug_info(node))
 
-    def _build_interface_or_namespace_member(self, node):
+    def _build_interface_or_namespace_member(
+            self, node, fallback_extended_attributes=None):
         def build_attribute(node):
             child_nodes = list(node.GetChildren())
             idl_type = self._take_type(child_nodes)
-            extended_attributes = self._take_extended_attributes(child_nodes)
+            extended_attributes = self._take_extended_attributes(
+                child_nodes) or fallback_extended_attributes
             assert len(child_nodes) == 0
             return Attribute.IR(
                 identifier=Identifier(node.GetName()),
@@ -171,7 +178,8 @@ class _IRBuilder(object):
         def build_constant(node):
             child_nodes = list(node.GetChildren())
             value = self._take_constant_value(child_nodes)
-            extended_attributes = self._take_extended_attributes(child_nodes)
+            extended_attributes = self._take_extended_attributes(
+                child_nodes) or fallback_extended_attributes
             assert len(child_nodes) == 1, child_nodes[0].GetClass()
             # idl_parser doesn't produce a 'Type' node for the type of a
             # constant, hence we need to skip one level.
@@ -188,7 +196,8 @@ class _IRBuilder(object):
             child_nodes = list(node.GetChildren())
             arguments = self._take_arguments(child_nodes)
             return_type = self._take_type(child_nodes)
-            extended_attributes = self._take_extended_attributes(child_nodes)
+            extended_attributes = self._take_extended_attributes(
+                child_nodes) or fallback_extended_attributes
             assert len(child_nodes) == 0
             return Operation.IR(
                 identifier=Identifier(node.GetName()),
@@ -479,8 +488,42 @@ class _IRBuilder(object):
             debug_info=self._build_debug_info(node))
 
     def _build_stringifier(self, node):
+        # There are three forms of stringifier declaration;
+        #   a. [ExtAttrs] stringifier;
+        #   b. [ExtAttrs] stringifier DOMString foo();
+        #   c. [ExtAttrs] stringifier attribute DOMString bar;
+        # and we apply [ExtAttrs] to an operation in cases a and b, or to an
+        # attribute in case c.
+
         assert node.GetClass() == 'Stringifier'
-        return None
+        child_nodes = node.GetChildren()
+        extended_attributes = self._take_extended_attributes(child_nodes)
+        assert len(child_nodes) <= 1
+
+        member = None
+        if len(child_nodes) == 1:
+            member = self._build_interface_or_namespace_member(
+                child_nodes[0], extended_attributes)
+            extended_attributes = None
+        operation = member if isinstance(member, Operation.IR) else None
+        attribute = member if isinstance(member, Attribute.IR) else None
+
+        if operation is None:
+            return_type = self._idl_type_factory.simple_type(
+                name='DOMString', debug_info=self._build_debug_info(node))
+            operation = Operation.IR(
+                identifier=Identifier(''),
+                arguments=[],
+                return_type=return_type,
+                extended_attributes=extended_attributes,
+                component=self._component,
+                debug_info=self._build_debug_info(node))
+        operation.is_stringifier = True
+
+        return Stringifier.IR(
+            operation=operation,
+            attribute=attribute,
+            debug_info=self._build_debug_info(node))
 
     def _build_type(self,
                     node,

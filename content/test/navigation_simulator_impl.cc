@@ -1136,13 +1136,13 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(std::move(common_params), std::move(begin_params),
-                          nullptr, navigation_client_ptr.PassInterface(),
-                          nullptr);
+                          mojo::NullRemote(),
+                          navigation_client_ptr.PassInterface(), nullptr);
   } else {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
         ->BeginNavigation(std::move(common_params), std::move(begin_params),
-                          nullptr, nullptr, nullptr);
+                          mojo::NullRemote(), nullptr, nullptr);
   }
 
   NavigationRequest* request =

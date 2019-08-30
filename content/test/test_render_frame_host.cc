@@ -362,11 +362,12 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   mojom::NavigationClientAssociatedPtr navigation_client_ptr;
   if (IsPerNavigationMojoInterfaceEnabled()) {
     GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
-    BeginNavigation(std::move(common_params), std::move(begin_params), nullptr,
-                    navigation_client_ptr.PassInterface(), nullptr);
+    BeginNavigation(std::move(common_params), std::move(begin_params),
+                    mojo::NullRemote(), navigation_client_ptr.PassInterface(),
+                    nullptr);
   } else {
-    BeginNavigation(std::move(common_params), std::move(begin_params), nullptr,
-                    nullptr, nullptr);
+    BeginNavigation(std::move(common_params), std::move(begin_params),
+                    mojo::NullRemote(), nullptr, nullptr);
   }
 }
 

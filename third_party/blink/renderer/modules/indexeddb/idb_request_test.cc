@@ -30,7 +30,9 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
@@ -70,9 +72,10 @@ class BackendDatabaseWithMockedClose
     : public testing::StrictMock<mojom::blink::IDBDatabase> {
  public:
   explicit BackendDatabaseWithMockedClose(
-      mojom::blink::IDBDatabaseAssociatedRequest request)
-      : binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(
+      mojo::PendingAssociatedReceiver<mojom::blink::IDBDatabase>
+          pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {
+    receiver_.set_disconnect_handler(
         base::BindOnce(&BackendDatabaseWithMockedClose::DatabaseDestroyed,
                        base::Unretained(this)));
   }
@@ -82,11 +85,11 @@ class BackendDatabaseWithMockedClose
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const WTF::String& new_name) override {}
-  void CreateTransaction(
-      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
-      int64_t transaction_id,
-      const WTF::Vector<int64_t>& object_store_ids,
-      mojom::blink::IDBTransactionMode mode) override {}
+  void CreateTransaction(mojo::PendingAssociatedReceiver<
+                             mojom::blink::IDBTransaction> transaction_receiver,
+                         int64_t transaction_id,
+                         const WTF::Vector<int64_t>& object_store_ids,
+                         mojom::blink::IDBTransactionMode mode) override {}
   MOCK_METHOD0(Close, void());
   void VersionChangeIgnored() override {}
   void AddObserver(int64_t transaction_id,
@@ -162,7 +165,7 @@ class BackendDatabaseWithMockedClose
 
  private:
   bool destroyed_ = false;
-  mojo::AssociatedBinding<mojom::blink::IDBDatabase> binding_;
+  mojo::AssociatedReceiver<mojom::blink::IDBDatabase> receiver_;
 };
 
 class IDBRequestTest : public testing::Test {
@@ -380,10 +383,10 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
       MakeGarbageCollected<IDBDatabaseCallbacks>();
 
   {
-    mojom::blink::IDBDatabaseAssociatedPtr ptr;
+    mojo::AssociatedRemote<mojom::blink::IDBDatabase> remote;
     std::unique_ptr<BackendDatabaseWithMockedClose> mock_database =
         std::make_unique<BackendDatabaseWithMockedClose>(
-            mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
+            remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
     EXPECT_CALL(*mock_database, Close()).Times(1);
 
     auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
@@ -396,16 +399,16 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     std::unique_ptr<WebIDBCallbacks> callbacks = request->CreateWebCallbacks();
 
     scope.GetExecutionContext()->NotifyContextDestroyed();
-    callbacks->UpgradeNeeded(ptr.PassInterface(), kOldVersion,
+    callbacks->UpgradeNeeded(remote.Unbind(), kOldVersion,
                              mojom::IDBDataLoss::None, String(), metadata);
     platform_->RunUntilIdle();
   }
 
   {
-    mojom::blink::IDBDatabaseAssociatedPtr ptr;
+    mojo::AssociatedRemote<mojom::blink::IDBDatabase> remote;
     std::unique_ptr<BackendDatabaseWithMockedClose> mock_database =
         std::make_unique<BackendDatabaseWithMockedClose>(
-            mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
+            remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
     EXPECT_CALL(*mock_database, Close()).Times(1);
 
     auto transaction_backend = std::make_unique<MockWebIDBTransaction>(
@@ -418,7 +421,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     std::unique_ptr<WebIDBCallbacks> callbacks = request->CreateWebCallbacks();
 
     scope.GetExecutionContext()->NotifyContextDestroyed();
-    callbacks->SuccessDatabase(ptr.PassInterface(), metadata);
+    callbacks->SuccessDatabase(remote.Unbind(), metadata);
     platform_->RunUntilIdle();
   }
 }

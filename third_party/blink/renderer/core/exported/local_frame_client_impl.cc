@@ -500,7 +500,7 @@ void LocalFrameClientImpl::BeginNavigation(
     HTMLFormElement* form,
     ContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy,
-    mojom::blink::BlobURLTokenPtr blob_url_token,
+    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
     base::TimeTicks input_start_time,
     const String& href_translate,
     WebContentSecurityPolicyList initiator_csp,
@@ -523,7 +523,7 @@ void LocalFrameClientImpl::BeginNavigation(
               kCheckContentSecurityPolicy
           ? kWebContentSecurityPolicyDispositionCheck
           : kWebContentSecurityPolicyDispositionDoNotCheck;
-  navigation_info->blob_url_token = blob_url_token.PassInterface().PassHandle();
+  navigation_info->blob_url_token = blob_url_token.PassPipe();
   navigation_info->input_start = input_start_time;
   navigation_info->initiator_csp = std::move(initiator_csp);
   navigation_info->initiator_address_space = initiator_address_space;
@@ -646,16 +646,16 @@ void LocalFrameClientImpl::DownloadURL(
   if (!web_frame_->Client())
     return;
   DCHECK(web_frame_->GetFrame()->GetDocument());
-  mojom::blink::BlobURLTokenPtr blob_url_token;
+  mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token;
   if (request.Url().ProtocolIs("blob")) {
     web_frame_->GetFrame()->GetDocument()->GetPublicURLManager().Resolve(
-        request.Url(), MakeRequest(&blob_url_token));
+        request.Url(), blob_url_token.InitWithNewPipeAndPassReceiver());
   }
   web_frame_->Client()->DownloadURL(
       WrappedResourceRequest(request),
       static_cast<WebLocalFrameClient::CrossOriginRedirects>(
           cross_origin_redirect_behavior),
-      blob_url_token.PassInterface().PassHandle());
+      blob_url_token.PassPipe());
 }
 
 void LocalFrameClientImpl::LoadErrorPage(int reason) {

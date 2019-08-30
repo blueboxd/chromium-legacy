@@ -1458,6 +1458,7 @@ jumbo_source_set("unit_tests") {
     "page/slot_scoped_traversal_test.cc",
     "page/spatial_navigation_test.cc",
     "page/touch_adjustment_test.cc",
+    "page/validation_message_overlay_delegate_test.cc",
     "page/viewport_test.cc",
     "page/window_features_test.cc",
     "page/zoom_test.cc",

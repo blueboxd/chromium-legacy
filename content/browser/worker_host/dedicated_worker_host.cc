@@ -100,7 +100,7 @@ void DedicatedWorkerHost::StartScriptLoad(
     network::mojom::CredentialsMode credentials_mode,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    blink::mojom::BlobURLTokenPtr blob_url_token,
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
     mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
@@ -454,7 +454,7 @@ class DedicatedWorkerHostFactoryImpl
       network::mojom::CredentialsMode credentials_mode,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      blink::mojom::BlobURLTokenPtr blob_url_token,
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojo::PendingRemote<blink::mojom::DedicatedWorkerHostFactoryClient>
           client,
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host_receiver)

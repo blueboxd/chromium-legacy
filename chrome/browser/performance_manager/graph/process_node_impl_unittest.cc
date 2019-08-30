@@ -67,10 +67,12 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
   EXPECT_FALSE(process_node->exit_status());
 
   EXPECT_EQ(0U, process_node->private_footprint_kb());
+  EXPECT_EQ(0U, process_node->resident_set_kb());
   EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 
   constexpr base::TimeDelta kCpuUsage = base::TimeDelta::FromMicroseconds(1);
   process_node->set_private_footprint_kb(10u);
+  process_node->set_resident_set_kb(20u);
   process_node->set_cumulative_cpu_usage(kCpuUsage);
 
   // Kill it again.
@@ -81,6 +83,7 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
 
   EXPECT_EQ(launch_time, process_node->launch_time());
   EXPECT_EQ(10u, process_node->private_footprint_kb());
+  EXPECT_EQ(20u, process_node->resident_set_kb());
   EXPECT_EQ(kCpuUsage, process_node->cumulative_cpu_usage());
 
   // Resurrect again and verify the launch time and measurements
@@ -90,6 +93,7 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
 
   EXPECT_EQ(launch2_time, process_node->launch_time());
   EXPECT_EQ(0U, process_node->private_footprint_kb());
+  EXPECT_EQ(0U, process_node->resident_set_kb());
   EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 }
 
@@ -254,6 +258,10 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
   process_node->set_private_footprint_kb(628);
   EXPECT_EQ(process_node->private_footprint_kb(),
             public_process_node->GetPrivateFootprintKb());
+
+  process_node->set_resident_set_kb(398);
+  EXPECT_EQ(process_node->resident_set_kb(),
+            public_process_node->GetResidentSetKb());
 }
 
 }  // namespace performance_manager

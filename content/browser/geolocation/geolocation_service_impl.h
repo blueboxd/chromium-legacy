@@ -59,14 +59,15 @@ class CONTENT_EXPORT GeolocationServiceImpl
   // Creates a Geolocation instance.
   // This may not be called a second time until the Geolocation instance has
   // been created.
-  void CreateGeolocation(device::mojom::GeolocationRequest request,
-                         bool user_gesture,
-                         CreateGeolocationCallback callback) override;
+  void CreateGeolocation(
+      mojo::PendingReceiver<device::mojom::Geolocation> receiver,
+      bool user_gesture,
+      CreateGeolocationCallback callback) override;
 
  private:
   // Creates the Geolocation Service.
   void CreateGeolocationWithPermissionStatus(
-      device::mojom::GeolocationRequest request,
+      mojo::PendingReceiver<device::mojom::Geolocation> receiver,
       CreateGeolocationCallback callback,
       blink::mojom::PermissionStatus permission_status);
 

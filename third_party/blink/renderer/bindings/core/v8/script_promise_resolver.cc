@@ -120,6 +120,7 @@ void ScriptPromiseResolver::ResolveOrRejectDeferred() {
 
 void ScriptPromiseResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
+  visitor->Trace(resolver_);
   ContextLifecycleObserver::Trace(visitor);
 }
 

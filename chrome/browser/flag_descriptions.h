@@ -986,6 +986,9 @@ extern const char kResourceLoadSchedulerDescription[];
 extern const char kPrefetchRedirectErrorName[];
 extern const char kPrefetchRedirectErrorDescription[];
 
+extern const char kPrefetchMainResourceNetworkIsolationKeyName[];
+extern const char kPrefetchMainResourceNetworkIsolationKeyDescription[];
+
 extern const char kSafeBrowsingUseAPDownloadVerdictsName[];
 extern const char kSafeBrowsingUseAPDownloadVerdictsDescription[];
 
@@ -1657,9 +1660,6 @@ extern const char kNtpDisableInitialMostVisitedFadeInDescription[];
 
 extern const char kNtpRealboxName[];
 extern const char kNtpRealboxDescription[];
-
-extern const char kNtpZeroSuggestName[];
-extern const char kNtpZeroSuggestDescription[];
 
 extern const char kEnableImprovedCookieControlsName[];
 extern const char kEnableImprovedCookieControlsDescription[];

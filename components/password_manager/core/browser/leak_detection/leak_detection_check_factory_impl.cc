@@ -21,13 +21,14 @@ LeakDetectionCheckFactoryImpl::TryCreateLeakCheck(
     LeakDetectionDelegateInterface* delegate,
     signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) const {
-  if (!base::FeatureList::IsEnabled(features::kLeakDetection))
-    return nullptr;
-
   if (!AuthenticatedLeakCheck::HasAccountForRequest(identity_manager)) {
     delegate->OnError(LeakDetectionError::kNotSignIn);
     return nullptr;
   }
+  // Instantiate the field trial right before the feature can be used. Thus,
+  // the experiment groups will only contain the users who can use the feature.
+  if (!base::FeatureList::IsEnabled(features::kLeakDetection))
+    return nullptr;
   return std::make_unique<AuthenticatedLeakCheck>(
       delegate, identity_manager, std::move(url_loader_factory));
 }

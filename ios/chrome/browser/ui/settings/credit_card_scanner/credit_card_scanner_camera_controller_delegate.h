@@ -7,7 +7,7 @@
 
 #import "ios/chrome/browser/ui/scanner/camera_controller.h"
 
-// Receives the Credit Card scanner results.
+// Receives the Credit Card scanner image results.
 @protocol CreditCardScannerCameraControllerDelegate <CameraControllerDelegate>
 
 // Called when the scanner starts receiving video frames through the camera

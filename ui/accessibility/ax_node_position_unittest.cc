@@ -478,6 +478,60 @@ TEST_F(AXPositionTest, Clone) {
   EXPECT_EQ(AXNodePosition::INVALID_INDEX, copy_position->child_index());
 }
 
+TEST_F(AXPositionTest, Serialize) {
+  TestPositionType null_position = AXNodePosition::CreateNullPosition();
+  ASSERT_NE(nullptr, null_position);
+  TestPositionType copy_position =
+      AXNodePosition::Unserialize(null_position->Serialize());
+  ASSERT_NE(nullptr, copy_position);
+  EXPECT_TRUE(copy_position->IsNullPosition());
+
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, 1 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  copy_position = AXNodePosition::Unserialize(tree_position->Serialize());
+  ASSERT_NE(nullptr, copy_position);
+  EXPECT_TRUE(copy_position->IsTreePosition());
+  EXPECT_EQ(root_.id, copy_position->anchor_id());
+  EXPECT_EQ(1, copy_position->child_index());
+  EXPECT_EQ(AXNodePosition::INVALID_OFFSET, copy_position->text_offset());
+
+  tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, AXNodePosition::BEFORE_TEXT);
+  ASSERT_NE(nullptr, tree_position);
+  copy_position = AXNodePosition::Unserialize(tree_position->Serialize());
+  ASSERT_NE(nullptr, copy_position);
+  EXPECT_TRUE(copy_position->IsTreePosition());
+  EXPECT_EQ(root_.id, copy_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, copy_position->child_index());
+  EXPECT_EQ(AXNodePosition::INVALID_OFFSET, copy_position->text_offset());
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, text_field_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kUpstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  copy_position = AXNodePosition::Unserialize(text_position->Serialize());
+  ASSERT_NE(nullptr, copy_position);
+  EXPECT_TRUE(copy_position->IsTextPosition());
+  EXPECT_EQ(text_field_.id, copy_position->anchor_id());
+  EXPECT_EQ(0, copy_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kUpstream, copy_position->affinity());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, text_field_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  copy_position = AXNodePosition::Unserialize(text_position->Serialize());
+  ASSERT_NE(nullptr, copy_position);
+  EXPECT_TRUE(copy_position->IsTextPosition());
+  EXPECT_EQ(text_field_.id, copy_position->anchor_id());
+  EXPECT_EQ(0, copy_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, copy_position->affinity());
+  EXPECT_EQ(AXNodePosition::INVALID_INDEX, copy_position->child_index());
+}
+
 TEST_F(AXPositionTest, GetTextFromNullPosition) {
   TestPositionType text_position = AXNodePosition::CreateNullPosition();
   ASSERT_NE(nullptr, text_position);

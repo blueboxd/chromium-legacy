@@ -24486,6 +24486,9 @@ Called by update_net_error_codes.py.-->
   <int value="3009" label="HTMLFrameSetElement"/>
   <int value="3010" label="MediaCapabilitiesFramerateRatio"/>
   <int value="3011" label="MediaCapabilitiesFramerateNumber"/>
+  <int value="3012" label="FetchRedirectError"/>
+  <int value="3013" label="FetchRedirectManual"/>
+  <int value="3014" label="FetchCacheReload"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36748,6 +36751,8 @@ from previous Chrome versions.
   <int value="1106307305" label="AutofillPrimaryInfoStyleExperiment:enabled"/>
   <int value="1107543566" label="enable-one-copy"/>
   <int value="1108663108" label="disable-device-discovery-notifications"/>
+  <int value="1109907837"
+      label="PrefetchMainResourceNetworkIsolationKey:enabled"/>
   <int value="1111871757" label="ForceUnifiedConsentBump:enabled"/>
   <int value="1112051724" label="DetectingHeavyPages:enabled"/>
   <int value="1113196543" label="ShowManagedUi:disabled"/>
@@ -36986,6 +36991,8 @@ from previous Chrome versions.
   <int value="1408331660" label="enhanced-bookmarks-experiment"/>
   <int value="1409437197" label="OfflinePagesLimitlessPrefetching:enabled"/>
   <int value="1410697724" label="mediadrm-enable-non-compositing"/>
+  <int value="1410846840"
+      label="PrefetchMainResourceNetworkIsolationKey:disabled"/>
   <int value="1411679884"
       label="AutofillLocalCardMigrationUsesStrikeSystemV2:enabled"/>
   <int value="1413158119" label="WebRtcRemoteEventLog:disabled"/>

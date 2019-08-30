@@ -526,6 +526,8 @@ cr.define('settings', function() {
           loadTimeData.getBoolean('showApps')) {
         r.APPS = r.BASIC.createSection('/apps', 'apps');
         r.APP_MANAGEMENT = r.APPS.createChild('/app-management');
+        r.APP_MANAGEMENT_DETAIL =
+            r.APP_MANAGEMENT.createChild('/app-management/detail');
       }
     } else {
       assert(r.ADVANCED, 'ADVANCED route should exist');

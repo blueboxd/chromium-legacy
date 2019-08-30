@@ -173,30 +173,12 @@ void OfflineAudioDestinationHandler::StartOfflineRendering() {
 void OfflineAudioDestinationHandler::DoOfflineRendering() {
   DCHECK(!IsMainThread());
 
-  unsigned number_of_channels;
+  unsigned number_of_channels = shared_render_target_->numberOfChannels();
   Vector<float*> destinations;
-  {
-    // Main thread GCs cannot happen while we're reading out channel
-    // data. Detect that condition by trying to take the cross-thread
-    // persistent lock which is held while a GC runs. If the lock is
-    // already held, simply delay rendering until the next quantum.
-    bool has_lock = ProcessHeap::CrossThreadPersistentMutex().TryLock();
-    if (!has_lock) {
-      // To ensure that the rendering step eventually happens, repost.
-      render_thread_task_runner_->PostTask(
-          FROM_HERE,
-          WTF::Bind(&OfflineAudioDestinationHandler::DoOfflineRendering,
-                    WrapRefCounted(this)));
-      return;
-    }
-
-    number_of_channels = shared_render_target_->numberOfChannels();
-    destinations.ReserveInitialCapacity(number_of_channels);
-    for (unsigned i = 0; i < number_of_channels; ++i) {
-      destinations.push_back(
-          static_cast<float*>(shared_render_target_->channels()[i].Data()));
-    }
-    ProcessHeap::CrossThreadPersistentMutex().unlock();
+  destinations.ReserveInitialCapacity(number_of_channels);
+  for (unsigned i = 0; i < number_of_channels; ++i) {
+    destinations.push_back(
+        static_cast<float*>(shared_render_target_->channels()[i].Data()));
   }
 
   // If there is more to process and there is no suspension at the moment,

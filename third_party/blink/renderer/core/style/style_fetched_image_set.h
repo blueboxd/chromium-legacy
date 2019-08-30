@@ -54,7 +54,8 @@ class StyleFetchedImageSet final : public StyleImage,
   ~StyleFetchedImageSet() override;
 
   CSSValue* CssValue() const override;
-  CSSValue* ComputedCSSValue() const override;
+  CSSValue* ComputedCSSValue(const ComputedStyle&,
+                             bool allow_visited_style) const override;
 
   // FIXME: This is used by StyleImage for equals comparison, but this
   // implementation only looks at the image from the set that we have loaded.

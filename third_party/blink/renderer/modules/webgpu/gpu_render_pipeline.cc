@@ -229,16 +229,22 @@ GPURenderPipeline* GPURenderPipeline::Create(
     dawn_desc.fragmentStage = nullptr;
   }
 
-  // TODO(crbug.com/dawn/131): Update Dawn to match WebGPU vertex input
-  v8::Isolate* isolate = script_state->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
-                                 "GPUVertexInputDescriptor");
-  DawnVertexInputInfo vertex_input_info = GPUVertexInputAsDawnInputState(
-      isolate, webgpu_desc->vertexInput(), exception_state);
-  dawn_desc.vertexInput = &std::get<0>(vertex_input_info);
+  DawnVertexInputInfo vertex_input_info;
+  if (webgpu_desc->hasVertexInput()) {
+    // TODO(crbug.com/dawn/131): Update Dawn to match WebGPU vertex input
+    v8::Isolate* isolate = script_state->GetIsolate();
+    ExceptionState exception_state(isolate,
+                                   ExceptionState::kConstructionContext,
+                                   "GPUVertexInputDescriptor");
+    vertex_input_info = GPUVertexInputAsDawnInputState(
+        isolate, webgpu_desc->vertexInput(), exception_state);
+    dawn_desc.vertexInput = &std::get<0>(vertex_input_info);
 
-  if (exception_state.HadException()) {
-    return nullptr;
+    if (exception_state.HadException()) {
+      return nullptr;
+    }
+  } else {
+    dawn_desc.vertexInput = nullptr;
   }
 
   dawn_desc.primitiveTopology =

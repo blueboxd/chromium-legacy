@@ -19,15 +19,30 @@ import java.util.List;
  * Handles toolbar functionality for the {@ContactsPickerDialog}.
  */
 public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails> {
+    // Our parent dialog.
+    ContactsPickerDialog mDialog;
+
     public ContactsPickerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
+    }
+
+    /**
+     * Set the parent dialog for this toolbar.
+     */
+    public void setParentDialog(ContactsPickerDialog dialog) {
+        mDialog = dialog;
+    }
+
+    /**
+     * Shows the Back arrow navigation button in the upper left corner.
+     */
+    public void showBackArrow() {
+        setNavigationButton(NAVIGATION_BUTTON_BACK);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-
-        showCloseButton();
 
         TextView up = (TextView) mNumberRollView.findViewById(R.id.up);
         TextView down = (TextView) mNumberRollView.findViewById(R.id.down);
@@ -35,16 +50,14 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
         ApiCompatibilityUtils.setTextAppearance(down, R.style.TextAppearance_BlackHeadline);
     }
 
-    /**
-     * Shows the Close or 'X' navigation button in the upper left corner.
-     */
-    public void showCloseButton() {
-        setNavigationIcon(R.drawable.btn_close);
-        setNavigationContentDescription(R.string.close);
-    }
-
     @Override
-    protected void setNavigationButton(int navigationButton) {}
+    public void onNavigationBack() {
+        if (isSearching()) {
+            super.onNavigationBack();
+        } else {
+            mDialog.cancel();
+        }
+    }
 
     @Override
     protected void showSelectionView(
@@ -58,5 +71,7 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
 
         Button done = (Button) findViewById(R.id.done);
         done.setEnabled(selectedItems.size() > 0);
+
+        showBackArrow();
     }
 }

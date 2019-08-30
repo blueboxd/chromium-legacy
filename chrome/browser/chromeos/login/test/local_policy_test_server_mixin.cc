@@ -51,11 +51,11 @@ void LocalPolicyTestServerMixin::SetUp() {
                                       policy::PolicyBuilder::kFakeDeviceId,
                                       {} /* state_keys */);
 
-  ASSERT_TRUE(policy_test_server_->SetSigningKeyAndSignature(
+  CHECK(policy_test_server_->SetSigningKeyAndSignature(
       policy::PolicyBuilder::CreateTestSigningKey().get(),
       policy::PolicyBuilder::GetTestSigningKeySignature()));
 
-  ASSERT_TRUE(policy_test_server_->Start());
+  CHECK(policy_test_server_->Start());
 }
 
 void LocalPolicyTestServerMixin::SetUpCommandLine(

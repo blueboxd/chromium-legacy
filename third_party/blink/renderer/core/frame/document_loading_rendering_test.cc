@@ -444,8 +444,7 @@ TEST_F(DocumentLoadingRenderingTest, StableSVGStopStylingWhileLoadingImport) {
   // Verify that SVG <stop> styling is stable/accurate when recalculated
   // during import loading.
   const auto recalc_and_check = [this]() {
-    GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
+    GetDocument().GetStyleEngine().MarkAllElementsForStyleRecalc(
         StyleChangeReasonForTracing::Create("test reason"));
     GetDocument().UpdateStyleAndLayout();
 

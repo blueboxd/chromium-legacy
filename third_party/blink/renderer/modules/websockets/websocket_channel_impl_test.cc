@@ -230,16 +230,16 @@ class WebSocketChannelImplTest : public PageTestBase {
       const String& extensions,
       mojo::ScopedDataPipeConsumerHandle readable,
       mojo::Remote<network::mojom::blink::WebSocketClient>* client) {
-    network::mojom::blink::WebSocketClientPtr client_ptr;
+    mojo::PendingRemote<network::mojom::blink::WebSocketClient> client_remote;
     mojo::PendingRemote<network::mojom::blink::WebSocket> websocket_to_pass;
     auto websocket = std::make_unique<TestWebSocket>(
         websocket_to_pass.InitWithNewPipeAndPassReceiver());
 
     handshake_client->OnConnectionEstablished(
-        network::mojom::blink::WebSocketPtr(websocket_to_pass),
-        mojo::MakeRequest(&client_ptr), selected_protocol, extensions,
-        std::move(readable));
-    client->Bind(client_ptr.PassInterface());
+        std::move(websocket_to_pass),
+        client_remote.InitWithNewPipeAndPassReceiver(), selected_protocol,
+        extensions, std::move(readable));
+    client->Bind(std::move(client_remote));
     return websocket;
   }
 

@@ -1993,4 +1993,25 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_EQ(host->CompositedAnimationsCount(), 0u);
 }
 
+// Regression test for https://crbug.com/999333. We were relying on the Document
+// always having Settings, which will not be the case if it is not attached to a
+// Frame.
+TEST_P(AnimationCompositorAnimationsTest,
+       DocumentWithoutSettingShouldNotCauseCrash) {
+  SetBodyInnerHTML("<div id='target'></div>");
+  Element* target = GetElementById("target");
+  ASSERT_TRUE(target);
+
+  // Move the target element to another Document, that does not have a frame
+  // (and thus no Settings).
+  Document* another_document = MakeGarbageCollected<Document>();
+  ASSERT_FALSE(another_document->GetSettings());
+
+  another_document->adoptNode(target, ASSERT_NO_EXCEPTION);
+
+  // This should not crash.
+  EXPECT_NE(CheckCanStartElementOnCompositor(*target),
+            CompositorAnimations::kNoFailure);
+}
+
 }  // namespace blink

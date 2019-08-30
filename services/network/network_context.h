@@ -19,7 +19,6 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"

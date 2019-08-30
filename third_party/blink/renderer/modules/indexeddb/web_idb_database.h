@@ -28,6 +28,7 @@
 
 #include <bitset>
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
@@ -47,7 +48,8 @@ class MODULES_EXPORT WebIDBDatabase {
                                  int64_t object_store_id,
                                  const String& name) = 0;
   virtual void CreateTransaction(
-      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+      mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+          transaction_receiver,
       int64_t id,
       const Vector<int64_t>& scope,
       mojom::IDBTransactionMode) = 0;

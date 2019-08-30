@@ -39,8 +39,9 @@ ALWAYS_INLINE PartitionPage* PartitionDirectMap(PartitionRootBase* root,
   map_size += kPageAllocationGranularityOffsetMask;
   map_size &= kPageAllocationGranularityBaseMask;
 
-  char* ptr = reinterpret_cast<char*>(
-      AllocPages(nullptr, map_size, kSuperPageSize, PageReadWrite));
+  char* ptr = reinterpret_cast<char*>(AllocPages(nullptr, map_size,
+                                                 kSuperPageSize, PageReadWrite,
+                                                 PageTag::kPartitionAlloc));
   if (UNLIKELY(!ptr))
     return nullptr;
 
@@ -219,8 +220,9 @@ ALWAYS_INLINE void* PartitionBucket::AllocNewSlotSpan(
   // page table bloat and not fragmenting address spaces in 32 bit
   // architectures.
   char* requested_address = root->next_super_page;
-  char* super_page = reinterpret_cast<char*>(AllocPages(
-      requested_address, kSuperPageSize, kSuperPageSize, PageReadWrite));
+  char* super_page = reinterpret_cast<char*>(
+      AllocPages(requested_address, kSuperPageSize, kSuperPageSize,
+                 PageReadWrite, PageTag::kPartitionAlloc));
   if (UNLIKELY(!super_page))
     return nullptr;
 

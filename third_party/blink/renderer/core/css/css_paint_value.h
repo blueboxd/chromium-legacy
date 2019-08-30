@@ -59,6 +59,11 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
     BuildInputArgumentValues(style_value);
   }
 
+  CSSPaintValue* ComputedCSSValue(const ComputedStyle&,
+                                  bool allow_visited_style) {
+    return this;
+  }
+
   void TraceAfterDispatch(blink::Visitor*);
 
  private:

@@ -49,6 +49,9 @@
 // accessibility trait UIAccessibilityTraitHeader.
 + (id<GREYMatcher>)headerWithAccessibilityLabel:(NSString*)label;
 
+// Returns matcher for the primary toolbar.
++ (id<GREYMatcher>)primaryToolbar;
+
 // Returns matcher for a cancel button.
 + (id<GREYMatcher>)cancelButton;
 

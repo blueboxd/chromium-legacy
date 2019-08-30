@@ -14,7 +14,45 @@ let otherButton;
 /** @type {FilesTooltip|Element} */
 let tooltip;
 
+const bodyContent = `
+  <style type="text/css">
+   button {
+     display: flex;
+     height: 32px;
+     margin: 30px;
+     width: 32px;
+   }
+
+   #container {
+     display: flex;
+     justify-content: space-between;
+   }
+
+   files-tooltip {
+     background: yellow;
+     box-sizing: border-box;
+     position: absolute;
+     text-align: center;
+     width: 100px;
+   }
+  </style>
+
+  <!-- Targets for tooltip testing. -->
+  <div id="container">
+    <button id="chocolate" aria-label="Chocolate!"></button>
+    <button id="cherries" aria-label="Cherries!"></button>
+  </div>
+
+  <!-- Button without a tooltip. -->
+  <button id="other"></button>
+
+  <!-- Polymer files tooltip element. -->
+  <files-tooltip></files-tooltip>
+
+`;
+
 function setUp() {
+  document.body.innerHTML += bodyContent;
   chocolateButton = document.querySelector('#chocolate');
   cherriesButton = document.querySelector('#cherries');
   otherButton = document.querySelector('#other');
@@ -110,8 +148,8 @@ function testClickHides(callback) {
             assertEquals('Chocolate!', label.textContent.trim());
             assertTrue(!!tooltip.getAttribute('visible'));
 
-            // Hiding here is synchronous. Dispatch the event asynchronously, so
-            // the mutation observer is started before hiding.
+            // Hiding here is synchronous. Dispatch the event asynchronously,
+            // so the mutation observer is started before hiding.
             setTimeout(() => {
               document.body.dispatchEvent(new MouseEvent('mousedown'));
             });

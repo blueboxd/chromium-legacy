@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace cc {
 class Layer;
@@ -67,7 +68,6 @@ class HTMLMediaElementControlsList;
 class HTMLMediaSource;
 class HTMLSourceElement;
 class HTMLTrackElement;
-class KURL;
 class MediaError;
 class MediaStreamDescriptor;
 class ScriptPromiseResolver;

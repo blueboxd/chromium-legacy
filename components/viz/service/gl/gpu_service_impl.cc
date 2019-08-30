@@ -220,6 +220,9 @@ GpuServiceImpl::~GpuServiceImpl() {
     wait.Wait();
   }
 
+  if (watchdog_thread_)
+    watchdog_thread_->OnGpuProcessTearDown();
+
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
 

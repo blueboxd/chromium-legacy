@@ -860,16 +860,17 @@ void RecordReadyToCommitUntilCommitHistogram(base::TimeDelta delay,
   }
 }
 
-blink::mojom::BlobURLTokenPtrInfo CloneBlobURLToken(
+mojo::PendingRemote<blink::mojom::BlobURLToken> CloneBlobURLToken(
     mojo::MessagePipeHandle handle) {
   if (!handle.is_valid())
-    return nullptr;
-  blink::mojom::BlobURLTokenPtrInfo result;
-  blink::mojom::BlobURLTokenPtr token(
-      blink::mojom::BlobURLTokenPtrInfo(mojo::ScopedMessagePipeHandle(handle),
-                                        blink::mojom::BlobURLToken::Version_));
-  token->Clone(MakeRequest(&result));
-  ignore_result(token.PassInterface().PassHandle().release());
+    return mojo::NullRemote();
+  mojo::PendingRemote<blink::mojom::BlobURLToken> result;
+  mojo::Remote<blink::mojom::BlobURLToken> token(
+      mojo::PendingRemote<blink::mojom::BlobURLToken>(
+          mojo::ScopedMessagePipeHandle(handle),
+          blink::mojom::BlobURLToken::Version_));
+  token->Clone(result.InitWithNewPipeAndPassReceiver());
+  ignore_result(token.Unbind().PassPipe().release());
   return result;
 }
 
@@ -6666,11 +6667,11 @@ void RenderFrameImpl::BeginNavigation(
   }
 
   if (info->navigation_policy == blink::kWebNavigationPolicyDownload) {
-    blink::mojom::BlobURLTokenPtrInfo blob_url_token =
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token =
         CloneBlobURLToken(info->blob_url_token.get());
     DownloadURL(info->url_request,
                 blink::WebLocalFrameClient::CrossOriginRedirects::kFollow,
-                blob_url_token.PassHandle());
+                blob_url_token.PassPipe());
   } else {
     OpenURL(std::move(info));
   }
@@ -6948,7 +6949,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
   params.triggering_event_info = info->triggering_event_info;
   params.blob_url_token =
-      CloneBlobURLToken(info->blob_url_token.get()).PassHandle().release();
+      CloneBlobURLToken(info->blob_url_token.get()).PassPipe().release();
   params.should_replace_current_entry =
       info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem &&
       render_view_->history_list_length_;
@@ -7250,7 +7251,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   if (info->is_client_redirect)
     client_side_redirect_url = frame_->GetDocument().Url();
 
-  blink::mojom::BlobURLTokenPtr blob_url_token(
+  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token(
       CloneBlobURLToken(info->blob_url_token.get()));
 
   int load_flags = info->url_request.GetLoadFlagsForWebUrlRequest();

@@ -22,8 +22,9 @@ extern const base::Feature kFirstRunDefaultSearchShortcut;
 
 // Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.
 extern const base::Feature kNtpRealbox;
-extern const base::Feature kNtpZeroSuggest;
 
+// Returns true if either kNtpRealbox or omnibox::kZeroSuggestionsOnNTP are
+// enabled.
 bool IsNtpRealboxEnabled();
 
 }  // namespace features

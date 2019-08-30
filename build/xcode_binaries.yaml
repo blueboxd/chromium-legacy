@@ -35,3 +35,6 @@ data:
   - file: Contents/Resources/English.lproj/License.rtf
   - file: Contents/Resources/LicenseInfo.plist
   - file: Contents/version.plist
+# llvm-size and size are run on swarming, those are symlinked to out of
+# isolated tree and produce invdalid symlink if we don't use copy mode here.
+install_mode: copy

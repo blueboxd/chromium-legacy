@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/presentation/presentation_connection_list.h"
 
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_connection.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_connection_available_event.h"

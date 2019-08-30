@@ -30,3 +30,8 @@
   --pin-button-height: 32px;
   --cr-icon-button-margin-start: 5px;
 }
+
+#learnMore {
+  color: var(--google-blue-500);
+  text-decoration: none;
+}

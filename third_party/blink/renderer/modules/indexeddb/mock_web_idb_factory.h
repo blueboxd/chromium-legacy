@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
@@ -30,7 +31,8 @@ class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
       Open,
       void(const WTF::String& name,
            int64_t version,
-           mojom::blink::IDBTransactionAssociatedRequest transaction_request,
+           mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+               transaction_receiver,
            int64_t transaction_id,
            std::unique_ptr<WebIDBCallbacks>,
            std::unique_ptr<WebIDBDatabaseCallbacks>));

@@ -4,6 +4,7 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
+import("//ui/file_manager/base/gn/js_test_gen_html.gni")
 
 visibility = [
   "//ui/file_manager/file_manager/foreground/*",
@@ -15,8 +16,8 @@ group("closure_compile") {
   visibility += [ "//ui/file_manager:closure_compile" ]
   deps = [
     ":closure_compile_module",
+    ":js_test_gen_html_type_check_auto",
     ":test_support_type_check",
-    ":unit_tests_type_check",
   ]
 }
 
@@ -805,7 +806,7 @@ js_library("webui_command_extender") {
   ]
 }
 
-js_unit_tests("unit_tests") {
+js_test_gen_html("js_test_gen_html") {
   deps = [
     ":actions_model_unittest",
     ":file_list_model_unittest",

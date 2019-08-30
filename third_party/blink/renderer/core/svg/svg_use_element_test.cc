@@ -74,44 +74,4 @@ TEST_F(SVGUseElementTest,
   ASSERT_FALSE(use->GetShadowRoot()->getElementById("target"));
 }
 
-TEST_F(SVGUseElementTest, NullInstanceRootWhenNotConnectedToDocument) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
-    <svg>
-      <defs>
-        <rect id="r" width="100" height="100" fill="blue"/>
-      </defs>
-      <use id="target" href="#r"/>
-    </svg>
-  )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
-
-  auto* target = To<SVGUseElement>(GetDocument().getElementById("target"));
-  ASSERT_TRUE(target);
-  ASSERT_TRUE(target->InstanceRoot());
-
-  target->remove();
-
-  ASSERT_FALSE(target->InstanceRoot());
-}
-
-TEST_F(SVGUseElementTest, NullInstanceRootWhenShadowTreePendingRebuild) {
-  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
-    <svg>
-      <defs>
-        <rect id="r" width="100" height="100" fill="blue"/>
-      </defs>
-      <use id="target" href="#r"/>
-    </svg>
-  )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases(LifecycleUpdateReason::kTest);
-
-  auto* target = To<SVGUseElement>(GetDocument().getElementById("target"));
-  ASSERT_TRUE(target);
-  ASSERT_TRUE(target->InstanceRoot());
-
-  GetDocument().getElementById("r")->setAttribute(html_names::kWidthAttr, "50");
-
-  ASSERT_FALSE(target->InstanceRoot());
-}
-
 }  // namespace blink

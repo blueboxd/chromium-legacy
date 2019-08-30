@@ -22,7 +22,7 @@ void EmbeddedTestServerSetupMixin::SetUp() {
   embedded_test_server_->ServeFilesFromDirectory(test_data_dir_);
   // Don't spin up the IO thread yet since no threads are allowed while
   // spawning sandbox host process. See crbug.com/322732.
-  ASSERT_TRUE(embedded_test_server_->InitializeAndListen());
+  CHECK(embedded_test_server_->InitializeAndListen());
 }
 
 void EmbeddedTestServerSetupMixin::SetUpOnMainThread() {
@@ -31,7 +31,7 @@ void EmbeddedTestServerSetupMixin::SetUpOnMainThread() {
 
 void EmbeddedTestServerSetupMixin::TearDownOnMainThread() {
   // Embedded test server should always be shutdown after any https forwarders.
-  EXPECT_TRUE(embedded_test_server_->ShutdownAndWaitUntilComplete());
+  CHECK(embedded_test_server_->ShutdownAndWaitUntilComplete());
 }
 
 }  // namespace chromeos

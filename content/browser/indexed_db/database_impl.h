@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -42,11 +43,11 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const base::string16& new_name) override;
-  void CreateTransaction(
-      blink::mojom::IDBTransactionAssociatedRequest transaction_request,
-      int64_t transaction_id,
-      const std::vector<int64_t>& object_store_ids,
-      blink::mojom::IDBTransactionMode mode) override;
+  void CreateTransaction(mojo::PendingAssociatedReceiver<
+                             blink::mojom::IDBTransaction> transaction_receiver,
+                         int64_t transaction_id,
+                         const std::vector<int64_t>& object_store_ids,
+                         blink::mojom::IDBTransactionMode mode) override;
   void Close() override;
   void VersionChangeIgnored() override;
   void AddObserver(int64_t transaction_id,

@@ -89,9 +89,14 @@ class ProcessNode : public Node {
   // lifetime, expressed as CPU seconds.
   virtual base::TimeDelta GetCumulativeCpuUsage() const = 0;
 
-  // Returns the most recently measured private memory footprint of the render
-  // process, in kilobytes.
+  // Returns the most recently measured private memory footprint of the process.
+  // This is roughly private, anonymous, non-discardable, resident or swapped
+  // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
   virtual uint64_t GetPrivateFootprintKb() const = 0;
+
+  // Returns the most recently measured resident set of the process, in
+  // kilobytes.
+  virtual uint64_t GetResidentSetKb() const = 0;
 
   // Returns a proxy to the RenderProcessHost associated with this node. The
   // proxy may only be dereferenced on the UI thread.

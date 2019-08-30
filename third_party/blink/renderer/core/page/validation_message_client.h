@@ -62,6 +62,7 @@ class ValidationMessageClient : public GarbageCollectedMixin {
 
   virtual void WillBeDestroyed() = 0;
 
+  virtual void ServiceScriptedAnimations(base::TimeTicks) {}
   virtual void LayoutOverlay() {}
   virtual void UpdatePrePaint() {}
   // For CompositeAfterPaint.

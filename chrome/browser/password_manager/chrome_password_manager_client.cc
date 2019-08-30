@@ -21,6 +21,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -401,17 +402,12 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
 void ChromePasswordManagerClient::ShowTouchToFill(
     PasswordManagerDriver* driver) {
 #if defined(OS_ANDROID)
-  // TODO(crbug.com/957532): Make TouchToFillController simply a member of this
-  // class and make it independent of the ManualFillingController.
-  if (!TouchToFillController::AllowedForWebContents(web_contents()))
-    return;
-
-  TouchToFillController::GetOrCreate(web_contents())
-      ->Show(credential_cache_
-                 .GetCredentialStore(url::Origin::Create(
-                     driver->GetLastCommittedURL().GetOrigin()))
-                 .GetCredentials(),
-             driver->AsWeakPtr());
+  GetOrCreateTouchToFillController()->Show(
+      credential_cache_
+          .GetCredentialStore(
+              url::Origin::Create(driver->GetLastCommittedURL().GetOrigin()))
+          .GetCredentials(),
+      driver->AsWeakPtr());
 #endif
 }
 
@@ -585,6 +581,16 @@ PasswordAccessoryController*
 ChromePasswordManagerClient::GetOrCreatePasswordAccessory() {
   return PasswordAccessoryController::GetOrCreate(web_contents(),
                                                   &credential_cache_);
+}
+
+TouchToFillController*
+ChromePasswordManagerClient::GetOrCreateTouchToFillController() {
+  if (!touch_to_fill_controller_) {
+    touch_to_fill_controller_ =
+        std::make_unique<TouchToFillController>(web_contents());
+  }
+
+  return touch_to_fill_controller_.get();
 }
 #endif  // defined(OS_ANDROID)
 

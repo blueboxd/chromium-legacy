@@ -10,13 +10,24 @@ js_type_check("closure_compile") {
     ":api_listener",
     ":app_item",
     ":app_management_page",
+    ":app_permission_view",
+    ":arc_permission_view",
     ":browser_proxy",
+    ":chrome_app_permission_view",
     ":constants",
+    ":dom_switch",
     ":fake_page_handler",
     ":main_view",
+    ":permission_item",
+    ":permission_toggle",
+    ":permission_view_header",
+    ":pin_to_shelf_item",
+    ":pwa_permission_view",
     ":reducers",
+    ":router",
     ":store",
     ":store_client",
+    ":toggle_row",
     ":types",
     ":util",
   ]
@@ -51,7 +62,29 @@ js_library("app_management_page") {
     ":actions",
     ":browser_proxy",
     ":main_view",
+    ":router",
     ":store",
+    ":store_client",
+  ]
+}
+
+js_library("app_permission_view") {
+  deps = [
+    ":arc_permission_view",
+    ":chrome_app_permission_view",
+    ":dom_switch",
+    ":pwa_permission_view",
+    ":store_client",
+  ]
+}
+
+js_library("arc_permission_view") {
+  deps = [
+    ":constants",
+    ":fake_page_handler",
+    ":permission_item",
+    ":permission_view_header",
+    ":pin_to_shelf_item",
     ":store_client",
   ]
 }
@@ -64,7 +97,18 @@ js_library("browser_proxy") {
   ]
 }
 
+js_library("chrome_app_permission_view") {
+  deps = [
+    ":fake_page_handler",
+    ":pin_to_shelf_item",
+    ":store_client",
+  ]
+}
+
 js_library("constants") {
+}
+
+js_library("dom_switch") {
 }
 
 js_library("fake_page_handler") {
@@ -87,11 +131,59 @@ js_library("main_view") {
   ]
 }
 
+js_library("permission_item") {
+  deps = [
+    ":fake_page_handler",
+    ":permission_toggle",
+    ":store_client",
+    ":util",
+  ]
+}
+
+js_library("permission_toggle") {
+  deps = [
+    ":util",
+  ]
+}
+
+js_library("permission_view_header") {
+  deps = [
+    ":browser_proxy",
+    ":store_client",
+  ]
+}
+
+js_library("pin_to_shelf_item") {
+  deps = [
+    ":browser_proxy",
+    ":toggle_row",
+    ":types",
+  ]
+}
+
+js_library("pwa_permission_view") {
+  deps = [
+    ":constants",
+    ":fake_page_handler",
+    ":permission_item",
+    ":pin_to_shelf_item",
+    ":store_client",
+  ]
+}
+
 js_library("reducers") {
   deps = [
     ":types",
     ":util",
     "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_library("router") {
+  deps = [
+    ":actions",
+    ":constants",
+    ":store_client",
   ]
 }
 
@@ -111,6 +203,13 @@ js_library("store_client") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:store",
     "//ui/webui/resources/js/cr/ui:store_client",
+  ]
+}
+
+js_library("toggle_row") {
+  deps = [
+    ":types",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
   ]
 }
 

@@ -60,6 +60,17 @@ void LenientTestProcessMetricsDecorator::RequestProcessesMemoryMetrics(
                 memory_instrumentation::mojom::GlobalMemoryDump::New()));
 }
 
+class LenientMockSystemNodeObserver
+    : public SystemNodeImpl::ObserverDefaultImpl {
+ public:
+  LenientMockSystemNodeObserver() {}
+  ~LenientMockSystemNodeObserver() override {}
+
+  MOCK_METHOD1(OnProcessMemoryMetricsAvailable, void(const SystemNode*));
+};
+using MockSystemNodeObserver =
+    ::testing::StrictMock<LenientMockSystemNodeObserver>;
+
 struct MemoryDumpProcInfo {
   base::ProcessId pid;
   uint32_t resident_set_kb;
@@ -125,6 +136,9 @@ class ProcessMetricsDecoratorTest : public GraphTestHarness {
 };
 
 TEST_F(ProcessMetricsDecoratorTest, RefreshTimer) {
+  MockSystemNodeObserver sys_node_observer;
+
+  graph()->AddSystemNodeObserver(&sys_node_observer);
   auto memory_dump = base::make_optional(std::move(
       GenerateMemoryDump({{mock_graph()->process->process_id(),
                            kFakeResidentSetKb, kFakePrivateFootprintKb},
@@ -135,27 +149,23 @@ TEST_F(ProcessMetricsDecoratorTest, RefreshTimer) {
       .WillOnce(testing::Return(testing::ByMove(std::move(memory_dump))));
 
   // There's no data available initially.
-  auto* data =
-      ProcessMetricsDecorator::Data::GetForTesting(mock_graph()->process.get());
-  EXPECT_FALSE(data);
-  data = ProcessMetricsDecorator::Data::GetForTesting(
-      mock_graph()->other_process.get());
-  EXPECT_FALSE(data);
+  EXPECT_EQ(0U, mock_graph()->process->resident_set_kb());
+  EXPECT_EQ(0U, mock_graph()->process->private_footprint_kb());
+
+  EXPECT_CALL(sys_node_observer, OnProcessMemoryMetricsAvailable(testing::_));
 
   // Advance the timer, this should trigger a refresh of the metrics.
   task_env().FastForwardBy(base::TimeDelta::FromMinutes(2));
 
-  data =
-      ProcessMetricsDecorator::Data::GetForTesting(mock_graph()->process.get());
-  EXPECT_TRUE(data);
-  EXPECT_EQ(kFakeResidentSetKb, data->resident_set_kb_);
-  EXPECT_EQ(kFakePrivateFootprintKb, data->private_footprint_kb_);
+  EXPECT_EQ(kFakeResidentSetKb, mock_graph()->process->resident_set_kb());
+  EXPECT_EQ(kFakePrivateFootprintKb,
+            mock_graph()->process->private_footprint_kb());
 
-  data = ProcessMetricsDecorator::Data::GetForTesting(
-      mock_graph()->other_process.get());
-  EXPECT_TRUE(data);
-  EXPECT_EQ(kFakeResidentSetKb, data->resident_set_kb_);
-  EXPECT_EQ(kFakePrivateFootprintKb, data->private_footprint_kb_);
+  EXPECT_EQ(kFakeResidentSetKb, mock_graph()->other_process->resident_set_kb());
+  EXPECT_EQ(kFakePrivateFootprintKb,
+            mock_graph()->other_process->private_footprint_kb());
+
+  graph()->RemoveSystemNodeObserver(&sys_node_observer);
 }
 
 TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
@@ -170,15 +180,9 @@ TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
 
   task_env().FastForwardBy(base::TimeDelta::FromMinutes(2));
 
-  auto* data =
-      ProcessMetricsDecorator::Data::GetForTesting(mock_graph()->process.get());
-  EXPECT_TRUE(data);
-  EXPECT_EQ(kFakeResidentSetKb, data->resident_set_kb_);
-  EXPECT_EQ(kFakePrivateFootprintKb, data->private_footprint_kb_);
-
-  data = ProcessMetricsDecorator::Data::GetForTesting(
-      mock_graph()->other_process.get());
-  EXPECT_FALSE(data);
+  EXPECT_EQ(kFakeResidentSetKb, mock_graph()->process->resident_set_kb());
+  EXPECT_EQ(kFakePrivateFootprintKb,
+            mock_graph()->process->private_footprint_kb());
 
   // Do another partial refresh but this time for the other process. The data
   // attached to |mock_graph()->process| shouldn't change.
@@ -191,17 +195,14 @@ TEST_F(ProcessMetricsDecoratorTest, PartialRefresh) {
 
   task_env().FastForwardBy(base::TimeDelta::FromMinutes(2));
 
-  data =
-      ProcessMetricsDecorator::Data::GetForTesting(mock_graph()->process.get());
-  EXPECT_TRUE(data);
-  EXPECT_EQ(kFakeResidentSetKb, data->resident_set_kb_);
-  EXPECT_EQ(kFakePrivateFootprintKb, data->private_footprint_kb_);
+  EXPECT_EQ(kFakeResidentSetKb, mock_graph()->process->resident_set_kb());
+  EXPECT_EQ(kFakePrivateFootprintKb,
+            mock_graph()->process->private_footprint_kb());
 
-  data = ProcessMetricsDecorator::Data::GetForTesting(
-      mock_graph()->other_process.get());
-  EXPECT_TRUE(data);
-  EXPECT_EQ(kFakeResidentSetKb * 2, data->resident_set_kb_);
-  EXPECT_EQ(kFakePrivateFootprintKb * 2, data->private_footprint_kb_);
+  EXPECT_EQ(kFakeResidentSetKb * 2,
+            mock_graph()->other_process->resident_set_kb());
+  EXPECT_EQ(kFakePrivateFootprintKb * 2,
+            mock_graph()->other_process->private_footprint_kb());
 }
 
 TEST_F(ProcessMetricsDecoratorTest, RefreshFailure) {
@@ -210,9 +211,8 @@ TEST_F(ProcessMetricsDecoratorTest, RefreshFailure) {
 
   task_env().FastForwardBy(base::TimeDelta::FromMinutes(2));
 
-  auto* data =
-      ProcessMetricsDecorator::Data::GetForTesting(mock_graph()->process.get());
-  EXPECT_FALSE(data);
+  EXPECT_EQ(0U, mock_graph()->process->resident_set_kb());
+  EXPECT_EQ(0U, mock_graph()->process->private_footprint_kb());
 }
 
 }  // namespace performance_manager

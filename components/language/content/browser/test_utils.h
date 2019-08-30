@@ -51,7 +51,7 @@ class MockIpGeoLocationProvider
 
   void CreateGeolocation(
       const net::MutablePartialNetworkTrafficAnnotationTag& /* unused */,
-      device::mojom::GeolocationRequest request) override;
+      mojo::PendingReceiver<device::mojom::Geolocation> receiver) override;
 
  private:
   MockGeoLocation* mock_geo_location_;

@@ -627,10 +627,18 @@ static const struct {
     test_interface_check_security_v8_internal::DoNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter,
     nullptr,
   },
-  {"doNotCheckSecurityVoidMethod", &test_interface_check_security_v8_internal::DoNotCheckSecurityVoidMethodOriginSafeMethodGetter, nullptr},
-  {"doNotCheckSecurityPerWorldBindingsVoidMethod", &test_interface_check_security_v8_internal::DoNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter, nullptr},
-  {"doNotCheckSecurityUnforgeableVoidMethod", &test_interface_check_security_v8_internal::DoNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter, nullptr},
-  {"doNotCheckSecurityVoidOverloadMethod", &test_interface_check_security_v8_internal::DoNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter, nullptr},
+};
+
+static const struct {
+  using ValueCallback = void(*)(const v8::PropertyCallbackInfo<v8::Value>&);
+
+  const char* const name;
+  const ValueCallback value;
+} kCrossOriginOperationTable[] = {
+  {"doNotCheckSecurityVoidMethod", &test_interface_check_security_v8_internal::DoNotCheckSecurityVoidMethodOriginSafeMethodGetter},
+  {"doNotCheckSecurityPerWorldBindingsVoidMethod", &test_interface_check_security_v8_internal::DoNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter},
+  {"doNotCheckSecurityUnforgeableVoidMethod", &test_interface_check_security_v8_internal::DoNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter},
+  {"doNotCheckSecurityVoidOverloadMethod", &test_interface_check_security_v8_internal::DoNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter},
 };
 }  // namespace test_interface_check_security_v8_internal
 
@@ -792,6 +800,12 @@ void V8TestInterfaceCheckSecurity::CrossOriginNamedGetter(v8::Local<v8::Name> na
       return;
     }
   }
+  for (const auto& operation : test_interface_check_security_v8_internal::kCrossOriginOperationTable) {
+    if (property_name == operation.name) {
+      operation.value(info);
+      return;
+    }
+  }
 
   // HTML 7.2.3.3 CrossOriginGetOwnPropertyHelper ( O, P )
   // https://html.spec.whatwg.org/C/#crossorigingetownpropertyhelper-(-o,-p-)
@@ -834,6 +848,8 @@ void V8TestInterfaceCheckSecurity::CrossOriginNamedEnumerator(const v8::Property
   Vector<String> names;
   for (const auto& attribute : test_interface_check_security_v8_internal::kCrossOriginAttributeTable)
     names.push_back(attribute.name);
+  for (const auto& operation : test_interface_check_security_v8_internal::kCrossOriginOperationTable)
+    names.push_back(operation.name);
 
   // Use the current context as the creation context, as a cross-origin access
   // may involve an object that does not have a creation context.

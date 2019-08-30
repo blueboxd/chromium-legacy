@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -134,13 +135,18 @@ void VideoFrameFileWriter::WriteVideoFramePNG(
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
   DCHECK(video_frame_mapper_);
 
-  auto mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
+  auto mapped_frame = video_frame;
+#if defined(OS_LINUX)
+  if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
+    mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
+#endif
+
   if (!mapped_frame) {
     LOG(ERROR) << "Failed to map video frame";
     return;
   }
 
-  scoped_refptr<VideoFrame> argb_out_frame = mapped_frame;
+  scoped_refptr<const VideoFrame> argb_out_frame = mapped_frame;
   if (argb_out_frame->format() != PIXEL_FORMAT_ARGB) {
     argb_out_frame = ConvertVideoFrame(argb_out_frame.get(),
                                        VideoPixelFormat::PIXEL_FORMAT_ARGB);
@@ -171,13 +177,18 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
   DCHECK(video_frame_mapper_);
 
-  auto mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
+  auto mapped_frame = video_frame;
+#if defined(OS_LINUX)
+  if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS)
+    mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
+#endif
+
   if (!mapped_frame) {
     LOG(ERROR) << "Failed to map video frame";
     return;
   }
 
-  scoped_refptr<VideoFrame> I420_out_frame = mapped_frame;
+  scoped_refptr<const VideoFrame> I420_out_frame = mapped_frame;
   if (I420_out_frame->format() != PIXEL_FORMAT_I420) {
     I420_out_frame = ConvertVideoFrame(I420_out_frame.get(),
                                        VideoPixelFormat::PIXEL_FORMAT_I420);

@@ -626,6 +626,11 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_AD_PASSWORD_CHANGE_NEW_PASSWORD_REJECTED_SHORT_ERROR);
   builder->Add("adPassChangePasswordsMismatch",
                IDS_AD_PASSWORD_CHANGE_PASSWORDS_MISMATCH_ERROR);
+
+  builder->Add("securityTokenPinDialogTitle",
+               IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_TITLE);
+  builder->Add("securityTokenPinDialogSubtitle",
+               IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_SUBTITLE);
 }
 
 void GaiaScreenHandler::Initialize() {
@@ -1239,7 +1244,11 @@ void GaiaScreenHandler::CloseSecurityTokenPinDialog() {
 
   security_token_pin_entered_callback_.Reset();
   security_token_pin_dialog_closed_callback_.Reset();
-  CallJS("login.GaiaSigninScreen.closePinDialog");
+
+  // Notify the page, unless it's already being shut down (which may happen if
+  // we're called from the destructor).
+  if (IsJavascriptAllowed())
+    CallJS("login.GaiaSigninScreen.closePinDialog");
 }
 
 bool GaiaScreenHandler::IsOfflineLoginActive() const {

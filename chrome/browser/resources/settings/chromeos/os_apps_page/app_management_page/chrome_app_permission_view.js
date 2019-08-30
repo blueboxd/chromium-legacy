@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 Polymer({
+  // TODO(crbug.com/999016): change to app-management-chrome-app-detail-view.
   is: 'app-management-chrome-app-permission-view',
 
   behaviors: [

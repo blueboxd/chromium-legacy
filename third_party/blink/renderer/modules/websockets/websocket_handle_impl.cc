@@ -27,7 +27,6 @@ WebSocketHandleImpl::WebSocketHandleImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)),
       channel_(nullptr),
-      client_binding_(this),
       readable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                         task_runner_) {
@@ -148,7 +147,7 @@ void WebSocketHandleImpl::OnResponseReceived(
 }
 
 void WebSocketHandleImpl::OnConnectionEstablished(
-    network::mojom::blink::WebSocketPtr websocket,
+    mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
     mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
         client_receiver,
     const String& protocol,
@@ -160,15 +159,15 @@ void WebSocketHandleImpl::OnConnectionEstablished(
   if (!channel_)
     return;
 
-  // From now on, we will detect mojo errors via |client_binding_|.
+  // From now on, we will detect mojo errors via |client_receiver_|.
   handshake_client_receiver_.reset();
-  client_binding_.Bind(std::move(client_receiver), task_runner_);
-  client_binding_.set_connection_error_with_reason_handler(
+  client_receiver_.Bind(std::move(client_receiver), task_runner_);
+  client_receiver_.set_disconnect_with_reason_handler(
       WTF::Bind(&WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this),
                 FROM_HERE));
 
   DCHECK(!websocket_);
-  websocket_ = std::move(websocket);
+  websocket_.Bind(std::move(websocket));
   readable_ = std::move(readable);
   const MojoResult mojo_result = readable_watcher_.Watch(
       readable_.get(), MOJO_HANDLE_SIGNAL_READABLE,
@@ -233,7 +232,7 @@ void WebSocketHandleImpl::ConsumePendingDataFrames() {
       return;
     }
     if (begin_result == MOJO_RESULT_FAILED_PRECONDITION) {
-      // |client_binding_| will catch the connection error.
+      // |client_receiver_| will catch the connection error.
       return;
     }
     DCHECK_EQ(begin_result, MOJO_RESULT_OK);

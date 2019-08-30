@@ -33,7 +33,7 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
       mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       mojo::ScopedMessagePipeHandle message_port,
-      blink::mojom::BlobURLTokenPtr blob_url_token) override;
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) override;
 
   const int client_process_id_;
   const int frame_id_;

@@ -31,15 +31,16 @@ void CanMakePaymentRespondWithObserver::OnResponseRejected(
 }
 
 void CanMakePaymentRespondWithObserver::OnResponseFulfilled(
+    ScriptState* script_state,
     const ScriptValue& value,
     ExceptionState::ContextType context_type,
     const char* interface_name,
     const char* property_name) {
   DCHECK(GetExecutionContext());
-  ExceptionState exception_state(value.GetIsolate(), context_type,
+  ExceptionState exception_state(script_state->GetIsolate(), context_type,
                                  interface_name, property_name);
   bool response =
-      ToBoolean(value.GetIsolate(), value.V8Value(), exception_state);
+      ToBoolean(script_state->GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     OnResponseRejected(blink::mojom::ServiceWorkerResponseError::kNoV8Instance);

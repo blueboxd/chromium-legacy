@@ -10,8 +10,8 @@
 
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
+#include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/autofill/accessory_controller.h"
-#include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
 class WebContents;
@@ -23,29 +23,18 @@ struct CredentialPair;
 }  // namespace password_manager
 
 class ManualFillingController;
+class TouchToFillControllerTest;
 
 class TouchToFillController
     : public base::SupportsWeakPtr<TouchToFillController>,
-      public content::WebContentsUserData<TouchToFillController>,
       public AccessoryController {
  public:
-  // Returns a reference to the unique TouchToFillController associated
-  // with |web_contents|. A new instance is created if the first time this
-  // function is called. Only valid to be called if
-  // TouchToFillController::AllowedForWebContents(web_contents).
-  static TouchToFillController* GetOrCreate(content::WebContents* web_contents);
-
-  // Allow injecting a custom ManualFillingController for testing.
-  static std::unique_ptr<TouchToFillController> CreateForTesting(
-      base::WeakPtr<ManualFillingController> mf_controller);
-
-  TouchToFillController(const TouchToFillController&) = delete;
-  TouchToFillController& operator=(const TouchToFillController&) = delete;
+  explicit TouchToFillController(content::WebContents* web_contents);
+  // Explicitly set the ManualFillingController in unit tests.
+  explicit TouchToFillController(
+      base::WeakPtr<ManualFillingController> mf_controller,
+      util::PassKey<TouchToFillControllerTest>);
   ~TouchToFillController() override;
-
-  // Returns true if the touch to fill controller may exist for |web_contents|.
-  // Otherwise it returns false.
-  static bool AllowedForWebContents(content::WebContents* web_contents);
 
   // Instructs the controller to show the provided |credentials| to the user.
   // Invokes FillSuggestion() on |driver| once the user made a selection.
@@ -57,14 +46,6 @@ class TouchToFillController
   void OnOptionSelected(autofill::AccessoryAction selected_action) override;
 
  private:
-  friend class content::WebContentsUserData<TouchToFillController>;
-
-  explicit TouchToFillController(content::WebContents* web_contents);
-
-  // Constructor corresponding to CreateForTesting().
-  explicit TouchToFillController(
-      base::WeakPtr<ManualFillingController> mf_controller);
-
   // Lazy-initializes and returns the ManualFillingController for the current
   // |web_contents_|. The lazy initialization is required to break a circular
   // dependency between the constructors of the TouchToFillController and
@@ -74,16 +55,16 @@ class TouchToFillController
   // The tab for which this class is scoped.
   content::WebContents* web_contents_ = nullptr;
 
+  // The manual filling controller object to forward client requests to.
+  // TODO(crbug.com/957532): Make TouchToFillController independent of the
+  // ManualFillingController.
+  base::WeakPtr<ManualFillingController> mf_controller_;
+
   // Credentials passed from the latest invocation of Show().
   std::vector<password_manager::CredentialPair> credentials_;
 
   // Driver passed from the latest invocation of Show().
   base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
-
-  // The manual filling controller object to forward client requests to.
-  base::WeakPtr<ManualFillingController> mf_controller_;
-
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_TOUCH_TO_FILL_CONTROLLER_H_

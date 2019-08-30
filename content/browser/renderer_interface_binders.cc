@@ -196,10 +196,10 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->CreatePaymentManager(std::move(request));
       }));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::CacheStorageRequest request, RenderProcessHost* host,
-         const url::Origin& origin) {
+      [](mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+         RenderProcessHost* host, const url::Origin& origin) {
         static_cast<RenderProcessHostImpl*>(host)->BindCacheStorage(
-            std::move(request), origin);
+            std::move(receiver), origin);
       }));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
       [](blink::mojom::IDBFactoryRequest request, RenderProcessHost* host,

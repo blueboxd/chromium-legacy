@@ -29,7 +29,8 @@
 
 // The Credit Card Scanner Coordinator.
 @property(nonatomic, strong)
-    CreditCardScannerCoordinator* creditCardScannerCoordinator;
+    CreditCardScannerCoordinator* creditCardScannerCoordinator API_AVAILABLE(
+        ios(13.0));
 
 // The view controller attached to this coordinator.
 @property(nonatomic, strong)
@@ -68,8 +69,11 @@
 }
 
 - (void)stop {
-  [self.creditCardScannerCoordinator stop];
-  self.creditCardScannerCoordinator = nil;
+  if (@available(iOS 13, *)) {
+    [self.creditCardScannerCoordinator stop];
+    self.creditCardScannerCoordinator = nil;
+  }
+
   [self.addCreditCardViewController.navigationController
       dismissViewControllerAnimated:YES
                          completion:nil];
@@ -97,7 +101,8 @@
                 IDS_IOS_ADD_CREDIT_CARD_INVALID_EXPIRATION_DATE_ALERT)];
 }
 
-- (void)creditCardMediatorShowScanner:(AutofillAddCreditCardMediator*)mediator {
+- (void)creditCardMediatorShowScanner:(AutofillAddCreditCardMediator*)mediator
+    API_AVAILABLE(ios(13.0)) {
   self.creditCardScannerCoordinator = [[CreditCardScannerCoordinator alloc]
       initWithBaseViewController:self.addCreditCardViewController];
 

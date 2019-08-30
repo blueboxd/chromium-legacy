@@ -2482,10 +2482,10 @@ are declared in tools/grit/grit_rule.gni.
 
       <!-- Cookie controls strings. -->
       <message name="IDS_COOKIE_CONTROLS_DIALOG_TITLE" desc="Title of the dialog that allows users to control cookie blocking.">
-        Tracking protection is on
+        Third-party cookie blocking is on
       </message>
       <message name="IDS_COOKIE_CONTROLS_DIALOG_TITLE_OFF" desc="Text shown in the dialog that allows users to control cookie blocking. Shown when cookie blocking was disabled for this specific site.">
-        Tracking protection is turned off for this site
+        Third-party cookie blocking is turned off for this site
       </message>
       <message name="IDS_COOKIE_CONTROLS_TURN_ON_BUTTON" desc="Label shown on a button that turns cookie blocking on after it was disabled for a specific site.">
         Turn on
@@ -2500,7 +2500,7 @@ are declared in tools/grit/grit_rule.gni.
               other {Chrome is blocking cookies from # sites}}
       </message>
       <message name="IDS_COOKIE_CONTROLS_TOOLTIP" desc="Tooltip shown on a page action icon that is shown when cookie blocking is enabled.">
-        Tracking protection
+        Third-party cookie blocking
       </message>
 
       <!-- Win certificate selector dialog strings.  -->

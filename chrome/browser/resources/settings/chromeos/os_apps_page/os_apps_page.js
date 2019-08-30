@@ -10,6 +10,10 @@
 Polymer({
   is: 'os-settings-apps-page',
 
+  behaviors: [
+    app_management.StoreClient,
+  ],
+
   properties: {
     /** @private {!Map<string, string>} */
     focusConfig_: {
@@ -23,6 +27,24 @@ Polymer({
       },
     },
 
+    /**
+     * @type {App}
+     * @private
+     */
+    app_: Object,
+  },
+
+  attached: function() {
+    this.watch('app_', state => app_management.util.getSelectedApp(state));
+  },
+
+  /**
+   * @param {App} app
+   * @return {string}
+   * @private
+   */
+  iconUrlFromId_: function(app) {
+    return app_management.util.getAppIcon(app);
   },
 
   /** @private */

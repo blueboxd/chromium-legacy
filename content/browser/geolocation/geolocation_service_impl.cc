@@ -68,7 +68,7 @@ void GeolocationServiceImpl::Bind(
 }
 
 void GeolocationServiceImpl::CreateGeolocation(
-    mojo::InterfaceRequest<device::mojom::Geolocation> request,
+    mojo::PendingReceiver<device::mojom::Geolocation> receiver,
     bool user_gesture,
     CreateGeolocationCallback callback) {
   if (!render_frame_host_->IsFeatureEnabled(
@@ -87,19 +87,19 @@ void GeolocationServiceImpl::CreateGeolocation(
       // There is an assumption here that the GeolocationServiceImplContext will
       // outlive the GeolocationServiceImpl.
       base::Bind(&GeolocationServiceImpl::CreateGeolocationWithPermissionStatus,
-                 base::Unretained(this), base::Passed(&request),
+                 base::Unretained(this), base::Passed(&receiver),
                  base::Passed(&scoped_callback)));
 }
 
 void GeolocationServiceImpl::CreateGeolocationWithPermissionStatus(
-    device::mojom::GeolocationRequest request,
+    mojo::PendingReceiver<device::mojom::Geolocation> receiver,
     CreateGeolocationCallback callback,
     blink::mojom::PermissionStatus permission_status) {
   std::move(callback).Run(permission_status);
   if (permission_status != blink::mojom::PermissionStatus::GRANTED)
     return;
 
-  geolocation_context_->BindGeolocation(std::move(request));
+  geolocation_context_->BindGeolocation(std::move(receiver));
 }
 
 }  // namespace content

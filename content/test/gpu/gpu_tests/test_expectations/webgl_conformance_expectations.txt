@@ -54,10 +54,14 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 [ android ] WebglExtension_WEBGL_compressed_texture_s3tc [ Failure ]
 
 # Android hardware-specific
+[ android nvidia ] WebglExtension_EXT_float_blend [ Failure ]
+[ android nvidia ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 [ android qualcomm ] WebglExtension_EXT_float_blend [ Failure ]
 [ android qualcomm ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 [ android qualcomm ] WebglExtension_WEBGL_draw_buffers [ Failure ]
 [ android qualcomm-adreno-(tm)-330 no-passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
+[ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_depth_texture [ Failure ]
+[ android qualcomm-adreno-(tm)-330 ] WebglExtension_WEBGL_compressed_texture_astc [ Failure ]
 [ android qualcomm-adreno-(tm)-418 ] WebglExtension_WEBGL_depth_texture [ Failure ]
 [ android qualcomm-adreno-(tm)-418 ] WebglExtension_EXT_sRGB [ Failure ]
 [ android qualcomm-adreno-(tm)-420 ] WebglExtension_EXT_sRGB [ Failure ]
@@ -75,6 +79,8 @@ crbug.com/849572 conformance/extensions/angle-instanced-arrays-out-of-bounds.htm
 # Nvidia bugs fixed in latest driver
 # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
 crbug.com/905370 [ android nvidia ] conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html [ Failure ]
+crbug.com/772651 [ android nvidia ] conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop-complex.html [ Failure ]
+crbug.com/772651 [ mac nvidia ] conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop-complex.html [ Failure ]
 
 # This test needs to be rewritten to measure its expected
 # performance; it's currently too flaky even on release bots.
@@ -495,6 +501,7 @@ crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/gl-f
 crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/qualcomm-crash.html [ Failure ]
 crbug.com/611945 [ qualcomm-adreno-(tm)-420 android ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Failure ]
 crbug.com/611945 [ qualcomm-adreno-(tm)-430 android ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Failure ]
+crbug.com/951628 [ android qualcomm-adreno-(tm)-420 no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
 # This test is skipped because running it causes a future test to fail.
 # The list of tests which may be that future test is very long. It is
@@ -519,6 +526,8 @@ crbug.com/693135 [ android qualcomm-adreno-(tm)-420 ] conformance/offscreencanva
 crbug.com/angleproject/2046 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/misc/uninitialized-local-global-variables.html [ Failure ]
 
 # Android NVIDIA: Nexus 9 and/or Shield TV
+crbug.com/798117 [ android nvidia ] conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html [ Failure ]
+crbug.com/606096 [ android nvidia ] conformance/glsl/bugs/multiplication-assignment.html [ Failure ]
 crbug.com/912161 [ android nvidia ] conformance/glsl/constructors/glsl-construct-ivec4.html [ RetryOnFailure ]
 crbug.com/912161 [ android nvidia ] conformance/glsl/constructors/glsl-construct-mat2.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
@@ -527,6 +536,7 @@ crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/478572 [ android nvidia ] deqp/data/gles2/shaders/functions.html [ Failure ]
 
 # Flaky timeout on android_n5x_swarming_rel and
 # android-marshmallow-arm64-rel.

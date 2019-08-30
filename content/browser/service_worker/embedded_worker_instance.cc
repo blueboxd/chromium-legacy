@@ -38,6 +38,7 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -109,7 +110,7 @@ using SetupProcessCallback = base::OnceCallback<void(
         blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_new_scripts */,
     std::unique_ptr<
         blink::URLLoaderFactoryBundleInfo> /* factory_bundle_for_renderer */,
-    blink::mojom::CacheStoragePtrInfo,
+    mojo::PendingRemote<blink::mojom::CacheStorage>,
     const base::Optional<base::TimeDelta>& thread_hop_time,
     const base::Optional<base::Time>& ui_post_time)>;
 
@@ -157,8 +158,8 @@ void SetupOnUIThread(
                                   std::move(devtools_proxy),
                                   std::move(factory_bundle_for_new_scripts),
                                   std::move(factory_bundle_for_renderer),
-                                  nullptr /* cache_storage */, thread_hop_time,
-                                  ui_post_time));
+                                  mojo::NullRemote() /* cache_storage */,
+                                  thread_hop_time, ui_post_time));
     return;
   }
 
@@ -178,7 +179,7 @@ void SetupOnUIThread(
                        std::move(process_info), std::move(devtools_proxy),
                        std::move(factory_bundle_for_new_scripts),
                        std::move(factory_bundle_for_renderer),
-                       nullptr /* cache_storage */, thread_hop_time,
+                       mojo::NullRemote() /* cache_storage */, thread_hop_time,
                        ui_post_time));
     return;
   }
@@ -194,11 +195,11 @@ void SetupOnUIThread(
   // byte-to-byte check will be performed on the worker (|pause_after_download|)
   // as most of those workers will have byte-to-byte equality and abort instead
   // of running.
-  blink::mojom::CacheStoragePtr cache_storage;
+  mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage;
   if (base::FeatureList::IsEnabled(
           blink::features::kEagerCacheStorageSetupForServiceWorkers) &&
       !params->pause_after_download) {
-    rph->BindCacheStorage(mojo::MakeRequest(&cache_storage),
+    rph->BindCacheStorage(cache_storage.InitWithNewPipeAndPassReceiver(),
                           url::Origin::Create(params->script_url));
   }
 
@@ -274,8 +275,7 @@ void SetupOnUIThread(
                      std::move(process_info), std::move(devtools_proxy),
                      std::move(factory_bundle_for_new_scripts),
                      std::move(factory_bundle_for_renderer),
-                     cache_storage.PassInterface(), thread_hop_time,
-                     ui_post_time));
+                     std::move(cache_storage), thread_hop_time, ui_post_time));
 }
 
 bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
@@ -594,7 +594,7 @@ class EmbeddedWorkerInstance::StartTask {
           factory_bundle_for_new_scripts,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           factory_bundle_for_renderer,
-      blink::mojom::CacheStoragePtrInfo cache_storage,
+      mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage,
       const base::Optional<base::TimeDelta>& thread_hop_time,
       const base::Optional<base::Time>& ui_post_time) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());

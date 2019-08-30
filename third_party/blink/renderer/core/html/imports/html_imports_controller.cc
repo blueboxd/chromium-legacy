@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child_client.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"

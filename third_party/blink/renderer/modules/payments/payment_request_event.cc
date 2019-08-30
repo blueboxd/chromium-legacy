@@ -180,8 +180,8 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
   auto method_data = payments::mojom::blink::PaymentHandlerMethodData::New();
   if (!method_details.IsEmpty()) {
     PaymentsValidators::ValidateAndStringifyObject(
-        "Method details", method_details, method_data->stringified_data,
-        exception_state);
+        script_state->GetIsolate(), "Method details", method_details,
+        method_data->stringified_data, exception_state);
     if (exception_state.HadException())
       return ScriptPromise();
   }

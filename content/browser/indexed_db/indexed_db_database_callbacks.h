@@ -14,6 +14,8 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
@@ -27,7 +29,8 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
  public:
   IndexedDBDatabaseCallbacks(
       scoped_refptr<IndexedDBContextImpl> context,
-      blink::mojom::IDBDatabaseCallbacksAssociatedPtrInfo callbacks_info,
+      mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
+          callbacks_remote,
       base::SequencedTaskRunner* idb_runner);
 
   virtual void OnForcedClose();
@@ -48,7 +51,7 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
 
   bool complete_ = false;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
-  blink::mojom::IDBDatabaseCallbacksAssociatedPtr callbacks_;
+  mojo::AssociatedRemote<blink::mojom::IDBDatabaseCallbacks> callbacks_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabaseCallbacks);

@@ -42,14 +42,14 @@ struct ExpectedElement {
 
   static ExpectedElement EmbeddedBytes(Vector<uint8_t> embedded_data) {
     uint64_t size = embedded_data.size();
-    return ExpectedElement{DataElement::NewBytes(
-        DataElementBytes::New(size, std::move(embedded_data), nullptr))};
+    return ExpectedElement{DataElement::NewBytes(DataElementBytes::New(
+        size, std::move(embedded_data), mojo::NullRemote()))};
   }
 
   static ExpectedElement LargeBytes(Vector<uint8_t> data) {
     uint64_t size = data.size();
     return ExpectedElement{DataElement::NewBytes(DataElementBytes::New(
-                               size, base::nullopt, nullptr)),
+                               size, base::nullopt, mojo::NullRemote())),
                            String(), std::move(data)};
   }
 
@@ -165,7 +165,7 @@ class BlobDataHandleTest : public testing::Test {
 
         base::RunLoop loop;
         Vector<uint8_t> received_bytes;
-        mojom::blink::BytesProviderPtr actual_data(
+        mojo::Remote<mojom::blink::BytesProvider> actual_data(
             std::move(actual->get_bytes()->data));
         actual_data->RequestAsReply(base::BindOnce(
             [](base::Closure quit_closure, Vector<uint8_t>* bytes_out,

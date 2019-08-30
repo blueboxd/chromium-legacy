@@ -1639,6 +1639,13 @@ const char kPrefetchRedirectErrorDescription[] =
     "Prefetch requests will not follow redirect responses, and instead be "
     "logged as errors. Redirect responses are still stored in the cache.";
 
+const char kPrefetchMainResourceNetworkIsolationKeyName[] =
+    "Prefetch requests for cross-origin main resources are fetched with a "
+    "special NetworkIsolationKey";
+const char kPrefetchMainResourceNetworkIsolationKeyDescription[] =
+    "Prefetch requests for cross-origin main resources can be reused by next "
+    "top-level navigations when HTTP cache is double-keyed.";
+
 const char kSafeBrowsingUseAPDownloadVerdictsName[] =
     "Request Advanced Protection verdicts when inspecting downloads";
 const char kSafeBrowsingUseAPDownloadVerdictsDescription[] =
@@ -2803,12 +2810,6 @@ const char kNtpRealboxDescription[] =
     "Enables a search box in the middle of the NTP that will accept input "
     "directly (i.e. not be a \"fake\" box). Search results will show below the "
     "non-fake input (\"realbox\").";
-
-const char kNtpZeroSuggestName[] =
-    "Suggest New Tab Page search results without input";
-const char kNtpZeroSuggestDescription[] =
-    "If enabled, forces on \"Real search box in New Tab Page\" and suggests "
-    "results without any typed input (i.e. on focus).";
 
 const char kEnableImprovedCookieControlsName[] =
     "Enable improved cookie controls UI";

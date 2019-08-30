@@ -21,18 +21,19 @@ namespace content {
 
 IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     scoped_refptr<IndexedDBContextImpl> context,
-    IDBDatabaseCallbacksAssociatedPtrInfo callbacks_info,
+    mojo::PendingAssociatedRemote<blink::mojom::IDBDatabaseCallbacks>
+        callbacks_remote,
     base::SequencedTaskRunner* idb_runner)
     : indexed_db_context_(std::move(context)) {
   DCHECK(idb_runner->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!callbacks_info.is_valid())
+  if (!callbacks_remote.is_valid())
     return;
-  callbacks_.Bind(std::move(callbacks_info));
+  callbacks_.Bind(std::move(callbacks_remote));
   // |callbacks_| is owned by |this|, so if |this| is destroyed, then
   // |callbacks_| will also be destroyed.  While |callbacks_| is otherwise
   // alive, |this| will always be valid.
-  callbacks_.set_connection_error_handler(base::BindOnce(
+  callbacks_.set_disconnect_handler(base::BindOnce(
       &IndexedDBDatabaseCallbacks::OnConnectionError, base::Unretained(this)));
 }
 

@@ -16,7 +16,7 @@ namespace blink {
 
 class ExecutionContext;
 class NFCProxy;
-class NFCReaderOptions;
+class NFCScanOptions;
 
 class MODULES_EXPORT NFCReader : public EventTargetWithInlineData,
                                  public ActiveScriptWrappable<NFCReader>,
@@ -25,9 +25,9 @@ class MODULES_EXPORT NFCReader : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NFCReader* Create(ExecutionContext*, NFCReaderOptions*);
+  static NFCReader* Create(ExecutionContext*);
 
-  NFCReader(ExecutionContext*, NFCReaderOptions*);
+  NFCReader(ExecutionContext*);
   ~NFCReader() override;
 
   // EventTarget overrides.
@@ -39,12 +39,9 @@ class MODULES_EXPORT NFCReader : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reading, kReading)
-  void start();
-  void stop();
+  void scan(const NFCScanOptions*);
 
   void Trace(blink::Visitor*) override;
-
-  const NFCReaderOptions* options() const { return options_; }
 
   // Called by NFCProxy for dispatching events.
   virtual void OnReading(const String& serial_number,
@@ -55,11 +52,11 @@ class MODULES_EXPORT NFCReader : public EventTargetWithInlineData,
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
+  void Abort();
+
   NFCProxy* GetNfcProxy() const;
 
   bool CheckSecurity();
-
-  const Member<NFCReaderOptions> options_;
 };
 
 }  // namespace blink

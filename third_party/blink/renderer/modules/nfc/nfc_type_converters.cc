@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_record.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_reader_options.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_scan_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -27,8 +27,8 @@ using device::mojom::blink::NDEFRecordTypeFilter;
 using device::mojom::blink::NFCPushOptions;
 using device::mojom::blink::NFCPushOptionsPtr;
 using device::mojom::blink::NFCPushTarget;
-using device::mojom::blink::NFCReaderOptions;
-using device::mojom::blink::NFCReaderOptionsPtr;
+using device::mojom::blink::NFCScanOptions;
+using device::mojom::blink::NFCScanOptionsPtr;
 
 using WTF::String;
 
@@ -236,25 +236,25 @@ TypeConverter<NFCPushOptionsPtr, const blink::NFCPushOptions*>::Convert(
   return pushOptionsPtr;
 }
 
-NFCReaderOptionsPtr
-TypeConverter<NFCReaderOptionsPtr, const blink::NFCReaderOptions*>::Convert(
-    const blink::NFCReaderOptions* watchOptions) {
-  // https://w3c.github.io/web-nfc/#dom-nfcreaderoptions
-  // Default values for NFCReaderOptions dictionary are:
+NFCScanOptionsPtr
+TypeConverter<NFCScanOptionsPtr, const blink::NFCScanOptions*>::Convert(
+    const blink::NFCScanOptions* scanOptions) {
+  // https://w3c.github.io/web-nfc/#dom-nfcscanoptions
+  // Default values for NFCScanOptions dictionary are:
   // url = "", recordType = null, mediaType = "", compatibility = "nfc-forum"
-  NFCReaderOptionsPtr watchOptionsPtr = NFCReaderOptions::New();
-  watchOptionsPtr->url = watchOptions->url();
-  watchOptionsPtr->media_type = watchOptions->mediaType();
-  watchOptionsPtr->compatibility =
-      blink::StringToNDEFCompatibility(watchOptions->compatibility());
+  NFCScanOptionsPtr scanOptionsPtr = NFCScanOptions::New();
+  scanOptionsPtr->url = scanOptions->url();
+  scanOptionsPtr->media_type = scanOptions->mediaType();
+  scanOptionsPtr->compatibility =
+      blink::StringToNDEFCompatibility(scanOptions->compatibility());
 
-  if (watchOptions->hasRecordType()) {
-    watchOptionsPtr->record_filter = NDEFRecordTypeFilter::New();
-    watchOptionsPtr->record_filter->record_type =
-        blink::StringToNDEFRecordType(watchOptions->recordType());
+  if (scanOptions->hasRecordType()) {
+    scanOptionsPtr->record_filter = NDEFRecordTypeFilter::New();
+    scanOptionsPtr->record_filter->record_type =
+        blink::StringToNDEFRecordType(scanOptions->recordType());
   }
 
-  return watchOptionsPtr;
+  return scanOptionsPtr;
 }
 
 }  // namespace mojo

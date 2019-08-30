@@ -10,6 +10,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -159,6 +160,48 @@ class AXPosition {
   virtual ~AXPosition() = default;
 
   virtual AXPositionInstance Clone() const = 0;
+
+  // A serialization of a position as POD. Not for sharing on disk or sharing
+  // across thread or process boundaries, just for passing a position to an
+  // API that works with positions as opaque objects.
+  struct SerializedPosition {
+    AXPositionKind kind;
+    int32_t anchor_id;
+    int child_index;
+    int text_offset;
+    ax::mojom::TextAffinity affinity;
+    char tree_id[33];
+  };
+
+  static_assert(std::is_trivially_copyable<SerializedPosition>::value,
+                "SerializedPosition must be POD");
+
+  SerializedPosition Serialize() {
+    SerializedPosition result;
+    result.kind = kind_;
+
+    // A tree ID can be serialized as a 32-byte string.
+    std::string tree_id_string = tree_id_.ToString();
+    DCHECK_LE(tree_id_string.size(), 32U);
+    strncpy(result.tree_id, tree_id_string.c_str(), 32);
+    result.tree_id[32] = 0;
+
+    result.anchor_id = anchor_id_;
+    result.child_index = child_index_;
+    result.text_offset = text_offset_;
+    result.affinity = affinity_;
+    return result;
+  }
+
+  static AXPositionInstance Unserialize(
+      const SerializedPosition& serialization) {
+    AXPositionInstance new_position(new AXPositionType());
+    new_position->Initialize(serialization.kind,
+                             ui::AXTreeID::FromString(serialization.tree_id),
+                             serialization.anchor_id, serialization.child_index,
+                             serialization.text_offset, serialization.affinity);
+    return new_position;
+  }
 
   virtual bool IsIgnoredPosition() const { return false; }
 

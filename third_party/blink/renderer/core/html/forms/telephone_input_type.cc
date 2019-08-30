@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/telephone_input_type.h"
 
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 

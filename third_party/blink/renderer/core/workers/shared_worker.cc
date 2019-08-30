@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/workers/shared_worker.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -80,10 +81,10 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
   if (script_url.IsEmpty())
     return nullptr;
 
-  mojom::blink::BlobURLTokenPtr blob_url_token;
+  mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token;
   if (script_url.ProtocolIs("blob")) {
-    document->GetPublicURLManager().Resolve(script_url,
-                                            MakeRequest(&blob_url_token));
+    document->GetPublicURLManager().Resolve(
+        script_url, blob_url_token.InitWithNewPipeAndPassReceiver());
   }
 
   // |name| should not be null according to the HTML spec, but the current impl

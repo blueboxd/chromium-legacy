@@ -368,9 +368,7 @@ MediaControlsOrientationLockDelegate::ComputeDeviceOrientation(
   // screen.orientation.angle is the standardized replacement for
   // window.orientation. They are equal, except -90 was replaced by 270.
   int screen_orientation_angle =
-      ScreenScreenOrientation::orientation(nullptr /* ScriptState */,
-                                           *dom_window->screen())
-          ->angle();
+      ScreenScreenOrientation::orientation(*dom_window->screen())->angle();
 
   // This is equivalent to screen.orientation.type.startsWith('landscape').
   bool screen_orientation_is_portrait =

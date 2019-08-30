@@ -23,6 +23,7 @@
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -784,6 +785,7 @@ void ChromePasswordManagerClientAndroidTest::CreateManualFillingController(
   ManualFillingControllerImpl::CreateForWebContentsForTesting(
       web_contents, favicon_service_.get(), mock_pwd_controller_.AsWeakPtr(),
       mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
+      GetClient()->GetOrCreateTouchToFillController()->AsWeakPtr(),
       std::make_unique<NiceMock<MockManualFillingView>>());
 }
 

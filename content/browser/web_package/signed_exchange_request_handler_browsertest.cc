@@ -724,8 +724,9 @@ class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
   }
 };
 
+// The test cert has expired. crbug.com/999419
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
-                       Basic) {
+                       DISABLED_Basic) {
   InstallMockCertChainInterceptor();
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");

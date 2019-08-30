@@ -3,39 +3,14 @@
 // found in the LICENSE file.
 
 function setUpPage() {
-  const importElements = (src) => {
-    const link = document.createElement('link');
-    link.rel = 'import';
-    link.onload = onLinkLoaded;
-    document.head.appendChild(link);
-    const sourceRoot = '../../../../../../../../';
-    link.href = sourceRoot + src;
-  };
-
-  let linksLoaded = 0;
-
-  const onLinkLoaded = () => {
-    if (++linksLoaded < 2) {
-      return;
-    }
-    document.body.innerHTML += '<files-toast></files-toast>';
-    window.waitUser = false;
-  };
-
-  importElements(
-      'third_party/polymer/v1_0/components-chromium/polymer/polymer.html');
-  importElements(
-      'ui/file_manager/file_manager/foreground/elements/files_toast.html');
-
-  // Make the test harness pause until the test page is fully loaded.
-  window.waitUser = true;
+  document.body.innerHTML += '<files-toast></files-toast>';
 }
 
 async function testToast(done) {
   /** @type {FilesToast|Element} */
   const toast = document.querySelector('files-toast');
-  const text = document.querySelector('files-toast #text');
-  const action = document.querySelector('files-toast #action');
+  const text = toast.shadowRoot.querySelector('#text');
+  const action = toast.shadowRoot.querySelector('#action');
   const waitFor = async f => {
     while (!f()) {
       await new Promise(r => setTimeout(r, 0));

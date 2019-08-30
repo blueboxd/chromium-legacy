@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -24,6 +25,7 @@
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -130,7 +132,7 @@ std::string FRERequirementToString(
   return std::string();
 }
 
-std::string AutoenrollmentStateToString(policy::AutoEnrollmentState state) {
+std::string AutoEnrollmentStateToString(policy::AutoEnrollmentState state) {
   switch (state) {
     case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_IDLE:
       return "Not started";
@@ -146,6 +148,8 @@ std::string AutoenrollmentStateToString(policy::AutoEnrollmentState state) {
       return "No enrollment";
     case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
       return "Zero-touch enrollment";
+    case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_DISABLED:
+      return "Device disabled";
   }
 }
 
@@ -410,6 +414,7 @@ void AutoEnrollmentController::Start() {
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
+    case policy::AUTO_ENROLLMENT_STATE_DISABLED:
       // Abort re-start when there's already a final decision.
       return;
 
@@ -569,7 +574,7 @@ void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
 
   // Skip everything if the device was in consumer mode previously.
   fre_requirement_ = GetFRERequirement();
-  LOGIN_LOG(EVENT) << FRERequirementToString(fre_requirement_);
+  VLOG(1) << FRERequirementToString(fre_requirement_);
   if (fre_requirement_ == FRERequirement::kExplicitlyNotRequired) {
     LOGIN_LOG(EVENT) << "Auto-enrollment disabled: VPD.";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
@@ -765,7 +770,7 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
 void AutoEnrollmentController::UpdateState(
     policy::AutoEnrollmentState new_state) {
   LOGIN_LOG(EVENT) << "New auto-enrollment state: "
-                   << AutoenrollmentStateToString(new_state);
+                   << AutoEnrollmentStateToString(new_state);
   state_ = new_state;
 
   // Stop the safeguard timer once a result comes in.
@@ -778,8 +783,22 @@ void AutoEnrollmentController::UpdateState(
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_DISABLED:
       safeguard_timer_.Stop();
       break;
+  }
+
+  // Device disabling mode is relying on device state stored in install
+  // attributes. In case that file is corrupted, this should prevent device
+  // re-enabling.
+  if (state_ == policy::AUTO_ENROLLMENT_STATE_DISABLED) {
+    policy::DeviceMode device_mode =
+        chromeos::InstallAttributes::Get()->GetMode();
+    if (device_mode == policy::DeviceMode::DEVICE_MODE_PENDING ||
+        device_mode == policy::DeviceMode::DEVICE_MODE_NOT_SET) {
+      DeviceSettingsService::Get()->SetDeviceMode(
+          policy::DeviceMode::DEVICE_MODE_ENTERPRISE);
+    }
   }
 
   if (state_ == policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT) {

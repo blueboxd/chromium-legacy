@@ -8,6 +8,9 @@
 #include <stdint.h>
 
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
@@ -19,19 +22,20 @@ class WebIDBCallbacks;
 
 class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
  public:
-  WebIDBDatabaseImpl(mojom::blink::IDBDatabaseAssociatedPtrInfo database,
-                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  WebIDBDatabaseImpl(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebIDBDatabaseImpl() override;
 
   // WebIDBDatabase
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const String& new_name) override;
-  void CreateTransaction(
-      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
-      int64_t transaction_id,
-      const Vector<int64_t>& scope,
-      mojom::IDBTransactionMode mode) override;
+  void CreateTransaction(mojo::PendingAssociatedReceiver<
+                             mojom::blink::IDBTransaction> transaction_receiver,
+                         int64_t transaction_id,
+                         const Vector<int64_t>& scope,
+                         mojom::IDBTransactionMode mode) override;
 
   void Close() override;
   void VersionChangeIgnored() override;
@@ -118,7 +122,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
 
-  mojom::blink::IDBDatabaseAssociatedPtr database_;
+  mojo::AssociatedRemote<mojom::blink::IDBDatabase> database_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 

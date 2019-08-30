@@ -23,8 +23,5 @@ public interface GooglePasswordManagerUIProvider {
      * @param activity The activity from which to launch the Password Checkup.
      * @return Whether launching the Password Checkup was possible or not.
      **/
-    // TODO(crbug.com/986317): Drop the default action once the method is implemented downstream.
-    default boolean launchPasswordCheckup(Activity activity) {
-        return false;
-    }
+    boolean launchPasswordCheckup(Activity activity);
 }

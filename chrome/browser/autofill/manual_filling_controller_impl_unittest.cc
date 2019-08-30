@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
@@ -63,9 +65,11 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     NavigateAndCommit(GURL(kExampleSite));
+    touch_to_fill_controller_.emplace(web_contents());
     ManualFillingControllerImpl::CreateForWebContentsForTesting(
         web_contents(), favicon_service(), mock_pwd_controller_.AsWeakPtr(),
         mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
+        touch_to_fill_controller_->AsWeakPtr(),
         std::make_unique<NiceMock<MockManualFillingView>>());
     NavigateAndCommit(GURL(kExampleSite));
   }
@@ -100,6 +104,9 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
+  // Constructing a TouchToFillController needs a valid WebContents. Use a
+  // base::Optional to be able to delay the construction.
+  base::Optional<TouchToFillController> touch_to_fill_controller_;
   std::unique_ptr<StrictMock<favicon::MockFaviconService>>
       mock_favicon_service_ =
           std::make_unique<StrictMock<favicon::MockFaviconService>>();

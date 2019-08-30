@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol LayoutGuideProvider;
+@protocol EdgeLayoutGuideProvider;
 
 // Struct to track the current keyboard state.
 typedef struct {
@@ -49,7 +49,7 @@ typedef struct {
 // Best layout guide for the keyboard including the prediction part of it. |nil|
 // if the keyboard is not present or found.
 // This can break on any iOS update to keyboard architecture.
-@property(class, readonly, nonatomic) id<LayoutGuideProvider>
+@property(class, readonly, nonatomic) id<EdgeLayoutGuideProvider>
     keyboardLayoutGuide;
 
 // Flag that indicates if the keyboard is on screen.

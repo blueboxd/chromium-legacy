@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/util/type_safety/strong_alias.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -148,7 +148,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   // |factory_| owns |this|.
   WebSocketFactory* const factory_;
-  mojo::Binding<mojom::WebSocket> binding_;
+  mojo::Receiver<mojom::WebSocket> receiver_{this};
 
   mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_;
   mojo::Remote<mojom::WebSocketClient> client_;

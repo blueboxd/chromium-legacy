@@ -10,8 +10,8 @@
 
 namespace autofill_assistant {
 
-ClientMemory::ClientMemory() = default;
-ClientMemory::~ClientMemory() = default;
+ClientMemory::ClientMemory() {}
+ClientMemory::~ClientMemory() {}
 
 const autofill::CreditCard* ClientMemory::selected_card() const {
   if (selected_card_.has_value())

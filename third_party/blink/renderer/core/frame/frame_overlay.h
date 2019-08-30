@@ -56,6 +56,10 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
     // For CompositeAfterPaint. Invalidates composited layers managed by the
     // delegate if any.
     virtual void Invalidate() {}
+
+    // Service any animations managed by the delegate.
+    virtual void ServiceScriptedAnimations(
+        base::TimeTicks monotonic_frame_begin_time) {}
   };
 
   FrameOverlay(LocalFrame*, std::unique_ptr<FrameOverlay::Delegate>);
@@ -75,6 +79,9 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
 
   const Delegate* GetDelegate() const { return delegate_.get(); }
   const LocalFrame& Frame() const { return *frame_; }
+
+  // Services any animations that the overlay may be managing.
+  void ServiceScriptedAnimations(base::TimeTicks monotonic_frame_begin_time);
 
   // DisplayItemClient methods.
   String DebugName() const final { return "FrameOverlay"; }

@@ -25,6 +25,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
+#include "third_party/blink/public/platform/pointer_id.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html/focus_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -64,6 +64,7 @@ class ElementIntersectionObserverData;
 class ElementRareData;
 class ExceptionState;
 class FloatQuad;
+class FloatSize;
 class FocusOptions;
 class Image;
 class InputDeviceCapabilities;
@@ -94,6 +95,8 @@ class V0CustomElementDefinition;
 enum class CSSPropertyID;
 enum class CSSValueID;
 enum class DisplayLockLifecycleTarget;
+
+using ScrollOffset = FloatSize;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,

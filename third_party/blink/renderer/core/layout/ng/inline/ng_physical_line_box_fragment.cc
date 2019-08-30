@@ -84,7 +84,7 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     PhysicalSize container_physical_size) const {
   WritingMode container_writing_mode = container_style->GetWritingMode();
   TextDirection container_direction = container_style->Direction();
-  PhysicalRect overflow({}, Size());
+  PhysicalRect overflow;
   for (const auto& child : Children()) {
     PhysicalRect child_scroll_overflow =
         child->ScrollableOverflowForPropagation(container);
@@ -116,6 +116,15 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     }
     overflow.Unite(child_scroll_overflow);
   }
+
+  // Make sure we include the inline-size of the line-box in the overflow.
+  PhysicalRect rect;
+  if (IsHorizontalWritingMode(container_writing_mode))
+    rect.size.width = Size().width;
+  else
+    rect.size.height = Size().height;
+  overflow.UniteEvenIfEmpty(rect);
+
   return overflow;
 }
 

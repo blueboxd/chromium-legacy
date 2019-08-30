@@ -178,8 +178,15 @@
   NSIndexPath* previousPath = [self indexForCellPathWithOffset:-1
                                                       fromPath:currentPath];
 
-  [self.formInputAccessoryView.previousButton setEnabled:previousPath != nil];
-  [self.formInputAccessoryView.nextButton setEnabled:nextPath != nil];
+  BOOL isValidPreviousPath =
+      previousPath && [[self.tableView cellForRowAtIndexPath:previousPath]
+                          isKindOfClass:TableViewTextEditCell.class];
+  self.formInputAccessoryView.previousButton.enabled = isValidPreviousPath;
+
+  BOOL isValidNextPath =
+      nextPath && [[self.tableView cellForRowAtIndexPath:nextPath]
+                      isKindOfClass:TableViewTextEditCell.class];
+  self.formInputAccessoryView.nextButton.enabled = isValidNextPath;
 }
 
 #pragma mark - Keyboard handling

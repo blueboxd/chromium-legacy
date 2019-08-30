@@ -29,7 +29,8 @@ class GeolocationContext : public mojom::GeolocationContext {
   static void Create(mojom::GeolocationContextRequest request);
 
   // mojom::GeolocationContext implementation:
-  void BindGeolocation(mojom::GeolocationRequest request) override;
+  void BindGeolocation(
+      mojo::PendingReceiver<mojom::Geolocation> receiver) override;
   void SetOverride(mojom::GeopositionPtr geoposition) override;
   void ClearOverride() override;
 

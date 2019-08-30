@@ -16,6 +16,6 @@ interface GeolocationService {
   // request (GRANTED or DENIED).
   // This may not be called a second time until the Geolocation instance has
   // been created.
-  CreateGeolocation(device.mojom.Geolocation& request, bool user_gesture)
+  CreateGeolocation(pending_receiver<device.mojom.Geolocation> receiver, bool user_gesture)
       => (PermissionStatus status);
 };

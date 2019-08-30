@@ -2368,7 +2368,7 @@ void Document::ScheduleLayoutTreeUpdate() {
 
 bool Document::HasPendingForcedStyleRecalc() const {
   return HasPendingVisualUpdate() && !InStyleRecalc() &&
-         GetStyleChangeType() >= kSubtreeStyleChange;
+         GetStyleChangeType() == kSubtreeStyleChange;
 }
 
 void Document::UpdateStyleInvalidationIfNeeded() {
@@ -2439,6 +2439,7 @@ void Document::PropagateStyleToViewport() {
   scoped_refptr<ComputedStyle> new_viewport_style =
       ComputedStyle::Clone(viewport_style);
   bool changed = false;
+  bool update_scrollbar_style = false;
 
   // Writing mode and direction
   {
@@ -2581,6 +2582,9 @@ void Document::PropagateStyleToViewport() {
                                    static_cast<OverscrollBehaviorType>(
                                        overflow_style->OverscrollBehaviorY())));
       }
+
+      if (overflow_style->HasPseudoStyle(kPseudoIdScrollbar))
+        update_scrollbar_style = true;
     }
 
     PROPAGATE_VALUE(overflow_x, OverflowX, SetOverflowX)
@@ -2605,7 +2609,9 @@ void Document::PropagateStyleToViewport() {
     new_viewport_style->UpdateFontOrientation();
     GetLayoutView()->SetStyle(new_viewport_style);
     SetupFontBuilder(*new_viewport_style);
+  }
 
+  if (changed || update_scrollbar_style) {
     if (PaintLayerScrollableArea* scrollable_area =
             GetLayoutView()->GetScrollableArea()) {
       if (scrollable_area->HorizontalScrollbar() &&
@@ -7903,11 +7909,10 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
     }
   }
 
-  // For V0 -> V1 upgrade, we need style recalculation for the whole document.
+  // For V0 -> V1 upgrade, we need style recalculation for all elements.
   if (shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV0 &&
       order == ShadowCascadeOrder::kShadowCascadeV1) {
-    SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
+    GetStyleEngine().MarkAllElementsForStyleRecalc(
         StyleChangeReasonForTracing::Create(style_change_reason::kShadow));
     UseCounter::Count(*this, WebFeature::kMixedShadowRootV0AndV1);
   }

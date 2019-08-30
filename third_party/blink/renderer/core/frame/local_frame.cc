@@ -600,12 +600,9 @@ void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
   if (inherited_effective_touch_action_ == touch_action)
     return;
   inherited_effective_touch_action_ = touch_action;
-  if (GetDocument()->documentElement()) {
-    GetDocument()->documentElement()->SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(
-            style_change_reason::kInheritedStyleChangeFromParentFrame));
-  }
+  GetDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
+      StyleChangeReasonForTracing::Create(
+          style_change_reason::kInheritedStyleChangeFromParentFrame));
 }
 
 bool LocalFrame::BubbleLogicalScrollFromChildFrame(

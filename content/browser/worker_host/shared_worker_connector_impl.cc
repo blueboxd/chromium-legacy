@@ -40,7 +40,7 @@ void SharedWorkerConnectorImpl::Connect(
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port,
-    blink::mojom::BlobURLTokenPtr blob_url_token) {
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
   RenderProcessHost* host = RenderProcessHost::FromID(client_process_id_);
   // The render process was already terminated.
   if (!host) {

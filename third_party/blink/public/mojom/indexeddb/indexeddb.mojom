@@ -231,10 +231,12 @@ interface IDBCallbacks {
   Blocked(int64 existing_version);
 
   // Factory::Open
-  UpgradeNeeded(associated IDBDatabase database, int64 old_version,
-                IDBDataLoss data_loss, string data_loss_message,
-                IDBDatabaseMetadata db_metadata);
-  SuccessDatabase(associated IDBDatabase? database,
+  UpgradeNeeded(pending_associated_remote<IDBDatabase> pending_database,
+                int64 old_version, IDBDataLoss data_loss,
+                string data_loss_message, IDBDatabaseMetadata db_metadata);
+
+  // Factory::Open
+  SuccessDatabase(pending_associated_remote<IDBDatabase>? pending_database,
                   IDBDatabaseMetadata metadata);
 
   // Database::Count / DeleteRange
@@ -321,7 +323,7 @@ union IDBDatabaseGetAllResult {
 };
 
 struct IDBDatabaseOpenCursorValue {
-  associated IDBCursor cursor;
+  pending_associated_remote<IDBCursor> cursor;
   IDBKey key;
   IDBKey primary_key;
   IDBValue? value;
@@ -337,7 +339,7 @@ interface IDBDatabase {
   RenameObjectStore(int64 transaction_id,
                     int64 object_store_id,
                     mojo_base.mojom.String16 new_name);
-  CreateTransaction(associated IDBTransaction& transaction_request,
+  CreateTransaction(pending_associated_receiver<IDBTransaction> transaction_receiver,
                     int64 transaction_id,
                     array<int64> object_store_ids,
                     IDBTransactionMode mode);
@@ -417,10 +419,10 @@ interface IDBFactory {
   GetDatabaseInfo(associated IDBCallbacks callbacks);
   GetDatabaseNames(associated IDBCallbacks callbacks);
   Open(associated IDBCallbacks callbacks,
-       associated IDBDatabaseCallbacks database_callbacks,
+       pending_associated_remote<IDBDatabaseCallbacks> database_callbacks,
        mojo_base.mojom.String16 name,
        int64 version,
-       associated IDBTransaction& version_change_transaction_request,
+       pending_associated_receiver<IDBTransaction> version_change_transaction_receiver,
        int64 transaction_id);
   DeleteDatabase(associated IDBCallbacks callbacks,
                  mojo_base.mojom.String16 name, bool force_close);

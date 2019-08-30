@@ -69,7 +69,7 @@ struct NDEFMessage {
 
   // The |url| field is an ASCII serialized origin, optionally followed by a URL
   // path. It represents Web NFC id, that can be used for matching Web NFC
-  // content with the filter specified by |url| field in NFCReaderOptions.
+  // content with the filter specified by |url| field in NFCScanOptions.
   string? url;
 
   // Maximum size of NFC message that can be sent over IPC is 32KB.
@@ -95,7 +95,7 @@ struct NDEFRecordTypeFilter {
   NDEFRecordType record_type;
 };
 
-struct NFCReaderOptions {
+struct NFCScanOptions {
   // Defines filtering constraint for NFC messages with specified |url|.
   string? url;
 
@@ -124,9 +124,9 @@ interface NFC {
   CancelPush(NFCPushTarget target) => (NFCError? error);
 
   // Starts watching for nearby NFC devices with data that matches
-  // NFCReaderOptions filtering criteria. |id| identifies each watch request on
+  // NFCScanOptions filtering criteria. |id| identifies each watch request on
   // the current Mojo connection.
-  Watch(NFCReaderOptions options, uint32 id) => (NFCError? error);
+  Watch(NFCScanOptions options, uint32 id) => (NFCError? error);
 
   // Cancels watch operation with provided id.
   CancelWatch (uint32 id) => (NFCError? error);

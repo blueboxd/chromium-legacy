@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace blink {
 
@@ -18,9 +20,9 @@ MockWebIDBTransaction::MockWebIDBTransaction() = default;
 
 MockWebIDBTransaction::~MockWebIDBTransaction() = default;
 
-mojom::blink::IDBTransactionAssociatedRequest
-MockWebIDBTransaction::CreateRequest() {
-  return mojom::blink::IDBTransactionAssociatedRequest();
+mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+MockWebIDBTransaction::CreateReceiver() {
+  return mojo::NullAssociatedReceiver();
 }
 
 }  // namespace blink

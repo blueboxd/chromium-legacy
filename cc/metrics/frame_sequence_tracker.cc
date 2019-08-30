@@ -16,6 +16,10 @@
 
 namespace cc {
 
+const char* const FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
+    "CompositorAnimation", "MainThreadAnimation", "PinchZoom", "RAF",
+    "TouchScroll",         "WheelScroll",         ""};
+
 namespace {
 
 enum class ThreadType {
@@ -23,16 +27,8 @@ enum class ThreadType {
   kCompositor,
 };
 
-constexpr const char* const kBuiltinSequences[] = {
-    [FrameSequenceTrackerType::kCompositorAnimation] = "CompositorAnimation",
-    [FrameSequenceTrackerType::kMainThreadAnimation] = "MainThreadAnimation",
-    [FrameSequenceTrackerType::kPinchZoom] = "PinchZoom",
-    [FrameSequenceTrackerType::kRAF] = "RAF",
-    [FrameSequenceTrackerType::kTouchScroll] = "TouchScroll",
-    [FrameSequenceTrackerType::kWheelScroll] = "WheelScroll",
-};
-
-constexpr int kBuiltinSequenceNum = base::size(kBuiltinSequences);
+constexpr int kBuiltinSequenceNum =
+    base::size(FrameSequenceTracker::kFrameSequenceTrackerTypeNames);
 constexpr int kMaximumHistogramIndex = 2 * kBuiltinSequenceNum;
 
 int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
@@ -158,8 +154,10 @@ FrameSequenceTracker* FrameSequenceTrackerCollection::GetTrackerForTesting(
 FrameSequenceTracker::FrameSequenceTracker(FrameSequenceTrackerType type)
     : type_(type) {
   DCHECK_LT(type_, FrameSequenceTrackerType::kMaxType);
-  TRACE_EVENT_ASYNC_BEGIN1("cc,benchmark", "FrameSequenceTracker", this, "name",
-                           TRACE_STR_COPY(kBuiltinSequences[type_]));
+  TRACE_EVENT_ASYNC_BEGIN1(
+      "cc,benchmark", "FrameSequenceTracker", this, "name",
+      TRACE_STR_COPY(
+          FrameSequenceTracker::kFrameSequenceTrackerTypeNames[type_]));
 }
 
 FrameSequenceTracker::~FrameSequenceTracker() {
@@ -374,9 +372,9 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
     const ThroughputData& data) {
   DCHECK_LT(sequence_type, FrameSequenceTrackerType::kMaxType);
 
-  const std::string sequence_length_name =
-      base::StrCat({"Graphics.Smoothness.FrameSequenceLength.",
-                    kBuiltinSequences[sequence_type]});
+  const std::string sequence_length_name = base::StrCat(
+      {"Graphics.Smoothness.FrameSequenceLength.",
+       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[sequence_type]});
   STATIC_HISTOGRAM_POINTER_GROUP(
       sequence_length_name, sequence_type, FrameSequenceTrackerType::kMaxType,
       Add(data.frames_expected),
@@ -390,9 +388,9 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
   if (data.frames_expected < kMinFramesForThroughputMetric)
     return;
 
-  const std::string name =
-      base::StrCat({"Graphics.Smoothness.Throughput.", thread_name, ".",
-                    kBuiltinSequences[sequence_type]});
+  const std::string name = base::StrCat(
+      {"Graphics.Smoothness.Throughput.", thread_name, ".",
+       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[sequence_type]});
   const int percent =
       static_cast<int>(100 * data.frames_produced / data.frames_expected);
   STATIC_HISTOGRAM_POINTER_GROUP(

@@ -90,10 +90,6 @@ SkColor GetLightModeColor(int id) {
       // TINT_BUTTONS.
       NOTREACHED();
       return gfx::kPlaceholderColor;
-    case ThemeProperties::COLOR_NTP_LOGO:
-      return SkColorSetRGB(0xEE, 0xEE, 0xEE);
-    case ThemeProperties::COLOR_NTP_SHORTCUT:
-      return gfx::kGoogleGrey100;
 
     // Properties not stored in theme pack.
     case ThemeProperties::COLOR_TAB_ALERT_AUDIO:

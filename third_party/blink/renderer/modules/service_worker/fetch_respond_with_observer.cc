@@ -222,17 +222,18 @@ void FetchRespondWithObserver::OnResponseRejected(
 }
 
 void FetchRespondWithObserver::OnResponseFulfilled(
+    ScriptState* script_state,
     const ScriptValue& value,
     ExceptionState::ContextType context_type,
     const char* interface_name,
     const char* property_name) {
   DCHECK(GetExecutionContext());
-  if (!V8Response::HasInstance(value.V8Value(), value.GetIsolate())) {
+  if (!V8Response::HasInstance(value.V8Value(), script_state->GetIsolate())) {
     OnResponseRejected(ServiceWorkerResponseError::kNoV8Instance);
     return;
   }
-  Response* response =
-      V8Response::ToImplWithTypeCheck(value.GetIsolate(), value.V8Value());
+  Response* response = V8Response::ToImplWithTypeCheck(
+      script_state->GetIsolate(), value.V8Value());
   // "If one of the following conditions is true, return a network error:
   //   - |response|'s type is |error|.
   //   - |request|'s mode is |same-origin| and |response|'s type is |cors|.
@@ -280,8 +281,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     return;
   }
 
-  ExceptionState exception_state(value.GetScriptState()->GetIsolate(),
-                                 context_type, interface_name, property_name);
+  ExceptionState exception_state(script_state->GetIsolate(), context_type,
+                                 interface_name, property_name);
   if (response->IsBodyLocked(exception_state) == Body::BodyLocked::kLocked) {
     DCHECK(!exception_state.HadException());
     OnResponseRejected(ServiceWorkerResponseError::kBodyLocked);

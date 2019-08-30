@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"

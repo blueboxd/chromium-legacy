@@ -31,6 +31,7 @@ namespace blink {
 class AnimationWorkletMutatorDispatcherImpl;
 class GraphicsLayer;
 class HitTestResult;
+class Page;
 class PageWidgetEventHandler;
 class PaintWorkletPaintDispatcher;
 class WebLocalFrameImpl;

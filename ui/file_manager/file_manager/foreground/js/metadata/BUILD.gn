@@ -4,6 +4,7 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
+import("//ui/file_manager/base/gn/js_test_gen_html.gni")
 
 # TODO(tapted): This entire folder should move to //ui/file_manager/base.
 visibility = [ "//ui/file_manager/*" ]
@@ -12,7 +13,7 @@ group("closure_compile") {
   testonly = true
   deps = [
     ":closure_compile_module",
-    ":unit_tests_type_check",
+    ":js_test_gen_html_type_check_auto",
   ]
 }
 
@@ -275,7 +276,7 @@ js_unittest("thumbnail_model_unittest") {
   ]
 }
 
-js_unit_tests("unit_tests") {
+js_test_gen_html("js_test_gen_html") {
   deps = [
     ":content_metadata_provider_unittest",
     ":exif_parser_unittest",

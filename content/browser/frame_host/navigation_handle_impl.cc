@@ -33,36 +33,9 @@ namespace content {
 
 NavigationHandleImpl::NavigationHandleImpl(
     NavigationRequest* navigation_request)
-    : navigation_request_(navigation_request) {
-  const GURL& url = navigation_request_->common_params().url;
-  TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
-                           "frame_tree_node", GetFrameTreeNodeId(), "url",
-                           url.possibly_invalid_spec());
-  DCHECK(!navigation_request_->common_params().navigation_start.is_null());
-  DCHECK(!IsRendererDebugURL(url));
+    : navigation_request_(navigation_request) {}
 
-  if (IsInMainFrame()) {
-    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-        "navigation", "Navigation StartToCommit", this,
-        navigation_request_->common_params().navigation_start, "Initial URL",
-        url.spec());
-  }
-
-  if (IsSameDocument()) {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                                 "Same document");
-  }
-}
-
-NavigationHandleImpl::~NavigationHandleImpl() {
-  if (IsInMainFrame()) {
-    TRACE_EVENT_ASYNC_END2("navigation", "Navigation StartToCommit", this,
-                           "URL",
-                           navigation_request_->common_params().url.spec(),
-                           "Net Error Code", GetNetErrorCode());
-  }
-  TRACE_EVENT_ASYNC_END0("navigation", "NavigationHandle", this);
-}
+NavigationHandleImpl::~NavigationHandleImpl() = default;
 
 int64_t NavigationHandleImpl::GetNavigationId() {
   return navigation_request_->navigation_handle_id();

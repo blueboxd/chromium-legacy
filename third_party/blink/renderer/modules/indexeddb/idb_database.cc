@@ -420,7 +420,7 @@ IDBTransaction* IDBDatabase::transaction(
           ->GetTaskRunner(TaskType::kDatabaseAccess),
       transaction_id);
 
-  backend_->CreateTransaction(transaction_backend->CreateRequest(),
+  backend_->CreateTransaction(transaction_backend->CreateReceiver(),
                               transaction_id, object_store_ids, mode);
 
   return IDBTransaction::CreateNonVersionChange(

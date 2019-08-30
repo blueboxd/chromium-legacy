@@ -471,7 +471,10 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
   // Negative margins can make the position negative, but the inline size is
   // always positive or 0.
   LayoutUnit available_width = AvailableWidth();
-  DCHECK_EQ(position_, line_info->ComputeWidth());
+
+  // Text measurement is done using floats which may introduce small rounding
+  // errors for near-saturated values.
+  DCHECK_EQ(position_.Round(), line_info->ComputeWidth().Round());
 
   line_info->SetWidth(available_width, position_);
   line_info->SetBfcOffset(

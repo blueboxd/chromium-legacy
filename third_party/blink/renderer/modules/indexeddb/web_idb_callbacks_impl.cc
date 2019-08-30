@@ -146,7 +146,7 @@ void WebIDBCallbacksImpl::SuccessStringList(const Vector<String>& string_list) {
 }
 
 void WebIDBCallbacksImpl::SuccessCursor(
-    mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+    mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
     std::unique_ptr<IDBKey> key,
     std::unique_ptr<IDBKey> primary_key,
     base::Optional<std::unique_ptr<IDBValue>> optional_value) {
@@ -186,11 +186,11 @@ void WebIDBCallbacksImpl::SuccessCursorPrefetch(
 }
 
 void WebIDBCallbacksImpl::SuccessDatabase(
-    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+    mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
     const IDBDatabaseMetadata& metadata) {
   std::unique_ptr<WebIDBDatabase> db;
-  if (database_info.is_valid()) {
-    db = std::make_unique<WebIDBDatabaseImpl>(std::move(database_info),
+  if (pending_database.is_valid()) {
+    db = std::make_unique<WebIDBDatabaseImpl>(std::move(pending_database),
                                               task_runner_);
   }
   if (request_) {
@@ -313,14 +313,14 @@ void WebIDBCallbacksImpl::Blocked(int64_t old_version) {
 }
 
 void WebIDBCallbacksImpl::UpgradeNeeded(
-    mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
+    mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
     int64_t old_version,
     mojom::IDBDataLoss data_loss,
     const String& data_loss_message,
     const IDBDatabaseMetadata& metadata) {
   std::unique_ptr<WebIDBDatabase> db;
-  if (database_info.is_valid()) {
-    db = std::make_unique<WebIDBDatabaseImpl>(std::move(database_info),
+  if (pending_database.is_valid()) {
+    db = std::make_unique<WebIDBDatabaseImpl>(std::move(pending_database),
                                               task_runner_);
   }
   if (request_) {

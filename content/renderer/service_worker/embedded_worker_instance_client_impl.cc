@@ -15,6 +15,7 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -58,7 +59,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   DCHECK(!params->provider_info->cache_storage ||
          base::FeatureList::IsEnabled(
              blink::features::kEagerCacheStorageSetupForServiceWorkers));
-  blink::mojom::CacheStoragePtrInfo cache_storage =
+  mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage =
       std::move(params->provider_info->cache_storage);
   service_manager::mojom::InterfaceProviderPtrInfo interface_provider =
       std::move(params->provider_info->interface_provider);
@@ -107,7 +108,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   auto worker = blink::WebEmbeddedWorker::Create(
       service_worker_context_client_.get(),
       std::move(installed_scripts_manager_params),
-      params->content_settings_proxy.PassHandle(), cache_storage.PassHandle(),
+      params->content_settings_proxy.PassHandle(), cache_storage.PassPipe(),
       interface_provider.PassHandle(), browser_interface_broker.PassPipe());
   service_worker_context_client_->StartWorkerContextOnInitiatorThread(
       std::move(worker), start_data);

@@ -8,13 +8,12 @@
     RuntimeEnabled=WebNFC,
     ActiveScriptWrappable,
     SecureContext,
-    Constructor(optional NFCReaderOptions options),
+    Constructor(),
     ConstructorCallWith=ExecutionContext,
     Exposed=Window
 ] interface NFCReader : EventTarget {
     attribute EventHandler onreading;
     attribute EventHandler onerror;
 
-    void start();
-    void stop();
+    void scan(optional NFCScanOptions options);
 };

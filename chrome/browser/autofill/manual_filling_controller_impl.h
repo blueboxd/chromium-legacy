@@ -68,6 +68,7 @@ class ManualFillingControllerImpl
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
       base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
+      base::WeakPtr<TouchToFillController> touch_to_fill_controller,
       std::unique_ptr<ManualFillingViewInterface> test_view);
 
 #if defined(UNIT_TEST)
@@ -97,6 +98,7 @@ class ManualFillingControllerImpl
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
       base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
+      base::WeakPtr<TouchToFillController> touch_to_fill_controller,
       std::unique_ptr<ManualFillingViewInterface> view);
 
   // Returns true if the keyboard accessory needs to be shown.

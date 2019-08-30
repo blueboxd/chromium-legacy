@@ -73,7 +73,9 @@ CSSValue* StyleFetchedImageSet::CssValue() const {
   return image_set_value_;
 }
 
-CSSValue* StyleFetchedImageSet::ComputedCSSValue() const {
+CSSValue* StyleFetchedImageSet::ComputedCSSValue(
+    const ComputedStyle& style,
+    bool allow_visited_style) const {
   return image_set_value_->ValueWithURLsMadeAbsolute();
 }
 

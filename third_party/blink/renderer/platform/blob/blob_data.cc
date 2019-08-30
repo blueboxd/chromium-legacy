@@ -57,16 +57,14 @@ namespace blink {
 
 using mojom::blink::BlobPtr;
 using mojom::blink::BlobPtrInfo;
-using mojom::blink::BytesProviderPtr;
-using mojom::blink::BytesProviderPtrInfo;
-using mojom::blink::BytesProviderRequest;
+using mojom::blink::BytesProvider;
 using mojom::blink::DataElement;
 using mojom::blink::DataElementBlob;
-using mojom::blink::DataElementPtr;
 using mojom::blink::DataElementBytes;
 using mojom::blink::DataElementBytesPtr;
 using mojom::blink::DataElementFile;
 using mojom::blink::DataElementFilesystemURL;
+using mojom::blink::DataElementPtr;
 
 namespace {
 
@@ -286,12 +284,12 @@ void BlobData::AppendDataInternal(base::span<const char> data,
       bytes_element->embedded_data = base::nullopt;
     }
   } else {
-    BytesProviderPtrInfo bytes_provider_info;
-    last_bytes_provider_ =
-        BlobBytesProvider::CreateAndBind(MakeRequest(&bytes_provider_info));
+    mojo::PendingRemote<BytesProvider> bytes_provider_remote;
+    last_bytes_provider_ = BlobBytesProvider::CreateAndBind(
+        bytes_provider_remote.InitWithNewPipeAndPassReceiver());
 
-    auto bytes_element = DataElementBytes::New(data.size(), base::nullopt,
-                                               std::move(bytes_provider_info));
+    auto bytes_element = DataElementBytes::New(
+        data.size(), base::nullopt, std::move(bytes_provider_remote));
     if (should_embed_bytes) {
       bytes_element->embedded_data = Vector<uint8_t>();
       bytes_element->embedded_data->Append(data.data(), data.size());

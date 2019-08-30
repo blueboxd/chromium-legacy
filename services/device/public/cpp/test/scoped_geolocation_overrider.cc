@@ -26,7 +26,8 @@ class ScopedGeolocationOverrider::FakeGeolocationContext
   void BindForOverrideService(mojom::GeolocationContextRequest request);
 
   // mojom::GeolocationContext implementation:
-  void BindGeolocation(mojom::GeolocationRequest request) override;
+  void BindGeolocation(
+      mojo::PendingReceiver<mojom::Geolocation> receiver) override;
   void SetOverride(mojom::GeopositionPtr geoposition) override;
   void ClearOverride() override;
 
@@ -39,7 +40,7 @@ class ScopedGeolocationOverrider::FakeGeolocationContext
 
 class ScopedGeolocationOverrider::FakeGeolocation : public mojom::Geolocation {
  public:
-  FakeGeolocation(mojom::GeolocationRequest request,
+  FakeGeolocation(mojo::PendingReceiver<mojom::Geolocation> receiver,
                   const FakeGeolocationContext* context);
   ~FakeGeolocation() override;
 
@@ -53,7 +54,7 @@ class ScopedGeolocationOverrider::FakeGeolocation : public mojom::Geolocation {
   const FakeGeolocationContext* context_;
   bool has_new_position_;
   QueryNextPositionCallback position_callback_;
-  mojo::Binding<mojom::Geolocation> binding_;
+  mojo::Receiver<mojom::Geolocation> receiver_{this};
 };
 
 ScopedGeolocationOverrider::ScopedGeolocationOverrider(
@@ -141,8 +142,9 @@ void ScopedGeolocationOverrider::FakeGeolocationContext::BindForOverrideService(
 }
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::BindGeolocation(
-    mojom::GeolocationRequest request) {
-  impls_.push_back(std::make_unique<FakeGeolocation>(std::move(request), this));
+    mojo::PendingReceiver<mojom::Geolocation> receiver) {
+  impls_.push_back(
+      std::make_unique<FakeGeolocation>(std::move(receiver), this));
 }
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::SetOverride(
@@ -165,10 +167,10 @@ void ScopedGeolocationOverrider::FakeGeolocationContext::ClearOverride() {
 }
 
 ScopedGeolocationOverrider::FakeGeolocation::FakeGeolocation(
-    mojom::GeolocationRequest request,
+    mojo::PendingReceiver<mojom::Geolocation> receiver,
     const FakeGeolocationContext* context)
-    : context_(context), has_new_position_(true), binding_(this) {
-  binding_.Bind(std::move(request));
+    : context_(context), has_new_position_(true) {
+  receiver_.Bind(std::move(receiver));
 }
 
 ScopedGeolocationOverrider::FakeGeolocation::~FakeGeolocation() {}

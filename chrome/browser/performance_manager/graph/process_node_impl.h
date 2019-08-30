@@ -31,7 +31,7 @@ class WorkerNodeImpl;
 // 1. Created, no PID.
 // 2. Process started, have PID - in the case where the associated render
 //    process fails to start, this state may not occur.
-// 3. Process died or falied to start, have exit status.
+// 3. Process died or failed to start, have exit status.
 // 4. Back to 2.
 class ProcessNodeImpl
     : public PublicNodeImpl<ProcessNodeImpl, ProcessNode>,
@@ -67,6 +67,10 @@ class ProcessNodeImpl
   uint64_t private_footprint_kb() const { return private_footprint_kb_; }
   void set_cumulative_cpu_usage(base::TimeDelta cumulative_cpu_usage) {
     cumulative_cpu_usage_ = cumulative_cpu_usage;
+  }
+  uint64_t resident_set_kb() const { return resident_set_kb_; }
+  void set_resident_set_kb(uint64_t resident_set_kb) {
+    resident_set_kb_ = resident_set_kb;
   }
   base::TimeDelta cumulative_cpu_usage() const { return cumulative_cpu_usage_; }
 
@@ -134,6 +138,7 @@ class ProcessNodeImpl
   double GetCpuUsage() const override;
   base::TimeDelta GetCumulativeCpuUsage() const override;
   uint64_t GetPrivateFootprintKb() const override;
+  uint64_t GetResidentSetKb() const override;
   const RenderProcessHostProxy& GetRenderProcessHostProxy() const override;
 
   void OnAllFramesInProcessFrozen();
@@ -144,6 +149,7 @@ class ProcessNodeImpl
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;
+  uint64_t resident_set_kb_ = 0;
 
   base::ProcessId process_id_ = base::kNullProcessId;
   ObservedProperty::NotifiesAlways<
@@ -172,8 +178,6 @@ class ProcessNodeImpl
 
   // Inline storage for FrozenFrameAggregator user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;
-
-  std::unique_ptr<NodeAttachedData> process_metrics_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessNodeImpl);
 };

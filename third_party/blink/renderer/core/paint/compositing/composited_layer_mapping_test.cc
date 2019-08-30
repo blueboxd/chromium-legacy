@@ -100,14 +100,31 @@ TEST_F(CompositedLayerMappingTest,
 
 TEST_F(CompositedLayerMappingTest,
        SubpixelAccumulationChangeIndirectCompositing) {
-  SetBodyInnerHTML(
-
-      "<div id='target' style='background: lightblue; "
-      "    position: relative; top: -10px; left: 0.4px; width: 100px;"
-      "    height: 100px; transform: translateX(0)'>"
-      "  <div style='position; relative; width: 100px; height: 100px;"
-      "    background: lightgray; will-change: transform'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        background: lightblue;
+        position: relative;
+        top: -10px;
+        left: 0.4px;
+        width: 100px;
+        height: 100px;
+        transform: translateX(0);
+        opacity: 0.4;
+      }
+      #child {
+        position; relative;
+        width: 100px;
+        height: 100px;
+        background: lightgray;
+        will-change: transform;
+        opacity: 0.6;
+      }
+    </style>
+    <div id='target'>
+      <div id='child'></div>
+    </div>
+  )HTML");
 
   Element* target = GetDocument().getElementById("target");
   target->SetInlineStyleProperty(CSSPropertyID::kLeft, "0.6px");
@@ -278,25 +295,28 @@ TEST_F(CompositedLayerMappingTest, LargeScaleInterestRect) {
         width: 1920px;
         transform: scale(0.0859375);
         transform-origin: 0 0 0;
-        background:blue;
+        background: blue;
+        will-change: transform;
       }
       .wrapper {
-          height: 92px;
-          width: 165px;
-          overflow: hidden;
+        height: 92px;
+        width: 165px;
+        overflow: hidden;
       }
       .posabs {
-          position: absolute;
-          width: 300px;
-          height: 300px;
-          top: 5000px;
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        top: 5000px;
+      }
+      #target {
+        will-change: transform;
       }
     </style>
     <div class='wrapper'>
       <div id='target' class='container'>
         <div class='posabs'></div>
-        <div id='target' style='will-change: transform'
-    class='posabs'></div>
+        <div id='target class='posabs'></div>
       </div>
     </div>
   )HTML");

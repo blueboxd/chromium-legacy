@@ -76,6 +76,10 @@ SupportResolutionChecker::CreateIfNeeded(V4L2Device::Type device_type,
   constexpr uint32_t supported_input_fourccs[] = {
       V4L2_PIX_FMT_VP8,
   };
+
+  // Recreate the V4L2 device in order to close the opened decoder, since
+  // we are about to query the supported decode profiles.
+  device = V4L2Device::Create();
   auto supported_profiles = device->GetSupportedDecodeProfiles(
       base::size(supported_input_fourccs), supported_input_fourccs);
   SupportedProfileMap supported_profile_map;

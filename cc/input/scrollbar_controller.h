@@ -107,6 +107,15 @@ class CC_EXPORT ScrollbarController {
   // when a drag has started. It is empty if a thumb drag is *not* in progress.
   base::Optional<gfx::Vector2dF> drag_anchor_relative_to_thumb_;
 
+  // Used to track if a GSU was processed for the current frame or not. Without
+  // this, thumb drag will appear jittery. The reason this happens is because
+  // when the first GSU is processed, it gets queued in the compositor thread
+  // event queue. So a second request within the same frame will end up
+  // calculating an incorrect delta (as ComputeThumbQuadRect would not have
+  // accounted for the delta in the first GSU that was not yet dispatched and
+  // pointermoves are not VSync aligned).
+  bool drag_processed_for_current_frame_;
+
   std::unique_ptr<base::CancelableClosure> cancelable_autoscroll_task_;
 };
 

@@ -48,7 +48,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       worker_script_type_(options.type),
       update_via_cache_(options.update_via_cache),
       phase_(INITIAL),
-      doom_installing_worker_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(false),
@@ -65,7 +64,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       scope_(registration->scope()),
       update_via_cache_(registration->update_via_cache()),
       phase_(INITIAL),
-      doom_installing_worker_(false),
       is_promise_resolved_(false),
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
@@ -151,13 +149,6 @@ bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) const {
 
 RegistrationJobType ServiceWorkerRegisterJob::GetType() const {
   return job_type_;
-}
-
-void ServiceWorkerRegisterJob::DoomInstallingWorker() {
-  doom_installing_worker_ = true;
-  if (phase_ == INSTALL)
-    Complete(blink::ServiceWorkerStatusCode::kErrorInstallWorkerFailed,
-             std::string());
 }
 
 ServiceWorkerRegisterJob::Internal::Internal() {}
@@ -562,12 +553,6 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
       ServiceWorkerMetrics::EventType::INSTALL,
       base::BindOnce(&ServiceWorkerRegisterJob::DispatchInstallEvent,
                      weak_factory_.GetWeakPtr()));
-
-  // A subsequent registration job may terminate our installing worker. It can
-  // only do so after we've started the worker and dispatched the install
-  // event, as those are atomic substeps in the [[Install]] algorithm.
-  if (doom_installing_worker_)
-    Complete(blink::ServiceWorkerStatusCode::kErrorInstallWorkerFailed);
 }
 
 void ServiceWorkerRegisterJob::DispatchInstallEvent(

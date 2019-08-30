@@ -5,15 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_POINTER_PROPERTIES_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_POINTER_PROPERTIES_H_
 
+#include "third_party/blink/public/platform/pointer_id.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 
-#include <cstdint>
 #include <limits>
 
 namespace blink {
-
-using PointerId = int32_t;
 
 // This class encapsulates the properties that are common between mouse and
 // pointer events and touch points as we transition towards the unified pointer

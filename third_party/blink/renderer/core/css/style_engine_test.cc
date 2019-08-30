@@ -1849,8 +1849,8 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
   // After a full recalc, we should have the same initial data.
   GetDocument().body()->SetInnerHTMLFromString(
       "<style>* { font-size: 1px; } </style>");
-  EXPECT_TRUE(GetDocument().NeedsStyleRecalc());
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().documentElement()->NeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
   UpdateAllLifecyclePhases();
   auto data2 = GetStyleEngine().MaybeCreateAndGetInitialData();
   EXPECT_TRUE(data2);

@@ -263,8 +263,9 @@ class TabListMediator {
         }
 
         /**
-         * Records Tabs.TabOffsetOfSwitch and MobileTabSwitched for the component only if the
-         * fromTab and toTab have the same filter index.
+         * Records MobileTabSwitched for the component. Also, records Tabs.TabOffsetOfSwitch but
+         * only when fromTab and toTab are within the same group. This method only records UMA
+         * for components other than TabSwitcher.
          *
          * @param fromTab The previous selected tab.
          * @param toTab The new selected tab.
@@ -277,6 +278,8 @@ class TabListMediator {
                                         .getCurrentTabModelFilter()
                                         .indexOf(toTab);
 
+            RecordUserAction.record("MobileTabSwitched." + mComponentName);
+
             if (fromFilterIndex != toFilterIndex) return;
 
             int fromIndex = TabModelUtils.getTabIndexById(
@@ -286,8 +289,6 @@ class TabListMediator {
 
             RecordHistogram.recordSparseHistogram(
                     "Tabs.TabOffsetOfSwitch." + mComponentName, fromIndex - toIndex);
-
-            RecordUserAction.record("MobileTabSwitched." + mComponentName);
         }
     };
 
@@ -534,6 +535,12 @@ class TabListMediator {
 
                     if (!isValidMovePosition(srcIndex) || !isValidMovePosition(desIndex)) return;
                     mModel.removeAt(srcIndex);
+                    if (getRelatedTabsForId(movedTab.getId()).size() == 2) {
+                        // When users use drop-to-merge to create a group.
+                        RecordUserAction.record("TabGroup.Created.DropToMerge");
+                    } else {
+                        RecordUserAction.record("TabGrid.Drag.DropToMerge");
+                    }
 
                     desIndex = srcIndex > desIndex ? desIndex : desIndex - 1;
                     Tab newSelectedTab = mTabModelSelector.getTabModelFilterProvider()

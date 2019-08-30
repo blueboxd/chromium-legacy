@@ -9,6 +9,7 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport_test.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_ice_transport_adapter_cross_thread_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"

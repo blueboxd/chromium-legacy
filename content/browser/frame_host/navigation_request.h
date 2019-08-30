@@ -838,6 +838,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return std::move(modified_request_headers_);
   }
 
+  // Helper functions to trace the start and end of |navigation_handle_|.
+  void TraceNavigationHandleStart();
+  void TraceNavigationHandleEnd();
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.

@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reader.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_reader_options.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_scan_options.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -46,9 +46,8 @@ MATCHER_P(MessageEquals, expected, "") {
 
 class MockNFCReader : public NFCReader {
  public:
-  explicit MockNFCReader(ExecutionContext* execution_context,
-                         NFCReaderOptions* options)
-      : NFCReader(execution_context, options) {}
+  explicit MockNFCReader(ExecutionContext* execution_context)
+      : NFCReader(execution_context) {}
 
   MOCK_METHOD2(OnReading,
                void(const String& serial_number,
@@ -119,7 +118,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
                   CancelPushCallback callback) override {
     std::move(callback).Run(nullptr);
   }
-  void Watch(device::mojom::blink::NFCReaderOptionsPtr options,
+  void Watch(device::mojom::blink::NFCScanOptionsPtr options,
              uint32_t id,
              WatchCallback callback) override {
     watches_.emplace(id, std::move(options));
@@ -142,7 +141,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
 
   device::mojom::blink::NDEFMessagePtr tag_message_;
   mojo::Remote<device::mojom::blink::NFCClient> client_;
-  std::map<uint32_t, device::mojom::blink::NFCReaderOptionsPtr> watches_;
+  std::map<uint32_t, device::mojom::blink::NFCScanOptionsPtr> watches_;
   mojo::Receiver<device::mojom::blink::NFC> receiver_;
 };
 
@@ -173,11 +172,11 @@ class NFCProxyTest : public PageTestBase {
 TEST_F(NFCProxyTest, SuccessfulPath) {
   auto& document = GetDocument();
   auto* nfc_proxy = NFCProxy::From(document);
-  auto* read_options = NFCReaderOptions::Create();
-  read_options->setURL(kTestUrl);
-  auto* reader = MakeGarbageCollected<MockNFCReader>(&document, read_options);
+  auto* scan_options = NFCScanOptions::Create();
+  scan_options->setURL(kTestUrl);
+  auto* reader = MakeGarbageCollected<MockNFCReader>(&document);
 
-  nfc_proxy->StartReading(reader);
+  nfc_proxy->StartReading(reader, scan_options);
   EXPECT_TRUE(nfc_proxy->IsReading(reader));
   test::RunPendingTasks();
   EXPECT_EQ(nfc_service()->GetWatches().size(), 1u);
@@ -216,11 +215,11 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
 TEST_F(NFCProxyTest, ErrorPath) {
   auto& document = GetDocument();
   auto* nfc_proxy = NFCProxy::From(document);
-  auto* read_options = NFCReaderOptions::Create();
-  read_options->setURL(kTestUrl);
-  auto* reader = MakeGarbageCollected<MockNFCReader>(&document, read_options);
+  auto* scan_options = NFCScanOptions::Create();
+  scan_options->setURL(kTestUrl);
+  auto* reader = MakeGarbageCollected<MockNFCReader>(&document);
 
-  nfc_proxy->StartReading(reader);
+  nfc_proxy->StartReading(reader, scan_options);
   EXPECT_TRUE(nfc_proxy->IsReading(reader));
   test::RunPendingTasks();
 

@@ -78,7 +78,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
       const base::string16& suggested_name,
       const bool use_prompt,
       const bool follow_cross_origin_redirects,
-      blink::mojom::BlobURLTokenPtrInfo blob_url_token) const;
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) const;
 
  private:
   friend class BrowserThread;

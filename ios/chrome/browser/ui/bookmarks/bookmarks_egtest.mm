@@ -4112,7 +4112,7 @@ id<GREYMatcher> SearchIconButton() {
   // Interrupt the folder name editing by tapping on First URL.
   [BookmarksTestCase scrollToTop];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
       performAction:grey_tap()];
   // Reopen bookmarks.
   [BookmarksTestCase openBookmarks];
@@ -4420,7 +4420,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Try long press.
   [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
       performAction:grey_longPress()];
 
   // Verify context menu is not visible.

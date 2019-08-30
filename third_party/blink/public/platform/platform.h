@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "base/containers/span.h"
-#include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"

@@ -86,7 +86,8 @@ CSSValue* StyleFetchedImage::CssValue() const {
       const_cast<StyleFetchedImage*>(this));
 }
 
-CSSValue* StyleFetchedImage::ComputedCSSValue() const {
+CSSValue* StyleFetchedImage::ComputedCSSValue(const ComputedStyle&,
+                                              bool allow_visited_style) const {
   return CssValue();
 }
 

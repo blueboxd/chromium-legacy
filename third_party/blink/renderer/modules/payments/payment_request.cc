@@ -393,13 +393,14 @@ void SetBasicCardMethodData(const ScriptValue& input,
                                       output->supported_types, exception_state);
 }
 
-void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
+void StringifyAndParseMethodSpecificData(v8::Isolate* isolate,
                                          const String& supported_method,
                                          const ScriptValue& input,
                                          PaymentMethodDataPtr& output,
                                          ExceptionState& exception_state) {
   PaymentsValidators::ValidateAndStringifyObject(
-      "Payment method data", input, output->stringified_data, exception_state);
+      isolate, "Payment method data", input, output->stringified_data,
+      exception_state);
   if (exception_state.HadException())
     return;
 
@@ -459,8 +460,8 @@ void ValidateAndConvertPaymentDetailsModifiers(
 
     if (modifier->hasData() && !modifier->data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
-          execution_context, modifier->supportedMethod(), modifier->data(),
-          output.back()->method_data, exception_state);
+          execution_context.GetIsolate(), modifier->supportedMethod(),
+          modifier->data(), output.back()->method_data, exception_state);
     } else {
       output.back()->method_data->stringified_data = "";
     }
@@ -563,7 +564,9 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate* input,
 
   if (input->hasPaymentMethodErrors()) {
     PaymentsValidators::ValidateAndStringifyObject(
-        "Payment method errors", input->paymentMethodErrors(),
+        execution_context.GetIsolate(), "Payment method errors",
+        input->paymentMethodErrors(),
+
         output->stringified_payment_method_errors, exception_state);
   }
 }
@@ -601,8 +604,9 @@ void ValidateAndConvertPaymentMethodData(
     if (payment_method_data->hasData() &&
         !payment_method_data->data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
-          execution_context, payment_method_data->supportedMethod(),
-          payment_method_data->data(), output.back(), exception_state);
+          execution_context.GetIsolate(),
+          payment_method_data->supportedMethod(), payment_method_data->data(),
+          output.back(), exception_state);
     } else {
       output.back()->stringified_data = "";
     }

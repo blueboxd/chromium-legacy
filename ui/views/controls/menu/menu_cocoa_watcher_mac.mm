@@ -15,7 +15,7 @@ MenuCocoaWatcherMac::MenuCocoaWatcherMac(base::OnceClosure callback)
     : callback_(std::move(callback)) {
   observer_token_other_menu_ = [[NSNotificationCenter defaultCenter]
       addObserverForName:NSMenuDidBeginTrackingNotification
-                  object:[NSApp mainMenu]
+                  object:nil
                    queue:nil
               usingBlock:^(NSNotification* notification) {
                 ExecuteCallback();

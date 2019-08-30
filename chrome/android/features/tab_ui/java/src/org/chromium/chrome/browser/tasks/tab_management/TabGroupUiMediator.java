@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -210,7 +211,11 @@ public class TabGroupUiMediator {
             Tab currentTab = mTabModelSelector.getCurrentTab();
             if (currentTab == null) return;
             mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
-            RecordUserAction.record("TabGroup.ExpandedFromStrip");
+            if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
+                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
+            } else {
+                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridSheet");
+            }
         });
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.ADD_CLICK_LISTENER, view -> {
             Tab currentTab = mTabModelSelector.getCurrentTab();
@@ -224,7 +229,7 @@ public class TabGroupUiMediator {
             mTabCreatorManager.getTabCreator(currentTab.isIncognito())
                     .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
                             TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
-            RecordUserAction.record("MobileNewTabOpened" + TabGroupUiCoordinator.COMPONENT_NAME);
+            RecordUserAction.record("MobileNewTabOpened." + TabGroupUiCoordinator.COMPONENT_NAME);
         });
     }
 

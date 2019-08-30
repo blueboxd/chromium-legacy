@@ -40,6 +40,7 @@
 #include "components/password_manager/core/browser/credential_cache.h"
 
 class PasswordAccessoryController;
+class TouchToFillController;
 #endif
 
 class PasswordGenerationPopupObserver;
@@ -214,6 +215,8 @@ class ChromePasswordManagerClient
 #if defined(OS_ANDROID)
   PasswordAccessoryController* GetOrCreatePasswordAccessory();
 
+  TouchToFillController* GetOrCreateTouchToFillController();
+
   password_manager::CredentialCache* GetCredentialCacheForTesting() {
     return &credential_cache_;
   }
@@ -289,6 +292,10 @@ class ChromePasswordManagerClient
 #if defined(OS_ANDROID)
   // Holds and facilitates a credential store for each origin in this tab.
   password_manager::CredentialCache credential_cache_;
+
+  // Controller for the Touch To Fill sheet. Created on demand during the first
+  // call to GetOrCreateTouchToFillController().
+  std::unique_ptr<TouchToFillController> touch_to_fill_controller_;
 #endif
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;

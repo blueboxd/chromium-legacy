@@ -186,7 +186,7 @@ std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeBlobStorageContext::URLLoaderFactoryForToken(
     BrowserContext* browser_context,
-    blink::mojom::BlobURLTokenPtr token) {
+    mojo::PendingRemote<blink::mojom::BlobURLToken> token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   network::mojom::URLLoaderFactoryPtr blob_url_loader_factory_ptr;
   base::PostTask(
@@ -194,13 +194,13 @@ ChromeBlobStorageContext::URLLoaderFactoryForToken(
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
              network::mojom::URLLoaderFactoryRequest request,
-             blink::mojom::BlobURLTokenPtrInfo token) {
+             mojo::PendingRemote<blink::mojom::BlobURLToken> token) {
             storage::BlobURLLoaderFactory::Create(
-                blink::mojom::BlobURLTokenPtr(std::move(token)),
-                context->context()->AsWeakPtr(), std::move(request));
+                std::move(token), context->context()->AsWeakPtr(),
+                std::move(request));
           },
           base::WrapRefCounted(GetFor(browser_context)),
-          MakeRequest(&blob_url_loader_factory_ptr), token.PassInterface()));
+          MakeRequest(&blob_url_loader_factory_ptr), std::move(token)));
   return base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
       std::move(blob_url_loader_factory_ptr));
 }

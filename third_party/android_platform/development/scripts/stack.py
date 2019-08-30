@@ -167,9 +167,9 @@ def main(argv):
     if option == "--help":
       PrintUsage()
     elif option == "--symbols-dir":
-      symbol.SYMBOLS_DIR = os.path.expanduser(value)
+      symbol.SYMBOLS_DIR = os.path.abspath(os.path.expanduser(value))
     elif option == "--symbols-zip":
-      zip_arg = os.path.expanduser(value)
+      zip_arg = os.path.abspath(os.path.expanduser(value))
     elif option == "--arch":
       symbol.ARCH = value
       arch_defined = True
@@ -177,9 +177,9 @@ def main(argv):
       symbol.CHROME_SYMBOLS_DIR = os.path.join(constants.DIR_SOURCE_ROOT,
                                                value)
     elif option == "--output-directory":
-      constants.SetOutputDirectory(value)
+      constants.SetOutputDirectory(os.path.abspath(value))
     elif option == "--packed-lib":
-      packed_libs.append(os.path.expanduser(value))
+      packed_libs.append(os.path.abspath(os.path.expanduser(value)))
     elif option == "--more-info":
       more_info = True
     elif option == "--less-info":

@@ -8,6 +8,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
@@ -36,7 +37,8 @@ class MockWebIDBTransaction : public testing::StrictMock<WebIDBTransaction> {
                     Vector<IDBIndexKeys>));
   MOCK_METHOD1(Commit, void(int64_t num_errors_handled));
 
-  mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
+  mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction> CreateReceiver()
+      override;
 };
 
 }  // namespace blink

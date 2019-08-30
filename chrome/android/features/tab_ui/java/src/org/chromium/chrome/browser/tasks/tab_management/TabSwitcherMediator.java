@@ -121,6 +121,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private int mModelIndexWhenShown;
     private int mTabIdwhenShown;
     private int mIndexInNewModelWhenSwitched;
+    private boolean mIsSelectingInTabSwitcher;
 
     private boolean mShowTabsInMruOrder;
 
@@ -199,7 +200,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                     mShouldIgnoreNextSelect = false;
                     return;
                 }
-                if (mContainerViewModel.get(IS_VISIBLE)) {
+                if (mIsSelectingInTabSwitcher) {
+                    mIsSelectingInTabSwitcher = false;
                     TabModelFilter modelFilter = mTabModelSelector.getTabModelFilterProvider()
                                                          .getCurrentTabModelFilter();
                     if (modelFilter instanceof TabGroupModelFilter) {
@@ -208,7 +210,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
                     // Use TabSelectionType.From_USER to filter the new tab creation case.
                     if (type == TabSelectionType.FROM_USER) recordUserSwitchedTab(tab, lastId);
+                }
 
+                if (mContainerViewModel.get(IS_VISIBLE)) {
                     onTabSelecting(tab.getId());
                 }
             }
@@ -327,7 +331,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
         Tab fromTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), lastId);
         assert fromTab != null;
-
         if (mModelIndexWhenShown == mTabModelSelector.getCurrentModelIndex()) {
             if (tab.getId() == mTabIdwhenShown) {
                 RecordUserAction.record("MobileTabReturnedToCurrentTab");
@@ -342,8 +345,12 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                                       .indexOf(tab);
 
                 if (fromIndex != toIndex || fromTab.getId() == tab.getId()) {
-                    RecordUserAction.record(
-                            "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
+                    // Only log when you switch a tab page directly from tab switcher.
+                    if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+                            || getRelatedTabs(tab.getId()).size() == 1) {
+                        RecordUserAction.record(
+                                "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
+                    }
                     RecordHistogram.recordSparseHistogram(
                             "Tabs.TabOffsetOfSwitch." + TabSwitcherCoordinator.COMPONENT_NAME,
                             fromIndex - toIndex);
@@ -360,7 +367,12 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 // here.
                 RecordUserAction.record("MobileTabSwitched");
             }
-            RecordUserAction.record("MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
+            // Only log when you switch a tab page directly from tab switcher.
+            if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
+                    || getRelatedTabs(tab.getId()).size() == 1) {
+                RecordUserAction.record(
+                        "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
+            }
         }
     }
 
@@ -530,11 +542,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 relatedTabs = null;
             }
             mTabGridDialogResetHandler.resetWithListOfTabs(relatedTabs);
+            RecordUserAction.record("TabGridDialog.ExpandedFromSwitcher");
         };
     }
 
     @Override
     public void onTabSelecting(int tabId) {
+        mIsSelectingInTabSwitcher = true;
         mOnTabSelectingListener.onTabSelecting(LayoutManager.time(), tabId);
     }
 

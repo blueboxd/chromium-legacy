@@ -1624,8 +1624,7 @@ Response InspectorCSSAgent::forcePseudoState(
     node_id_to_forced_pseudo_state_.Set(node_id, forced_pseudo_state);
   else
     node_id_to_forced_pseudo_state_.erase(node_id);
-  element->ownerDocument()->SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  element->ownerDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
   return Response::OK();
 }
@@ -2087,8 +2086,7 @@ void InspectorCSSAgent::DidAddDocument(Document* document) {
     return;
 
   document->GetStyleEngine().SetRuleUsageTracker(tracker_);
-  document->SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
+  document->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
 }
 
@@ -2141,8 +2139,7 @@ void InspectorCSSAgent::ResetPseudoStates() {
 
   node_id_to_forced_pseudo_state_.clear();
   for (auto& document : documents_to_change) {
-    document->SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
+    document->GetStyleEngine().MarkAllElementsForStyleRecalc(
         StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
   }
 }
@@ -2399,8 +2396,7 @@ Response InspectorCSSAgent::startRuleUsageTracking() {
   SetCoverageEnabled(true);
 
   for (Document* document : dom_agent_->Documents()) {
-    document->SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
+    document->GetStyleEngine().MarkAllElementsForStyleRecalc(
         StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
     document->UpdateStyleAndLayoutTree();
   }

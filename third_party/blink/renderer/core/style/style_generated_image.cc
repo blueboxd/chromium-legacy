@@ -49,8 +49,10 @@ CSSValue* StyleGeneratedImage::CssValue() const {
   return image_generator_value_.Get();
 }
 
-CSSValue* StyleGeneratedImage::ComputedCSSValue() const {
-  return image_generator_value_->ValueWithURLsMadeAbsolute();
+CSSValue* StyleGeneratedImage::ComputedCSSValue(
+    const ComputedStyle& style,
+    bool allow_visited_style) const {
+  return image_generator_value_->ComputedCSSValue(style, allow_visited_style);
 }
 
 FloatSize StyleGeneratedImage::ImageSize(

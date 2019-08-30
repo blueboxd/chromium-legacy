@@ -14,12 +14,11 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using blink::mojom::blink::IDBCallbacksAssociatedPtrInfo;
-using blink::mojom::blink::IDBCursorAssociatedPtrInfo;
 
 namespace blink {
 
 WebIDBCursorImpl::WebIDBCursorImpl(
-    mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+    mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
     int64_t transaction_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : transaction_id_(transaction_id),

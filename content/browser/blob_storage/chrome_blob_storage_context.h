@@ -71,8 +71,9 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   // itself is invalid all requests will result in errors.
   // Must be called on the UI thread.
   static scoped_refptr<network::SharedURLLoaderFactory>
-  URLLoaderFactoryForToken(BrowserContext* browser_context,
-                           blink::mojom::BlobURLTokenPtr token);
+  URLLoaderFactoryForToken(
+      BrowserContext* browser_context,
+      mojo::PendingRemote<blink::mojom::BlobURLToken> token);
 
   // Similar to the above method this also returns a factory capable of loading
   // a single (blob) URL. If the |url| isn't a valid/registered blob URL at the

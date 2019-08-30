@@ -39,8 +39,8 @@ void MockIpGeoLocationProvider::Bind(mojo::ScopedMessagePipeHandle handle) {
 
 void MockIpGeoLocationProvider::CreateGeolocation(
     const net::MutablePartialNetworkTrafficAnnotationTag& /* unused */,
-    device::mojom::GeolocationRequest request) {
-  mock_geo_location_->BindGeoLocation(std::move(request));
+    mojo::PendingReceiver<device::mojom::Geolocation> receiver) {
+  mock_geo_location_->BindGeoLocation(std::move(receiver));
 }
 
 }  // namespace language

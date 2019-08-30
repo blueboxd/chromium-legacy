@@ -571,6 +571,7 @@
     <!-- Bottom Sheet dimensions -->
     <dimen name="bottom_sheet_min_full_half_distance">140dp</dimen>
     <dimen name="bottom_sheet_peek_height">56dp</dimen>
+    <dimen name="bottom_sheet_toolbar_shadow_height">16dp</dimen>
 
     <!-- TextBubble dimensions -->
     <dimen name="text_bubble_margin">4dp</dimen>

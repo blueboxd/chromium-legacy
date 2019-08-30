@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_SMB_SHARES_SMB_HANDLER_H_
 
 #include "base/callback_forward.h"
-#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"

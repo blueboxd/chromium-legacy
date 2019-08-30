@@ -14,7 +14,7 @@ namespace blink {
 class DOMArrayBuffer;
 class NDEFRecordInit;
 class NDEFMessageInit;
-class NFCReaderOptions;
+class NFCScanOptions;
 class NFCPushOptions;
 }  // namespace blink
 
@@ -100,10 +100,10 @@ struct TypeConverter<device::mojom::blink::NFCPushOptionsPtr,
 };
 
 template <>
-struct TypeConverter<device::mojom::blink::NFCReaderOptionsPtr,
-                     const blink::NFCReaderOptions*> {
-  static device::mojom::blink::NFCReaderOptionsPtr Convert(
-      const blink::NFCReaderOptions* watchOptions);
+struct TypeConverter<device::mojom::blink::NFCScanOptionsPtr,
+                     const blink::NFCScanOptions*> {
+  static device::mojom::blink::NFCScanOptionsPtr Convert(
+      const blink::NFCScanOptions* scanOptions);
 };
 
 }  // namespace mojo

@@ -28,7 +28,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoaderFactory
   // Creates a factory for a BlobURLToken. The token is used to look up the blob
   // and blob URL in the (browser side) BlobStorageRegistry, to ensure you can't
   // use a blob URL to load the contents of an unrelated blob.
-  static void Create(blink::mojom::BlobURLTokenPtr token,
+  static void Create(mojo::PendingRemote<blink::mojom::BlobURLToken> token,
                      base::WeakPtr<BlobStorageContext> context,
                      network::mojom::URLLoaderFactoryRequest request);
 

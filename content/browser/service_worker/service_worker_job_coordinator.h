@@ -63,12 +63,6 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
     ServiceWorkerRegisterJobBase* Push(
         std::unique_ptr<ServiceWorkerRegisterJobBase> job);
 
-    // Dooms the installing worker of the running register/update job if a
-    // register/update job is scheduled to run after it. This corresponds to
-    // the "Terminate installing worker" steps at the beginning of the spec's
-    // [[Update]] and [[Install]] algorithms.
-    void DoomInstallingWorkerIfNeeded();
-
     // Starts the first job in the queue.
     void StartOneJob();
 

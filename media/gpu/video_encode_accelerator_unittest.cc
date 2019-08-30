@@ -2044,7 +2044,7 @@ void VEAClient::BitstreamBufferReady(
     // frames are received.
     if (!encoder_->IsFlushSupported() &&
         num_encoded_frames_ == num_frames_to_encode_) {
-      FlushEncoderSuccessfully();
+      FlushEncoderDone(true);
     }
 
     if (save_to_file_) {

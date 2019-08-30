@@ -585,8 +585,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)[chromeos::kDisplayRotationDefault] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_whitelist)[arc::prefs::kArcHasAccessToRemovableMedia] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[arc::prefs::kArcVisibleExternalStorages] =
       settings_api::PrefType::PREF_TYPE_LIST;
 

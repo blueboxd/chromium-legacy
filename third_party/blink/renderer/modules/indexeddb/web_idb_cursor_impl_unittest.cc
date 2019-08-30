@@ -11,7 +11,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
@@ -25,9 +27,10 @@ namespace {
 
 class MockCursorImpl : public mojom::blink::IDBCursor {
  public:
-  explicit MockCursorImpl(mojom::blink::IDBCursorAssociatedRequest request)
-      : binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(base::BindOnce(
+  explicit MockCursorImpl(
+      mojo::PendingAssociatedReceiver<mojom::blink::IDBCursor> receiver)
+      : receiver_(this, std::move(receiver)) {
+    receiver_.set_disconnect_handler(base::BindOnce(
         &MockCursorImpl::CursorDestroyed, base::Unretained(this)));
   }
 
@@ -77,7 +80,7 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
   int continue_calls_ = 0;
   bool destroyed_ = false;
 
-  mojo::AssociatedBinding<IDBCursor> binding_;
+  mojo::AssociatedReceiver<IDBCursor> receiver_;
 };
 
 class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
@@ -110,11 +113,11 @@ class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
 class WebIDBCursorImplTest : public testing::Test {
  public:
   WebIDBCursorImplTest() : null_key_(IDBKey::CreateNone()) {
-    mojom::blink::IDBCursorAssociatedPtr ptr;
+    mojo::AssociatedRemote<mojom::blink::IDBCursor> remote;
     mock_cursor_ = std::make_unique<MockCursorImpl>(
-        mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
+        remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
     cursor_ = std::make_unique<WebIDBCursorImpl>(
-        ptr.PassInterface(), 1,
+        remote.Unbind(), 1,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 

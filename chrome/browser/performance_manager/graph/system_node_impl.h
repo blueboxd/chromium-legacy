@@ -27,6 +27,10 @@ class SystemNodeImpl : public PublicNodeImpl<SystemNodeImpl, SystemNode>,
   explicit SystemNodeImpl(GraphImpl* graph);
   ~SystemNodeImpl() override;
 
+  // This should be called after refreshing the memory usage data of the process
+  // nodes.
+  void OnProcessMemoryMetricsAvailable();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemNodeImpl);
 };

@@ -80,12 +80,8 @@ ArcVolumeMounterBridge::ArcVolumeMounterBridge(content::BrowserContext* context,
   DiskMountManager::GetInstance()->AddObserver(this);
 
   change_registerar_.Init(pref_service_);
-  // Start monitoring |kArcHasAccessToRemovableMedia| changes. Note that the
+  // Start monitoring |kArcVisibleExternalStorages| changes. Note that the
   // registerar automatically stops monitoring the pref in its dtor.
-  change_registerar_.Add(
-      prefs::kArcHasAccessToRemovableMedia,
-      base::BindRepeating(&ArcVolumeMounterBridge::OnPrefChanged,
-                          weak_ptr_factory_.GetWeakPtr()));
   change_registerar_.Add(
       prefs::kArcVisibleExternalStorages,
       base::BindRepeating(&ArcVolumeMounterBridge::OnVisibleStoragesChanged,
@@ -126,28 +122,6 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
   volume_mounter_instance->OnMountEvent(mojom::MountPointInfo::New(
       DiskMountManager::MOUNTING, kMyFilesPath, kMyFilesPath, kMyFilesUuid,
       device_label, device_type, false));
-}
-
-bool ArcVolumeMounterBridge::HasAccessToRemovableMedia() const {
-  DCHECK(pref_service_);
-  // If the UI is not enabled, allow the access.
-  if (!base::FeatureList::IsEnabled(arc::kUsbStorageUIFeature))
-    return true;
-  return pref_service_->GetBoolean(prefs::kArcHasAccessToRemovableMedia);
-}
-
-void ArcVolumeMounterBridge::OnPrefChanged() {
-  if (HasAccessToRemovableMedia()) {
-    // Mount everything again. Mounting the same disk (e.g. MyFiles) again is
-    // allowed and is no-op.
-    SendAllMountEvents();
-    return;
-  }
-  // Unmount everything except for MyFiles.
-  for (const auto& keyValue : DiskMountManager::GetInstance()->mount_points()) {
-    OnMountEvent(DiskMountManager::MountEvent::UNMOUNTING,
-                 chromeos::MountError::MOUNT_ERROR_NONE, keyValue.second);
-  }
 }
 
 bool ArcVolumeMounterBridge::IsVisibleToAndroidApps(
@@ -198,15 +172,6 @@ void ArcVolumeMounterBridge::OnMountEvent(
   }
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
     DVLOG(1) << "Error " << error_code << "occurs during MountEvent " << event;
-    return;
-  }
-
-  // Do not propagate MOUNTING event to ARC when the media sharing setting is
-  // turned off. The other event (i.e. UNMOUNTING) should still go through.
-  if (event == DiskMountManager::MountEvent::MOUNTING &&
-      !HasAccessToRemovableMedia()) {
-    VLOG(2) << "Disk at " << mount_info.source_path
-            << " is not allowed to be shared with ARC";
     return;
   }
 

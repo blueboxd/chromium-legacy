@@ -400,9 +400,11 @@ def cpp_name_or_partial(interface):
 def measure_as(definition_or_member, interface):
     extended_attributes = definition_or_member.extended_attributes
     if 'MeasureAs' in extended_attributes:
+        includes.add('core/frame/web_feature.h')
         includes.add('platform/instrumentation/use_counter.h')
         return lambda suffix: extended_attributes['MeasureAs']
     if 'Measure' in extended_attributes:
+        includes.add('core/frame/web_feature.h')
         includes.add('platform/instrumentation/use_counter.h')
         measure_as_name = capitalize(definition_or_member.name)
         if interface is not None:

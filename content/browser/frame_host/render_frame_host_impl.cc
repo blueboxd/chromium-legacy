@@ -4150,7 +4150,7 @@ void RenderFrameHostImpl::IssueKeepAliveHandle(
 void RenderFrameHostImpl::BeginNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_params,
-    blink::mojom::BlobURLTokenPtr blob_url_token,
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
     blink::mojom::NavigationInitiatorPtr navigation_initiator) {
   if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
@@ -4179,7 +4179,7 @@ void RenderFrameHostImpl::BeginNavigation(
   // below, and to make sure we don't incorrectly try to use the blob_url_token.
   if (common_params->url.SchemeIsBlob() &&
       !validated_params->url.SchemeIsBlob()) {
-    blob_url_token = nullptr;
+    blob_url_token = mojo::NullRemote();
   }
 
   if (blob_url_token && !validated_params->url.SchemeIsBlob()) {

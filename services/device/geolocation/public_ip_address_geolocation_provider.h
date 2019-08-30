@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/geolocation/public_ip_address_geolocator.h"
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
@@ -41,7 +41,8 @@ class PublicIpAddressGeolocationProvider
   ~PublicIpAddressGeolocationProvider() override;
 
   // Binds a PublicIpAddressGeolocationProvider request to this instance.
-  void Bind(mojom::PublicIpAddressGeolocationProviderRequest request);
+  void Bind(mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider>
+                receiver);
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
@@ -50,7 +51,7 @@ class PublicIpAddressGeolocationProvider
   // Provides a Geolocation instance that performs IP-geolocation only.
   void CreateGeolocation(
       const net::MutablePartialNetworkTrafficAnnotationTag& tag,
-      mojom::GeolocationRequest request) override;
+      mojo::PendingReceiver<mojom::Geolocation> receiver) override;
 
   // Central PublicIpAddressLocationNotifier for use by all implementations of
   // mojom::Geolocation provided by the CreateGeolocation method.
@@ -59,10 +60,10 @@ class PublicIpAddressGeolocationProvider
   std::unique_ptr<PublicIpAddressLocationNotifier>
       public_ip_address_location_notifier_;
 
-  mojo::BindingSet<mojom::PublicIpAddressGeolocationProvider>
-      provider_binding_set_;
+  mojo::ReceiverSet<mojom::PublicIpAddressGeolocationProvider>
+      provider_receiver_set_;
 
-  mojo::StrongBindingSet<mojom::Geolocation> geolocation_binding_set_;
+  mojo::UniqueReceiverSet<mojom::Geolocation> geolocation_receiver_set_;
 
   DISALLOW_COPY_AND_ASSIGN(PublicIpAddressGeolocationProvider);
 };

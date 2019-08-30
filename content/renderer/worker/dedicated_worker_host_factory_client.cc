@@ -9,6 +9,7 @@
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -70,8 +71,8 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
   factory_->CreateWorkerHostAndStartScriptLoad(
       script_url, script_origin, credentials_mode,
       std::move(outside_fetch_client_settings_object),
-      blink::mojom::BlobURLTokenPtr(blink::mojom::BlobURLTokenPtrInfo(
-          std::move(blob_url_token), blink::mojom::BlobURLToken::Version_)),
+      mojo::PendingRemote<blink::mojom::BlobURLToken>(
+          std::move(blob_url_token), blink::mojom::BlobURLToken::Version_),
       receiver_.BindNewPipeAndPassRemote(),
       remote_host_.BindNewPipeAndPassReceiver());
 }

@@ -127,12 +127,6 @@ struct ThemeBackgroundInfo {
   // The picked custom color for Chrome Colors. Valid only if Chrome Colors is
   // set.
   SkColor color_picked = gfx::kPlaceholderColor;
-
-  // Color used for alternative Google logo on NTP.
-  SkColor logo_color = gfx::kPlaceholderColor;
-
-  // Color for NTP shortcut backgrounds.
-  SkColor shortcut_color = gfx::kPlaceholderColor;
 };
 
 struct InstantMostVisitedItem {

@@ -155,6 +155,7 @@ public class PickerCategoryView extends RelativeLayout
                 false);
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
+        mToolbar.showBackArrow();
 
         mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);
         mSearchButton.setOnClickListener(this);
@@ -181,6 +182,8 @@ public class PickerCategoryView extends RelativeLayout
     public void initialize(ContactsPickerDialog dialog, ContactsPickerListener listener) {
         mDialog = dialog;
         mListener = listener;
+
+        mToolbar.setParentDialog(mDialog);
 
         mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
@@ -210,7 +213,6 @@ public class PickerCategoryView extends RelativeLayout
     public void onEndSearch() {
         mPickerAdapter.setSearchString("");
         mPickerAdapter.setSearchMode(false);
-        mToolbar.showCloseButton();
         mToolbar.setNavigationOnClickListener(this);
         mDoneButton.setVisibility(VISIBLE);
         mSearchButton.setVisibility(VISIBLE);

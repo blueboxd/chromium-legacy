@@ -68,7 +68,8 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
 
   bool Equals(const CSSCrossfadeValue&) const;
 
-  CSSCrossfadeValue* ValueWithURLsMadeAbsolute();
+  CSSCrossfadeValue* ComputedCSSValue(const ComputedStyle&,
+                                      bool allow_visited_style);
 
   void TraceAfterDispatch(blink::Visitor*);
 

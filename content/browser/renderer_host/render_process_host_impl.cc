@@ -1861,11 +1861,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::BindCacheStorage(
-    blink::mojom::CacheStorageRequest request,
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  storage_partition_impl_->GetCacheStorageContext()->AddBinding(
-      std::move(request), origin);
+  storage_partition_impl_->GetCacheStorageContext()->AddReceiver(
+      std::move(receiver), origin);
 }
 
 void RenderProcessHostImpl::BindIndexedDB(

@@ -31,6 +31,8 @@
 #include <memory>
 #include <utility>
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -133,7 +135,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }
 
   void SuccessCursor(
-      mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
+      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primary_key,
       base::Optional<std::unique_ptr<IDBValue>> optional_value) override {
@@ -147,8 +149,9 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     NOTREACHED();
   }
 
-  void SuccessDatabase(mojom::blink::IDBDatabaseAssociatedPtrInfo backend,
-                       const IDBDatabaseMetadata& metadata) override {
+  void SuccessDatabase(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_backend,
+      const IDBDatabaseMetadata& metadata) override {
     NOTREACHED();
   }
 
@@ -175,11 +178,12 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
 
   void Blocked(int64_t old_version) override { NOTREACHED(); }
 
-  void UpgradeNeeded(mojom::blink::IDBDatabaseAssociatedPtrInfo database,
-                     int64_t old_version,
-                     mojom::IDBDataLoss data_loss,
-                     const String& data_loss_message,
-                     const IDBDatabaseMetadata& metadata) override {
+  void UpgradeNeeded(
+      mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,
+      int64_t old_version,
+      mojom::IDBDataLoss data_loss,
+      const String& data_loss_message,
+      const IDBDatabaseMetadata& metadata) override {
     NOTREACHED();
   }
 
@@ -339,8 +343,8 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
       ExecutionContext::From(script_state)
           ->GetTaskRunner(TaskType::kDatabaseAccess),
       transaction_id);
-  mojom::blink::IDBTransactionAssociatedRequest transaction_request =
-      transaction_backend->CreateRequest();
+  mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
+      transaction_receiver = transaction_backend->CreateReceiver();
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, database_callbacks, std::move(transaction_backend),
       transaction_id, version, std::move(metrics));
@@ -357,7 +361,7 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
     exception_state.ThrowSecurityError("An internal error occurred.");
     return nullptr;
   }
-  factory->Open(name, version, std::move(transaction_request), transaction_id,
+  factory->Open(name, version, std::move(transaction_receiver), transaction_id,
                 request->CreateWebCallbacks(),
                 database_callbacks->CreateWebCallbacks());
   return request;

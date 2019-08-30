@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SERVICES_BROKER_PROCESS_H_
-#define SANDBOX_LINUX_SERVICES_BROKER_PROCESS_H_
+#ifndef SANDBOX_LINUX_SYSCALL_BROKER_BROKER_PROCESS_H_
+#define SANDBOX_LINUX_SYSCALL_BROKER_BROKER_PROCESS_H_
+
+#include <sys/stat.h>
 
 #include <memory>
 #include <string>
@@ -139,4 +141,4 @@ class SANDBOX_EXPORT BrokerProcess {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_LINUX_SERVICES_BROKER_PROCESS_H_
+#endif  // SANDBOX_LINUX_SYSCALL_BROKER_BROKER_PROCESS_H_

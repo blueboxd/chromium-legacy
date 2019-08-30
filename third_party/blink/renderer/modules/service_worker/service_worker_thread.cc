@@ -49,7 +49,7 @@ ServiceWorkerThread::ServiceWorkerThread(
     std::unique_ptr<ServiceWorkerGlobalScopeProxy> global_scope_proxy,
     std::unique_ptr<ServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
-    mojom::blink::CacheStoragePtrInfo cache_storage_info,
+    mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     scoped_refptr<base::SingleThreadTaskRunner>
         parent_thread_default_task_runner)
     : WorkerThread(*global_scope_proxy,
@@ -58,7 +58,7 @@ ServiceWorkerThread::ServiceWorkerThread(
       worker_backing_thread_(std::make_unique<WorkerBackingThread>(
           ThreadCreationParams(GetThreadType()))),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
-      cache_storage_info_(std::move(cache_storage_info)) {}
+      cache_storage_remote_(std::move(cache_storage_remote)) {}
 
 ServiceWorkerThread::~ServiceWorkerThread() {
   global_scope_proxy_->Detach();
@@ -128,7 +128,7 @@ void ServiceWorkerThread::RunInstalledModuleScriptOnWorkerThread(
 WorkerOrWorkletGlobalScope* ServiceWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return ServiceWorkerGlobalScope::Create(this, std::move(creation_params),
-                                          std::move(cache_storage_info_),
+                                          std::move(cache_storage_remote_),
                                           time_origin_);
 }
 

@@ -32,7 +32,8 @@ class MODULES_EXPORT PaymentRequestRespondWithObserver final
                                                    WaitUntilObserver*);
 
   void OnResponseRejected(mojom::ServiceWorkerResponseError) override;
-  void OnResponseFulfilled(const ScriptValue&,
+  void OnResponseFulfilled(ScriptState*,
+                           const ScriptValue&,
                            ExceptionState::ContextType,
                            const char* interface_name,
                            const char* property_name) override;

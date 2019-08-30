@@ -348,7 +348,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Load commands -------------------------------------------------------
 
   // The client should handle the request as a download.
-  // If the request is for a blob: URL, a BlobURLTokenPtr should be provided
+  // If the request is for a blob: URL, a BlobURLToken should be provided
   // as |blob_url_token| to ensure the correct blob gets downloaded.
   enum class CrossOriginRedirects { kFollow, kNavigate };
   virtual void DownloadURL(const WebURLRequest&,

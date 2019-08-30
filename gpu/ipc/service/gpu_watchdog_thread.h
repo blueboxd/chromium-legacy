@@ -59,6 +59,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   // once init is complete, before executing tasks.
   virtual void OnInitComplete() = 0;
 
+  // Notifies the watchdog when the GPU child process is being destroyed.
+  // This function is called directly from
+  // viz::GpuServiceImpl::~GpuServiceImpl()
+  virtual void OnGpuProcessTearDown() = 0;
+
   virtual void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) = 0;
 
   // For gpu testing only. Return status for the watchdog tests
@@ -86,6 +91,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnBackgrounded() override;
   void OnForegrounded() override;
   void OnInitComplete() override {}
+  void OnGpuProcessTearDown() override {}
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
   bool IsGpuHangDetectedForTesting() override;
 

@@ -49,7 +49,8 @@ class StyleFetchedImage final : public StyleImage,
   WrappedImagePtr Data() const override;
 
   CSSValue* CssValue() const override;
-  CSSValue* ComputedCSSValue() const override;
+  CSSValue* ComputedCSSValue(const ComputedStyle&,
+                             bool allow_visited_style) const override;
 
   bool CanRender() const override;
   bool IsLoaded() const override;

@@ -370,6 +370,12 @@
       status: "test",
     },
     {
+      // Support for CSS content-size property.
+      // http://tabatkins.github.io/specs/css-content-size/
+      name: "CSSContentSize",
+      status: "experimental",
+    },
+    {
       name: "CSSFocusVisible",
       status: "experimental",
     },
@@ -1264,6 +1270,9 @@
     {
       name: "PNaCl",
       origin_trial_feature_name: "PNaCl",
+    },
+    {
+      name: "PointerLockOptions",
     },
     {
       name: "PointerRawUpdate",

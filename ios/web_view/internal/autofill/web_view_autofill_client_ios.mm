@@ -153,6 +153,11 @@ void WebViewAutofillClientIOS::ShowLocalCardMigrationResults(
   NOTIMPLEMENTED();
 }
 
+void WebViewAutofillClientIOS::ShowWebauthnOfferDialog(
+    WebauthnOfferDialogCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {

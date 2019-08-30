@@ -59,9 +59,9 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void Restart();
 
   // network::mojom::URLLoaderClient
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
@@ -486,16 +486,16 @@ void OnNewLoginRequest(int process_id,
 // URLLoaderClient methods.
 
 void InterceptedRequest::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // intercept response headers here
   // pause/resume proxied_client_binding_ if necessary
 
-  if (head.headers && head.headers->response_code() >= 400) {
+  if (head->headers && head->headers->response_code() >= 400) {
     // In Android WebView the WebViewClient.onReceivedHttpError callback
     // is invoked for any resource (main page, iframe, image, etc.) with
     // status code >= 400.
     std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> error_info =
-        AwContentsClientBridge::ExtractHttpErrorInfo(head.headers.get());
+        AwContentsClientBridge::ExtractHttpErrorInfo(head->headers.get());
 
     OnReceivedHttpError(process_id_, request_.render_frame_id,
                         AwWebResourceRequest(request_), std::move(error_info));
@@ -506,8 +506,8 @@ void InterceptedRequest::OnReceiveResponse(
     // Check for x-auto-login-header
     HeaderData header_data;
     std::string header_string;
-    if (head.headers && head.headers->GetNormalizedHeader(kAutoLoginHeaderName,
-                                                          &header_string)) {
+    if (head->headers && head->headers->GetNormalizedHeader(
+                             kAutoLoginHeaderName, &header_string)) {
       if (ParseHeader(header_string, ALLOW_ANY_REALM, &header_data)) {
         // TODO(timvolodine): consider simplifying this and above callback
         // code, crbug.com/897149.
@@ -518,15 +518,15 @@ void InterceptedRequest::OnReceiveResponse(
     }
   }
 
-  target_client_->OnReceiveResponse(head);
+  target_client_->OnReceiveResponse(std::move(head));
 }
 
 void InterceptedRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // TODO(timvolodine): handle redirect override.
   request_was_redirected_ = true;
-  target_client_->OnReceiveRedirect(redirect_info, head);
+  target_client_->OnReceiveRedirect(redirect_info, std::move(head));
   request_.url = redirect_info.new_url;
   request_.method = redirect_info.new_method;
   request_.site_for_cookies = redirect_info.new_site_for_cookies;

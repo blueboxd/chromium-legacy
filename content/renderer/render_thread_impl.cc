@@ -1857,7 +1857,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     // Set it to be our thread's task runner instead.
     params.compositor_task_runner = main_thread_compositor_task_runner_;
   }
-  params.enable_surface_synchronization = true;
   if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
@@ -1951,14 +1950,12 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (GetContentClient()->UsingSynchronousCompositing()) {
     RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
     if (widget) {
-      // TODO(ericrk): Remove this check when SurfaceSynchronization is always
-      // enabled, and collapse with non-webview registration below.
-      if (features::IsSurfaceSynchronizationEnabled()) {
-        frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-            widget_routing_id,
-            std::move(render_frame_metadata_observer_client_request),
-            std::move(render_frame_metadata_observer_ptr));
-      }
+      // TODO(ericrk): Collapse with non-webview registration below.
+      frame_sink_provider_->RegisterRenderFrameMetadataObserver(
+          widget_routing_id,
+          std::move(render_frame_metadata_observer_client_request),
+          std::move(render_frame_metadata_observer_ptr));
+
       std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
           compositor_task_runner_, GetGpuMemoryBufferManager(),

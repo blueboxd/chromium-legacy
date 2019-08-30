@@ -24,6 +24,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/constants.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 

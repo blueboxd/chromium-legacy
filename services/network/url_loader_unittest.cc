@@ -2597,7 +2597,7 @@ class MockNetworkContextClient : public TestNetworkContextClient {
       const GURL& url,
       bool first_auth_attempt,
       const net::AuthChallengeInfo& auth_info,
-      const base::Optional<network::ResourceResponseHead>& head,
+      network::mojom::URLResponseHeadPtr head,
       mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
     if (head)
       EXPECT_TRUE(head->auth_challenge_info.has_value());
@@ -3665,8 +3665,8 @@ TEST_F(URLLoaderTest, CookieReporting) {
     EXPECT_EQ(
         "b",
         network_context_client.reported_response_cookies()[0].cookie.Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_context_client.reported_response_cookies()[0].status);
+    EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
+                    .status.IsInclude());
   }
 
   {
@@ -3699,8 +3699,8 @@ TEST_F(URLLoaderTest, CookieReporting) {
     EXPECT_EQ(
         "b",
         network_context_client.reported_request_cookies()[0].cookie.Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_context_client.reported_request_cookies()[0].status);
+    EXPECT_TRUE(network_context_client.reported_request_cookies()[0]
+                    .status.IsInclude());
   }
 }
 
@@ -3748,8 +3748,8 @@ TEST_F(URLLoaderTest, CookieReportingRedirect) {
   EXPECT_EQ(
       "true",
       network_context_client.reported_response_cookies()[0].cookie.Value());
-  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-            network_context_client.reported_response_cookies()[0].status);
+  EXPECT_TRUE(
+      network_context_client.reported_response_cookies()[0].status.IsInclude());
 }
 
 TEST_F(URLLoaderTest, CookieReportingAuth) {
@@ -3790,8 +3790,8 @@ TEST_F(URLLoaderTest, CookieReportingAuth) {
     EXPECT_EQ(
         "true",
         network_context_client.reported_response_cookies()[0].cookie.Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_context_client.reported_response_cookies()[0].status);
+    EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
+                    .status.IsInclude());
   }
 }
 
@@ -3835,8 +3835,8 @@ TEST_F(URLLoaderTest, RawRequestCookies) {
               network_service_client.raw_request_cookies()[0].cookie.Name());
     EXPECT_EQ("b",
               network_service_client.raw_request_cookies()[0].cookie.Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_service_client.raw_request_cookies()[0].status);
+    EXPECT_TRUE(
+        network_service_client.raw_request_cookies()[0].status.IsInclude());
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -3884,8 +3884,10 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
               network_service_client.raw_request_cookies()[0].cookie.Name());
     EXPECT_EQ("b",
               network_service_client.raw_request_cookies()[0].cookie.Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
-              network_service_client.raw_request_cookies()[0].status);
+    EXPECT_TRUE(network_service_client.raw_request_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_NOT_ON_PATH}));
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -3924,8 +3926,8 @@ TEST_F(URLLoaderTest, RawResponseCookies) {
               network_service_client.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("b",
               network_service_client.raw_response_cookies()[0].cookie->Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_service_client.raw_response_cookies()[0].status);
+    EXPECT_TRUE(
+        network_service_client.raw_response_cookies()[0].status.IsInclude());
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
 
@@ -3967,9 +3969,10 @@ TEST_F(URLLoaderTest, RawResponseCookiesInvalid) {
     network_service_client.WaitUntilRawResponse(1u);
     // On these failures the cookie object is not created
     EXPECT_FALSE(network_service_client.raw_response_cookies()[0].cookie);
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE,
-        network_service_client.raw_response_cookies()[0].status);
+    EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_FAILURE_TO_STORE}));
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4020,8 +4023,8 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
               network_service_client.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("true",
               network_service_client.raw_response_cookies()[0].cookie->Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_service_client.raw_response_cookies()[0].status);
+    EXPECT_TRUE(
+        network_service_client.raw_response_cookies()[0].status.IsInclude());
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4063,8 +4066,10 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
     // On these failures the cookie object is created but not included.
     EXPECT_TRUE(
         network_service_client.raw_response_cookies()[0].cookie->IsSecure());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
-              network_service_client.raw_response_cookies()[0].status);
+    EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_SECURE_ONLY}));
   }
 }
 
@@ -4106,8 +4111,8 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
               network_service_client.raw_response_cookies()[0].cookie->Name());
     EXPECT_EQ("true",
               network_service_client.raw_response_cookies()[0].cookie->Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_service_client.raw_response_cookies()[0].status);
+    EXPECT_TRUE(
+        network_service_client.raw_response_cookies()[0].status.IsInclude());
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4147,8 +4152,10 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
     // On these failures the cookie object is created but not included.
     EXPECT_TRUE(
         network_service_client.raw_response_cookies()[0].cookie->IsSecure());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
-              network_service_client.raw_response_cookies()[0].status);
+    EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_SECURE_ONLY}));
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4221,27 +4228,19 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     loader_client.RunUntilComplete();
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
-    network_context_client.WaitUntilReportedResponseCookies(2u);
+    network_context_client.WaitUntilReportedResponseCookies(1u);
     EXPECT_EQ(
         "a",
         network_context_client.reported_response_cookies()[0].cookie.Name());
     EXPECT_EQ(
         "b",
         network_context_client.reported_response_cookies()[0].cookie.Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_context_client.reported_response_cookies()[0].status);
-
-    // The cookie is reported twice, once for it actual use, and once for the
-    // warning of its upcoming deprecation.
+    EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
+                    .status.IsInclude());
     EXPECT_EQ(
-        "a",
-        network_context_client.reported_response_cookies()[1].cookie.Name());
-    EXPECT_EQ(
-        "b",
-        network_context_client.reported_response_cookies()[1].cookie.Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
-              network_context_client.reported_response_cookies()[1].status);
+        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+            WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+        network_context_client.reported_response_cookies()[0].status.warning());
   }
 
   // Blocked.
@@ -4280,9 +4279,10 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     EXPECT_EQ(
         "b",
         network_context_client.reported_response_cookies()[0].cookie.Value());
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-        network_context_client.reported_response_cookies()[0].status);
+    EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
+                    .status.HasExactlyExclusionReasonsForTesting(
+                        {net::CanonicalCookie::CookieInclusionStatus::
+                             EXCLUDE_USER_PREFERENCES}));
 
     test_network_delegate()->set_cookie_options(0);
   }
@@ -4319,8 +4319,8 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     EXPECT_EQ(
         "e",
         network_context_client.reported_response_cookies()[0].cookie.Value());
-    EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              network_context_client.reported_response_cookies()[0].status);
+    EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
+                    .status.IsInclude());
   }
 }
 

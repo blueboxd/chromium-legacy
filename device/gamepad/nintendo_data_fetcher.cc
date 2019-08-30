@@ -181,6 +181,9 @@ void NintendoDataFetcher::GetGamepadData(bool) {
     auto& device = entry.second;
     if (device->IsOpen() && device->IsUsable()) {
       PadState* state = GetPadState(device->GetSourceId());
+      if (!state)
+        continue;
+
       if (!state->is_initialized) {
         state->mapper = device->GetMappingFunction();
         device->InitializeGamepadState(state->mapper != nullptr, state->data);

@@ -114,7 +114,7 @@ TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogCancel) {
       LeakDialogDismissalReason::kClickedClose, 1);
 
   histogram_tester().ExpectUniqueSample(
-      "PasswordManager.LeakDetection.DialogDismissalReason.Checkup",
+      "PasswordManager.LeakDetection.DialogDismissalReason.CheckupAndChange",
       LeakDialogDismissalReason::kClickedClose, 1);
 
   EXPECT_CALL(leak_prompt(), ControllerGone());
@@ -136,7 +136,7 @@ TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogCheckPasswords) {
       LeakDialogDismissalReason::kClickedCheckPasswords, 1);
 
   histogram_tester().ExpectUniqueSample(
-      "PasswordManager.LeakDetection.DialogDismissalReason.CheckupAndChange",
+      "PasswordManager.LeakDetection.DialogDismissalReason.Checkup",
       LeakDialogDismissalReason::kClickedCheckPasswords, 1);
 
   EXPECT_CALL(leak_prompt(), ControllerGone());

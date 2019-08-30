@@ -4988,7 +4988,20 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothPolicyTest, Block) {
   EXPECT_THAT(rejection, testing::MatchesRegex("NotFoundError: .*policy.*"));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest,
+class CertificateTransparencyPolicyTest : public PolicyTest {
+ public:
+  CertificateTransparencyPolicyTest() : PolicyTest() {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        true);
+  }
+
+  ~CertificateTransparencyPolicyTest() override {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        base::nullopt);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
                        CertificateTransparencyEnforcementDisabledForUrls) {
   net::EmbeddedTestServer https_server_ok(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_ok.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
@@ -5050,7 +5063,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest,
+IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
                        CertificateTransparencyEnforcementDisabledForCas) {
   net::EmbeddedTestServer https_server_ok(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_ok.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);

@@ -156,29 +156,6 @@ bool GeometryMapper::LocalToAncestorVisualRect(
   return result;
 }
 
-bool GeometryMapper::PointVisibleInAncestorSpace(
-    const PropertyTreeState& local_state,
-    const PropertyTreeState& ancestor_state,
-    const FloatPoint& local_point) {
-  const auto& ancestor_clip = ancestor_state.Clip().Unalias();
-  for (const auto* clip = &local_state.Clip().Unalias();
-       clip && clip != &ancestor_clip; clip = SafeUnalias(clip->Parent())) {
-    FloatPoint mapped_point =
-        SourceToDestinationProjection(local_state.Transform(),
-                                      clip->LocalTransformSpace())
-            .MapPoint(local_point);
-
-    if (!clip->ClipRect().IntersectsQuad(
-            FloatRect(mapped_point, FloatSize(1, 1))))
-      return false;
-
-    if (clip->ClipPath() && !clip->ClipPath()->Contains(mapped_point))
-      return false;
-  }
-
-  return true;
-}
-
 bool GeometryMapper::LocalToAncestorVisualRectInternal(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,

@@ -42,6 +42,8 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
@@ -4388,11 +4390,12 @@ class MojoTestHelper {
 // the ShowUnhandledTapUIIfNeeded notification.
 class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
  public:
-  MockUnhandledTapNotifierImpl() : binding_(this) {}
+  MockUnhandledTapNotifierImpl() = default;
   ~MockUnhandledTapNotifierImpl() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(mojom::blink::UnhandledTapNotifierRequest(std::move(handle)));
+    receiver_.Bind(mojo::PendingReceiver<mojom::blink::UnhandledTapNotifier>(
+        std::move(handle)));
   }
 
   void ShowUnhandledTapUIIfNeeded(
@@ -4412,7 +4415,7 @@ class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
     tapped_position_ = IntPoint();
     element_text_run_length_ = 0;
     font_size_ = 0;
-    binding_.Close();
+    receiver_.reset();
   }
 
  private:
@@ -4421,7 +4424,7 @@ class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
   int element_text_run_length_ = 0;
   int font_size_ = 0;
 
-  mojo::Binding<mojom::blink::UnhandledTapNotifier> binding_;
+  mojo::Receiver<mojom::blink::UnhandledTapNotifier> receiver_{this};
 };
 
 // A Test Fixture for testing ShowUnhandledTapUIIfNeeded usages.

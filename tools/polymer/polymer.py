@@ -300,6 +300,7 @@ def _process_dom_module(js_file, html_file):
   js_imports = _generate_js_imports(html_file)
 
   IIFE_OPENING = '(function() {\n'
+  IIFE_OPENING_ARROW = '(() => {\n'
   IIFE_CLOSING = '})();'
 
   with open(js_file) as f:
@@ -310,7 +311,7 @@ def _process_dom_module(js_file, html_file):
 
   for i, line in enumerate(lines):
     if not imports_added:
-      if line.startswith(IIFE_OPENING):
+      if line.startswith(IIFE_OPENING) or line.startswith(IIFE_OPENING_ARROW):
         # Replace the IIFE opening line with the JS imports.
         line = '\n'.join(js_imports) + '\n\n'
         imports_added = True

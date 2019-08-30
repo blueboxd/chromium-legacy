@@ -89,7 +89,7 @@ class CC_EXPORT LayerImpl {
   bool IsActive() const;
 
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
-  bool has_transform_node() { return has_transform_node_; }
+  bool has_transform_node() const { return has_transform_node_; }
 
   void set_property_tree_sequence_number(int sequence_number) {}
 

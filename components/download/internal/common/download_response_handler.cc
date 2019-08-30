@@ -89,16 +89,16 @@ DownloadResponseHandler::DownloadResponseHandler(
 DownloadResponseHandler::~DownloadResponseHandler() = default;
 
 void DownloadResponseHandler::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   create_info_ = CreateDownloadCreateInfo(head);
-  cert_status_ = head.cert_status;
+  cert_status_ = head->cert_status;
 
   // TODO(xingliu): Do not use http cache.
   // Sets page transition type correctly and call
   // |RecordDownloadSourcePageTransitionType| here.
-  if (head.headers) {
-    has_strong_validators_ = head.headers->HasStrongValidators();
-    RecordDownloadHttpResponseCode(head.headers->response_code(),
+  if (head->headers) {
+    has_strong_validators_ = head->headers->HasStrongValidators();
+    RecordDownloadHttpResponseCode(head->headers->response_code(),
                                    is_background_mode_);
     RecordDownloadContentDisposition(create_info_->content_disposition);
   }
@@ -157,7 +157,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
 
 void DownloadResponseHandler::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   if (!follow_cross_origin_redirects_ &&
       !first_origin_.IsSameOriginWith(
           url::Origin::Create(redirect_info.new_url))) {

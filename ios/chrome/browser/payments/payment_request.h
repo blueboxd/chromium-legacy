@@ -463,6 +463,8 @@ class PaymentRequest : public PaymentOptionsProvider,
   // the merchant.
   IOSPaymentInstrumentFinder ios_instrument_finder_;
 
+  base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };
 

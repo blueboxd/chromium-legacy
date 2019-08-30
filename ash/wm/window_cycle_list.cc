@@ -21,7 +21,6 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -97,8 +96,7 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
         preview_view_(
             new WindowPreviewView(window,
                                   /*trilinear_filtering_on_init=*/
-                                  features::IsTrilinearFilteringEnabled())),
-        window_observer_(this) {
+                                  features::IsTrilinearFilteringEnabled())) {
     header_view_ = new views::View();
     views::BoxLayout* layout =
         header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -238,7 +236,7 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
   // The view that actually renders a thumbnail version of the window.
   WindowPreviewView* preview_view_;
 
-  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_;
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleItemView);
 };
@@ -413,7 +411,7 @@ class WindowCycleView : public views::WidgetDelegateView {
 };
 
 WindowCycleList::WindowCycleList(const WindowList& windows)
-    : windows_(windows), screen_observer_(this) {
+    : windows_(windows) {
   if (!ShouldShowUi())
     Shell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
 

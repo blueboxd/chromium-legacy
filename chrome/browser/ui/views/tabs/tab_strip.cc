@@ -841,6 +841,8 @@ TabStrip::~TabStrip() {
 
   new_tab_button_->RemoveObserver(this);
 
+  hover_card_observer_.RemoveAll();
+
   // The children (tabs) may callback to us from their destructor. Delete them
   // so that if they call back we aren't in a weird state.
   RemoveAllChildViews(true);
@@ -1583,7 +1585,7 @@ void TabStrip::UpdateHoverCard(Tab* tab) {
     if (!tab)
       return;
     hover_card_ = new TabHoverCardBubbleView(tab);
-    hover_card_->views::View::AddObserver(this);
+    hover_card_observer_.Add(hover_card_);
     if (GetWidget()) {
       hover_card_event_sniffer_ =
           std::make_unique<TabHoverCardEventSniffer>(hover_card_, this);
@@ -3162,7 +3164,7 @@ views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
 
 void TabStrip::OnViewIsDeleting(views::View* observed_view) {
   if (observed_view == hover_card_) {
-    hover_card_->views::View::RemoveObserver(this);
+    hover_card_observer_.Remove(hover_card_);
     hover_card_event_sniffer_.reset();
     hover_card_ = nullptr;
   }

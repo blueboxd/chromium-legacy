@@ -17,17 +17,22 @@
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/cpp/resource_response_info.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace network {
 
 // Parameters for a resource response header.
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseHead
+struct COMPONENT_EXPORT(NETWORK_CPP) ResourceResponseHead
     : ResourceResponseInfo {
   ResourceResponseHead();
   ~ResourceResponseHead();
 
   ResourceResponseHead(const ResourceResponseHead& other);
+
+  // TODO(lfg): Temporary until this struct is fully converted to mojom.
+  ResourceResponseHead(const mojom::URLResponseHeadPtr& other);
+  operator mojom::URLResponseHeadPtr() const;
 
   // TimeTicks::Now() when the browser received the request from the renderer.
   base::TimeTicks request_start;
@@ -41,7 +46,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseHead
 
 // Simple wrapper that refcounts ResourceResponseHead.
 // Inherited, rather than typedef'd, to allow forward declarations.
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponse
+struct COMPONENT_EXPORT(NETWORK_CPP) ResourceResponse
     : public base::RefCountedThreadSafe<ResourceResponse> {
  public:
   ResourceResponseHead head;

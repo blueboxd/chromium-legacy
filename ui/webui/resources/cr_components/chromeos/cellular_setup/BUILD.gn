@@ -47,6 +47,11 @@ js_library("webview_post_util") {
 js_library("provisioning_page") {
   deps = [
     ":base_page",
+    ":webview_post_util",
+  ]
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/webview_tag.js",
   ]
 }
 

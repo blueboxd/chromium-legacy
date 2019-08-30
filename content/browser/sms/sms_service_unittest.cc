@@ -78,9 +78,9 @@ class Service {
   NiceMock<MockSmsProvider>* provider() { return &provider_; }
 
   void CreateSmsPrompt(RenderFrameHost* rfh, bool confirm) {
-    EXPECT_CALL(*delegate(), CreateSmsPrompt(rfh, _, _, _))
+    EXPECT_CALL(*delegate(), CreateSmsPrompt(rfh, _, _, _, _))
         .WillOnce(Invoke([=](RenderFrameHost*, const Origin& origin,
-                             base::OnceClosure on_confirm,
+                             const std::string&, base::OnceClosure on_confirm,
                              base::OnceClosure on_cancel) {
           if (confirm) {
             // Simulates user clicking the "Enter code" button to verify
@@ -97,7 +97,7 @@ class Service {
   }
 
   void NotifyReceive(const GURL& url, const string& message) {
-    provider_.NotifyReceive(Origin::Create(url), message);
+    provider_.NotifyReceive(Origin::Create(url), "", message);
   }
 
  private:
@@ -431,9 +431,9 @@ TEST_F(SmsServiceTest, Cancel) {
     service.NotifyReceive(GURL(kTestUrl), "hi");
   }));
 
-  EXPECT_CALL(*service.delegate(), CreateSmsPrompt(main_rfh(), _, _, _))
-      .WillOnce(Invoke([&](RenderFrameHost*, const Origin&, base::OnceClosure,
-                           base::OnceClosure on_cancel) {
+  EXPECT_CALL(*service.delegate(), CreateSmsPrompt(main_rfh(), _, _, _, _))
+      .WillOnce(Invoke([&](RenderFrameHost*, const Origin&, const std::string&,
+                           base::OnceClosure, base::OnceClosure on_cancel) {
         // Simulates the user pressing "Cancel".
         std::move(on_cancel).Run();
       }));

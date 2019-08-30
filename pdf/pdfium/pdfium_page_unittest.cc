@@ -17,14 +17,14 @@ namespace chrome_pdf {
 
 namespace {
 
-TEST(PDFiumPageTest, ToPDFiumRotation) {
+TEST(PDFiumPageHelperTest, ToPDFiumRotation) {
   EXPECT_EQ(ToPDFiumRotation(PageOrientation::kOriginal), 0);
   EXPECT_EQ(ToPDFiumRotation(PageOrientation::kClockwise90), 1);
   EXPECT_EQ(ToPDFiumRotation(PageOrientation::kClockwise180), 2);
   EXPECT_EQ(ToPDFiumRotation(PageOrientation::kClockwise270), 3);
 }
 
-TEST(PDFiumPageDeathTest, ToPDFiumRotation) {
+TEST(PDFiumPageHelperDeathTest, ToPDFiumRotation) {
   PageOrientation invalid_orientation = static_cast<PageOrientation>(-1);
 #if DCHECK_IS_ON()
   EXPECT_DCHECK_DEATH(ToPDFiumRotation(invalid_orientation));
@@ -34,6 +34,15 @@ TEST(PDFiumPageDeathTest, ToPDFiumRotation) {
 }
 
 }  // namespace
+
+using PDFiumPageTest = PDFiumTestBase;
+
+TEST_F(PDFiumPageTest, Constructor) {
+  PDFiumPage page(/*engine=*/nullptr, 2);
+  EXPECT_EQ(page.index(), 2);
+  EXPECT_TRUE(page.rect().IsEmpty());
+  EXPECT_FALSE(page.available());
+}
 
 class PDFiumPageLinkTest : public PDFiumTestBase {
  public:

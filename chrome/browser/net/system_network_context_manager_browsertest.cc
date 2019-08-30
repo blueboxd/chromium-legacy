@@ -22,6 +22,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -358,3 +359,55 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerWPADQuickCheckBrowsertest,
 INSTANTIATE_TEST_SUITE_P(,
                          SystemNetworkContextManagerWPADQuickCheckBrowsertest,
                          ::testing::Bool());
+
+class SystemNetworkContextManagerCertificateTransparencyBrowsertest
+    : public SystemNetworkContextManagerBrowsertest,
+      public testing::WithParamInterface<base::Optional<bool>> {
+ public:
+  SystemNetworkContextManagerCertificateTransparencyBrowsertest() {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        GetParam());
+  }
+  ~SystemNetworkContextManagerCertificateTransparencyBrowsertest() override {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        base::nullopt);
+  }
+};
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+IN_PROC_BROWSER_TEST_P(
+    SystemNetworkContextManagerCertificateTransparencyBrowsertest,
+    CertificateTransparencyConfig) {
+  network::mojom::NetworkContextParamsPtr context_params =
+      g_browser_process->system_network_context_manager()
+          ->CreateDefaultNetworkContextParams();
+
+  const bool kDefault =
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD) && \
+    !defined(OS_ANDROID)
+      true;
+#else
+      false;
+#endif
+
+  EXPECT_EQ(GetParam().value_or(kDefault),
+            context_params->enforce_chrome_ct_policy);
+  EXPECT_NE(GetParam().value_or(kDefault), context_params->ct_logs.empty());
+
+  if (GetParam().value_or(kDefault)) {
+    bool has_google_log = false;
+    bool has_disqualified_log = false;
+    for (const auto& ct_log : context_params->ct_logs) {
+      has_google_log |= ct_log->operated_by_google;
+      has_disqualified_log |= ct_log->disqualified_at.has_value();
+    }
+    EXPECT_TRUE(has_google_log);
+    EXPECT_TRUE(has_disqualified_log);
+  }
+}
+#endif
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    SystemNetworkContextManagerCertificateTransparencyBrowsertest,
+    ::testing::Values(base::nullopt, true, false));

@@ -83,6 +83,8 @@ class SharedWorkerHostTest : public testing::Test {
       mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory) {
     auto main_script_load_params =
         blink::mojom::WorkerMainScriptLoadParams::New();
+    main_script_load_params->response_head =
+        network::mojom::URLResponseHead::New();
     auto subresource_loader_factories =
         std::make_unique<blink::URLLoaderFactoryBundleInfo>();
 

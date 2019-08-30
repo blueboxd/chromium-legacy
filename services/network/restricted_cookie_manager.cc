@@ -114,8 +114,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   void OnCookieChange(const net::CanonicalCookie& cookie,
                       net::CookieChangeCause cause) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (cookie.IncludeForRequestURL(url_, options_) !=
-        CookieInclusionStatus::INCLUDE)
+    if (!cookie.IncludeForRequestURL(url_, options_).IsInclude())
       return;
 
     // When a user blocks a site's access to cookies, the existing cookies are
@@ -237,11 +236,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   // TODO(https://crbug.com/977040): Remove once samesite tightening up is
   // rolled out.
   for (const auto& cookie_and_status : excluded_cookies) {
-    if (cookie_and_status.status ==
-            CookieInclusionStatus::
-                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
-        cookie_and_status.status ==
-            CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE) {
+    if (cookie_and_status.status.ShouldWarn()) {
       result_with_status.push_back(
           {cookie_and_status.cookie, cookie_and_status.status});
     }
@@ -254,6 +249,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   // TODO(https://crbug.com/993843): Use the statuses passed in |cookie_list|.
   for (size_t i = 0; i < cookie_list.size(); ++i) {
     const net::CanonicalCookie& cookie = cookie_list[i].cookie;
+    CookieInclusionStatus status = cookie_list[i].status;
     const std::string& cookie_name = cookie.Name();
 
     if (match_type == mojom::CookieMatchType::EQUALS) {
@@ -269,24 +265,12 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     }
 
     if (blocked) {
-      result_with_status.push_back(
-          {cookie, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
+      status.AddExclusionReason(
+          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     } else {
       result.push_back(cookie);
-      // TODO(https://crbug.com/993843): Use the actual status passed in. (For
-      // now it should always be INCLUDE so it doesn't matter.)
-      result_with_status.push_back({cookie, CookieInclusionStatus::INCLUDE});
-
-      // Warn about upcoming deprecations.
-      // TODO(https://crbug.com/977040): Remove once samesite tightening up is
-      // rolled out.
-      CookieInclusionStatus eventual_status =
-          net::cookie_util::CookieWouldBeExcludedDueToSameSite(cookie,
-                                                               net_options);
-      if (eventual_status != CookieInclusionStatus::INCLUDE) {
-        result_with_status.push_back({cookie, eventual_status});
-      }
     }
+    result_with_status.push_back({cookie, status});
   }
 
   if (network_context_client_) {
@@ -324,7 +308,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
     if (network_context_client_) {
       std::vector<net::CookieWithStatus> result_with_status;
       result_with_status.push_back(
-          {cookie, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
+          {cookie, CookieInclusionStatus(
+                       CookieInclusionStatus::EXCLUDE_USER_PREFERENCES)});
       network_context_client_->OnCookiesChanged(
           is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
           result_with_status);
@@ -360,32 +345,18 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
   std::vector<net::CookieWithStatus> notify;
   // TODO(https://crbug.com/977040): Only report pure INCLUDE once samesite
   // tightening up is rolled out.
-  DCHECK_NE(status, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+  DCHECK(!status.HasExclusionReason(
+      CookieInclusionStatus::EXCLUDE_USER_PREFERENCES));
 
   if (network_context_client_) {
-    switch (status) {
-      case CookieInclusionStatus::INCLUDE: {
-        CookieInclusionStatus eventual_status =
-            net::cookie_util::CookieWouldBeExcludedDueToSameSite(cookie,
-                                                                 net_options);
-        if (eventual_status != CookieInclusionStatus::INCLUDE) {
-          notify.push_back({cookie, eventual_status});
-        }
-        FALLTHROUGH;
-      }
-      case CookieInclusionStatus::EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
-      case CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE:
-        notify.push_back({cookie, status});
-        network_context_client_->OnCookiesChanged(
-            is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
-            std::move(notify));
-        break;
-
-      default:
-        break;
+    if (status.IsInclude() || status.ShouldWarn()) {
+      notify.push_back({cookie, status});
+      network_context_client_->OnCookiesChanged(
+          is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
+          std::move(notify));
     }
   }
-  std::move(user_callback).Run(status == CookieInclusionStatus::INCLUDE);
+  std::move(user_callback).Run(status.IsInclude());
 }
 
 void RestrictedCookieManager::AddChangeListener(

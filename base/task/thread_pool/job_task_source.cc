@@ -11,7 +11,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
+#include "base/task/thread_pool/pooled_task_runner_delegate.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/time/time_override.h"
 
 namespace base {
 namespace internal {
@@ -20,7 +23,8 @@ JobTaskSource::JobTaskSource(
     const Location& from_here,
     const TaskTraits& traits,
     RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
-    RepeatingCallback<size_t()> max_concurrency_callback)
+    RepeatingCallback<size_t()> max_concurrency_callback,
+    PooledTaskRunnerDelegate* delegate)
     : TaskSource(traits, nullptr, TaskSourceExecutionMode::kJob),
       from_here_(from_here),
       max_concurrency_callback_(std::move(max_concurrency_callback)),
@@ -29,14 +33,15 @@ JobTaskSource::JobTaskSource(
              const RepeatingCallback<void(experimental::JobDelegate*)>&
                  worker_task) {
             // Each worker task has its own delegate with associated state.
-            // TODO(crbug.com/839091): Implement assertions on max concurrency
-            // increase in the delegate.
-            experimental::JobDelegate job_delegate{self};
+            experimental::JobDelegate job_delegate{self, self->delegate_};
             worker_task.Run(&job_delegate);
           },
           base::Unretained(this),
           std::move(worker_task))),
-      queue_time_(TimeTicks::Now()) {}
+      queue_time_(TimeTicks::Now()),
+      delegate_(delegate) {
+  DCHECK(delegate_);
+}
 
 JobTaskSource::~JobTaskSource() {
 #if DCHECK_IS_ON()
@@ -100,16 +105,52 @@ size_t JobTaskSource::GetRemainingConcurrency() const {
 }
 
 void JobTaskSource::NotifyConcurrencyIncrease() {
-  // TODO(839091): Implement this.
+#if DCHECK_IS_ON()
+  {
+    AutoLock auto_lock(version_lock_);
+    ++increase_version_;
+    version_condition_.Broadcast();
+  }
+#endif  // DCHECK_IS_ON()
+  // Make sure the task source is in the queue if not already.
+  // Caveat: it's possible but unlikely that the task source has already reached
+  // its intended concurrency and doesn't need to be enqueued if there
+  // previously were too many worker. For simplicity, the task source is always
+  // enqueued and will get discarded if already saturated when it is popped from
+  // the priority queue.
+  delegate_->EnqueueJobTaskSource(this);
 }
 
 size_t JobTaskSource::GetMaxConcurrency() const {
   return max_concurrency_callback_.Run();
 }
 
+#if DCHECK_IS_ON()
+
+size_t JobTaskSource::GetConcurrencyIncreaseVersion() const {
+  AutoLock auto_lock(version_lock_);
+  return increase_version_;
+}
+
+bool JobTaskSource::WaitForConcurrencyIncreaseUpdate(size_t recorded_version) {
+  AutoLock auto_lock(version_lock_);
+  constexpr TimeDelta timeout = TimeDelta::FromSeconds(1);
+  const base::TimeTicks start_time = subtle::TimeTicksNowIgnoringOverride();
+  do {
+    DCHECK_LE(recorded_version, increase_version_);
+    if (recorded_version != increase_version_)
+      return true;
+    // Waiting is acceptable because it is in DCHECK-only code.
+    ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
+        allow_base_sync_primitives;
+    version_condition_.TimedWait(timeout);
+  } while (subtle::TimeTicksNowIgnoringOverride() - start_time < timeout);
+  return false;
+}
+
+#endif  // DCHECK_IS_ON()
+
 Optional<Task> JobTaskSource::TakeTask(TaskSource::Transaction* transaction) {
-  // JobTaskSource members are not lock-protected so no need to acquire a lock
-  // if |transaction| is nullptr.
   DCHECK_GT(worker_count_.load(std::memory_order_relaxed), 0U);
   DCHECK(worker_task_);
   return base::make_optional<Task>(from_here_, worker_task_, TimeDelta());

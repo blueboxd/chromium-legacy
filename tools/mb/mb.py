@@ -395,7 +395,8 @@ class MetaBuildWrapper(object):
           self.Run(remap_cmd)
 
           zip_path = self.args.zip_path
-          with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as fp:
+          with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED,
+                               allowZip64=True) as fp:
               for root, _, files in os.walk(zip_dir):
                   for filename in files:
                       path = self.PathJoin(root, filename)

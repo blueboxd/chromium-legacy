@@ -589,6 +589,11 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
   if (!discovery_factory)
     discovery_factory = request_delegate_->GetDiscoveryFactory();
 
+  if (ctap_get_assertion_request_->cable_extension) {
+    discovery_factory->set_cable_data(
+        *ctap_get_assertion_request_->cable_extension);
+  }
+
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
       connector_, discovery_factory, GetTransports(caller_origin_, transports_),
       *ctap_get_assertion_request_,
@@ -1014,8 +1019,10 @@ void AuthenticatorCommon::OnRegisterResponse(
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kKeyAlreadyRegistered);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kKeyAlreadyRegistered,
+          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1025,41 +1032,53 @@ void AuthenticatorCommon::OnRegisterResponse(
           Focus::kDoCheck);
       return;
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
-      // TODO(crbug/876109): This isn't strictly unreachable.
-      NOTREACHED();
+      NOTREACHED() << "This should only be reachable for assertions";
+      InvokeCallbackAndCleanup(
+          std::move(make_credential_response_callback_),
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
+          Focus::kDoCheck);
       return;
     case device::FidoReturnCode::kUserConsentDenied:
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kUserConsentDenied);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kUserConsentDenied,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kSoftPINBlock:
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kSoftPINBlock);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kSoftPINBlock,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kHardPINBlock:
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kHardPINBlock);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kHardPINBlock,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kAuthenticatorRemovedDuringPINEntry);
+              kAuthenticatorRemovedDuringPINEntry,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingResidentKeys:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kAuthenticatorMissingResidentKeys);
+              kAuthenticatorMissingResidentKeys,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kAuthenticatorMissingUserVerification);
+              kAuthenticatorMissingUserVerification,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingCredentialManagement:
       NOTREACHED()
@@ -1078,8 +1097,10 @@ void AuthenticatorCommon::OnRegisterResponse(
       return;
     case device::FidoReturnCode::kStorageFull:
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kStorageFull);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kStorageFull,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
@@ -1226,8 +1247,10 @@ void AuthenticatorCommon::OnSignResponse(
   switch (status_code) {
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kKeyNotRegistered);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kKeyNotRegistered,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1236,41 +1259,52 @@ void AuthenticatorCommon::OnSignResponse(
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kUserConsentButCredentialExcluded:
-      // TODO(crbug/876109): This isn't strictly unreachable.
-      NOTREACHED();
+      NOTREACHED() << "This should only be reachable for registrations";
+      InvokeCallbackAndCleanup(
+          std::move(get_assertion_response_callback_),
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kUserConsentDenied:
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kUserConsentDenied);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kUserConsentDenied,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kSoftPINBlock:
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kSoftPINBlock);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kSoftPINBlock,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kHardPINBlock:
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kHardPINBlock);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kHardPINBlock,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kAuthenticatorRemovedDuringPINEntry);
+              kAuthenticatorRemovedDuringPINEntry,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingResidentKeys:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kAuthenticatorMissingResidentKeys);
+              kAuthenticatorMissingResidentKeys,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
       SignalFailureToRequestDelegate(
           authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kAuthenticatorMissingUserVerification);
+              kAuthenticatorMissingUserVerification,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingCredentialManagement:
       NOTREACHED()
@@ -1288,8 +1322,10 @@ void AuthenticatorCommon::OnSignResponse(
     case device::FidoReturnCode::kStorageFull:
       NOTREACHED() << "Should not be possible for assertions.";
       SignalFailureToRequestDelegate(
-          authenticator, AuthenticatorRequestClientDelegate::
-                             InterestingFailureReason::kStorageFull);
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kStorageFull,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
@@ -1338,52 +1374,8 @@ void AuthenticatorCommon::OnAccountSelected(
 
 void AuthenticatorCommon::SignalFailureToRequestDelegate(
     const ::device::FidoAuthenticator* authenticator,
-    AuthenticatorRequestClientDelegate::InterestingFailureReason reason) {
-  blink::mojom::AuthenticatorStatus status =
-      blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-
-  switch (reason) {
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kKeyAlreadyRegistered:
-      status = blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kKeyNotRegistered:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kSoftPINBlock:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kHardPINBlock:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kAuthenticatorRemovedDuringPINEntry:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kAuthenticatorMissingResidentKeys:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kAuthenticatorMissingUserVerification:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kStorageFull:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
-        kUserConsentDenied:
-      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
-      break;
-  }
-
+    AuthenticatorRequestClientDelegate::InterestingFailureReason reason,
+    blink::mojom::AuthenticatorStatus status) {
   error_awaiting_user_acknowledgement_ = status;
 
   // If WebAuthnUi is enabled, this error blocks until after receiving user
@@ -1408,7 +1400,8 @@ void AuthenticatorCommon::OnTimeout() {
 
   SignalFailureToRequestDelegate(
       /*authenticator=*/nullptr,
-      AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
+      AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout,
+      blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
 
 void AuthenticatorCommon::CancelWithStatus(

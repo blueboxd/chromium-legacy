@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/scoped_observer.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"

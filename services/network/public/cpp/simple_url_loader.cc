@@ -295,9 +295,9 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   void Retry();
 
   // mojom::URLLoaderClient implementation;
-  void OnReceiveResponse(const ResourceResponseHead& response_head) override;
+  void OnReceiveResponse(mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override;
+                         mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnUploadProgress(int64_t current_position,
@@ -1546,7 +1546,7 @@ void SimpleURLLoaderImpl::Retry() {
 }
 
 void SimpleURLLoaderImpl::OnReceiveResponse(
-    const ResourceResponseHead& response_head) {
+    mojom::URLResponseHeadPtr response_head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (request_state_->response_info) {
     // The final headers have already been received, so the URLLoader is
@@ -1559,8 +1559,8 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
   // No headers indicates this was not a real HTTP response (Could be a file
   // URL, FTP, response could have been provided by something else, etc).
   int response_code = 200;
-  if (response_head.headers)
-    response_code = response_head.headers->response_code();
+  if (response_head->headers)
+    response_code = response_head->headers->response_code();
 
   // If a 5xx response was received, and |this| should retry on 5xx errors,
   // retry the request.
@@ -1590,7 +1590,7 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
 
 void SimpleURLLoaderImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head) {
+    mojom::URLResponseHeadPtr response_head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (request_state_->response_info) {
     // If the headers have already been received, the URLLoader is violating the

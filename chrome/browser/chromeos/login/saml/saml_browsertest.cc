@@ -30,7 +30,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
@@ -42,6 +41,7 @@
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -90,12 +90,10 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/features/feature_channel.h"
 #include "google_apis/gaia/fake_gaia.h"
@@ -515,10 +513,6 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-
   // Fill-in the SAML IdP form and submit.
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("not_the_password", {"Dummy"});
@@ -527,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   SigninFrameJS().TapOn("Submit");
 
   // Login should finish login and a session should start.
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 
   // Regression test for http://crbug.com/490737: Verify that the user's actual
   // password was used, not the contents of the first type=password input field
@@ -563,16 +557,13 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   // Scraping a single password should finish the login and start the session.
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   SigninFrameJS().TapOn("Submit");
   std::string message;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
   } while (message != "\"fake_password\"");
 
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
@@ -598,11 +589,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
   SigninFrameJS().TypeIntoPath("fake_password", {"DynamicallyCreatedPassword"});
 
   // Scraping a single password should finish the login and start the session.
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   SigninFrameJS().TapOn("Submit");
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
@@ -627,11 +615,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
   test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
   // Either scraped password should be able to sign-in.
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   SendConfirmPassword("password1");
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
@@ -657,11 +642,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   test::OobeJS().ExpectTrue("$('saml-confirm-password').manualInput");
 
   // Two matching passwords should let the user to sign in.
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   SetManualPasswords("Test1", "Test1");
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
@@ -682,11 +664,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   SigninFrameJS().TapOn("Submit");
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetActiveUser();
@@ -1210,11 +1189,8 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   // Scraping a single password should finish the login right away.
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   SigninFrameJS().TapOn("Submit");
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 }
 
 std::string SAMLPolicyTest::GetCookieValue(const std::string& name) {
@@ -1258,10 +1234,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTestWebUILogin, PRE_NoSAML) {
       ->GetView<GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kNonSAMLUserEmail, "password", "[]");
 
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources())
-      .Wait();
+  test::WaitForSessionStart();
 }
 
 // Verifies that the offline login time limit does not affect a user who
@@ -1426,11 +1399,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
   // Scraping one password should finish login.
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   SigninFrameJS().TapOn("Submit");
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 }
 
 // Ensure that the permission status of getUserMedia requests from SAML login
@@ -1519,11 +1489,8 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
   SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
   SigninFrameJS().TypeIntoPath("fake_password", {"Password"});
 
-  content::WindowedNotificationObserver session_start_waiter(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   SigninFrameJS().TapOn("Submit");
-  session_start_waiter.Wait();
+  test::WaitForSessionStart();
 
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(
       user_manager::UserManager::Get()->GetPrimaryUser());

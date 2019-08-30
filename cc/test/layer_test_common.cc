@@ -172,6 +172,14 @@ LayerTestCommon::LayerImplTest::~LayerImplTest() {
   host_->host_impl()->ReleaseLayerTreeFrameSink();
 }
 
+LayerImpl* LayerTestCommon::LayerImplTest::EnsureRootLayerInPendingTree() {
+  LayerTreeImpl* pending_tree = host_impl()->pending_tree();
+  if (LayerImpl* root = pending_tree->root_layer_for_testing())
+    return root;
+  pending_tree->SetRootLayerForTesting(LayerImpl::Create(pending_tree, 1));
+  return pending_tree->root_layer_for_testing();
+}
+
 void LayerTestCommon::LayerImplTest::CalcDrawProps(
     const gfx::Size& viewport_size) {
   RenderSurfaceList render_surface_list;

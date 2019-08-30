@@ -15,13 +15,10 @@
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/screen.h"
 
 namespace aura {
 class Window;
-}
-
-namespace display {
-class Screen;
 }
 
 namespace views {
@@ -103,7 +100,8 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   views::Widget* cycle_ui_widget_ = nullptr;
 
   // The window list will dismiss if the display metrics change.
-  ScopedObserver<display::Screen, display::DisplayObserver> screen_observer_;
+  ScopedObserver<display::Screen, display::DisplayObserver> screen_observer_{
+      this};
 
   // A timer to delay showing the UI. Quick Alt+Tab should not flash a UI.
   base::OneShotTimer show_ui_timer_;

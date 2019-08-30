@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
+// clang-format on
+
 suite('cr-radio-button', function() {
   let radioButton;
 

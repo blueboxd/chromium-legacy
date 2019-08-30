@@ -59,7 +59,7 @@ void DocumentLayout::ComputeSingleViewLayout(
   for (size_t i = 0; i < page_sizes.size(); ++i) {
     if (i != 0) {
       // Add space for bottom separator.
-      EnlargeHeight(kBottomSeparator);
+      size_.Enlarge(0, kBottomSeparator);
     }
 
     const pp::Size& page_size = page_sizes[i];
@@ -89,22 +89,18 @@ void DocumentLayout::ComputeTwoUpViewLayout(
     } else {
       page_rect = draw_utils::GetRightRectForTwoUpView(
           page_size, {size_.width(), size_.height()});
-      EnlargeHeight(std::max(page_size.height(), page_sizes[i - 1].height()));
+      size_.Enlarge(0,
+                    std::max(page_size.height(), page_sizes[i - 1].height()));
     }
     page_layouts_[i].outer_rect = page_rect;
     page_layouts_[i].inner_rect = InsetRect(page_rect, page_insets);
   }
 
   if (page_sizes.size() % 2 == 1) {
-    EnlargeHeight(page_sizes.back().height());
+    size_.Enlarge(0, page_sizes.back().height());
   }
 
   size_.set_width(2 * size_.width());
-}
-
-void DocumentLayout::EnlargeHeight(int height) {
-  DCHECK_GE(height, 0);
-  size_.Enlarge(0, height);
 }
 
 }  // namespace chrome_pdf

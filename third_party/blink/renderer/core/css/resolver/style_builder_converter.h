@@ -272,6 +272,8 @@ class StyleBuilderConverter {
       const CSSValue&,
       bool is_animation_tainted);
 
+  static ContentSize ConvertContentSize(StyleResolverState&, const CSSValue&);
+
  private:
   static const CSSToLengthConversionData& CssToLengthConversionData(
       StyleResolverState&);

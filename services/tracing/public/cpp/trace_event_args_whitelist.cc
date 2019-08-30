@@ -26,6 +26,7 @@ struct WhitelistEntry {
 
 const char* const kScopedBlockingCallAllowedArgs[] = {"file_name",
                                                       "function_name", nullptr};
+const char* const kFallbackFontAllowedArgs[] = {"font_name", nullptr};
 const char* const kGetFallbackFontsAllowedArgs[] = {"script", nullptr};
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
@@ -50,6 +51,8 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
     {"base", "ScopedBlockingCall*", kScopedBlockingCallAllowedArgs},
+    {"base", "ScopedThreadMayLoadLibraryOnBackgroundThread",
+     kScopedBlockingCallAllowedArgs},
     {"benchmark", "TestWhitelist*", nullptr},
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"fonts", "CachedFontLinkSettings::GetLinkedFonts", nullptr},
@@ -70,6 +73,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {TRACE_DISABLED_BY_DEFAULT("memory-infra"), "*", kMemoryDumpAllowedArgs},
     {TRACE_DISABLED_BY_DEFAULT("system_stats"), "*", nullptr},
     {TRACE_DISABLED_BY_DEFAULT("v8.gc"), "*", kV8GCAllowedArgs},
+    {"ui", "RenderTextHarfBuzz::FallbackFont", kFallbackFontAllowedArgs},
     {"ui", "RenderTextHarfBuzz::GetFallbackFonts",
      kGetFallbackFontsAllowedArgs},
     {"ui", "UserEvent", nullptr},

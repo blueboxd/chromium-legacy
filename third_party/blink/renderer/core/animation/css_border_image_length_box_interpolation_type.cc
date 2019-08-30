@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
 #include "third_party/blink/renderer/core/animation/side_index.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -239,8 +239,8 @@ InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
           return ConvertBorderImageNumberSide(side.Number());
         if (side.length().IsAuto())
           return ConvertBorderImageAutoSide();
-        return LengthInterpolationFunctions::MaybeConvertLength(side.length(),
-                                                                zoom);
+        return InterpolationValue(
+            InterpolableLength::MaybeConvertLength(side.length(), zoom));
       });
 }
 
@@ -250,13 +250,9 @@ void CompositeSide(UnderlyingValue& underlying_value,
                    const NonInterpolableValue* non_interpolable_value) {
   switch (GetSideType(non_interpolable_value)) {
     case SideType::kNumber:
+    case SideType::kLength:
       underlying_value.MutableInterpolableValue().ScaleAndAdd(
           underlying_fraction, interpolable_value);
-      break;
-    case SideType::kLength:
-      LengthInterpolationFunctions::Composite(
-          underlying_value, underlying_fraction, interpolable_value,
-          non_interpolable_value);
       break;
     case SideType::kAuto:
       break;
@@ -337,7 +333,8 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
           return ConvertBorderImageAutoSide();
         }
 
-        return LengthInterpolationFunctions::MaybeConvertCSSValue(side);
+        return InterpolationValue(
+            InterpolableLength::MaybeConvertCSSValue(side));
       });
 }
 
@@ -388,9 +385,9 @@ void CSSBorderImageLengthBoxInterpolationType::ApplyStandardPropertyValue(
       case SideType::kAuto:
         return Length::Auto();
       case SideType::kLength:
-        return LengthInterpolationFunctions::CreateLength(
-            *list.Get(index), non_interpolable_list.Get(index),
-            state.CssToLengthConversionData(), kValueRangeNonNegative);
+        return To<InterpolableLength>(*list.Get(index))
+            .CreateLength(state.CssToLengthConversionData(),
+                          kValueRangeNonNegative);
       default:
         NOTREACHED();
         return Length::Auto();

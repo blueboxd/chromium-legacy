@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -50,8 +50,7 @@ class InheritedFontSizeChecker
 };
 
 InterpolationValue ConvertFontSize(float size) {
-  return InterpolationValue(
-      LengthInterpolationFunctions::CreateInterpolablePixels(size));
+  return InterpolationValue(InterpolableLength::CreatePixels(size));
 }
 
 InterpolationValue MaybeConvertKeyword(
@@ -85,8 +84,7 @@ InterpolationValue MaybeConvertKeyword(
 InterpolationValue CSSFontSizeInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(
-      LengthInterpolationFunctions::CreateNeutralInterpolableValue());
+  return InterpolationValue(InterpolableLength::CreateNeutral());
 }
 
 InterpolationValue CSSFontSizeInterpolationType::MaybeConvertInitial(
@@ -111,8 +109,7 @@ InterpolationValue CSSFontSizeInterpolationType::MaybeConvertValue(
     const StyleResolverState* state,
     ConversionCheckers& conversion_checkers) const {
   std::unique_ptr<InterpolableValue> result =
-      LengthInterpolationFunctions::MaybeConvertCSSValue(value)
-          .interpolable_value;
+      InterpolableLength::MaybeConvertCSSValue(value);
   if (result)
     return InterpolationValue(std::move(result));
 
@@ -136,9 +133,9 @@ void CSSFontSizeInterpolationType::ApplyStandardPropertyValue(
     const NonInterpolableValue*,
     StyleResolverState& state) const {
   const FontDescription& parent_font = state.ParentFontDescription();
-  Length font_size_length = LengthInterpolationFunctions::CreateLength(
-      interpolable_value, nullptr, state.FontSizeConversionData(),
-      kValueRangeNonNegative);
+  Length font_size_length =
+      To<InterpolableLength>(interpolable_value)
+          .CreateLength(state.FontSizeConversionData(), kValueRangeNonNegative);
   float font_size =
       FloatValueForLength(font_size_length, parent_font.GetSize().value);
   state.GetFontBuilder().SetSize(FontDescription::Size(

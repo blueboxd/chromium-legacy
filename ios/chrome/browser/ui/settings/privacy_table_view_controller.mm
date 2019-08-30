@@ -135,12 +135,14 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
     // screen.
     _prefObserverBridge->ObserveChangesForPreference(
         prefs::kIosHandoffToOtherDevices, &_prefChangeRegistrar);
-    _prefObserverBridge->ObserveChangesForPreference(
-        metrics::prefs::kMetricsReportingEnabled,
-        &_prefChangeRegistrarApplicationContext);
-    _prefObserverBridge->ObserveChangesForPreference(
-        prefs::kMetricsReportingWifiOnly,
-        &_prefChangeRegistrarApplicationContext);
+    if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
+      _prefObserverBridge->ObserveChangesForPreference(
+          metrics::prefs::kMetricsReportingEnabled,
+          &_prefChangeRegistrarApplicationContext);
+      _prefObserverBridge->ObserveChangesForPreference(
+          prefs::kMetricsReportingWifiOnly,
+          &_prefChangeRegistrarApplicationContext);
+    }
   }
   return self;
 }
@@ -507,6 +509,7 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
 
   if (preferenceName == metrics::prefs::kMetricsReportingEnabled ||
       preferenceName == prefs::kMetricsReportingWifiOnly) {
+    DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
     if (base::FeatureList::IsEnabled(kUmaCellular)) {
       bool isOn = GetApplicationContext()->GetLocalState()->GetBoolean(
           metrics::prefs::kMetricsReportingEnabled);

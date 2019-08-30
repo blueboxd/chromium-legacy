@@ -46,6 +46,7 @@
 #include "net/base/filename_util.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -144,7 +145,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
    public:
     virtual void OnReceiveRedirect(const GURL& redirected_url) = 0;
     virtual void OnReceiveResponse(
-        const network::ResourceResponseHead& response_head) = 0;
+        network::mojom::URLResponseHeadPtr response_head) = 0;
     virtual void OnStartLoadingResponseBody() = 0;
     virtual void OnComplete() = 0;
 
@@ -157,13 +158,13 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   ~TestURLLoaderClient() override {}
 
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override {
-    observer_->OnReceiveResponse(response_head);
+      network::mojom::URLResponseHeadPtr response_head) override {
+    observer_->OnReceiveResponse(std::move(response_head));
   }
 
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     observer_->OnReceiveRedirect(redirect_info.new_url);
   }
 
@@ -247,7 +248,7 @@ class OfflinePageURLLoaderBuilder : public TestURLLoaderClient::Observer {
 
   void OnReceiveRedirect(const GURL& redirected_url) override;
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnStartLoadingResponseBody() override;
   void OnComplete() override;
 
@@ -944,8 +945,8 @@ void OfflinePageURLLoaderBuilder::OnReceiveRedirect(
 }
 
 void OfflinePageURLLoaderBuilder::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
-  mime_type_ = response_head.mime_type;
+    network::mojom::URLResponseHeadPtr response_head) {
+  mime_type_ = response_head->mime_type;
 }
 
 void OfflinePageURLLoaderBuilder::OnStartLoadingResponseBody() {

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.gesturenav;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.PorterDuff.Mode;
 import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.util.AttributeSet;
@@ -70,12 +71,15 @@ public class NavigationBubble extends LinearLayout {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
-        mBlack = ApiCompatibilityUtils.getColor(getResources(), android.R.color.black);
+        mBlack = ApiCompatibilityUtils.getColor(getResources(), R.color.navigation_bubble_arrow);
         mBlue = ApiCompatibilityUtils.getColor(getResources(), R.color.default_icon_color_blue);
 
         mColorUpdateListener = new ColorUpdateListener();
         mColorAnimator = ValueAnimator.ofFloat(0, 1).setDuration(COLOR_TRANSITION_DURATION_MS);
         mColorAnimator.addUpdateListener(mColorUpdateListener);
+        getBackground().setColorFilter(ApiCompatibilityUtils.getColor(getResources(),
+                                               R.color.navigation_bubble_background_color),
+                Mode.MULTIPLY);
     }
 
     @Override

@@ -108,12 +108,12 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
   }
 
   // network::mojom::URLLoaderClient:
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override {
-    original_client_->OnReceiveResponse(head);
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
+    original_client_->OnReceiveResponse(std::move(head));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override {
+                         network::mojom::URLResponseHeadPtr head) override {
     // Don't tell the original client since it thinks this is a local load and
     // just follow the redirect.
     network_loader_->FollowRedirect(std::vector<std::string>(),

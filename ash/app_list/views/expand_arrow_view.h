@@ -9,6 +9,7 @@
 
 #include "ash/app_list/app_list_export.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view_targeter_delegate.h"
 
@@ -53,6 +54,12 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
+  void MaybeEnableHintingAnimation(bool enabled);
+
+  bool IsHintingAnimationRunningForTest() {
+    return hinting_animation_timer_.IsRunning();
+  }
+
  private:
   // gfx::AnimationDelegate overrides:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -85,6 +92,8 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
 
   // The y position offset of the arrow in this view.
   int arrow_y_offset_;
+
+  base::OneShotTimer hinting_animation_timer_;
 
   base::WeakPtrFactory<ExpandArrowView> weak_ptr_factory_{this};
 

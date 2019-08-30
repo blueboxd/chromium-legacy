@@ -49,7 +49,6 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
     auto database_task_runner = task_environment_.GetMainThreadTaskRunner();
     hint_cache_ = std::make_unique<HintCache>(
         std::make_unique<HintCacheStore>(db_provider_.get(), database_path,
-                                         nullptr /* pref_service */,
                                          database_task_runner),
         memory_cache_size);
     is_store_initialized_ = false;

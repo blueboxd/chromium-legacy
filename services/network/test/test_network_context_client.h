@@ -26,7 +26,7 @@ class TestNetworkContextClient : public network::mojom::NetworkContextClient {
       const GURL& url,
       bool first_auth_attempt,
       const net::AuthChallengeInfo& auth_info,
-      const base::Optional<ResourceResponseHead>& head,
+      mojom::URLResponseHeadPtr head,
       mojom::AuthChallengeResponderPtr auth_challenge_responder) override {}
   void OnCertificateRequested(
       const base::Optional<base::UnguessableToken>& window_id,

@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   bool UpdateCornerRadius(int top_radius, int bottom_radius);
   bool UpdateArtworkMaxWidthPct(double max_width_pct);
 
-  SkColor GetBackgroundColor() const;
+  SkColor GetBackgroundColor(const views::View& owner) const;
   SkColor GetForegroundColor(const views::View& owner) const;
 
  private:
@@ -57,6 +57,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
   gfx::Rect GetGradientBounds(const views::View& owner) const;
   SkPoint GetGradientStartPoint(const gfx::Rect& draw_bounds) const;
   SkPoint GetGradientEndPoint(const gfx::Rect& draw_bounds) const;
+  SkColor GetDefaultBackgroundColor(const views::View& owner) const;
 
   int top_radius_;
   int bottom_radius_;

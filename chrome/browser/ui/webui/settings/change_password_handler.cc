@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -61,8 +60,7 @@ void ChangePasswordHandler::HandleInitialize(const base::ListValue* args) {
 void ChangePasswordHandler::HandleChangePassword(const base::ListValue* args) {
   service_->OnUserAction(
       web_ui()->GetWebContents(),
-      service_->GetPasswordProtectionReusedPasswordAccountType(
-          PasswordType::PRIMARY_ACCOUNT_PASSWORD, service_->username()),
+      service_->reused_password_account_type_for_last_shown_warning(),
       RequestOutcome::UNKNOWN,
       LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
       safe_browsing::WarningUIType::CHROME_SETTINGS,
@@ -72,12 +70,12 @@ void ChangePasswordHandler::HandleChangePassword(const base::ListValue* args) {
 void ChangePasswordHandler::UpdateChangePasswordCardVisibility() {
   FireWebUIListener(
       "change-password-visibility",
-      base::Value(service_->IsWarningEnabled(
-                      service_->GetPasswordProtectionReusedPasswordAccountType(
-                          PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                          service_->username())) &&
-                  safe_browsing::ChromePasswordProtectionService::
-                      ShouldShowChangePasswordSettingUI(profile_)));
+      base::Value(
+          service_->IsWarningEnabled(
+              service_
+                  ->reused_password_account_type_for_last_shown_warning()) &&
+          safe_browsing::ChromePasswordProtectionService::
+              ShouldShowChangePasswordSettingUI(profile_)));
 }
 
 }  // namespace settings

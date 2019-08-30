@@ -12,5 +12,6 @@
         android:layout_height="match_parent"
         android:divider="@null"
         android:dividerHeight="0dp"
-        android:paddingTop="@dimen/navigation_sheet_content_top_padding" />
+        android:paddingTop="@dimen/navigation_sheet_content_top_padding"
+        android:paddingBottom="@dimen/navigation_sheet_content_bottom_padding" />
 </org.chromium.chrome.browser.gesturenav.NavigationSheetView>

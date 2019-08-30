@@ -18,6 +18,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -37,9 +38,9 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
     private final int mContainerHeightResource;
 
     private static class DialogClickHandler implements ModalDialogProperties.Controller {
-        private Callback<Boolean> mCallback;
+        private Callback<Integer> mCallback;
 
-        DialogClickHandler(Callback<Boolean> onClick) {
+        DialogClickHandler(Callback<Integer> onClick) {
             mCallback = onClick;
         }
 
@@ -47,10 +48,10 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
         public void onClick(PropertyModel model, int buttonType) {
             switch (buttonType) {
                 case ModalDialogProperties.ButtonType.POSITIVE:
-                    mCallback.onResult(true);
+                    mCallback.onResult(DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                     break;
                 case ModalDialogProperties.ButtonType.NEGATIVE:
-                    mCallback.onResult(false);
+                    mCallback.onResult(DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                     break;
                 default:
                     assert false : "Unexpected button pressed in dialog: " + buttonType;
@@ -58,8 +59,8 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
         }
 
         @Override
-        public void onDismiss(PropertyModel model, int dismissalCause) {
-            mCallback.onResult(false);
+        public void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause) {
+            mCallback.onResult(dismissalCause);
         }
     }
 
@@ -83,7 +84,7 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
     }
 
     void setButtons(
-            String positiveButtonText, String negativeButtonText, Callback<Boolean> onClick) {
+            String positiveButtonText, String negativeButtonText, Callback<Integer> onClick) {
         mModalDialogBuilder.with(ModalDialogProperties.CONTROLLER, new DialogClickHandler(onClick))
                 .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, positiveButtonText)
                 .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText);

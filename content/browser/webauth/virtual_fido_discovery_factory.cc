@@ -123,13 +123,6 @@ VirtualFidoDiscoveryFactory::Create(device::FidoTransportProtocol transport,
   return discovery;
 }
 
-std::unique_ptr<::device::FidoDiscoveryBase>
-VirtualFidoDiscoveryFactory::CreateCable(
-    std::vector<device::CableDiscoveryData> cable_data) {
-  return Create(device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
-                nullptr);
-}
-
 void VirtualFidoDiscoveryFactory::CreateAuthenticator(
     blink::test::mojom::VirtualAuthenticatorOptionsPtr options,
     CreateAuthenticatorCallback callback) {

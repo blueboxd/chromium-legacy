@@ -364,13 +364,16 @@ class Generator(generator.Generator):
     # affected and we can remove this method.
     self._SetUniqueNameForImports()
 
-    self.Write(self._GenerateAMDModule(), "%s.js" % self.module.path)
-    self.Write(self._GenerateExterns(), "%s.externs.js" % self.module.path)
+    self.WriteWithComment(self._GenerateAMDModule(), "%s.js" % self.module.path)
+    self.WriteWithComment(self._GenerateExterns(),
+                          "%s.externs.js" % self.module.path)
     if self.js_bindings_mode == "new":
-      self.Write(self._GenerateLiteHtml(), "%s.html" % self.module.path)
-      self.Write(self._GenerateLiteBindings(), "%s-lite.js" % self.module.path)
-      self.Write(self._GenerateLiteBindingsForCompile(),
-                 "%s-lite-for-compile.js" % self.module.path)
+      self.WriteWithComment(self._GenerateLiteHtml(),
+                            "%s.html" % self.module.path)
+      self.WriteWithComment(self._GenerateLiteBindings(),
+                            "%s-lite.js" % self.module.path)
+      self.WriteWithComment(self._GenerateLiteBindingsForCompile(),
+                            "%s-lite-for-compile.js" % self.module.path)
 
   def _SetUniqueNameForImports(self):
     used_names = set()

@@ -1185,7 +1185,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
   ASSERT_TRUE(content::ExecuteScript(
       guest_contents,
       "viewer.navigator_.navigate("
-      "    'www.example.com', Navigator.WindowOpenDisposition.CURRENT_TAB);"));
+      "    'www.example.com',"
+      "    PdfNavigator.WindowOpenDisposition.CURRENT_TAB);"));
   navigation_observer.Wait();
 
   EXPECT_FALSE(navigation_observer.last_navigation_url().is_empty());

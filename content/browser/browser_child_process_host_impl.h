@@ -25,6 +25,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 #if defined(OS_WIN)
 #include "base/win/object_watcher.h"
@@ -50,7 +51,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 #if defined(OS_WIN)
       public base::win::ObjectWatcher::Delegate,
 #endif
-      public ChildProcessLauncher::Client {
+      public ChildProcessLauncher::Client,
+      public memory_instrumentation::mojom::CoordinatorConnector {
  public:
   BrowserChildProcessHostImpl(content::ProcessType process_type,
                               BrowserChildProcessHostDelegate* delegate,
@@ -164,6 +166,13 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   bool CanUseWarmUpConnection() override;
 #endif
 
+  // memory_instrumentation::mojom::CoordinatorConnector implementation:
+  void RegisterCoordinatorClient(
+      mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator>
+          receiver,
+      mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess>
+          client_process) override;
+
   // Returns true if the process has successfully launched. Must only be called
   // on the IO thread.
   bool IsProcessLaunched() const;
@@ -182,6 +191,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   std::string metrics_name_;
   BrowserChildProcessHostDelegate* delegate_;
   std::unique_ptr<ChildProcessHost> child_process_host_;
+  mojo::Receiver<memory_instrumentation::mojom::CoordinatorConnector>
+      coordinator_connector_receiver_{this};
 
   mojo::OutgoingInvitation mojo_invitation_;
   std::unique_ptr<ChildConnection> child_connection_;

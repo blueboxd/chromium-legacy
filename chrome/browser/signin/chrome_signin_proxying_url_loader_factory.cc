@@ -113,9 +113,9 @@ class ProxyingURLLoaderFactory::InProgressRequest
   }
 
   // network::mojom::URLLoaderClient:
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
 
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
@@ -370,22 +370,22 @@ void ProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
 }
 
 void ProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // Even though |head| is const we can get a non-const pointer to the headers
   // and modifications we made are passed to the target client.
-  ProxyResponseAdapter adapter(this, head.headers.get());
+  ProxyResponseAdapter adapter(this, head->headers.get());
   factory_->delegate_->ProcessResponse(&adapter, GURL() /* redirect_url */);
-  target_client_->OnReceiveResponse(head);
+  target_client_->OnReceiveResponse(std::move(head));
 }
 
 void ProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // Even though |head| is const we can get a non-const pointer to the headers
   // and modifications we made are passed to the target client.
-  ProxyResponseAdapter adapter(this, head.headers.get());
+  ProxyResponseAdapter adapter(this, head->headers.get());
   factory_->delegate_->ProcessResponse(&adapter, redirect_info.new_url);
-  target_client_->OnReceiveRedirect(redirect_info, head);
+  target_client_->OnReceiveRedirect(redirect_info, std::move(head));
 
   // The request URL returned by ProxyResponseAdapter::GetOrigin() is updated
   // immediately but the URL and referrer

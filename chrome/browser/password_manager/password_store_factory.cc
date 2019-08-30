@@ -129,7 +129,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
 
   std::unique_ptr<password_manager::LoginDatabase> login_db(
-      password_manager::CreateLoginDatabase(profile->GetPath()));
+      password_manager::CreateLoginDatabaseForProfileStorage(
+          profile->GetPath()));
 #if defined(OS_MACOSX)
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);

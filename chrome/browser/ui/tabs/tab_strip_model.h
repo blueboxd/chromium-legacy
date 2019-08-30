@@ -419,6 +419,13 @@ class TabStripModel {
   // behind a feature flag (see https://crbug.com/915956).
   void AddToExistingGroup(const std::vector<int>& indices, TabGroupId group);
 
+  // Moves the set of tabs indicated by |indices| to precede the tab at index
+  // |destination_index|, maintaining their order and the order of tabs not
+  // being moved, and adds them to the tab group |group|.
+  void MoveTabsIntoGroup(const std::vector<int>& indices,
+                         int destination_index,
+                         TabGroupId group);
+
   // Similar to AddToExistingGroup(), but creates a group with id |group| if it
   // doesn't exist. This is only intended to be called from session restore
   // code.
@@ -634,12 +641,11 @@ class TabStripModel {
   void AddToExistingGroupImpl(const std::vector<int>& indices,
                               TabGroupId group);
 
-  // Moves the set of tabs indicated by |indices| to precede the tab at index
-  // |destination_index|, maintaining their order and the order of tabs not
-  // being moved, and adds them to the tab group |group|.
-  void MoveTabsIntoGroup(const std::vector<int>& indices,
-                         int destination_index,
-                         TabGroupId group);
+  // Implementation of MoveTabsIntoGroup. Moves the set of tabs in |indices| to
+  // the |destination_index| and updates the tabs to the appropriate |group|.
+  void MoveTabsIntoGroupImpl(const std::vector<int>& indices,
+                             int destination_index,
+                             TabGroupId group);
 
   // Moves the tab at |index| to |new_index| and sets its group to |new_group|.
   // Notifies any observers that group affiliation has changed for the tab.

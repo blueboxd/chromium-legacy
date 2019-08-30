@@ -195,13 +195,13 @@ class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
         std::move(delegating_client), params.traffic_annotation);
   }
 
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override {
-    original_client_->OnReceiveResponse(head);
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
+    original_client_->OnReceiveResponse(std::move(head));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override {
-    original_client_->OnReceiveRedirect(redirect_info, head);
+                         network::mojom::URLResponseHeadPtr head) override {
+    original_client_->OnReceiveRedirect(redirect_info, std::move(head));
   }
 
   void OnUploadProgress(int64_t current_position,

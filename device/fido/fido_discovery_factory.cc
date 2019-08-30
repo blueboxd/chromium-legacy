@@ -55,8 +55,9 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::make_unique<FidoBleDiscovery>();
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
-      NOTREACHED() << "Cable discovery is constructed using the dedicated "
-                      "factory method.";
+      if (cable_data_) {
+        return std::make_unique<FidoCableDiscovery>(*cable_data_);
+      }
       return nullptr;
     case FidoTransportProtocol::kNearFieldCommunication:
       // TODO(https://crbug.com/825949): Add NFC support.
@@ -75,9 +76,9 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
   return nullptr;
 }
 
-std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::CreateCable(
+void FidoDiscoveryFactory::set_cable_data(
     std::vector<CableDiscoveryData> cable_data) {
-  return std::make_unique<FidoCableDiscovery>(std::move(cable_data));
+  cable_data_.emplace(std::move(cable_data));
 }
 
 #if defined(OS_WIN)

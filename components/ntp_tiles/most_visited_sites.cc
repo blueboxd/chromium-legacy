@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/features.h"
 #include "components/ntp_tiles/icon_cacher.h"
@@ -136,7 +135,6 @@ MostVisitedSites::MostVisitedSites(
       supervisor_(std::move(supervisor)),
       observer_(nullptr),
       max_num_sites_(0u),
-      top_sites_observer_(this),
       mv_source_(TileSource::TOP_SITES) {
   DCHECK(prefs_);
   // top_sites_ can be null in tests.

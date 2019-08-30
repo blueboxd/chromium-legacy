@@ -307,7 +307,7 @@ std::string GetThemeCSS(Profile* profile) {
       ThemeService::GetThemeProviderForProfile(profile)
           .GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
 
-  return base::StringPrintf("html { background-color: #%02X%02X%02X; }",
+  return base::StringPrintf("body { background-color: #%02X%02X%02X; }",
                             SkColorGetR(background_color),
                             SkColorGetG(background_color),
                             SkColorGetB(background_color));

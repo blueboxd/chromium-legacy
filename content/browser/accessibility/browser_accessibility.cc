@@ -1907,6 +1907,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
       return {};
     }
 
+    case ax::mojom::Role::kTime:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TIME);
+
     default:
       return {};
   }

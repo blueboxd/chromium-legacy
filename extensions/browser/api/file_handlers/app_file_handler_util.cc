@@ -10,6 +10,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
@@ -325,8 +326,8 @@ void PrepareFilesForWritableApp(
     const std::set<base::FilePath>& directory_paths,
     const base::Closure& on_success,
     const base::Callback<void(const base::FilePath&)>& on_failure) {
-  scoped_refptr<WritableFileChecker> checker(new WritableFileChecker(
-      paths, context, directory_paths, on_success, on_failure));
+  auto checker = base::MakeRefCounted<WritableFileChecker>(
+      paths, context, directory_paths, on_success, on_failure);
   checker->Check();
 }
 

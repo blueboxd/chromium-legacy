@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
@@ -109,12 +110,12 @@ class CryptAuthMetadataSyncerImpl : public CryptAuthMetadataSyncer {
   void AttemptNextStep();
 
   void EncryptLocalDeviceMetadata();
+  void OnLocalDeviceMetadataEncrypted(
+      const base::Optional<std::string>& encrypted_metadata);
   void CreateGroupKey();
   void OnGroupKeyCreated(
       const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
       const base::Optional<CryptAuthKey>& client_ephemeral_dh);
-  void OnLocalDeviceMetadataEncrypted(
-      const base::Optional<std::string>& encrypted_metadata);
   void MakeSyncMetadataCall();
   void OnSyncMetadataSuccess(const cryptauthv2::SyncMetadataResponse& response);
   void OnSyncMetadataFailure(NetworkRequestError error);
@@ -152,6 +153,9 @@ class CryptAuthMetadataSyncerImpl : public CryptAuthMetadataSyncer {
   // instance can only be used for one method call; therefore, for each
   // encryption/decryption, a new encryptor needs to be generated.
   std::unique_ptr<CryptAuthEciesEncryptor> encryptor_;
+
+  // The time of the last state change. Used for execution time metrics.
+  base::TimeTicks last_state_change_timestamp_;
 
   State state_ = State::kNotStarted;
   const CryptAuthKey* initial_group_key_;

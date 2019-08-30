@@ -350,6 +350,9 @@ extern const char kEnableFilesystemInIncognitoDescription[];
 extern const char kEnableNoScriptPreviewsName[];
 extern const char kEnableNoScriptPreviewsDescription[];
 
+extern const char kEnableRemovingAllThirdPartyCookiesName[];
+extern const char kEnableRemovingAllThirdPartyCookiesDescription[];
+
 extern const char kDataReductionProxyServerAlternative1[];
 extern const char kDataReductionProxyServerAlternative2[];
 extern const char kDataReductionProxyServerAlternative3[];

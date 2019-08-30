@@ -11,6 +11,20 @@
 
 namespace content {
 
+namespace {
+
+url::Origin ParseOrigin(const std::string& message) {
+  base::Optional<SmsParser::Result> result = SmsParser::Parse(message);
+  return result->origin;
+}
+
+std::string ParseOTP(const std::string& message) {
+  base::Optional<SmsParser::Result> result = SmsParser::Parse(message);
+  return result->one_time_code;
+}
+
+}  // namespace
+
 TEST(SmsParserTest, NoToken) {
   ASSERT_FALSE(SmsParser::Parse("foo"));
 }
@@ -39,152 +53,93 @@ TEST(SmsParserTest, Mailto) {
   ASSERT_FALSE(SmsParser::Parse("For: mailto:goto@chromium.org"));
 }
 
-TEST(SmsParserTest, Basic) {
-  base::Optional<url::Origin> origin =
-      SmsParser::Parse("For: https://example.com");
+TEST(SmsParserTest, MissingOneTimeCodeParameter) {
+  ASSERT_FALSE(SmsParser::Parse("For: https://example.com"));
+}
 
-  GURL url("https://example.com");
-  ASSERT_EQ(origin, url::Origin::Create(url));
+TEST(SmsParserTest, Basic) {
+  ASSERT_EQ(url::Origin::Create(GURL("https://example.com")),
+            ParseOrigin("For: https://example.com?otp=123"));
 }
 
 TEST(SmsParserTest, Realistic) {
-  base::Optional<url::Origin> origin = SmsParser::Parse(
-      "<#> Your OTP is 1234ABC.\nFor: https://example.com?s3LhKBB0M33");
+  ASSERT_EQ(url::Origin::Create(GURL("https://example.com")),
+            ParseOrigin("<#> Your OTP is 1234ABC.\nFor: "
+                        "https://example.com?otp=123&s3LhKBB0M33"));
+}
 
-  GURL url("https://example.com");
-  ASSERT_EQ(origin, url::Origin::Create(url));
+TEST(SmsParserTest, OneTimeCode) {
+  auto result = SmsParser::Parse("For: https://example.com?otp=123");
+  ASSERT_EQ("123", (*result).one_time_code);
 }
 
 TEST(SmsParserTest, LocalhostForDevelopment) {
-  ASSERT_EQ(SmsParser::Parse("For: http://localhost:8080"),
-            url::Origin::Create(GURL("http://localhost:8080")));
-  ASSERT_EQ(SmsParser::Parse("For: http://localhost:80"),
-            url::Origin::Create(GURL("http://localhost:80")));
-  ASSERT_EQ(SmsParser::Parse("For: http://localhost"),
-            url::Origin::Create(GURL("http://localhost")));
+  ASSERT_EQ(url::Origin::Create(GURL("http://localhost:8080")),
+            ParseOrigin("For: http://localhost:8080?otp=123"));
+  ASSERT_EQ(url::Origin::Create(GURL("http://localhost:80")),
+            ParseOrigin("For: http://localhost:80?otp=123"));
+  ASSERT_EQ(url::Origin::Create(GURL("http://localhost")),
+            ParseOrigin("For: http://localhost?otp=123"));
   ASSERT_FALSE(SmsParser::Parse("For: localhost"));
 }
 
 TEST(SmsParserTest, Paths) {
-  base::Optional<url::Origin> origin =
-      SmsParser::Parse("For: https://example.com/foobar");
-
-  GURL url("https://example.com");
-  ASSERT_EQ(origin, url::Origin::Create(url));
+  ASSERT_EQ(url::Origin::Create(GURL("https://example.com")),
+            ParseOrigin("For: https://example.com/foobar?otp=123"));
 }
 
 TEST(SmsParserTest, Message) {
-  base::Optional<url::Origin> origin =
-      SmsParser::Parse("hello world\nFor: https://example.com");
-
-  GURL url("https://example.com");
-  ASSERT_EQ(origin, url::Origin::Create(url));
+  ASSERT_EQ(url::Origin::Create(GURL("https://example.com")),
+            ParseOrigin("hello world\nFor: https://example.com?otp=123"));
 }
 
 TEST(SmsParserTest, Whitespace) {
-  base::Optional<url::Origin> origin =
-      SmsParser::Parse("hello world\nFor: https://example.com ");
-
-  GURL url("https://example.com");
-  ASSERT_EQ(origin, url::Origin::Create(url));
+  ASSERT_EQ(url::Origin::Create(GURL("https://example.com")),
+            ParseOrigin("hello world\nFor: https://example.com?otp=123 "));
 }
 
 TEST(SmsParserTest, Newlines) {
-  base::Optional<url::Origin> origin =
-      SmsParser::Parse("hello world\nFor: https://example.com\n");
-
-  GURL url("https://example.com");
-  ASSERT_EQ(origin, url::Origin::Create(url));
+  ASSERT_EQ(url::Origin::Create(GURL("https://example.com")),
+            ParseOrigin("hello world\nFor: https://example.com?otp=123\n"));
 }
 
 TEST(SmsParserTest, TwoTokens) {
-  base::Optional<url::Origin> origin =
-      SmsParser::Parse("For: https://a.com For: https://b.com");
-
-  GURL url("https://b.com");
-  ASSERT_EQ(origin, url::Origin::Create(url));
+  ASSERT_EQ(url::Origin::Create(GURL("https://b.com")),
+            ParseOrigin("For: https://a.com For: https://b.com?otp=123"));
 }
 
 TEST(SmsParserTest, DifferentPorts) {
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://a.com:8443/");
-
-    GURL url("https://a.com");
-    ASSERT_NE(origin, url::Origin::Create(url));
-  }
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://a.com:8443/");
-
-    GURL url("https://a.com:443");
-    ASSERT_NE(origin, url::Origin::Create(url));
-  }
+  ASSERT_NE(url::Origin::Create(GURL("https://a.com")),
+            ParseOrigin("For: https://a.com:8443/?otp=123"));
+  ASSERT_NE(url::Origin::Create(GURL("https://a.com:443")),
+            ParseOrigin("For: https://a.com:8443/?otp=123"));
 }
 
 TEST(SmsParserTest, ImplicitPort) {
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://a.com:443/");
-
-    GURL url("https://a.com");
-    ASSERT_EQ(origin, url::Origin::Create(url));
-  }
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://a.com:8443/");
-
-    GURL url("https://a.com");
-    ASSERT_NE(origin, url::Origin::Create(url));
-  }
+  ASSERT_EQ(url::Origin::Create(GURL("https://a.com")),
+            ParseOrigin("For: https://a.com:443/?otp=123"));
+  ASSERT_NE(url::Origin::Create(GURL("https://a.com")),
+            ParseOrigin("For: https://a.com:8443/?otp=123"));
 }
 
 TEST(SmsParserTest, Redirector) {
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://a.com/redirect?https://b.com");
-
-    GURL url("https://a.com");
-    ASSERT_EQ(origin, url::Origin::Create(url));
-  }
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://a.com/redirect?https:%2f%2fb.com");
-
-    GURL url("https://a.com");
-    ASSERT_EQ(origin, url::Origin::Create(url));
-  }
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://a.com/redirect#https:%2f%2fb.com");
-
-    GURL url("https://a.com");
-    ASSERT_EQ(origin, url::Origin::Create(url));
-  }
+  ASSERT_EQ(url::Origin::Create(GURL("https://a.com")),
+            ParseOrigin("For: https://a.com/redirect?otp=123&https://b.com"));
+  ASSERT_EQ(
+      url::Origin::Create(GURL("https://a.com")),
+      ParseOrigin("For: https://a.com/redirect?&otp=123&https:%2f%2fb.com"));
+  ASSERT_EQ(
+      url::Origin::Create(GURL("https://a.com")),
+      ParseOrigin("For: https://a.com/redirect?otp=123#https:%2f%2fb.com"));
 }
 
 TEST(SmsParserTest, UsernameAndPassword) {
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://b.com@a.com/");
-
-    GURL url("https://a.com");
-    ASSERT_EQ(origin, url::Origin::Create(url));
-  }
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://b.com:c.com@a.com/");
-
-    GURL url("https://a.com");
-    ASSERT_EQ(origin, url::Origin::Create(url));
-  }
-  {
-    base::Optional<url::Origin> origin =
-        SmsParser::Parse("For: https://b.com:noodle@a.com:443/");
-
-    GURL url("https://a.com");
-    ASSERT_EQ(origin, url::Origin::Create(url));
-  }
+  ASSERT_EQ(url::Origin::Create(GURL("https://a.com")),
+            ParseOrigin("For: https://b.com@a.com/?otp=123"));
+  ASSERT_EQ(url::Origin::Create(GURL("https://a.com")),
+            ParseOrigin("For: https://b.com:c.com@a.com/?otp=123"));
+  ASSERT_EQ(url::Origin::Create(GURL("https://a.com")),
+            ParseOrigin("For: https://b.com:noodle@a.com:443/?otp=123"));
 }
 
 TEST(SmsParserTest, HarmlessOriginsButInvalid) {
@@ -192,11 +147,38 @@ TEST(SmsParserTest, HarmlessOriginsButInvalid) {
 }
 
 TEST(SmsParserTest, AppHash) {
-  base::Optional<url::Origin> origin =
-      SmsParser::Parse("<#> Hello World\nFor: https://example.com?s3LhKBB0M33");
+  ASSERT_EQ(
+      url::Origin::Create(GURL("https://example.com")),
+      ParseOrigin(
+          "<#> Hello World\nFor: https://example.com?otp=123&s3LhKBB0M33"));
+}
 
-  GURL url("https://example.com");
-  ASSERT_EQ(origin, url::Origin::Create(url));
+TEST(SmsParserTest, OneTimeCodeCharRanges) {
+  ASSERT_EQ("cannot-contain-hashes",
+            ParseOTP("For: https://example.com?otp=cannot-contain-hashes#yes"));
+  ASSERT_EQ(
+      "can-contain-numbers-like-123",
+      ParseOTP("For: https://example.com?otp=can-contain-numbers-like-123"));
+  ASSERT_EQ(
+      "can-contain-utf8-like-🤷",
+      ParseOTP("For: https://example.com?otp=can-contain-utf8-like-🤷"));
+  ASSERT_EQ(
+      "can-contain-chars-like-*^$@",
+      ParseOTP("For: https://example.com?otp=can-contain-chars-like-*^$@"));
+  ASSERT_EQ(
+      "human-readable-words-like-sillyface",
+      ParseOTP(
+          "For: https://example.com?otp=human-readable-words-like-sillyface"));
+  ASSERT_EQ(
+      "works-with-more-params",
+      ParseOTP("For: https://example.com?otp=works-with-more-params&foo=bar"));
+  ASSERT_EQ(
+      "works-with-more-params",
+      ParseOTP("For: https://example.com?foo=bar&otp=works-with-more-params"));
+  ASSERT_EQ(
+      "can-it-be-super-lengthy-like-a-lot",
+      ParseOTP(
+          "For: https://example.com?otp=can-it-be-super-lengthy-like-a-lot"));
 }
 
 }  // namespace content

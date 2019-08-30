@@ -13,6 +13,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -21,6 +22,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.content_public.browser.BrowserStartupController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +51,11 @@ public class SearchEngineLogoUtils {
     public static boolean shouldShowSearchEngineLogo() {
         return !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
                 && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO);
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+                // Using the profile now, so we need to pay attention to browser initialization.
+                && BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                           .isFullBrowserStarted()
+                && !Profile.getLastUsedProfile().isOffTheRecord();
     }
 
     public static boolean shouldRoundedSearchEngineLogo() {

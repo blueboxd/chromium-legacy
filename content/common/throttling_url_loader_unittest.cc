@@ -182,14 +182,14 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     on_received_response_called_++;
     if (on_received_response_callback_)
       on_received_response_callback_.Run();
   }
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     on_received_redirect_called_++;
     if (on_received_redirect_callback_)
       on_received_redirect_callback_.Run();

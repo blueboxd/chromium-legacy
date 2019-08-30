@@ -87,7 +87,6 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
-#include "base/power_monitor/power_monitor_device_source.h"
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif  // OS_WIN

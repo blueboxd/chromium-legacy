@@ -20,6 +20,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/hid_haptic_gamepad.h"
 #include "device/gamepad/hid_writer_linux.h"
+#include "device/gamepad/xbox_hid_controller.h"
 #include "device/udev_linux/udev.h"
 
 #if defined(OS_CHROMEOS)
@@ -208,7 +209,7 @@ bool GamepadDeviceLinux::IsEmpty() const {
 }
 
 bool GamepadDeviceLinux::SupportsVibration() const {
-  if (dualshock4_ || hid_haptics_)
+  if (dualshock4_ || xbox_hid_ || hid_haptics_)
     return true;
 
   // The Xbox Adaptive Controller reports force feedback capability, but the
@@ -543,16 +544,23 @@ void GamepadDeviceLinux::InitializeHidraw(base::ScopedFD fd) {
   uint16_t vendor_id;
   uint16_t product_id;
   bool is_dualshock4 = false;
+  bool is_xbox_hid = false;
   bool is_hid_haptic = false;
   if (GetHidrawDevinfo(hidraw_fd_, &bus_type_, &vendor_id, &product_id)) {
     is_dualshock4 = Dualshock4Controller::IsDualshock4(vendor_id, product_id);
+    is_xbox_hid = XboxHidController::IsXboxHid(vendor_id, product_id);
     is_hid_haptic = HidHapticGamepad::IsHidHaptic(vendor_id, product_id);
-    DCHECK_LE(is_dualshock4 + is_hid_haptic, 1);
+    DCHECK_LE(is_dualshock4 + is_xbox_hid + is_hid_haptic, 1);
   }
 
   if (is_dualshock4 && !dualshock4_) {
     dualshock4_ = std::make_unique<Dualshock4Controller>(
         bus_type_, std::make_unique<HidWriterLinux>(hidraw_fd_));
+  }
+
+  if (is_xbox_hid && !xbox_hid_) {
+    xbox_hid_ = std::make_unique<XboxHidController>(
+        std::make_unique<HidWriterLinux>(hidraw_fd_));
   }
 
   if (is_hid_haptic && !hid_haptics_) {
@@ -566,6 +574,9 @@ void GamepadDeviceLinux::CloseHidrawNode() {
   if (dualshock4_)
     dualshock4_->Shutdown();
   dualshock4_.reset();
+  if (xbox_hid_)
+    xbox_hid_->Shutdown();
+  xbox_hid_.reset();
   if (hid_haptics_)
     hid_haptics_->Shutdown();
   hid_haptics_.reset();
@@ -614,6 +625,11 @@ void GamepadDeviceLinux::SetVibration(double strong_magnitude,
     return;
   }
 
+  if (xbox_hid_) {
+    xbox_hid_->SetVibration(strong_magnitude, weak_magnitude);
+    return;
+  }
+
   if (hid_haptics_) {
     hid_haptics_->SetVibration(strong_magnitude, weak_magnitude);
     return;
@@ -644,6 +660,11 @@ void GamepadDeviceLinux::SetZeroVibration() {
   DCHECK(polling_runner_->RunsTasksInCurrentSequence());
   if (dualshock4_) {
     dualshock4_->SetZeroVibration();
+    return;
+  }
+
+  if (xbox_hid_) {
+    xbox_hid_->SetZeroVibration();
     return;
   }
 

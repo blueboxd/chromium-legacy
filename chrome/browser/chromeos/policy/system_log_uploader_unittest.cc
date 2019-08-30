@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -259,12 +260,29 @@ class SystemLogUploaderTest : public testing::TestWithParam<bool> {
     EXPECT_GE(next_task, uploader.last_upload_attempt() + expected_delay);
   }
 
+  void ExpectSuccessHistogram(int amount) {
+    histogram_tester_.ExpectUniqueSample(
+        SystemLogUploader::kSystemLogUploadResultHistogram,
+        is_zipped_upload_ ? SystemLogUploader::ZIPPED_LOGS_UPLOAD_SUCCESS
+                          : SystemLogUploader::NON_ZIPPED_LOGS_UPLOAD_SUCCESS,
+        amount);
+  }
+
+  void ExpectFailureHistogram(int amount) {
+    histogram_tester_.ExpectUniqueSample(
+        SystemLogUploader::kSystemLogUploadResultHistogram,
+        is_zipped_upload_ ? SystemLogUploader::ZIPPED_LOGS_UPLOAD_FAILURE
+                          : SystemLogUploader::NON_ZIPPED_LOGS_UPLOAD_FAILURE,
+        amount);
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   bool is_zipped_upload_;
   base::test::ScopedFeatureList feature_list;
+  base::HistogramTester histogram_tester_;
 };
 
 // Check disabled system log uploads by default.
@@ -279,6 +297,8 @@ TEST_P(SystemLogUploaderTest, Basic) {
   SystemLogUploader uploader(std::move(syslog_delegate), task_runner_);
 
   task_runner_->RunPendingTasks();
+  histogram_tester_.ExpectTotalCount(
+      SystemLogUploader::kSystemLogUploadResultHistogram, 0);
 }
 
 // One success task pending.
@@ -298,6 +318,7 @@ TEST_P(SystemLogUploaderTest, SuccessTest) {
   RunPendingUploadTaskAndCheckNext(
       uploader, base::TimeDelta::FromMilliseconds(
                     SystemLogUploader::kDefaultUploadDelayMs));
+  ExpectSuccessHistogram(/*amount=*/1);
 }
 
 // Three failed responses recieved.
@@ -326,6 +347,7 @@ TEST_P(SystemLogUploaderTest, ThreeFailureTest) {
   RunPendingUploadTaskAndCheckNext(uploader,
                                    base::TimeDelta::FromMilliseconds(
                                        SystemLogUploader::kErrorUploadDelayMs));
+  ExpectFailureHistogram(/*amount=*/3);
 }
 
 // Check header fields of system log files to upload.
@@ -345,6 +367,7 @@ TEST_P(SystemLogUploaderTest, CheckHeaders) {
   RunPendingUploadTaskAndCheckNext(
       uploader, base::TimeDelta::FromMilliseconds(
                     SystemLogUploader::kDefaultUploadDelayMs));
+  ExpectSuccessHistogram(/*amount=*/1);
 }
 
 // Disable system log uploads after one failed log upload.
@@ -364,6 +387,7 @@ TEST_P(SystemLogUploaderTest, DisableLogUpload) {
   RunPendingUploadTaskAndCheckNext(uploader,
                                    base::TimeDelta::FromMilliseconds(
                                        SystemLogUploader::kErrorUploadDelayMs));
+  ExpectFailureHistogram(/*amount=*/1);
 
   // Disable log upload and check that frequency is usual, because there is no
   // errors, we should not upload logs.
@@ -377,6 +401,7 @@ TEST_P(SystemLogUploaderTest, DisableLogUpload) {
   RunPendingUploadTaskAndCheckNext(
       uploader, base::TimeDelta::FromMilliseconds(
                     SystemLogUploader::kDefaultUploadDelayMs));
+  ExpectFailureHistogram(/*amount=*/1);
 }
 
 INSTANTIATE_TEST_SUITE_P(SystemLogUploaderTestInstance,

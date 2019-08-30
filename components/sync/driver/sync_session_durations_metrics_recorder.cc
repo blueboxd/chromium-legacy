@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
-#include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 namespace syncer {
@@ -28,10 +27,7 @@ base::TimeDelta SubtractInactiveTime(base::TimeDelta total_length,
 SyncSessionDurationsMetricsRecorder::SyncSessionDurationsMetricsRecorder(
     SyncService* sync_service,
     signin::IdentityManager* identity_manager)
-    : sync_service_(sync_service),
-      identity_manager_(identity_manager),
-      sync_observer_(this),
-      identity_manager_observer_(this) {
+    : sync_service_(sync_service), identity_manager_(identity_manager) {
   // |sync_service| can be null if sync is disabled by a command line flag.
   if (sync_service_) {
     sync_observer_.Add(sync_service_);

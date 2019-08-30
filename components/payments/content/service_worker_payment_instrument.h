@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/weak_ptr.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_instrument.h"
@@ -55,7 +56,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
       const PaymentRequestSpec* spec,
       std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
       PaymentRequestDelegate* payment_request_delegate,
-      IdentityObserver* identity_observer);
+      base::WeakPtr<IdentityObserver> identity_observer);
 
   // This constructor is used for a payment app that has not been installed in
   // Chrome but can be installed when paying with it.
@@ -67,7 +68,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
       std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
       const std::string& enabled_methods,
       PaymentRequestDelegate* payment_request_delegate,
-      IdentityObserver* identity_observer);
+      base::WeakPtr<IdentityObserver> identity_observer);
   ~ServiceWorkerPaymentInstrument() override;
 
   // The callback for ValidateCanMakePayment.
@@ -102,8 +103,10 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
-  bool IsValidForPaymentMethodIdentifier(
-      const std::string& payment_method_identifier) const override;
+  void IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier,
+      bool* is_valid) const override;
+  base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
   gfx::ImageSkia icon_image_skia() const override;
 
   void set_payment_handler_host(
@@ -136,8 +139,9 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   // Weak pointer that must outlive this object.
   PaymentRequestDelegate* payment_request_delegate_;
 
-  // Weak pointer that must outlive this object.
-  IdentityObserver* identity_observer_;
+  // The object that is notified of service worker registration identifier after
+  // the service worker is installed.
+  base::WeakPtr<IdentityObserver> identity_observer_;
 
   mojom::PaymentHandlerHostPtrInfo payment_handler_host_;
 

@@ -9,13 +9,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_make_credential_response.h"
-#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -115,16 +113,16 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
     case AuthenticatorAttachment::kPlatform:
       return {FidoTransportProtocol::kInternal};
     case AuthenticatorAttachment::kCrossPlatform:
-      // Cloud-assisted BLE is not yet supported for MakeCredential requests.
       return {FidoTransportProtocol::kUsbHumanInterfaceDevice,
               FidoTransportProtocol::kBluetoothLowEnergy,
-              FidoTransportProtocol::kNearFieldCommunication};
+              FidoTransportProtocol::kNearFieldCommunication,
+              FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
     case AuthenticatorAttachment::kAny:
-      // Cloud-assisted BLE is not yet supported for MakeCredential requests.
       return {FidoTransportProtocol::kInternal,
               FidoTransportProtocol::kNearFieldCommunication,
               FidoTransportProtocol::kUsbHumanInterfaceDevice,
-              FidoTransportProtocol::kBluetoothLowEnergy};
+              FidoTransportProtocol::kBluetoothLowEnergy,
+              FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
   }
 
   NOTREACHED();

@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_sync_result.h"
 #include "chromeos/services/device_sync/cryptauth_feature_status_getter.h"
@@ -67,6 +68,10 @@ class CryptAuthFeatureStatusGetterImpl : public CryptAuthFeatureStatusGetter {
   // be used for one call; therefore, for each API call, a new client needs to
   // be generated from |client_factory_|.
   std::unique_ptr<CryptAuthClient> cryptauth_client_;
+
+  // The time when BatchGetFeatureStatuses API call was made. Used for execution
+  // time metrics.
+  base::TimeTicks start_get_feature_statuses_timestamp_;
 
   CryptAuthClientFactory* client_factory_ = nullptr;
   std::unique_ptr<base::OneShotTimer> timer_;

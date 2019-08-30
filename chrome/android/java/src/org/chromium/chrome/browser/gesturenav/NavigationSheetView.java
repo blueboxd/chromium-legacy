@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
+import android.support.annotation.IdRes;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ListView;
@@ -30,10 +31,13 @@ public class NavigationSheetView extends RelativeLayout {
     public NavigationSheetView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mItemHeight = getResources().getDimensionPixelSize(R.dimen.navigation_popup_item_height);
-        mContentPadding =
-                getResources().getDimensionPixelSize(R.dimen.navigation_sheet_content_top_padding)
-                + getResources().getDimensionPixelSize(
-                        R.dimen.navigation_sheet_content_bottom_padding);
+        mContentPadding = getSizePx(context, R.dimen.navigation_sheet_content_top_padding)
+                + getSizePx(context, R.dimen.navigation_sheet_content_bottom_padding)
+                + getSizePx(context, R.dimen.navigation_sheet_content_wrap_padding);
+    }
+
+    private static int getSizePx(Context context, @IdRes int id) {
+        return context.getResources().getDimensionPixelSize(id);
     }
 
     /**

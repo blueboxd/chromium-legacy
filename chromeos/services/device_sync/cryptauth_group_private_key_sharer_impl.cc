@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_ecies_encryptor_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
@@ -22,11 +23,13 @@ namespace device_sync {
 namespace {
 
 // Timeout values for asynchronous operations.
-// TODO(https://crbug.com/933656): Tune these values.
+// TODO(https://crbug.com/933656): Use async execution time metrics to tune
+// these timeout values. For now, set these timeouts to the max execution time
+// recorded by the metrics.
 constexpr base::TimeDelta kWaitingForGroupPrivateKeyEncryptionTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 constexpr base::TimeDelta kWaitingForShareGroupPrivateKeyResponseTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 
 CryptAuthDeviceSyncResult::ResultCode
 ShareGroupPrivateKeyNetworkRequestErrorToResultCode(NetworkRequestError error) {
@@ -59,6 +62,21 @@ int64_t CalculateInt64Sha256Hash(const std::string& str) {
   int64_t hash;
   crypto::SHA256HashString(str, &hash, sizeof(int64_t));
   return hash;
+}
+
+void RecordGroupPrivateKeyEncryptionMetrics(
+    const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.GroupPrivateKeySharer.ExecutionTime."
+      "GroupPrivateKeyEncryption",
+      execution_time);
+}
+
+void RecordShareGroupPrivateKeyMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.GroupPrivateKeySharer.ExecutionTime."
+      "ShareGroupPrivateKey",
+      execution_time);
 }
 
 }  // namespace
@@ -139,6 +157,7 @@ void CryptAuthGroupPrivateKeySharerImpl::SetState(State state) {
 
   PA_LOG(INFO) << "Transitioning from " << state_ << " to " << state;
   state_ = state;
+  last_state_change_timestamp_ = base::TimeTicks::Now();
 
   base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
@@ -156,6 +175,19 @@ void CryptAuthGroupPrivateKeySharerImpl::OnTimeout() {
   base::Optional<CryptAuthDeviceSyncResult::ResultCode> error_code =
       ResultCodeErrorFromTimeoutDuringState(state_);
   DCHECK(error_code);
+
+  base::TimeDelta execution_time =
+      base::TimeTicks::Now() - last_state_change_timestamp_;
+  switch (state_) {
+    case State::kWaitingForGroupPrivateKeyEncryption:
+      RecordGroupPrivateKeyEncryptionMetrics(execution_time);
+      break;
+    case State::kWaitingForShareGroupPrivateKeyResponse:
+      RecordShareGroupPrivateKeyMetrics(execution_time);
+      break;
+    default:
+      NOTREACHED();
+  }
 
   FinishAttempt(*error_code);
 }
@@ -211,6 +243,9 @@ void CryptAuthGroupPrivateKeySharerImpl::OnGroupPrivateKeysEncrypted(
         id_to_encrypted_group_private_key_map) {
   DCHECK_EQ(State::kWaitingForGroupPrivateKeyEncryption, state_);
 
+  RecordGroupPrivateKeyEncryptionMetrics(base::TimeTicks::Now() -
+                                         last_state_change_timestamp_);
+
   cryptauthv2::ShareGroupPrivateKeyRequest request;
   request.mutable_context()->CopyFrom(request_context);
 
@@ -264,6 +299,9 @@ void CryptAuthGroupPrivateKeySharerImpl::OnShareGroupPrivateKeySuccess(
     const cryptauthv2::ShareGroupPrivateKeyResponse& response) {
   DCHECK_EQ(State::kWaitingForShareGroupPrivateKeyResponse, state_);
 
+  RecordShareGroupPrivateKeyMetrics(base::TimeTicks::Now() -
+                                    last_state_change_timestamp_);
+
   CryptAuthDeviceSyncResult::ResultCode result_code =
       did_non_fatal_error_occur_
           ? CryptAuthDeviceSyncResult::ResultCode::kFinishedWithNonFatalErrors
@@ -274,6 +312,9 @@ void CryptAuthGroupPrivateKeySharerImpl::OnShareGroupPrivateKeySuccess(
 void CryptAuthGroupPrivateKeySharerImpl::OnShareGroupPrivateKeyFailure(
     NetworkRequestError error) {
   DCHECK_EQ(State::kWaitingForShareGroupPrivateKeyResponse, state_);
+
+  RecordShareGroupPrivateKeyMetrics(base::TimeTicks::Now() -
+                                    last_state_change_timestamp_);
 
   FinishAttempt(ShareGroupPrivateKeyNetworkRequestErrorToResultCode(error));
 }

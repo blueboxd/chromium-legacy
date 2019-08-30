@@ -278,13 +278,19 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     EnqueueOrder sequence_number = sequence_manager_->GetNextSequenceNumber();
     bool was_immediate_incoming_queue_empty =
         any_thread_.immediate_incoming_queue.empty();
-    base::TimeTicks desired_run_time;
+    base::TimeTicks delayed_run_time;
     // The desired run time is only required when delayed fence is allowed.
     // Avoid evaluating it when not required.
-    if (delayed_fence_allowed_)
-      desired_run_time = lazy_now.Now();
+    //
+    // TODO(https://crbug.com/997203) The code that records jank metrics depends
+    // on the delayed run time to be set when |add_queue_time_to_tasks| is true.
+    // We should remove that dependency and only set the delayed run time here
+    // when |delayed_fence_allowed_| is true. See https://crbug.com/997203#c22
+    // for details about the dependency.
+    if (delayed_fence_allowed_ || add_queue_time_to_tasks)
+      delayed_run_time = lazy_now.Now();
     any_thread_.immediate_incoming_queue.push_back(Task(
-        std::move(task), desired_run_time, sequence_number, sequence_number));
+        std::move(task), delayed_run_time, sequence_number, sequence_number));
 
     if (any_thread_.on_task_ready_handler) {
       any_thread_.on_task_ready_handler.Run(

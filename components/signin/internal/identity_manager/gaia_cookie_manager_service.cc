@@ -458,7 +458,9 @@ GaiaCookieManagerService::GaiaCookieManagerService(
                        "parse list accounts data from pref.";
       listed_accounts_.clear();
       signed_out_accounts_.clear();
+      return;
     }
+    InitializeListedAccountsIds();
   }
 }
 
@@ -851,11 +853,7 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
   RecordListAccountsRetryResult(GoogleServiceAuthError::AuthErrorNone(),
                                 fetcher_retries_);
 
-  for (gaia::ListedAccount& account : listed_accounts_) {
-    DCHECK(account.id.empty());
-    account.id = AccountTrackerService::PickAccountIdForAccount(
-        signin_client_->GetPrefs(), account.gaia_id, account.email);
-  }
+  InitializeListedAccountsIds();
 
   list_accounts_stale_ = false;
   HandleNextRequest();
@@ -937,6 +935,14 @@ void GaiaCookieManagerService::OnLogOutFailure(
   }
 
   HandleNextRequest();
+}
+
+void GaiaCookieManagerService::InitializeListedAccountsIds() {
+  for (gaia::ListedAccount& account : listed_accounts_) {
+    DCHECK(account.id.empty());
+    account.id = AccountTrackerService::PickAccountIdForAccount(
+        signin_client_->GetPrefs(), account.gaia_id, account.email);
+  }
 }
 
 void GaiaCookieManagerService::StartFetchingUbertoken() {

@@ -4,6 +4,7 @@
 
 #include "chrome/installer/setup/setup_main.h"
 
+// Must be before msi.h.
 #include <windows.h>
 
 #include <msi.h>
@@ -43,6 +44,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "build/branding_buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -85,7 +87,7 @@
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/installer/util/google_update_util.h"
 #endif
 
@@ -611,7 +613,7 @@ installer::InstallStatus UninstallProducts(
   if (!system_level_cmd.GetProgram().empty())
     base::LaunchProcess(system_level_cmd, base::LaunchOptions());
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Tell Google Update that an uninstall has taken place if this install did
   // not originate from the MSI. Google Update has its own logic relating to
   // MSI-driven uninstalls that conflicts with this. Ignore the return value:
@@ -619,7 +621,7 @@ installer::InstallStatus UninstallProducts(
   // failure of Chrome's uninstallation.
   if (!installer_state.is_msi())
     google_update::UninstallGoogleUpdate(installer_state.system_install());
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   return install_status;
 }
@@ -989,7 +991,7 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
         cmd_line.GetSwitchValueNative(
             installer::switches::kSetDisplayVersionValue));
     *exit_code = OverwriteDisplayVersions(registry_product, registry_value);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   } else if (cmd_line.HasSwitch(installer::switches::kStoreDMToken)) {
     // Write the specified token to the registry, overwriting any already
     // existing value.

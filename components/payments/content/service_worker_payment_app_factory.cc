@@ -138,7 +138,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
         web_contents->GetBrowserContext(),
         base::BindOnce(
             &SelfDeletingServiceWorkerPaymentAppFactory::OnGotAllPaymentApps,
-            base::Unretained(this)));
+            weak_ptr_factory_.GetWeakPtr()));
   }
 
   void IgnorePortInOriginComparisonForTesting() {
@@ -166,10 +166,10 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
         std::move(apps),
         base::BindOnce(
             &SelfDeletingServiceWorkerPaymentAppFactory::OnPaymentAppsVerified,
-            base::Unretained(this)),
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&SelfDeletingServiceWorkerPaymentAppFactory::
                            OnPaymentAppsVerifierFinishedUsingResources,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void OnPaymentAppsVerified(content::PaymentAppProvider::PaymentApps apps,
@@ -184,10 +184,10 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
           requested_method_data_,
           base::BindOnce(
               &SelfDeletingServiceWorkerPaymentAppFactory::OnPaymentAppsCrawled,
-              base::Unretained(this)),
+              weak_ptr_factory_.GetWeakPtr()),
           base::BindOnce(&SelfDeletingServiceWorkerPaymentAppFactory::
                              OnPaymentAppsCrawlerFinishedUsingResources,
-                         base::Unretained(this)));
+                         weak_ptr_factory_.GetWeakPtr()));
       return;
     }
 
@@ -250,6 +250,9 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
   bool is_payment_app_crawler_finished_using_resources_ = true;
 
   bool ignore_port_in_origin_comparison_for_testing_ = false;
+
+  base::WeakPtrFactory<SelfDeletingServiceWorkerPaymentAppFactory>
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SelfDeletingServiceWorkerPaymentAppFactory);
 };

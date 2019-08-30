@@ -17,6 +17,7 @@
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "ipc/ipc_sync_channel.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"

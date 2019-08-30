@@ -1,5 +1,8 @@
 include_rules = [
+  "+components/viz/common",
   "+content/public/app",
+  "+gpu/command_buffer/service",
   "+services/service_manager",
   "+ui/base",
+  "+ui/gl/gl_switches.h",
 ]

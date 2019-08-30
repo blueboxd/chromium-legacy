@@ -416,7 +416,8 @@ TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
           cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
 
   std::move(adapted_callback)
-      .Run(CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+      .Run(CanonicalCookie::CookieInclusionStatus(
+          CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
 
   EXPECT_FALSE(result_out);
 
@@ -427,8 +428,7 @@ TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
   adapted_callback =
       cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
 
-  std::move(adapted_callback)
-      .Run(CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  std::move(adapted_callback).Run(CanonicalCookie::CookieInclusionStatus());
 
   EXPECT_TRUE(result_out);
 }

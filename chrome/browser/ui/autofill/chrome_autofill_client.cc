@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -263,6 +264,13 @@ void ChromeAutofillClient::ShowLocalCardMigrationResults(
   controller->UpdateCreditCardIcon(has_server_error, tip_message,
                                    migratable_credit_cards,
                                    delete_local_card_callback);
+#endif
+}
+
+void ChromeAutofillClient::ShowWebauthnOfferDialog(
+    WebauthnOfferDialogCallback callback) {
+#if !defined(OS_ANDROID)
+  ShowWebauthnOfferDialogView(web_contents(), callback);
 #endif
 }
 

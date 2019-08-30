@@ -47,17 +47,9 @@ void ImageContextImpl::CreateFallbackImage(
   DCHECK(!fallback_context_state_);
   fallback_context_state_ = context_state;
 
-  SkColorType color_type = ResourceFormatToClosestSkColorType(
-      true /* gpu_compositing */, resource_format());
-
-  // Don't use a fallback SkColorType because we may fail checks inside Skia
-  if (SkColorTypeBytesPerPixel(color_type) * 8 !=
-      BitsPerPixel(resource_format()))
-    return;
-
   fallback_texture_ =
       fallback_context_state_->gr_context()->createBackendTexture(
-          size().width(), size().height(), color_type,
+          size().width(), size().height(), backend_format(),
 #if DCHECK_IS_ON()
           SkColors::kRed,
 #else

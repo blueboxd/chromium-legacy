@@ -241,12 +241,15 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImage(ImageContext* image_context) {
       image_context->resource_format(),
       image_context->mailbox_holder().texture_target,
       image_context->ycbcr_info());
-  image_context->set_image(recorder_->makePromiseTexture(
-      backend_format, image_context->size().width(),
-      image_context->size().height(), GrMipMapped::kNo, image_context->origin(),
-      color_type, image_context->alpha_type(), image_context->color_space(),
-      Fulfill /* fulfillProc */, DoNothing /* releaseProc */,
-      DoNothing /* doneProc */, image_context /* context */));
+  image_context->SetImage(
+      recorder_->makePromiseTexture(
+          backend_format, image_context->size().width(),
+          image_context->size().height(), GrMipMapped::kNo,
+          image_context->origin(), color_type, image_context->alpha_type(),
+          image_context->color_space(), Fulfill /* fulfillProc */,
+          DoNothing /* releaseProc */, DoNothing /* doneProc */,
+          image_context /* context */),
+      backend_format);
 
   if (image_context->mailbox_holder().sync_token.HasData()) {
     resource_sync_tokens_.push_back(image_context->mailbox_holder().sync_token);
@@ -279,6 +282,10 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
     formats[i] = GetGrBackendFormatForTexture(
         context->resource_format(), context->mailbox_holder().texture_target);
     yuva_sizes[i].set(context->size().width(), context->size().height());
+
+    // NOTE: We don't have promises for individual planes, but still need format
+    // for fallback
+    context->SetImage(nullptr, formats[i]);
 
     if (context->mailbox_holder().sync_token.HasData()) {
       resource_sync_tokens_.push_back(context->mailbox_holder().sync_token);
@@ -438,12 +445,14 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
         ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
     GrBackendFormat backend_format =
         GetGrBackendFormatForTexture(format, GL_TEXTURE_2D);
-    image_context->set_image(recorder_->makePromiseTexture(
-        backend_format, image_context->size().width(),
-        image_context->size().height(), image_context->mipmap(),
-        image_context->origin(), color_type, image_context->alpha_type(),
-        image_context->color_space(), Fulfill, DoNothing, DoNothing,
-        image_context.get()));
+    image_context->SetImage(
+        recorder_->makePromiseTexture(
+            backend_format, image_context->size().width(),
+            image_context->size().height(), image_context->mipmap(),
+            image_context->origin(), color_type, image_context->alpha_type(),
+            image_context->color_space(), Fulfill, DoNothing, DoNothing,
+            image_context.get()),
+        backend_format);
     DCHECK(image_context->has_image());
   }
   images_in_current_paint_.push_back(image_context.get());

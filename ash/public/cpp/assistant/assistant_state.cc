@@ -38,10 +38,7 @@ void AssistantState::NotifyStatusChanged(mojom::VoiceInteractionState state) {
   if (voice_interaction_state_ == state)
     return;
 
-  voice_interaction_state_ = state;
-
-  for (auto& observer : observers_)
-    observer.OnAssistantStatusChanged(state);
+  UpdateAssistantStatus(state);
   remote_observers_.ForAllPtrs(
       [state](auto* observer) { observer->OnAssistantStatusChanged(state); });
 }
@@ -50,9 +47,7 @@ void AssistantState::NotifySettingsEnabled(bool enabled) {
   if (settings_enabled_.has_value() && settings_enabled_.value() == enabled)
     return;
 
-  settings_enabled_ = enabled;
-  for (auto& observer : observers_)
-    observer.OnAssistantSettingsEnabled(enabled);
+  UpdateSettingsEnabled(enabled);
   remote_observers_.ForAllPtrs([enabled](auto* observer) {
     observer->OnAssistantSettingsEnabled(enabled);
   });
@@ -62,9 +57,7 @@ void AssistantState::NotifyHotwordEnabled(bool enabled) {
   if (hotword_enabled_.has_value() && hotword_enabled_.value() == enabled)
     return;
 
-  hotword_enabled_ = enabled;
-  for (auto& observer : observers_)
-    observer.OnAssistantHotwordEnabled(enabled);
+  UpdateHotwordEnabled(enabled);
   remote_observers_.ForAllPtrs([enabled](auto* observer) {
     observer->OnAssistantHotwordEnabled(enabled);
   });
@@ -74,9 +67,7 @@ void AssistantState::NotifyFeatureAllowed(mojom::AssistantAllowedState state) {
   if (allowed_state_ == state)
     return;
 
-  allowed_state_ = state;
-  for (auto& observer : observers_)
-    observer.OnAssistantFeatureAllowedChanged(state);
+  UpdateFeatureAllowedState(state);
   remote_observers_.ForAllPtrs([state](auto* observer) {
     observer->OnAssistantFeatureAllowedChanged(state);
   });
@@ -86,9 +77,7 @@ void AssistantState::NotifyLocaleChanged(const std::string& locale) {
   if (locale_ == locale)
     return;
 
-  locale_ = locale;
-  for (auto& observer : observers_)
-    observer.OnLocaleChanged(locale);
+  UpdateLocale(locale);
   remote_observers_.ForAllPtrs(
       [locale](auto* observer) { observer->OnLocaleChanged(locale); });
 }
@@ -97,10 +86,7 @@ void AssistantState::NotifyArcPlayStoreEnabledChanged(bool enabled) {
   if (arc_play_store_enabled_ == enabled)
     return;
 
-  arc_play_store_enabled_ = enabled;
-
-  for (auto& observer : observers_)
-    observer.OnArcPlayStoreEnabledChanged(enabled);
+  UpdateArcPlayStoreEnabled(enabled);
   remote_observers_.ForAllPtrs([enabled](auto* observer) {
     observer->OnArcPlayStoreEnabledChanged(enabled);
   });
@@ -110,10 +96,7 @@ void AssistantState::NotifyLockedFullScreenStateChanged(bool enabled) {
   if (locked_full_screen_enabled_ == enabled)
     return;
 
-  locked_full_screen_enabled_ = enabled;
-
-  for (auto& observer : observers_)
-    observer.OnLockedFullScreenStateChanged(enabled);
+  UpdateLockedFullScreenState(enabled);
   remote_observers_.ForAllPtrs([enabled](auto* observer) {
     observer->OnLockedFullScreenStateChanged(enabled);
   });

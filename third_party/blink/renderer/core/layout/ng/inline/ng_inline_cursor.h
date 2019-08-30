@@ -29,12 +29,16 @@ class CORE_EXPORT NGInlineCursor {
   STACK_ALLOCATED();
 
  public:
-  NGInlineCursor(const LayoutBlockFlow&);
-  NGInlineCursor(const NGFragmentItems& items) { SetRoot(items); }
+  NGInlineCursor(const LayoutBlockFlow& block_flow);
+  NGInlineCursor(const NGFragmentItems& items);
+  NGInlineCursor(const NGPaintFragment& root_paint_fragment);
 
   //
   // Functions to query the current position.
   //
+
+  bool IsAtEnd() const { return !current_item_ && !current_paint_fragment_; }
+  explicit operator bool() const { return !IsAtEnd(); }
 
   // True if the current position is a line box.
   bool IsLineBox() const;
@@ -56,34 +60,36 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move the current position to the next fragment in pre-order DFS. Returns
   // |true| if the move was successful.
-  bool MoveToNext();
+  void MoveToNext();
 
   // Same as |MoveToNext| except that this skips children even if they exist.
-  bool MoveToNextSkippingChildren();
+  void MoveToNextSkippingChildren();
 
   // TODO(kojii): Add more variations as needed, NextSibling,
   // NextSkippingChildren, Previous, etc.
 
  private:
+  using ItemsSpan = base::span<const std::unique_ptr<NGFragmentItem>>;
+
   void SetRoot(const NGFragmentItems& items);
+  void SetRoot(ItemsSpan items);
   void SetRoot(const NGPaintFragment& root_paint_fragment);
 
-  bool MoveToItem(unsigned item_index);
-  bool MoveToNextItem();
-  bool MoveToNextItemSkippingChildren();
+  void MoveToItem(const ItemsSpan::iterator& iter);
+  void MoveToNextItem();
+  void MoveToNextItemSkippingChildren();
 
-  bool MoveToParentPaintFragment();
-  bool MoveToNextPaintFragment();
-  bool MoveToNextSibilingPaintFragment();
-  bool MoveToNextPaintFragmentSkippingChildren();
+  void MoveToParentPaintFragment();
+  void MoveToNextPaintFragment();
+  void MoveToNextSibilingPaintFragment();
+  void MoveToNextPaintFragmentSkippingChildren();
 
-  const NGFragmentItems* items_ = nullptr;
-  const NGPaintFragment* root_paint_fragment_ = nullptr;
-
+  ItemsSpan items_;
+  ItemsSpan::iterator item_iter_;
   const NGFragmentItem* current_item_ = nullptr;
-  const NGPaintFragment* current_paint_fragment_ = nullptr;
 
-  unsigned current_item_index_ = 0;
+  const NGPaintFragment* root_paint_fragment_ = nullptr;
+  const NGPaintFragment* current_paint_fragment_ = nullptr;
 };
 
 }  // namespace blink

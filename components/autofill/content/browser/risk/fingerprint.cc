@@ -220,7 +220,8 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
 
   // Ensures that any observer registrations for the GPU data are cleaned up by
   // the time this object is destroyed.
-  ScopedObserver<content::GpuDataManager, FingerprintDataLoader> gpu_observer_;
+  ScopedObserver<content::GpuDataManager, content::GpuDataManagerObserver>
+      gpu_observer_{this};
 
   // Data that will be passed on to the next loading phase.  See the comment for
   // GetFingerprint() for a description of these variables.
@@ -272,7 +273,6 @@ FingerprintDataLoader::FingerprintDataLoader(
     base::OnceCallback<void(std::unique_ptr<Fingerprint>)> callback,
     service_manager::Connector* connector)
     : gpu_data_manager_(content::GpuDataManager::GetInstance()),
-      gpu_observer_(this),
       obfuscated_gaia_id_(obfuscated_gaia_id),
       window_bounds_(window_bounds),
       content_bounds_(content_bounds),

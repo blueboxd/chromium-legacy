@@ -1831,6 +1831,35 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
   return hr;
 }
 
+// Registers OS user - gaia user association in HKEY_LOCAL_MACHINE registry
+// hive.
+HRESULT RegisterAssociation(const base::string16& sid,
+                            const base::string16& id,
+                            const base::string16& email,
+                            const base::string16& token_handle) {
+  // Save token handle.  This handle will be used later to determine if the
+  // the user has changed their password since the account was created.
+  HRESULT hr = SetUserProperty(sid, kUserTokenHandle, token_handle);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "SetUserProperty(th) hr=" << putHR(hr);
+    return hr;
+  }
+
+  hr = SetUserProperty(sid, kUserId, id);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "SetUserProperty(id) hr=" << putHR(hr);
+    return hr;
+  }
+
+  hr = SetUserProperty(sid, kUserEmail, email);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "SetUserProperty(email) hr=" << putHR(hr);
+    return hr;
+  }
+
+  return S_OK;
+}
+
 HRESULT CGaiaCredentialBase::ReportResult(
     NTSTATUS status,
     NTSTATUS substatus,
@@ -1853,12 +1882,33 @@ HRESULT CGaiaCredentialBase::ReportResult(
     authentication_results_->SetKey(
         kKeyPassword, base::Value(base::UTF16ToUTF8((BSTR)password_)));
 
+    base::string16 gaia_id = GetDictString(*authentication_results_, kKeyId);
+    if (gaia_id.empty()) {
+      LOGFN(ERROR) << "Id is empty";
+      return E_INVALIDARG;
+    }
+
+    base::string16 email = GetDictString(*authentication_results_, kKeyEmail);
+    if (email.empty()) {
+      LOGFN(ERROR) << "Email is empty";
+      return E_INVALIDARG;
+    }
+
+    // Os user - gaia user association is saved in HKEY_LOCAL_MACHINE. So, we
+    // can attempt saving association even before calling forked process. Forked
+    // process will also re-write everything saved here as well as valid token
+    // handle. Token handle is saved as empty here, so that if for any reason
+    // forked process fails to save association, it will enforce re-auth due to
+    // invalid token handle.
+    HRESULT hr = RegisterAssociation(OLE2CW(user_sid_), gaia_id, email, L"");
+    if (FAILED(hr))
+      return hr;
+
     // At this point the user and password stored in authentication_results_
     // should match what is stored in username_ and password_ so the
     // SaveAccountInfo process can be forked.
     CComBSTR status_text;
-    HRESULT hr =
-        ForkSaveAccountInfoStub(*authentication_results_, &status_text);
+    hr = ForkSaveAccountInfoStub(*authentication_results_, &status_text);
     if (FAILED(hr))
       LOGFN(ERROR) << "ForkSaveAccountInfoStub hr=" << putHR(hr);
   }

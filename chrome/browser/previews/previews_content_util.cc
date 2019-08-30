@@ -418,6 +418,21 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     }
   }
 
+  if (previews_state & content::DEFER_ALL_SCRIPT_ON) {
+    content::WebContents* web_contents =
+        navigation_handle ? navigation_handle->GetWebContents() : nullptr;
+    if (web_contents) {
+      auto* previews_service = PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+      if (previews_service &&
+          previews_service->MatchesDeferAllScriptDenyListRegexp(url)) {
+        previews_state &= ~content::DEFER_ALL_SCRIPT_ON;
+        UMA_HISTOGRAM_BOOLEAN("Previews.DeferAllScript.DenyListMatch", true);
+      }
+    }
+  }
+
   // Make priority decision among allowed client preview types that can be
   // decided at Commit time.
 

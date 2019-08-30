@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CSS Content Size Test: content-size with valid values</title>
+<link rel="help" href="http://tabatkins.github.io/specs/css-content-size/">
+<meta name="assert" content="content-size supports the full grammar 'none | <length>{1,2}'.">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/css/support/parsing-testcommon.js"></script>
+</head>
+<body>
+<script>
+test_valid_value("content-size", "none");
+test_valid_value("content-size", "1px");
+test_valid_value("content-size", "2em 3px");
+test_valid_value("content-size", "5px 5px", "5px");
+</script>
+</body>
+</html>
+

@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -1890,11 +1891,10 @@ DeveloperPrivateRepairExtensionFunction::Run() {
   if (!web_contents)
     return RespondNow(Error(kCouldNotFindWebContentsError));
 
-  scoped_refptr<WebstoreReinstaller> reinstaller(new WebstoreReinstaller(
+  auto reinstaller = base::MakeRefCounted<WebstoreReinstaller>(
       web_contents, params->extension_id,
       base::BindOnce(
-          &DeveloperPrivateRepairExtensionFunction::OnReinstallComplete,
-          this)));
+          &DeveloperPrivateRepairExtensionFunction::OnReinstallComplete, this));
   reinstaller->BeginReinstall();
 
   return RespondLater();

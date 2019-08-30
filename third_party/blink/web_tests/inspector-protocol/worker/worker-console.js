@@ -2,6 +2,16 @@
   var {page, session, dp} = await testRunner.startBlank(
       `Tests how console messages from worker get into page's console once worker is destroyed.`);
 
+  // TODO(johannes): Within this test, it appears that it's necessary to
+  // wait until messages have trickled into the page log
+  // via dp.Log.onEntryAdded or into the console API
+  // via childSession.protocol.Runtime.onConsoleAPICalled, before calling
+  // worker.terminate, or otherwise the messages may be dropped, or even
+  // appear much later, after another worker has been started.
+  // For now, this test is non-flaky primarily by sprinkling several
+  // Promise.all calls around postToWorker. Further investigation /
+  // clarification / research may be needed.
+
   await session.evaluate(`
     let worker;
 
@@ -13,7 +23,7 @@
       return new Promise(resolve => {
         worker = new Worker(
             '${testRunner.url('../resources/worker-console-worker.js')}');
-        worker.onmessage = () => { resolve(); }
+        worker.onmessage = resolve;
       });
     }
 
@@ -26,125 +36,161 @@
     // anyway. This is much of the point of this test.
     function postToWorker(message) {
       return new Promise(resolve => {
-        worker.onmessage = () => { resolve(); };
+        worker.onmessage = resolve;
         worker.postMessage(message);
       });
     }
   `);
 
+  // To avoid flaky test output, we emit messages into these three different
+  // logs, and flush them after each section of the test.
+  const clientLog = [];
+  const pageLog = [];
+  const consoleLog = [];
+  function flushLogs() {
+    for (let line of clientLog) {
+      testRunner.log(line);
+    }
+    clientLog.length = 0;
+    for (let line of pageLog) {
+      testRunner.log('<- Log from page: ' + line);
+    }
+    pageLog.length = 0;
+    for (let line of consoleLog) {
+      testRunner.log('<-- Console API from worker: ' + line);
+    }
+    consoleLog.length = 0;
+  }
+
   await dp.Log.enable();
-  dp.Log.onEntryAdded((event) => {
-    testRunner.log('<- Log from page: ' + event.params.entry.text);
-  });
+  dp.Log.onEntryAdded((event) => { pageLog.push(event.params.entry.text); });
 
   function postToWorker(message) {
-    testRunner.log('-> Posting to worker: ' + message);
+    clientLog.push('-> Posting to worker: ' + message);
     return session.evaluateAsync('postToWorker("' + message + '")');
   }
 
   {
-    testRunner.log(
+    clientLog.push(
         "\n=== console.log event won't get lost despite worker.terminate. ===");
-    testRunner.log('Starting worker');
+    clientLog.push('Starting worker');
     await session.evaluateAsync('startWorker()');
-    await postToWorker('message0 (posted after starting worker)');
-    testRunner.log('Terminating worker');
-    await session.evaluate('worker.terminate()');
+    await Promise.all([
+      postToWorker('message0 (posted after starting worker)'),
+      dp.Log.onceEntryAdded()]);
     // The key part of this test is that its expectation contains
-    // "<- Log from page: message1", even though we terminated the
-    // worker without awaiting the log event (postToWorker only ensures
-    // that the message was echoed back to the page).
+    // "<- Log from page: message0 (posted after starting worker)", even
+    // though we terminated the worker without awaiting the log event
+    // (postToWorker only ensures that the message was echoed back to the page).
+    clientLog.push('Terminating worker');
+    await session.evaluate('worker.terminate()');
+    flushLogs();
   }
 
   {
-    testRunner.log(
+    clientLog.push(
         '\n=== Scenario with autoattach enabled and stopped. ===');
-    testRunner.log('Starting worker');
+    clientLog.push('Starting worker');
     await session.evaluateAsync('startWorker()');
-    await postToWorker('message1');
+    await Promise.all([postToWorker('message1'), dp.Log.onceEntryAdded()]);
 
     // Now we call Target.setAutoAttach, which will immediately generate
     // an event that we're attached; which we receive below to create the
     // childSession instance.
-    testRunner.log('Starting autoattach');
+    clientLog.push('Starting autoattach');
     dp.Target.setAutoAttach({
       autoAttach: true, waitForDebuggerOnStart: false, flatten: true});
     const childSession = session.createChild(
         (await dp.Target.onceAttachedToTarget()).params.sessionId);
     childSession.protocol.Runtime.onConsoleAPICalled((event) => {
-      testRunner.log('<-- Console API from worker: ' +
-                     event.params.args[0].value);
+      consoleLog.push(event.params.args[0].value);
     });
-    testRunner.log('child session for worker created');
+    clientLog.push('child session for worker created');
 
-    testRunner.log('Sending Runtime.enable to worker');
+    clientLog.push('Sending Runtime.enable to worker');
     childSession.protocol.Runtime.enable();
+    await childSession.protocol.Runtime.onceConsoleAPICalled();
 
-    await postToWorker('message2 (posted after runtime enabled)');
-    await postToWorker('throw1 (posted after runtime enabled; ' +
-                       'yields exception in worker)');
+    await Promise.all([
+      postToWorker('message2 (posted after runtime enabled)'),
+      dp.Log.onceEntryAdded(),
+      childSession.protocol.Runtime.onceConsoleAPICalled()]);
+    await Promise.all([
+      postToWorker('throw1 (posted after runtime enabled; ' +
+                   'yields exception in worker)'),
+      dp.Log.onceEntryAdded()]);
 
     // This unregisters the child session, so we stop getting the console API
     // calls, but still receive the log messages for the page.
-    testRunner.log('Stopping autoattach');
+    clientLog.push('Stopping autoattach');
     await dp.Target.setAutoAttach({autoAttach: false,
                                    waitForDebuggerOnStart: false});
-    await postToWorker('message3 (posted after auto-attach)');
-    testRunner.log('Terminating worker');
+    await Promise.all([
+      postToWorker('message3 (posted after auto-attach)'),
+      dp.Log.onceEntryAdded()]);
+    clientLog.push('Terminating worker');
+    flushLogs();
     await session.evaluate('worker.terminate()');
   }
 
   {
-    testRunner.log(
+    clientLog.push(
         '\n=== Scenario with autoattach from the get-go. ===');
     // This time we start the worker only after Target.setAutoAttach, so
     // we may await the autoattach response.
-    testRunner.log('Starting autoattach');
+    clientLog.push('Starting autoattach');
     await dp.Target.setAutoAttach({
       autoAttach: true, waitForDebuggerOnStart: false, flatten: true});
 
-    testRunner.log('Starting worker');
+    clientLog.push('Starting worker');
     session.evaluate('startWorker()');
     const childSession = session.createChild(
         (await dp.Target.onceAttachedToTarget()).params.sessionId);
     childSession.protocol.Runtime.onConsoleAPICalled((event) => {
-      testRunner.log('<-- Console API from worker: ' +
-                     event.params.args[0].value);
+      consoleLog.push(event.params.args[0].value);
     });
-    testRunner.log('child session for worker created');
+    clientLog.push('child session for worker created');
 
     // Here, we test the behavior of posting before / after Runtime.enable.
-    await postToWorker(
-        "message4 (posted before worker's runtime agent enabled)");
-    testRunner.log('Sending Runtime.enable to worker');
+    await Promise.all([
+      postToWorker("message4 (posted before worker's runtime agent enabled)"),
+      dp.Log.onceEntryAdded()]);
+
+    clientLog.push('Sending Runtime.enable to worker');
     childSession.protocol.Runtime.enable();
-    await postToWorker(
-        "message5 (posted after worker's runtime agent enabled)");
-    testRunner.log('Terminating worker');
+    await childSession.protocol.Runtime.onceConsoleAPICalled();
+    await Promise.all([
+      postToWorker("message5 (posted after worker's runtime agent enabled)"),
+      childSession.protocol.Runtime.onceConsoleAPICalled(),
+      dp.Log.onceEntryAdded()]);
+    clientLog.push('Terminating worker');
+    flushLogs();
     await session.evaluate('worker.terminate()');
   }
 
   {
-    testRunner.log(
+    clientLog.push(
         '\n=== New worker, with auto-attach still enabled. ===');
-    testRunner.log('Starting worker');
+    clientLog.push('Starting worker');
     session.evaluate('startWorker()');
     const childSession = session.createChild(
         (await dp.Target.onceAttachedToTarget()).params.sessionId);
     childSession.protocol.Runtime.onConsoleAPICalled((event) => {
-      testRunner.log('<-- Console API from worker: ' +
-                     event.params.args[0].value);
+      consoleLog.push(event.params.args[0].value);
     });
-    testRunner.log('child session for worker created');
+    clientLog.push('child session for worker created');
 
-    await postToWorker('message6 (posted just before worker termination)');
+    await Promise.all([
+      postToWorker('message6 (posted just before worker termination)'),
+      dp.Log.onceEntryAdded()]);
 
-    testRunner.log('Terminating worker');
+    clientLog.push('Terminating worker');
+    clientLog.push('Stopping autoattach');
+    flushLogs();
     await session.evaluate('worker.terminate()');
 
-    testRunner.log('Stopping autoattach');
-    await dp.Target.setAutoAttach({autoAttach: false,
-                                   waitForDebuggerOnStart: false});
+    dp.Target.setAutoAttach({autoAttach: false,
+                             waitForDebuggerOnStart: false});
   }
   testRunner.completeTest();
 })

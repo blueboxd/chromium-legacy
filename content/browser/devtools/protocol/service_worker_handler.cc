@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
@@ -78,22 +79,23 @@ const std::string GetVersionStatusString(
   return std::string();
 }
 
-void StopServiceWorkerOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
-                           int64_t version_id) {
+void StopServiceWorkerOnCoreThread(
+    scoped_refptr<ServiceWorkerContextWrapper> context,
+    int64_t version_id) {
   if (content::ServiceWorkerVersion* version =
           context->GetLiveVersion(version_id)) {
     version->StopWorker(base::DoNothing());
   }
 }
 
-void GetDevToolsRouteInfoOnIO(
+void GetDevToolsRouteInfoOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     int64_t version_id,
     const base::Callback<void(int, int)>& callback) {
   if (content::ServiceWorkerVersion* version =
           context->GetLiveVersion(version_id)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    RunOrPostTaskOnThread(
+        FROM_HERE, BrowserThread::UI,
         base::BindOnce(
             callback, version->embedded_worker()->process_id(),
             version->embedded_worker()->worker_devtools_agent_route_id()));
@@ -112,7 +114,7 @@ Response CreateInvalidVersionIdErrorResponse() {
   return Response::InvalidParams("Invalid version ID");
 }
 
-void DidFindRegistrationForDispatchSyncEventOnIO(
+void DidFindRegistrationForDispatchSyncEventOnCoreThread(
     scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const std::string& tag,
     bool last_chance,
@@ -130,7 +132,7 @@ void DidFindRegistrationForDispatchSyncEventOnIO(
       tag, std::move(version), last_chance, base::DoNothing());
 }
 
-void DidFindRegistrationForDispatchPeriodicSyncEventOnIO(
+void DidFindRegistrationForDispatchPeriodicSyncEventOnCoreThread(
     scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const std::string& tag,
     blink::ServiceWorkerStatusCode status,
@@ -149,7 +151,7 @@ void DidFindRegistrationForDispatchPeriodicSyncEventOnIO(
       tag, std::move(version), base::DoNothing());
 }
 
-void DispatchSyncEventOnIO(
+void DispatchSyncEventOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const GURL& origin,
@@ -158,11 +160,11 @@ void DispatchSyncEventOnIO(
     bool last_chance) {
   context->FindReadyRegistrationForId(
       registration_id, origin,
-      base::BindOnce(&DidFindRegistrationForDispatchSyncEventOnIO, sync_context,
-                     tag, last_chance));
+      base::BindOnce(&DidFindRegistrationForDispatchSyncEventOnCoreThread,
+                     sync_context, tag, last_chance));
 }
 
-void DispatchPeriodicSyncEventOnIO(
+void DispatchPeriodicSyncEventOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const GURL& origin,
@@ -170,8 +172,9 @@ void DispatchPeriodicSyncEventOnIO(
     const std::string& tag) {
   context->FindReadyRegistrationForId(
       registration_id, origin,
-      base::BindOnce(&DidFindRegistrationForDispatchPeriodicSyncEventOnIO,
-                     sync_context, tag));
+      base::BindOnce(
+          &DidFindRegistrationForDispatchPeriodicSyncEventOnCoreThread,
+          sync_context, tag));
 }
 
 }  // namespace
@@ -274,8 +277,9 @@ Response ServiceWorkerHandler::StopWorker(const std::string& version_id) {
   int64_t id = 0;
   if (!base::StringToInt64(version_id, &id))
     return CreateInvalidVersionIdErrorResponse();
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&StopServiceWorkerOnIO, context_, id));
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(&StopServiceWorkerOnCoreThread, context_, id));
   return Response::OK();
 }
 
@@ -312,9 +316,9 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   int64_t id = blink::mojom::kInvalidServiceWorkerVersionId;
   if (!base::StringToInt64(version_id, &id))
     return CreateInvalidVersionIdErrorResponse();
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&GetDevToolsRouteInfoOnIO, context_, id,
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(&GetDevToolsRouteInfoOnCoreThread, context_, id,
                      base::Bind(&ServiceWorkerHandler::OpenNewDevToolsWindow,
                                 weak_factory_.GetWeakPtr())));
   return Response::OK();
@@ -366,10 +370,10 @@ Response ServiceWorkerHandler::DispatchSyncEvent(
   BackgroundSyncContextImpl* sync_context =
       storage_partition_->GetBackgroundSyncContext();
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&DispatchSyncEventOnIO, context_,
-                                base::WrapRefCounted(sync_context),
-                                GURL(origin), id, tag, last_chance));
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                        base::BindOnce(&DispatchSyncEventOnCoreThread, context_,
+                                       base::WrapRefCounted(sync_context),
+                                       GURL(origin), id, tag, last_chance));
   return Response::OK();
 }
 
@@ -388,9 +392,9 @@ Response ServiceWorkerHandler::DispatchPeriodicSyncEvent(
   BackgroundSyncContextImpl* sync_context =
       storage_partition_->GetBackgroundSyncContext();
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&DispatchPeriodicSyncEventOnIO, context_,
+  RunOrPostTaskOnThread(
+      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(&DispatchPeriodicSyncEventOnCoreThread, context_,
                      base::WrapRefCounted(sync_context), GURL(origin), id,
                      tag));
   return Response::OK();

@@ -1650,7 +1650,9 @@ void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
 bool PaintLayerScrollableArea::HasOverflowControls() const {
   // We do not need to check for ScrollCorner because it only exists iff there
   // are scrollbars, see: |ScrollCornerRect| and |UpdateScrollCornerStyle|.
-  DCHECK(!ScrollCorner() || HasScrollbar());
+  // TODO(pdr, majinfeng1): Re-enable this DCHECK when https://crbug.com/999062
+  // is resolved. This is temporarily disabled to prevent crashes.
+  // DCHECK(!ScrollCorner() || HasScrollbar());
   return HasScrollbar() || GetLayoutBox()->CanResize();
 }
 

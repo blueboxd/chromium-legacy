@@ -9,6 +9,7 @@
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
 #include "chrome/common/media_router/media_source.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace media_router {
 

@@ -76,7 +76,7 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveResponse(
         rewrite_header_callback_.Run(response_head));
@@ -84,7 +84,7 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
 
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveRedirect(
         redirect_info, rewrite_header_callback_.Run(response_head));

@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -403,8 +404,8 @@ void CastStreamingNativeHandler::CreateCastSession(
 
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
 
-  scoped_refptr<CastSession> session(new CastSession(
-      context()->web_frame()->GetTaskRunner(blink::TaskType::kInternalMedia)));
+  auto session = base::MakeRefCounted<CastSession>(
+      context()->web_frame()->GetTaskRunner(blink::TaskType::kInternalMedia));
   std::unique_ptr<CastRtpStream> stream1, stream2;
   if ((args[0]->IsNull() || args[0]->IsUndefined()) &&
       (args[1]->IsNull() || args[1]->IsUndefined())) {

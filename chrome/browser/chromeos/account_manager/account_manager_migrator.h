@@ -25,6 +25,10 @@ namespace chromeos {
 
 class AccountManagerMigrator : public KeyedService {
  public:
+  // Migration step id for ARC accounts migration. Used by |ArcAuthService| to
+  // figure out if ARC migrations should be retried.
+  static const char kArcAccountsMigrationId[];
+
   explicit AccountManagerMigrator(Profile* profile);
   ~AccountManagerMigrator() override;
 

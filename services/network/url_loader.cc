@@ -311,20 +311,11 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
 bool ShouldNotifyAboutCookie(
     net::CanonicalCookie::CookieInclusionStatus status) {
   // Notify about cookies actually used, and those blocked by preferences ---
-  // for purposes of cookie UI --- as well those pertaining to the
-  // samesite-by-default and samesite-none-must-be-secure features, in order
-  // to issue a deprecation warning for them.
-  switch (status) {
-    case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_NONE_INSECURE:
-      return true;
-    default:
-      return false;
-  }
+  // for purposes of cookie UI --- as well those carrying warnings pertaining to
+  // SameSite features, in order to issue a deprecation warning for them.
+  return status.IsInclude() || status.ShouldWarn() ||
+         status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                       EXCLUDE_USER_PREFERENCES);
 }
 
 }  // namespace

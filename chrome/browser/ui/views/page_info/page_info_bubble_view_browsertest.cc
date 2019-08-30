@@ -475,6 +475,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   safe_browsing::ReusedPasswordAccountType reused_password_account_type;
   reused_password_account_type.set_account_type(
       safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      reused_password_account_type);
 
   service->ShowModalWarning(
       contents, safe_browsing::RequestOutcome::UNKNOWN,

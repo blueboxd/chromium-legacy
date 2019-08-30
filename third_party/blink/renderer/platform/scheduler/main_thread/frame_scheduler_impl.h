@@ -80,6 +80,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       FrameScheduler::FrameType frame_type);
   ~FrameSchedulerImpl() override;
 
+  // FrameOrWorkerScheduler implementation:
+  void SetPausedForCooperativeScheduling(Paused) override;
+
   // FrameScheduler implementation:
   void SetFrameVisible(bool frame_visible) override;
   bool IsFrameVisible() const override;

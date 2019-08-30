@@ -880,7 +880,7 @@ bool GpuProcessHost::Init() {
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
       this, std::move(viz_main_pending_remote), std::move(params));
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVizDevTools)) {
     // Start creating a socket for the Viz DevTools server. If it is created

@@ -217,7 +217,7 @@
     </template>
     <cr-link-row id="browsingDataSize" class="hr" on-click="onBrowsingDataTap_"
         label="$i18n{storageItemBrowsingData}"
-        sub-label="$i18n{storageSizeComputing}"></cr-link-row>
+        sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
     <template is="dom-if" if="[[androidRunning_]]">
       <cr-link-row id="androidSize" class="hr" on-click="onAndroidTap_"
           label="$i18n{storageItemAndroid}"

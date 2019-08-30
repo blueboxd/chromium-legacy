@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/session/session_observer.h"
@@ -46,7 +47,6 @@ class Shelf;
 class ShelfLayoutManagerObserver;
 class ShelfLayoutManagerTest;
 class ShelfWidget;
-class WallpaperController;
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
 // status widgets. The shelf is given the total available width and told the
@@ -503,7 +503,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
       SHELF_BACKGROUND_DEFAULT;
 
   ScopedSessionObserver scoped_session_observer_{this};
-  ScopedObserver<WallpaperController, ShelfLayoutManager>
+  ScopedObserver<WallpaperController, WallpaperControllerObserver>
       wallpaper_controller_observer_{this};
 
   // Location of the most recent mouse drag event in screen coordinate.

@@ -126,6 +126,16 @@ bool CSSNumericLiteralValue::AccumulateLengthArray(CSSLengthArray& length_array,
   return true;
 }
 
+void CSSNumericLiteralValue::AccumulateLengthUnitTypes(
+    LengthTypeFlags& types) const {
+  if (!IsLength())
+    return;
+  LengthUnitType length_type;
+  bool conversion_success = UnitTypeToLengthUnitType(GetType(), length_type);
+  DCHECK(conversion_success);
+  types.set(length_type);
+}
+
 bool CSSNumericLiteralValue::IsComputationallyIndependent() const {
   if (!IsLength())
     return true;

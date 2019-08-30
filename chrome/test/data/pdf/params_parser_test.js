@@ -7,7 +7,7 @@ var tests = [
    * Test named destinations.
    */
   function testParamsParser() {
-    var paramsParser = new OpenPDFParamsParser(function(message) {
+    var paramsParser = new OpenPdfParamsParser(function(message) {
       chrome.test.assertEq('getNamedDestination', message.type);
       if (message.namedDestination == 'RU')
         paramsParser.onNamedDestinationReceived(26);

@@ -16,6 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"

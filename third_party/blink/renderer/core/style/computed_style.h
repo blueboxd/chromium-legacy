@@ -2494,6 +2494,11 @@ class ComputedStyle : public ComputedStyleBase,
     return DarkColorScheme() ? WebColorScheme::kDark : WebColorScheme::kLight;
   }
 
+  Color ForcedBackplateColor() const {
+    return LayoutTheme::GetTheme().SystemColor(CSSValueID::kWindow,
+                                               WebColorScheme::kLight);
+  }
+
  private:
   EClear Clear() const { return ClearInternal(); }
   EFloat Floating() const { return FloatingInternal(); }

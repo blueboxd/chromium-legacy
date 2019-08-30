@@ -310,6 +310,10 @@ class WebView {
       float bottom_controls_height,
       bool browser_controls_shrink_layout) = 0;
 
+  // Same as ResizeWithBrowserControls, but keeps the same BrowserControl
+  // settings.
+  virtual void Resize(const WebSize&) = 0;
+
   // Auto-Resize -----------------------------------------------------------
 
   // In auto-resize mode, the view is automatically adjusted to fit the html

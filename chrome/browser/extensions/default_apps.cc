@@ -122,12 +122,16 @@ bool Provider::ShouldInstallInProfile() {
 
 Provider::Provider(Profile* profile,
                    VisitorInterface* service,
-                   extensions::ExternalLoader* loader,
+                   scoped_refptr<extensions::ExternalLoader> loader,
                    extensions::Manifest::Location crx_location,
                    extensions::Manifest::Location download_location,
                    int creation_flags)
-    : extensions::ExternalProviderImpl(service, loader, profile, crx_location,
-                                       download_location, creation_flags),
+    : extensions::ExternalProviderImpl(service,
+                                       std::move(loader),
+                                       profile,
+                                       crx_location,
+                                       download_location,
+                                       creation_flags),
       profile_(profile),
       is_migration_(false) {
   DCHECK(profile);

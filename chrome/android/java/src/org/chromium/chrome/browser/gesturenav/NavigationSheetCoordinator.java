@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
 import android.os.Handler;
-import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -119,9 +118,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         listview.setAdapter(mModelAdapter);
 
         mSheetPeekRunnable = () -> {
-            if (isVisible()) return;
-            parent.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-            peek(mForward);
+            if (!isVisible()) peek(mForward);
         };
 
         mPeekSheetThreshold =

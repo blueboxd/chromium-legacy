@@ -14,7 +14,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 
 namespace network {
@@ -34,9 +34,10 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
  public:
   SpeechRecognitionDispatcherHost(int render_process_id, int render_frame_id);
   ~SpeechRecognitionDispatcherHost() override;
-  static void Create(int render_process_id,
-                     int render_frame_id,
-                     blink::mojom::SpeechRecognizerRequest request);
+  static void Create(
+      int render_process_id,
+      int render_frame_id,
+      mojo::PendingReceiver<blink::mojom::SpeechRecognizer> receiver);
   base::WeakPtr<SpeechRecognitionDispatcherHost> AsWeakPtr();
 
   // blink::mojom::SpeechRecognizer implementation

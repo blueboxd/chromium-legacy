@@ -14,7 +14,6 @@
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -108,15 +107,6 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
   animation_->SetTweenType(gfx::Tween::LINEAR);
   animation_->SetSlideDuration(kCycleDurationInMs * 2 + kCycleIntervalInMs);
-  ResetHintingAnimation();
-  // When side shelf or tablet mode is enabled, the peeking launcher won't be
-  // shown, so the hint animation is unnecessary. Also, do not run the animation
-  // during test since we are not testing the animation and it might cause msan
-  // crash when spoken feedbacke is enabled (See https://crbug.com/926038).
-  if (!app_list_view_->is_side_shelf() && !app_list_view_->is_tablet_mode() &&
-      !AppListView::ShortAnimationsForTesting()) {
-    ScheduleHintingAnimation(true);
-  }
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
@@ -356,15 +346,29 @@ void ExpandArrowView::TransitToFullscreenAllAppsState() {
   app_list_view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 }
 
+void ExpandArrowView::MaybeEnableHintingAnimation(bool enabled) {
+  button_pressed_ = false;
+  ResetHintingAnimation();
+  // When side shelf or tablet mode is enabled, the peeking launcher won't be
+  // shown, so the hint animation is unnecessary. Also, do not run the animation
+  // during test since we are not testing the animation and it might cause msan
+  // crash when spoken feedback is enabled (See https://crbug.com/926038).
+  if (enabled && !app_list_view_->is_side_shelf() &&
+      !app_list_view_->is_tablet_mode() &&
+      !AppListView::ShortAnimationsForTesting()) {
+    ScheduleHintingAnimation(true);
+  } else {
+    hinting_animation_timer_.Stop();
+  }
+}
+
 void ExpandArrowView::ScheduleHintingAnimation(bool is_first_time) {
   int delay_in_sec = kAnimationIntervalInSec;
   if (is_first_time)
     delay_in_sec = kAnimationInitialWaitTimeInSec;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&ExpandArrowView::StartHintingAnimation,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(delay_in_sec));
+  hinting_animation_timer_.Start(FROM_HERE,
+                                 base::TimeDelta::FromSeconds(delay_in_sec),
+                                 this, &ExpandArrowView::StartHintingAnimation);
 }
 
 void ExpandArrowView::StartHintingAnimation() {

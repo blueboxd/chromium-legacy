@@ -260,6 +260,10 @@ const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
 const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
     "D3D11VideoDecoderIgnoreWorkarounds", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Don't allow use of 11.1 devices, even if supported. They might be more crashy
+const base::Feature kD3D11LimitTo11_0{"D3D11VideoDecoderLimitTo11_0",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Falls back to other decoders after audio/video decode error happens. The
 // implementation may choose different strategies on when to fallback. See
 // DecoderStream for details. When disabled, playback will fail immediately

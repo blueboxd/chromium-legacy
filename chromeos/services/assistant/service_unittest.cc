@@ -22,6 +22,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/pref_connection_delegate.h"
@@ -215,8 +216,8 @@ class AssistantServiceTest : public testing::Test {
     service_ =
         std::make_unique<Service>(remote_service_.BindNewPipeAndPassReceiver(),
                                   shared_url_loader_factory_->Clone());
-    service_->SetPrefConnectionDelegateForTesting(
-        std::move(fake_pref_connection));
+    service_->GetAssistantStateProxyForTesting()
+        ->SetPrefConnectionDelegateForTesting(std::move(fake_pref_connection));
     service_->is_test_ = true;
 
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(

@@ -79,10 +79,7 @@ Polymer({
     this.updateFromStore();
   },
 
-  /**
-   * Overriden from bookmarks.MouseFocusBehavior.
-   * @return {!HTMLElement}
-   */
+  /** @return {!HTMLElement} */
   getFocusTarget: function() {
     return this.$.container;
   },

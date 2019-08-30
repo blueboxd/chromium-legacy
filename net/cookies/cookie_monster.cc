@@ -975,7 +975,7 @@ void CookieMonster::FilterCookiesWithOptions(
     CanonicalCookie::CookieInclusionStatus status =
         (*it)->IncludeForRequestURL(url, options);
 
-    if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    if (!status.IsInclude()) {
       if (options.return_excluded_cookies())
         excluded_cookies->push_back({**it, status});
       continue;
@@ -988,13 +988,14 @@ void CookieMonster::FilterCookiesWithOptions(
   }
 }
 
-CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
+void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
     const std::string& key,
     const CanonicalCookie& ecc,
     bool source_secure,
     bool skip_httponly,
     bool already_expired,
-    base::Time* creation_date_to_inherit) {
+    base::Time* creation_date_to_inherit,
+    CanonicalCookie::CookieInclusionStatus* status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool found_equivalent_cookie = false;
@@ -1037,6 +1038,9 @@ CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
         if (!skip_httponly || !cc->IsHttpOnly()) {
           histogram_cookie_delete_equivalent_->Add(
               COOKIE_DELETE_EQUIVALENT_WOULD_HAVE_DELETED);
+        } else {
+          // Would also have skipped for being httponly, so make a note of that.
+          skipped_httponly = true;
         }
       }
     } else if (ecc.IsEquivalent(*cc)) {
@@ -1065,10 +1069,11 @@ CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
   if (cookie_it_to_possibly_delete != cookies_.end()) {
     CanonicalCookie* cc_to_possibly_delete =
         cookie_it_to_possibly_delete->second.get();
-    // If a secure cookie was encountered (and left alone), don't actually
+    // 1) If a secure cookie was encountered (and left alone), don't actually
     // modify any of the pre-existing cookies. Only delete if no secure cookies
-    // were skipped.
-    if (!skipped_secure_cookie) {
+    // were skipped. 2) Only delete if the status of the current cookie-addition
+    // is "include", so that we don't throw out a valid cookie for a bad cookie.
+    if (!skipped_secure_cookie && status->IsInclude()) {
       histogram_cookie_delete_equivalent_->Add(COOKIE_DELETE_EQUIVALENT_FOUND);
       if (cc_to_possibly_delete->Value() == ecc.Value()) {
         *creation_date_to_inherit = cc_to_possibly_delete->CreationDate();
@@ -1078,7 +1083,7 @@ CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
       InternalDeleteCookie(cookie_it_to_possibly_delete, true,
                            already_expired ? DELETE_COOKIE_EXPIRED_OVERWRITE
                                            : DELETE_COOKIE_OVERWRITE);
-    } else {
+    } else if (skipped_secure_cookie) {
       // If any secure cookie was skipped, preserve the pre-existing cookie.
       DCHECK(cc_skipped_secure);
       net_log_.AddEvent(
@@ -1090,13 +1095,15 @@ CanonicalCookie::CookieInclusionStatus CookieMonster::DeleteAnyEquivalentCookie(
     }
   }
 
-  if (skipped_httponly)
-    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY;
+  if (skipped_httponly) {
+    status->AddExclusionReason(
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY);
+  }
 
-  if (skipped_secure_cookie)
-    return CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE;
-
-  return CanonicalCookie::CookieInclusionStatus::INCLUDE;
+  if (skipped_secure_cookie) {
+    status->AddExclusionReason(
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE);
+  }
 }
 
 CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
@@ -1135,42 +1142,33 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                                        SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  CanonicalCookie::CookieInclusionStatus status;
+
   std::string scheme_lower = base::ToLowerASCII(source_scheme);
   bool secure_source = GURL::SchemeIsCryptographic(scheme_lower);
   if ((cc->IsSecure() && !secure_source)) {
-    MaybeRunCookieCallback(
-        std::move(callback),
+    status.AddExclusionReason(
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
-    return;
   }
 
-  CanonicalCookie::CookieInclusionStatus status =
-      cc->IsSetPermittedInContext(options);
-  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-    // IsSetPermittedInContext already logs if it rejects a cookie, so
-    // CookieMonster doesn't need to.
-    MaybeRunCookieCallback(std::move(callback), status);
-    return;
-  }
+  status.AddExclusionReasonsAndWarningIfAny(
+      cc->IsSetPermittedInContext(options));
 
   if (!IsCookieableScheme(scheme_lower)) {
-    MaybeRunCookieCallback(
-        std::move(callback),
+    status.AddExclusionReason(
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
-    return;
   }
 
   // If both SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
   // are enabled, non-SameSite cookies without the Secure attribute will be
-  // rejected.
+  // rejected. A warning for this would have been added by
+  // IsSetPermittedInContext().
   if (cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() &&
       cc->IsEffectivelySameSiteNone() && !cc->IsSecure()) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "SetCookie() rejecting insecure cookie with SameSite=None.";
-    status =
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE;
-    MaybeRunCookieCallback(std::move(callback), status);
-    return;
+    status.AddExclusionReason(
+        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE);
   }
 
   const std::string key(GetKey(cc->Domain()));
@@ -1184,67 +1182,67 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   base::Time creation_date_to_inherit;
 
-  status = DeleteAnyEquivalentCookie(
+  MaybeDeleteEquivalentCookieAndUpdateStatus(
       key, *cc, secure_source, options.exclude_httponly(), already_expired,
-      &creation_date_to_inherit);
+      &creation_date_to_inherit, &status);
 
-  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-    std::string error;
-    error =
-        "SetCookie() not clobbering httponly cookie or secure cookie for "
-        "insecure scheme";
-
-    DVLOG(net::cookie_util::kVlogSetCookies) << error;
-    MaybeRunCookieCallback(std::move(callback), status);
-    return;
-  }
-
-  DVLOG(net::cookie_util::kVlogSetCookies)
-      << "SetCookie() key: " << key << " cc: " << cc->DebugString();
-
-  // Realize that we might be setting an expired cookie, and the only point
-  // was to delete the cookie which we've already done.
-  if (!already_expired) {
-    // See InitializeHistograms() for details.
-    if (cc->IsPersistent()) {
-      histogram_expiration_duration_minutes_->Add(
-          (cc->ExpiryDate() - creation_date).InMinutes());
-    }
-
-    // Histogram the type of scheme used on URLs that set cookies. This
-    // intentionally includes cookies that are set or overwritten by
-    // http:// URLs, but not cookies that are cleared by http:// URLs, to
-    // understand if the former behavior can be deprecated for Secure
-    // cookies.
-    CookieSource cookie_source_sample =
-        (secure_source
-             ? (cc->IsSecure()
-                    ? COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME
-                    : COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME)
-             : (cc->IsSecure()
-                    ? COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME
-                    : COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME));
-    histogram_cookie_source_scheme_->Add(cookie_source_sample);
-
-    if (!creation_date_to_inherit.is_null()) {
-      cc->SetCreationDate(creation_date_to_inherit);
-    }
-
-    InternalInsertCookie(key, std::move(cc), true);
-  } else {
+  if (status.HasExclusionReason(
+          CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE) ||
+      status.HasExclusionReason(CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_OVERWRITE_HTTP_ONLY)) {
     DVLOG(net::cookie_util::kVlogSetCookies)
-        << "SetCookie() not storing already expired cookie.";
+        << "SetCookie() not clobbering httponly cookie or secure cookie for "
+           "insecure scheme";
   }
 
-  // We assume that hopefully setting a cookie will be less common than
-  // querying a cookie.  Since setting a cookie can put us over our limits,
-  // make sure that we garbage collect...  We can also make the assumption that
-  // if a cookie was set, in the common case it will be used soon after,
-  // and we will purge the expired cookies in GetCookies().
-  GarbageCollect(creation_date, key);
+  if (status.IsInclude()) {
+    DVLOG(net::cookie_util::kVlogSetCookies)
+        << "SetCookie() key: " << key << " cc: " << cc->DebugString();
 
-  MaybeRunCookieCallback(std::move(callback),
-                         CanonicalCookie::CookieInclusionStatus::INCLUDE);
+    // Realize that we might be setting an expired cookie, and the only point
+    // was to delete the cookie which we've already done.
+    if (!already_expired) {
+      // See InitializeHistograms() for details.
+      if (cc->IsPersistent()) {
+        histogram_expiration_duration_minutes_->Add(
+            (cc->ExpiryDate() - creation_date).InMinutes());
+      }
+
+      // Histogram the type of scheme used on URLs that set cookies. This
+      // intentionally includes cookies that are set or overwritten by
+      // http:// URLs, but not cookies that are cleared by http:// URLs, to
+      // understand if the former behavior can be deprecated for Secure
+      // cookies.
+      CookieSource cookie_source_sample =
+          (secure_source
+               ? (cc->IsSecure()
+                      ? COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME
+                      : COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME)
+               : (cc->IsSecure()
+                      ? COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME
+                      : COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME));
+      histogram_cookie_source_scheme_->Add(cookie_source_sample);
+
+      if (!creation_date_to_inherit.is_null()) {
+        cc->SetCreationDate(creation_date_to_inherit);
+      }
+
+      InternalInsertCookie(key, std::move(cc), true);
+    } else {
+      DVLOG(net::cookie_util::kVlogSetCookies)
+          << "SetCookie() not storing already expired cookie.";
+    }
+
+    // We assume that hopefully setting a cookie will be less common than
+    // querying a cookie.  Since setting a cookie can put us over our limits,
+    // make sure that we garbage collect...  We can also make the assumption
+    // that if a cookie was set, in the common case it will be used soon after,
+    // and we will purge the expired cookies in GetCookies().
+    GarbageCollect(creation_date, key);
+  }
+
+  // TODO(chlily): Log metrics.
+  MaybeRunCookieCallback(std::move(callback), status);
 }
 
 void CookieMonster::SetAllCookies(CookieList list,
@@ -1278,7 +1276,7 @@ void CookieMonster::SetAllCookies(CookieList list,
   // https://codereview.chromium.org/2882063002/#msg64), which would
   // solve the return value problem.
   MaybeRunCookieCallback(std::move(callback),
-                         CanonicalCookie::CookieInclusionStatus::INCLUDE);
+                         CanonicalCookie::CookieInclusionStatus());
 }
 
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,

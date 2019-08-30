@@ -1834,9 +1834,8 @@ bool SetCookie(BrowserContext* browser_context,
       *cc.get(), url.scheme(), options,
       base::BindOnce(
           [](bool* result, base::RunLoop* run_loop,
-             net::CanonicalCookie::CookieInclusionStatus success) {
-            *result = (success ==
-                       net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+             net::CanonicalCookie::CookieInclusionStatus set_cookie_status) {
+            *result = set_cookie_status.IsInclude();
             run_loop->Quit();
           },
           &result, &run_loop));

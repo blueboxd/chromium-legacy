@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -2002,8 +2003,7 @@ ExtensionFunction::ResponseAction TabsSetZoomFunction::Run() {
                           ? content::ZoomFactorToZoomLevel(params->zoom_factor)
                           : zoom_controller->GetDefaultZoomLevel();
 
-  scoped_refptr<ExtensionZoomRequestClient> client(
-      new ExtensionZoomRequestClient(extension()));
+  auto client = base::MakeRefCounted<ExtensionZoomRequestClient>(extension());
   if (!zoom_controller->SetZoomLevelByClient(zoom_level, client)) {
     // Tried to zoom a tab in disabled mode.
     return RespondNow(Error(tabs_constants::kCannotZoomDisabledTabError));

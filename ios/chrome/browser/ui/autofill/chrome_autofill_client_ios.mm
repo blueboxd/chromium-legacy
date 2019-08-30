@@ -223,6 +223,11 @@ void ChromeAutofillClientIOS::ShowLocalCardMigrationResults(
   NOTIMPLEMENTED();
 }
 
+void ChromeAutofillClientIOS::ShowWebauthnOfferDialog(
+    WebauthnOfferDialogCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void ChromeAutofillClientIOS::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {

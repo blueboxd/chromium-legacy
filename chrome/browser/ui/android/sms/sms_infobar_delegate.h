@@ -16,6 +16,7 @@
 class SmsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SmsInfoBarDelegate(const url::Origin& origin,
+                     const std::string& one_time_code,
                      base::OnceClosure on_confirm,
                      base::OnceClosure on_cancel);
   ~SmsInfoBarDelegate() override;
@@ -33,6 +34,7 @@ class SmsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   const url::Origin origin_;
+  const std::string one_time_code_;
   base::OnceClosure on_confirm_;
   base::OnceClosure on_cancel_;
   DISALLOW_COPY_AND_ASSIGN(SmsInfoBarDelegate);

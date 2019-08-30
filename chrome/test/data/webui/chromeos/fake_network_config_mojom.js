@@ -180,7 +180,7 @@ class FakeNetworkConfig {
           OncMojo.getConnectionStateTypeFromString(network.ConnectionState);
     }
     if (network.VPN) {
-      mojoNetwork.vpn = {type: OncMojo.getVPNTypeFromString(network.VPN.Type)};
+      mojoNetwork.vpn = {type: OncMojo.getVpnTypeFromString(network.VPN.Type)};
       if (network.VPN.ThirdPartyVPN) {
         mojoNetwork.vpn.providerId = network.VPN.ThirdPartyVPN.ExtensionID;
         mojoNetwork.vpn.providerName = network.VPN.ThirdPartyVPN.ProviderName;

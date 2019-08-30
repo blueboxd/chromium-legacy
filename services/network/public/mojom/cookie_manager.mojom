@@ -86,30 +86,20 @@ struct CanonicalCookie {
   CookiePriority priority = MEDIUM;
 };
 
-// Keep values here in sync with net::CanonicalCookie::CookieInclusionStatus.
-enum CookieInclusionStatus {
-  INCLUDE,
-  EXCLUDE_HTTP_ONLY,
-  EXCLUDE_SECURE_ONLY,
-  EXCLUDE_DOMAIN_MISMATCH,
-  EXCLUDE_NOT_ON_PATH,
-  EXCLUDE_SAMESITE_STRICT,
-  EXCLUDE_SAMESITE_LAX,
-  EXCLUDE_SAMESITE_EXTENDED,
-  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
-  EXCLUDE_SAMESITE_NONE_INSECURE,
-  EXCLUDE_USER_PREFERENCES,
+// Keep values here in sync with
+// net::CanonicalCookie::CookieInclusionStatus::WarningReason.
+enum CookieInclusionStatusWarningReason {
+  DO_NOT_WARN = 0,
+  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+  WARN_SAMESITE_NONE_INSECURE,
+  WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE
+};
 
-  // Statuses specific to setting cookies
-  EXCLUDE_FAILURE_TO_STORE,
-  EXCLUDE_NONCOOKIEABLE_SCHEME,
-  EXCLUDE_OVERWRITE_SECURE,
-  EXCLUDE_OVERWRITE_HTTP_ONLY,
-  EXCLUDE_INVALID_DOMAIN,
-  EXCLUDE_INVALID_PREFIX,
-
-  // Please keep last
-  EXCLUDE_UNKNOWN_ERROR
+// Exclusion reasons can be found in
+// net::CanonicalCookie::CookieInclusionStatus::ExclusionReason.
+struct CookieInclusionStatus {
+  uint32 exclusion_reasons;
+  CookieInclusionStatusWarningReason warning;
 };
 
 struct CookieWithStatus {

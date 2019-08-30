@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/proto/autofill_sync.pb.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/sync/model/entity_data.h"
@@ -303,8 +302,7 @@ AutocompleteSyncBridge::AutocompleteSyncBridge(
     AutofillWebDataBackend* backend,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      web_data_backend_(backend),
-      scoped_observer_(this) {
+      web_data_backend_(backend) {
   DCHECK(web_data_backend_);
 
   scoped_observer_.Add(web_data_backend_);

@@ -226,10 +226,17 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void AfterClientUpdateData(
       std::unique_ptr<NotificationEntry> entry,
       std::unique_ptr<NotificationData> updated_notification_data) {
+    if (!updated_notification_data) {
+      // TODO(xingliu): Client has drop the data, track metrics here.
+      return;
+    }
+
     // Tracks user impression on the notification to be shown.
     context_->impression_tracker()->AddImpression(
         entry->type, entry->guid, entry->schedule_params.impression_mapping,
         updated_notification_data->custom_data);
+
+    stats::LogNotificationShow(*updated_notification_data, entry->type);
 
     // Show the notification in UI.
     auto system_data = std::make_unique<DisplayAgent::SystemData>();

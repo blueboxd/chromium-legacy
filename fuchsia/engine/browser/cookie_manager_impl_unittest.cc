@@ -75,8 +75,7 @@ class CookieManagerImplTest : public testing::Test {
     mojo_cookie_manager_->SetCanonicalCookie(
         *CreateCookie(name, value), "https", options,
         base::Bind([](net::CanonicalCookie::CookieInclusionStatus status) {
-          EXPECT_EQ(status,
-                    net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+          EXPECT_TRUE(status.IsInclude());
         }));
   }
 

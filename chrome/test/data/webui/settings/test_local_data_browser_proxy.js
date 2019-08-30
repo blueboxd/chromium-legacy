@@ -20,6 +20,7 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
       'getNumCookiesString',
       'reloadCookies',
       'removeCookie',
+      'removeThirdPartyCookies',
     ]);
 
     /** @private {?CookieList} */
@@ -98,5 +99,10 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
   /** @override */
   removeCookie(path) {
     this.methodCalled('removeCookie', path);
+  }
+
+  /** @override */
+  removeThirdPartyCookies() {
+    this.methodCalled('removeThirdPartyCookies');
   }
 }

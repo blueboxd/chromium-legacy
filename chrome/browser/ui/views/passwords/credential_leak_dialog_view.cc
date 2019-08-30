@@ -16,6 +16,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 
 using views::BoxLayout;
@@ -61,8 +62,10 @@ std::unique_ptr<NonAccessibleImageView> CreateIllustration(
 
 // Creates the content containing the title and description for the dialog
 // rendered below the illustration.
-std::unique_ptr<views::View> CreateContent(const base::string16& title,
-                                           const base::string16& description) {
+std::unique_ptr<views::View> CreateContent(
+    const base::string16& title,
+    const base::string16& description,
+    gfx::Range bold_change_password_range) {
   auto content = std::make_unique<views::View>();
   content->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -78,10 +81,14 @@ std::unique_ptr<views::View> CreateContent(const base::string16& title,
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   content->AddChildView(std::move(title_label));
 
-  auto description_label = std::make_unique<views::Label>(
-      description, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
-  description_label->SetMultiLine(true);
-  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  auto description_label =
+      std::make_unique<views::StyledLabel>(description, nullptr);
+  if (!bold_change_password_range.is_empty()) {
+    views::StyledLabel::RangeStyleInfo style;
+    style.custom_font = description_label->GetDefaultFontList().Derive(
+        0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
+    description_label->AddStyleRange(bold_change_password_range, style);
+  }
   content->AddChildView(std::move(description_label));
 
   return content;
@@ -176,7 +183,8 @@ void CredentialLeakDialogView::InitWindow() {
       CreateIllustration(GetNativeTheme()->ShouldUseDarkColors());
   image_view_ = illustration.get();
   std::unique_ptr<views::View> content =
-      CreateContent(controller_->GetTitle(), controller_->GetDescription());
+      CreateContent(controller_->GetTitle(), controller_->GetDescription(),
+                    controller_->GetChangePasswordBoldRange());
   AddChildView(std::move(illustration));
   AddChildView(std::move(content));
 }

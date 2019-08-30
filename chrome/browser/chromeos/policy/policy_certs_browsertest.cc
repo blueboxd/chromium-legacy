@@ -16,6 +16,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -48,8 +49,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
@@ -285,10 +284,6 @@ int VerifyTestServerCert(
   return result;
 }
 
-bool IsSessionStarted() {
-  return session_manager::SessionManager::Get()->IsSessionStarted();
-}
-
 // Returns true if |cert_handle| refers to a certificate that has a subject
 // CommonName equal to |subject_common_name|.
 bool HasSubjectCommonName(CERTCertificate* cert_handle,
@@ -477,14 +472,6 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
     command_line->AppendSwitch(chromeos::switches::kOobeSkipPostLogin);
   }
 
-  void WaitForSessionStart() {
-    if (IsSessionStarted())
-      return;
-    content::WindowedNotificationObserver(chrome::NOTIFICATION_SESSION_STARTED,
-                                          base::BindRepeating(IsSessionStarted))
-        .Wait();
-  }
-
   chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
 
   const AccountId device_local_account_id_ =
@@ -542,7 +529,7 @@ class PolicyProvidedTrustAnchorsPublicSessionTest
 IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsPublicSessionTest,
                        DISABLED_AllowedInPublicSession) {
   StartLogin();
-  WaitForSessionStart();
+  chromeos::test::WaitForSessionStart();
 
   BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());
@@ -556,43 +543,14 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsPublicSessionTest,
 }
 
 class PolicyProvidedTrustAnchorsOnUserSessionInitTest
-    : public LoginPolicyTestBase,
-      content::NotificationObserver {
+    : public LoginPolicyTestBase {
  protected:
   PolicyProvidedTrustAnchorsOnUserSessionInitTest() {}
-
-  void SetUpOnMainThread() override {
-    LoginPolicyTestBase::SetUpOnMainThread();
-
-    session_started_notification_registrar_ =
-        std::make_unique<content::NotificationRegistrar>();
-    session_started_notification_registrar_->Add(
-        this, chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources());
-  }
-
-  void TearDownOnMainThread() override {
-    session_started_notification_registrar_.reset();
-
-    LoginPolicyTestBase::TearDownOnMainThread();
-  }
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
     std::string user_policy_blob = GetTestCertsFileContents(kRootCaCertOnc);
     policy->SetKey(key::kOpenNetworkConfiguration,
                    base::Value(user_policy_blob));
-  }
-
-  bool user_session_started() { return user_session_started_; }
-
-  void WaitSessionStart() {
-    if (user_session_started())
-      return;
-
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources())
-        .Wait();
   }
 
   void TriggerLogIn() {
@@ -611,18 +569,6 @@ class PolicyProvidedTrustAnchorsOnUserSessionInitTest
   }
 
  private:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    EXPECT_EQ(chrome::NOTIFICATION_SESSION_STARTED, type);
-    user_session_started_ = true;
-  }
-
-  bool user_session_started_ = false;
-
-  std::unique_ptr<content::NotificationRegistrar>
-      session_started_notification_registrar_;
-
   DISALLOW_COPY_AND_ASSIGN(PolicyProvidedTrustAnchorsOnUserSessionInitTest);
 };
 
@@ -641,9 +587,9 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsOnUserSessionInitTest,
   SkipToLoginScreen();
   TriggerLogIn();
 
-  EXPECT_FALSE(user_session_started());
+  EXPECT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
 
-  WaitSessionStart();
+  chromeos::test::WaitForSessionStart();
   EXPECT_EQ(net::OK, VerifyTestServerCert(active_user_profile(), server_cert));
 }
 

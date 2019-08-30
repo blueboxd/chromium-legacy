@@ -16,6 +16,10 @@
 
 namespace em = enterprise_management;
 
+namespace content {
+struct WebPluginInfo;
+}
+
 namespace enterprise_reporting {
 
 class ReportGenerator {
@@ -58,6 +62,9 @@ class ReportGenerator {
 
  private:
   void GenerateProfileReportWithIndex(int profile_index);
+
+  void OnPluginsReady(const std::vector<content::WebPluginInfo>& plugins);
+  void OnBasicRequestReady();
 
   ProfileReportGenerator profile_report_generator_;
 

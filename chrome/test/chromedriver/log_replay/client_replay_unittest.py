@@ -43,8 +43,11 @@ _RESPONSE_ONLY = ('[1531428670.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce] '
                   'RESPONSE GetTitle {\n"param2": 42\n}\n')
 _PAYLOAD_SCRIPT = ('[1531428670.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]'
                    ' RESPONSE GetTitle {\n"param2": "function(){func()}"\n}\n')
-_PAYLOAD_READABLE_TIME = (
+_PAYLOAD_READABLE_TIME_LINUX = (
     '[08-12-2019 15:45:34.824002][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]'
+    ' RESPONSE GetTitle {\n"param2": "function(){func()}"\n}\n')
+_PAYLOAD_READABLE_TIME_WINDOWS = (
+    '[08-12-2019 15:45:34.824][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]'
     ' RESPONSE GetTitle {\n"param2": "function(){func()}"\n}\n')
 _BAD_SCRIPT = ('[1531428670.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]'
                ' RESPONSE GetTitle {\n"param2": "))}\\})}/{)}({(})}"\n}\n')
@@ -118,12 +121,20 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
         ("[1531428670.535][INFO]: [b15232d5497ec0d8300a5a1ea56f33ce]"
             " RESPONSE GetTitle {\n"))
 
-  def testGetNextClientHeaderLine_readableTime(self):
-    string_buffer = StringIO.StringIO(_PAYLOAD_READABLE_TIME)
+  def testGetNextClientHeaderLine_readableTimeLinux(self):
+    string_buffer = StringIO.StringIO(_PAYLOAD_READABLE_TIME_LINUX)
     command_sequence = client_replay.CommandSequence()
     command_sequence._parser = client_replay._Parser(string_buffer)
     self.assertEquals(command_sequence._parser._GetNextClientHeaderLine(),
         ("[08-12-2019_15:45:34.824002][INFO]:"
+         " [b15232d5497ec0d8300a5a1ea56f33ce] RESPONSE GetTitle {\n"))
+
+  def testGetNextClientHeaderLine_readableTimeWindows(self):
+    string_buffer = StringIO.StringIO(_PAYLOAD_READABLE_TIME_WINDOWS)
+    command_sequence = client_replay.CommandSequence()
+    command_sequence._parser = client_replay._Parser(string_buffer)
+    self.assertEquals(command_sequence._parser._GetNextClientHeaderLine(),
+        ("[08-12-2019_15:45:34.824][INFO]:"
          " [b15232d5497ec0d8300a5a1ea56f33ce] RESPONSE GetTitle {\n"))
 
   def testIngestLoggedResponse(self):

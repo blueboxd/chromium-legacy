@@ -387,6 +387,130 @@ TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
   EXPECT_THAT(*value, testing::ElementsAreArray(kU2fMockResponseData));
 }
 
+// InvertChannelID inverts all the bits in the given channel ID. This is used to
+// create a channel ID that will not be equal to the expected channel ID.
+std::array<uint8_t, 4> InvertChannelID(
+    const std::array<uint8_t, 4> channel_id) {
+  std::array<uint8_t, 4> ret;
+  memcpy(ret.data(), channel_id.data(), ret.size());
+  for (size_t i = 0; i < ret.size(); i++) {
+    ret[i] ^= 0xff;
+  }
+  return ret;
+}
+
+TEST_F(FidoHidDeviceTest, TestMessageOnOtherChannel) {
+  // Test that a HID message with a different channel ID is ignored.
+  ::testing::Sequence sequence;
+  auto mock_connection = CreateHidConnectionWithHidInitExpectations(
+      kChannelId, fake_hid_manager_.get(), sequence);
+
+  // HID_CBOR request to authenticator.
+  mock_connection->ExpectHidWriteWithCommand(FidoHidDeviceCommand::kMsg);
+
+  EXPECT_CALL(*mock_connection, ReadPtr(_))
+      .InSequence(sequence)
+      // Message on wrong channel.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockResponseWithChannelId(
+                InvertChannelID(mock_connection->connection_channel_id()),
+                kHidUnknownCommandError));
+      }))
+      // Expected message on the correct channel.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(true, 0,
+                           CreateMockResponseWithChannelId(
+                               mock_connection->connection_channel_id(),
+                               kU2fMockResponseMessage));
+      }));
+
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
+
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
+  ASSERT_EQ(1u, u2f_devices.size());
+  auto& device = u2f_devices.front();
+
+  TestDeviceCallbackReceiver cb;
+  device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
+  cb.WaitForCallback();
+  const auto& value = cb.value();
+  ASSERT_TRUE(value);
+  EXPECT_THAT(*value, testing::ElementsAreArray(kU2fMockResponseData));
+}
+
+TEST_F(FidoHidDeviceTest, TestContinuedMessageOnOtherChannel) {
+  // Test that a multi-frame HID message with a different channel ID is
+  // ignored.
+  ::testing::Sequence sequence;
+  auto mock_connection = CreateHidConnectionWithHidInitExpectations(
+      kChannelId, fake_hid_manager_.get(), sequence);
+
+  // HID_CBOR request to authenticator.
+  mock_connection->ExpectHidWriteWithCommand(FidoHidDeviceCommand::kMsg);
+
+  constexpr uint8_t kOtherChannelMsgPrefix[64] = {
+      0x83,
+      0x00,
+      // Mark reply as being 64 bytes long, which is more than a single USB
+      // frame can contain.
+      0x40,
+      0,
+  };
+
+  constexpr uint8_t kOtherChannelMsgSuffix[64] = {
+      // Continuation packet zero.
+      0x00,
+      // Contents can be anything.
+  };
+
+  EXPECT_CALL(*mock_connection, ReadPtr(_))
+      .InSequence(sequence)
+      // Beginning of a message on the wrong channel.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockResponseWithChannelId(
+                InvertChannelID(mock_connection->connection_channel_id()),
+                kOtherChannelMsgPrefix));
+      }))
+      // Continuation of the message on the wrong channel.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockResponseWithChannelId(
+                InvertChannelID(mock_connection->connection_channel_id()),
+                kOtherChannelMsgSuffix));
+      }))
+      // Expected message on the correct channel.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(true, 0,
+                           CreateMockResponseWithChannelId(
+                               mock_connection->connection_channel_id(),
+                               kU2fMockResponseMessage));
+      }));
+
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
+
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
+  ASSERT_EQ(1u, u2f_devices.size());
+  auto& device = u2f_devices.front();
+
+  TestDeviceCallbackReceiver cb;
+  device->DeviceTransact(GetMockDeviceRequest(), cb.callback());
+  cb.WaitForCallback();
+  const auto& value = cb.value();
+  ASSERT_TRUE(value);
+  EXPECT_THAT(*value, testing::ElementsAreArray(kU2fMockResponseData));
+}
+
 TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
   ::testing::Sequence sequence;
   auto mock_connection = CreateHidConnectionWithHidInitExpectations(

@@ -29,7 +29,7 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gfx/switches.h"
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
 #include "components/ui_devtools/css_agent.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/ui_devtools/viz/dom_agent_viz.h"
@@ -119,7 +119,7 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManager(
                                 base::Unretained(gpu_service)));
 }
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
 void VizCompositorThreadRunnerImpl::CreateVizDevTools(
     mojom::VizDevToolsParamsPtr params) {
   // It is safe to use Unretained(this) because |this| owns the |task_runner_|,
@@ -198,13 +198,13 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
       mojom::FrameSinkManagerClientPtr(
           std::move(params->frame_sink_manager_client)));
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   if (pending_viz_dev_tools_params_)
     InitVizDevToolsOnCompositorThread(std::move(pending_viz_dev_tools_params_));
 #endif
 }
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
 void VizCompositorThreadRunnerImpl::CreateVizDevToolsOnCompositorThread(
     mojom::VizDevToolsParamsPtr params) {
   if (!frame_sink_manager_) {
@@ -250,7 +250,7 @@ void VizCompositorThreadRunnerImpl::TearDownOnCompositorThread() {
         server_shared_bitmap_manager_.get());
   }
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   devtools_server_.reset();
 #endif
   frame_sink_manager_.reset();

@@ -233,7 +233,7 @@ ServiceWorkerSingleScriptUpdateChecker::
 // URLLoaderClient override ----------------------------------------------------
 
 void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse", this,
@@ -259,7 +259,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   // Only main script needs the following check.
   if (is_main_script_) {
     std::string service_worker_allowed;
-    bool has_header = response_head.headers->EnumerateHeader(
+    bool has_header = response_head->headers->EnumerateHeader(
         nullptr, ServiceWorkerConsts::kServiceWorkerAllowed,
         &service_worker_allowed);
     if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
@@ -273,7 +273,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
 
   network_loader_state_ =
       ServiceWorkerUpdatedScriptLoader::LoaderState::kWaitingForBody;
-  network_accessed_ = response_head.network_accessed;
+  network_accessed_ = response_head->network_accessed;
 
   WriteHeaders(
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
@@ -281,7 +281,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
 
 void ServiceWorkerSingleScriptUpdateChecker::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
       "ServiceWorkerSingleScriptUpdateChecker::OnReceiveRedirect", this,

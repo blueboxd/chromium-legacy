@@ -28,9 +28,6 @@ class ExtensionAPI;
 class ProcessMap;
 class WindowController;
 
-// A factory function for creating new ExtensionFunction instances.
-typedef ExtensionFunction* (*ExtensionFunctionFactory)();
-
 // ExtensionFunctionDispatcher receives requests to execute functions from
 // Chrome extensions running in a RenderFrameHost and dispatches them to the
 // appropriate handler. It lives entirely on the UI thread.
@@ -128,7 +125,7 @@ class ExtensionFunctionDispatcher
   // Helper to create an ExtensionFunction to handle the function given by
   // |params|. Can be called on any thread.
   // Does not set subclass properties, or include_incognito.
-  static ExtensionFunction* CreateExtensionFunction(
+  static scoped_refptr<ExtensionFunction> CreateExtensionFunction(
       const ExtensionHostMsg_Request_Params& params,
       const Extension* extension,
       int requesting_process_id,

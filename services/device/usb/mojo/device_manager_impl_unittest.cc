@@ -155,7 +155,7 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
     mojo::Remote<mojom::UsbDevice> device;
     device_manager->GetDevice(mock_device->guid(),
                               device.BindNewPipeAndPassReceiver(),
-                              /*device_client=*/nullptr);
+                              /*device_client=*/mojo::NullRemote());
     // Close is a no-op if the device hasn't been opened but ensures that the
     // pipe was successfully connected.
     device->Close(loop.QuitClosure());
@@ -165,7 +165,7 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
   mojo::Remote<mojom::UsbDevice> bad_device;
   device_manager->GetDevice("not a real guid",
                             bad_device.BindNewPipeAndPassReceiver(),
-                            /*device_client=*/nullptr);
+                            /*device_client=*/mojo::NullRemote());
 
   {
     base::RunLoop loop;

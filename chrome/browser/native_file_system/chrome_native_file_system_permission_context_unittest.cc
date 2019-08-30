@@ -365,6 +365,33 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
 }
 
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
+       ConfirmSensitiveDirectoryAccess_BlockChildrenNested) {
+  base::FilePath user_data_dir = temp_dir_.GetPath().AppendASCII("user");
+  base::ScopedPathOverride user_data_override(chrome::DIR_USER_DATA,
+                                              user_data_dir, true, true);
+  base::FilePath download_dir = user_data_dir.AppendASCII("downloads");
+  base::ScopedPathOverride download_override(chrome::DIR_DEFAULT_DOWNLOADS,
+                                             download_dir, true, true);
+
+  // User Data directory itself should not be allowed.
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
+            ConfirmSensitiveDirectoryAccessSync(permission_context(),
+                                                {user_data_dir}));
+  // Parent of User Data directory should also not be allowed.
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
+            ConfirmSensitiveDirectoryAccessSync(permission_context(),
+                                                {temp_dir_.GetPath()}));
+  // The nested Download directory itself should not be allowed.
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
+            ConfirmSensitiveDirectoryAccessSync(permission_context(),
+                                                {download_dir}));
+  // Paths inside the nested Download directory should be allowed.
+  EXPECT_EQ(SensitiveDirectoryResult::kAllowed,
+            ConfirmSensitiveDirectoryAccessSync(
+                permission_context(), {download_dir.AppendASCII("foo")}));
+}
+
+TEST_F(ChromeNativeFileSystemPermissionContextTest,
        ConfirmSensitiveDirectoryAccess_RelativePathBlock) {
   base::FilePath home_dir = temp_dir_.GetPath().AppendASCII("home");
   base::ScopedPathOverride home_override(base::DIR_HOME, home_dir, true, true);

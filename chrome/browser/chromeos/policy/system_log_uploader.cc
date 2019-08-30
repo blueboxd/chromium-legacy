@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -297,6 +298,9 @@ const char* const SystemLogUploader::kZippedLogsFileName = "logs.zip";
 const char* const SystemLogUploader::kContentTypeOctetStream =
     "application/octet-stream";
 
+const char* const SystemLogUploader::kSystemLogUploadResultHistogram =
+    "Enterprise.SystemLogUploadResult";
+
 SystemLogUploader::SystemLogUploader(
     std::unique_ptr<Delegate> syslog_delegate,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
@@ -334,6 +338,12 @@ void SystemLogUploader::OnSuccess() {
   log_upload_in_progress_ = false;
   retry_count_ = 0;
 
+  UMA_HISTOGRAM_ENUMERATION(
+      kSystemLogUploadResultHistogram,
+      base::FeatureList::IsEnabled(features::kUploadZippedSystemLogs)
+          ? ZIPPED_LOGS_UPLOAD_SUCCESS
+          : NON_ZIPPED_LOGS_UPLOAD_SUCCESS);
+
   // On successful log upload schedule the next log upload after
   // upload_frequency_ time from now.
   ScheduleNextSystemLogUpload(upload_frequency_);
@@ -344,6 +354,11 @@ void SystemLogUploader::OnFailure(UploadJob::ErrorCode error_code) {
   last_upload_attempt_ = base::Time::NowFromSystemTime();
   log_upload_in_progress_ = false;
 
+  UMA_HISTOGRAM_ENUMERATION(
+      kSystemLogUploadResultHistogram,
+      base::FeatureList::IsEnabled(features::kUploadZippedSystemLogs)
+          ? ZIPPED_LOGS_UPLOAD_FAILURE
+          : NON_ZIPPED_LOGS_UPLOAD_FAILURE);
   //  If we have hit the maximum number of retries, terminate this upload
   //  attempt and schedule the next one using the normal delay. Otherwise, retry
   //  uploading after kErrorUploadDelayMs milliseconds.

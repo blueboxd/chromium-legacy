@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/named_node_map.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/pointer_lock_options.h"
 #include "third_party/blink/renderer/core/dom/presentation_attribute_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
@@ -5121,9 +5122,17 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
 }
 
 void Element::requestPointerLock() {
-  if (GetDocument().GetPage())
+  if (GetDocument().GetPage()) {
     GetDocument().GetPage()->GetPointerLockController().RequestPointerLock(
         this);
+  }
+}
+
+void Element::requestPointerLock(const PointerLockOptions* options) {
+  if (GetDocument().GetPage()) {
+    GetDocument().GetPage()->GetPointerLockController().RequestPointerLock(
+        this, options);
+  }
 }
 
 SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {

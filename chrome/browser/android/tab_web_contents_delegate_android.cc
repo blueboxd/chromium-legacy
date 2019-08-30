@@ -165,10 +165,11 @@ TabWebContentsDelegateAndroid::RunBluetoothChooser(
 void TabWebContentsDelegateAndroid::CreateSmsPrompt(
     content::RenderFrameHost* host,
     const url::Origin& origin,
+    const std::string& one_time_code,
     base::OnceClosure on_confirm,
     base::OnceClosure on_cancel) {
   auto* web_contents = content::WebContents::FromRenderFrameHost(host);
-  SmsInfoBar::Create(web_contents, origin, std::move(on_confirm),
+  SmsInfoBar::Create(web_contents, origin, one_time_code, std::move(on_confirm),
                      std::move(on_cancel));
 }
 

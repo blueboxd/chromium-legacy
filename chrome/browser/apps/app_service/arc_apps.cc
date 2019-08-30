@@ -189,35 +189,32 @@ void ArcApps::LoadIcon(const std::string& app_id,
                        int32_t size_hint_in_dip,
                        bool allow_placeholder_icon,
                        LoadIconCallback callback) {
-  if (icon_key) {
-    // Treat the Play Store as a special case, loading an icon defined by a
-    // resource instead of asking the Android VM (or the cache of previous
-    // responses from the Android VM). Presumably this is for bootstrapping:
-    // the Play Store icon (the UI for enabling and installing Android apps)
-    // should be showable even before the user has installed their first
-    // Android app and before bringing up an Android VM for the first time.
-    if (app_id == arc::kPlayStoreAppId) {
-      LoadPlayStoreIcon(icon_compression, size_hint_in_dip,
-                        static_cast<IconEffects>(icon_key->icon_effects),
-                        std::move(callback));
-      return;
-    }
-
-    // Try loading the icon from an on-disk cache. If that fails, fall back to
-    // LoadIconFromVM.
-    LoadIconFromFileWithFallback(
-        icon_compression, size_hint_in_dip,
-        GetCachedIconFilePath(app_id, size_hint_in_dip),
-        static_cast<IconEffects>(icon_key->icon_effects), std::move(callback),
-        base::BindOnce(&ArcApps::LoadIconFromVM, weak_ptr_factory_.GetWeakPtr(),
-                       app_id, icon_compression, size_hint_in_dip,
-                       allow_placeholder_icon,
-                       static_cast<IconEffects>(icon_key->icon_effects)));
+  if (!icon_key) {
+    std::move(callback).Run(apps::mojom::IconValue::New());
     return;
   }
+  IconEffects icon_effects = static_cast<IconEffects>(icon_key->icon_effects);
 
-  // On failure, we still run the callback, with the zero IconValue.
-  std::move(callback).Run(apps::mojom::IconValue::New());
+  // Treat the Play Store as a special case, loading an icon defined by a
+  // resource instead of asking the Android VM (or the cache of previous
+  // responses from the Android VM). Presumably this is for bootstrapping:
+  // the Play Store icon (the UI for enabling and installing Android apps)
+  // should be showable even before the user has installed their first
+  // Android app and before bringing up an Android VM for the first time.
+  if (app_id == arc::kPlayStoreAppId) {
+    LoadPlayStoreIcon(icon_compression, size_hint_in_dip, icon_effects,
+                      std::move(callback));
+  } else if (allow_placeholder_icon) {
+    constexpr bool is_placeholder_icon = true;
+    LoadIconFromResource(icon_compression, size_hint_in_dip,
+                         IDR_APP_DEFAULT_ICON, is_placeholder_icon,
+                         icon_effects, std::move(callback));
+  } else {
+    arc_icon_once_loader_.LoadIcon(
+        app_id, size_hint_in_dip, icon_compression,
+        base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_compression,
+                       size_hint_in_dip, icon_effects, std::move(callback)));
+  }
 }
 
 void ArcApps::Launch(const std::string& app_id,
@@ -396,41 +393,6 @@ void ArcApps::OnPackageListInitialRefreshed() {
       Publish(Convert(prefs, app_id, *app_info));
     }
   }
-}
-
-const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
-                                                    int32_t size_hint_in_dip) {
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (!prefs) {
-    return base::FilePath();
-  }
-  // TODO(crbug.com/826982): process the app_id argument like the private
-  // GetAppFromAppOrGroupId function and the ArcAppIcon::mapped_app_id_ field
-  // in arc_app_icon.cc?
-  return prefs->GetIconPath(
-      app_id,
-      ArcAppIconDescriptor(size_hint_in_dip,
-                           apps_util::GetPrimaryDisplayUIScaleFactor()));
-}
-
-void ArcApps::LoadIconFromVM(const std::string app_id,
-                             apps::mojom::IconCompression icon_compression,
-                             int32_t size_hint_in_dip,
-                             bool allow_placeholder_icon,
-                             IconEffects icon_effects,
-                             LoadIconCallback callback) {
-  if (allow_placeholder_icon) {
-    constexpr bool is_placeholder_icon = true;
-    LoadIconFromResource(icon_compression, size_hint_in_dip,
-                         IDR_APP_DEFAULT_ICON, is_placeholder_icon,
-                         icon_effects, std::move(callback));
-    return;
-  }
-
-  arc_icon_once_loader_.LoadIcon(
-      app_id, size_hint_in_dip, icon_compression,
-      base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_compression,
-                     size_hint_in_dip, icon_effects, std::move(callback)));
 }
 
 void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,

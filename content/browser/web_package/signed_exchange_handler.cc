@@ -74,14 +74,6 @@ constexpr char kSXGWithoutNoSniffErrorMessage[] =
 
 network::mojom::NetworkContext* g_network_context_for_testing = nullptr;
 
-base::Optional<base::Time> g_verification_time_for_testing;
-
-base::Time GetVerificationTime() {
-  if (g_verification_time_for_testing)
-    return *g_verification_time_for_testing;
-  return base::Time::Now();
-}
-
 bool IsSupportedSignedExchangeVersion(
     const base::Optional<SignedExchangeVersion>& version) {
   return version == SignedExchangeVersion::kB3;
@@ -164,12 +156,6 @@ std::string OCSPErrorToString(const net::OCSPVerifyResult& ocsp_result) {
 void SignedExchangeHandler::SetNetworkContextForTesting(
     network::mojom::NetworkContext* network_context) {
   g_network_context_for_testing = network_context;
-}
-
-// static
-void SignedExchangeHandler::SetVerificationTimeForTesting(
-    base::Optional<base::Time> verification_time_for_testing) {
-  g_verification_time_for_testing = verification_time_for_testing;
 }
 
 SignedExchangeHandler::SignedExchangeHandler(
@@ -494,7 +480,7 @@ void SignedExchangeHandler::OnCertReceived(
   const SignedExchangeSignatureVerifier::Result verify_result =
       SignedExchangeSignatureVerifier::Verify(
           *version_, *envelope_, unverified_cert_chain_.get(),
-          GetVerificationTime(), devtools_proxy_.get());
+          signed_exchange_utils::GetVerificationTime(), devtools_proxy_.get());
   UMA_HISTOGRAM_ENUMERATION(kHistogramSignatureVerificationResult,
                             verify_result);
   if (verify_result != SignedExchangeSignatureVerifier::Result::kSuccess) {

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -82,8 +81,7 @@ AccessTokenFetcher::AccessTokenFetcher(
       url_loader_factory_(std::move(url_loader_factory)),
       scopes_(scopes),
       mode_(mode),
-      callback_(std::move(callback)),
-      token_service_observer_(this) {
+      callback_(std::move(callback)) {
   DCHECK(client_id_.empty() == client_secret_.empty());
   DCHECK(client_id_.empty() || !url_loader_factory);
 

@@ -289,6 +289,13 @@ bool CSSPrimitiveValue::AccumulateLengthArray(CSSLengthArray& length_array,
                                                                  multiplier);
 }
 
+void CSSPrimitiveValue::AccumulateLengthUnitTypes(
+    LengthTypeFlags& types) const {
+  if (IsCalculated())
+    return To<CSSMathFunctionValue>(this)->AccumulateLengthUnitTypes(types);
+  To<CSSNumericLiteralValue>(this)->AccumulateLengthUnitTypes(types);
+}
+
 double CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
     UnitType unit_type) {
   double factor = 1.0;

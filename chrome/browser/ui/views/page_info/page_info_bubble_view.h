@@ -162,8 +162,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
-  CreateSecurityDescriptionForPasswordReuse(
-      PageInfoUI::PasswordType password_type) const override;
+  CreateSecurityDescriptionForPasswordReuse() const override;
 #endif
 
   // Creates the contents of the |site_settings_view_|. The ownership of the

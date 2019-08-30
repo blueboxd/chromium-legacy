@@ -90,10 +90,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     // the source desk is in overview mode, while the target desk is not.
     // This should not be used for entering overview mode.
     kImmediateExit,
-    // Prevents overview from stealing the input focus. Used by code that starts
-    // overview after a window has already been snapped in split view. The
-    // purpose is so that overview does not steal focus from the snapped window.
-    kStartUnfocused,
   };
 
   // Callback which fills out the passed settings object. Used by several
@@ -215,8 +211,12 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Updates all the overview items' mask and shadow.
   void UpdateRoundedCornersAndShadow();
 
-  // Called when the overview mode starting animation completes.
-  void OnStartingAnimationComplete(bool canceled);
+  // Called when the overview mode starting animation completes. |canceled| is
+  // true when the starting animation is interrupted by ending overview mode. If
+  // |canceled| is false and |should_focus_overview| is true, then
+  // |overview_focus_widget_| shall gain focus. |should_focus_overview| has no
+  // effect when |canceled| is true.
+  void OnStartingAnimationComplete(bool canceled, bool should_focus_overview);
 
   // Called when windows are being activated/deactivated during
   // overview mode.

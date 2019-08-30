@@ -33,9 +33,9 @@ class EmptyURLLoaderClient : public mojom::URLLoaderClient,
   void DeleteSelf();
 
   // mojom::URLLoaderClient overrides:
-  void OnReceiveResponse(const ResourceResponseHead& head) override;
+  void OnReceiveResponse(mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& head) override;
+                         mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;

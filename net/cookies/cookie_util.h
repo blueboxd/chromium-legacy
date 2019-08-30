@@ -144,25 +144,13 @@ NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForSubresource(const GURL& url,
                                      const GURL& site_for_cookies);
 
-// Checks whether a cookie would be excluded due to SameSite restrictions,
-// assuming SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
-// were turned on. This should be called on a cookie that is in fact included,
-// (presumably because SameSiteByDefaultCookies and
-// CookiesWithoutSameSiteMustBeSecure are not actually enabled). If the
-// return value is not INCLUDE, the cookie should be added to the excluded
-// cookies list so that an appropriate warning message can be shown in the
-// console.
-NET_EXPORT CanonicalCookie::CookieInclusionStatus
-CookieWouldBeExcludedDueToSameSite(const CanonicalCookie& cookie,
-                                   const CookieOptions& options);
-
 // Returns whether the respective SameSite feature is enabled.
 NET_EXPORT bool IsSameSiteByDefaultCookiesEnabled();
 NET_EXPORT bool IsCookiesWithoutSameSiteMustBeSecureEnabled();
 
 // Takes a callback accepting a CookieInclusionStatus and returns a callback
 // that accepts a bool, setting the bool to true if the CookieInclusionStatus
-// was set to INCLUDE, else sending false.
+// was set to "include", else sending false.
 //
 // Can be used with SetCanonicalCookie when you don't need to know why a cookie
 // was blocked, only whether it was blocked.

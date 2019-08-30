@@ -12,7 +12,6 @@ class PrefRegistrySimple;
 namespace optimization_guide {
 namespace prefs {
 
-extern const char kHintLoadedCounts[];
 extern const char kHintsFetcherLastFetchAttempt[];
 extern const char kHintsFetcherDataSaverTopHostBlacklist[];
 extern const char kHintsFetcherDataSaverTopHostBlacklistState[];

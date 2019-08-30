@@ -45,8 +45,7 @@ bool ShouldIncludeForRequestUrl(NSHTTPCookie* cookie, const GURL& url) {
       net::CanonicalCookieFromSystemCookie(cookie, base::Time());
   net::CookieOptions options;
   options.set_include_httponly();
-  return canonical_cookie.IncludeForRequestURL(url, options) ==
-         net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+  return canonical_cookie.IncludeForRequestURL(url, options).IsInclude();
 }
 
 }  // namespace

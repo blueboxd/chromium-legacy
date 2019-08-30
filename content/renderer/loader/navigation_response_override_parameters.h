@@ -10,8 +10,8 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -23,9 +23,10 @@ struct CONTENT_EXPORT NavigationResponseOverrideParameters {
   ~NavigationResponseOverrideParameters();
 
   std::vector<GURL> redirects;
-  std::vector<network::ResourceResponseHead> redirect_responses;
+  std::vector<network::mojom::URLResponseHeadPtr> redirect_responses;
   std::vector<net::RedirectInfo> redirect_infos;
-  network::ResourceResponseHead response_head;
+  network::mojom::URLResponseHeadPtr response_head =
+      network::mojom::URLResponseHead::New();
   mojo::ScopedDataPipeConsumerHandle response_body;
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
 };

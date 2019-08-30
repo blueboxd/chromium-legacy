@@ -240,9 +240,9 @@ void CollectUserDataAction::OnGetUserData(
       auto contact_details_proto = collect_user_data.contact_details();
       autofill::AutofillProfile contact_profile;
       contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL,
-                                 base::ASCIIToUTF16(user_data->payer_name));
+                                 base::UTF8ToUTF16(user_data->payer_name));
       autofill::data_util::NameParts parts = autofill::data_util::SplitName(
-          base::ASCIIToUTF16(user_data->payer_name));
+          base::UTF8ToUTF16(user_data->payer_name));
       contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FIRST,
                                  parts.given);
       contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_MIDDLE,
@@ -250,10 +250,10 @@ void CollectUserDataAction::OnGetUserData(
       contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_LAST,
                                  parts.family);
       contact_profile.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
-                                 base::ASCIIToUTF16(user_data->payer_email));
+                                 base::UTF8ToUTF16(user_data->payer_email));
       contact_profile.SetRawInfo(
           autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
-          base::ASCIIToUTF16(user_data->payer_phone));
+          base::UTF8ToUTF16(user_data->payer_phone));
       if (!contact_details_proto.contact_details_name().empty()) {
         delegate_->GetClientMemory()->set_selected_address(
             contact_details_proto.contact_details_name(),

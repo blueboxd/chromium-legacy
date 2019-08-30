@@ -81,9 +81,6 @@ class CONTENT_EXPORT SignedExchangeHandler {
   static void SetNetworkContextForTesting(
       network::mojom::NetworkContext* network_context);
 
-  static void SetVerificationTimeForTesting(
-      base::Optional<base::Time> verification_time_for_testing);
-
   // Once constructed |this| starts reading the |body| and parses the response
   // as a signed HTTP exchange. The response body of the exchange can be read
   // from |payload_stream| passed to |headers_callback|. |cert_fetcher_factory|

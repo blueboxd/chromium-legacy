@@ -204,10 +204,8 @@ struct ProcessMemoryDump {
   // parameter can be removed.
   mojo_base.mojom.ProcessId pid;
 
-  // Shows which services the given process is running, to help separate out
-  // the statistics for a given service.  Clients should look through the entire
-  // list since there may be other entities used internally listed, too.
-  array<string> service_names;
+  // The name of the primary service running in the process, if any.
+  string? service_name;
 };
 
 // Metrics aggregated across all processes.
@@ -296,9 +294,6 @@ interface HeapProfilerHelper {
 // the whole system. The coordinator maintains a list of registered client
 // processes and polls them whenever a global dump is required.
 interface Coordinator {
-  // Registers a client process.
-  RegisterClientProcess(ClientProcess client_process, ProcessType process_type);
-
   // Broadcasts a dump request to all registered client processes and returns a
   // global dump which includes allocator dumps specified in |allocator_dump_names|.
   // For example, given an allocator dump name such as "malloc" or "cc/resource_memory",
@@ -326,11 +321,30 @@ interface Coordinator {
   RequestGlobalMemoryDumpAndAppendToTrace(DumpType dump_type,
                                           LevelOfDetail level_of_detail) =>
       (bool success, uint64 dump_id);
+};
 
-  // When a heap profiler is registered, heap dumps will be added to the trace
-  // any time RequestGlobalMemoryDumpAndAppendToTrace is called.
-  // This is cleaner than having the memory_instrumentation service talk
-  // directly to the HeapProfiler, since that will spawn the HeapProfiler in a
-  // new process if it isn't already running.
-  RegisterHeapProfiler(HeapProfiler heap_profiler);
+// An interface which can be used by client processes to register themselves
+// with a CoordinatorController client (like the browser), who can then pass the
+// registration along to the service with authoritative information about the
+// process's identity.
+interface CoordinatorConnector {
+  // Registers the calling process. The implementation of this API must already
+  // know who the calling process is and should forward these arguments along to
+  // the CoordinatorController along with information about the process.
+  RegisterCoordinatorClient(pending_receiver<Coordinator> receiver,
+                            pending_remote<ClientProcess> client_process);
+};
+
+// Main interface to the memory instrumentation coordinator. This is considered
+// privileged and the browser should effectively be the only client.
+interface CoordinatorController {
+  // Binds a new Coordinator interface endpoint for a unique client process.
+  // Should be called once for each process, including the browser itself.
+  // |client_process| is an endpoint the service can use to push client events
+  // to the process.
+  RegisterClientProcess(pending_receiver<Coordinator> receiver,
+                        pending_remote<ClientProcess> client_process,
+                        ProcessType process_type,
+                        mojo_base.mojom.ProcessId process_id,
+                        string? service_name);
 };

@@ -27,4 +27,17 @@ WEB_ENGINE_EXPORT extern const char kUserAgentProductAndVersion[];
 // Context process.
 constexpr uint32_t kContextRequestHandleId = PA_HND(PA_USER0, 0);
 
+// The URL scheme used to access content directories.
+WEB_ENGINE_EXPORT extern const char
+    kFuchsiaContentDirectoryScheme[];  // "fuchsia-dir"
+
+// The command line switch used to register custom schemes with a process.
+// The contents are structured as a list of key-value pairs which map the scheme
+// name to the handle of a Fuchsia::io::Directory channel.
+//     e.g. foo=1234,bar=5678
+// The switch can be used to send names by themselves, by pairing the names with
+// zeroed handles.
+WEB_ENGINE_EXPORT extern const char
+    kContentDirectories[];  // "content-directories";
+
 #endif  // FUCHSIA_ENGINE_COMMON_H_

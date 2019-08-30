@@ -209,8 +209,14 @@ template("tast_test") {
     # The following expression filters out all non-critical tests. See the link
     # below for more details:
     # https://chromium.googlesource.com/chromiumos/platform/tast/+/master/docs/test_attributes.md
-    tast_attr_expr =
-        "!disabled && !\"group:*\" && !informational && \"dep:chrome\""
+    tast_attr_expr = "!disabled && !\"group:*\" && \"dep:chrome\""
+
+    if (defined(enable_tast_informational_tests) &&
+        enable_tast_informational_tests) {
+      tast_attr_expr += " && informational"
+    } else {
+      tast_attr_expr += " && !informational"
+    }
     if (!is_chrome_branded) {
       tast_attr_expr += " && !\"dep:chrome_internal\""
     }

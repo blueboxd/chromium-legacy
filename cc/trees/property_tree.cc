@@ -584,6 +584,7 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
 void TransformTree::SetRootScaleAndTransform(
     float device_scale_factor,
     const gfx::Transform& device_transform) {
+  device_scale_factor_ = device_scale_factor;
   gfx::Vector2dF device_transform_scale_components =
       MathUtil::ComputeTransform2dScaleComponents(device_transform, 1.f);
 

@@ -13,10 +13,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -38,8 +38,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -198,11 +196,8 @@ void AffiliationTestHelper::LoginUser(const AccountId& account_id) {
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   CHECK(controller);
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
   controller->Login(user_context, chromeos::SigninSpecifics());
-  observer.Wait();
+  chromeos::test::WaitForSessionStart();
 
   const user_manager::UserList& logged_users =
       user_manager::UserManager::Get()->GetLoggedInUsers();

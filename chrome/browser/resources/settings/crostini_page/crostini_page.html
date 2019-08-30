@@ -43,7 +43,7 @@
           <template is="dom-if" if="[[!prefs.crostini.enabled.value]]">
             <div class="separator"></div>
             <cr-button id="enable"
-                disabled="[[!allowCrostini]]"
+                disabled$="[[disableCrostiniInstall_]]"
                 on-click="onEnableTap_"
                 aria-label="$i18n{crostiniPageTitle}"
                 aria-describedby="secondaryText">

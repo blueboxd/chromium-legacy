@@ -14,6 +14,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/common/extensions/image_writer/image_writer_util_mac.h"
@@ -42,7 +43,7 @@ RemovableStorageProvider::PopulateDeviceList() {
   }
 
   base::mac::ScopedIOObject<io_object_t> disk_obj;
-  scoped_refptr<StorageDeviceList> device_list(new StorageDeviceList());
+  auto device_list = base::MakeRefCounted<StorageDeviceList>();
   while (disk_obj.reset(IOIteratorNext(disk_iterator)), disk_obj) {
     std::string bsd_name;
     uint64_t size_in_bytes;

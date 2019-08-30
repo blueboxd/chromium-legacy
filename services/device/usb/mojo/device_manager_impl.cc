@@ -64,7 +64,7 @@ void DeviceManagerImpl::GetDevices(mojom::UsbEnumerationOptionsPtr options,
 void DeviceManagerImpl::GetDevice(
     const std::string& guid,
     mojo::PendingReceiver<mojom::UsbDevice> device_receiver,
-    mojom::UsbDeviceClientPtr device_client) {
+    mojo::PendingRemote<mojom::UsbDeviceClient> device_client) {
   scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
   if (!device)
     return;

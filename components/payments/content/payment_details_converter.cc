@@ -33,9 +33,10 @@ PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
   response->modifiers = std::vector<mojom::PaymentHandlerModifierPtr>();
 
   for (const auto& merchant : *details->modifiers) {
-    if (!method_checker.Run(merchant->method_data->supported_method)) {
+    bool is_valid = false;
+    method_checker.Run(merchant->method_data->supported_method, &is_valid);
+    if (!is_valid)
       continue;
-    }
 
     mojom::PaymentHandlerModifierPtr mod = mojom::PaymentHandlerModifier::New();
     mod->method_data = mojom::PaymentHandlerMethodData::New();

@@ -27,6 +27,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_type.h"
@@ -41,7 +42,6 @@ namespace ash {
 class KeyboardControllerObserver;
 }
 namespace ui {
-class InputMethod;
 class TextInputClient;
 }  // namespace ui
 
@@ -404,7 +404,7 @@ class KEYBOARD_EXPORT KeyboardUIController
   std::unique_ptr<ui::InputMethodKeyboardController>
       input_method_keyboard_controller_;
   KeyboardLayoutDelegate* layout_delegate_ = nullptr;
-  ScopedObserver<ui::InputMethod, ui::InputMethodObserver> ime_observer_;
+  ScopedObserver<ui::InputMethod, ui::InputMethodObserver> ime_observer_{this};
 
   // Container window that the keyboard window is a child of.
   aura::Window* parent_container_ = nullptr;

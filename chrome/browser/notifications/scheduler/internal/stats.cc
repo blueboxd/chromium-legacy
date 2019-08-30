@@ -4,12 +4,18 @@
 
 #include "chrome/browser/notifications/scheduler/internal/stats.h"
 
+#include <string>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/notifications/scheduler/public/notification_data.h"
 
 namespace notifications {
 namespace stats {
 namespace {
+
+const char kIhnrActionButtonEventHistogram[] =
+    "Notifications.Scheduler.IhnrActionButtonEvent";
 
 // Returns the histogram suffix for a client type. Should match suffix
 // NotificationSchedulerClientType in histograms.xml.
@@ -26,13 +32,41 @@ std::string ToHistogramSuffix(SchedulerClientType client_type) {
   }
 }
 
+// Logs a histogram enumeration with client type suffix.
+template <typename T>
+void LogHistogramEnumWithSuffix(const std::string& name,
+                                T value,
+                                SchedulerClientType client_type) {
+  base::UmaHistogramEnumeration(name, value);
+  auto name_with_suffix = name;
+  name_with_suffix.append(".").append(ToHistogramSuffix(client_type));
+  base::UmaHistogramEnumeration(name_with_suffix, value);
+}
+
 }  // namespace
 
 void LogUserAction(const UserActionData& action_data) {
-  std::string name("Notifications.Scheduler.UserAction");
-  base::UmaHistogramEnumeration(name, action_data.action_type);
-  name.append(".").append(ToHistogramSuffix(action_data.client_type));
-  base::UmaHistogramEnumeration(name, action_data.action_type);
+  // Logs action type.
+  LogHistogramEnumWithSuffix("Notifications.Scheduler.UserAction",
+                             action_data.action_type, action_data.client_type);
+
+  // Logs inline helpful/unhelpful buttons clicks.
+  if (action_data.button_click_info.has_value()) {
+    switch (action_data.button_click_info->type) {
+      case ActionButtonType::kHelpful:
+        LogHistogramEnumWithSuffix(kIhnrActionButtonEventHistogram,
+                                   ActionButtonEvent::kHelpfulClick,
+                                   action_data.client_type);
+        break;
+      case ActionButtonType::kUnhelpful:
+        LogHistogramEnumWithSuffix(kIhnrActionButtonEventHistogram,
+                                   ActionButtonEvent::kUnhelpfulClick,
+                                   action_data.client_type);
+        break;
+      case ActionButtonType::kUnknownAction:
+        break;
+    }
+  }
 }
 
 void LogBackgroundTaskEvent(BackgroundTaskEvent event) {
@@ -89,6 +123,23 @@ void LogNotificationDbInit(bool success, int entry_count) {
 void LogNotificationDbOperation(bool success) {
   UMA_HISTOGRAM_BOOLEAN(
       "Notifications.Scheduler.NotificationDb.OperationResult", success);
+}
+
+void LogNotificationShow(const NotificationData& notification_data,
+                         SchedulerClientType client_type) {
+  bool has_ihnr_button = false;
+  for (const auto& button : notification_data.buttons) {
+    if (button.type == ActionButtonType::kHelpful ||
+        button.type == ActionButtonType::kUnhelpful) {
+      has_ihnr_button = true;
+      break;
+    }
+  }
+
+  if (has_ihnr_button) {
+    LogHistogramEnumWithSuffix(kIhnrActionButtonEventHistogram,
+                               ActionButtonEvent::kShown, client_type);
+  }
 }
 
 void LogPngIconConverterEncodeResult(bool success) {

@@ -40,7 +40,7 @@ cr.define('cellularSetup', function() {
 
     // The portal is a website served by the mobile carrier.
     if (state === State.WAITING_FOR_PORTAL_TO_LOAD) {
-      return 5000;  // 5 seconds.
+      return 10000;  // 10 seconds.
     }
 
     // Finishing activation only requires sending a D-Bus message to Shill.
@@ -100,6 +100,16 @@ Polymer({
     showError_: {type: Boolean, value: false},
 
     /**
+     * Cellular metadata received via the onActivationStarted() callback. If
+     * that callback has not occurred, this field is null.
+     * @private {?chromeos.cellularSetup.mojom.CellularMetadata}
+     */
+    cellularMetadata_: {
+      type: Object,
+      value: null,
+    },
+
+    /**
      * Whether try again should be shown in the button bar.
      * @private {boolean}
      */
@@ -148,13 +158,6 @@ Polymer({
    * @private {?number}
    */
   currentTimeoutId_: null,
-
-  /**
-   * Cellular metadata received via the onActivationStarted() callback. If that
-   * callback has not occurred, this field is null.
-   * @private {?chromeos.cellularSetup.mojom.CellularMetadata}
-   */
-  cellularMetadata_: null,
 
   /**
    * Handler used to communicate state updates back to the CellularSetup
@@ -320,6 +323,7 @@ Polymer({
     this.activationDelegateReceiver_.$.close();
     this.activationDelegateReceiver_ = null;
     this.carrierPortalHandler_ = null;
+    this.cellularMetadata_ = null;
   },
 
   /** @private */
@@ -328,6 +332,24 @@ Polymer({
       clearTimeout(this.currentTimeoutId_);
     }
     this.currentTimeoutId_ = null;
+  },
+
+  /** @private */
+  onCarrierPortalLoaded_: function() {
+    this.state_ = cellularSetup.State.WAITING_FOR_USER_PAYMENT;
+    this.carrierPortalHandler_.onCarrierPortalStatusChange(
+        chromeos.cellularSetup.mojom.CarrierPortalStatus
+            .kPortalLoadedWithoutPaidUser);
+  },
+
+  /**
+   * @param {!CustomEvent<boolean>} event
+   * @private
+   */
+  onCarrierPortalResult_: function(event) {
+    const success = event.detail;
+    this.state_ = success ? cellularSetup.State.ACTIVATION_SUCCESS :
+                            cellularSetup.State.ACTIVATION_FAILURE;
   },
 
   /** @private */

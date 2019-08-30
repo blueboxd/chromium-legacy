@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -13,8 +13,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,10 +115,7 @@ void LoginPolicyTestBase::LogIn(const std::string& user_id,
       ->GetOobeUI()
       ->GetView<chromeos::GaiaScreenHandler>()
       ->ShowSigninScreenForTest(user_id, password, services);
-
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources()).Wait();
+  chromeos::test::WaitForSessionStart();
 }
 
 }  // namespace policy

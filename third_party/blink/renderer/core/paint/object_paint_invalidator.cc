@@ -213,6 +213,10 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
   if (object_.ShouldDoFullPaintInvalidation())
     return object_.FullPaintInvalidationReason();
 
+  if (object_.GetDocument().InForcedColorsMode() &&
+      object_.IsLayoutBlockFlow() && !context_.old_visual_rect.IsEmpty())
+    return PaintInvalidationReason::kBackplate;
+
   if (!(context_.subtree_flags &
         PaintInvalidatorContext::kInvalidateEmptyVisualRect) &&
       context_.old_visual_rect.IsEmpty() &&

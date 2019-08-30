@@ -41,6 +41,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/browsing_data/core/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
@@ -2925,6 +2926,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL},
     {"siteSettingsCookieRemoveAllShown",
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_SHOWN},
+    {"siteSettingsCookieRemoveAllThirdParty",
+     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_THIRD_PARTY},
+    {"siteSettingsCookieRemoveThirdPartyDialogTitle",
+     IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_DIALOG_TITLE},
+    {"siteSettingsCookieRemoveThirdPartyConfirmation",
+     IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_CONFIRMATION},
+    {"siteSettingsCookiesClearThirdParty",
+     IDS_SETTINGS_SITE_SETTINGS_CLEAR_THIRD_PARTY_COOKIES},
     {"siteSettingsCookieRemoveDialogTitle",
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE},
     {"siteSettingsCookieRemoveMultipleConfirmation",
@@ -3043,6 +3052,11 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableNativeFileSystemWriteContentSetting",
       base::FeatureList::IsEnabled(::blink::features::kNativeFileSystemAPI));
+
+  html_source->AddBoolean(
+      "enableRemovingAllThirdPartyCookies",
+      base::FeatureList::IsEnabled(
+          browsing_data::features::kEnableRemovingAllThirdPartyCookies));
 }
 
 #if defined(OS_CHROMEOS)

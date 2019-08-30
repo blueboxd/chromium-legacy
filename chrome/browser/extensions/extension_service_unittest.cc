@@ -4862,7 +4862,7 @@ class ExtensionCookieCallback {
   ExtensionCookieCallback() : result_(false) {}
 
   void SetCookieCallback(net::CanonicalCookie::CookieInclusionStatus result) {
-    result_ = (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+    result_ = result.IsInclude();
   }
 
   void GetAllCookiesCallback(const net::CookieStatusList& list,
@@ -4994,8 +4994,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 void SetCookieSaveData(bool* result_out,
                        base::OnceClosure callback,
                        net::CanonicalCookie::CookieInclusionStatus result) {
-  *result_out =
-      (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  *result_out = result.IsInclude();
   std::move(callback).Run();
 }
 

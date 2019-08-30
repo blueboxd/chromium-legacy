@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Test for the password manager illustration modal dialog. */
@@ -52,7 +53,7 @@ public class PasswordManagerDialogTest {
     private static final String CANCEL_BUTTON = "Cancel";
 
     @Mock
-    private Callback<Boolean> mOnClick;
+    private Callback<Integer> mOnClick;
 
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -91,14 +92,14 @@ public class PasswordManagerDialogTest {
     @SmallTest
     public void testOkPressedCallback() {
         onView(withId(R.id.positive_button)).perform(click());
-        verify(mOnClick).onResult(true);
+        verify(mOnClick).onResult(DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
     }
 
     @Test
     @SmallTest
     public void testCancelPressedCallback() {
         onView(withId(R.id.negative_button)).perform(click());
-        verify(mOnClick).onResult(false);
+        verify(mOnClick).onResult(DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
     }
 
     @Test

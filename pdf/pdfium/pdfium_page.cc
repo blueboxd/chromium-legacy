@@ -192,14 +192,8 @@ PDFiumPage::LinkTarget::LinkTarget(const LinkTarget& other) = default;
 
 PDFiumPage::LinkTarget::~LinkTarget() = default;
 
-PDFiumPage::PDFiumPage(PDFiumEngine* engine,
-                       int i,
-                       const pp::Rect& r,
-                       bool available)
-    : engine_(engine),
-      index_(i),
-      rect_(r),
-      available_(available) {}
+PDFiumPage::PDFiumPage(PDFiumEngine* engine, int i)
+    : engine_(engine), index_(i), available_(false) {}
 
 PDFiumPage::PDFiumPage(PDFiumPage&& that) = default;
 

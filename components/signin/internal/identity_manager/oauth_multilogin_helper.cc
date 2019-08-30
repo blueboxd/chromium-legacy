@@ -196,8 +196,10 @@ void OAuthMultiloginHelper::StartSettingCookies(
       cookie_manager->SetCanonicalCookie(
           cookie, "https", options,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-              std::move(callback), net::CanonicalCookie::CookieInclusionStatus::
-                                       EXCLUDE_UNKNOWN_ERROR));
+              std::move(callback),
+              net::CanonicalCookie::CookieInclusionStatus(
+                  net::CanonicalCookie::CookieInclusionStatus::
+                      EXCLUDE_UNKNOWN_ERROR)));
     } else {
       LOG(ERROR) << "Duplicate cookie found: " << cookie.Name() << " "
                  << cookie.Domain();
@@ -210,8 +212,7 @@ void OAuthMultiloginHelper::OnCookieSet(
     const std::string& cookie_domain,
     net::CanonicalCookie::CookieInclusionStatus status) {
   cookies_to_set_.erase(std::make_pair(cookie_name, cookie_domain));
-  bool success =
-      (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  bool success = status.IsInclude();
   if (!success) {
     LOG(ERROR) << "Failed to set cookie " << cookie_name
                << " for domain=" << cookie_domain << ".";

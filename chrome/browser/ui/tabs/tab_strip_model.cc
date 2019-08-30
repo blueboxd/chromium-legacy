@@ -1055,6 +1055,15 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
   AddToExistingGroupImpl(indices, group);
 }
 
+void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
+                                      int destination_index,
+                                      TabGroupId group) {
+  DCHECK(!reentrancy_guard_);
+  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+
+  MoveTabsIntoGroupImpl(indices, destination_index, group);
+}
+
 void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
                                          TabGroupId group) {
   DCHECK(!reentrancy_guard_);
@@ -1757,7 +1766,7 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
   if (IsTabPinned(new_indices[0]))
     new_indices = SetTabsPinned(new_indices, true);
 
-  MoveTabsIntoGroup(new_indices, destination_index, new_group);
+  MoveTabsIntoGroupImpl(new_indices, destination_index, new_group);
 
   // Notify observers about the initial visual data.
   for (auto& observer : observers_) {
@@ -1786,12 +1795,12 @@ void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
   }
   new_indices = SetTabsPinned(new_indices, pin);
 
-  MoveTabsIntoGroup(new_indices, destination_index, group);
+  MoveTabsIntoGroupImpl(new_indices, destination_index, group);
 }
 
-void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
-                                      int destination_index,
-                                      TabGroupId group) {
+void TabStripModel::MoveTabsIntoGroupImpl(const std::vector<int>& indices,
+                                          int destination_index,
+                                          TabGroupId group) {
   // Some tabs will need to be moved to the right, some to the left. We need to
   // handle those separately. First, move tabs to the right, starting with the
   // rightmost tab so we don't cause other tabs we are about to move to shift.

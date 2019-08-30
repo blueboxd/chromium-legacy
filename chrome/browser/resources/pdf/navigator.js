@@ -5,42 +5,24 @@
 'use strict';
 
 /**
- * Creates a new NavigatorDelegate for calling browser-specific functions to
- * do the actual navigating.
- *
- * @param {number} tabId The tab ID of the PDF viewer or -1 if the viewer is
- *    not displayed in a tab.
- * @constructor
+ * NavigatorDelegate for calling browser-specific functions to do the actual
+ * navigating.
  */
-function NavigatorDelegate(tabId) {
-  this.tabId_ = tabId;
-}
+class NavigatorDelegate {
+  /**
+   * @param {number} tabId The tab ID of the PDF viewer or -1 if the viewer is
+   *     not displayed in a tab.
+   */
+  constructor(tabId) {
+    /** @private {number} */
+    this.tabId_ = tabId;
+  }
 
-/**
- * Creates a new Navigator for navigating to links inside or outside the PDF.
- *
- * @param {string} originalUrl The original page URL.
- * @param {Object} viewport The viewport info of the page.
- * @param {Object} paramsParser The object for URL parsing.
- * @param {Object} navigatorDelegate The object with callback functions that
- *    get called when navigation happens in the current tab, a new tab,
- *    and a new window.
- * @constructor
- */
-function Navigator(originalUrl, viewport, paramsParser, navigatorDelegate) {
-  this.originalUrl_ = originalUrl;
-  this.viewport_ = viewport;
-  this.paramsParser_ = paramsParser;
-  this.navigatorDelegate_ = navigatorDelegate;
-}
-
-NavigatorDelegate.prototype = {
   /**
    * Called when navigation should happen in the current tab.
-   *
    * @param {string} url The url to be opened in the current tab.
    */
-  navigateInCurrentTab: function(url) {
+  navigateInCurrentTab(url) {
     // When the PDFviewer is inside a browser tab, prefer the tabs API because
     // it can navigate from one file:// URL to another.
     if (chrome.tabs && this.tabId_ != -1) {
@@ -48,15 +30,14 @@ NavigatorDelegate.prototype = {
     } else {
       window.location.href = url;
     }
-  },
+  }
 
   /**
    * Called when navigation should happen in the new tab.
-   *
    * @param {string} url The url to be opened in the new tab.
    * @param {boolean} active Indicates if the new tab should be the active tab.
    */
-  navigateInNewTab: function(url, active) {
+  navigateInNewTab(url, active) {
     // Prefer the tabs API because it guarantees we can just open a new tab.
     // window.open doesn't have this guarantee.
     if (chrome.tabs) {
@@ -64,14 +45,13 @@ NavigatorDelegate.prototype = {
     } else {
       window.open(url);
     }
-  },
+  }
 
   /**
    * Called when navigation should happen in the new window.
-   *
    * @param {string} url The url to be opened in the new window.
    */
-  navigateInNewWindow: function(url) {
+  navigateInNewWindow(url) {
     // Prefer the windows API because it guarantees we can just open a new
     // window. window.open with '_blank' argument doesn't have this guarantee.
     if (chrome.windows) {
@@ -80,32 +60,33 @@ NavigatorDelegate.prototype = {
       window.open(url, '_blank');
     }
   }
-};
+}
 
-/**
- * Represents options when navigating to a new url. C++ counterpart of
- * the enum is in ui/base/window_open_disposition.h. This enum represents
- * the only values that are passed from Plugin.
- * @enum {number}
- */
-Navigator.WindowOpenDisposition = {
-  CURRENT_TAB: 1,
-  NEW_FOREGROUND_TAB: 3,
-  NEW_BACKGROUND_TAB: 4,
-  NEW_WINDOW: 6,
-  SAVE_TO_DISK: 7
-};
+/** Navigator for navigating to links inside or outside the PDF. */
+class PdfNavigator {
+  /**
+   * @param {string} originalUrl The original page URL.
+   * @param {!Viewport} viewport The viewport info of the page.
+   * @param {!OpenPdfParamsParser} paramsParser The object for URL parsing.
+   * @param {!NavigatorDelegate} navigatorDelegate The object with callback
+   *    functions that get called when navigation happens in the current tab,
+   *    a new tab, and a new window.
+   */
+  constructor(originalUrl, viewport, paramsParser, navigatorDelegate) {
+    this.originalUrl_ = originalUrl;
+    this.viewport_ = viewport;
+    this.paramsParser_ = paramsParser;
+    this.navigatorDelegate_ = navigatorDelegate;
+  }
 
-Navigator.prototype = {
   /**
    * Function to navigate to the given URL. This might involve navigating
    * within the PDF page or opening a new url (in the same tab or a new tab).
-   *
    * @param {string} url The URL to navigate to.
-   * @param {number} disposition The window open disposition when
-   *    navigating to the new URL.
+   * @param {!PdfNavigator.WindowOpenDisposition} disposition The window open
+   *     disposition when navigating to the new URL.
    */
-  navigate: function(url, disposition) {
+  navigate(url, disposition) {
     if (url.length == 0) {
       return;
     }
@@ -133,20 +114,20 @@ Navigator.prototype = {
     }
 
     switch (disposition) {
-      case Navigator.WindowOpenDisposition.CURRENT_TAB:
+      case PdfNavigator.WindowOpenDisposition.CURRENT_TAB:
         this.paramsParser_.getViewportFromUrlParams(
             url, this.onViewportReceived_.bind(this));
         break;
-      case Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB:
+      case PdfNavigator.WindowOpenDisposition.NEW_BACKGROUND_TAB:
         this.navigatorDelegate_.navigateInNewTab(url, false);
         break;
-      case Navigator.WindowOpenDisposition.NEW_FOREGROUND_TAB:
+      case PdfNavigator.WindowOpenDisposition.NEW_FOREGROUND_TAB:
         this.navigatorDelegate_.navigateInNewTab(url, true);
         break;
-      case Navigator.WindowOpenDisposition.NEW_WINDOW:
+      case PdfNavigator.WindowOpenDisposition.NEW_WINDOW:
         this.navigatorDelegate_.navigateInNewWindow(url);
         break;
-      case Navigator.WindowOpenDisposition.SAVE_TO_DISK:
+      case PdfNavigator.WindowOpenDisposition.SAVE_TO_DISK:
         // TODO(jaepark): Alt + left clicking a link in PDF should
         // download the link.
         this.paramsParser_.getViewportFromUrlParams(
@@ -155,16 +136,15 @@ Navigator.prototype = {
       default:
         break;
     }
-  },
+  }
 
   /**
    * Called when the viewport position is received.
-   *
    * @param {Object} viewportPosition Dictionary containing the viewport
    *    position.
    * @private
    */
-  onViewportReceived_: function(viewportPosition) {
+  onViewportReceived_(viewportPosition) {
     let originalUrl = this.originalUrl_;
     let hashIndex = originalUrl.search('#');
     if (hashIndex != -1) {
@@ -183,16 +163,16 @@ Navigator.prototype = {
     } else {
       this.navigatorDelegate_.navigateInCurrentTab(viewportPosition.url);
     }
-  },
+  }
 
   /**
    * Checks if the URL starts with a scheme and is not just a scheme.
-   *
+   * TODO (rbpotter): Update to use URL (here and elsewhere in this file).
    * @param {string} url The input URL
    * @return {boolean} Whether the url is valid.
    * @private
    */
-  isValidUrl_: function(url) {
+  isValidUrl_(url) {
     // Make sure |url| starts with a valid scheme.
     if (!url.startsWith('http://') && !url.startsWith('https://') &&
         !url.startsWith('ftp://') && !url.startsWith('file://') &&
@@ -213,17 +193,16 @@ Navigator.prototype = {
     }
 
     return true;
-  },
+  }
 
   /**
    * Attempt to figure out what a URL is when there is no scheme.
-   *
    * @param {string} url The input URL
    * @return {string} The URL with a scheme or the original URL if it is not
    *     possible to determine the scheme.
    * @private
    */
-  guessUrlWithoutScheme_: function(url) {
+  guessUrlWithoutScheme_(url) {
     // If the original URL is mailto:, that does not make sense to start with,
     // and neither does adding |url| to it.
     // If the original URL is not a valid URL, this cannot make a valid URL.
@@ -276,4 +255,18 @@ Navigator.prototype = {
 
     return 'http://' + url;
   }
+}
+
+/**
+ * Represents options when navigating to a new url. C++ counterpart of
+ * the enum is in ui/base/window_open_disposition.h. This enum represents
+ * the only values that are passed from Plugin.
+ * @enum {number}
+ */
+PdfNavigator.WindowOpenDisposition = {
+  CURRENT_TAB: 1,
+  NEW_FOREGROUND_TAB: 3,
+  NEW_BACKGROUND_TAB: 4,
+  NEW_WINDOW: 6,
+  SAVE_TO_DISK: 7
 };

@@ -28,8 +28,11 @@ class CredentialLeakDialogViewAndroid {
   // Called to create and show the dialog.
   void Show(ui::WindowAndroid* window_android);
 
-  // Called from Java via JNI. Prompts user to save their password.
+  // Called from Java via JNI.
   void Accepted(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
+  // Called from Java via JNI.
+  void Cancelled(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Called from Java via JNI.
   void Closed(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

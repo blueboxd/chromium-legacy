@@ -834,6 +834,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return;
   }
 
+  self.webStateImpl->ClearWebUI();
+
   // This navigation can be an iframe navigation, but it's not possible to
   // distinguish it from the main frame navigation, so context still has to be
   // created.

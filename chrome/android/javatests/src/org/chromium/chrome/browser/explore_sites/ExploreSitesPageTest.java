@@ -181,30 +181,28 @@ public class ExploreSitesPageTest {
     @SmallTest
     @CommandLineFlags.
     Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile"
-                    + "/denseVariation/titleBottom"})
-    @Feature({"ExploreSites"})
-    public void
-    testInitialLayout_DenseTitleBottom() throws Exception {
-        // Ensure that the DenseTitleBottomView has loaded without crashing
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/denseVariation/"
+                    + "titleBottom"})
+    @Feature({"ExploreSites", "RenderTest"})
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testInitialLayout_DenseTitleBottom(boolean nightModeEnabled) throws Exception {
         Assert.assertEquals(
                 DenseVariation.DENSE_TITLE_BOTTOM, ExploreSitesBridge.getDenseVariation());
-        // TODO(angelii): Add render test once layout is finalized.
+        mRenderTestRule.render(mRecyclerView, "initial_layout_dense_title_bottom");
     }
 
     @Test
     @SmallTest
     @CommandLineFlags.
     Add({"enable-features=ExploreSites<FakeStudyName", "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile"
-                    + "/denseVariation/titleRight"})
-    @Feature({"ExploreSites"})
-    public void
-    testInitialLayout_DenseTitleRight() throws Exception {
-        // Ensure that the DenseTitleRightView has loaded without crashing
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/denseVariation/"
+                + "titleRight"})
+    @Feature({"ExploreSites", "RenderTest"})
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testInitialLayout_DenseTitleRight(boolean nightModeEnabled) throws Exception {
         Assert.assertEquals(
                 DenseVariation.DENSE_TITLE_RIGHT, ExploreSitesBridge.getDenseVariation());
-        // TODO(angelii): Add render test once layout is finalized.
+        mRenderTestRule.render(mRecyclerView, "initial_layout_dense_title_right");
     }
 
     @Test

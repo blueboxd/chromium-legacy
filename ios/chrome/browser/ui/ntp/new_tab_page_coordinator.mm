@@ -122,6 +122,10 @@
   [self.contentSuggestionsCoordinator.headerController focusFakebox];
 }
 
+- (void)reload {
+  [self.contentSuggestionsCoordinator reload];
+}
+
 #pragma mark - LogoAnimationControllerOwnerOwner
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {

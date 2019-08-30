@@ -182,6 +182,9 @@ class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
   base::Optional<CryptAuthDeviceRegistry::InstanceIdToDeviceMap>
       new_device_registry_map_;
 
+  // The time of the last state change. Used for execution time metrics.
+  base::TimeTicks last_state_change_timestamp_;
+
   std::unique_ptr<CryptAuthMetadataSyncer> metadata_syncer_;
   std::unique_ptr<CryptAuthFeatureStatusGetter> feature_status_getter_;
   std::unique_ptr<CryptAuthEciesEncryptor> encryptor_;

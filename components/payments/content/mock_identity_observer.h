@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
@@ -22,7 +23,11 @@ class MockIdentityObserver
   MOCK_METHOD2(SetInvokedServiceWorkerIdentity,
                void(const url::Origin& origin, int64_t registration_id));
 
+  base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver> AsWeakPtr();
+
  private:
+  base::WeakPtrFactory<MockIdentityObserver> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(MockIdentityObserver);
 };
 

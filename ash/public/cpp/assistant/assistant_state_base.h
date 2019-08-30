@@ -119,6 +119,15 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   void UpdateLaunchWithMicOpen();
   void UpdateNotificationEnabled();
 
+  // Called when new values of the listened states are received.
+  void UpdateAssistantStatus(mojom::VoiceInteractionState state);
+  void UpdateSettingsEnabled(bool enabled);
+  void UpdateHotwordEnabled(bool enabled);
+  void UpdateFeatureAllowedState(mojom::AssistantAllowedState state);
+  void UpdateLocale(const std::string& locale);
+  void UpdateArcPlayStoreEnabled(bool enabled);
+  void UpdateLockedFullScreenState(bool enabled);
+
   mojom::VoiceInteractionState voice_interaction_state_ =
       mojom::VoiceInteractionState::NOT_READY;
 

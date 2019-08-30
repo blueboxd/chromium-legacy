@@ -980,7 +980,8 @@ PhysicalRect LayoutInline::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
   Vector<PhysicalRect> rects = OutlineRects(
       PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
   PhysicalRect rect = UnionRect(rects);
-  if (rects.IsEmpty())
+  // When empty LayoutInline is not culled, |rect| is empty but |rects| is not.
+  if (rect.IsEmpty())
     rect.offset = AnchorPhysicalLocation();
   return LocalToAbsoluteRect(rect);
 }

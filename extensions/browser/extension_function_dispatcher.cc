@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
@@ -335,9 +336,9 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (render_frame_host)
     DCHECK_EQ(render_process_id, render_frame_host->GetProcess()->GetID());
 
-  scoped_refptr<ExtensionFunction> function(CreateExtensionFunction(
+  scoped_refptr<ExtensionFunction> function = CreateExtensionFunction(
       params, extension, render_process_id, *process_map,
-      ExtensionAPI::GetSharedInstance(), browser_context_, callback));
+      ExtensionAPI::GetSharedInstance(), browser_context_, callback);
   if (!function.get())
     return;
 
@@ -482,7 +483,8 @@ bool ExtensionFunctionDispatcher::CheckPermissions(
 }
 
 // static
-ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
+scoped_refptr<ExtensionFunction>
+ExtensionFunctionDispatcher::CreateExtensionFunction(
     const ExtensionHostMsg_Request_Params& params,
     const Extension* extension,
     int requesting_process_id,
@@ -490,7 +492,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     ExtensionAPI* api,
     void* profile_id,
     const ExtensionFunction::ResponseCallback& callback) {
-  ExtensionFunction* function =
+  scoped_refptr<ExtensionFunction> function =
       ExtensionFunctionRegistry::GetInstance().NewFunction(params.name);
   if (!function) {
     LOG(ERROR) << "Unknown Extension API - " << params.name;

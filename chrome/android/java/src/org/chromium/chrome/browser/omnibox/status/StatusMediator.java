@@ -37,7 +37,6 @@ class StatusMediator {
     private boolean mPageIsOffline;
     private boolean mShowStatusIconWhenUrlFocused;
     private boolean mIsSecurityButtonShown;
-    private boolean mShouldShowSearchEngineLogo;
     private boolean mIsSearchEngineGoogle;
     private boolean mShouldCancelCustomFavicon;
 
@@ -305,7 +304,6 @@ class StatusMediator {
         mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
 
         mIsSearchEngineGoogle = isSearchEngineGoogle;
-        mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
         updateLocationBarIcon();
     }
 
@@ -337,7 +335,7 @@ class StatusMediator {
                 && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
                 && SearchEngineLogoUtils.doesUrlMatchDefaultSearchEngine(
                         mToolbarCommonPropertiesModel.getCurrentUrl());
-        if (mShouldShowSearchEngineLogo
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()
                 && (showFocused || showUnfocusedNewTabPage || showUnfocusedSearchResultsPage)) {
             mShouldCancelCustomFavicon = false;
             mModel.set(StatusProperties.STATUS_ICON_TINT_RES, /* no tint */ 0);

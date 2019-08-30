@@ -82,7 +82,8 @@ scoped_refptr<RefcountedKeyedService>
 WebViewPasswordStoreFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   std::unique_ptr<password_manager::LoginDatabase> login_db(
-      password_manager::CreateLoginDatabase(context->GetStatePath()));
+      password_manager::CreateLoginDatabaseForProfileStorage(
+          context->GetStatePath()));
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner(
       base::SequencedTaskRunnerHandle::Get());

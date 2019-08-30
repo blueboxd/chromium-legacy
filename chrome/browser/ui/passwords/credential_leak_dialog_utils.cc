@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/passwords/credential_leak_dialog_utils.h"
 
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
@@ -23,10 +24,7 @@ namespace leak_dialog_utils {
 
 base::string16 GetAcceptButtonLabel(CredentialLeakType leak_type) {
   return l10n_util::GetStringUTF16(
-      (password_manager::IsPasswordUsedOnOtherSites(leak_type) &&
-       password_manager::IsSyncingPasswordsNormally(leak_type))
-          ? IDS_LEAK_CHECK_CREDENTIALS
-          : IDS_OK);
+      ShouldCheckPasswords(leak_type) ? IDS_LEAK_CHECK_CREDENTIALS : IDS_OK);
 }
 
 base::string16 GetCancelButtonLabel() {
@@ -38,10 +36,13 @@ base::string16 GetDescription(CredentialLeakType leak_type,
   const auto formatted = url_formatter::FormatOriginForSecurityDisplay(
       url::Origin::Create(origin),
       url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-  if (!password_manager::IsSyncingPasswordsNormally(leak_type) ||
-      !password_manager::IsPasswordUsedOnOtherSites(leak_type)) {
+  if (!ShouldCheckPasswords(leak_type)) {
+    std::vector<size_t> offsets;
+    base::string16 bold_message = l10n_util::GetStringUTF16(
+        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_BOLD_MESSAGE);
     return l10n_util::GetStringFUTF16(
-        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, formatted);
+        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, bold_message, formatted,
+        &offsets);
   } else if (password_manager::IsPasswordSaved(leak_type)) {
     return l10n_util::GetStringUTF16(
         IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE);
@@ -69,8 +70,8 @@ LeakDialogType GetLeakDialogType(CredentialLeakType leak_type) {
     return LeakDialogType::kChange;
 
   return password_manager::IsPasswordSaved(leak_type)
-             ? LeakDialogType::kCheckupAndChange
-             : LeakDialogType::kCheckup;
+             ? LeakDialogType::kCheckup
+             : LeakDialogType::kCheckupAndChange;
 }
 
 GURL GetPasswordCheckupURL() {
@@ -80,4 +81,20 @@ GURL GetPasswordCheckupURL() {
     return GURL(chrome::kPasswordCheckupURL);
   return GURL(value);
 }
+
+gfx::Range GetChangePasswordBoldRange(CredentialLeakType leak_type) {
+  if (ShouldCheckPasswords(leak_type))
+    return gfx::Range();
+
+  std::vector<size_t> offsets;
+  const base::string16 bold_message = l10n_util::GetStringUTF16(
+      IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_BOLD_MESSAGE);
+  const base::string16 change_password_message =
+      l10n_util::GetStringFUTF16(IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
+                                 bold_message, base::string16(), &offsets);
+  return offsets.empty()
+             ? gfx::Range()
+             : gfx::Range(offsets[0], offsets[0] + bold_message.length());
+}
+
 }  // namespace leak_dialog_utils

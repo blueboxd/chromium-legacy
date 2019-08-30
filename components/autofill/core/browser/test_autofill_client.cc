@@ -107,6 +107,9 @@ void TestAutofillClient::ShowLocalCardMigrationResults(
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     MigrationDeleteCardCallback delete_local_card_callback) {}
 
+void TestAutofillClient::ShowWebauthnOfferDialog(
+    WebauthnOfferDialogCallback callback) {}
+
 void TestAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {

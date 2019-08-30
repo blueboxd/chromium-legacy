@@ -1852,8 +1852,14 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
  public:
   CertificateTransparencySSLUITest()
       : CertVerifierBrowserTest(),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
-  ~CertificateTransparencySSLUITest() override {}
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        true);
+  }
+  ~CertificateTransparencySSLUITest() override {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        base::nullopt);
+  }
 
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();

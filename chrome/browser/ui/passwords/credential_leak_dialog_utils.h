@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 
 namespace leak_dialog_utils {
@@ -39,6 +40,11 @@ password_manager::metrics_util::LeakDialogType GetLeakDialogType(
 
 // Returns the URL used to launch the password checkup.
 GURL GetPasswordCheckupURL();
+
+// Returns the range of the bold part of the leak dialog message when
+// credentials were leaked only on current site.
+gfx::Range GetChangePasswordBoldRange(
+    password_manager::CredentialLeakType leak_type);
 
 }  // namespace leak_dialog_utils
 

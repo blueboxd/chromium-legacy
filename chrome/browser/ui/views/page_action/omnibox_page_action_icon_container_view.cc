@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_ui_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
@@ -16,7 +18,8 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
-#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_icon_view.h"
+#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
+#include "chrome/browser/ui/views/sharing/sharing_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -94,9 +97,27 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         page_action_icons_.push_back(native_file_system_icon_);
         break;
       case PageActionIconType::kClickToCall:
-        click_to_call_icon_view_ =
-            new ClickToCallIconView(params.page_action_icon_delegate);
+        click_to_call_icon_view_ = new SharingIconView(
+            params.page_action_icon_delegate,
+            base::BindRepeating([](content::WebContents* contents) {
+              return static_cast<SharingUiController*>(
+                  ClickToCallUiController::GetOrCreateFromWebContents(
+                      contents));
+            }),
+            base::BindRepeating(ClickToCallDialogView::GetAsBubble));
         page_action_icons_.push_back(click_to_call_icon_view_);
+        break;
+      case PageActionIconType::kSharedClipboard:
+        shared_clipboard_icon_view_ = new SharingIconView(
+            params.page_action_icon_delegate,
+            base::BindRepeating([](content::WebContents* contents) {
+              return static_cast<SharingUiController*>(
+                  SharedClipboardUiController::GetOrCreateFromWebContents(
+                      contents));
+            }),
+            // TODO(yasmo): create shared clipboard dialog view.
+            base::BindRepeating(ClickToCallDialogView::GetAsBubble));
+        page_action_icons_.push_back(shared_clipboard_icon_view_);
         break;
       case PageActionIconType::kLocalCardMigration:
       case PageActionIconType::kSaveCard:
@@ -148,6 +169,8 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return native_file_system_icon_;
     case PageActionIconType::kClickToCall:
       return click_to_call_icon_view_;
+    case PageActionIconType::kSharedClipboard:
+      return shared_clipboard_icon_view_;
     case PageActionIconType::kLocalCardMigration:
     case PageActionIconType::kSaveCard:
       NOTREACHED();

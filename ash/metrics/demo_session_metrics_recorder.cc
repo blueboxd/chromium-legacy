@@ -21,7 +21,6 @@
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -166,7 +165,7 @@ class DemoSessionMetricsRecorder::ActiveAppArcPackageNameObserver
  public:
   explicit ActiveAppArcPackageNameObserver(
       DemoSessionMetricsRecorder* metrics_recorder)
-      : metrics_recorder_(metrics_recorder), scoped_observer_(this) {}
+      : metrics_recorder_(metrics_recorder) {}
 
   // aura::WindowObserver
   void OnWindowPropertyChanged(aura::Window* window,
@@ -196,8 +195,7 @@ class DemoSessionMetricsRecorder::ActiveAppArcPackageNameObserver
 
  private:
   DemoSessionMetricsRecorder* metrics_recorder_;
-  ScopedObserver<aura::Window, ActiveAppArcPackageNameObserver>
-      scoped_observer_;
+  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ActiveAppArcPackageNameObserver);
 };
@@ -209,7 +207,7 @@ class DemoSessionMetricsRecorder::UniqueAppsLaunchedArcPackageNameObserver
  public:
   explicit UniqueAppsLaunchedArcPackageNameObserver(
       DemoSessionMetricsRecorder* metrics_recorder)
-      : metrics_recorder_(metrics_recorder), scoped_observer_(this) {}
+      : metrics_recorder_(metrics_recorder) {}
 
   // aura::WindowObserver
   void OnWindowPropertyChanged(aura::Window* window,
@@ -238,8 +236,7 @@ class DemoSessionMetricsRecorder::UniqueAppsLaunchedArcPackageNameObserver
 
  private:
   DemoSessionMetricsRecorder* metrics_recorder_;
-  ScopedObserver<aura::Window, UniqueAppsLaunchedArcPackageNameObserver>
-      scoped_observer_;
+  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UniqueAppsLaunchedArcPackageNameObserver);
 };
@@ -247,7 +244,6 @@ class DemoSessionMetricsRecorder::UniqueAppsLaunchedArcPackageNameObserver
 DemoSessionMetricsRecorder::DemoSessionMetricsRecorder(
     std::unique_ptr<base::RepeatingTimer> timer)
     : timer_(std::move(timer)),
-      observer_(this),
       unique_apps_arc_package_name_observer_(
           std::make_unique<UniqueAppsLaunchedArcPackageNameObserver>(this)),
       active_app_arc_package_name_observer_(

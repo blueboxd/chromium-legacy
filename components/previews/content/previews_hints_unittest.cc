@@ -88,7 +88,7 @@ class PreviewsHintsTest
     ProtoDatabaseProviderTestBase::SetUp();
     hint_cache_ = std::make_unique<optimization_guide::HintCache>(
         std::make_unique<optimization_guide::HintCacheStore>(
-            db_provider_.get(), temp_dir_.GetPath(), nullptr /* pref_service */,
+            db_provider_.get(), temp_dir_.GetPath(),
             task_environment_.GetMainThreadTaskRunner()));
 
     is_store_initialized_ = false;

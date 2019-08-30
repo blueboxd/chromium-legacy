@@ -945,15 +945,6 @@ TEST_F(NGInlineNodeTest, InvalidateSetText) {
   EXPECT_TRUE(layout_block_flow_->NeedsCollectInlines());
 }
 
-TEST_F(NGInlineNodeTest, InvalidateSetTextWithOffset) {
-  SetupHtml("t", "<div id=t>before</div>");
-  EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
-
-  LayoutText* text = ToLayoutText(layout_block_flow_->FirstChild());
-  text->SetTextWithOffset(String("after").Impl(), 1, 4);
-  EXPECT_TRUE(layout_block_flow_->NeedsCollectInlines());
-}
-
 TEST_F(NGInlineNodeTest, InvalidateAddAbsolute) {
   SetupHtml("t",
             "<style>span { position: absolute; }</style>"

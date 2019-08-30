@@ -51,6 +51,7 @@ suite('CrostiniPageTests', function() {
       const button = crostiniPage.$$('#enable');
       assertTrue(!!button);
       assertFalse(!!crostiniPage.$$('.subpage-arrow'));
+      assertFalse(button.disabled);
 
       button.click();
       Polymer.dom.flush();
@@ -59,6 +60,26 @@ suite('CrostiniPageTests', function() {
       setCrostiniPrefs(true);
 
       assertTrue(!!crostiniPage.$$('.subpage-arrow'));
+    });
+
+    test('ButtonDisabledDuringInstall', function() {
+      const button = crostiniPage.$$('#enable');
+      assertTrue(!!button);
+      return flushAsync()
+          .then(() => {
+            assertFalse(button.disabled);
+            cr.webUIListenerCallback('crostini-installer-status-changed', true);
+            flushAsync();
+          })
+          .then(() => {
+            assertTrue(button.disabled);
+            cr.webUIListenerCallback(
+                'crostini-installer-status-changed', false);
+            flushAsync();
+          })
+          .then(() => {
+            assertFalse(button.disabled);
+          });
     });
   });
 

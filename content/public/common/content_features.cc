@@ -737,8 +737,8 @@ const base::Feature kWebXrPlaneDetection{"WebXRPlaneDetection",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Start streaming scripts on script preload.
-const base::Feature kScriptStreamingOnPreload{
-    "ScriptStreamingOnPreload", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the Trusted Types API is available.
 const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",

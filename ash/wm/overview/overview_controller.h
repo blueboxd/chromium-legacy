@@ -143,6 +143,10 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // notify shell that the starting animations have been completed.
   std::vector<std::unique_ptr<DelayedAnimationObserver>> start_animations_;
 
+  // Indicates that overview shall gain focus when the starting animations have
+  // completed.
+  bool should_focus_overview_ = false;
+
   std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
       occlusion_tracker_pauser_;
 

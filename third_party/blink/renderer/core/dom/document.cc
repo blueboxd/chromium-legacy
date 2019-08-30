@@ -299,6 +299,7 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -3213,6 +3214,11 @@ void Document::Initialize() {
   // attached to a frame. Otherwise ContextLifecycleObserver::contextDestroyed
   // wouldn't be fired.
   network_state_observer_ = MakeGarbageCollected<NetworkStateObserver>(*this);
+
+  // Check for frame_ so we only attach execution contexts with its own
+  // scheduler.
+  if (frame_)
+    GetAgent()->AttachExecutionContext(this);
 }
 
 void Document::Shutdown() {
@@ -3361,6 +3367,11 @@ void Document::Shutdown() {
   lifecycle_.AdvanceTo(DocumentLifecycle::kStopped);
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
+
+  // Check for frame_ so we only detach execution contexts with its own
+  // scheduler.
+  if (frame_)
+    GetAgent()->DetachExecutionContext(this);
 
   // TODO(haraken): Call contextDestroyed() before we start any disruptive
   // operations.

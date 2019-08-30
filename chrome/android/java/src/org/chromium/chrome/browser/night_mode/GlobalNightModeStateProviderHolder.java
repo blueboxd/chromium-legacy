@@ -63,6 +63,7 @@ public class GlobalNightModeStateProviderHolder {
                 sInstance = new DummyNightModeStateProvider();
             } else {
                 sInstance = new GlobalNightModeStateController(SystemNightModeMonitor.getInstance(),
+                        PowerSavingModeMonitor.getInstance(),
                         ChromePreferenceManager.getInstance());
             }
         }

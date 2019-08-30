@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff.Mode;
 import android.graphics.Rect;
 import android.os.Build;
 import android.support.annotation.IntDef;
@@ -21,6 +22,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
@@ -516,7 +518,8 @@ public class BottomSheet
 
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
-        mToolbarHolder.setBackgroundResource(R.drawable.top_round);
+        setBackground(mToolbarHolder);
+
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
 
         mActivity = activity;
@@ -526,8 +529,7 @@ public class BottomSheet
         mBottomSheetContentContainer =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
-        mBottomSheetContentContainer.setBackgroundResource(R.drawable.top_round);
-
+        setBackground(mBottomSheetContentContainer);
         mDpToPx = mActivity.getResources().getDisplayMetrics().density;
 
         // Listen to height changes on the root.
@@ -658,6 +660,18 @@ public class BottomSheet
         mSheetContainer.removeView(this);
     }
 
+    /**
+     * Sets the background with round corner drawable, adjusts the color for dark mode.
+     * @param view View in BottomSheet to set the drawable to.
+     */
+    private static void setBackground(View view) {
+        view.setBackgroundResource(R.drawable.top_round);
+        view.getBackground().setColorFilter(
+                ApiCompatibilityUtils.getColor(
+                        view.getContext().getResources(), org.chromium.ui.R.color.sheet_bg_color),
+                Mode.MULTIPLY);
+    }
+
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
@@ -775,8 +789,12 @@ public class BottomSheet
                 mSheetContent != null ? mSheetContent.getContentView() : null,
                 mBottomSheetContentContainer);
 
-        swapViews(content != null ? content.getToolbarView() : null,
-                mSheetContent != null ? mSheetContent.getToolbarView() : null, mToolbarHolder);
+        View newToolbar = content != null ? content.getToolbarView() : null;
+        swapViews(newToolbar, mSheetContent != null ? mSheetContent.getToolbarView() : null,
+                mToolbarHolder);
+
+        // We hide the default toolbar if the new content has its own.
+        mDefaultToolbarView.setVisibility(newToolbar != null ? GONE : VISIBLE);
 
         onSheetContentChanged(content);
     }

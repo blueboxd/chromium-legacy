@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_PROFILE_OBSERVER_H_
 #define CHROME_BROWSER_FEEDBACK_FEEDBACK_PROFILE_OBSERVER_H_
 
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -16,6 +18,7 @@ class BrowserContext;
 
 namespace feedback {
 
+class FeedbackReport;
 class FeedbackUploader;
 
 // FeedbackProfileObserver waits on profile creation notifications to check
@@ -40,8 +43,9 @@ class FeedbackProfileObserver : public content::NotificationObserver {
   // the given browser context.
   void QueueUnsentReports(content::BrowserContext* context);
 
-  static void QueueSingleReport(feedback::FeedbackUploader* uploader,
-                                std::unique_ptr<std::string> data);
+  static void QueueSingleReport(
+      base::WeakPtr<feedback::FeedbackUploader> uploader,
+      scoped_refptr<FeedbackReport> report);
 
   // Used to track creation of profiles so we can load any unsent reports
   // for that profile.

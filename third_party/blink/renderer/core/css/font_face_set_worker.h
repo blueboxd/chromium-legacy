@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/font_face_set.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -49,6 +50,8 @@ class CORE_EXPORT FontFaceSetWorker final
  protected:
   bool InActiveContext() const override { return true; }
   FontSelector* GetFontSelector() const override {
+    // TODO(Fserb): tracking down crbug.com/988125, can be DCHECK later.
+    CHECK(GetWorker()->GetThread()->IsCurrentThread());
     return GetWorker()->GetFontSelector();
   }
   // For workers, this is always an empty list.

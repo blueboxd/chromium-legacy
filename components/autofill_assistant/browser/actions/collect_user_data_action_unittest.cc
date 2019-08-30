@@ -271,5 +271,47 @@ TEST_F(CollectUserDataActionTest, MandatoryPostalCodeWithoutErrorMessageFails) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(CollectUserDataActionTest, ContactDetailsCanHandleUtf8) {
+  // String literal = 艾丽森 in UTF-8.
+  const std::string kNonAsciiName("\xE8\x89\xBE\xE4\xB8\xBD\xE6\xA3\xAE");
+  const std::string kNonAsciiEmail(
+      "\xE8\x89\xBE\xE4\xB8\xBD\xE6\xA3\xAE@example.com");
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* contact_details_proto =
+      collect_user_data_proto->mutable_contact_details();
+  contact_details_proto->set_contact_details_name(kMemoryLocation);
+  contact_details_proto->set_request_payer_name(true);
+  contact_details_proto->set_request_payer_email(true);
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [&](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+              std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            user_data->payer_name.assign(kNonAsciiName);
+            user_data->payer_email.assign(kNonAsciiEmail);
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  EXPECT_CALL(callback_,
+              Run(Pointee(AllOf(
+                  Property(&ProcessedActionProto::status, ACTION_APPLIED),
+                  Property(&ProcessedActionProto::collect_user_data_result,
+                           Property(&CollectUserDataResultProto::payer_email,
+                                    kNonAsciiEmail))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_EQ(client_memory_.has_selected_address(kMemoryLocation), true);
+  auto* profile = client_memory_.selected_address(kMemoryLocation);
+  EXPECT_EQ(profile->GetRawInfo(autofill::NAME_FULL),
+            base::UTF8ToUTF16(kNonAsciiName));
+  EXPECT_EQ(profile->GetRawInfo(autofill::EMAIL_ADDRESS),
+            base::UTF8ToUTF16(kNonAsciiEmail));
+}
+
 }  // namespace
 }  // namespace autofill_assistant

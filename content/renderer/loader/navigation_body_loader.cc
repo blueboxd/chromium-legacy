@@ -52,8 +52,9 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     NotifyResourceRedirectReceived(render_frame_id, resource_load_info.get(),
                                    redirect_info, redirect_response);
     WebURLLoaderImpl::PopulateURLResponse(
-        url, redirect_response, &redirect.redirect_response,
-        response_head.ssl_info.has_value(), request_id);
+        url, network::ResourceResponseHead(redirect_response),
+        &redirect.redirect_response, response_head.ssl_info.has_value(),
+        request_id);
     if (url.SchemeIs(url::kDataScheme))
       redirect.redirect_response.SetHttpStatusCode(200);
     redirect.new_url = redirect_info.new_url;
@@ -107,14 +108,14 @@ NavigationBodyLoader::~NavigationBodyLoader() {
 }
 
 void NavigationBodyLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // This has already happened in the browser process.
   NOTREACHED();
 }
 
 void NavigationBodyLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // This has already happened in the browser process.
   NOTREACHED();
 }

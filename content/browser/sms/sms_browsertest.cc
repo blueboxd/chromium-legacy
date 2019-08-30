@@ -101,11 +101,11 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
-  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
-      .WillOnce(Invoke([&](RenderFrameHost*, const url::Origin&,
-                           base::OnceClosure on_confirm, base::OnceClosure) {
-        std::move(on_confirm).Run();
-      }));
+  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _, _))
+      .WillOnce(
+          Invoke([&](RenderFrameHost*, const url::Origin&, const std::string&,
+                     base::OnceClosure on_confirm,
+                     base::OnceClosure) { std::move(on_confirm).Run(); }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   )";
 
   EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&provider, &url]() {
-    provider->NotifyReceive(url::Origin::Create(url), "hello");
+    provider->NotifyReceive(url::Origin::Create(url), "", "hello");
   }));
 
   // Wait for UKM to be recorded to avoid race condition.
@@ -143,11 +143,11 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
-  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
-      .WillOnce(Invoke([&](RenderFrameHost*, const url::Origin&,
-                           base::OnceClosure on_confirm, base::OnceClosure) {
-        std::move(on_confirm).Run();
-      }));
+  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _, _))
+      .WillOnce(
+          Invoke([&](RenderFrameHost*, const url::Origin&, const std::string&,
+                     base::OnceClosure on_confirm,
+                     base::OnceClosure) { std::move(on_confirm).Run(); }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
   ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                         ukm_loop2.QuitClosure());
 
-  provider->NotifyReceive(url::Origin::Create(url), "hello");
+  provider->NotifyReceive(url::Origin::Create(url), "", "hello");
 
   EXPECT_EQ("hello", EvalJs(shell(), "first"));
 
@@ -324,10 +324,10 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
     base::RunLoop loop;
     base::RunLoop ukm_loop;
 
-    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
-        .WillOnce(
-            Invoke([&loop](RenderFrameHost*, const url::Origin&,
-                           base::OnceClosure on_confirm, base::OnceClosure) {
+    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _, _))
+        .WillOnce(Invoke(
+            [&loop](RenderFrameHost*, const url::Origin&, const std::string&,
+                    base::OnceClosure on_confirm, base::OnceClosure) {
               std::move(on_confirm).Run();
               loop.Quit();
             }));
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    provider->NotifyReceive(url::Origin::Create(url), "hello1");
+    provider->NotifyReceive(url::Origin::Create(url), "", "hello1");
 
     loop.Run();
     ukm_loop.Run();
@@ -354,10 +354,10 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
     base::RunLoop loop;
     base::RunLoop ukm_loop;
 
-    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
-        .WillOnce(
-            Invoke([&loop](RenderFrameHost*, const url::Origin&,
-                           base::OnceClosure on_confirm, base::OnceClosure) {
+    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _, _))
+        .WillOnce(Invoke(
+            [&loop](RenderFrameHost*, const url::Origin&, const std::string&,
+                    base::OnceClosure on_confirm, base::OnceClosure) {
               std::move(on_confirm).Run();
               loop.Quit();
             }));
@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
 
-    provider->NotifyReceive(url::Origin::Create(url), "hello2");
+    provider->NotifyReceive(url::Origin::Create(url), "", "hello2");
 
     loop.Run();
     ukm_loop.Run();
@@ -424,17 +424,17 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   {
     base::RunLoop loop;
     base::RunLoop ukm_loop;
-    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
-        .WillOnce(
-            Invoke([&loop](RenderFrameHost*, const url::Origin&,
-                           base::OnceClosure on_confirm, base::OnceClosure) {
+    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _, _))
+        .WillOnce(Invoke(
+            [&loop](RenderFrameHost*, const url::Origin&, const std::string&,
+                    base::OnceClosure on_confirm, base::OnceClosure) {
               std::move(on_confirm).Run();
               loop.Quit();
             }));
     // Wait for UKM to be recorded to avoid race condition.
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
-    provider->NotifyReceive(url::Origin::Create(url1), "hello1");
+    provider->NotifyReceive(url::Origin::Create(url1), "", "hello1");
     loop.Run();
     ukm_loop.Run();
   }
@@ -446,17 +446,17 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   {
     base::RunLoop loop;
     base::RunLoop ukm_loop;
-    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
-        .WillOnce(
-            Invoke([&loop](RenderFrameHost*, const url::Origin&,
-                           base::OnceClosure on_confirm, base::OnceClosure) {
+    EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _, _))
+        .WillOnce(Invoke(
+            [&loop](RenderFrameHost*, const url::Origin&, const std::string&,
+                    base::OnceClosure on_confirm, base::OnceClosure) {
               std::move(on_confirm).Run();
               loop.Quit();
             }));
     // Wait for UKM to be recorded to avoid race condition.
     ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                           ukm_loop.QuitClosure());
-    provider->NotifyReceive(url::Origin::Create(url2), "hello2");
+    provider->NotifyReceive(url::Origin::Create(url2), "", "hello2");
     loop.Run();
     ukm_loop.Run();
   }
@@ -495,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
 
   shell()->Close();
 
-  provider->NotifyReceive(url::Origin::Create(url), "hello");
+  provider->NotifyReceive(url::Origin::Create(url), "", "hello");
 
   ExpectNoOutcomeUKM();
 }
@@ -513,16 +513,17 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
   base::RunLoop loop;
   base::RunLoop ukm_loop;
 
-  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _))
+  EXPECT_CALL(delegate_, CreateSmsPrompt(_, _, _, _, _))
       .WillOnce(Invoke([&loop](RenderFrameHost*, const url::Origin&,
-                               base::OnceClosure, base::OnceClosure on_cancel) {
+                               const std::string&, base::OnceClosure,
+                               base::OnceClosure on_cancel) {
         // Simulates the user pressing "cancel".
         std::move(on_cancel).Run();
         loop.Quit();
       }));
 
   EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&provider, &url]() {
-    provider->NotifyReceive(url::Origin::Create(url), "hello");
+    provider->NotifyReceive(url::Origin::Create(url), "", "hello");
   }));
 
   // Wait for UKM to be recorded to avoid race condition.

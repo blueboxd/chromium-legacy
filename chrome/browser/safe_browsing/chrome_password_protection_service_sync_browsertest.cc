@@ -146,6 +146,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceSyncBrowserTest,
   reused_password_account_type.set_account_type(
       safe_browsing::ReusedPasswordAccountType::GSUITE);
   reused_password_account_type.set_is_account_syncing(true);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      reused_password_account_type);
   service->ShowInterstitial(web_contents, reused_password_account_type);
   content::WebContents* interstitial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

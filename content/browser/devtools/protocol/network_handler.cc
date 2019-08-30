@@ -569,87 +569,120 @@ std::unique_ptr<Array<Network::SignedExchangeError>> BuildSignedExchangeErrors(
   return signed_exchange_errors;
 }
 
+// TODO(crbug.com/993843): Make this return an array of reasons, not just the
+// first one.
 base::Optional<Network::SetCookieBlockedReason>
 GetProtocolBlockedSetCookieReason(
     net::CanonicalCookie::CookieInclusionStatus status) {
-  switch (status) {
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY:
-      return Network::SetCookieBlockedReasonEnum::SecureOnly;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT:
-      return Network::SetCookieBlockedReasonEnum::SameSiteStrict;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX:
-      return Network::SetCookieBlockedReasonEnum::SameSiteLax;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED:
-      return Network::SetCookieBlockedReasonEnum::SameSiteExtended;
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
-      return Network::SetCookieBlockedReasonEnum::
-          SameSiteUnspecifiedTreatedAsLax;
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_NONE_INSECURE:
-      return Network::SetCookieBlockedReasonEnum::SameSiteNoneInsecure;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
-      return Network::SetCookieBlockedReasonEnum::UserPreferences;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE:
-      return Network::SetCookieBlockedReasonEnum::SyntaxError;
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_NONCOOKIEABLE_SCHEME:
-      return Network::SetCookieBlockedReasonEnum::SchemeNotSupported;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE:
-      return Network::SetCookieBlockedReasonEnum::OverwriteSecure;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN:
-      return Network::SetCookieBlockedReasonEnum::InvalidDomain;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX:
-      return Network::SetCookieBlockedReasonEnum::InvalidPrefix;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR:
-      return Network::SetCookieBlockedReasonEnum::UnknownError;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY:
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH:
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH:
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_OVERWRITE_HTTP_ONLY:
-    case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
-      return base::nullopt;
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY)) {
+    return Network::SetCookieBlockedReasonEnum::SecureOnly;
   }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_SAMESITE_STRICT)) {
+    return Network::SetCookieBlockedReasonEnum::SameSiteStrict;
+  }
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)) {
+    return Network::SetCookieBlockedReasonEnum::SameSiteLax;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_SAMESITE_EXTENDED)) {
+    return Network::SetCookieBlockedReasonEnum::SameSiteExtended;
+  }
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::
+              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX)) {
+    return Network::SetCookieBlockedReasonEnum::SameSiteUnspecifiedTreatedAsLax;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_SAMESITE_NONE_INSECURE)) {
+    return Network::SetCookieBlockedReasonEnum::SameSiteNoneInsecure;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_USER_PREFERENCES)) {
+    return Network::SetCookieBlockedReasonEnum::UserPreferences;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_FAILURE_TO_STORE)) {
+    return Network::SetCookieBlockedReasonEnum::SyntaxError;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_NONCOOKIEABLE_SCHEME)) {
+    return Network::SetCookieBlockedReasonEnum::SchemeNotSupported;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_OVERWRITE_SECURE)) {
+    return Network::SetCookieBlockedReasonEnum::OverwriteSecure;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_INVALID_DOMAIN)) {
+    return Network::SetCookieBlockedReasonEnum::InvalidDomain;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_INVALID_PREFIX)) {
+    return Network::SetCookieBlockedReasonEnum::InvalidPrefix;
+  }
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)) {
+    return Network::SetCookieBlockedReasonEnum::UnknownError;
+  }
+
+  // EXCLUDE_HTTP_ONLY, EXCLUDE_NOT_ON_PATH, EXCLUDE_DOMAIN_MISMATCH,
+  // EXCLUDE_OVERWRITE_HTTP_ONLY, or no exclusion reasons.
+  return base::nullopt;
 }
 
+// TODO(crbug.com/993843): Make this return an array of reasons, not just the
+// first one.
 base::Optional<Network::CookieBlockedReason> GetProtocolBlockedCookieReason(
     net::CanonicalCookie::CookieInclusionStatus status) {
-  switch (status) {
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY:
-      return Network::CookieBlockedReasonEnum::SecureOnly;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH:
-      return Network::CookieBlockedReasonEnum::NotOnPath;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH:
-      return Network::CookieBlockedReasonEnum::DomainMismatch;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT:
-      return Network::CookieBlockedReasonEnum::SameSiteStrict;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX:
-      return Network::CookieBlockedReasonEnum::SameSiteLax;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED:
-      return Network::CookieBlockedReasonEnum::SameSiteExtended;
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
-      return Network::CookieBlockedReasonEnum::SameSiteUnspecifiedTreatedAsLax;
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_NONE_INSECURE:
-      return Network::CookieBlockedReasonEnum::SameSiteNoneInsecure;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
-      return Network::CookieBlockedReasonEnum::UserPreferences;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR:
-      return Network::CookieBlockedReasonEnum::UnknownError;
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE:
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_NONCOOKIEABLE_SCHEME:
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE:
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN:
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX:
-    case net::CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_OVERWRITE_HTTP_ONLY:
-    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY:
-    case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
-      return base::nullopt;
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY)) {
+    return Network::CookieBlockedReasonEnum::SecureOnly;
   }
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH)) {
+    return Network::CookieBlockedReasonEnum::NotOnPath;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_DOMAIN_MISMATCH)) {
+    return Network::CookieBlockedReasonEnum::DomainMismatch;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_SAMESITE_STRICT)) {
+    return Network::CookieBlockedReasonEnum::SameSiteStrict;
+  }
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)) {
+    return Network::CookieBlockedReasonEnum::SameSiteLax;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_SAMESITE_EXTENDED)) {
+    return Network::CookieBlockedReasonEnum::SameSiteExtended;
+  }
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::
+              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX)) {
+    return Network::CookieBlockedReasonEnum::SameSiteUnspecifiedTreatedAsLax;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_SAMESITE_NONE_INSECURE)) {
+    return Network::CookieBlockedReasonEnum::SameSiteNoneInsecure;
+  }
+  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
+                                    EXCLUDE_USER_PREFERENCES)) {
+    return Network::CookieBlockedReasonEnum::UserPreferences;
+  }
+  if (status.HasExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)) {
+    return Network::CookieBlockedReasonEnum::UnknownError;
+  }
+
+  // EXCLUDE_FAILURE_TO_STORE, EXCLUDE_NONCOOKIEABLE_SCHEME,
+  // EXCLUDE_OVERWRITE_SECURE, EXCLUDE_INVALID_DOMAIN, EXCLUDE_INVALID_PREFIX,
+  // EXCLUDE_OVERWRITE_HTTP_ONLY, EXCLUDE_HTTP_ONLY, or no exclusion reasons.
+  return base::nullopt;
 }
 
 std::unique_ptr<Array<Network::BlockedSetCookieWithReason>>
@@ -680,28 +713,7 @@ BuildProtocolBlockedCookies(const net::CookieStatusList& net_list) {
   std::unique_ptr<Array<Network::BlockedCookieWithReason>> protocol_list =
       std::make_unique<Array<Network::BlockedCookieWithReason>>();
 
-  bool samesite_by_default_enabled =
-      net::cookie_util::IsSameSiteByDefaultCookiesEnabled();
-  bool must_be_secure_enabled =
-      net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled();
-
   for (const net::CookieWithStatus& cookie : net_list) {
-    // These CookieInclusionStatus values will be passed to us from network
-    // service even if the cookies were actually included - the actual
-    // inclusion depends on these flags. If the flags are disabled, then don't
-    // forward them to the frontend because they were not actually blocked.
-    if (!samesite_by_default_enabled) {
-      if (cookie.status == net::CanonicalCookie::CookieInclusionStatus::
-                               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
-        continue;
-      }
-      if (!must_be_secure_enabled &&
-          cookie.status == net::CanonicalCookie::CookieInclusionStatus::
-                               EXCLUDE_SAMESITE_NONE_INSECURE) {
-        continue;
-      }
-    }
-
     base::Optional<Network::CookieBlockedReason> blocked_reason =
         GetProtocolBlockedCookieReason(cookie.status);
     if (!blocked_reason.has_value())
@@ -1408,7 +1420,7 @@ std::unique_ptr<protocol::Object> BuildResponseHeaders(
 
 std::unique_ptr<Network::Response> BuildResponse(
     const GURL& url,
-    const network::ResourceResponseInfo& info) {
+    const network::ResourceResponseHead& info) {
   int status = 0;
   std::string status_text;
   if (info.headers) {

@@ -1768,6 +1768,12 @@ html[dir=rtl] #left-semicircle {
   border-top-right-radius: var(--tile-size);
 }
 
+#colors-theme-info {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 #refresh-daily-wrapper {
   display: none;
   margin-inline-start: auto;

@@ -45,6 +45,19 @@ class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
 
   void SetClockForTesting(const base::Clock* clock) { clock_ = clock; }
 
+  // TODO(https://crbug.com/999240): These are exposed to allow end-to-end
+  // testing by higher layers (i.e. that the ChromeCTPolicyEnforcer is
+  // correctly constructed). When either this issue or https://crbug.com/848277
+  // are fixed, the configuration can be tested independently, and these can
+  // be removed.
+  const std::vector<std::string>& operated_by_google_logs_for_testing() {
+    return operated_by_google_logs_;
+  }
+  const std::vector<std::pair<std::string, base::TimeDelta>>&
+  disqualified_logs_for_testing() {
+    return disqualified_logs_;
+  }
+
  private:
   // Returns true if the log identified by |log_id| (the SHA-256 hash of the
   // log's DER-encoded SPKI) has been disqualified, and sets

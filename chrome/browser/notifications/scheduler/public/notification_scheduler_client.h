@@ -30,7 +30,8 @@ class NotificationSchedulerClient {
 
   // Called before the notification should be displayed to the user. The clients
   // can overwrite data in |notification_data| and return the updated data in
-  // |callback|.
+  // |callback|. The client can cancel the notification by replying a nullptr in
+  // the |callback|.
   virtual void BeforeShowNotification(
       std::unique_ptr<NotificationData> notification_data,
       NotificationDataCallback callback) = 0;

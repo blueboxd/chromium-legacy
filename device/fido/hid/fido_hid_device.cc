@@ -361,6 +361,14 @@ void FidoHidDevice::OnRead(bool success,
     return;
   }
 
+  if (!message->MessageComplete()) {
+    // Continue reading additional packets.
+    connection_->Read(base::BindOnce(&FidoHidDevice::OnReadContinuation,
+                                     weak_factory_.GetWeakPtr(),
+                                     std::move(*message)));
+    return;
+  }
+
   // Received a message from a different channel, so try again.
   if (channel_id_ != message->channel_id()) {
     ReadMessage();
@@ -387,14 +395,6 @@ void FidoHidDevice::OnRead(bool success,
       NOTREACHED();
   }
 
-  if (!message->MessageComplete()) {
-    // Continue reading additional packets.
-    connection_->Read(base::BindOnce(&FidoHidDevice::OnReadContinuation,
-                                     weak_factory_.GetWeakPtr(),
-                                     std::move(*message)));
-    return;
-  }
-
   MessageReceived(std::move(*message));
 }
 
@@ -413,11 +413,21 @@ void FidoHidDevice::OnReadContinuation(
   }
   DCHECK(buf);
 
-  message.AddContinuationPacket(*buf);
+  if (!message.AddContinuationPacket(*buf)) {
+    Transition(State::kDeviceError);
+    return;
+  }
+
   if (!message.MessageComplete()) {
     connection_->Read(base::BindOnce(&FidoHidDevice::OnReadContinuation,
                                      weak_factory_.GetWeakPtr(),
                                      std::move(message)));
+    return;
+  }
+
+  // Received a message from a different channel, so try again.
+  if (channel_id_ != message.channel_id()) {
+    ReadMessage();
     return;
   }
 

@@ -107,7 +107,8 @@
         id="menuButton"
         tabindex="[[ironListTabIndex]]"
         title="$i18n{moreActionsButtonTitle}"
-        aria-label$="[[getButtonAriaLabel_(item_)]]"
+        aria-label$="[[getButtonAriaLabel_(item_, isSelectedItem_,
+            isMultiSelect_)]]"
         on-click="onMenuButtonClick_"
         aria-haspopup="menu"></cr-icon-button>
   </template>

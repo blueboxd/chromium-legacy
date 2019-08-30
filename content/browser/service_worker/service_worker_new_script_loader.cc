@@ -189,7 +189,7 @@ void ServiceWorkerNewScriptLoader::ResumeReadingBodyFromNet() {
 // URLLoaderClient for network loader ------------------------------------------
 
 void ServiceWorkerNewScriptLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(LoaderState::kLoadingHeader, network_loader_state_);
   if (!version_->context() || version_->is_redundant()) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
@@ -215,7 +215,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     // Check the path restriction defined in the spec:
     // https://w3c.github.io/ServiceWorker/#service-worker-script-response
     std::string service_worker_allowed;
-    bool has_header = response_head.headers->EnumerateHeader(
+    bool has_header = response_head->headers->EnumerateHeader(
         nullptr, ServiceWorkerConsts::kServiceWorkerAllowed,
         &service_worker_allowed);
     if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
@@ -227,7 +227,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
       return;
     }
 
-    if (response_head.network_accessed)
+    if (response_head->network_accessed)
       version_->embedded_worker()->OnNetworkAccessedForScriptLoad();
 
     version_->SetMainScriptHttpResponseInfo(*response_info);
@@ -240,20 +240,17 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
 
   // Don't pass SSLInfo to the client when the original request doesn't ask
   // to send it.
-  if (response_head.ssl_info.has_value() &&
+  if (response_head->ssl_info.has_value() &&
       !(original_options_ &
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
-    network::ResourceResponseHead new_response_head = response_head;
-    new_response_head.ssl_info.reset();
-    client_->OnReceiveResponse(new_response_head);
-    return;
+    response_head->ssl_info.reset();
   }
-  client_->OnReceiveResponse(response_head);
+  client_->OnReceiveResponse(std::move(response_head));
 }
 
 void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   // Resource requests for service worker scripts should not follow redirects.
   //
   // Step 9.5: "Set request's redirect mode to "error"."

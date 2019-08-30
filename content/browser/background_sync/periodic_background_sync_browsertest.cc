@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest,
   EXPECT_TRUE(Unregister("foo"));
 }
 
-IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest, DISABLED_FindATag) {
+IN_PROC_BROWSER_TEST_F(PeriodicBackgroundSyncBrowserTest, FindATag) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 

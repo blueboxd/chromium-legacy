@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
+#include "components/ui_devtools/buildflags.h"
 #include "components/viz/service/main/viz_compositor_thread_runner.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 
@@ -49,7 +50,7 @@ class VizCompositorThreadRunnerImpl : public VizCompositorThreadRunner {
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params,
                               gpu::CommandBufferTaskExecutor* task_executor,
                               GpuServiceImpl* gpu_service) override;
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   void CreateVizDevTools(mojom::VizDevToolsParamsPtr params) override;
 #endif
   void CleanupForShutdown(base::OnceClosure cleanup_finished_callback) override;
@@ -59,7 +60,7 @@ class VizCompositorThreadRunnerImpl : public VizCompositorThreadRunner {
       mojom::FrameSinkManagerParamsPtr params,
       gpu::CommandBufferTaskExecutor* task_executor,
       GpuServiceImpl* gpu_service);
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   void CreateVizDevToolsOnCompositorThread(mojom::VizDevToolsParamsPtr params);
   void InitVizDevToolsOnCompositorThread(mojom::VizDevToolsParamsPtr params);
 #endif
@@ -70,7 +71,7 @@ class VizCompositorThreadRunnerImpl : public VizCompositorThreadRunner {
   std::unique_ptr<ServerSharedBitmapManager> server_shared_bitmap_manager_;
   std::unique_ptr<OutputSurfaceProvider> output_surface_provider_;
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   std::unique_ptr<ui_devtools::UiDevToolsServer> devtools_server_;
 
   // If the FrameSinkManager is not ready yet, then we stash the pending

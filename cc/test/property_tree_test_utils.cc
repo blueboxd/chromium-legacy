@@ -23,6 +23,7 @@ template <typename LayerType>
 void SetupRootPropertiesInternal(LayerType* root) {
   root->set_property_tree_sequence_number(
       GetPropertyTrees(root)->sequence_number);
+  root->SetElementId(LayerIdToElementIdForTesting(root->id()));
 
   auto& root_transform_node =
       CreateTransformNode(root, TransformTree::kRootNodeId);
@@ -31,10 +32,16 @@ void SetupRootPropertiesInternal(LayerType* root) {
   auto& root_clip_node = CreateClipNode(root, ClipTree::kRootNodeId);
   DCHECK_EQ(root_clip_node.id, ClipTree::kViewportNodeId);
   root_clip_node.clip = gfx::RectF(gfx::SizeF(root->bounds()));
+  // Root clip is in the real root transform space instead of the root layer's
+  // transform space.
+  root_clip_node.transform_id = TransformTree::kRootNodeId;
 
   auto& root_effect_node = CreateEffectNode(root, EffectTree::kRootNodeId);
   DCHECK_EQ(root_effect_node.id, EffectTree::kContentsRootNodeId);
   root_effect_node.render_surface_reason = RenderSurfaceReason::kRoot;
+  // Root effect is in the real root transform space instead of the root layer's
+  // transform space.
+  root_effect_node.transform_id = TransformTree::kRootNodeId;
 
   auto& root_scroll_node = CreateScrollNode(root, ScrollTree::kRootNodeId);
   DCHECK_EQ(root_scroll_node.id, ScrollTree::kSecondaryRootNodeId);
@@ -65,6 +72,10 @@ TransformNode& CreateTransformNodeInternal(LayerType* layer, int parent_id) {
   if (node->element_id) {
     property_trees->element_id_to_transform_node_index[node->element_id] =
         node->id;
+  }
+  if (const auto* parent_node = transform_tree.Node(node->parent_id)) {
+    node->in_subtree_of_page_scale_layer =
+        parent_node->in_subtree_of_page_scale_layer;
   }
   transform_tree.set_needs_update(true);
   return *node;
@@ -137,10 +148,10 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer, int parent_id) {
 template <typename LayerType>
 void SetScrollOffsetInternal(LayerType* layer,
                              const gfx::ScrollOffset& scroll_offset) {
+  DCHECK(layer->has_transform_node());
   auto* transform_node = GetTransformNode(layer);
   transform_node->scroll_offset = scroll_offset;
-  transform_node->needs_local_transform_update = true;
-  GetPropertyTrees(layer)->transform_tree.set_needs_update(true);
+  SetLocalTransformChanged(layer);
   GetPropertyTrees(layer)->scroll_tree.SetScrollOffset(layer->element_id(),
                                                        scroll_offset);
 }
@@ -250,7 +261,8 @@ void SetupViewport(Layer* root,
                    overscroll_elasticity_layer.get());
     CreateTransformNode(overscroll_elasticity_layer.get());
     CopyProperties(overscroll_elasticity_layer.get(), page_scale_layer.get());
-    CreateTransformNode(page_scale_layer.get());
+    CreateTransformNode(page_scale_layer.get()).in_subtree_of_page_scale_layer =
+        true;
     CopyProperties(page_scale_layer.get(), inner_viewport_scroll_layer.get());
     CreateTransformNode(inner_viewport_scroll_layer.get());
     CreateScrollNode(inner_viewport_scroll_layer.get());

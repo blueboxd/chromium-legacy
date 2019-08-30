@@ -192,6 +192,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void SetTextWithOffset(scoped_refptr<StringImpl>,
                          unsigned offset,
                          unsigned len);
+  void SetTextInternal(scoped_refptr<StringImpl>);
 
   virtual void TransformText();
 
@@ -322,11 +323,12 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void SetHasBidiControlInlineItems() { has_bidi_control_items_ = true; }
   void ClearHasBidiControlInlineItems() { has_bidi_control_items_ = false; }
 
- protected:
   virtual const base::span<NGInlineItem>* GetNGInlineItems() const {
     return nullptr;
   }
   virtual base::span<NGInlineItem>* GetNGInlineItems() { return nullptr; }
+
+ protected:
   void WillBeDestroyed() override;
 
   void StyleWillChange(StyleDifference, const ComputedStyle&) final {}
@@ -334,7 +336,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void InLayoutNGInlineFormattingContextWillChange(bool) final;
 
-  void SetTextInternal(scoped_refptr<StringImpl>);
   virtual void TextDidChange();
 
   virtual InlineTextBox* CreateTextBox(int start,

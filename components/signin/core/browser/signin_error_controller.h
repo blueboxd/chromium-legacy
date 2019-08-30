@@ -88,8 +88,8 @@ class SigninErrorController : public KeyedService,
   const AccountMode account_mode_;
   signin::IdentityManager* identity_manager_;
 
-  ScopedObserver<signin::IdentityManager, SigninErrorController>
-      scoped_identity_manager_observer_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      scoped_identity_manager_observer_{this};
 
   // The account that generated the last auth error.
   CoreAccountId error_account_id_;

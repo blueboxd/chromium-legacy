@@ -1308,7 +1308,10 @@ if (closure_compile) {
       "ui/webui/resources:closure_compile",
     ]
     if (is_chromeos) {
-      data_deps += [ "ui/file_manager:closure_compile" ]
+      data_deps += [
+        "chromeos/components:closure_compile",
+        "ui/file_manager:closure_compile",
+      ]
     }
     if (is_android) {
       data_deps += [ "components/offline_pages/resources:closure_compile" ]

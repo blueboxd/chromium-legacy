@@ -16,6 +16,7 @@
 #include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -177,7 +178,7 @@ void UsbDeviceManagerHelper::GetDevice(
 
   DCHECK(device_manager_);
   device_manager_->GetDevice(guid, std::move(device_receiver),
-                             /*device_client=*/nullptr);
+                             /*device_client=*/mojo::NullRemote());
 }
 
 void UsbDeviceManagerHelper::EnsureUsbDeviceManagerConnection() {

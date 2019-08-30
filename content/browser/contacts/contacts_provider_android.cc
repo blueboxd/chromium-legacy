@@ -14,6 +14,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/android/content_jni_headers/ContactsDialogHost_jni.h"
+#include "content/public/browser/contacts_picker_properties_requested.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/android/window_android.h"
@@ -52,7 +53,7 @@ void ContactsProviderAndroid::Select(bool multiple,
                                      ContactsSelectedCallback callback) {
   if (!dialog_) {
     std::move(callback).Run(base::nullopt, /*percentage_shared=*/-1,
-                            /*properties_requested*/ -1);
+                            PROPERTIES_NONE);
     return;
   }
 
@@ -105,14 +106,15 @@ void ContactsProviderAndroid::EndContactsList(JNIEnv* env,
                                               jint percentage_shared,
                                               jint properties_requested) {
   DCHECK(callback_);
-  std::move(callback_).Run(std::move(contacts_), percentage_shared,
-                           properties_requested);
+  ContactsPickerPropertiesRequested properties =
+      static_cast<ContactsPickerPropertiesRequested>(properties_requested);
+  std::move(callback_).Run(std::move(contacts_), percentage_shared, properties);
 }
 
 void ContactsProviderAndroid::EndWithPermissionDenied(JNIEnv* env) {
   DCHECK(callback_);
   std::move(callback_).Run(base::nullopt, /*percentage_shared=*/-1,
-                           /*properties_requested*/ -1);
+                           PROPERTIES_NONE);
 }
 
 }  // namespace content

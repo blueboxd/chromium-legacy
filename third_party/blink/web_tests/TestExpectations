@@ -721,6 +721,7 @@ crbug.com/591099 fast/events/touch/compositor-touch-hit-rects-list-translate.htm
 crbug.com/591099 fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/889721 fast/inline/outline-continuations.html [ Failure ]
 crbug.com/591099 fast/text/font-format-support-color-cff2-vertical.html [ Failure ]
+crbug.com/998872 fast/text/international/bidi-ignored-for-first-child-inline.html [ Failure ]
 crbug.com/591099 fast/text/whitespace/018.html [ Failure ]
 crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
@@ -1120,7 +1121,6 @@ crbug.com/591099 [ Mac10.13 ] fast/text/font-weight.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/alef-connected.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-AN-after-empty-run.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-LDB-2-CSS.html [ Failure ]
-crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-ignored-for-first-child-inline.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-innertext.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-linebreak-001.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/international/bidi-linebreak-003.html [ Failure ]
@@ -3251,6 +3251,12 @@ crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-tim
 crbug.com/994214 external/wpt/html/cross-origin-opener-policy/coop-navigated-popup.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
 crbug.com/626703 [ Win10 ] virtual/cascade/external/wpt/css/css-paint-api/color-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/omt-service-worker-startup/external/wpt/shape-detection/shapedetection-cross-origin.sub.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] virtual/omt-service-worker-startup/external/wpt/shape-detection/detection-security-test.https.html [ Timeout ]
@@ -6184,9 +6190,6 @@ crbug.com/838348 external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
 # Sheriff 2019-04-17
 crbug.com/953534 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
 
-crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-empty-inline.html [ Failure ]
-crbug.com/953479 external/wpt/css/cssom-view/offsetTopLeft-leading-space-inline.html [ Failure ]
-
 crbug.com/953591 [ Win ] css3/masking/mask-repeat-space-padding.html [ Pass Failure ]
 crbug.com/953591 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ Pass Failure ]
 crbug.com/953591 [ Win ] transforms/matrix-02.html [ Pass Failure ]
@@ -6533,3 +6536,5 @@ crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-mai
 
 # Pending enabling scroll to text feature
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
+
+crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]

@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/views/search_result_base_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -18,8 +19,6 @@
 #include "ui/views/view_observer.h"
 
 namespace app_list {
-
-class SearchResultBaseView;
 
 // SearchResultContainerView is a base class for views that contain multiple
 // search results. SearchPageView holds these in a list and manages which one is
@@ -133,8 +132,7 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   bool shown_ = false;
   AppListViewDelegate* const view_delegate_;
 
-  ScopedObserver<SearchResultBaseView, ViewObserver> result_view_observer_{
-      this};
+  ScopedObserver<views::View, views::ViewObserver> result_view_observer_{this};
 
   // The factory that consolidates multiple Update calls into one.
   base::WeakPtrFactory<SearchResultContainerView> update_factory_{this};

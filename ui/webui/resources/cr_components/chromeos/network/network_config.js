@@ -476,7 +476,7 @@ Polymer({
   },
 
   /** @private */
-  onEnterPressedInPasswordInput_: function() {
+  onEnterPressedInInput_: function() {
     if (!this.isConfigured_) {
       return;
     }

@@ -48,6 +48,7 @@ ALIGNMENT_ORDER = [
     'Font',
     'FillLayer',
     'NinePieceImage',
+    'ContentSize',
     # Aligns like float
     'StyleOffsetRotation',
     'TransformOrigin',

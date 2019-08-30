@@ -14,6 +14,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/hid_haptic_gamepad.h"
 #include "device/gamepad/hid_writer_mac.h"
+#include "device/gamepad/xbox_hid_controller.h"
 
 namespace device {
 
@@ -98,10 +99,22 @@ GamepadDeviceMac::GamepadDeviceMac(int location_id,
   if (Dualshock4Controller::IsDualshock4(vendor_id, product_id)) {
     dualshock4_ = std::make_unique<Dualshock4Controller>(
         bus_type_, std::make_unique<HidWriterMac>(device_ref));
-  } else if (HidHapticGamepad::IsHidHaptic(vendor_id, product_id)) {
+    return;
+  }
+
+  if (XboxHidController::IsXboxHid(vendor_id, product_id)) {
+    xbox_hid_ = std::make_unique<XboxHidController>(
+        std::make_unique<HidWriterMac>(device_ref));
+    return;
+  }
+
+  if (HidHapticGamepad::IsHidHaptic(vendor_id, product_id)) {
     hid_haptics_ = HidHapticGamepad::Create(
         vendor_id, product_id, std::make_unique<HidWriterMac>(device_ref));
-  } else if (device_ref) {
+    return;
+  }
+
+  if (device_ref) {
     ff_device_ref_ = CreateForceFeedbackDevice(device_ref);
     if (ff_device_ref_) {
       ff_effect_ref_ = CreateForceFeedbackEffect(ff_device_ref_, &ff_effect_,
@@ -125,6 +138,9 @@ void GamepadDeviceMac::DoShutdown() {
   if (dualshock4_)
     dualshock4_->Shutdown();
   dualshock4_.reset();
+  if (xbox_hid_)
+    xbox_hid_->Shutdown();
+  xbox_hid_.reset();
   if (hid_haptics_)
     hid_haptics_->Shutdown();
   hid_haptics_.reset();
@@ -400,16 +416,27 @@ void GamepadDeviceMac::UpdateGamepadForValue(IOHIDValueRef value,
 }
 
 bool GamepadDeviceMac::SupportsVibration() {
-  return dualshock4_ || hid_haptics_ || ff_device_ref_;
+  return dualshock4_ || xbox_hid_ || hid_haptics_ || ff_device_ref_;
 }
 
 void GamepadDeviceMac::SetVibration(double strong_magnitude,
                                     double weak_magnitude) {
   if (dualshock4_) {
     dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
-  } else if (hid_haptics_) {
+    return;
+  }
+
+  if (xbox_hid_) {
+    xbox_hid_->SetVibration(strong_magnitude, weak_magnitude);
+    return;
+  }
+
+  if (hid_haptics_) {
     hid_haptics_->SetVibration(strong_magnitude, weak_magnitude);
-  } else if (ff_device_ref_) {
+    return;
+  }
+
+  if (ff_device_ref_) {
     FFCUSTOMFORCE* ff_custom_force =
         static_cast<FFCUSTOMFORCE*>(ff_effect_.lpvTypeSpecificParams);
     DCHECK(ff_custom_force);
@@ -432,11 +459,21 @@ void GamepadDeviceMac::SetVibration(double strong_magnitude,
 void GamepadDeviceMac::SetZeroVibration() {
   if (dualshock4_) {
     dualshock4_->SetZeroVibration();
-  } else if (hid_haptics_) {
-    hid_haptics_->SetZeroVibration();
-  } else if (ff_effect_ref_) {
-    FFEffectStop(ff_effect_ref_);
+    return;
   }
+
+  if (xbox_hid_) {
+    xbox_hid_->SetZeroVibration();
+    return;
+  }
+
+  if (hid_haptics_) {
+    hid_haptics_->SetZeroVibration();
+    return;
+  }
+
+  if (ff_effect_ref_)
+    FFEffectStop(ff_effect_ref_);
 }
 
 // static

@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -22,7 +23,9 @@ EventLoop::EventLoop(v8::Isolate* isolate,
   DCHECK(isolate_);
 }
 
-EventLoop::~EventLoop() = default;
+EventLoop::~EventLoop() {
+  DCHECK(schedulers_.IsEmpty());
+}
 
 void EventLoop::EnqueueMicrotask(base::OnceClosure task) {
   pending_microtasks_.push_back(std::move(task));
@@ -46,12 +49,38 @@ void EventLoop::PerformIsolateGlobalMicrotasksCheckpoint(v8::Isolate* isolate) {
 
 void EventLoop::Disable() {
   loop_enabled_ = false;
-  // TODO(tzik): Disable associated Frames.
+
+  for (auto* scheduler : schedulers_) {
+    scheduler->SetPausedForCooperativeScheduling(
+        FrameOrWorkerScheduler::Paused(true));
+  }
+  // TODO(keishi): Disable microtaskqueue too.
 }
 
 void EventLoop::Enable() {
   loop_enabled_ = true;
-  // TODO(tzik): Enable associated Frames.
+
+  for (auto* scheduler : schedulers_) {
+    scheduler->SetPausedForCooperativeScheduling(
+        FrameOrWorkerScheduler::Paused(false));
+  }
+  // TODO(keishi): Enable microtaskqueue too.
+}
+
+void EventLoop::AttachScheduler(FrameOrWorkerScheduler* scheduler) {
+  DCHECK(loop_enabled_);
+  DCHECK(!schedulers_.Contains(scheduler));
+  schedulers_.insert(scheduler);
+}
+
+void EventLoop::DetachScheduler(FrameOrWorkerScheduler* scheduler) {
+  DCHECK(loop_enabled_);
+  DCHECK(schedulers_.Contains(scheduler));
+  schedulers_.erase(scheduler);
+}
+
+bool EventLoop::IsSchedulerAttachedForTest(FrameOrWorkerScheduler* scheduler) {
+  return schedulers_.Contains(scheduler);
 }
 
 // static

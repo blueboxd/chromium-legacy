@@ -352,7 +352,7 @@
     },
 
     'chromeos_device_friendly_gtests_experimental': {
-      'chrome_all_tast_tests': {
+      'chrome_all_tast_tests_informational': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
         }

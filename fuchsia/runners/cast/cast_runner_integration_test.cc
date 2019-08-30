@@ -156,10 +156,11 @@ class CastRunnerIntegrationTest : public testing::Test {
       : run_timeout_(
             TestTimeouts::action_timeout(),
             base::MakeExpectedNotRunClosure(FROM_HERE, "Run() timed out.")) {
-
     // Create the CastRunner, published into |test_services_|.
+    constexpr fuchsia::web::ContextFeatureFlags kFeatures = {};
     cast_runner_ = std::make_unique<CastRunner>(
-        &outgoing_directory_, WebContentRunner::CreateIncognitoWebContext());
+        &outgoing_directory_,
+        WebContentRunner::CreateIncognitoWebContext(kFeatures));
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;

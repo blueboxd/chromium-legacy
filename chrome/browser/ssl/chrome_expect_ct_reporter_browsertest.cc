@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,7 +28,17 @@ namespace {
 // received by a server.
 class ExpectCTBrowserTest : public CertVerifierBrowserTest {
  public:
-  ExpectCTBrowserTest() : CertVerifierBrowserTest() {}
+  ExpectCTBrowserTest() : CertVerifierBrowserTest() {
+    // Expect-CT reporting depends on actually enforcing Certificate
+    // Transparency.
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        true);
+  }
+
+  ~ExpectCTBrowserTest() override {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        base::nullopt);
+  }
 
   void SetUpOnMainThread() override {
     run_loop_ = std::make_unique<base::RunLoop>();

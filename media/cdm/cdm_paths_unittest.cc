@@ -11,8 +11,11 @@
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Only verify platform specific path where CDMs are Chrome components.
-#if (defined(OS_MACOSX) || defined(OS_WIN)) && \
+// Only verify platform specific path on some platforms.
+// TODO(crbug.com/971433). Move the CDMs out of the install directory on
+// ChromeOS.
+#if (defined(OS_MACOSX) || defined(OS_WIN) ||         \
+     (defined(OS_LINUX) && !defined(OS_CHROMEOS))) && \
     (defined(ARCH_CPU_X86) || defined(ARCH_CPU_X86_64))
 #define CDM_USE_PLATFORM_SPECIFIC_PATH
 #endif

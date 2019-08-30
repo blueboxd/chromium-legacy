@@ -11,7 +11,6 @@ SigninErrorController::SigninErrorController(
     signin::IdentityManager* identity_manager)
     : account_mode_(mode),
       identity_manager_(identity_manager),
-      scoped_identity_manager_observer_(this),
       auth_error_(GoogleServiceAuthError::AuthErrorNone()) {
   DCHECK(identity_manager_);
   scoped_identity_manager_observer_.Add(identity_manager_);

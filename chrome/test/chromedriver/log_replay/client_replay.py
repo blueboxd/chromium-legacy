@@ -586,10 +586,10 @@ class _Parser(object):
       r"^\[[0-9]{10}\.[0-9]{3}\]\[INFO\]: \[[a-f0-9]*\]")
 
   # Matches headers for client commands/responses when readable-timestamp
-  #option is selected
+  #option is selected. Depending on OS, final component may be 3 or 6 digits
   _CLIENT_PREAMBLE_REGEX_READABLE = re.compile(
       r"^\[[0-9]{2}-[0-9]{2}-[0-9]{4} "
-      "[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}\]\[INFO\]: \[[a-f0-9]*\]")
+      "[0-9]{2}:[0-9]{2}:[0-9]{2}.([0-9]{3}){1,2}\]\[INFO\]: \[[a-f0-9]*\]")
 
   def __init__(self, log_file):
     """Initialize the _Parser instance.

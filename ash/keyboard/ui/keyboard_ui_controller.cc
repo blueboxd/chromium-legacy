@@ -33,7 +33,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -163,8 +162,7 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
 
 KeyboardUIController::KeyboardUIController()
     : input_method_keyboard_controller_(
-          std::make_unique<InputMethodKeyboardController>(this)),
-      ime_observer_(this) {
+          std::make_unique<InputMethodKeyboardController>(this)) {
   DCHECK_EQ(g_keyboard_controller, nullptr);
   g_keyboard_controller = this;
 }

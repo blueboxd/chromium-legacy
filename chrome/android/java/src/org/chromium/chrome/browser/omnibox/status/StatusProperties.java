@@ -26,7 +26,8 @@ class StatusProperties {
     static final WritableIntPropertyKey STATUS_ICON_TINT_RES = new WritableIntPropertyKey();
 
     /** Specifies the icon. */
-    static final WritableObjectPropertyKey<Bitmap> STATUS_ICON = new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<Bitmap> STATUS_ICON =
+            new WritableObjectPropertyKey<>(true);
 
     /** Specifies accessibility string presented to user upon long click on security icon. */
     public static final WritableIntPropertyKey STATUS_ICON_ACCESSIBILITY_TOAST_RES =

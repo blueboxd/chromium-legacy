@@ -49,6 +49,7 @@ class TabWebContentsDelegateAndroid
       const content::BluetoothChooser::EventHandler& event_handler) override;
   void CreateSmsPrompt(content::RenderFrameHost*,
                        const url::Origin&,
+                       const std::string& one_time_code,
                        base::OnceClosure on_confirm,
                        base::OnceClosure on_cancel) override;
   std::unique_ptr<content::BluetoothScanningPrompt> ShowBluetoothScanningPrompt(

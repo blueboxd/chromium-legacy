@@ -37,9 +37,7 @@ const char
 
 DetachableBaseNotificationController::DetachableBaseNotificationController(
     DetachableBaseHandler* detachable_base_handler)
-    : detachable_base_handler_(detachable_base_handler),
-      detachable_base_observer_(this),
-      session_observer_(this) {
+    : detachable_base_handler_(detachable_base_handler) {
   detachable_base_observer_.Add(detachable_base_handler);
   ShowPairingNotificationIfNeeded();
 }

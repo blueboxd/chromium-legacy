@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/view.h"

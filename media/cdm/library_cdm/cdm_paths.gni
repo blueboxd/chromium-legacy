@@ -27,9 +27,12 @@ if (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm") {
   component_arch = "unsupported_arch"
 }
 
-# Only enable platform specific path where CDMs are Chrome components.
-# Note: |cdm_platform_specific_path| is exported as a BUILDFLAG to cdm_paths.cc.
-if ((is_win || is_mac) && (current_cpu == "x86" || current_cpu == "x64")) {
+# Enable platform specific paths. This is required when the CDMs are Chrome
+# components, but is optional for other platforms.
+# Note: |cdm_platform_specific_path| is exported as a BUILDFLAG to
+# cdm_paths.cc.
+if ((is_win || is_mac || is_desktop_linux) &&
+    (current_cpu == "x86" || current_cpu == "x64")) {
   cdm_platform_specific_path =
       "_platform_specific/$component_os" + "_" + "$component_arch"
 

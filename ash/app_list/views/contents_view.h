@@ -250,8 +250,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // to true when the opacity changes gradually.
   void UpdateExpandArrowOpacity(ash::AppListState target_state, bool animate);
 
-  // Updates the expand arrow's focus behavior based on AppListViewState.
-  void UpdateExpandArrowFocusBehavior(ash::AppListViewState target_state);
+  // Updates the expand arrow's behavior based on AppListViewState.
+  void UpdateExpandArrowBehavior(ash::AppListViewState target_state);
 
   // Updates search box visibility based on the current state.
   void UpdateSearchBoxVisibility(ash::AppListState current_state);

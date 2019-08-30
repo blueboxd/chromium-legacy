@@ -15,9 +15,13 @@
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/button/button.h"
 
+namespace views {
+class FocusSearch;
+}
+
 namespace ash {
 
-class ASH_EXPORT ScrollableShelfView : public views::View,
+class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
                                        public ShelfButtonDelegate {
  public:
@@ -41,12 +45,33 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
 
   void Init();
 
+  // Called when the focus ring for ScrollableShelfView is enabled/disabled.
+  // |activated| is true when enabling the focus ring.
+  void OnFocusRingActivationChanged(bool activated);
+
+  // Scrolls to a new page of shelf icons. |forward| indicates whether the next
+  // page or previous page is shown.
+  void ScrollToNewPage(bool forward);
+
+  // AccessiblePaneView:
+  views::FocusSearch* GetFocusSearch() override;
+  views::FocusTraversable* GetFocusTraversableParent() override;
+  views::View* GetFocusTraversableParentView() override;
+  views::View* GetDefaultFocusableChild() override;
+
   views::View* GetShelfContainerViewForTest();
 
   ShelfView* shelf_view() { return shelf_view_; }
 
   LayoutStrategy layout_strategy_for_test() const { return layout_strategy_; }
   gfx::Vector2dF scroll_offset_for_test() const { return scroll_offset_; }
+
+  int first_tappable_app_index() { return first_tappable_app_index_; }
+  int last_tappable_app_index() { return last_tappable_app_index_; }
+
+  void set_default_last_focusable_child(bool default_last_focusable_child) {
+    default_last_focusable_child_ = default_last_focusable_child;
+  }
 
   // Size of the arrow button.
   static int GetArrowButtonSize();
@@ -143,6 +168,18 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
   // Updates the gradient zone.
   void UpdateGradientZone();
 
+  // Returns the actual scroll offset on the view's main axis. When the left
+  // arrow button shows, |shelf_view_| is translated due to the change in
+  // |shelf_container_view_|'s bounds. That translation offset is not included
+  // in |scroll_offset_|.
+  int GetActualScrollOffset() const;
+
+  // Updates |first_tappable_app_index_| and |last_tappable_app_index_|.
+  void UpdateTappableIconIndices();
+
+  views::View* FindFirstFocusableChild();
+  views::View* FindLastFocusableChild();
+
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.
@@ -168,6 +205,20 @@ class ASH_EXPORT ScrollableShelfView : public views::View,
       kNotShowArrowButtons;
 
   std::unique_ptr<GradientLayerDelegate> gradient_layer_delegate_;
+
+  std::unique_ptr<views::FocusSearch> focus_search_;
+
+  // The index of the first/last tappable app index.
+  int first_tappable_app_index_ = -1;
+  int last_tappable_app_index_ = -1;
+
+  // Whether this view should focus its last focusable child (instead of its
+  // first) when focused.
+  bool default_last_focusable_child_ = false;
+
+  // Indicates whether the focus ring on shelf items contained by
+  // ScrollableShelfView is enabled.
+  bool focus_ring_activated_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfView);
 };

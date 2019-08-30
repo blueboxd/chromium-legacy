@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -306,10 +307,10 @@ scoped_refptr<ContentRulesRegistry>
 ChromeExtensionsAPIClient::CreateContentRulesRegistry(
     content::BrowserContext* browser_context,
     RulesCacheDelegate* cache_delegate) const {
-  return scoped_refptr<ContentRulesRegistry>(new ChromeContentRulesRegistry(
+  return base::MakeRefCounted<ChromeContentRulesRegistry>(
       browser_context, cache_delegate,
       base::Bind(&CreateDefaultContentPredicateEvaluators,
-                 base::Unretained(browser_context))));
+                 base::Unretained(browser_context)));
 }
 
 std::unique_ptr<DevicePermissionsPrompt>

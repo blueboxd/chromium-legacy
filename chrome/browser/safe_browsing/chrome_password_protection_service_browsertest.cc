@@ -551,6 +551,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   ReusedPasswordAccountType account_type;
   account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      account_type);
 
   base::HistogramTester histograms;
   // Shows interstitial on current web_contents.

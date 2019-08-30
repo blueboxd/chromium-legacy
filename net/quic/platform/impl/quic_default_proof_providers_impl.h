@@ -15,5 +15,7 @@ namespace quic {
 std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl(
     const std::string& host);
 std::unique_ptr<ProofSource> CreateDefaultProofSourceImpl();
+
 }  // namespace quic
+
 #endif  // NET_QUIC_PLATFORM_IMPL_QUIC_DEFAULT_PROOF_PROVIDERS_IMPL_H_

@@ -191,8 +191,8 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   // code.
   AccessTokenFetcher::TokenCallback callback_;
 
-  ScopedObserver<IdentityManager, PrimaryAccountAccessTokenFetcher>
-      identity_manager_observer_;
+  ScopedObserver<IdentityManager, IdentityManager::Observer>
+      identity_manager_observer_{this};
 
   // Internal fetcher that does the actual access token request.
   std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;

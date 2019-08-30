@@ -44,10 +44,8 @@
   for (NSHTTPCookie* cookie in self.cookies) {
     net::CanonicalCookie canonical_cookie =
         net::CanonicalCookieFromSystemCookie(cookie, base::Time());
-    if (canonical_cookie.IncludeForRequestURL(gURL, options) ==
-        net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    if (canonical_cookie.IncludeForRequestURL(gURL, options).IsInclude())
       [result addObject:cookie];
-    }
   }
   return [result copy];
 }

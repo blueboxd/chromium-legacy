@@ -41,7 +41,8 @@ PaymentRequestState::PaymentRequestState(
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
     ContentPaymentRequestDelegate* payment_request_delegate,
-    ServiceWorkerPaymentInstrument::IdentityObserver* sw_identity_observer,
+    base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver>
+        sw_identity_observer,
     JourneyLogger* journey_logger)
     : is_ready_to_pay_(false),
       get_all_instruments_finished_(true),
@@ -513,6 +514,10 @@ void PaymentRequestState::SelectDefaultShippingAddressAndNotifyObservers() {
   profile_comparator()->RecordMissingFieldsOfShippingProfile(
       shipping_profiles().empty() ? nullptr : shipping_profiles()[0]);
   UpdateIsReadyToPayAndNotifyObservers();
+}
+
+base::WeakPtr<PaymentRequestState> PaymentRequestState::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void PaymentRequestState::PopulateProfileCache() {

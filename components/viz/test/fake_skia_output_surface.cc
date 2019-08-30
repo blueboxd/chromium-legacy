@@ -155,9 +155,12 @@ void FakeSkiaOutputSurface::MakePromiseSkImage(ImageContext* image_context) {
 
   auto sk_color_type = ResourceFormatToClosestSkColorType(
       true /* gpu_compositing */, image_context->resource_format());
-  image_context->set_image(SkImage::MakeFromTexture(
-      gr_context(), backend_texture, kTopLeft_GrSurfaceOrigin, sk_color_type,
-      image_context->alpha_type(), image_context->color_space()));
+  image_context->SetImage(
+      SkImage::MakeFromTexture(gr_context(), backend_texture,
+                               kTopLeft_GrSurfaceOrigin, sk_color_type,
+                               image_context->alpha_type(),
+                               image_context->color_space()),
+      backend_texture.getBackendFormat());
 }
 
 sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromYUV(

@@ -10,6 +10,7 @@
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
+#include "base/profiler/stack_copier.h"
 #include "base/profiler/thread_delegate.h"
 #include "base/profiler/unwinder.h"
 
@@ -112,18 +113,18 @@ bool StackSamplerImpl::CopyStack(StackBuffer* stack_buffer,
 
     profile_builder->RecordMetadata(get_metadata_items.get());
 
-    stack_copy_bottom = CopyStackContentsAndRewritePointers(
+    stack_copy_bottom = StackCopier::CopyStackContentsAndRewritePointers(
         reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
-        stack_buffer->buffer());
+        StackBuffer::kPlatformStackAlignment, stack_buffer->buffer());
   }
 
   *stack_top = reinterpret_cast<uintptr_t>(stack_copy_bottom) + (top - bottom);
 
   for (uintptr_t* reg :
        thread_delegate_->GetRegistersToRewrite(thread_context)) {
-    *reg = RewritePointerIfInOriginalStack(reinterpret_cast<uint8_t*>(bottom),
-                                           reinterpret_cast<uintptr_t*>(top),
-                                           stack_copy_bottom, *reg);
+    *reg = StackCopier::RewritePointerIfInOriginalStack(
+        reinterpret_cast<uint8_t*>(bottom), reinterpret_cast<uintptr_t*>(top),
+        stack_copy_bottom, *reg);
   }
 
   return true;
@@ -171,92 +172,6 @@ std::vector<Frame> StackSamplerImpl::WalkStack(ModuleCache* module_cache,
            stack.size() > prior_stack_size);
 
   return stack;
-}
-
-// If the value at |pointer| points to the original stack, rewrite it to point
-// to the corresponding location in the copied stack. NO HEAP ALLOCATIONS.
-// static
-uintptr_t RewritePointerIfInOriginalStack(const uint8_t* original_stack_bottom,
-                                          const uintptr_t* original_stack_top,
-                                          const uint8_t* stack_copy_bottom,
-                                          uintptr_t pointer) {
-  auto original_stack_bottom_uint =
-      reinterpret_cast<uintptr_t>(original_stack_bottom);
-  auto original_stack_top_uint =
-      reinterpret_cast<uintptr_t>(original_stack_top);
-  auto stack_copy_bottom_uint = reinterpret_cast<uintptr_t>(stack_copy_bottom);
-
-  if (pointer < original_stack_bottom_uint ||
-      pointer >= original_stack_top_uint)
-    return pointer;
-
-  return stack_copy_bottom_uint + (pointer - original_stack_bottom_uint);
-}
-
-// Copies the stack to a buffer while rewriting possible pointers to locations
-// within the stack to point to the corresponding locations in the copy. This is
-// necessary to handle stack frames with dynamic stack allocation, where a
-// pointer to the beginning of the dynamic allocation area is stored on the
-// stack and/or in a non-volatile register.
-//
-// Eager rewriting of anything that looks like a pointer to the stack, as done
-// in this function, does not adversely affect the stack unwinding. The only
-// other values on the stack the unwinding depends on are return addresses,
-// which should not point within the stack memory. The rewriting is guaranteed
-// to catch all pointers because the stacks are guaranteed by the ABI to be
-// sizeof(uintptr_t*) aligned.
-//
-// |original_stack_bottom| and |original_stack_top| are different pointer types
-// due on their differing guaranteed alignments -- the bottom may only be 1-byte
-// aligned while the top is aligned to double the pointer width.
-//
-// Returns a pointer to the bottom address in the copied stack. This value
-// matches the alignment of |original_stack_bottom| to ensure that the stack
-// contents have the same alignment as in the original stack. As a result the
-// value will be different than |stack_buffer_bottom| if |original_stack_bottom|
-// is not aligned to double the pointer width.
-//
-// NO HEAP ALLOCATIONS.
-//
-// static
-NO_SANITIZE("address")
-const uint8_t* CopyStackContentsAndRewritePointers(
-    const uint8_t* original_stack_bottom,
-    const uintptr_t* original_stack_top,
-    uintptr_t* stack_buffer_bottom) {
-  const uint8_t* byte_src = original_stack_bottom;
-  // The first address in the stack with pointer alignment. Pointer-aligned
-  // values from this point to the end of the stack are possibly rewritten using
-  // RewritePointerIfInOriginalStack(). Bytes before this cannot be a pointer
-  // because they occupy less space than a pointer would.
-  const uint8_t* first_aligned_address = reinterpret_cast<uint8_t*>(
-      (reinterpret_cast<uintptr_t>(byte_src) + sizeof(uintptr_t) - 1) &
-      ~(sizeof(uintptr_t) - 1));
-
-  // The stack copy bottom, which is offset from |stack_buffer_bottom| by the
-  // same alignment as in the original stack. This guarantees identical
-  // alignment between values in the original stack and the copy. This uses the
-  // platform stack alignment rather than pointer alignment so that the stack
-  // copy is aligned to platform expectations.
-  uint8_t* stack_copy_bottom = reinterpret_cast<uint8_t*>(stack_buffer_bottom) +
-                               (reinterpret_cast<uintptr_t>(byte_src) &
-                                (StackBuffer::kPlatformStackAlignment - 1));
-  uint8_t* byte_dst = stack_copy_bottom;
-
-  // Copy bytes verbatim up to the first aligned address.
-  for (; byte_src < first_aligned_address; ++byte_src, ++byte_dst)
-    *byte_dst = *byte_src;
-
-  // Copy the remaining stack by pointer-sized values, rewriting anything that
-  // looks like a pointer into the stack.
-  const uintptr_t* src = reinterpret_cast<const uintptr_t*>(byte_src);
-  uintptr_t* dst = reinterpret_cast<uintptr_t*>(byte_dst);
-  for (; src < original_stack_top; ++src, ++dst) {
-    *dst = RewritePointerIfInOriginalStack(
-        original_stack_bottom, original_stack_top, stack_copy_bottom, *src);
-  }
-
-  return stack_copy_bottom;
 }
 
 }  // namespace base

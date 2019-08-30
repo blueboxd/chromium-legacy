@@ -1754,6 +1754,40 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
   return list;
 }
 
+const CSSValue* ContentSize::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (range.Peek().Id() == CSSValueID::kNone)
+    return css_property_parser_helpers::ConsumeIdent(range);
+  auto* width = css_property_parser_helpers::ConsumeLength(
+      range, context.Mode(), kValueRangeNonNegative);
+  if (!width)
+    return nullptr;
+  auto* height = css_property_parser_helpers::ConsumeLength(
+      range, context.Mode(), kValueRangeNonNegative);
+  if (!height)
+    height = width;
+
+  return MakeGarbageCollected<CSSValuePair>(width, height,
+                                            CSSValuePair::kDropIdenticalValues);
+}
+
+const CSSValue* ContentSize::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  if (style.GetContentSize().IsNone())
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  return MakeGarbageCollected<CSSValuePair>(
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.GetContentSize().GetWidth(), style),
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.GetContentSize().GetHeight(), style),
+      CSSValuePair::kDropIdenticalValues);
+}
+
 namespace {
 
 CSSValue* ConsumeAttr(CSSParserTokenRange args,

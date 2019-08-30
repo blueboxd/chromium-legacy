@@ -324,6 +324,9 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   void OnLogOutSuccess() override;
   void OnLogOutFailure(const GoogleServiceAuthError& error) override;
 
+  // Helper method to initialize listed accounts ids.
+  void InitializeListedAccountsIds();
+
   // Helper method for AddAccountToCookie* methods.
   void AddAccountToCookieInternal(
       const CoreAccountId& account_id,

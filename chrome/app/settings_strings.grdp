@@ -3579,6 +3579,18 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_SHOWN" desc="Label for the button to delete all visible cookies for a site.">
     Remove All Shown
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_THIRD_PARTY" desc="Label for the subpage button to open a confirmation dialog to remove all cookies available in third-party contexts.">
+    Remove Third-Party Cookies
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting third-party cookie data.">
+    Clear third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_CONFIRMATION" desc="Text for the dialog that warns about deleting third-party cookie data.">
+    This will delete all cookies and site data available in third-party contexts. Do you want to continue?
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_THIRD_PARTY_COOKIES" desc="Label for the confirmation dialog button to delete all cookies and site data for third-party contexts.">
+    Clear third-party cookies
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting all site data.">
     Clear site data
   </message>

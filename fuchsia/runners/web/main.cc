@@ -14,9 +14,15 @@ int main(int argc, char** argv) {
   base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::RunLoop run_loop;
 
+  constexpr fuchsia::web::ContextFeatureFlags kWebRunnerFeatures =
+      fuchsia::web::ContextFeatureFlags::NETWORK |
+      fuchsia::web::ContextFeatureFlags::AUDIO |
+      fuchsia::web::ContextFeatureFlags::VULKAN |
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
+
   WebContentRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
-      WebContentRunner::CreateDefaultWebContext());
+      WebContentRunner::CreateDefaultWebContext(kWebRunnerFeatures));
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()

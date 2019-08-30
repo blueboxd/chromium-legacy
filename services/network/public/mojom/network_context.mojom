@@ -242,15 +242,6 @@ struct NetworkContextParams {
   [EnableIf=is_android]
   bool check_clear_text_permitted = false;
 
-  // True if the "Certificate Transparency in Chrome" policy (see
-  // https://github.com/chromium/ct-policy/blob/master/ct_policy.md) should
-  // be enforced for certificates and connections.
-  //
-  // See //net/docs/certificate-transparency.md before setting this flag to
-  // true.
-  [EnableIf=is_ct_supported]
-  bool enforce_chrome_ct_policy = false;
-
   // Enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
   bool http_09_on_non_default_ports_enabled = false;
 
@@ -309,6 +300,15 @@ struct NetworkContextParams {
   // servers, so they can discover misconfigurations.
   bool enable_certificate_reporting = false;
 
+  // True if the "Certificate Transparency in Chrome" policy (see
+  // https://github.com/chromium/ct-policy/blob/master/ct_policy.md) should
+  // be enforced for certificates and connections.
+  //
+  // See //net/docs/certificate-transparency.md before setting this flag to
+  // true.
+  [EnableIf=is_ct_supported]
+  bool enforce_chrome_ct_policy = false;
+
   // Enables Expect CT reporting, which sends reports for opted-in sites that
   // don't serve sufficient Certificate Transparency information.
   [EnableIf=is_ct_supported]
@@ -319,6 +319,13 @@ struct NetworkContextParams {
   // unrecognized.
   [EnableIf=is_ct_supported]
   array<CTLogInfo> ct_logs;
+
+  // When the Certificate Transparency logs in |ct_logs| were last updated. If
+  // |enforce_chrome_ct_policy| is set, and |ct_log_update_time| is not
+  // sufficiently recent, enforcement of the "Certificate Transparency in
+  // Chrome" policy will be disabled.
+  [EnableIf=is_ct_supported]
+  mojo_base.mojom.Time ct_log_update_time;
 
   // Specifies the path to the directory where NSS will store its database.
   [EnableIf=is_chromeos]

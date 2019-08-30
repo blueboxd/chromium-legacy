@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
@@ -241,11 +242,18 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   views::SetHitTestComponent(omnibox_page_action_icon_container_view_,
                              static_cast<int>(HTCLIENT));
 
-  browser_actions_container_ =
-      AddChildView(std::make_unique<BrowserActionsContainer>(
-          browser_view->browser(), nullptr, this, false /* interactive */));
-  views::SetHitTestComponent(browser_actions_container_,
-                             static_cast<int>(HTCLIENT));
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    extensions_container_ = AddChildView(
+        std::make_unique<ExtensionsToolbarContainer>(browser_view_->browser()));
+    views::SetHitTestComponent(extensions_container_,
+                               static_cast<int>(HTCLIENT));
+  } else {
+    browser_actions_container_ =
+        AddChildView(std::make_unique<BrowserActionsContainer>(
+            browser_view->browser(), nullptr, this, false /* interactive */));
+    views::SetHitTestComponent(browser_actions_container_,
+                               static_cast<int>(HTCLIENT));
+  }
 
 // TODO(crbug.com/998900): Create AppControllerUi class to contain this logic.
 #if defined(OS_CHROMEOS)

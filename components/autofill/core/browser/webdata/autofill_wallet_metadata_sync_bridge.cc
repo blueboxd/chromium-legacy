@@ -18,7 +18,6 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -327,8 +326,7 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      web_data_backend_(web_data_backend),
-      scoped_observer_(this) {
+      web_data_backend_(web_data_backend) {
   DCHECK(web_data_backend_);
   scoped_observer_.Add(web_data_backend_);
 

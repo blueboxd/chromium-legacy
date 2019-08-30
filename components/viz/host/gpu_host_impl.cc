@@ -193,7 +193,7 @@ void GpuHostImpl::ConnectFrameSinkManager(
   viz_main_->CreateFrameSinkManager(std::move(params));
 }
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
 void GpuHostImpl::ConnectVizDevTools(mojom::VizDevToolsParamsPtr params) {
   viz_main_->CreateVizDevTools(std::move(params));
 }

@@ -65,9 +65,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void ResumeReadingBodyFromNet() override;
 
   // mojom::URLLoaderClient overrides:
-  void OnReceiveResponse(const ResourceResponseHead& head) override;
+  void OnReceiveResponse(mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& head) override;
+                         mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;
@@ -108,7 +108,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void SetCorsFlagIfNeeded();
 
   static base::Optional<std::string> GetHeaderString(
-      const ResourceResponseHead& response,
+      const mojom::URLResponseHead& response,
       const std::string& header_name);
 
   mojo::Binding<mojom::URLLoader> binding_;

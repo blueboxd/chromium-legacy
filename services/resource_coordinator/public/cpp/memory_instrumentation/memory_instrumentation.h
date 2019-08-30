@@ -8,16 +8,10 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
 
 namespace memory_instrumentation {
 
@@ -37,9 +31,16 @@ class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
   using RequestGlobalMemoryDumpAndAppendToTraceCallback =
       base::OnceCallback<void(bool success, uint64_t dump_id)>;
 
-  static void CreateInstance(service_manager::Connector*,
-                             const std::string& service_name);
+  static void CreateInstance(
+      mojo::PendingRemote<memory_instrumentation::mojom::Coordinator>
+          coordinator);
   static MemoryInstrumentation* GetInstance();
+
+  // Retrieves a Coordinator interface to communicate with the service. This is
+  // safe to call from any thread.
+  memory_instrumentation::mojom::Coordinator* GetCoordinator() const {
+    return coordinator_.get();
+  }
 
   // Requests a global memory dump with |allocator_dump_names| indicating
   // the name of allocator dumps in which the consumer is interested. If
@@ -95,18 +96,13 @@ class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
       RequestGlobalMemoryDumpAndAppendToTraceCallback);
 
  private:
-  MemoryInstrumentation(service_manager::Connector* connector,
-                        const std::string& service_name);
+  explicit MemoryInstrumentation(
+      mojo::PendingRemote<memory_instrumentation::mojom::Coordinator>
+          coordinator);
   ~MemoryInstrumentation();
 
-  const mojom::CoordinatorPtr& GetCoordinatorBindingForCurrentSequence();
-  void BindCoordinatorRequestOnConnectorThread(mojom::CoordinatorRequest);
-
-  service_manager::Connector* const connector_;
-  scoped_refptr<base::SingleThreadTaskRunner> connector_task_runner_;
-  base::SequenceLocalStorageSlot<mojom::CoordinatorPtr>
-      sequence_storage_coordinator_;
-  const std::string service_name_;
+  const mojo::SharedRemote<memory_instrumentation::mojom::Coordinator>
+      coordinator_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryInstrumentation);
 };

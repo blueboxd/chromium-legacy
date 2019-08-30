@@ -21,9 +21,17 @@ namespace app_list {
 // obtain the AppListConfig.
 class ASH_PUBLIC_EXPORT AppListConfig {
  public:
-  // Constructor for the default, unscaled configuration.
+  // Constructor for default kShared configuration.
   AppListConfig();
 
+  // Constructor for unscaled configurations of the provided type.
+  explicit AppListConfig(ash::AppListConfigType type);
+
+  // Constructor for scaled app list configuration.
+  // Used only if kScalableAppList feature is not enabled, in which case the
+  // app list configuration for small screens is created by scaling down
+  // AppListCondigType::kShared configuration.
+  //
   // |scale_x| - The scale at which apps grid tile should be scaled
   // horizontally.
   // |scale_y| - The scale at which apps grid tile should be scaled
@@ -31,8 +39,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // |inner_title_scale_y| - The scale to use to vertically scale dimensions
   // within the apps grid tile. Different from |scale_y| because tile title
   // height is not vertically scaled.
-  AppListConfig(float scale_x, float scale_y, float inner_tile_scale_y);
-
+  AppListConfig(const AppListConfig& base_config,
+                float scale_x,
+                float scale_y,
+                float inner_tile_scale_y);
   ~AppListConfig();
 
   // Gets default app list configuration.
@@ -46,16 +56,14 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // |current_config|: If not null, the app list config currently used by the
   // app list.
   // NOTE: This should only be called on AppListConfig::instance().
+  // TODO(crbug.com/976947): Once ScalableAppList feature is removed (and
+  // enabled by default), this should return a reference or a pointer to an
+  // AppListConfig owned by |this|, as then the number of possible different
+  // configs will be restricted to the number of supported config types.
   std::unique_ptr<AppListConfig> CreateForAppListWidget(
       const gfx::Size& display_work_area_size,
       const gfx::Size& available_grid_size,
       const AppListConfig* current_config);
-
-  // The scale values used for the config - used primarily to identify the
-  // configuration. Both default to 1 (for the config returned by
-  // AppListConfig::instance()).
-  float scale_x() const { return scale_x_; }
-  float scale_y() const { return scale_y_; }
 
   int grid_tile_width() const { return grid_tile_width_; }
   int grid_tile_height() const { return grid_tile_height_; }
@@ -219,7 +227,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int GetMaxNumOfItemsPerPage(int page) const;
 
  private:
-  // Current config scale values.
+  const ash::AppListConfigType type_;
+
+  // Current config scale values - should be different from 1 for
+  // AppListConfigType::kShared only.
   const float scale_x_;
   const float scale_y_;
 

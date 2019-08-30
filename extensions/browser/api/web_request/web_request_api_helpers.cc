@@ -16,6 +16,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -1227,7 +1228,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
 
   // Only create a copy if we really want to modify the response headers.
   if (override_response_headers->get() == NULL) {
-    *override_response_headers = new net::HttpResponseHeaders(
+    *override_response_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         original_response_headers->raw_headers());
   }
 
@@ -1353,8 +1354,9 @@ void MergeOnHeadersReceivedResponses(
   if (new_url.is_valid()) {
     // Only create a copy if we really want to modify the response headers.
     if (override_response_headers->get() == NULL) {
-      *override_response_headers = new net::HttpResponseHeaders(
-          original_response_headers->raw_headers());
+      *override_response_headers =
+          base::MakeRefCounted<net::HttpResponseHeaders>(
+              original_response_headers->raw_headers());
     }
     (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
     (*override_response_headers)->RemoveHeader("location");

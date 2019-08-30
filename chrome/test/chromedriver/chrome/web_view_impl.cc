@@ -172,7 +172,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
   // Page.setDownloadBehavior. This is handled by the
   // DownloadDirectoryOverrideManager, which is only instantiated
   // in headless chrome.
-  if (browser_info->browser_name == "headless chrome")
+  if (browser_info->is_headless)
     download_directory_override_manager_ =
         std::make_unique<DownloadDirectoryOverrideManager>(client_.get());
   client_->SetOwner(this);

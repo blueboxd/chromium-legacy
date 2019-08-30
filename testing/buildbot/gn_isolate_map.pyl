@@ -586,6 +586,13 @@
     "label": "//chromeos:chrome_all_tast_tests",
     "type": "raw",
   },
+  "chrome_all_tast_tests_informational": {
+    "args": [
+      "--vm-logs-dir=${ISOLATED_OUTDIR}",
+    ],
+    "label": "//chromeos:chrome_all_tast_tests_informational",
+    "type": "raw",
+  },
   "chrome_app_unittests": {
     "label": "//chrome/test:chrome_app_unittests",
     "type": "console_test_launcher",

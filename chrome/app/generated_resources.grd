@@ -8429,10 +8429,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
         A data breach on a site or app you use exposed your password. Chrome recommends checking your saved passwords now.
       </message>
       <message name="IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were leaked on current site only.">
-        A data breach on a site or app you use exposed your password. Chrome recommends changing your password on <ph name ="ORIGIN">$1<ex>example.com</ex></ph> now.
+        A data breach on a site or app you use exposed your password. Chrome recommends <ph name="BOLD">$1<ex>changing your password</ex></ph> on <ph name="ORIGIN">$2<ex>example.com</ex></ph> now.
+      </message>
+      <message name="IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_BOLD_MESSAGE" desc="The text that is written in bold in leak dialog message when credentials were leaked on current site only.">
+        changing your password
       </message>
       <message name="IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE" desc="The text that is used in credential leak detection dialog when credentials were not saved in chrome, but used on multiple sites.">
-        A data breach on a site or app you use exposed your password. Chrome recommends checking your saved passwords and changing your password on <ph name ="ORIGIN">$1<ex>example.com</ex></ph>.
+        A data breach on a site or app you use exposed your password. Chrome recommends checking your saved passwords and changing your password on <ph name="ORIGIN">$1<ex>example.com</ex></ph>.
       </message>
       <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES" desc="The title of the dialog during the autosign-in first run experience for the Chrome syncing users.">
         Sign in easily across devices
@@ -10017,15 +10020,15 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- SMS strings -->
     <message name="IDS_SMS_INFOBAR_TITLE" desc="Title shown when Chrome is waiting for an SMS on the user's behalf">
-      Do you want to enter the code on this site?
+      Verify your phone number
     </message>
 
     <message name="IDS_SMS_INFOBAR_STATUS_SMS_RECEIVED" desc="Message shown when Chrome has received an SMS on the user's behalf">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> sent a verification code to your phone
+      <ph name="ONE_TIME_CODE">$1<ex>123</ex></ph> is your code for <ph name="ORIGIN">$2<ex>example.com</ex></ph>
     </message>
 
     <message name="IDS_SMS_INFOBAR_BUTTON_OK" desc="Text for the button shown when Chrome has received an SMS on the user's behalf">
-      Enter code
+      Verify
     </message>
 
   </messages>

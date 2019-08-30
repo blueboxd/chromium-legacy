@@ -54,6 +54,14 @@ bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
 
 bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
   DCHECK(BuiltInModuleInfraEnabled());
+
+  // Some built-in APIs are available only on SecureContexts.
+  // https://crbug.com/977470
+  if (BuiltInModuleRequireSecureContext(module) &&
+      !GetExecutionContext()->IsSecureContext()) {
+    return false;
+  }
+
   if (RuntimeEnabledFeatures::BuiltInModuleAllEnabled())
     return true;
   switch (module) {
@@ -71,6 +79,20 @@ bool ModulatorImplBase::BuiltInModuleEnabled(layered_api::Module module) const {
       return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
     case layered_api::Module::kElementsVirtualScroller:
       return false;
+  }
+}
+
+bool ModulatorImplBase::BuiltInModuleRequireSecureContext(
+    layered_api::Module module) {
+  switch (module) {
+    case layered_api::Module::kBlank:
+    case layered_api::Module::kElementsInternal:
+    case layered_api::Module::kElementsSwitch:
+    case layered_api::Module::kElementsToast:
+    case layered_api::Module::kElementsVirtualScroller:
+      return false;
+    case layered_api::Module::kKvStorage:
+      return true;
   }
 }
 

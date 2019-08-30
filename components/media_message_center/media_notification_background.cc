@@ -12,6 +12,7 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
@@ -20,8 +21,6 @@ namespace media_message_center {
 namespace {
 
 constexpr int kMediaImageGradientWidth = 40;
-
-constexpr SkColor kMediaNotificationDefaultBackgroundColor = SK_ColorWHITE;
 
 // The ratio for a background color option to be considered very popular.
 constexpr double kMediaNotificationBackgroundColorVeryPopularRatio = 2.5;
@@ -281,7 +280,7 @@ void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
   // Draw a filled rectangle which will act as the main background of the
   // notification. This may cover up some of the artwork.
   const SkColor background_color =
-      background_color_.value_or(kMediaNotificationDefaultBackgroundColor);
+      background_color_.value_or(GetDefaultBackgroundColor(*view));
   canvas->FillRect(GetFilledBackgroundBounds(*view), background_color);
 
   {
@@ -332,10 +331,11 @@ bool MediaNotificationBackground::UpdateArtworkMaxWidthPct(
   return true;
 }
 
-SkColor MediaNotificationBackground::GetBackgroundColor() const {
+SkColor MediaNotificationBackground::GetBackgroundColor(
+    const views::View& owner) const {
   if (background_color_.has_value())
     return *background_color_;
-  return kMediaNotificationDefaultBackgroundColor;
+  return GetDefaultBackgroundColor(owner);
 }
 
 SkColor MediaNotificationBackground::GetForegroundColor(
@@ -345,7 +345,7 @@ SkColor MediaNotificationBackground::GetForegroundColor(
           ? *foreground_color_
           : views::style::GetColor(owner, views::style::CONTEXT_LABEL,
                                    views::style::STYLE_PRIMARY);
-  return color_utils::BlendForMinContrast(foreground, GetBackgroundColor())
+  return color_utils::BlendForMinContrast(foreground, GetBackgroundColor(owner))
       .color;
 }
 
@@ -410,6 +410,12 @@ SkPoint MediaNotificationBackground::GetGradientEndPoint(
     const gfx::Rect& draw_bounds) const {
   return gfx::PointToSkPoint(base::i18n::IsRTL() ? draw_bounds.left_center()
                                                  : draw_bounds.right_center());
+}
+
+SkColor MediaNotificationBackground::GetDefaultBackgroundColor(
+    const views::View& owner) const {
+  return owner.GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBackground);
 }
 
 }  // namespace media_message_center

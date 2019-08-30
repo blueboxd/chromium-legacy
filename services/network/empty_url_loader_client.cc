@@ -34,12 +34,12 @@ void EmptyURLLoaderClient::DeleteSelf() {
   delete this;
 }
 
-void EmptyURLLoaderClient::OnReceiveResponse(const ResourceResponseHead& head) {
-}
+void EmptyURLLoaderClient::OnReceiveResponse(
+    const mojom::URLResponseHeadPtr head) {}
 
 void EmptyURLLoaderClient::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& head) {}
+    mojom::URLResponseHeadPtr head) {}
 
 void EmptyURLLoaderClient::OnUploadProgress(int64_t current_position,
                                             int64_t total_size,

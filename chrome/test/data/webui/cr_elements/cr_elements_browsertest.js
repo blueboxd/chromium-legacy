@@ -488,7 +488,6 @@ CrElementsRadioButtonTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../test_util.js',
     'cr_radio_button_test.js',
   ]),
 };

@@ -657,7 +657,8 @@
     <dimen name="navigation_bubble_text_end_padding">8dp</dimen>
     <dimen name="navigation_sheet_toolbar_bottom_padding">44dp</dimen>
     <dimen name="navigation_sheet_content_top_padding">18dp</dimen>
-    <dimen name="navigation_sheet_content_bottom_padding">8dp</dimen>
+    <dimen name="navigation_sheet_content_bottom_padding">4dp</dimen>
+    <dimen name="navigation_sheet_content_wrap_padding">4dp</dimen>
 
     <!-- ChromeTextInputLayout dimensions -->
     <dimen name="text_input_layout_padding_start">3dp</dimen>

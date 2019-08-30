@@ -16,9 +16,16 @@
 namespace content {
 
 constexpr base::StringPiece kToken = "For: ";
+constexpr base::StringPiece kOneTimeCode = "otp";
+
+SmsParser::Result::Result(const url::Origin& origin,
+                          const std::string& one_time_code)
+    : origin(std::move(origin)), one_time_code(one_time_code) {}
+
+SmsParser::Result::~Result() {}
 
 // static
-base::Optional<url::Origin> SmsParser::Parse(base::StringPiece sms) {
+base::Optional<SmsParser::Result> SmsParser::Parse(base::StringPiece sms) {
   size_t found = sms.rfind(kToken);
 
   if (found == base::StringPiece::npos) {
@@ -29,15 +36,18 @@ base::Optional<url::Origin> SmsParser::Parse(base::StringPiece sms) {
 
   GURL gurl(url);
 
-  if (!gurl.is_valid()) {
+  if (!gurl.is_valid())
     return base::nullopt;
-  }
 
-  if (!(gurl.SchemeIs(url::kHttpsScheme) || net::IsLocalhost(gurl))) {
+  if (!(gurl.SchemeIs(url::kHttpsScheme) || net::IsLocalhost(gurl)))
     return base::nullopt;
-  }
 
-  return url::Origin::Create(gurl);
+  std::string one_time_code;
+
+  if (!net::GetValueForKeyInQuery(gurl, kOneTimeCode.data(), &one_time_code))
+    return base::nullopt;
+
+  return Result(url::Origin::Create(gurl), one_time_code);
 }
 
 }  // namespace content

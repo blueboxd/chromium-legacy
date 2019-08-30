@@ -44,7 +44,8 @@ class XRRuntimeManagerTest : public testing::Test {
   std::unique_ptr<VRServiceImpl> BindService() {
     mojo::PendingRemote<device::mojom::VRServiceClient> proxy;
     device::FakeVRServiceClient client(proxy.InitWithNewPipeAndPassReceiver());
-    auto service = base::WrapUnique(new VRServiceImpl());
+    auto service =
+        std::make_unique<VRServiceImpl>(util::PassKey<XRRuntimeManagerTest>());
     service->SetClient(std::move(proxy));
     return service;
   }

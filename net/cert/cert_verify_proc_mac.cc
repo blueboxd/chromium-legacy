@@ -637,6 +637,7 @@ int VerifyWithGivenFlags(X509Certificate* cert,
                          const std::string& ocsp_response,
                          const std::string& sct_list,
                          const int flags,
+                         bool rev_checking_soft_fail,
                          CRLSet* crl_set,
                          CertVerifyResult* verify_result,
                          CRLSetResult* completed_chain_crl_result) {
@@ -1029,10 +1030,10 @@ int VerifyWithGivenFlags(X509Certificate* cert,
   // that SecTrustEvaluate may have set, as its results are not used.
   verify_result->cert_status &= ~CERT_STATUS_COMMON_NAME_INVALID;
 
-  // TODO(wtc): Suppress CERT_STATUS_NO_REVOCATION_MECHANISM for now to be
-  // compatible with Windows, which in turn implements this behavior to be
-  // compatible with WinHTTP, which doesn't report this error (bug 3004).
-  verify_result->cert_status &= ~CERT_STATUS_NO_REVOCATION_MECHANISM;
+  if (rev_checking_soft_fail) {
+    verify_result->cert_status &= ~(CERT_STATUS_NO_REVOCATION_MECHANISM |
+                                    CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+  }
 
   AppendPublicKeyHashesAndUpdateKnownRoot(
       completed_chain, &verify_result->public_key_hashes,
@@ -1072,9 +1073,9 @@ int CertVerifyProcMac::VerifyInternal(
   GetCandidateEVPolicy(cert, &candidate_ev_policy_oid);
 
   CRLSetResult completed_chain_crl_result;
-  int rv =
-      VerifyWithGivenFlags(cert, hostname, ocsp_response, sct_list, flags,
-                           crl_set, verify_result, &completed_chain_crl_result);
+  int rv = VerifyWithGivenFlags(cert, hostname, ocsp_response, sct_list, flags,
+                                /*rev_checking_soft_fail=*/true, crl_set,
+                                verify_result, &completed_chain_crl_result);
   if (rv != OK)
     return rv;
 
@@ -1082,27 +1083,43 @@ int CertVerifyProcMac::VerifyInternal(
       CheckCertChainEV(verify_result->verified_cert.get(),
                        candidate_ev_policy_oid)) {
     // EV policies check out and the verification succeeded. See if revocation
-    // checking still needs to be done before it can be marked as EV.
-    if (completed_chain_crl_result == kCRLSetUnknown &&
-        !(flags & VERIFY_REV_CHECKING_ENABLED)) {
+    // checking still needs to be done before it can be marked as EV. Even if
+    // the first verification had VERIFY_REV_CHECKING_ENABLED, verification
+    // must be repeated since the previous verification was done with soft-fail
+    // revocation checking.
+    if (completed_chain_crl_result == kCRLSetUnknown) {
       // If this is an EV cert and it wasn't covered by CRLSets and revocation
       // checking wasn't already on, try again with revocation forced on.
       //
       // Restore the input state of |*verify_result|, so that the
       // re-verification starts with a clean slate.
-      *verify_result = input_verify_result;
+      CertVerifyResult ev_verify_result = input_verify_result;
       int tmp_rv = VerifyWithGivenFlags(
           verify_result->verified_cert.get(), hostname, ocsp_response, sct_list,
-          flags | VERIFY_REV_CHECKING_ENABLED, crl_set, verify_result,
+          flags | VERIFY_REV_CHECKING_ENABLED,
+          /*rev_checking_soft_fail=*/false, crl_set, &ev_verify_result,
           &completed_chain_crl_result);
-      // If re-verification failed, return those results without setting EV
-      // status.
-      if (tmp_rv != OK)
+      if (tmp_rv == OK) {
+        // If EV re-verification succeeded, mark as EV and return those results.
+        *verify_result = ev_verify_result;
+        verify_result->cert_status |= CERT_STATUS_IS_EV;
+      } else if (tmp_rv == ERR_CERT_REVOKED) {
+        // This matches the historical behavior of cert_verify_proc_mac where a
+        // revoked result from the EV verification attempt results in revoked
+        // result overall. (Technically this may not be correct if there was a
+        // different non-revoked, non-EV path that could have been built.)
+        *verify_result = ev_verify_result;
         return tmp_rv;
-      // Otherwise, fall through and add the EV status flag.
+      } else {
+        // If EV was attempted, set CERT_STATUS_REV_CHECKING_ENABLED even if the
+        // EV result wasn't used. This is a little weird but matches the
+        // behavior of the other verifiers.
+        verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
+      }
+    } else {
+      // EV cert and it was covered by CRLSets.
+      verify_result->cert_status |= CERT_STATUS_IS_EV;
     }
-    // EV cert and it was covered by CRLSets or revocation checking passed.
-    verify_result->cert_status |= CERT_STATUS_IS_EV;
   }
 
   LogNameNormalizationMetrics(".Mac", verify_result->verified_cert.get(),

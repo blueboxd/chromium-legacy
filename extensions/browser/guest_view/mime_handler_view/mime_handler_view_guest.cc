@@ -54,10 +54,10 @@ StreamContainer::StreamContainer(
       handler_url_(handler_url),
       extension_id_(extension_id),
       transferrable_loader_(std::move(transferrable_loader)),
-      mime_type_(transferrable_loader_->head.mime_type),
+      mime_type_(transferrable_loader_->head->mime_type),
       original_url_(original_url),
       stream_url_(transferrable_loader_->url),
-      response_headers_(transferrable_loader_->head.headers) {}
+      response_headers_(transferrable_loader_->head->headers) {}
 
 StreamContainer::~StreamContainer() {
 }

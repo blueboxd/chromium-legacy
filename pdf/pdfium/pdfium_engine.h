@@ -120,7 +120,7 @@ class PDFiumEngine : public PDFEngine,
   int GetCopiesToPrint() override;
   int GetDuplexType() override;
   bool GetPageSizeAndUniformity(pp::Size* size) override;
-  void AppendBlankPages(int num_pages) override;
+  void AppendBlankPages(size_t num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
   std::string GetMetadata(const std::string& key) override;
   std::vector<uint8_t> GetSaveData() override;
@@ -232,10 +232,6 @@ class PDFiumEngine : public PDFEngine,
   // fully downloaded.
   // If this has been run once, it will not notify the client again.
   void FinishLoadingDocument();
-
-  // Formats the pages of |page_sizes| and appends them to |pages_|. Formats to
-  // two-up view if |two_up_view_| is true, else formats to single-view.
-  void LoadPagesInCurrentLayout(std::vector<pp::Size> page_sizes, bool reload);
 
   // Applies the current layout to the PDFiumPage objects. This primarily
   // involves updating the PDFiumPage rectangles from the corresponding layout

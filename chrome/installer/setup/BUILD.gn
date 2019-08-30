@@ -26,6 +26,13 @@ if (is_win) {
       "uninstall.h",
     ]
 
+    if (is_chrome_branded) {
+      # The resource compiler can only handle macro functions up to 31 chars
+      # which the buildflag system produces for this. Make a define so we can
+      # toggle off of the enable-basic-printing flag in the .rc file.
+      defines = [ "GOOGLE_CHROME_BRANDING_FOR_RC" ]
+    }
+
     configs -= [ "//build/config/win:console" ]
     configs += [ "//build/config/win:windowed" ]
 
@@ -34,6 +41,7 @@ if (is_win) {
       ":lib",
       ":setup_exe_version",
       "//base",
+      "//build:branding_buildflags",
       "//build/win:default_exe_manifest",
       "//chrome/chrome_elf:constants",
       "//chrome/common:constants",
@@ -98,6 +106,7 @@ if (is_win) {
     ]
 
     deps = [
+      "//build:branding_buildflags",
       "//chrome/common:constants",
       "//chrome/common:version_header",
       "//chrome/install_static:install_static_util",
@@ -147,6 +156,7 @@ if (is_win) {
       "//base:i18n",
       "//base/allocator:buildflags",
       "//base/test:test_support",
+      "//build:branding_buildflags",
       "//chrome/common:constants",
       "//chrome/common:version_header",
       "//chrome/install_static:install_static_util",

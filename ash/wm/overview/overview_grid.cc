@@ -42,7 +42,6 @@
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
-#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -349,8 +348,6 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
                            const gfx::Rect& bounds_in_screen)
     : root_window_(root_window),
       overview_session_(overview_session),
-      window_observer_(this),
-      window_state_observer_(this),
       bounds_(bounds_in_screen) {
   for (auto* window : windows) {
     if (window->GetRootWindow() != root_window)

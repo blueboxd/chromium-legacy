@@ -42,11 +42,6 @@ const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
 const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsSurfaceSynchronizationEnabled() {
-  // TODO(crbug.com/985009): Delete function after all callers are removed.
-  return true;
-}
-
 bool IsVizDisplayCompositorEnabled() {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // We can't remove the feature switch yet because OOP-D isn't enabled on all

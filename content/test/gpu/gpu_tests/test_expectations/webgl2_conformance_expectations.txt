@@ -50,8 +50,8 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 # ========================
 
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
-# TODO(kbr): restore suppression for Android / Qualcomm below after this is fixed.
-crbug.com/949249 conformance2/extensions/ovr_multiview2.html [ Failure ]
+
+crbug.com/949249 [ passthrough ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 
 # Marking a test as failing on all platforms.
 crbug.com/985032 conformance2/glsl3/sampler-array-indexing.html [ Failure ]
@@ -160,6 +160,7 @@ crbug.com/angleproject/1465 [ win ] conformance2/glsl3/tricky-loop-conditions.ht
 crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
 # Win / D3D11 backend
+# This test seems to flakily pass sometimes (at least on AMD and Intel).
 crbug.com/angleproject/3388 [ win d3d11 ] conformance2/uniforms/large-uniform-buffers.html [ Failure ]
 
 # Win / NVidia
@@ -236,6 +237,7 @@ crbug.com/878780 [ win amd ] conformance2/textures/webgl_canvas/* [ RetryOnFailu
 crbug.com/992457 [ win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-srgb8-rgb-unsigned_byte.html [ RetryOnFailure ]
 
 # Recent AMD drivers seem to have a regression with 3D textures.
+# (Some of these tests seem to occasionally pass unexpectedly.)
 crbug.com/angleproject/2424 [ d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-3d-* [ Failure ]
 crbug.com/angleproject/2424 [ d3d11 win amd ] conformance2/textures/image/tex-3d-* [ Failure ]
 crbug.com/angleproject/2424 [ d3d11 win amd ] conformance2/textures/image_data/tex-3d-* [ Failure ]
@@ -674,16 +676,13 @@ crbug.com/951628 [ android no-passthrough ] conformance/rendering/blending.html 
 
 # Qualcomm (Pixel 2) failures
 crbug.com/906737 [ android qualcomm ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-# TODO(kbr): uncomment after http://crbug.com/949249 fixed
-# crbug.com/906739 [ android qualcomm ] conformance2/extensions/ovr_multiview2.html [ Failure ]
-crbug.com/906742 [ android qualcomm ] conformance2/glsl3/compare-structs-containing-arrays.html [ Failure ]
+crbug.com/906742 [ android qualcomm no-passthrough ] conformance2/glsl3/compare-structs-containing-arrays.html [ Failure ]
 crbug.com/906735 [ android qualcomm ] conformance2/textures/video/tex-2d-rgba8ui-rgba_integer-unsigned_byte.html [ Failure ]
 crbug.com/981216 [ android qualcomm-adreno-(tm)-540 ] deqp/functional/gles3/fbocolorbuffer/tex2d_01.html [ RetryOnFailure ]
 crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/default_framebuffer_02.html [ RetryOnFailure ]
 
 # This test is failing on Android Pixel 2 and 3 (Qualcomm)
 # Seems to be an OpenGL ES bug.
-crbug.com/945903 [ android qualcomm ] conformance2/rendering/vertex-id.html [ Failure ]
 crbug.com/695742 [ android qualcomm no-angle ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
 
 # This test is flaky but can fail three times in a row so it must be
@@ -704,7 +703,6 @@ crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminanc
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 
 crbug.com/angleproject/3684 [ android opengles ] conformance2/renderbuffers/multisample-with-full-sample-counts.html [ Failure ]
-crbug.com/983142 [ android opengles ] conformance2/textures/misc/tex-storage-compressed-formats.html [ Failure ]
 crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-rgb16f-rgb-half_float.html [ Failure ]
 crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html [ Failure ]
 crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-srgb8-rgb-unsigned_byte.html [ Failure ]

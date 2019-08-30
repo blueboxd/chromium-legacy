@@ -28,34 +28,34 @@ NavigationPreloadRequest::NavigationPreloadRequest(
 NavigationPreloadRequest::~NavigationPreloadRequest() = default;
 
 void NavigationPreloadRequest::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK(!response_);
   response_ = std::make_unique<blink::WebURLResponse>();
   // TODO(horo): Set report_security_info to true when DevTools is attached.
   const bool report_security_info = false;
-  WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
-                                        report_security_info,
-                                        -1 /* request_id */);
+  WebURLLoaderImpl::PopulateURLResponse(
+      url_, network::ResourceResponseHead(response_head), response_.get(),
+      report_security_info, -1 /* request_id */);
   MaybeReportResponseToOwner();
 }
 
 void NavigationPreloadRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK(!response_);
   DCHECK(net::HttpResponseHeaders::IsRedirectResponseCode(
-      response_head.headers->response_code()));
+      response_head->headers->response_code()));
 
   response_ = std::make_unique<blink::WebURLResponse>();
-  WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
-                                        false /* report_security_info */,
-                                        -1 /* request_id */);
+  WebURLLoaderImpl::PopulateURLResponse(
+      url_, network::ResourceResponseHead(response_head), response_.get(),
+      false /* report_security_info */, -1 /* request_id */);
   owner_->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                       mojo::ScopedDataPipeConsumerHandle());
   // This will delete |this|.
   owner_->OnNavigationPreloadComplete(
-      fetch_event_id_, response_head.response_start,
-      response_head.encoded_data_length, 0 /* encoded_body_length */,
+      fetch_event_id_, response_head->response_start,
+      response_head->encoded_data_length, 0 /* encoded_body_length */,
       0 /* decoded_body_length */);
 }
 

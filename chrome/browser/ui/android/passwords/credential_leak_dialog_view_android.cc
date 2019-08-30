@@ -51,11 +51,17 @@ void CredentialLeakDialogViewAndroid::Show(ui::WindowAndroid* window_android) {
 void CredentialLeakDialogViewAndroid::Accepted(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  controller_->OnPasswordCheckTriggered();
+  controller_->OnAcceptDialog();
+}
+
+void CredentialLeakDialogViewAndroid::Cancelled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  controller_->OnCancelDialog();
 }
 
 void CredentialLeakDialogViewAndroid::Closed(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  controller_->OnDialogDismissRequested();
+  controller_->OnCloseDialog();
 }

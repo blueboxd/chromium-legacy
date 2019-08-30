@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -64,7 +65,7 @@ struct TestCase {
 };
 
 bool OverrideFunction(const std::string& name,
-                      extensions::ExtensionFunctionFactory factory) {
+                      ExtensionFunctionFactory factory) {
   return ExtensionFunctionRegistry::GetInstance().OverrideFunctionForTesting(
       name, factory);
 }
@@ -194,7 +195,7 @@ class FileBrowserHandlerExtensionTest : public extensions::ExtensionApiTest {
   // the test.  This function will be called from ExtensionFunctinoDispatcher
   // whenever an extension function for fileBrowserHandlerInternal.selectFile
   // will be needed.
-  static ExtensionFunction* TestSelectFileFunctionFactory() {
+  static scoped_refptr<ExtensionFunction> TestSelectFileFunctionFactory() {
     EXPECT_TRUE(test_cases_);
     EXPECT_TRUE(!test_cases_ || current_test_case_ < test_cases_->size());
 
@@ -208,7 +209,7 @@ class FileBrowserHandlerExtensionTest : public extensions::ExtensionApiTest {
         new MockFileSelectorFactory(test_cases_->at(current_test_case_));
     current_test_case_++;
 
-    return new FileBrowserHandlerInternalSelectFileFunction(
+    return base::MakeRefCounted<FileBrowserHandlerInternalSelectFileFunction>(
         mock_factory, false);
   }
 

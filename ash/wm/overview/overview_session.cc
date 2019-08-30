@@ -642,19 +642,20 @@ void OverviewSession::UpdateRoundedCornersAndShadow() {
       window->UpdateRoundedCornersAndShadow();
 }
 
-void OverviewSession::OnStartingAnimationComplete(bool canceled) {
+void OverviewSession::OnStartingAnimationComplete(bool canceled,
+                                                  bool should_focus_overview) {
   for (auto& grid : grid_list_)
     grid->OnStartingAnimationComplete(canceled);
 
-  if (!canceled) {
-    if (overview_focus_widget_) {
-      if (enter_exit_overview_type_ == EnterExitOverviewType::kStartUnfocused)
-        overview_focus_widget_->ShowInactive();
-      else
-        overview_focus_widget_->Show();
-    }
-    Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
+  if (canceled)
+    return;
+  if (overview_focus_widget_) {
+    if (should_focus_overview)
+      overview_focus_widget_->Show();
+    else
+      overview_focus_widget_->ShowInactive();
   }
+  Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
 }
 
 void OverviewSession::OnWindowActivating(

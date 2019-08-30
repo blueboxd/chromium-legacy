@@ -7,10 +7,7 @@
 
 #include "base/optional.h"
 #include "content/common/content_export.h"
-
-namespace url {
-class Origin;
-}
+#include "url/origin.h"
 
 namespace content {
 
@@ -19,7 +16,15 @@ namespace content {
 // Returns an empty result if the formatting doesn't match.
 class CONTENT_EXPORT SmsParser {
  public:
-  static base::Optional<url::Origin> Parse(base::StringPiece sms);
+  struct CONTENT_EXPORT Result {
+    Result(const url::Origin& origin, const std::string& one_time_code);
+    ~Result();
+
+    const url::Origin origin;
+    const std::string one_time_code;
+  };
+
+  static base::Optional<Result> Parse(base::StringPiece sms);
 };
 
 }  // namespace content

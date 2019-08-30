@@ -1417,9 +1417,14 @@ def main(argv):
         GetDepConfig(c)
         for c in build_utils.ParseGnList(options.module_build_configs)
     ]
-    base_module_configs = [c for c in module_configs if c['is_base_module']]
-    assert len(base_module_configs) == 1, 'Must have exactly 1 base module!'
-    deps_info['base_module_config'] = base_module_configs[0]['path']
+    jni_all_source = set()
+    for c in module_configs:
+      if c['is_base_module']:
+        assert 'base_module_config' not in deps_info, (
+            'Must have exactly 1 base module!')
+        deps_info['base_module_config'] = c['path']
+      jni_all_source.update(c['jni']['all_source'])
+    deps_info['jni'] = {'all_source': sorted(jni_all_source)}
 
   # Map configs to classpath entries that should be included in their final dex.
   classpath_entries_by_owning_config = collections.defaultdict(list)

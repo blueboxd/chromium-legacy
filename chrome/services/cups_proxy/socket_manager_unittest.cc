@@ -60,7 +60,7 @@ class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
   // Note: Can't simulate actual IO thread in unit_tests, so we serve an
   // arbitrary SingleThreadTaskRunner.
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override {
-    return base::CreateSingleThreadTaskRunner({});
+    return base::CreateSingleThreadTaskRunner({base::ThreadPool()});
   }
 };
 

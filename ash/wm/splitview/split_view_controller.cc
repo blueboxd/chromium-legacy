@@ -1522,7 +1522,7 @@ int SplitViewController::GetDividerEndPosition() {
 void SplitViewController::OnWindowSnapped(aura::Window* window) {
   RestoreTransformIfApplicable(window);
   UpdateSplitViewStateAndNotifyObservers();
-  ActivateAndStackSnappedWindow(window);
+  ActivateSnappedWindowAndUpdateStacking(window);
 
   // If there are two window snapped in clamshell mode, splitview mode is ended.
   if (state_ == SplitViewState::kBothSnapped &&
@@ -1717,25 +1717,16 @@ void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
   }
 }
 
-void SplitViewController::ActivateAndStackSnappedWindow(aura::Window* window) {
-  wm::ActivateWindow(window);
-
-  // Stack the other snapped window below the current active window so that the
-  // two snapped window are always the top two windows when split view mode is
-  // active.
-  aura::Window* stacking_target =
-      (window == left_window_) ? right_window_ : left_window_;
-
-  // Only try to restack the snapped windows if they have the same parent
-  // window. Otherwise, just make sure the |stacking_target| is the top
-  // child window of its parent.
-  // TODO(xdai): Find better ways to handle this case.
-  if (stacking_target) {
-    if (stacking_target->parent() == window->parent())
-      stacking_target->parent()->StackChildBelow(stacking_target, window);
-    else
-      stacking_target->parent()->StackChildAtTop(stacking_target);
+void SplitViewController::ActivateSnappedWindowAndUpdateStacking(
+    aura::Window* window) {
+  aura::Window* other_window =
+      window == left_window_ ? right_window_ : left_window_;
+  if (other_window) {
+    DCHECK(window == left_window_ || window == right_window_);
+    other_window->parent()->StackChildAtTop(other_window);
   }
+
+  wm::ActivateWindow(window);
 }
 
 void SplitViewController::SetWindowsTransformDuringResizing() {

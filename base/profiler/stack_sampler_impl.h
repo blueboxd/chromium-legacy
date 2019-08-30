@@ -61,19 +61,6 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
   StackSamplerTestDelegate* const test_delegate_;
 };
 
-// These two functions are exposed for testing.
-
-BASE_EXPORT uintptr_t
-RewritePointerIfInOriginalStack(const uint8_t* original_stack_bottom,
-                                const uintptr_t* original_stack_top,
-                                const uint8_t* stack_copy_bottom,
-                                uintptr_t pointer);
-
-BASE_EXPORT const uint8_t* CopyStackContentsAndRewritePointers(
-    const uint8_t* original_stack_bottom,
-    const uintptr_t* original_stack_top,
-    uintptr_t* stack_buffer_bottom);
-
 }  // namespace base
 
 #endif  // BASE_PROFILER_STACK_SAMPLER_IMPL_H_

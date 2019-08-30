@@ -162,9 +162,7 @@ Polymer({
    * @private
    */
   onBrowsingDataTap_: function() {
-    settings.navigateTo(
-        settings.routes.CLEAR_BROWSER_DATA,
-        /* dynamicParams */ null, /* removeSearch */ true);
+    window.open('chrome://settings/clearBrowserData');
   },
 
   /**

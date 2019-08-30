@@ -1032,6 +1032,9 @@ int CertVerifyProcNSS::VerifyInternalImpl(
     if (check_revocation)
       verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
+    // TODO(mattm): This is weird, VerifyEV might verify a different path but
+    // the non-EV path is what actually gets returned just with the EV bit
+    // added.
     if (VerifyEV(cert_handle, flags, crl_set, check_revocation, metadata,
                  ev_policy_oid, trust_anchors.get(), &crlset_callback)) {
       verify_result->cert_status |= CERT_STATUS_IS_EV;

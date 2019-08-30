@@ -19,7 +19,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -74,7 +73,7 @@ bool IsShelfBackgroundTypeWithRoundedCorners(
 
 AppListPresenterDelegateImpl::AppListPresenterDelegateImpl(
     AppListControllerImpl* controller)
-    : controller_(controller), display_observer_(this), shelf_observer_(this) {
+    : controller_(controller) {
   display_observer_.Add(display::Screen::GetScreen());
 }
 

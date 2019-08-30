@@ -5,24 +5,21 @@ designs and make code easier to maintain. **Code coverage helps you ensure your
 tests are thorough**.
 
 Chromium CLs can show a line-by-line breakdown of test coverage. **You can use
-the code coverage trybot to ensure you only submit well-tested code**.
+it to ensure you only submit well-tested code**.
 
-To see code coverage for a Chromium CL, trigger the code coverage trybot
-**linux-coverage-rel**:
-
-![choose_tryjobs] ![linux_coverage_rel]
-
-Once the build finishes and code coverage data is processed successfully, **look
+To see code coverage for a Chromium CL, **trigger a CQ dry run**, and once the
+builds finish and code coverage data is processed successfully, **look
 at the right column of the side by side diff view to see coverage information**:
 
 ![code_coverage_annotations]
 
+**Code coverage data is shared between patchsets that are commit-message-edit or
+trivial-rebase away**, however, if a newly uploaded patchset has
+non-trivial code change, a new CQ dry run must be triggered before coverage data
+shows up again.
+
 The code coverage tool currently **supports C/C++ code for Chrome on Linux**;
 support for more platforms and more languages is in progress.
-
-The code coverage trybot has been **rolled out to a 10% experiment**, and once
-we're more comfortable in its stability, we plan to enable it by default and
-expand it to more platforms.
 
 ## Contacts
 

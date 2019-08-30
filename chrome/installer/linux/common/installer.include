@@ -194,9 +194,11 @@ stage_install_common() {
   fi
 
   # Widevine CDM.
-  if [ -f "${BUILDDIR}/libwidevinecdm.so" ]; then
+  if [ -f "${BUILDDIR}/WidevineCdm" ]; then
     # No need to strip; libwidevinecdm.so starts out stripped.
-    install -m ${SHLIB_PERMS} "${BUILDDIR}/libwidevinecdm.so" "${STAGEDIR}/${INSTALLDIR}/"
+    cp -a "${BUILDDIR}/WidevineCdm" "${STAGEDIR}/${INSTALLDIR}/"
+    find "${STAGEDIR}/${INSTALLDIR}/WidevineCdm" -type d -exec chmod 755 '{}' \;
+    find "${STAGEDIR}/${INSTALLDIR}/WidevineCdm" -type f -exec chmod 644 '{}' \;
   fi
 
   # ANGLE

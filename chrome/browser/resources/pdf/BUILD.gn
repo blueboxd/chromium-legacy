@@ -79,11 +79,19 @@ js_library("metrics") {
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
+js_library("navigator") {
+  deps = [
+    ":open_pdf_params_parser",
+    ":viewport",
+  ]
+}
+
 js_type_check("pdf_resources") {
   deps = [
     ":browser_api",
     ":gesture_detector",
     ":metrics",
+    ":navigator",
     ":open_pdf_params_parser",
     ":pdf_fitting_type",
     ":pdf_scripting_api",

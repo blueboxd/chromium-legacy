@@ -41,7 +41,8 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
                                  const BindingContext& context,
                                  const storage::FileSystemURL& url,
                                  const storage::FileSystemURL& swap_url,
-                                 const SharedHandleState& handle_state);
+                                 const SharedHandleState& handle_state,
+                                 bool has_transient_user_activation);
   ~NativeFileSystemFileWriterImpl() override;
 
   const storage::FileSystemURL& swap_url() const { return swap_url_; }
@@ -64,6 +65,9 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
                                                const std::string& hash)>;
   void ComputeHashForSwapFileForTesting(HashCallback callback) {
     ComputeHashForSwapFile(std::move(callback));
+  }
+  bool HasTransientUserActivationForTesting() const {
+    return has_transient_user_activation_;
   }
 
  private:
@@ -127,6 +131,10 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   State state_ = State::kOpen;
 
   bool skip_quarantine_service_for_testing_ = false;
+
+  // Keeps track of user activation state at creation time for SafeBrowsing
+  // checks.
+  bool has_transient_user_activation_ = false;
 
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 

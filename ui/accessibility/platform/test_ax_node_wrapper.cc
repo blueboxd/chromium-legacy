@@ -633,6 +633,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
       return {};
     }
 
+    case ax::mojom::Role::kTime:
+      return base::ASCIIToUTF16("time");
+
     default:
       return {};
   }

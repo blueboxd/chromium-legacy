@@ -57,10 +57,11 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     ~MockURLLoaderClient() override {}
 
     // network::mojom::URLLoaderClient overrides:
-    MOCK_METHOD1(OnReceiveResponse, void(const network::ResourceResponseHead&));
+    MOCK_METHOD1(OnReceiveResponse,
+                 void(const network::mojom::URLResponseHeadPtr));
     MOCK_METHOD2(OnReceiveRedirect,
                  void(const net::RedirectInfo&,
-                      const network::ResourceResponseHead&));
+                      network::mojom::URLResponseHeadPtr));
     MOCK_METHOD3(OnUploadProgress,
                  void(int64_t, int64_t, base::OnceCallback<void()> callback));
     MOCK_METHOD1(OnReceiveCachedMetadata, void(mojo_base::BigBuffer));

@@ -1529,6 +1529,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-removing-all-third-party-cookies",
+    "owners": [ "dullweber" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-reopen-tab-in-product-help",
     "owners": [ "collinbaker" ],
     "expiry_milestone": 76
@@ -1941,7 +1946,7 @@
   {
     "name": "enable-webrtc-pipewire-capturer",
     "owners": [ "tomas.popela@gmail.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "enable-webrtc-remote-event-log",

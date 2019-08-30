@@ -36,6 +36,9 @@ Polymer({
     },
 
     /** @private */
+    isMultiSelect_: Boolean,
+
+    /** @private */
     isFolder_: Boolean,
 
     /** @private */
@@ -66,6 +69,7 @@ Polymer({
     this.watch('item_', store => store.nodes[this.itemId]);
     this.watch(
         'isSelectedItem_', store => store.selection.items.has(this.itemId));
+    this.watch('isMultiSelect_', store => store.selection.items.size > 1);
 
     this.updateFromStore();
   },
@@ -113,7 +117,12 @@ Polymer({
   onMenuButtonClick_: function(e) {
     e.stopPropagation();
     e.preventDefault();
-    this.selectThisItem_();
+
+    // Skip selecting the item if this item is part of a multi-selected group.
+    if (!this.isMultiSelectMenu_()) {
+      this.selectThisItem_();
+    }
+
     this.fire('open-command-menu', {
       targetElement: e.target,
       source: MenuSource.ITEM,
@@ -251,9 +260,29 @@ Polymer({
         url ? cr.icon.getFaviconForPageURL(url, false) : null;
   },
 
-  /** @private */
+  /**
+   * @return {string}
+   * @private
+   */
   getButtonAriaLabel_: function() {
+    if (!this.item_) {
+      return '';  // Item hasn't loaded, skip for now.
+    }
+
+    if (this.isMultiSelectMenu_()) {
+      return loadTimeData.getStringF('moreActionsMultiButtonAxLabel');
+    }
+
     return loadTimeData.getStringF(
         'moreActionsButtonAxLabel', this.item_.title);
-  }
+  },
+
+  /**
+   * This item is part of a group selection.
+   * @return {boolean}
+   * @private
+   */
+  isMultiSelectMenu_: function() {
+    return this.isSelectedItem_ && this.isMultiSelect_;
+  },
 });

@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "content/browser/devtools/cross_thread_protocol_callback.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -37,7 +38,7 @@ using RequestInterceptedCallback =
     DevToolsNetworkInterceptor::RequestInterceptedCallback;
 using ContinueInterceptedRequestCallback =
     DevToolsNetworkInterceptor::ContinueInterceptedRequestCallback;
-using GetResponseBodyForInterceptionCallback =
+using GetResponseBodyCallback =
     DevToolsNetworkInterceptor::GetResponseBodyForInterceptionCallback;
 using TakeResponseBodyPipeCallback =
     DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback;
@@ -74,15 +75,14 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
 
   void StartReading(mojo::ScopedDataPipeConsumerHandle body);
 
-  void AddCallback(
-      std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
-    callbacks_.push_back(std::move(callback));
+  using GetBodyCallback = CrossThreadProtocolCallback<GetResponseBodyCallback>;
+  void AddCallback(GetBodyCallback callback) {
     if (data_complete_) {
-      DCHECK_EQ(1UL, callbacks_.size());
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&BodyReader::DispatchBodyOnUI,
-                                    std::move(callbacks_), encoded_body_));
+      DCHECK(callbacks_.empty());
+      callback.sendSuccess(encoded_body_, true);
+      return;
     }
+    callbacks_.push_back(std::move(callback));
   }
 
   bool data_complete() const { return data_complete_; }
@@ -93,19 +93,12 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
   }
 
   void CancelWithError(std::string error) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&BodyReader::DispatchErrorOnUI,
-                                  std::move(callbacks_), std::move(error)));
+    for (auto& cb : callbacks_)
+      cb.sendFailure(Response::Error(error));
+    callbacks_.clear();
   }
 
  private:
-  using CallbackVector =
-      std::vector<std::unique_ptr<GetResponseBodyForInterceptionCallback>>;
-  static void DispatchBodyOnUI(const CallbackVector& callbacks,
-                               const std::string& body);
-  static void DispatchErrorOnUI(const CallbackVector& callbacks,
-                                const std::string& error);
-
   void OnDataAvailable(const void* data, size_t num_bytes) override {
     DCHECK(!data_complete_);
     body_->data().append(
@@ -115,7 +108,7 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
   void OnDataComplete() override;
 
   std::unique_ptr<mojo::DataPipeDrainer> body_pipe_drainer_;
-  CallbackVector callbacks_;
+  std::vector<GetBodyCallback> callbacks_;
   base::OnceClosure download_complete_callback_;
   scoped_refptr<base::RefCountedString> body_;
   std::string encoded_body_;
@@ -136,24 +129,10 @@ void BodyReader::OnDataComplete() {
   body_pipe_drainer_.reset();
   // TODO(caseq): only encode if necessary.
   base::Base64Encode(body_->data(), &encoded_body_);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&BodyReader::DispatchBodyOnUI,
-                                std::move(callbacks_), encoded_body_));
+  for (auto& cb : callbacks_)
+    cb.sendSuccess(encoded_body_, true);
+  callbacks_.clear();
   std::move(download_complete_callback_).Run();
-}
-
-// static
-void BodyReader::DispatchBodyOnUI(const CallbackVector& callbacks,
-                                  const std::string& encoded_body) {
-  for (const auto& cb : callbacks)
-    cb->sendSuccess(encoded_body, true);
-}
-
-// static
-void BodyReader::DispatchErrorOnUI(const CallbackVector& callbacks,
-                                   const std::string& error) {
-  for (const auto& cb : callbacks)
-    cb->sendFailure(Response::Error(error));
 }
 
 struct ResponseMetadata {
@@ -193,11 +172,11 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
 
   void GetResponseBody(
-      std::unique_ptr<GetResponseBodyForInterceptionCallback> callback);
+      CrossThreadProtocolCallback<GetResponseBodyCallback> callback);
   void TakeResponseBodyPipe(TakeResponseBodyPipeCallback callback);
   void ContinueInterceptedRequest(
       std::unique_ptr<Modifications> modifications,
-      std::unique_ptr<ContinueInterceptedRequestCallback> callback);
+      CrossThreadProtocolCallback<ContinueInterceptedRequestCallback> callback);
   void Detach();
 
   void OnAuthRequest(
@@ -238,7 +217,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void Shutdown();
 
   std::unique_ptr<InterceptedRequestInfo> BuildRequestInfo(
-      const network::ResourceResponseHead* head);
+      const network::mojom::URLResponseHeadPtr& head);
   void NotifyClient(std::unique_ptr<InterceptedRequestInfo> request_info);
   void FetchCookies(
       network::mojom::CookieManager::GetCookieListCallback callback);
@@ -267,9 +246,9 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void ResumeReadingBodyFromNet() override;
 
   // network::mojom::URLLoaderClient methods
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
@@ -389,7 +368,7 @@ class DevToolsURLLoaderInterceptor::Impl
 
   void GetResponseBody(
       const std::string& interception_id,
-      std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
+      CrossThreadProtocolCallback<GetResponseBodyCallback> callback) {
     if (InterceptionJob* job = FindJob(interception_id, &callback))
       job->GetResponseBody(std::move(callback));
   }
@@ -413,7 +392,8 @@ class DevToolsURLLoaderInterceptor::Impl
   void ContinueInterceptedRequest(
       const std::string& interception_id,
       std::unique_ptr<Modifications> modifications,
-      std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
+      CrossThreadProtocolCallback<ContinueInterceptedRequestCallback>
+          callback) {
     if (InterceptionJob* job = FindJob(interception_id, &callback)) {
       job->ContinueInterceptedRequest(std::move(modifications),
                                       std::move(callback));
@@ -425,14 +405,12 @@ class DevToolsURLLoaderInterceptor::Impl
 
   template <typename Callback>
   InterceptionJob* FindJob(const std::string& id,
-                           std::unique_ptr<Callback>* callback) {
+                           CrossThreadProtocolCallback<Callback>* callback) {
     auto it = jobs_.find(id);
     if (it != jobs_.end())
       return it->second;
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Callback::sendFailure, std::move(*callback),
-                                  protocol::Response::InvalidParams(
-                                      "Invalid InterceptionId.")));
+    callback->sendFailure(
+        protocol::Response::InvalidParams("Invalid InterceptionId."));
     return nullptr;
   }
 
@@ -617,11 +595,11 @@ void DevToolsURLLoaderInterceptor::SetPatterns(
 
 void DevToolsURLLoaderInterceptor::GetResponseBody(
     const std::string& interception_id,
-    std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&Impl::GetResponseBody, base::Unretained(impl_.get()),
-                     interception_id, std::move(callback)));
+    std::unique_ptr<GetResponseBodyCallback> callback) {
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&Impl::GetResponseBody,
+                                base::Unretained(impl_.get()), interception_id,
+                                WrapForAnotherThread(std::move(callback))));
 }
 
 void DevToolsURLLoaderInterceptor::TakeResponseBodyPipe(
@@ -640,7 +618,8 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&Impl::ContinueInterceptedRequest,
                                 base::Unretained(impl_.get()), interception_id,
-                                std::move(modifications), std::move(callback)));
+                                std::move(modifications),
+                                WrapForAnotherThread(std::move(callback))));
 }
 
 bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
@@ -754,14 +733,10 @@ bool InterceptionJob::CanGetResponseBody(std::string* error_reason) {
 }
 
 void InterceptionJob::GetResponseBody(
-    std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
+    CrossThreadProtocolCallback<GetResponseBodyCallback> callback) {
   std::string error_reason;
   if (!CanGetResponseBody(&error_reason)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&GetResponseBodyForInterceptionCallback::sendFailure,
-                       std::move(callback),
-                       Response::Error(std::move(error_reason))));
+    callback.sendFailure(Response::Error(std::move(error_reason)));
     return;
   }
   if (!body_reader_) {
@@ -794,16 +769,13 @@ void InterceptionJob::TakeResponseBodyPipe(
 
 void InterceptionJob::ContinueInterceptedRequest(
     std::unique_ptr<Modifications> modifications,
-    std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
+    CrossThreadProtocolCallback<ContinueInterceptedRequestCallback> callback) {
   Response response = InnerContinueRequest(std::move(modifications));
   // |this| may be destroyed at this point.
-  bool success = response.isSuccess();
-  base::OnceClosure task =
-      success ? base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
-                               std::move(callback))
-              : base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
-                               std::move(callback), std::move(response));
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(task));
+  if (response.isSuccess())
+    callback.sendSuccess();
+  else
+    callback.sendFailure(std::move(response));
 }
 
 void InterceptionJob::Detach() {
@@ -1179,7 +1151,7 @@ void InterceptionJob::CancelRequest() {
 }
 
 std::unique_ptr<InterceptedRequestInfo> InterceptionJob::BuildRequestInfo(
-    const network::ResourceResponseHead* head) {
+    const network::mojom::URLResponseHeadPtr& head) {
   auto result = std::make_unique<InterceptedRequestInfo>();
   result->interception_id = current_id_;
   if (renderer_request_id_.has_value())
@@ -1319,11 +1291,11 @@ void InterceptionJob::ResumeReadingBodyFromNet() {
 
 // URLLoaderClient methods
 void InterceptionJob::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   state_ = State::kResponseReceived;
   DCHECK(!response_metadata_);
   if (!(stage_ & InterceptionStage::RESPONSE)) {
-    client_->OnReceiveResponse(head);
+    client_->OnReceiveResponse(std::move(head));
     return;
   }
   loader_->PauseReadingBodyFromNet();
@@ -1331,18 +1303,18 @@ void InterceptionJob::OnReceiveResponse(
 
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
 
-  auto request_info = BuildRequestInfo(&head);
+  auto request_info = BuildRequestInfo(head);
   const network::ResourceRequest& request = create_loader_params_->request;
   request_info->is_download =
       request_info->is_navigation &&
       (is_download_ || download_utils::IsDownload(
-                           request.url, head.headers.get(), head.mime_type));
+                           request.url, head->headers.get(), head->mime_type));
   NotifyClient(std::move(request_info));
 }
 
 void InterceptionJob::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   DCHECK_EQ(State::kRequestSent, state_);
   state_ = State::kRedirectReceived;
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
@@ -1350,12 +1322,11 @@ void InterceptionJob::OnReceiveRedirect(
       std::make_unique<net::RedirectInfo>(redirect_info);
 
   if (!(stage_ & InterceptionStage::RESPONSE)) {
-    client_->OnReceiveRedirect(redirect_info, head);
+    client_->OnReceiveRedirect(redirect_info, std::move(head));
     return;
   }
 
-  std::unique_ptr<InterceptedRequestInfo> request_info =
-      BuildRequestInfo(&head);
+  std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo(head);
   request_info->redirect_url = redirect_info.new_url.spec();
   NotifyClient(std::move(request_info));
 }

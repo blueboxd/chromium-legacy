@@ -119,7 +119,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     instrument_ = std::make_unique<ServiceWorkerPaymentInstrument>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
-        std::move(stored_app), &delegate_, &identity_observer_);
+        std::move(stored_app), &delegate_, identity_observer_.AsWeakPtr());
   }
 
   ServiceWorkerPaymentInstrument* GetInstrument() { return instrument_.get(); }

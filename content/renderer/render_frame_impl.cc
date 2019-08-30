@@ -498,8 +498,9 @@ void FillNavigationParamsRequest(
     for (const auto& exchange : commit_params.prefetched_signed_exchanges) {
       blink::WebURLResponse web_response;
       WebURLLoaderImpl::PopulateURLResponse(
-          exchange->inner_url, exchange->inner_response, &web_response,
-          false /* report_security_info*/, -1 /* request_id */);
+          exchange->inner_url,
+          network::ResourceResponseHead(exchange->inner_response),
+          &web_response, false /* report_security_info*/, -1 /* request_id */);
       navigation_params->prefetched_signed_exchanges.emplace_back(
           std::make_unique<
               blink::WebNavigationParams::PrefetchedSignedExchange>(
@@ -3375,7 +3376,7 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
 void RenderFrameImpl::CommitNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
-    const network::ResourceResponseHead& response_head,
+    network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/scoped_observer.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
@@ -22,7 +23,6 @@ class SharedURLLoaderFactory;
 }
 
 class GoogleServiceAuthError;
-class ProfileOAuth2TokenService;
 
 namespace signin {
 struct AccessTokenInfo;
@@ -245,8 +245,8 @@ class AccessTokenFetcher : public ProfileOAuth2TokenServiceObserver,
   // contract.
   TokenCallback callback_;
 
-  ScopedObserver<ProfileOAuth2TokenService, AccessTokenFetcher>
-      token_service_observer_;
+  ScopedObserver<ProfileOAuth2TokenService, ProfileOAuth2TokenServiceObserver>
+      token_service_observer_{this};
 
   std::unique_ptr<OAuth2AccessTokenManager::Request> access_token_request_;
 

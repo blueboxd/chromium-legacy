@@ -141,6 +141,14 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     DCHECK(response_.headers);
     DCHECK(request.request_initiator);
 
+    // Keep the SSLInfo only when the request is for main frame main resource,
+    // or report_raw_headers is set. Users can inspect the certificate for the
+    // main frame using the info bubble in Omnibox, and for the subresources in
+    // DevTools' Security panel.
+    if ((request.resource_type != static_cast<int>(ResourceType::kMainFrame)) &&
+        !request.report_raw_headers) {
+      response_.ssl_info = base::nullopt;
+    }
     UpdateRequestResponseStartTime(&response_);
     response_.encoded_data_length = 0;
     if (is_navigation_request) {
@@ -481,8 +489,8 @@ bool CanStoreEntry(const PrefetchedSignedExchangeCache::Entry& entry) {
 }
 
 bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry,
-                 const base::Time& now) {
-  if (entry.signature_expire_time() < now)
+                 const base::Time& verification_time) {
+  if (entry.signature_expire_time() < verification_time)
     return false;
 
   const std::unique_ptr<const network::ResourceResponseHead>& outer_response =
@@ -490,15 +498,16 @@ bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry,
 
   // Use the prefetched entry within kPrefetchReuseMins minutes without
   // validation.
-  if (outer_response->headers->GetCurrentAge(
-          outer_response->request_time, outer_response->response_time, now) <
+  if (outer_response->headers->GetCurrentAge(outer_response->request_time,
+                                             outer_response->response_time,
+                                             verification_time) <
       base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins)) {
     return true;
   }
   // We use the prefetched entry when we don't need the validation.
   if (outer_response->headers->RequiresValidation(
-          outer_response->request_time, outer_response->response_time, now) !=
-      net::VALIDATION_NONE) {
+          outer_response->request_time, outer_response->response_time,
+          verification_time) != net::VALIDATION_NONE) {
     return false;
   }
   return true;
@@ -643,6 +652,8 @@ void PrefetchedSignedExchangeCache::Store(
     return;
   const GURL outer_url = cached_exchange->outer_url();
   exchanges_[outer_url] = std::move(cached_exchange);
+  for (TestObserver& observer : test_observers_)
+    observer.OnStored(this, outer_url);
 }
 
 void PrefetchedSignedExchangeCache::Clear() {
@@ -655,14 +666,16 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
   const auto it = exchanges_.find(outer_url);
   if (it == exchanges_.end())
     return nullptr;
-  const base::Time now = base::Time::Now();
+  const base::Time verification_time =
+      signed_exchange_utils::GetVerificationTime();
   const std::unique_ptr<const Entry>& exchange = it->second;
-  if (!CanUseEntry(*exchange.get(), now)) {
+  if (!CanUseEntry(*exchange.get(), verification_time)) {
     exchanges_.erase(it);
     return nullptr;
   }
   return std::make_unique<PrefetchedNavigationLoaderInterceptor>(
-      exchange->Clone(), GetInfoListForNavigation(*exchange, now));
+      exchange->Clone(),
+      GetInfoListForNavigation(*exchange, verification_time));
 }
 
 const PrefetchedSignedExchangeCache::EntryMap&
@@ -707,7 +720,7 @@ void PrefetchedSignedExchangeCache::RecordHistograms() {
 std::vector<mojom::PrefetchedSignedExchangeInfoPtr>
 PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     const Entry& main_exchange,
-    const base::Time& now) {
+    const base::Time& verification_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const url::Origin outer_url_origin =
@@ -720,7 +733,7 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
   EntryMap::iterator exchanges_it = exchanges_.begin();
   while (exchanges_it != exchanges_.end()) {
     const std::unique_ptr<const Entry>& exchange = exchanges_it->second;
-    if (!CanUseEntry(*exchange.get(), now)) {
+    if (!CanUseEntry(*exchange.get(), verification_time)) {
       exchanges_.erase(exchanges_it++);
       continue;
     }
@@ -747,6 +760,16 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     ++exchanges_it;
   }
   return info_list;
+}
+
+void PrefetchedSignedExchangeCache::AddObserverForTesting(
+    TestObserver* observer) {
+  test_observers_.AddObserver(observer);
+}
+
+void PrefetchedSignedExchangeCache::RemoveObserverForTesting(
+    const TestObserver* observer) {
+  test_observers_.RemoveObserver(observer);
 }
 
 }  // namespace content

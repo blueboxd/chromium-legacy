@@ -6,10 +6,9 @@
 
 #include "chrome/installer/setup/setup_util.h"
 
-#include <windows.h>
-
 #include <objbase.h>
 #include <stddef.h>
+#include <windows.h>
 #include <wtsapi32.h>
 
 #include <algorithm>
@@ -40,6 +39,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
@@ -156,7 +156,7 @@ void RemoveBinariesVersionKey(const InstallerState& installer_state) {
 // from an old multi-install GCF.
 void RemoveMultiChromeFrame(const InstallerState& installer_state) {
 // There never was a "Chromium Frame".
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // To maximize cleanup, unconditionally delete GCF's Clients and ClientState
   // keys unless single-install GCF is present. This condition is satisfied if
   // both keys exist, Clients\pv contains a value, and
@@ -230,12 +230,12 @@ void RemoveMultiChromeFrame(const InstallerState& installer_state) {
                                                                : ALL_FAILED));
   UMA_HISTOGRAM_ENUMERATION("Setup.Install.MultiChromeFrameRemoved", result,
                             NUM_RESULTS);
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void RemoveAppLauncherVersionKey(const InstallerState& installer_state) {
 // The app launcher was only registered for Google Chrome.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   static constexpr wchar_t kLauncherGuid[] =
       L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
 
@@ -248,12 +248,12 @@ void RemoveAppLauncherVersionKey(const InstallerState& installer_state) {
     UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteAppLauncherClientsKey",
                           succeeded);
   }
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void RemoveAppHostExe(const InstallerState& installer_state) {
 // The app host was only installed for Google Chrome.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::FilePath app_host(
       installer_state.target_path().Append(FILE_PATH_LITERAL("app_host.exe")));
 
@@ -261,12 +261,12 @@ void RemoveAppHostExe(const InstallerState& installer_state) {
     const bool succeeded = base::DeleteFile(app_host, false);
     UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteAppHost", succeeded);
   }
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void RemoveLegacyChromeAppCommands(const InstallerState& installer_state) {
 // These app commands were only registered for Google Chrome.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::string16 path(GetCommandKey(L"install-extension"));
 
   if (base::win::RegKey(installer_state.root_key(), path.c_str(),
@@ -277,7 +277,7 @@ void RemoveLegacyChromeAppCommands(const InstallerState& installer_state) {
     UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteInstallExtensionCommand",
                           succeeded);
   }
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 }  // namespace

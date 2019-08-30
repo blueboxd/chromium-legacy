@@ -17,6 +17,7 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/browser/web_package/signed_exchange_test_utils.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
@@ -183,7 +184,7 @@ class SignedExchangeHandlerTest
 
   void SetUp() override {
     original_client_ = SetBrowserClientForTesting(&browser_client_);
-    SignedExchangeHandler::SetVerificationTimeForTesting(
+    signed_exchange_utils::SetVerificationTimeForTesting(
         base::Time::UnixEpoch() +
         base::TimeDelta::FromSeconds(kSignatureHeaderDate));
     feature_list_.InitAndEnableFeature(features::kSignedHTTPExchange);
@@ -210,7 +211,7 @@ class SignedExchangeHandlerTest
     }
     SignedExchangeHandler::SetNetworkContextForTesting(nullptr);
     network::NetworkContext::SetCertVerifierForTesting(nullptr);
-    SignedExchangeHandler::SetVerificationTimeForTesting(
+    signed_exchange_utils::SetVerificationTimeForTesting(
         base::Optional<base::Time>());
     SetBrowserClientForTesting(original_client_);
   }
@@ -588,7 +589,7 @@ TEST_P(SignedExchangeHandlerTest,
        CertValidMoreThan90DaysShouldBeAllowedByIgnoreErrorsSPKIListFlag) {
   SetIgnoreCertificateErrorsSPKIList(kPEMECDSAP256SPKIHash);
 
-  SignedExchangeHandler::SetVerificationTimeForTesting(
+  signed_exchange_utils::SetVerificationTimeForTesting(
       base::Time::UnixEpoch() +
       base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
   mock_cert_fetcher_factory_->ExpectFetch(

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
@@ -17,6 +18,7 @@
 #include "ash/public/cpp/scoped_guest_button_blocker.h"
 #include "ash/shutdown_controller_impl.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
+#include "ash/tray_action/tray_action.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -33,9 +35,7 @@ enum class SessionState;
 
 namespace ash {
 
-class LockScreenActionBackgroundController;
 enum class LockScreenActionBackgroundState;
-class TrayAction;
 
 class KioskAppsButton;
 

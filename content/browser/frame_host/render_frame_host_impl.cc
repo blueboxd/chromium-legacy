@@ -7301,10 +7301,10 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
 
 void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
     const std::string& cookie_url,
-    net::CanonicalCookie::CookieInclusionStatus status) {
+    net::CanonicalCookie::CookieInclusionStatus::WarningReason warning) {
   std::string deprecation_message;
-  if (status == net::CanonicalCookie::CookieInclusionStatus::
-                    EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
+  if (warning == net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+                     WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT) {
     if (!ShouldAddCookieSameSiteDeprecationMessage(
             cookie_url, &cookie_no_samesite_deprecation_url_hashes_)) {
       return;
@@ -7318,9 +7318,8 @@ void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
         "Application>Storage>Cookies and see more details at "
         "https://www.chromestatus.com/feature/5088147346030592 and "
         "https://www.chromestatus.com/feature/5633521622188032.";
-  }
-  if (status == net::CanonicalCookie::CookieInclusionStatus::
-                    EXCLUDE_SAMESITE_NONE_INSECURE) {
+  } else if (warning == net::CanonicalCookie::CookieInclusionStatus::
+                            WarningReason::WARN_SAMESITE_NONE_INSECURE) {
     if (!ShouldAddCookieSameSiteDeprecationMessage(
             cookie_url,
             &cookie_samesite_none_insecure_deprecation_url_hashes_)) {

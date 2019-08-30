@@ -190,7 +190,9 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
   }
   if (CanShowInterstitial(reason, reused_password_account_type,
                           main_frame_url)) {
-    username_ = username;
+    username_for_last_shown_warning_ = username;
+    reused_password_account_type_for_last_shown_warning_ =
+        reused_password_account_type;
     ShowInterstitial(web_contents, reused_password_account_type);
   }
 }
@@ -251,7 +253,8 @@ void PasswordProtectionService::RequestFinished(
 
     if (ShouldShowModalWarning(request->trigger_type(), password_type,
                                response->verdict_type())) {
-      username_ = request->username();
+      username_for_last_shown_warning_ = request->username();
+      reused_password_account_type_for_last_shown_warning_ = password_type;
       ShowModalWarning(request->web_contents(), request->request_outcome(),
                        response->verdict_type(), response->verdict_token(),
                        password_type);
@@ -364,7 +367,7 @@ PasswordProtectionService::MaybeCreateNavigationThrottle(
             safe_browsing::LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
         IsSupportedPasswordTypeForModalWarning(
             GetPasswordProtectionReusedPasswordAccountType(
-                request->password_type(), username()))) {
+                request->password_type(), username_for_last_shown_warning()))) {
       return std::make_unique<PasswordProtectionNavigationThrottle>(
           navigation_handle, request, /*is_warning_showing=*/false);
     }

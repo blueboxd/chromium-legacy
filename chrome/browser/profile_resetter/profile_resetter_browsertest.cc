@@ -115,7 +115,7 @@ void RemoveCookieTester::GetCookieListCallback(
 
 void RemoveCookieTester::SetCanonicalCookieCallback(
     net::CanonicalCookie::CookieInclusionStatus result) {
-  ASSERT_TRUE(result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  ASSERT_TRUE(result.IsInclude());
   Notify();
 }
 

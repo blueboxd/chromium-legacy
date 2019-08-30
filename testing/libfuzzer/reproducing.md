@@ -107,6 +107,32 @@ out/fuzz/$FUZZER_NAME -timeout=25 -rss_limit_mb=2048 -print_final_stats=1 $CORPU
 Waiting for a crash to occur may take some time (up to 1hr), but if it happens,
 you will be able to test the fix locally and/or somehow debug the issue.
 
+## Minimizing a crash input (optional)
+
+ClusterFuzz does crash input minimization automatically, and a typical crash
+report has two testcases available for downloading:
+
+* An original testcase that has triggered the crash;
+* A minimized testcase that is smaller than the original but triggers the same
+  crash.
+
+If you would like to further minimize a testcase, run the fuzz target with the
+two additional arguments:
+
+* `-minimize_crash=1`
+* `-exact_artifact_path=<output_filename_for_minimized_testcase>`
+
+The full command would be:
+
+```
+out/fuzz/$FUZZER_NAME -minimize_crash=1 -exact_artifact_path=<minimized_testcase_path> $TESTCASE_PATH
+```
+
+This might be useful for large testcases that make it hard to identify a root
+cause of a crash. You can leave the minimization running locally for a while
+(e.g. overnight) for better results.
+
+
 [ClusterFuzz Reproduce Tool]: https://github.com/google/clusterfuzz-tools
 [File a bug]: https://bugs.chromium.org/p/chromium/issues/entry?component=Tools%3EStability%3ElibFuzzer&comment=What%20problem%20are%20you%20seeing
 [here]: getting_started.md#symbolize-stacktrace

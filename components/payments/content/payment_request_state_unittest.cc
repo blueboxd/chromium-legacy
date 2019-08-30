@@ -80,7 +80,7 @@ class PaymentRequestStateTest : public testing::Test,
         nullptr /* context */, GURL("https://example.com"),
         GURL("https://example.com/pay"), spec_.get(), this, "en-US",
         &test_personal_data_manager_, &test_payment_request_delegate_,
-        &identity_observer_, &journey_logger_);
+        identity_observer_.AsWeakPtr(), &journey_logger_);
     state_->AddObserver(this);
   }
 

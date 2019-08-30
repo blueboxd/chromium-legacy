@@ -1203,16 +1203,6 @@
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],
       },
-      'Linux Tests Code Coverage': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
-      'Linux Release Code Coverage (NVIDIA)': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
     },
   },
   'notification_helper_unittests': {
@@ -1447,7 +1437,6 @@
       'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
       'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
       'Linux Release (NVIDIA)',
-      'Linux Release Code Coverage (NVIDIA)',
     ],
   },
   'telemetry_perf_unittests': {
@@ -1504,13 +1493,6 @@
       },
       # chromium.linux
       'Linux Tests': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
-      # Mirrors 'Linux Tests'
-      'Linux Tests Code Coverage': {
         'args': [
           '--xvfb',
           '--jobs=1',
@@ -1692,8 +1674,6 @@
   'webdriver_tests_suite': {
     'remove_from': [
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
-      # Mirrors 'Linux Tests'
-      'Linux Tests Code Coverage',  # https://crbug.com/929689, https://crbug.com/936557
     ],
   },
   'webgl2_conformance_gl_passthrough_tests': {
@@ -1866,17 +1846,6 @@
         },
       },
       'Linux Tests': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
-      # Mirrors 'Linux Tests'
-      'Linux Tests Code Coverage': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
-      'Linux Release Code Coverage (NVIDIA)': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
         ],

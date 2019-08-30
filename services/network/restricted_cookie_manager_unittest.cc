@@ -205,14 +205,13 @@ class RestrictedCookieManagerTest
                            net::CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return callback.result() ==
-           net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+    return callback.result().IsInclude();
   }
 
   // Simplified helper for SetCanonicalCookie.
   //
   // Creates a CanonicalCookie that is not secure, not http-only,
-  // and not restricted to first parties. Crashes if the creation fails.
+  // and has SameSite=None. Crashes if the creation fails.
   void SetSessionCookie(const char* name,
                         const char* value,
                         const char* domain,
@@ -439,26 +438,16 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
     EXPECT_EQ("cookie-value", cookies[0].Value());
   }
 
-  ASSERT_EQ(2u, recorded_activity().size());
+  ASSERT_EQ(1u, recorded_activity().size());
   EXPECT_EQ(recorded_activity()[0].get, true);
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/test/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-
-  // Duplicated for exclusion warning.
-  EXPECT_EQ(recorded_activity()[1].get, true);
-  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/test/");
-  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[1].cookie,
-              net::MatchesCookieLine("cookie-name=cookie-value"));
-  // SetSessionCookie uses net::CookieSameSite::NO_RESTRICTION, but this is an
-  // insecure cookie.
-  EXPECT_EQ(recorded_activity()[1].status,
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_SAMESITE_NONE_INSECURE);
+  EXPECT_TRUE(recorded_activity()[0].status.IsInclude());
+  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+                WARN_SAMESITE_NONE_INSECURE,
+            recorded_activity()[0].status.warning());
 
   // Disabing getting third-party cookies works correctly.
   cookie_settings_.set_block_third_party_cookies(true);
@@ -473,15 +462,16 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
     ASSERT_THAT(cookies, testing::SizeIs(0));
   }
 
-  ASSERT_EQ(3u, recorded_activity().size());
-  EXPECT_EQ(recorded_activity()[2].get, true);
-  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/test/");
-  EXPECT_EQ(recorded_activity()[2].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[2].cookie,
+  ASSERT_EQ(2u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[1].get, true);
+  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
+  EXPECT_THAT(recorded_activity()[1].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(
-      recorded_activity()[2].status,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+  EXPECT_TRUE(
+      recorded_activity()[1].status.HasExactlyExclusionReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_USER_PREFERENCES}));
 }
 
 TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
@@ -511,9 +501,10 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
-  EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_SAMESITE_NONE_INSECURE);
+  EXPECT_TRUE(
+      recorded_activity()[0].status.HasExactlyExclusionReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_SAMESITE_NONE_INSECURE}));
 }
 
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookie) {
@@ -614,21 +605,15 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
         *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
   }
 
-  ASSERT_EQ(2u, recorded_activity().size());
+  ASSERT_EQ(1u, recorded_activity().size());
   EXPECT_EQ(recorded_activity()[0].get, false);
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
-
-  EXPECT_EQ(recorded_activity()[1].get, false);
-  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/");
-  EXPECT_EQ(recorded_activity()[1].site_for_cookies, "http://notexample.com/");
-  EXPECT_THAT(recorded_activity()[1].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[1].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  EXPECT_TRUE(recorded_activity()[0].status.IsInclude());
+  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+            recorded_activity()[0].status.warning());
 
   {
     // Not if third-party cookies are disabled, though.
@@ -640,15 +625,16 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
         *cookie, GURL("http://example.com"), GURL("http://otherexample.com")));
   }
 
-  ASSERT_EQ(3u, recorded_activity().size());
-  EXPECT_EQ(recorded_activity()[2].get, false);
-  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/");
-  EXPECT_EQ(recorded_activity()[2].site_for_cookies,
+  ASSERT_EQ(2u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[1].get, false);
+  EXPECT_EQ(recorded_activity()[1].url, "http://example.com/");
+  EXPECT_EQ(recorded_activity()[1].site_for_cookies,
             "http://otherexample.com/");
-  EXPECT_THAT(recorded_activity()[2].cookie, net::MatchesCookieLine("A2=B2"));
-  EXPECT_EQ(
-      recorded_activity()[2].status,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+  EXPECT_THAT(recorded_activity()[1].cookie, net::MatchesCookieLine("A2=B2"));
+  EXPECT_TRUE(
+      recorded_activity()[1].status.HasExactlyExclusionReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_USER_PREFERENCES}));
 
   // Read back, in first-party context
   auto options = mojom::CookieManagerGetOptions::New();
@@ -662,13 +648,12 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_EQ("B", cookies[0].Value());
 
-  ASSERT_EQ(4u, recorded_activity().size());
-  EXPECT_EQ(recorded_activity()[3].get, true);
-  EXPECT_EQ(recorded_activity()[3].url, "http://example.com/test/");
-  EXPECT_EQ(recorded_activity()[3].site_for_cookies, "http://example.com/");
-  EXPECT_THAT(recorded_activity()[3].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[3].status,
-            net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  ASSERT_EQ(3u, recorded_activity().size());
+  EXPECT_EQ(recorded_activity()[2].get, true);
+  EXPECT_EQ(recorded_activity()[2].url, "http://example.com/test/");
+  EXPECT_EQ(recorded_activity()[2].site_for_cookies, "http://example.com/");
+  EXPECT_THAT(recorded_activity()[2].cookie, net::MatchesCookieLine("A=B"));
+  EXPECT_TRUE(recorded_activity()[2].status.IsInclude());
 }
 
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
@@ -688,9 +673,10 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
   EXPECT_EQ(recorded_activity()[0].url, "http://example.com/");
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "http://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
-  EXPECT_EQ(recorded_activity()[0].status,
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
+  EXPECT_TRUE(
+      recorded_activity()[0].status.HasExactlyExclusionReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::
+               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
 }
 
 TEST_P(RestrictedCookieManagerTest, CookiesEnabledFor) {

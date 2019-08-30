@@ -6,12 +6,14 @@
 #define BASE_TASK_POST_JOB_H_
 
 #include "base/base_export.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 
 namespace base {
 namespace internal {
 class JobTaskSource;
+class PooledTaskRunnerDelegate;
 }
 namespace experimental {
 
@@ -19,7 +21,13 @@ namespace experimental {
 // communicate with the scheduler.
 class BASE_EXPORT JobDelegate {
  public:
-  explicit JobDelegate(internal::JobTaskSource* task_source);
+  // A JobDelegate is instantiated for each worker task that is run.
+  // |task_source| is the task source whose worker task is running with this
+  // delegate and |pooled_task_runner_delegate| provides communication with the
+  // thread pool.
+  JobDelegate(internal::JobTaskSource* task_source,
+              internal::PooledTaskRunnerDelegate* pooled_task_runner_delegate);
+  ~JobDelegate();
 
   // Returns true if this thread should return from the worker task on the
   // current thread ASAP. Workers should periodically invoke ShouldYield (or
@@ -38,7 +46,25 @@ class BASE_EXPORT JobDelegate {
   void NotifyConcurrencyIncrease();
 
  private:
+  // Verifies that either max concurrency is lower or equal to
+  // |expected_max_concurrency|, or there is an increase version update
+  // triggered by NotifyConcurrencyIncrease().
+  void AssertExpectedConcurrency(size_t expected_max_concurrency);
+
   internal::JobTaskSource* const task_source_;
+  internal::PooledTaskRunnerDelegate* const pooled_task_runner_delegate_;
+
+#if DCHECK_IS_ON()
+  // Used in AssertExpectedConcurrency(), see that method's impl for details.
+  // Value of max concurrency recorded before running the worker task.
+  size_t recorded_max_concurrency_;
+  // Value of the increase version recorded before running the worker task.
+  size_t recorded_increase_version_;
+  // Value returned by the last call to ShouldYield().
+  bool last_should_yield_ = false;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(JobDelegate);
 };
 
 }  // namespace experimental

@@ -564,7 +564,40 @@ class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(ControlButtonBackgroundImageSource);
 };
 
+// Returns whether the color is grayscale.
+bool IsColorGrayscale(SkColor color) {
+  constexpr int kChannelTolerance = 9;
+  auto channels = {SkColorGetR(color), SkColorGetG(color), SkColorGetB(color)};
+  const int range = std::max(channels) - std::min(channels);
+  return range < kChannelTolerance;
+}
+
 }  // namespace
+
+namespace internal {  // for testing
+
+// Calculate contrasting color for given |bg_color|. Returns lighter color if
+// the color is very dark and returns darker color otherwise.
+SkColor GetContrastingColorForBackground(SkColor bg_color,
+                                         float luminosity_change) {
+  color_utils::HSL hsl;
+  SkColorToHSL(bg_color, &hsl);
+
+  // If luminosity is 0, it means |bg_color| is black. Use white for black
+  // backgrounds.
+  if (hsl.l == 0)
+    return SK_ColorWHITE;
+
+  // Decrease luminosity, unless color is already dark.
+  if (hsl.l > 0.15)
+    luminosity_change *= -1;
+
+  hsl.l *= 1 + luminosity_change;
+  if (hsl.l >= 0.0f && hsl.l <= 1.0f)
+    return HSLToSkColor(hsl, 255);
+  return bg_color;
+}
+}  // namespace internal
 
 BrowserThemePack::~BrowserThemePack() {
   if (!data_pack_.get()) {
@@ -1677,18 +1710,53 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
 }
 
 void BrowserThemePack::GenerateMissingNtpColors() {
-  // Calculate NTP text color based on NTP background.
-  SkColor ntp_background_color;
   gfx::Image image = GetImageNamed(IDR_THEME_NTP_BACKGROUND);
-  if (!image.IsEmpty()) {
-    ntp_background_color = ComputeImageColor(image, image.Height());
-    SetColorIfUnspecified(
-        TP::COLOR_NTP_TEXT,
-        color_utils::GetColorWithMaxContrast(ntp_background_color));
-  } else if (GetColor(TP::COLOR_NTP_BACKGROUND, &ntp_background_color)) {
-    SetColorIfUnspecified(
-        TP::COLOR_NTP_TEXT,
-        color_utils::GetColorWithMaxContrast(ntp_background_color));
+  bool has_background_image = !image.IsEmpty();
+
+  SkColor background_color;
+  bool has_background_color =
+      GetColor(TP::COLOR_NTP_BACKGROUND, &background_color);
+
+  // Calculate NTP text color based on NTP background.
+  SkColor text_color;
+  if (!GetColor(TP::COLOR_NTP_TEXT, &text_color)) {
+    if (has_background_image)
+      has_background_color = ComputeImageColor(image, image.Height());
+
+    if (has_background_image || has_background_color) {
+      SetColor(TP::COLOR_NTP_TEXT,
+               color_utils::GetColorWithMaxContrast(background_color));
+    }
+  }
+
+  // Calculate logo alternate, if not specified.
+  int logo_alternate = 0;
+  if (!GetDisplayProperty(TP::NTP_LOGO_ALTERNATE, &logo_alternate)) {
+    logo_alternate =
+        has_background_image ||
+        (has_background_color && !IsColorGrayscale(background_color));
+    SetDisplayProperty(TP::NTP_LOGO_ALTERNATE, logo_alternate);
+  }
+
+  // For themes that use alternate logo and no NTP background image is present,
+  // set logo color in the same hue as NTP background.
+  if (logo_alternate == 1 && !has_background_image && has_background_color) {
+    SkColor logo_color = color_utils::IsDark(background_color)
+                             ? SK_ColorWHITE
+                             : internal::GetContrastingColorForBackground(
+                                   background_color,
+                                   /*luminosity_change=*/0.3f);
+    SetColor(TP::COLOR_NTP_LOGO, logo_color);
+  }
+
+  // Calculate NTP shortcut color.
+  // Use light color for NTPs with images, and themed color for NTPs with solid
+  // color.
+  if (!has_background_image && has_background_color &&
+      background_color != SK_ColorWHITE) {
+    SetColor(TP::COLOR_NTP_SHORTCUT, internal::GetContrastingColorForBackground(
+                                         background_color,
+                                         /*luminosity_change=*/0.2f));
   }
 }
 

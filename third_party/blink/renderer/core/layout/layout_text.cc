@@ -1662,6 +1662,16 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
     }
   }
 
+  if (NGInlineNode::SetTextWithOffset(this, text, offset, len)) {
+    DCHECK(!NeedsCollectInlines());
+    // Prevent |TextDidChange()| to propagate |NeedsCollectInlines|
+    SetNeedsCollectInlines(true);
+    TextDidChange();
+    valid_ng_items_ = true;
+    ClearNeedsCollectInlines();
+    return;
+  }
+
   unsigned old_len = TextLength();
   unsigned new_len = text->length();
   int delta = new_len - old_len;

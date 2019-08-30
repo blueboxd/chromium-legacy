@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -327,11 +328,11 @@ NativeProcessLauncherImpl::NativeProcessLauncherImpl(
     const base::FilePath& profile_directory,
     bool require_native_initiated_connections,
     const std::string& connect_id)
-    : core_(new Core(allow_user_level_hosts,
-                     window_handle,
-                     profile_directory,
-                     require_native_initiated_connections,
-                     connect_id)) {}
+    : core_(base::MakeRefCounted<Core>(allow_user_level_hosts,
+                                       window_handle,
+                                       profile_directory,
+                                       require_native_initiated_connections,
+                                       connect_id)) {}
 
 NativeProcessLauncherImpl::~NativeProcessLauncherImpl() {
   core_->Detach();

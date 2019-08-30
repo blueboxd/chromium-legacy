@@ -378,8 +378,7 @@ void GaiaScreenHandler::LoadGaiaWithPartition(
       base::BindOnce(&GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition,
                      weak_factory_.GetWeakPtr(), context, partition_name);
   if (context.gaps_cookie.empty()) {
-    std::move(callback).Run(
-        net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+    std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus());
     return;
   }
 

@@ -121,11 +121,13 @@ enum SecurityType {
 };
 
 // The configuration type for virtual networks.
-enum VPNType {
+enum VpnType {
+  // Internal VPN types.
   kL2TPIPsec,
   kOpenVPN,
-  kThirdPartyVPN,
-  kArcVPN,
+  // External VPN types.
+  kExtension,
+  kArc,
 };
 
 // Filter used for requesting lists of network states.
@@ -185,7 +187,7 @@ struct TetherStateProperties {
 };
 
 struct VPNStateProperties {
-  VPNType type;
+  VpnType type;
   string provider_id;
   string provider_name;
 };
@@ -539,7 +541,7 @@ struct ManagedVPNProperties {
   ManagedOpenVPNProperties? open_vpn;
   ManagedString? provider_id;
   string provider_name;
-  VPNType type;
+  VpnType type;
 };
 
 struct ManagedWiFiProperties {
@@ -633,7 +635,7 @@ struct VPNConfigProperties {
   OpenVPNConfigProperties? open_vpn;
   // For existing configurations, this must match the VPN type. Only
   // configuration of internal VPN types (kOpenVPN and kL2TPIPsec) is supported.
-  VPNType type;
+  VpnType type;
 };
 
 struct ConfigProperties {

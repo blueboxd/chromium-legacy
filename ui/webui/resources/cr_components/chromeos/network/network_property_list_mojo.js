@@ -308,8 +308,8 @@ Polymer({
             /** @type{!chromeos.networkConfig.mojom.ActivationStateType}*/ (
                 value));
       } else if (key == 'vpn.type') {
-        valueStr = OncMojo.getVPNTypeString(
-            /** @type{!chromeos.networkConfig.mojom.VPNType}*/ (value));
+        valueStr = OncMojo.getVpnTypeString(
+            /** @type{!chromeos.networkConfig.mojom.VpnType}*/ (value));
       } else if (key == 'wifi.security') {
         valueStr = OncMojo.getSecurityTypeString(
             /** @type{!chromeos.networkConfig.mojom.SecurityType}*/ (value));

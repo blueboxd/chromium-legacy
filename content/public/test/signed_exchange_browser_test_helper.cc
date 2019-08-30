@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/browser/web_package/signed_exchange_handler.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -34,14 +34,14 @@ SignedExchangeBrowserTestHelper::SignedExchangeBrowserTestHelper() = default;
 SignedExchangeBrowserTestHelper::~SignedExchangeBrowserTestHelper() = default;
 
 void SignedExchangeBrowserTestHelper::SetUp() {
-  SignedExchangeHandler::SetVerificationTimeForTesting(
+  signed_exchange_utils::SetVerificationTimeForTesting(
       base::Time::UnixEpoch() +
       base::TimeDelta::FromSeconds(kSignatureHeaderDate));
 }
 
 void SignedExchangeBrowserTestHelper::TearDownOnMainThread() {
   interceptor_.reset();
-  SignedExchangeHandler::SetVerificationTimeForTesting(
+  signed_exchange_utils::SetVerificationTimeForTesting(
       base::Optional<base::Time>());
 }
 

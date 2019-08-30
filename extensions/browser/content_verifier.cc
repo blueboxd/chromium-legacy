@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -513,7 +514,8 @@ void ContentVerifier::OnExtensionLoaded(
   if (shutdown_on_ui_)
     return;
 
-  if (delegate_->ShouldBeVerified(*extension)) {
+  if (delegate_->GetVerifierSourceType(*extension) ==
+      ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES) {
     base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&ContentVerifier::OnExtensionLoadedOnIO, this,

@@ -468,8 +468,7 @@ void CookiesSetFunction::SetCanonicalCookieCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(NO_RESPONSE, state_);
   state_ = SET_COMPLETED;
-  success_ = (set_cookie_result ==
-              net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  success_ = set_cookie_result.IsInclude();
 }
 
 void CookiesSetFunction::GetCookieListCallback(

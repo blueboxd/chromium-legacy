@@ -500,6 +500,10 @@ below:
       <message name="IDS_AX_ROLE_TELEPHONE" desc="Accessibility role description for telephone number input">
         telephone
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-time -->
+      <message name="IDS_AX_ROLE_TIME" desc="Accessibility role description for a time">
+        time
+      </message>
       <!-- https://w3c.github.io/html-aam/#el-input-url -->
       <message name="IDS_AX_ROLE_URL" desc="Accessibility role description for URL input">
         url
@@ -621,9 +625,6 @@ below:
         </message>
         <message name="IDS_AX_ROLE_TAB_PANEL" desc="Accessibility role description for a tab panel, the part of the window that changes when selecting a new tab">
           tab panel
-        </message>
-        <message name="IDS_AX_ROLE_TIME" desc="Accessibility role description for a time">
-          time
         </message>
         <message name="IDS_AX_ROLE_TIMER" desc="Accessibility role description for a timer">
           timer

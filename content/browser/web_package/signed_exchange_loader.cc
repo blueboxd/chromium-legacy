@@ -112,7 +112,7 @@ SignedExchangeLoader::SignedExchangeLoader(
 SignedExchangeLoader::~SignedExchangeLoader() = default;
 
 void SignedExchangeLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   // Must not be called because this SignedExchangeLoader and the client
   // endpoints were bound after OnReceiveResponse() is called.
   NOTREACHED();
@@ -120,7 +120,7 @@ void SignedExchangeLoader::OnReceiveResponse(
 
 void SignedExchangeLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   // Must not be called because this SignedExchangeLoader and the client
   // endpoints were bound after OnReceiveResponse() is called.
   NOTREACHED();

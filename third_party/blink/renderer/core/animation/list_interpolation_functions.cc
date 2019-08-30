@@ -302,6 +302,13 @@ static bool NonInterpolableListsAreCompatible(
   return true;
 }
 
+bool ListInterpolationFunctions::VerifyNoNonInterpolableValues(
+    const NonInterpolableValue* a,
+    const NonInterpolableValue* b) {
+  DCHECK(!a && !b);
+  return true;
+}
+
 void ListInterpolationFunctions::Composite(
     UnderlyingValueOwner& underlying_value_owner,
     double underlying_fraction,

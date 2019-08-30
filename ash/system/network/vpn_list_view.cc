@@ -54,7 +54,7 @@ using chromeos::network_config::mojom::NetworkFilter;
 using chromeos::network_config::mojom::NetworkStateProperties;
 using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
-using chromeos::network_config::mojom::VPNType;
+using chromeos::network_config::mojom::VpnType;
 
 namespace ash {
 namespace tray {
@@ -75,11 +75,11 @@ bool VpnProviderMatchesNetwork(const VPNProvider& provider,
     return false;
 
   // Package name is the vpn provider id for ArcVPNProvider in network state.
-  if (network->vpn->type == VPNType::kArcVPN) {
+  if (network->vpn->type == VpnType::kArc) {
     return provider.provider_type == VPNProvider::ARC_VPN &&
            network->vpn->provider_id == provider.package_name;
   }
-  if (network->vpn->type == VPNType::kThirdPartyVPN) {
+  if (network->vpn->type == VpnType::kExtension) {
     return provider.provider_type == VPNProvider::THIRD_PARTY_VPN &&
            network->vpn->provider_id == provider.app_id;
   }
@@ -444,7 +444,7 @@ void VPNListView::AddProvidersAndNetworks(const NetworkStateList& networks) {
   for (const auto& network : networks) {
     if (network->connection_state == ConnectionStateType::kNotConnected)
       break;
-    if (network->vpn->type != VPNType::kArcVPN)
+    if (network->vpn->type != VpnType::kArc)
       continue;
 
     // If no matched provider found for this network. Show it unnested.

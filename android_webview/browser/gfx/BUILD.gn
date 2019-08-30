@@ -63,6 +63,7 @@ source_set("gfx") {
   deps = [
     "//android_webview:native_jni",
     "//base",
+    "//components/ui_devtools:buildflags",
     "//content/public/browser",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/service",

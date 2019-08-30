@@ -43,10 +43,12 @@
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -62,6 +64,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -819,6 +822,18 @@ TEST_F(DocumentTest, DocumentShutdownNotifier) {
   GetDocument().Shutdown();
   EXPECT_EQ(nullptr, observer.LifecycleContext());
   EXPECT_EQ(1, observer.CountContextDestroyedCalled());
+}
+
+TEST_F(DocumentTest, AttachExecutionContext) {
+  EXPECT_TRUE(
+      GetDocument().GetAgent()->event_loop()->IsSchedulerAttachedForTest(
+          GetDocument().GetScheduler()));
+  Document* doc = GetDocument().implementation().createHTMLDocument("foo");
+  EXPECT_EQ(GetDocument().GetAgent(), doc->GetAgent());
+  GetDocument().Shutdown();
+  EXPECT_FALSE(doc->GetAgent()->event_loop()->IsSchedulerAttachedForTest(
+      doc->GetScheduler()));
+  doc->Shutdown();
 }
 
 // This tests that meta-theme-color can be found correctly

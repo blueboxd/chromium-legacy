@@ -16,9 +16,10 @@ class MockSmsWebContentsDelegate : public WebContentsDelegate {
   MockSmsWebContentsDelegate();
   ~MockSmsWebContentsDelegate() override;
 
-  MOCK_METHOD4(CreateSmsPrompt,
+  MOCK_METHOD5(CreateSmsPrompt,
                void(RenderFrameHost*,
                     const url::Origin&,
+                    const std::string&,
                     base::OnceCallback<void()> on_confirm,
                     base::OnceCallback<void()> on_cancel));
 

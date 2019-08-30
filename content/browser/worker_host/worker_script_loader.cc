@@ -226,14 +226,14 @@ void WorkerScriptLoader::ResumeReadingBodyFromNet() {
 // calls FollowRedirect(), it can do so.
 
 void WorkerScriptLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  client_->OnReceiveResponse(response_head);
+  client_->OnReceiveResponse(std::move(response_head));
 }
 
 void WorkerScriptLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (--redirect_limit_ == 0) {
     CommitCompleted(
@@ -242,7 +242,7 @@ void WorkerScriptLoader::OnReceiveRedirect(
   }
 
   redirect_info_ = redirect_info;
-  client_->OnReceiveRedirect(redirect_info, response_head);
+  client_->OnReceiveRedirect(redirect_info, std::move(response_head));
 }
 
 void WorkerScriptLoader::OnUploadProgress(

@@ -517,7 +517,7 @@ void ShippingAddressEditorViewController::OnDataChanged(bool synchronous) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&ShippingAddressEditorViewController::UpdateEditorView,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

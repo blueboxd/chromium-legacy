@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/animation/filter_interpolation_functions.h"
 
 #include <memory>
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/shadow_interpolation_functions.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -97,12 +97,12 @@ InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
       break;
 
     case FilterOperation::BLUR: {
-      if (filter.length() == 0)
-        result.interpolable_value =
-            LengthInterpolationFunctions::CreateNeutralInterpolableValue();
-      else
-        result =
-            LengthInterpolationFunctions::MaybeConvertCSSValue(filter.Item(0));
+      if (filter.length() == 0) {
+        result.interpolable_value = InterpolableLength::CreateNeutral();
+      } else {
+        result = InterpolationValue(
+            InterpolableLength::MaybeConvertCSSValue(filter.Item(0)));
+      }
       break;
     }
 
@@ -148,8 +148,8 @@ InterpolationValue filter_interpolation_functions::MaybeConvertFilter(
       break;
 
     case FilterOperation::BLUR:
-      result = LengthInterpolationFunctions::MaybeConvertLength(
-          To<BlurFilterOperation>(filter).StdDeviation(), zoom);
+      result = InterpolationValue(InterpolableLength::MaybeConvertLength(
+          To<BlurFilterOperation>(filter).StdDeviation(), zoom));
       break;
 
     case FilterOperation::DROP_SHADOW: {
@@ -191,7 +191,7 @@ filter_interpolation_functions::CreateNoneValue(
       return std::make_unique<InterpolableNumber>(1);
 
     case FilterOperation::BLUR:
-      return LengthInterpolationFunctions::CreateNeutralInterpolableValue();
+      return InterpolableLength::CreateNeutral();
 
     case FilterOperation::DROP_SHADOW:
       return ShadowInterpolationFunctions::CreateNeutralInterpolableValue();
@@ -239,9 +239,10 @@ FilterOperation* filter_interpolation_functions::CreateFilter(
     }
 
     case FilterOperation::BLUR: {
-      Length std_deviation = LengthInterpolationFunctions::CreateLength(
-          interpolable_value, non_interpolable_value.TypeNonInterpolableValue(),
-          state.CssToLengthConversionData(), kValueRangeNonNegative);
+      Length std_deviation =
+          To<InterpolableLength>(interpolable_value)
+              .CreateLength(state.CssToLengthConversionData(),
+                            kValueRangeNonNegative);
       return MakeGarbageCollected<BlurFilterOperation>(std_deviation);
     }
 

@@ -355,6 +355,11 @@ public class LocationBarLayout extends FrameLayout
         mOmniboxPrerender.initializeForProfile(profile);
     }
 
+    @Override
+    public void setShowIconsWhenUrlFocused(boolean showIcon) {
+        mStatusViewCoordinator.setShowIconsWhenUrlFocused(showIcon);
+    }
+
     /** Focuses the current page. */
     private void focusCurrentTab() {
         if (mToolbarDataProvider.hasTab()) getCurrentTab().requestFocus();

@@ -23,6 +23,10 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
   import("//build/config/arm.gni")
 }
 
+if (is_mac) {
+  import("//build/config/mac/symbols.gni")
+}
+
 declare_args() {
   # How many symbols to include in the build. This affects the performance of
   # the build since the symbols are large and dealing with them is slow.
@@ -197,8 +201,13 @@ declare_args() {
   # in turn is important for goma compile hit rate.
   # Setting this to true may make it harder to debug binaries on Linux, see
   # https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug_compilation_dir
+  # It's not clear if the crash server will correctly handle dSYMs with relative
+  # paths, so we disable this feature for official benefit. The main benefit is
+  # deterministic builds to reduce compile times, so this is less relevant for
+  # official builders.
   strip_absolute_paths_from_debug_symbols =
-      is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux
+      is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
+      (is_mac && !enable_dsyms)
 }
 
 # If it wasn't manually set, set to an appropriate default.

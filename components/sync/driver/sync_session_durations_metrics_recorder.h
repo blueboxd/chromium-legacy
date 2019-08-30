@@ -13,6 +13,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 
 namespace syncer {
@@ -74,9 +75,9 @@ class SyncSessionDurationsMetricsRecorder
   signin::IdentityManager* const identity_manager_;
 
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
-      sync_observer_;
+      sync_observer_{this};
   ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
-      identity_manager_observer_;
+      identity_manager_observer_{this};
 
   // Tracks the elapsed active session time while the browser is open. The timer
   // is absent if there's no active session.

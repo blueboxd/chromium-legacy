@@ -248,8 +248,8 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
 
   if (cookie->IsSecure() && !secure_source) {
     if (!callback.is_null())
-      std::move(callback).Run(
-          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
+      std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY));
     return;
   }
 
@@ -258,14 +258,14 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
   if (ns_cookie != nil) {
     system_store_->SetCookieAsync(
         ns_cookie, &cookie->CreationDate(),
-        BindSetCookiesCallback(
-            &callback, net::CanonicalCookie::CookieInclusionStatus::INCLUDE));
+        BindSetCookiesCallback(&callback,
+                               net::CanonicalCookie::CookieInclusionStatus()));
     return;
   }
 
   if (!callback.is_null())
-    std::move(callback).Run(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE);
+    std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE));
 }
 
 void CookieStoreIOS::GetCookieListWithOptionsAsync(
@@ -643,7 +643,7 @@ void CookieStoreIOS::UpdateCachesAfterSet(
     SetCookiesCallback callback,
     net::CanonicalCookie::CookieInclusionStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE)
+  if (status.IsInclude())
     UpdateCachesFromCookieMonster();
   if (!callback.is_null())
     std::move(callback).Run(status);
@@ -682,9 +682,8 @@ CookieStoreIOS::CanonicalCookieWithStatusListFromSystemCookies(
   cookie_list.reserve([cookies count]);
   for (NSHTTPCookie* cookie in cookies) {
     base::Time created = system_store_->GetCookieCreationTime(cookie);
-    cookie_list.push_back(
-        {CanonicalCookieFromSystemCookie(cookie, created),
-         net::CanonicalCookie::CookieInclusionStatus::INCLUDE});
+    cookie_list.push_back({CanonicalCookieFromSystemCookie(cookie, created),
+                           net::CanonicalCookie::CookieInclusionStatus()});
   }
   return cookie_list;
 }

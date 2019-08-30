@@ -14,11 +14,10 @@
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_coordinator_service.h"
 #include "content/public/browser/tracing_controller.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace heap_profiling {
 
@@ -60,24 +59,28 @@ void Supervisor::SetClientConnectionManagerConstructor(
   constructor_ = constructor;
 }
 
-void Supervisor::Start(service_manager::Connector* connector,
-                       base::OnceClosure closure) {
-  Start(connector, GetModeForStartup(), GetStackModeForStartup(),
+void Supervisor::Start(base::OnceClosure closure) {
+  Start(GetModeForStartup(), GetStackModeForStartup(),
         GetSamplingRateForStartup(), std::move(closure));
 }
 
-void Supervisor::Start(service_manager::Connector* connector,
-                       Mode mode,
+void Supervisor::Start(Mode mode,
                        mojom::StackMode stack_mode,
                        uint32_t sampling_rate,
                        base::OnceClosure closure) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!started_);
 
+  mojo::PendingRemote<memory_instrumentation::mojom::HeapProfilerHelper> helper;
+  mojo::PendingRemote<memory_instrumentation::mojom::HeapProfiler> profiler;
+  auto profiler_receiver = profiler.InitWithNewPipeAndPassReceiver();
+  content::GetResourceCoordinatorService()->RegisterHeapProfiler(
+      std::move(profiler), helper.InitWithNewPipeAndPassReceiver());
   base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->PostTask(FROM_HERE, base::BindOnce(&Supervisor::StartServiceOnIOThread,
                                            base::Unretained(this),
-                                           connector->Clone(), mode, stack_mode,
+                                           std::move(profiler_receiver),
+                                           std::move(helper), mode, stack_mode,
                                            sampling_rate, std::move(closure)));
 }
 
@@ -166,28 +169,17 @@ void Supervisor::RequestTraceWithHeapDump(TraceFinishedCallback callback,
 }
 
 void Supervisor::StartServiceOnIOThread(
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingReceiver<memory_instrumentation::mojom::HeapProfiler> receiver,
+    mojo::PendingRemote<memory_instrumentation::mojom::HeapProfilerHelper>
+        remote_helper,
     Mode mode,
     mojom::StackMode stack_mode,
     uint32_t sampling_rate,
     base::OnceClosure closure) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  // The heap profiling service requires the injection of a few Resource
-  // Coordinator dependencies.
-  mojo::Remote<memory_instrumentation::mojom::Coordinator> coordinator;
-  connector->Connect(resource_coordinator::mojom::kServiceName,
-                     coordinator.BindNewPipeAndPassReceiver());
-  mojo::PendingRemote<memory_instrumentation::mojom::HeapProfilerHelper> helper;
-  connector->Connect(resource_coordinator::mojom::kServiceName,
-                     helper.InitWithNewPipeAndPassReceiver());
-
-  memory_instrumentation::mojom::HeapProfilerPtr heap_profiler;
-  auto profiler_request = mojo::MakeRequest(&heap_profiler);
-  coordinator->RegisterHeapProfiler(std::move(heap_profiler));
-
   mojo::PendingRemote<mojom::ProfilingService> service =
-      LaunchService(std::move(profiler_request), std::move(helper));
+      LaunchService(std::move(receiver), std::move(remote_helper));
 
   controller_ = std::make_unique<Controller>(std::move(service), stack_mode,
                                              sampling_rate);

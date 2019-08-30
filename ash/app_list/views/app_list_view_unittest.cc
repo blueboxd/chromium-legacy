@@ -2021,6 +2021,27 @@ TEST_F(AppListViewTest, AppsGridViewVisibilityOnReopening) {
   EXPECT_TRUE(IsViewVisibleOnScreen(apps_grid_view()));
 }
 
+TEST_F(AppListViewTest, AppsGridViewExpandHintingOnReopening) {
+  AppListView::SetShortAnimationForTesting(false);
+  Initialize(false /*is_tablet_mode*/);
+
+  Show();
+  view_->SetState(ash::AppListViewState::kPeeking);
+  EXPECT_TRUE(
+      contents_view()->expand_arrow_view()->IsHintingAnimationRunningForTest());
+
+  view_->SetState(ash::AppListViewState::kClosed);
+  EXPECT_FALSE(
+      contents_view()->expand_arrow_view()->IsHintingAnimationRunningForTest());
+
+  Show();
+  view_->SetState(ash::AppListViewState::kPeeking);
+  EXPECT_TRUE(
+      contents_view()->expand_arrow_view()->IsHintingAnimationRunningForTest());
+
+  AppListView::SetShortAnimationForTesting(true);
+}
+
 // Tests that going into a folder view, then setting the AppListState to PEEKING
 // hides the folder view.
 TEST_F(AppListViewTest, FolderViewToPeeking) {

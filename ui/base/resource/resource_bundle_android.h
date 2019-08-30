@@ -14,8 +14,14 @@
 namespace ui {
 
 // Loads "resources.apk" from the .apk. Falls back to loading from disk, which
-// is necessary for tests. Returns true if it succeeds, false otherwise.
+// is necessary for tests.
 UI_BASE_EXPORT void LoadMainAndroidPackFile(
+    const char* path_within_apk,
+    const base::FilePath& disk_file_path);
+
+// Loads "dev_ui_resources.apk" from the .apk, for the DevUI DFM. Falls back to
+// loading from disk.
+UI_BASE_EXPORT void LoadAndroidDevUiPackFile(
     const char* path_within_apk,
     const base::FilePath& disk_file_path);
 

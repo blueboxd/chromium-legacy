@@ -488,6 +488,9 @@ constexpr char kLocalProfileId[] = "profile.local_profile_id";
 // Deprecated 8/2019
 const char kLastStartupTimestamp[] = "startup_metric.last_startup_timestamp";
 
+// Deprecated 8/2019
+const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -560,6 +563,8 @@ void RegisterProfilePrefsForMigration(
 #if defined(USE_X11)
   registry->RegisterIntegerPref(kLocalProfileId, 0);
 #endif
+
+  registry->RegisterDictionaryPref(kHintLoadedCounts);
 }
 
 }  // namespace
@@ -1161,4 +1166,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(USE_X11)
   profile_prefs->ClearPref(kLocalProfileId);
 #endif
+
+  // Added 8/2019.
+  profile_prefs->ClearPref(kHintLoadedCounts);
 }

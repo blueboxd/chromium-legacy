@@ -1186,10 +1186,34 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ExitInline(
     LayoutObject* node) {
   DCHECK(node);
 
-  AppendOpaque(NGInlineItem::kCloseTag, node);
+  if (NeedsBoxInfo()) {
+    BoxInfo* current_box = &boxes_.back();
+    if (!current_box->should_create_box_fragment) {
+      // Set ShouldCreateBoxFragment if this inline box is empty so that we can
+      // compute its position/size correctly. Check this by looking for any
+      // non-empty items after the last |kOpenTag|.
+      const unsigned open_item_index = current_box->item_index;
+      DCHECK_GE(items_->size(), open_item_index + 1);
+      DCHECK_EQ((*items_)[open_item_index].Type(), NGInlineItem::kOpenTag);
+      for (unsigned i = items_->size() - 1;; --i) {
+        NGInlineItem& item = (*items_)[i];
+        if (i == open_item_index) {
+          DCHECK_EQ(i, current_box->item_index);
+          // TODO(kojii): <area> element fails to hit-test when we don't cull.
+          if (!IsHTMLAreaElement(item.GetLayoutObject()->GetNode()))
+            item.SetShouldCreateBoxFragment();
+          break;
+        }
+        DCHECK_GT(i, current_box->item_index);
+        if (!item.IsEmptyItem())
+          break;
+      }
+    }
 
-  if (NeedsBoxInfo())
     boxes_.pop_back();
+  }
+
+  AppendOpaque(NGInlineItem::kCloseTag, node);
 
   Exit(node);
 }

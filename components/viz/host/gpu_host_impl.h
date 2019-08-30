@@ -20,6 +20,7 @@
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
+#include "components/ui_devtools/buildflags.h"
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_domain_guilt.h"
@@ -152,7 +153,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   void ConnectFrameSinkManager(mojom::FrameSinkManagerRequest request,
                                mojom::FrameSinkManagerClientPtrInfo client);
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   // Connects to Viz DevTools running in the Viz service.
   void ConnectVizDevTools(mojom::VizDevToolsParamsPtr params);
 #endif

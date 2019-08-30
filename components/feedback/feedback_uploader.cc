@@ -82,7 +82,17 @@ void FeedbackUploader::SetMinimumRetryDelayForTesting(base::TimeDelta delay) {
 }
 
 void FeedbackUploader::QueueReport(std::unique_ptr<std::string> data) {
-  QueueReportWithDelay(std::move(data), base::TimeDelta());
+  reports_queue_.emplace(base::MakeRefCounted<FeedbackReport>(
+      feedback_reports_path_, base::Time::Now(), std::move(data),
+      task_runner_));
+  UpdateUploadTimer();
+}
+
+void FeedbackUploader::RequeueReport(scoped_refptr<FeedbackReport> report) {
+  DCHECK_EQ(task_runner_, report->reports_task_runner());
+  report->set_upload_at(base::Time::Now());
+  reports_queue_.emplace(std::move(report));
+  UpdateUploadTimer();
 }
 
 void FeedbackUploader::StartDispatchingReport() {
@@ -247,14 +257,6 @@ void FeedbackUploader::UpdateUploadTimer() {
     upload_timer_.Start(FROM_HERE, delay, this,
                         &FeedbackUploader::UpdateUploadTimer);
   }
-}
-
-void FeedbackUploader::QueueReportWithDelay(std::unique_ptr<std::string> data,
-                                            base::TimeDelta delay) {
-  reports_queue_.emplace(base::MakeRefCounted<FeedbackReport>(
-      feedback_reports_path_, base::Time::Now() + delay, std::move(data),
-      task_runner_));
-  UpdateUploadTimer();
 }
 
 }  // namespace feedback

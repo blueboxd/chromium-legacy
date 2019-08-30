@@ -98,18 +98,12 @@ std::unique_ptr<FidoDiscoveryBase> FakeFidoDiscoveryFactory::Create(
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::move(next_ble_discovery_);
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
-      NOTREACHED() << "CaBLE should be handled by CreateCable().";
-      return nullptr;
+      return std::move(next_cable_discovery_);
     case FidoTransportProtocol::kInternal:
       return std::move(next_platform_discovery_);
   }
   NOTREACHED();
   return nullptr;
-}
-
-std::unique_ptr<FidoDiscoveryBase> FakeFidoDiscoveryFactory::CreateCable(
-    std::vector<CableDiscoveryData> cable_data) {
-  return std::move(next_cable_discovery_);
 }
 
 }  // namespace test

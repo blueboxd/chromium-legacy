@@ -51,6 +51,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnableUnitTest.java",
   "junit/src/org/chromium/chrome/browser/customtabs/CloseButtonNavigatorTest.java",
   "junit/src/org/chromium/chrome/browser/customtabs/CustomTabIntentDataProviderTest.java",
+  "junit/src/org/chromium/chrome/browser/customtabs/CustomTabNightModeStateControllerTest.java",
   "junit/src/org/chromium/chrome/browser/customtabs/CustomTabStatusBarColorProviderTest.java",
   "junit/src/org/chromium/chrome/browser/customtabs/NavigationInfoCaptureTriggerTest.java",
   "junit/src/org/chromium/chrome/browser/customtabs/content/CustomTabActivityContentTestEnvironment.java",

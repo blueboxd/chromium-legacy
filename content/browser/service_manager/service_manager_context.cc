@@ -71,8 +71,6 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
-#include "services/resource_coordinator/resource_coordinator_service.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -316,12 +314,6 @@ void CreateInProcessAudioService(
                                                         std::move(request)));
                      },
                      BrowserMainLoop::GetAudioManager(), std::move(request)));
-}
-
-std::unique_ptr<service_manager::Service> CreateResourceCoordinatorService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<resource_coordinator::ResourceCoordinatorService>(
-      std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateTracingService(
@@ -591,11 +583,6 @@ ServiceManagerContext::ServiceManagerContext(
       service_manager_thread_task_runner_));
   auto* system_connection = ServiceManagerConnection::GetForProcess();
   SetSystemConnector(system_connection->GetConnector()->Clone());
-
-  RegisterInProcessService(
-      resource_coordinator::mojom::kServiceName,
-      service_manager_thread_task_runner_,
-      base::BindRepeating(&CreateResourceCoordinatorService));
 
   RegisterInProcessService(metrics::mojom::kMetricsServiceName,
                            service_manager_thread_task_runner_,

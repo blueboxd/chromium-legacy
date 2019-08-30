@@ -62,7 +62,7 @@ bool CanMakePaymentQuery::CanQueryWithPerMethodQuota(
       timer->Start(FROM_HERE, base::TimeDelta::FromMinutes(30),
                    base::BindOnce(
                        &CanMakePaymentQuery::ExpireQuotaForFrameOriginAndMethod,
-                       base::Unretained(this), id));
+                       weak_ptr_factory_.GetWeakPtr(), id));
       timers_.insert(std::make_pair(id, std::move(timer)));
       per_method_queries_.insert(std::make_pair(id, params));
       continue;
@@ -85,7 +85,7 @@ bool CanMakePaymentQuery::CanQueryWithoutPerMethodQuota(
     auto timer = std::make_unique<base::OneShotTimer>();
     timer->Start(FROM_HERE, base::TimeDelta::FromMinutes(30),
                  base::BindOnce(&CanMakePaymentQuery::ExpireQuotaForFrameOrigin,
-                                base::Unretained(this), id));
+                                weak_ptr_factory_.GetWeakPtr(), id));
     timers_.insert(std::make_pair(id, std::move(timer)));
     queries_.insert(std::make_pair(id, query));
     return true;

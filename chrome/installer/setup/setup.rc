@@ -58,7 +58,10 @@ IDI_SETUP               ICON                    "setup.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
-#if defined(GOOGLE_CHROME_BUILD)
+// This really should be using the buildflag but the resource compiler fails on
+// macro functions longer than 31 chars which this command produces. The BUILD
+// sets this regular define for this target only for this line to consume.
+#ifdef GOOGLE_CHROME_BRANDING_FOR_RC
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -115,7 +118,7 @@ IDR_OEMPG_VI.HTML       HTML   "eula\\oem_vi.html"
 IDR_OEMPG_ZH_CN.HTML    HTML   "eula\\oem_zh-CN.html"
 IDR_OEMPG_ZH_TW.HTML    HTML   "eula\\oem_zh-TW.html"
 
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // GOOGLE_CHROME_BRANDING_FOR_RC
 
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

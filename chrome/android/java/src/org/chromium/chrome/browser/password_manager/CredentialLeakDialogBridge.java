@@ -43,15 +43,21 @@ public class CredentialLeakDialogBridge {
         mCredentialLeakDialog.dismissDialog(DialogDismissalCause.DISMISSED_BY_NATIVE);
     }
 
-    private void onClick(boolean ok) {
+    private void onClick(@DialogDismissalCause int dismissalCause) {
         if (mNativeCredentialLeakDialogViewAndroid == 0) return;
-        if (ok) {
-            nativeAccepted(mNativeCredentialLeakDialogViewAndroid);
-        } else {
-            nativeClosed(mNativeCredentialLeakDialogViewAndroid);
+        switch (dismissalCause) {
+            case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
+                nativeAccepted(mNativeCredentialLeakDialogViewAndroid);
+                return;
+            case DialogDismissalCause.NEGATIVE_BUTTON_CLICKED:
+                nativeCancelled(mNativeCredentialLeakDialogViewAndroid);
+                return;
+            default:
+                nativeClosed(mNativeCredentialLeakDialogViewAndroid);
         }
     }
 
     private native void nativeAccepted(long nativeCredentialLeakDialogViewAndroid);
+    private native void nativeCancelled(long nativeCredentialLeakDialogViewAndroid);
     private native void nativeClosed(long nativeCredentialLeakDialogViewAndroid);
 }

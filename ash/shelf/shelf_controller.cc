@@ -26,7 +26,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/message_center/message_center.h"
 
 namespace ash {
 
@@ -102,8 +101,7 @@ void SetShelfBehaviorsFromPrefs() {
 
 ShelfController::ShelfController()
     : is_notification_indicator_enabled_(
-          features::IsNotificationIndicatorEnabled()),
-      message_center_observer_(this) {
+          features::IsNotificationIndicatorEnabled()) {
   ShelfModel::SetInstance(&model_);
 
   Shell::Get()->session_controller()->AddObserver(this);

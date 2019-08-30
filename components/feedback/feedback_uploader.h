@@ -50,6 +50,9 @@ class FeedbackUploader : public KeyedService,
   // Queues a report for uploading.
   void QueueReport(std::unique_ptr<std::string> data);
 
+  // Re-queues an existing report from disk for uploading.
+  void RequeueReport(scoped_refptr<FeedbackReport> report);
+
   bool QueueEmpty() const { return reports_queue_.empty(); }
 
   content::BrowserContext* context() { return context_; }
@@ -112,9 +115,6 @@ class FeedbackUploader : public KeyedService,
 
   // Update our timer for uploading the next report.
   void UpdateUploadTimer();
-
-  void QueueReportWithDelay(std::unique_ptr<std::string> data,
-                            base::TimeDelta delay);
 
   // URLLoaderFactory used for network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

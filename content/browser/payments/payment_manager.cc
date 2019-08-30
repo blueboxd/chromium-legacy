@@ -31,7 +31,7 @@ PaymentManager::PaymentManager(
   DCHECK(payment_app_context);
 
   binding_.set_connection_error_handler(base::BindOnce(
-      &PaymentManager::OnConnectionError, base::Unretained(this)));
+      &PaymentManager::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PaymentManager::Init(const GURL& context_url, const std::string& scope) {

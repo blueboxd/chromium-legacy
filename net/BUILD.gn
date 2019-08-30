@@ -6190,33 +6190,37 @@ if (!is_ios) {
 
 # This has a global (InitGlobals) that must always be linked in, so
 # must be a source set instead of a static library.
-source_set("net_fuzzer_test_support") {
-  testonly = true
+if (use_fuzzing_engine) {
+  # fuzzer_test targets are no-op when |use_fuzzing_engine| is false. Fuzzer
+  # support targets should be disabled too.
+  source_set("net_fuzzer_test_support") {
+    testonly = true
 
-  sources = [
-    "base/fuzzer_test_support.cc",
-    "filter/fuzzed_source_stream.cc",
-    "filter/fuzzed_source_stream.h",
-    "socket/fuzzed_datagram_client_socket.cc",
-    "socket/fuzzed_datagram_client_socket.h",
-    "socket/fuzzed_server_socket.cc",
-    "socket/fuzzed_server_socket.h",
-    "socket/fuzzed_socket.cc",
-    "socket/fuzzed_socket.h",
-    "socket/fuzzed_socket_factory.cc",
-    "socket/fuzzed_socket_factory.h",
-    "third_party/quiche/src/quic/platform/api/quic_fuzzed_data_provider.h",
-  ]
-  public_deps = [
-    "//base/test:test_support",
-    "//net/dns:fuzzer_test_support",
-  ]
-  deps = [
-    "//base",
-    "//base:i18n",
-    "//net",
-  ]
-  allow_circular_includes_from = [ "//net/dns:fuzzer_test_support" ]
+    sources = [
+      "base/fuzzer_test_support.cc",
+      "filter/fuzzed_source_stream.cc",
+      "filter/fuzzed_source_stream.h",
+      "socket/fuzzed_datagram_client_socket.cc",
+      "socket/fuzzed_datagram_client_socket.h",
+      "socket/fuzzed_server_socket.cc",
+      "socket/fuzzed_server_socket.h",
+      "socket/fuzzed_socket.cc",
+      "socket/fuzzed_socket.h",
+      "socket/fuzzed_socket_factory.cc",
+      "socket/fuzzed_socket_factory.h",
+      "third_party/quiche/src/quic/platform/api/quic_fuzzed_data_provider.h",
+    ]
+    public_deps = [
+      "//base/test:test_support",
+      "//net/dns:fuzzer_test_support",
+    ]
+    deps = [
+      "//base",
+      "//base:i18n",
+      "//net",
+    ]
+    allow_circular_includes_from = [ "//net/dns:fuzzer_test_support" ]
+  }
 }
 
 proto_library("disk_cache_lpm_fuzzer_proto") {

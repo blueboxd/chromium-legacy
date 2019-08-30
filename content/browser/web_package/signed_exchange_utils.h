@@ -93,6 +93,14 @@ network::ResourceResponseHead CreateRedirectResponseHead(
 // any thread.
 int MakeRequestID();
 
+// Returns the time to be used for verifying signed exchange. Can be overridden
+// using SetVerificationTimeForTesting().
+base::Time GetVerificationTime();
+
+// Override the time which is used for verifying signed exchange.
+CONTENT_EXPORT void SetVerificationTimeForTesting(
+    base::Optional<base::Time> verification_time_for_testing);
+
 }  // namespace signed_exchange_utils
 }  // namespace content
 

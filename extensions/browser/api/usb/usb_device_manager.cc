@@ -17,6 +17,7 @@
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -157,7 +158,7 @@ void UsbDeviceManager::GetDevice(
     mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver) {
   EnsureConnectionWithDeviceManager();
   device_manager_->GetDevice(guid, std::move(device_receiver),
-                             /*device_client=*/nullptr);
+                             /*device_client=*/mojo::NullRemote());
 }
 
 const device::mojom::UsbDeviceInfo* UsbDeviceManager::GetDeviceInfo(

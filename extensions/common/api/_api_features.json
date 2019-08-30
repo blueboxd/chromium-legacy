@@ -232,6 +232,7 @@
         "chrome://add-supervision/*",
         "chrome://assistant-optin/*",
         "chrome://cast/*",
+        "chrome://cellular-setup/*",
         "chrome://discards/*",
         "chrome://extensions-frame/*",  // TODO(dbeam): still needed?
         "chrome://extensions/*",
@@ -652,6 +653,7 @@
     "matches": [
       "chrome://add-supervision/*",
       "chrome://assistant-optin/*",
+      "chrome://cellular-setup/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
       "chrome://hats/*",
@@ -672,6 +674,7 @@
     "matches": [
       "chrome://add-supervision/*",
       "chrome://assistant-optin/*",
+      "chrome://cellular-setup/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
       "chrome://hats/*",
@@ -690,6 +693,7 @@
     "matches": [
       "chrome://add-supervision/*",
       "chrome://assistant-optin/*",
+      "chrome://cellular-setup/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
       "chrome://hats/*",

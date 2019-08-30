@@ -246,18 +246,24 @@ cr.define('print_preview_test_utils', function() {
     const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
                                    print_preview.DestinationOrigin.LOCAL;
     // Five destinations. FooDevice is the system default.
-    [{id: 'ID1', name: 'One'}, {id: 'ID2', name: 'Two'},
-     {id: 'ID3', name: 'Three'}, {id: 'ID4', name: 'Four'},
-     {id: 'FooDevice', name: 'FooName'}]
+    [{deviceName: 'ID1', printerName: 'One'},
+     {deviceName: 'ID2', printerName: 'Two'},
+     {deviceName: 'ID3', printerName: 'Three'},
+     {deviceName: 'ID4', printerName: 'Four'},
+     {deviceName: 'FooDevice', printerName: 'FooName'}]
         .forEach((info, index) => {
           const destination = new print_preview.Destination(
-              info.id, print_preview.DestinationType.LOCAL, origin, info.name,
+              info.deviceName, print_preview.DestinationType.LOCAL, origin,
+              info.printerName,
               print_preview.DestinationConnectionStatus.ONLINE);
           if (nativeLayer) {
-            nativeLayer.setLocalDestinationCapabilities(
-                print_preview_test_utils.getCddTemplate(info.id, info.name));
+            nativeLayer.setLocalDestinationCapabilities({
+              printer: info,
+              capabilities: print_preview_test_utils.getCddTemplate(
+                  info.deviceName, info.printerName),
+            });
           }
-          localDestinations.push({printerName: info.name, deviceName: info.id});
+          localDestinations.push(info);
           destinations.push(destination);
         });
     return destinations;

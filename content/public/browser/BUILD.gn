@@ -7,6 +7,10 @@ import("//build/config/ui.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # See //content/BUILD.gn for how this works.
 group("browser") {
   if (is_component_build) {
@@ -72,6 +76,7 @@ jumbo_source_set("browser_sources") {
     "browser_accessibility_state.h",
     "browser_associated_interface.h",
     "browser_child_process_host.h",
+    "browser_child_process_host_delegate.cc",
     "browser_child_process_host_delegate.h",
     "browser_child_process_host_iterator.cc",
     "browser_child_process_host_iterator.h",
@@ -112,6 +117,7 @@ jumbo_source_set("browser_sources") {
     "client_hints_controller_delegate.h",
     "color_chooser.h",
     "console_message.h",
+    "contacts_picker_properties_requested.h",
     "content_browser_client.cc",
     "content_browser_client.h",
     "content_index_context.h",
@@ -275,6 +281,7 @@ jumbo_source_set("browser_sources") {
     "renderer_preferences_util.h",
     "replaced_navigation_entry_data.h",
     "resource_context.h",
+    "resource_coordinator_service.h",
     "restore_type.h",
     "same_site_data_remover.h",
     "sandbox_type.h",
@@ -464,5 +471,13 @@ jumbo_source_set("browser_sources") {
   if (is_chromeos) {
     sources +=
         [ "chromeos/delegate_to_browser_gpu_service_accelerator_factory.h" ]
+  }
+}
+
+if (is_android) {
+  java_cpp_enum("contacts_picker_properties_requested_javagen") {
+    sources = [
+      "contacts_picker_properties_requested.h",
+    ]
   }
 }

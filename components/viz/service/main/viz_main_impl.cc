@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "components/ui_devtools/buildflags.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -275,7 +276,7 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
 }
 
 void VizMainImpl::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   viz_compositor_thread_runner_->CreateVizDevTools(std::move(params));
 #endif
 }

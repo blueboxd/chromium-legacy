@@ -352,19 +352,19 @@ class OncMojo {
   }
 
   /**
-   * @param {!chromeos.networkConfig.mojom.VPNType} value
+   * @param {!chromeos.networkConfig.mojom.VpnType} value
    * @return {string}
    */
-  static getVPNTypeString(value) {
-    const VPNType = chromeos.networkConfig.mojom.VPNType;
+  static getVpnTypeString(value) {
+    const VpnType = chromeos.networkConfig.mojom.VpnType;
     switch (value) {
-      case VPNType.kL2TPIPsec:
+      case VpnType.kL2TPIPsec:
         return 'L2TP-IPsec';
-      case VPNType.kOpenVPN:
+      case VpnType.kOpenVPN:
         return 'OpenVPN';
-      case VPNType.kThirdPartyVPN:
+      case VpnType.kExtension:
         return 'ThirdPartyVPN';
-      case VPNType.kArcVPN:
+      case VpnType.kArc:
         return 'ARCVPN';
     }
     assertNotReached('Unexpected enum value: ' + OncMojo.getEnumString(value));
@@ -373,22 +373,22 @@ class OncMojo {
 
   /**
    * @param {string} value
-   * @return {!chromeos.networkConfig.mojom.VPNType}
+   * @return {!chromeos.networkConfig.mojom.VpnType}
    */
-  static getVPNTypeFromString(value) {
-    const VPNType = chromeos.networkConfig.mojom.VPNType;
+  static getVpnTypeFromString(value) {
+    const VpnType = chromeos.networkConfig.mojom.VpnType;
     switch (value) {
       case 'L2TP-IPsec':
-        return VPNType.kL2TPIPsec;
+        return VpnType.kL2TPIPsec;
       case 'OpenVPN':
-        return VPNType.kOpenVPN;
+        return VpnType.kOpenVPN;
       case 'ThirdPartyVPN':
-        return VPNType.kThirdPartyVPN;
+        return VpnType.kExtension;
       case 'ARCVPN':
-        return VPNType.kArcVPN;
+        return VpnType.kArc;
     }
     assertNotReached('Unexpected value: ' + value);
-    return VPNType.kOpenVPN;
+    return VpnType.kOpenVPN;
   }
 
   /**
@@ -546,7 +546,7 @@ class OncMojo {
         break;
       case mojom.NetworkType.kVPN:
         result.vpn = {
-          type: mojom.VPNType.kOpenVPN,
+          type: mojom.VpnType.kOpenVPN,
           providerId: '',
           providerName: '',
         };
@@ -664,7 +664,7 @@ class OncMojo {
       case mojom.NetworkType.kVPN:
         result.vpn = {
           providerName: '',
-          type: mojom.VPNType.kOpenVPN,
+          type: mojom.VpnType.kOpenVPN,
           openVpn: {},
         };
         break;

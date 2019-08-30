@@ -106,6 +106,42 @@ meter::-webkit-meter-even-less-good-value {
   border-radius: 1px 0px 0px 1px;
 }
 
+input[type="date" i]::-webkit-calendar-picker-indicator,
+input[type="datetime-local" i]::-webkit-calendar-picker-indicator,
+input[type="month" i]::-webkit-calendar-picker-indicator,
+input[type="week" i]::-webkit-calendar-picker-indicator {
+  background-image: -webkit-image-set(url(images/calendar_icon.svg) 1x);
+  background-origin: content-box;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 1.2em;
+  opacity: 1;
+  outline: none;
+  padding-bottom: 2px;
+  padding-inline-start: 27px;
+  padding-inline-end: 3px;
+  padding-top: 2px;
+  width: 1.2em;
+}
+
+input::-webkit-calendar-picker-indicator:hover {
+  background-color: initial;
+}
+
+/* Remove focus ring from fields and use highlight color */
+input::-webkit-datetime-edit-ampm-field:focus,
+input::-webkit-datetime-edit-day-field:focus,
+input::-webkit-datetime-edit-hour-field:focus,
+input::-webkit-datetime-edit-millisecond-field:focus,
+input::-webkit-datetime-edit-minute-field:focus,
+input::-webkit-datetime-edit-month-field:focus,
+input::-webkit-datetime-edit-second-field:focus,
+input::-webkit-datetime-edit-week-field:focus,
+input::-webkit-datetime-edit-year-field:focus {
+  background-color: rgba(0, 120, 212, 0.4);
+  outline: none;
+}
+
 /* -internal-list-box is how we specify select[multiple] */
 /* select[multiple] is an exception to the prohibition on sizes here
    because it is one of the few controls with borders that grow on zoom

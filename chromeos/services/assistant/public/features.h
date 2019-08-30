@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace chromeos {
 namespace assistant {
@@ -31,6 +32,12 @@ extern const base::Feature kAssistantAppSupport;
 // Enables Assistant proactive suggestions.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantProactiveSuggestions;
+
+// Enables suppression of Assistant proactive suggestions that have already been
+// shown to the user.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::FeatureParam<bool>
+    kAssistantProactiveSuggestionsSuppressDuplicates;
 
 // Enables Assistant routines.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
@@ -103,6 +110,9 @@ bool IsMediaSessionIntegrationEnabled();
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsPowerManagerEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsProactiveSuggestionsEnabled();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+bool IsProactiveSuggestionsSuppressDuplicatesEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsRoutinesEnabled();
 

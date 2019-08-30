@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/util/type_safety/pass_key.h"
 
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/service/interface_set.h"
@@ -42,10 +43,13 @@ class BrowserXRRuntime;
 class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
                                 content::WebContentsObserver {
  public:
-  friend XRRuntimeManagerTest;
   static bool IsXrDeviceConsentPromptDisabledForTesting();
 
   explicit VRServiceImpl(content::RenderFrameHost* render_frame_host);
+
+  // Constructor for tests.
+  explicit VRServiceImpl(util::PassKey<XRRuntimeManagerTest>);
+
   ~VRServiceImpl() override;
 
   static void Create(content::RenderFrameHost* render_frame_host,
@@ -93,12 +97,8 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   void SetListeningForActivate(
       device::mojom::VRDisplayClientPtr display_client) override;
-  void SetInFocusedFrame(bool in_focused_frame);
 
  private:
-  // Constructor for tests.
-  VRServiceImpl();
-
   // content::WebContentsObserver implementation
   void OnWebContentsFocused(content::RenderWidgetHost* host) override;
   void OnWebContentsLostFocus(content::RenderWidgetHost* host) override;
@@ -108,8 +108,6 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   void ResolvePendingRequests();
   bool IsSecureContextRequirementSatisfied();
-
-  bool IsAnotherHostPresenting();
 
   // Returns currently active instance of SessionMetricsHelper from WebContents.
   // If the instance is not present on WebContents, it will be created with the

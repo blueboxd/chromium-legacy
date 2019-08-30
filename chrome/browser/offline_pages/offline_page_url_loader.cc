@@ -19,6 +19,7 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace offline_pages {
 

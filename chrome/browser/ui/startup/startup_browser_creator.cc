@@ -468,8 +468,7 @@ SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
       pref.type = SessionStartupPref::LAST;
   }
 
-  if (pref.type == SessionStartupPref::LAST &&
-      IncognitoModePrefs::ShouldLaunchIncognito(command_line, prefs)) {
+  if (pref.type == SessionStartupPref::LAST && profile->IsOffTheRecord()) {
     // We don't store session information when incognito. If the user has
     // chosen to restore last session and launched incognito, fallback to
     // default launch behavior.

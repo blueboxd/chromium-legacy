@@ -44,22 +44,7 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
-namespace network {
-struct HttpRawRequestResponseInfo;
-}
-
 namespace IPC {
-
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
-    ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>> {
-  typedef scoped_refptr<network::HttpRawRequestResponseInfo> param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
 
 // TODO(Richard): Remove this traits after usage of FrameHostMsg_OpenURL_Params
 // disappears.

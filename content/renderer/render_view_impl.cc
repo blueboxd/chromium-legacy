@@ -2016,17 +2016,7 @@ void RenderViewImpl::OnUpdatePageVisualProperties(
       device_scale_factor_scaled_visual_viewport_size = gfx::ScaleToCeiledSize(
           viewport_size, GetScreenInfo().device_scale_factor);
     }
-    // TODO(wjmaclean): At present this makes use of the WebWidget part of
-    // WebViewImpl in order to be able to re-size the view
-    // without having to plumb through the browser-controls state. When
-    // WebViewImpl is no longer a WebWidget, then we'll need to plumb these
-    // values as well. At that time, presumably WebViewImpl::Resize() will
-    // also have migrated to the WebView API. https://crbug.com/419087
-    // Note: If WebViewImpl stops having any widget association when the
-    // main frame is remote, then this should be replaced with a direct call to
-    // webview()->ResizeVisualViewport().
-    webview()->MainFrameWidget()->Resize(
-        device_scale_factor_scaled_visual_viewport_size);
+    webview()->Resize(device_scale_factor_scaled_visual_viewport_size);
   }
 }
 

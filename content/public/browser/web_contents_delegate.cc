@@ -149,6 +149,7 @@ std::unique_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
 void WebContentsDelegate::CreateSmsPrompt(
     RenderFrameHost* host,
     const url::Origin& origin,
+    const std::string& one_time_code,
     base::OnceCallback<void()> on_confirm,
     base::OnceCallback<void()> on_cancel) {}
 

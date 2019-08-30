@@ -29,13 +29,18 @@ class CredentialLeakControllerAndroid {
   // Called when a leaked credential was detected.
   void ShowDialog();
 
-  // Called from the UI when the dialog dismissal was requested.
+  // Called from the UI when the "Close" button was pressed.
   // Will destroy the controller.
-  void OnDialogDismissRequested();
+  void OnCancelDialog();
 
-  // Called from the UI when the password check button was pressed.
+  // Called from the UI when the okay or password check button was pressed.
   // Will destroy the controller.
-  void OnPasswordCheckTriggered();
+  void OnAcceptDialog();
+
+  // Called from the UI when the dialog was dismissed by other means (e.g. back
+  // button).
+  // Will destroy the controller.
+  void OnCloseDialog();
 
   // The label of the accept button. Varies by leak type.
   base::string16 GetAcceptButtonLabel() const;

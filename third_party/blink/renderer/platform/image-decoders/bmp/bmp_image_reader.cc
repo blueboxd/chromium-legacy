@@ -283,7 +283,7 @@ bool BMPImageReader::ReadInfoHeader() {
 
   // Read compression type, if present.
   if (info_header_.size >= 20) {
-    uint32_t compression = ReadUint32(16);
+    const uint32_t compression = ReadUint32(16);
 
     // Detect OS/2 2.x-specific compression types.
     if ((compression == 3) && (info_header_.bit_count == 1)) {
@@ -331,8 +331,60 @@ bool BMPImageReader::ReadInfoHeader() {
       kProfileEmbedded = 0x4d424544,       // "MBED"
     };
 
-    uint32_t cs_type = ReadUint32(56);
+    const uint32_t cs_type = ReadUint32(56);
     switch (cs_type) {
+      case kLcsCalibratedRGB: {  // Endpoints and gamma specified directly
+        skcms_ICCProfile profile;
+        skcms_Init(&profile);
+
+        // Convert chromaticity values from 2.30 fixed point to floating point.
+        const auto fxpt2dot30_to_float = [](uint32_t fxpt2dot30) {
+          return fxpt2dot30 * 9.31322574615478515625e-10f;
+        };
+        const float rx = fxpt2dot30_to_float(ReadUint32(60));
+        const float ry = fxpt2dot30_to_float(ReadUint32(64));
+        const float gx = fxpt2dot30_to_float(ReadUint32(72));
+        const float gy = fxpt2dot30_to_float(ReadUint32(76));
+        const float bx = fxpt2dot30_to_float(ReadUint32(84));
+        const float by = fxpt2dot30_to_float(ReadUint32(88));
+        // BMPs do not explicitly encode a white point.  Using the sRGB
+        // illuminant (D65) seems reasonable given that Windows' system color
+        // space is sRGB.
+        constexpr float kD65x = 0.31271;
+        constexpr float kD65y = 0.32902;
+        skcms_Matrix3x3 to_xyzd50;
+        if (!skcms_PrimariesToXYZD50(rx, ry, gx, gy, bx, by, kD65x, kD65y,
+                                     &to_xyzd50)) {
+          // Some real-world images have bogus values, e.g. all zeros.  Ignore
+          // the color space data in such cases, rather than failing.
+          break;
+        }
+        skcms_SetXYZD50(&profile, &to_xyzd50);
+
+        // Convert gamma values from 16.16 fixed point to transfer functions.
+        const auto fxpt16dot16_to_fn = [](uint32_t fxpt16dot16) {
+          skcms_TransferFunction fn;
+          fn.a = 1.0f;
+          fn.b = fn.c = fn.d = fn.e = fn.f = 0.0f;
+          // Petzold's "Programming Windows" claims the gamma here is a decoding
+          // gamma (e.g. 2.2), as opposed to the inverse, an encoding gamma
+          // (like PNG encodes in its gAMA chunk).
+          fn.g = SkFixedToFloat(fxpt16dot16);
+          return fn;
+        };
+        profile.has_trc = true;
+        profile.trc[0].table_entries = 0;
+        profile.trc[0].parametric = fxpt16dot16_to_fn(ReadUint32(96));
+        profile.trc[1].table_entries = 0;
+        profile.trc[1].parametric = fxpt16dot16_to_fn(ReadUint32(100));
+        profile.trc[2].table_entries = 0;
+        profile.trc[2].parametric = fxpt16dot16_to_fn(ReadUint32(104));
+
+        parent_->SetEmbeddedColorProfile(
+            std::make_unique<ColorProfile>(profile));
+        break;
+      }
+
       case kLcssRGB:               // sRGB
       case kLcsWindowsColorSpace:  // "The Windows default color space" (sRGB)
         parent_->SetEmbeddedColorProfile(
@@ -346,8 +398,6 @@ bool BMPImageReader::ReadInfoHeader() {
         }
         break;
 
-      case kLcsCalibratedRGB:  // Endpoints and gamma specified directly.
-                               // Unsupported for now.  TODO(pkasting): Support.
       case kProfileLinked:     // Linked ICC profile.  Unsupported; presents
                                // security concerns.
       default:                 // Unknown.

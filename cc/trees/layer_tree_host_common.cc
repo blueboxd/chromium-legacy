@@ -664,11 +664,11 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
                                               : DONT_BUILD_PROPERTY_TREES);
 }
 
-PropertyTrees* GetPropertyTrees(Layer* layer) {
+PropertyTrees* GetPropertyTrees(const Layer* layer) {
   return layer->layer_tree_host()->property_trees();
 }
 
-PropertyTrees* GetPropertyTrees(LayerImpl* layer) {
+PropertyTrees* GetPropertyTrees(const LayerImpl* layer) {
   return layer->layer_tree_impl()->property_trees();
 }
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -86,10 +87,16 @@ class PaymentInstrument {
       const std::set<autofill::CreditCard::CardType>& supported_types)
       const = 0;
 
-  // Returns true if this payment instrument can handle payments for the given
-  // |payment_method_identifier|.
-  virtual bool IsValidForPaymentMethodIdentifier(
-      const std::string& payment_method_identifier) const = 0;
+  // Sets |is_valid| to true if this payment instrument can handle payments for
+  // the given |payment_method_identifier|. The |is_valid| is an an out-param
+  // instead of the return value to enable binding this method with a
+  // base::WeakPtr, which prohibits non-void methods.
+  virtual void IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier,
+      bool* is_valid) const = 0;
+
+  // Returns a WeakPtr to this payment instrument.
+  virtual base::WeakPtr<PaymentInstrument> AsWeakPtr() = 0;
 
   // Sorts the instruments using the overloaded < operator.
   static void SortInstruments(

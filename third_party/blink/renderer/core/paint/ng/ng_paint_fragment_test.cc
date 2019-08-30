@@ -110,7 +110,7 @@ TEST_F(NGPaintFragmentTest, InlineBox) {
     div { font: 10px Ahem; width: 10ch; }
     </style>
     <body>
-      <div id="container">12345 <span id="box">XXX YYY<span></div>
+      <div id="container">12345 <span id="box">XXX YYY</span></div>
     </body>
   )HTML");
   const NGPaintFragment* container = GetPaintFragmentByElementId("container");
@@ -154,7 +154,7 @@ TEST_F(NGPaintFragmentTest, InlineBoxVerticalRL) {
           writing-mode: vertical-rl; }
     </style>
     <body>
-      <div id="container">12345 <span id="box">XXX YYY<span></div>
+      <div id="container">12345 <span id="box">XXX YYY</span></div>
     </body>
   )HTML");
   const NGPaintFragment* container = GetPaintFragmentByElementId("container");
@@ -520,7 +520,7 @@ TEST_F(NGPaintFragmentTest, RelativeBlock) {
     #container { position: relative; top: 10px; }
     </style>
     <body>
-      <div id="container">12345 <span id="box">XXX YYY<span></div>
+      <div id="container">12345 <span id="box">XXX YYY</span></div>
     </body>
   )HTML");
   const NGPaintFragment* container = GetPaintFragmentByElementId("container");

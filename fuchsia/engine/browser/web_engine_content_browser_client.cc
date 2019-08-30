@@ -4,6 +4,8 @@
 
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
 
+#include <fuchsia/web/cpp/fidl.h>
+#include <string>
 #include <utility>
 
 #include "components/version_info/version_info.h"
@@ -67,4 +69,32 @@ void WebEngineContentBrowserClient::BindInterfaceRequestFromFrame(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   mojo_service_registry_.BindInterface(
       interface_name, std::move(interface_pipe), render_frame_host);
+}
+
+void WebEngineContentBrowserClient::
+    RegisterNonNetworkNavigationURLLoaderFactories(
+        int frame_tree_node_id,
+        NonNetworkURLLoaderFactoryMap* factories) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories)) {
+    (*factories)[kFuchsiaContentDirectoryScheme] =
+        std::make_unique<ContentDirectoryLoaderFactory>();
+  }
+}
+
+void WebEngineContentBrowserClient::
+    RegisterNonNetworkSubresourceURLLoaderFactories(
+        int render_process_id,
+        int render_frame_id,
+        NonNetworkURLLoaderFactoryMap* factories) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories)) {
+    (*factories)[kFuchsiaContentDirectoryScheme] =
+        std::make_unique<ContentDirectoryLoaderFactory>();
+  }
+}
+
+void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line,
+    int child_process_id) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kContentDirectories))
+    command_line->AppendSwitch(kContentDirectories);
 }

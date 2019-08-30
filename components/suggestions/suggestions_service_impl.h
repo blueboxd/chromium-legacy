@@ -24,6 +24,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -40,10 +41,6 @@ namespace network {
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
-
-namespace syncer {
-class SyncService;
-}  // namespace syncer
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -178,7 +175,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   syncer::SyncService* sync_service_;
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
-      sync_service_observer_;
+      sync_service_observer_{this};
 
   // The state of history sync, i.e. are we uploading history data to Google?
   syncer::UploadState history_sync_state_;

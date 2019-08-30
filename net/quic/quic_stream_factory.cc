@@ -1146,8 +1146,10 @@ void QuicStreamFactory::InitializeMigrationOptions() {
   bool retry_on_alternate_network_before_handshake =
       params_.retry_on_alternate_network_before_handshake;
   bool migrate_idle_sessions = params_.migrate_idle_sessions;
+  bool allow_port_migration = params_.allow_port_migration;
   params_.migrate_sessions_on_network_change_v2 = false;
   params_.migrate_sessions_early_v2 = false;
+  params_.allow_port_migration = false;
   params_.retry_on_alternate_network_before_handshake = false;
   params_.migrate_idle_sessions = false;
 
@@ -1167,6 +1169,13 @@ void QuicStreamFactory::InitializeMigrationOptions() {
   if (handle_ip_change)
     NetworkChangeNotifier::AddIPAddressObserver(this);
 
+  // Port migration and early migration both act on path degrading and thus can
+  // not be simultaneously set.
+  DCHECK(!allow_port_migration || !migrate_sessions_early);
+
+  if (allow_port_migration)
+    params_.allow_port_migration = true;
+
   if (!NetworkChangeNotifier::AreNetworkHandlesSupported())
     return;
 
@@ -1179,9 +1188,10 @@ void QuicStreamFactory::InitializeMigrationOptions() {
 
   // Enable migration on platform notifications.
   params_.migrate_sessions_on_network_change_v2 = true;
+
   if (!migrate_sessions_early) {
-    DCHECK(!retry_on_alternate_network_before_handshake &&
-           !migrate_idle_sessions);
+    DCHECK(!migrate_idle_sessions &&
+           !retry_on_alternate_network_before_handshake);
     return;
   }
 
@@ -1918,7 +1928,7 @@ int QuicStreamFactory::CreateSession(
       params_.max_allowed_push_id, params_.migrate_sessions_early_v2,
       params_.migrate_sessions_on_network_change_v2, default_network_,
       retransmittable_on_wire_timeout_, params_.migrate_idle_sessions,
-      params_.idle_session_migration_period,
+      params_.allow_port_migration, params_.idle_session_migration_period,
       params_.max_time_on_non_default_network,
       params_.max_migrations_to_non_default_network_on_write_error,
       params_.max_migrations_to_non_default_network_on_path_degrading,

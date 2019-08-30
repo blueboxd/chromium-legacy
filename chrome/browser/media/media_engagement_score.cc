@@ -21,8 +21,6 @@ const char MediaEngagementScore::kHasHighScoreKey[] = "hasHighScore";
 const char MediaEngagementScore::kAudiblePlaybacksKey[] = "audiblePlaybacks";
 const char MediaEngagementScore::kSignificantPlaybacksKey[] =
     "significantPlaybacks";
-const char MediaEngagementScore::kVisitsWithMediaTagKey[] =
-    "visitsWithMediaTag";
 const char MediaEngagementScore::kHighScoreChanges[] = "highScoreChanges";
 const char MediaEngagementScore::kSignificantMediaPlaybacksKey[] =
     "mediaElementPlaybacks";
@@ -122,8 +120,6 @@ MediaEngagementScore::MediaEngagementScore(
                       &audible_playbacks_);
   GetIntegerFromScore(score_dict_.get(), kSignificantPlaybacksKey,
                       &significant_playbacks_);
-  GetIntegerFromScore(score_dict_.get(), kVisitsWithMediaTagKey,
-                      &visits_with_media_tag_);
   GetIntegerFromScore(score_dict_.get(), kHighScoreChanges,
                       &high_score_changes_);
   GetIntegerFromScore(score_dict_.get(), kSignificantMediaPlaybacksKey,
@@ -208,7 +204,6 @@ bool MediaEngagementScore::UpdateScoreDict() {
   bool is_high = false;
   int stored_audible_playbacks = 0;
   int stored_significant_playbacks = 0;
-  int stored_visits_with_media_tag = 0;
   int high_score_changes = 0;
   int stored_media_element_playbacks = 0;
   int stored_audio_context_playbacks = 0;
@@ -239,8 +234,6 @@ bool MediaEngagementScore::UpdateScoreDict() {
                       &stored_audible_playbacks);
   GetIntegerFromScore(score_dict_.get(), kSignificantPlaybacksKey,
                       &stored_significant_playbacks);
-  GetIntegerFromScore(score_dict_.get(), kVisitsWithMediaTagKey,
-                      &stored_visits_with_media_tag);
   GetIntegerFromScore(score_dict_.get(), kHighScoreChanges,
                       &high_score_changes);
   GetIntegerFromScore(score_dict_.get(), kSignificantMediaPlaybacksKey,
@@ -253,7 +246,6 @@ bool MediaEngagementScore::UpdateScoreDict() {
                  is_high_ != is_high ||
                  stored_audible_playbacks != audible_playbacks() ||
                  stored_significant_playbacks != significant_playbacks() ||
-                 stored_visits_with_media_tag != visits_with_media_tag() ||
                  stored_media_element_playbacks != media_element_playbacks() ||
                  stored_audio_context_playbacks != audio_context_playbacks() ||
                  stored_last_media_playback_internal !=
@@ -276,12 +268,15 @@ bool MediaEngagementScore::UpdateScoreDict() {
   score_dict_->SetBoolean(kHasHighScoreKey, is_high_);
   score_dict_->SetInteger(kAudiblePlaybacksKey, audible_playbacks_);
   score_dict_->SetInteger(kSignificantPlaybacksKey, significant_playbacks_);
-  score_dict_->SetInteger(kVisitsWithMediaTagKey, visits_with_media_tag_);
   score_dict_->SetInteger(kHighScoreChanges, high_score_changes_);
   score_dict_->SetInteger(kSignificantMediaPlaybacksKey,
                           media_element_playbacks_);
   score_dict_->SetInteger(kSignificantAudioContextPlaybacksKey,
                           audio_context_playbacks_);
+
+  // visitsWithMediaTag was deprecated in https://crbug.com/998687 and should
+  // be removed if we see it in |score_dict_|.
+  score_dict_->RemoveKey("visitsWithMediaTag");
 
   return true;
 }

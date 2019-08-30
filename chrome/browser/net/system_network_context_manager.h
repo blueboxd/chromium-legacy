@@ -140,6 +140,12 @@ class SystemNetworkContextManager {
   static network::mojom::HttpAuthDynamicParamsPtr
   GetHttpAuthDynamicParamsForTesting();
 
+  // Enables Certificate Transparency and enforcing the Chrome Certificate
+  // Transparency Policy. For test use only. Use base::nullopt_t to reset to
+  // the default state.
+  static void SetEnableCertificateTransparencyForTesting(
+      base::Optional<bool> enabled);
+
  private:
   class URLLoaderFactoryForSystem;
 

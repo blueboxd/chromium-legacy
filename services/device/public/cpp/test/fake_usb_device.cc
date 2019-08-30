@@ -23,7 +23,7 @@ namespace device {
 void FakeUsbDevice::Create(
     scoped_refptr<FakeUsbDeviceInfo> device,
     mojo::PendingReceiver<device::mojom::UsbDevice> receiver,
-    mojom::UsbDeviceClientPtr client) {
+    mojo::PendingRemote<mojom::UsbDeviceClient> client) {
   auto* device_object = new FakeUsbDevice(device, std::move(client));
   device_object->receiver_ = mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(device_object), std::move(receiver));
@@ -35,13 +35,13 @@ FakeUsbDevice::~FakeUsbDevice() {
 }
 
 FakeUsbDevice::FakeUsbDevice(scoped_refptr<FakeUsbDeviceInfo> device,
-                             mojom::UsbDeviceClientPtr client)
+                             mojo::PendingRemote<mojom::UsbDeviceClient> client)
     : device_(device), observer_(this), client_(std::move(client)) {
   DCHECK(device_);
   observer_.Add(device_.get());
 
   if (client_) {
-    client_.set_connection_error_handler(base::BindOnce(
+    client_.set_disconnect_handler(base::BindOnce(
         &FakeUsbDevice::OnClientConnectionError, base::Unretained(this)));
   }
 }

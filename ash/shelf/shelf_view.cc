@@ -576,6 +576,11 @@ void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
+  // ScrollableShelfView should handles the focus traversal if the flag
+  // is enabled.
+  if (chromeos::switches::ShouldShowScrollableShelf())
+    return nullptr;
+
   return this;
 }
 

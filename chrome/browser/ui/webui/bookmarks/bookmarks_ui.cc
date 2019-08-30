@@ -93,6 +93,8 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
       {"menuSort", IDS_BOOKMARK_MANAGER_MENU_SORT},
       {"moreActionsButtonTitle", IDS_BOOKMARK_MANAGER_MORE_ACTIONS},
       {"moreActionsButtonAxLabel", IDS_BOOKMARK_MANAGER_MORE_ACTIONS_AX_LABEL},
+      {"moreActionsMultiButtonAxLabel",
+       IDS_BOOKMARK_MANAGER_MORE_ACTIONS_MULTI_AX_LABEL},
       {"noSearchResults", IDS_SEARCH_NO_RESULTS},
       {"openDialogBody", IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL},
       {"openDialogConfirm", IDS_BOOKMARK_MANAGER_OPEN_DIALOG_CONFIRM},

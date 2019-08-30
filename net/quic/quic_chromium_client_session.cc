@@ -700,6 +700,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     NetworkChangeNotifier::NetworkHandle default_network,
     quic::QuicTime::Delta retransmittable_on_wire_timeout,
     bool migrate_idle_session,
+    bool allow_port_migration,
     base::TimeDelta idle_migration_period,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_write_error,
@@ -730,6 +731,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       migrate_session_on_network_change_v2_(
           migrate_sessions_on_network_change_v2),
       migrate_idle_session_(migrate_idle_session),
+      allow_port_migration_(allow_port_migration),
       idle_migration_period_(idle_migration_period),
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_write_error_(

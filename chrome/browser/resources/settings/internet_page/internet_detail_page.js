@@ -1271,18 +1271,18 @@ Polymer({
     } else if (type == mojom.NetworkType.kVPN) {
       const vpnType = this.managedProperties_.vpn.type;
       switch (vpnType) {
-        case mojom.VPNType.kThirdPartyVPN:
+        case mojom.VpnType.kExtension:
           fields.push('vpn.providerName');
           break;
-        case mojom.VPNType.kArcVPN:
+        case mojom.VpnType.kArc:
           fields.push('vpn.type');
           break;
-        case mojom.VPNType.kOpenVPN:
+        case mojom.VpnType.kOpenVPN:
           fields.push(
               'vpn.type', 'vpn.host', 'vpn.openVpn.username',
               'vpn.openVpn.extraHosts');
           break;
-        case mojom.VPNType.kL2TPIPsec:
+        case mojom.VpnType.kL2TPIPsec:
           fields.push('vpn.type', 'vpn.host', 'vpn.l2tp.username');
           break;
       }
@@ -1308,10 +1308,10 @@ Polymer({
     const type = this.managedProperties_.type;
     if (type == mojom.NetworkType.kVPN) {
       const vpnType = this.managedProperties_.vpn.type;
-      if (vpnType != mojom.VPNType.kThirdPartyVPN) {
+      if (vpnType != mojom.VpnType.kExtension) {
         editFields['vpn.host'] = 'String';
       }
-      if (vpnType == mojom.VPNType.kOpenVPN) {
+      if (vpnType == mojom.VpnType.kOpenVPN) {
         editFields['vpn.openVpn.username'] = 'String';
         editFields['vpn.openVpn.extraHosts'] = 'StringArray';
       }
@@ -1492,7 +1492,7 @@ Polymer({
   isArcVpn_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kVPN &&
-        managedProperties.vpn.type == mojom.VPNType.kArcVPN;
+        managedProperties.vpn.type == mojom.VpnType.kArc;
   },
 
   /**
@@ -1503,7 +1503,7 @@ Polymer({
   isThirdPartyVpn_: function(managedProperties) {
     return !!managedProperties &&
         managedProperties.type == mojom.NetworkType.kVPN &&
-        managedProperties.vpn.type == mojom.VPNType.kThirdPartyVPN;
+        managedProperties.vpn.type == mojom.VpnType.kExtension;
   },
 
   /**

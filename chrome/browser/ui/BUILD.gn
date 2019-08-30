@@ -1973,8 +1973,13 @@ jumbo_split_static_library("ui") {
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     sources += [
+      "autofill/payments/webauthn_offer_dialog.h",
+      "autofill/payments/webauthn_offer_dialog_controller.cc",
+      "autofill/payments/webauthn_offer_dialog_controller.h",
       "frame/window_frame_util.cc",
       "frame/window_frame_util.h",
+      "views/autofill/payments/webauthn_offer_dialog_view.cc",
+      "views/autofill/payments/webauthn_offer_dialog_view.h",
       "views/close_bubble_on_tab_activation_helper.cc",
       "views/close_bubble_on_tab_activation_helper.h",
       "views/hats/hats_bubble_view.cc",
@@ -3033,8 +3038,6 @@ jumbo_split_static_library("ui") {
       "views/session_crashed_bubble_view.h",
       "views/sharing/click_to_call/click_to_call_dialog_view.cc",
       "views/sharing/click_to_call/click_to_call_dialog_view.h",
-      "views/sharing/click_to_call/click_to_call_icon_view.cc",
-      "views/sharing/click_to_call/click_to_call_icon_view.h",
       "views/sharing/sharing_icon_view.cc",
       "views/sharing/sharing_icon_view.h",
       "views/simple_message_box_views.cc",

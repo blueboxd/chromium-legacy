@@ -28,9 +28,8 @@ namespace {
 
 class CookieSettingsObserver : public CookieSettings::Observer {
  public:
-  CookieSettingsObserver(CookieSettings* settings)
-      : settings_(settings), scoped_observer(this) {
-    scoped_observer.Add(settings);
+  CookieSettingsObserver(CookieSettings* settings) : settings_(settings) {
+    scoped_observer_.Add(settings);
   }
 
   void OnThirdPartyCookieBlockingChanged(
@@ -45,7 +44,8 @@ class CookieSettingsObserver : public CookieSettings::Observer {
  private:
   CookieSettings* settings_;
   bool last_value_ = false;
-  ScopedObserver<CookieSettings, CookieSettingsObserver> scoped_observer;
+  ScopedObserver<CookieSettings, CookieSettings::Observer> scoped_observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(CookieSettingsObserver);
 };

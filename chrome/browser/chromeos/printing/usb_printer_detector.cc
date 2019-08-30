@@ -137,7 +137,7 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     mojo::Remote<device::mojom::UsbDevice> device;
     device_manager_->GetDevice(device_info.guid,
                                device.BindNewPipeAndPassReceiver(),
-                               nullptr /* device_client */);
+                               mojo::NullRemote() /* device_client */);
     GetDeviceId(std::move(device),
                 base::BindOnce(&UsbPrinterDetectorImpl::OnGetDeviceId,
                                weak_factory_.GetWeakPtr(), std::move(entry),

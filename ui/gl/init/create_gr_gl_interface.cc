@@ -679,6 +679,11 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       functions->fWaitSync = glWaitSyncEmulateEGL;
       functions->fDeleteSync = glDeleteSyncEmulateEGL;
     }
+  } else if (use_version_es2) {
+    // We have gl sync, but want to Skia use ES2 that doesn't have fences.
+    // To provide Skia with ways of sync to prevent it calling glFinish we set
+    // GL_APPLE_sync support.
+    extensions.add("GL_APPLE_sync");
   }
 
   functions->fGetInternalformativ = gl->glGetInternalformativFn;

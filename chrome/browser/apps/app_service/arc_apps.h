@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
@@ -84,14 +83,6 @@ class ArcApps : public KeyedService,
       const arc::mojom::ArcPackageInfo& package_info) override;
   void OnPackageListInitialRefreshed() override;
 
-  const base::FilePath GetCachedIconFilePath(const std::string& app_id,
-                                             int32_t size_hint_in_dip);
-  void LoadIconFromVM(const std::string app_id,
-                      apps::mojom::IconCompression icon_compression,
-                      int32_t size_hint_in_dip,
-                      bool allow_placeholder_icon,
-                      IconEffects icon_effects,
-                      LoadIconCallback callback);
   void LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                          int32_t size_hint_in_dip,
                          IconEffects icon_effects,

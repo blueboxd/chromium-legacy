@@ -207,9 +207,10 @@ class MockLocalSocket : public MockAndroidConnection::Delegate {
 
 class FakeAndroidUsbDevice : public FakeUsbDevice {
  public:
-  static void Create(scoped_refptr<FakeUsbDeviceInfo> device_info,
-                     mojo::PendingReceiver<device::mojom::UsbDevice> receiver,
-                     device::mojom::UsbDeviceClientPtr client) {
+  static void Create(
+      scoped_refptr<FakeUsbDeviceInfo> device_info,
+      mojo::PendingReceiver<device::mojom::UsbDevice> receiver,
+      mojo::PendingRemote<device::mojom::UsbDeviceClient> client) {
     auto* device_object =
         new FakeAndroidUsbDevice(device_info, std::move(client));
     device_object->receiver_ = mojo::MakeSelfOwnedReceiver(
@@ -219,8 +220,9 @@ class FakeAndroidUsbDevice : public FakeUsbDevice {
   ~FakeAndroidUsbDevice() override = default;
 
  protected:
-  FakeAndroidUsbDevice(scoped_refptr<FakeUsbDeviceInfo> device,
-                       device::mojom::UsbDeviceClientPtr client)
+  FakeAndroidUsbDevice(
+      scoped_refptr<FakeUsbDeviceInfo> device,
+      mojo::PendingRemote<device::mojom::UsbDeviceClient> client)
       : FakeUsbDevice(device, std::move(client)) {
     broken_traits_ =
         static_cast<FakeAndroidUsbDeviceInfo*>(device.get())->broken_traits();
@@ -426,7 +428,8 @@ class FakeAndroidUsbManager : public FakeUsbDeviceManager {
   void GetDevice(
       const std::string& guid,
       mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
-      device::mojom::UsbDeviceClientPtr device_client) override {
+      mojo::PendingRemote<device::mojom::UsbDeviceClient> device_client)
+      override {
     DCHECK(base::Contains(devices(), guid));
     FakeAndroidUsbDevice::Create(devices()[guid], std::move(device_receiver),
                                  std::move(device_client));

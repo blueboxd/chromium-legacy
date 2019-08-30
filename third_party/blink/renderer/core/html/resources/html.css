@@ -511,7 +511,7 @@ textarea {
 
 ::-webkit-input-placeholder {
     -webkit-text-security: none;
-    color: #757575;
+    color: rgba(0, 0, 0, 0.54);
     pointer-events: none !important;
 }
 

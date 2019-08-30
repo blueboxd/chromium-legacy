@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/browser/contacts_picker_properties_requested.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -39,7 +40,7 @@ void OnContactsSelected(
     ukm::SourceId source_id,
     base::Optional<std::vector<blink::mojom::ContactInfoPtr>> contacts,
     int percentage_shared,
-    int properties_requested) {
+    ContactsPickerPropertiesRequested properties_requested) {
   if (contacts != base::nullopt) {
     int select_count = contacts.value().size();
     ukm::builders::ContactsPicker_ShareStatistics(source_id)

@@ -369,7 +369,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   EXPECT_EQ(mojom::NetworkType::kVPN, network->type);
   EXPECT_EQ(mojom::ConnectionStateType::kConnecting, network->connection_state);
   ASSERT_TRUE(network->vpn);
-  EXPECT_EQ(mojom::VPNType::kL2TPIPsec, network->vpn->type);
+  EXPECT_EQ(mojom::VpnType::kL2TPIPsec, network->vpn->type);
   EXPECT_EQ(mojom::OncSource::kNone, network->source);
 
   // TODO(919691): Test ProxyMode once UIProxyConfigService logic is improved.
@@ -505,7 +505,7 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_EQ(mojom::ConnectionStateType::kConnecting,
             properties->connection_state);
   ASSERT_TRUE(properties->vpn);
-  EXPECT_EQ(mojom::VPNType::kL2TPIPsec, properties->vpn->type);
+  EXPECT_EQ(mojom::VpnType::kL2TPIPsec, properties->vpn->type);
 }
 
 // Test managed property policy values.

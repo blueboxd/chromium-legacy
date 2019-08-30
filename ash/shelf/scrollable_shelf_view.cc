@@ -5,12 +5,14 @@
 #include "ash/shelf/scrollable_shelf_view.h"
 
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/views/focus/focus_search.h"
 
 namespace ash {
 
@@ -139,11 +141,75 @@ class ScrollableShelfView::GradientLayerDelegate : public ui::LayerDelegate {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// ScrollableShelfFocusSearch
+
+class ScrollableShelfFocusSearch : public views::FocusSearch {
+ public:
+  explicit ScrollableShelfFocusSearch(
+      ScrollableShelfView* scrollable_shelf_view)
+      : FocusSearch(/*root=*/nullptr,
+                    /*cycle=*/true,
+                    /*accessibility_mode=*/true),
+        scrollable_shelf_view_(scrollable_shelf_view) {}
+
+  ~ScrollableShelfFocusSearch() override = default;
+
+  // views::FocusSearch
+  views::View* FindNextFocusableView(
+      views::View* starting_view,
+      FocusSearch::SearchDirection search_direction,
+      FocusSearch::TraversalDirection traversal_direction,
+      FocusSearch::StartingViewPolicy check_starting_view,
+      FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
+      views::FocusTraversable** focus_traversable,
+      views::View** focus_traversable_view) override {
+    std::vector<views::View*> focusable_views;
+    ShelfView* shelf_view = scrollable_shelf_view_->shelf_view();
+
+    for (int i = shelf_view->first_visible_index();
+         i <= shelf_view->last_visible_index(); ++i) {
+      focusable_views.push_back(shelf_view->view_model()->view_at(i));
+    }
+
+    int start_index = 0;
+    for (size_t i = 0; i < focusable_views.size(); ++i) {
+      if (focusable_views[i] == starting_view) {
+        start_index = i;
+        break;
+      }
+    }
+
+    int new_index =
+        start_index +
+        (search_direction == FocusSearch::SearchDirection::kBackwards ? -1 : 1);
+
+    // Scrolls to the new page if the focused shelf item is not tappable
+    // on the current page.
+    if (new_index < 0)
+      new_index = focusable_views.size() - 1;
+    else if (new_index >= static_cast<int>(focusable_views.size()))
+      new_index = 0;
+    else if (new_index < scrollable_shelf_view_->first_tappable_app_index())
+      scrollable_shelf_view_->ScrollToNewPage(/*forward=*/false);
+    else if (new_index > scrollable_shelf_view_->last_tappable_app_index())
+      scrollable_shelf_view_->ScrollToNewPage(/*forward=*/true);
+
+    return focusable_views[new_index];
+  }
+
+ private:
+  ScrollableShelfView* scrollable_shelf_view_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollableShelfFocusSearch);
+};
+
+////////////////////////////////////////////////////////////////////////////////
 // ScrollableShelfView
 
 ScrollableShelfView::ScrollableShelfView(ShelfModel* model, Shelf* shelf)
     : shelf_view_(new ShelfView(model, shelf)) {
   Shell::Get()->AddShellObserver(this);
+  set_allow_deactivate_on_esc(true);
 }
 
 ScrollableShelfView::~ScrollableShelfView() {
@@ -177,6 +243,62 @@ void ScrollableShelfView::Init() {
 
   gradient_layer_delegate_ = std::make_unique<GradientLayerDelegate>();
   layer()->SetMaskLayer(gradient_layer_delegate_->layer());
+
+  focus_search_ = std::make_unique<ScrollableShelfFocusSearch>(this);
+}
+
+void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
+  if (activated) {
+    focus_ring_activated_ = true;
+    SetPaneFocusAndFocusDefault();
+
+    // Clears the gradient shader when the focus ring shows.
+    GradientLayerDelegate::FadeZone fade_zone = {gfx::Rect(), false, false};
+    gradient_layer_delegate_->set_fade_zone(fade_zone);
+    gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
+    SchedulePaint();
+  } else {
+    // Shows the gradient shader when the focus ring is disabled.
+    focus_ring_activated_ = false;
+    UpdateGradientZone();
+  }
+}
+
+void ScrollableShelfView::ScrollToNewPage(bool forward) {
+  float offset = CalculatePageScrollingOffset(forward);
+  if (GetShelf()->IsHorizontalAlignment())
+    ScrollByXOffset(offset, /*animating=*/true);
+  else
+    ScrollByYOffset(offset, /*animating=*/true);
+}
+
+views::FocusSearch* ScrollableShelfView::GetFocusSearch() {
+  return focus_search_.get();
+}
+
+views::FocusTraversable* ScrollableShelfView::GetFocusTraversableParent() {
+  return parent()->GetFocusTraversable();
+}
+
+views::View* ScrollableShelfView::GetFocusTraversableParentView() {
+  return this;
+}
+
+views::View* ScrollableShelfView::GetDefaultFocusableChild() {
+  // Adapts |scroll_offset_| to show the view properly right after the focus
+  // ring is enabled.
+
+  if (default_last_focusable_child_) {
+    scroll_offset_ = GetShelf()->IsHorizontalAlignment()
+                         ? gfx::Vector2dF(CalculateScrollUpperBound(), 0)
+                         : gfx::Vector2dF(0, CalculateScrollUpperBound());
+    Layout();
+    return FindLastFocusableChild();
+  } else {
+    scroll_offset_ = gfx::Vector2dF();
+    Layout();
+    return FindFirstFocusableChild();
+  }
 }
 
 views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
@@ -347,9 +469,14 @@ void ScrollableShelfView::Layout() {
   if (right_arrow_->GetVisible())
     right_arrow_->SetBoundsRect(right_arrow_bounds);
 
+  if (gradient_layer_delegate_->layer()->bounds() != layer()->bounds())
+    gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
+
   // Bounds of the gradient zone are relative to the location of arrow buttons.
   // So updates the gradient zone after the bounds of arrow buttons are set.
-  if (is_right_arrow_changed)
+  // The gradient zone is not painted when the focus ring shows in order to
+  // display the focus ring correctly.
+  if (is_right_arrow_changed && !focus_ring_activated_)
     UpdateGradientZone();
 
   // Layout |shelf_container_view_|.
@@ -372,6 +499,8 @@ void ScrollableShelfView::Layout() {
     total_offset = -total_offset;
 
   shelf_container_view_->TranslateShelfView(total_offset);
+
+  UpdateTappableIconIndices();
 }
 
 void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
@@ -414,11 +543,7 @@ void ScrollableShelfView::ButtonPressed(views::Button* sender,
   views::View* sender_view = sender;
   DCHECK((sender_view == left_arrow_) || (sender_view == right_arrow_));
 
-  float offset = CalculatePageScrollingOffset(sender_view == right_arrow_);
-  if (GetShelf()->IsHorizontalAlignment())
-    ScrollByXOffset(offset, true);
-  else
-    ScrollByYOffset(offset, true);
+  ScrollToNewPage(sender_view == right_arrow_);
 }
 
 void ScrollableShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
@@ -512,22 +637,15 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
     // the scrolling offset should be floored.
     scroll_offset_ = gfx::ToFlooredVector2d(scroll_offset_);
 
-    int current_scroll_distance = GetShelf()->IsHorizontalAlignment()
-                                      ? scroll_offset_.x()
-                                      : scroll_offset_.y();
+    int actual_scroll_distance = GetActualScrollOffset();
 
     // Returns early when it does not need to adjust the shelf view's location.
-    if (current_scroll_distance == CalculateScrollUpperBound())
+    if (actual_scroll_distance == CalculateScrollUpperBound())
       return true;
 
-    const int residue = current_scroll_distance % GetUnit();
+    const int residue = actual_scroll_distance % GetUnit();
     int offset =
         residue > GetGestureDragThreshold() ? GetUnit() - residue : -residue;
-
-    // In order to fully show the leftmost app icon when the left arrow button
-    // shows.
-    if (residue)
-      offset -= (kArrowButtonGroupWidth - kAppIconEndPadding);
 
     // Returns early when it does not need to adjust the shelf view's location.
     if (!offset)
@@ -653,8 +771,49 @@ void ScrollableShelfView::UpdateGradientZone() {
   GradientLayerDelegate::FadeZone fade_zone = {zone_rect, fade_in,
                                                is_horizontal_alignment};
   gradient_layer_delegate_->set_fade_zone(fade_zone);
-  gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
   SchedulePaint();
+}
+
+int ScrollableShelfView::GetActualScrollOffset() const {
+  int scroll_distance = GetShelf()->IsHorizontalAlignment()
+                            ? scroll_offset_.x()
+                            : scroll_offset_.y();
+  if (left_arrow_->GetVisible())
+    scroll_distance += (kArrowButtonGroupWidth - kAppIconEndPadding);
+  return scroll_distance;
+}
+
+void ScrollableShelfView::UpdateTappableIconIndices() {
+  if (layout_strategy_ == kNotShowArrowButtons) {
+    first_tappable_app_index_ = shelf_view_->first_visible_index();
+    last_tappable_app_index_ = shelf_view_->last_visible_index();
+    return;
+  }
+
+  int actual_scroll_distance = GetActualScrollOffset();
+  int shelf_container_available_space =
+      (GetShelf()->IsHorizontalAlignment() ? shelf_container_view_->width()
+                                           : shelf_container_view_->height()) -
+      GetFadeZoneLength();
+  if (layout_strategy_ == kShowRightArrowButton ||
+      layout_strategy_ == kShowButtons) {
+    first_tappable_app_index_ = actual_scroll_distance / GetUnit();
+    last_tappable_app_index_ =
+        first_tappable_app_index_ + shelf_container_available_space / GetUnit();
+  } else {
+    DCHECK_EQ(layout_strategy_, kShowLeftArrowButton);
+    last_tappable_app_index_ = shelf_view_->last_visible_index();
+    first_tappable_app_index_ =
+        last_tappable_app_index_ - shelf_container_available_space / GetUnit();
+  }
+}
+
+views::View* ScrollableShelfView::FindFirstFocusableChild() {
+  return shelf_view_->view_model()->view_at(shelf_view_->first_visible_index());
+}
+
+views::View* ScrollableShelfView::FindLastFocusableChild() {
+  return shelf_view_->view_model()->view_at(shelf_view_->last_visible_index());
 }
 
 }  // namespace ash

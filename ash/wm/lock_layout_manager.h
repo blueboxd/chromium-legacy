@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/wm_default_layout_manager.h"
@@ -18,7 +19,6 @@
 
 namespace ash {
 
-class Shelf;
 class WindowState;
 class WMEvent;
 
@@ -77,7 +77,7 @@ class ASH_EXPORT LockLayoutManager : public WmDefaultLayoutManager,
   aura::Window* window_;
   aura::Window* root_window_;
 
-  ScopedObserver<Shelf, ShelfObserver> shelf_observer_;
+  ScopedObserver<Shelf, ShelfObserver> shelf_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockLayoutManager);
 };

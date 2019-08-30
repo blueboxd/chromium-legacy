@@ -84,7 +84,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
             /*on_edited=*/
             base::BindOnce(
                 &PaymentRequestState::SetSelectedInstrument,
-                base::Unretained(state()), instrument_,
+                state()->AsWeakPtr(), instrument_,
                 PaymentRequestState::SectionSelectionStatus::kEditedSelected),
             /*on_added=*/
             base::OnceCallback<void(const autofill::CreditCard&)>(),
@@ -238,7 +238,7 @@ void PaymentMethodViewController::ButtonPressed(views::Button* sender,
         /*on_edited=*/base::OnceClosure(),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillPaymentInstrument,
-                       base::Unretained(state()), /*selected=*/true),
+                       state()->AsWeakPtr(), /*selected=*/true),
         /*credit_card=*/nullptr);
   } else {
     PaymentRequestSheetController::ButtonPressed(sender, event);

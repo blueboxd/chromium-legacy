@@ -23,7 +23,6 @@
 #import "device/bluetooth/test/mock_bluetooth_cbservice_mac.h"
 #import "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #import "device/bluetooth/test/test_bluetooth_adapter_observer.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 using base::mac::ObjCCast;
 using base::scoped_nsobject;

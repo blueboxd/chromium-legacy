@@ -225,8 +225,7 @@ var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// TODO(crbug.com/962114): Disabled due to flakes on linux-chromeos-rel.
-TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsCrostiniPageTest', 'All', () => {
   mocha.run();
 });
 

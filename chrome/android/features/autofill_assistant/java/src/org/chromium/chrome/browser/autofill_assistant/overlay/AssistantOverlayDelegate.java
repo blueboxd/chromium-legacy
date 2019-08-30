@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /** Delegate for the overlay. */
 @JNINamespace("autofill_assistant")
@@ -24,14 +25,16 @@ class AssistantOverlayDelegate {
     /** Called after a certain number of unexpected taps. */
     void onUnexpectedTaps() {
         if (mNativeAssistantOverlayDelegate != 0) {
-            nativeOnUnexpectedTaps(mNativeAssistantOverlayDelegate);
+            AssistantOverlayDelegateJni.get().onUnexpectedTaps(
+                    mNativeAssistantOverlayDelegate, AssistantOverlayDelegate.this);
         }
     }
 
     /** Asks for an update of the touchable area. */
     void updateTouchableArea() {
         if (mNativeAssistantOverlayDelegate != 0) {
-            nativeUpdateTouchableArea(mNativeAssistantOverlayDelegate);
+            AssistantOverlayDelegateJni.get().updateTouchableArea(
+                    mNativeAssistantOverlayDelegate, AssistantOverlayDelegate.this);
         }
     }
 
@@ -41,7 +44,8 @@ class AssistantOverlayDelegate {
      */
     void onUserInteractionInsideTouchableArea() {
         if (mNativeAssistantOverlayDelegate != 0) {
-            nativeOnUserInteractionInsideTouchableArea(mNativeAssistantOverlayDelegate);
+            AssistantOverlayDelegateJni.get().onUserInteractionInsideTouchableArea(
+                    mNativeAssistantOverlayDelegate, AssistantOverlayDelegate.this);
         }
     }
 
@@ -50,8 +54,12 @@ class AssistantOverlayDelegate {
         mNativeAssistantOverlayDelegate = 0;
     }
 
-    private native void nativeOnUnexpectedTaps(long nativeAssistantOverlayDelegate);
-    private native void nativeUpdateTouchableArea(long nativeAssistantOverlayDelegate);
-    private native void nativeOnUserInteractionInsideTouchableArea(
-            long nativeAssistantOverlayDelegate);
+    @NativeMethods
+    interface Natives {
+        void onUnexpectedTaps(long nativeAssistantOverlayDelegate, AssistantOverlayDelegate caller);
+        void updateTouchableArea(
+                long nativeAssistantOverlayDelegate, AssistantOverlayDelegate caller);
+        void onUserInteractionInsideTouchableArea(
+                long nativeAssistantOverlayDelegate, AssistantOverlayDelegate caller);
+    }
 }

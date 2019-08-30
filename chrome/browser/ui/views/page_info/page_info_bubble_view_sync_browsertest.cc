@@ -161,13 +161,15 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
   // SB_THREAT_TYPE_GAIA_PASSWORD_REUSE.
   safe_browsing::ChromePasswordProtectionService* service = safe_browsing::
       ChromePasswordProtectionService::GetPasswordProtectionService(profile);
-  service->set_username("user@gmail.com");
+  service->set_username_for_last_shown_warning("user@gmail.com");
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   safe_browsing::ReusedPasswordAccountType account_type;
   account_type.set_account_type(
       safe_browsing::ReusedPasswordAccountType::GMAIL);
   account_type.set_is_account_syncing(true);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      account_type);
   service->ShowModalWarning(
       contents, safe_browsing::RequestOutcome::UNKNOWN,
       safe_browsing::LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,

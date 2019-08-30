@@ -4,7 +4,6 @@
 
 #include "pdf/document_layout.h"
 
-#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_pdf {
@@ -20,8 +19,6 @@ class DocumentLayoutTest : public testing::Test {
  protected:
   DocumentLayout layout_;
 };
-
-using DocumentLayoutDeathTest = DocumentLayoutTest;
 
 // TODO(kmoon): Need to use this with EXPECT_PRED2 instead of just using
 // EXPECT_EQ, due to ADL issues with pp::Size's operator== (defined in global
@@ -108,14 +105,6 @@ TEST_F(DocumentLayoutTest, SetOptionsDoesNotRecomputeLayout) {
   EXPECT_EQ(layout_.options().default_page_orientation(),
             PageOrientation::kClockwise90);
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(1, 2));
-}
-
-TEST_F(DocumentLayoutTest, EnlargeHeight) {
-  layout_.EnlargeHeight(5);
-  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 5));
-
-  layout_.EnlargeHeight(11);
-  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 16));
 }
 
 TEST_F(DocumentLayoutTest, ComputeSingleViewLayout) {
@@ -216,10 +205,6 @@ TEST_F(DocumentLayoutTest, ComputeTwoUpViewLayout) {
   EXPECT_PRED2(PpRectEq, pp::Rect(105, 903, 290, 390),
                layout_.page_bounds_rect(4));
   EXPECT_PRED2(PpSizeEq, pp::Size(800, 1300), layout_.size());
-}
-
-TEST_F(DocumentLayoutDeathTest, EnlargeHeightNegativeIncrement) {
-  EXPECT_DCHECK_DEATH(layout_.EnlargeHeight(-5));
 }
 
 }  // namespace

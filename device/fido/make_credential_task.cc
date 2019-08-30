@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "device/base/features.h"
 #include "device/fido/ctap2_device_operation.h"
+#include "device/fido/pin.h"
 #include "device/fido/u2f_command_constructor.h"
 #include "device/fido/u2f_register_operation.h"
 
@@ -23,11 +24,15 @@ namespace {
 // [1]
 // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#authenticatorMakeCredential,
 // step 6
-bool ShouldUseU2fBecauseCtapRequiresClientPin(
+bool CtapDeviceShouldUseU2fBecauseClientPinIsSet(
     const FidoDevice* device,
     const CtapMakeCredentialRequest& request) {
+  DCHECK_EQ(device->supported_protocol(), ProtocolVersion::kCtap2);
+  // Don't use U2F for requests that require UV or PIN which U2F doesn't
+  // support. Note that |pin_auth| may also be set by GetTouchRequest(), but we
+  // don't want those requests to use U2F either if CTAP is supported.
   if (request.user_verification == UserVerificationRequirement::kRequired ||
-      (request.pin_auth && !request.pin_auth->empty())) {
+      request.pin_auth) {
     return false;
   }
 
@@ -87,6 +92,7 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
            AuthenticatorSupportedOptions::ClientPinAvailability::
                kNotSupported)) {
     req.pin_auth.emplace();
+    req.pin_protocol = pin::kProtocolVersion;
   }
 
   DCHECK(IsConvertibleToU2fRegisterCommand(req));
@@ -108,14 +114,14 @@ void MakeCredentialTask::Cancel() {
 void MakeCredentialTask::StartTask() {
   if (device()->supported_protocol() == ProtocolVersion::kCtap2 &&
       !request_.is_u2f_only &&
-      !ShouldUseU2fBecauseCtapRequiresClientPin(device(), request_)) {
+      !CtapDeviceShouldUseU2fBecauseClientPinIsSet(device(), request_)) {
     MakeCredential();
   } else {
     // |device_info| should be present iff the device is CTAP2. This will be
     // used in |MaybeRevertU2fFallback| to restore the protocol of CTAP2 devices
     // once this task is complete.
-    DCHECK((device()->supported_protocol() == ProtocolVersion::kCtap2) ==
-           static_cast<bool>(device()->device_info()));
+    DCHECK_EQ(device()->supported_protocol() == ProtocolVersion::kCtap2,
+              device()->device_info().has_value());
     device()->set_supported_protocol(ProtocolVersion::kU2f);
     U2fRegister();
   }

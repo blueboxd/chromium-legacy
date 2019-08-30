@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -215,9 +216,9 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
     return;
   }
 
-  scoped_refptr<WebstoreInstaller> installer =
-      new WebstoreInstaller(profile_, this, GetWebContents(), id_,
-                            std::move(approval), install_source_);
+  auto installer = base::MakeRefCounted<WebstoreInstaller>(
+      profile_, this, GetWebContents(), id_, std::move(approval),
+      install_source_);
   installer->Start();
 }
 
@@ -291,8 +292,8 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
   // Assume ownership of webstore_data.
   webstore_data_ = std::move(webstore_data);
 
-  scoped_refptr<WebstoreInstallHelper> helper =
-      new WebstoreInstallHelper(this, id_, manifest, icon_url);
+  auto helper = base::MakeRefCounted<WebstoreInstallHelper>(this, id_, manifest,
+                                                            icon_url);
   // The helper will call us back via OnWebstoreParseSuccess() or
   // OnWebstoreParseFailure().
   helper->Start(content::BrowserContext::GetDefaultStoragePartition(profile_)

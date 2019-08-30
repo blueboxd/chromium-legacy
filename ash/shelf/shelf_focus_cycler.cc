@@ -6,6 +6,7 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/shelf/login_shelf_view.h"
+#include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
@@ -14,6 +15,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "chromeos/constants/chromeos_switches.h"
 
 namespace ash {
 
@@ -83,8 +85,13 @@ void ShelfFocusCycler::FocusShelf(bool last_element) {
     Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
   } else {
     HotseatWidget* hotseat_widget = shelf_->shelf_widget()->hotseat_widget();
-    hotseat_widget->GetShelfView()->set_default_last_focusable_child(
-        last_element);
+    if (chromeos::switches::ShouldShowScrollableShelf()) {
+      hotseat_widget->scrollable_shelf_view()->set_default_last_focusable_child(
+          last_element);
+    } else {
+      hotseat_widget->GetShelfView()->set_default_last_focusable_child(
+          last_element);
+    }
     Shell::Get()->focus_cycler()->FocusWidget(hotseat_widget);
   }
 }

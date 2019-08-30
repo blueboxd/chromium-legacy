@@ -60,9 +60,10 @@ void CookieMonsterChangeDispatcher::Subscription::DispatchChange(
     net::CookieChangeCause change_cause) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!url_.is_empty() && cookie.IncludeForRequestURL(url_, options_) !=
-                              CanonicalCookie::CookieInclusionStatus::INCLUDE)
+  if (!url_.is_empty() &&
+      !cookie.IncludeForRequestURL(url_, options_).IsInclude()) {
     return;
+  }
 
   // TODO(mmenke, pwnall): Run callbacks synchronously?
   task_runner_->PostTask(

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -234,7 +235,7 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
             .get();
   }
 
-  scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
+  auto helper = base::MakeRefCounted<WebstoreInstallHelper>(
       this, details().id, details().manifest, icon_url);
 
   // The helper will call us back via OnWebstoreParseSuccess or

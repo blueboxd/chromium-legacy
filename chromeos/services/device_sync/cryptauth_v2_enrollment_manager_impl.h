@@ -173,7 +173,7 @@ class CryptAuthV2EnrollmentManagerImpl
   State state_ = State::kIdle;
 
   // The time of the last state change. Used for execution time metrics.
-  base::Time last_state_change_timestamp_;
+  base::TimeTicks last_state_change_timestamp_;
 
   base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
   base::Optional<cryptauthv2::PolicyReference>

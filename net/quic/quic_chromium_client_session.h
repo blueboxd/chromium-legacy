@@ -384,6 +384,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       NetworkChangeNotifier::NetworkHandle default_network,
       quic::QuicTime::Delta retransmittable_on_wire_timeout,
       bool migrate_idle_session,
+      bool allow_port_migration,
       base::TimeDelta idle_migration_period,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
@@ -762,6 +763,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
   bool migrate_idle_session_;
+  bool allow_port_migration_;
   // Session can be migrated if its idle time is within this period.
   base::TimeDelta idle_migration_period_;
   base::TimeDelta max_time_on_non_default_network_;

@@ -13,6 +13,7 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/native_theme/test_native_theme.h"
 #include "ui/views/test/test_views.h"
 
 namespace media_message_center {
@@ -27,6 +28,22 @@ constexpr double kMutedSaturation = 0.2;
 constexpr double kVibrantSaturation = 0.8;
 
 constexpr int kDefaultForegroundArtworkHeight = 100;
+
+constexpr SkColor kDarkBackgroundColor = SK_ColorBLACK;
+
+class TestDarkTheme : public ui::TestNativeTheme {
+ public:
+  TestDarkTheme() = default;
+  ~TestDarkTheme() override = default;
+
+  // ui::NativeTheme implementation.
+  SkColor GetSystemColor(ColorId color_id,
+                         ColorScheme color_scheme) const override {
+    if (color_id == kColorId_BubbleBackground)
+      return kDarkBackgroundColor;
+    return ui::TestNativeTheme::GetSystemColor(color_id, color_scheme);
+  }
+};
 
 SkColor GetColorFromSL(double s, double l) {
   return color_utils::HSLToSkColor({0.2, s, l}, SK_AlphaOPAQUE);
@@ -118,6 +135,13 @@ TEST_F(MediaNotificationBackgroundTest,
   constexpr SkColor kTestColor = SK_ColorYELLOW;
   background()->UpdateArtwork(CreateTestBackgroundImage(kTestColor));
   EXPECT_EQ(kTestColor, GetBackgroundColor());
+}
+
+TEST_F(MediaNotificationBackgroundTest, GetBackgroundColorRespectsTheme) {
+  TestDarkTheme dark_theme;
+  views::View owner;
+  owner.SetNativeTheme(&dark_theme);
+  EXPECT_EQ(kDarkBackgroundColor, background()->GetBackgroundColor(owner));
 }
 
 // MediaNotificationBackgroundBlackWhiteTest will repeat these tests with a

@@ -75,7 +75,7 @@ class UsbChooserContext : public ChooserContextBase,
   void GetDevice(
       const std::string& guid,
       mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
-      device::mojom::UsbDeviceClientPtr device_client);
+      mojo::PendingRemote<device::mojom::UsbDeviceClient> device_client);
 #if defined(OS_ANDROID)
   void RefreshDeviceInfo(
       const std::string& guid,

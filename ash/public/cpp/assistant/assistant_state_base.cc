@@ -181,4 +181,50 @@ void AssistantStateBase::UpdateNotificationEnabled() {
     observer.OnAssistantNotificationEnabled(notification_enabled_.value());
 }
 
+void AssistantStateBase::UpdateAssistantStatus(
+    mojom::VoiceInteractionState state) {
+  voice_interaction_state_ = state;
+  for (auto& observer : observers_)
+    observer.OnAssistantStatusChanged(voice_interaction_state_);
+}
+
+void AssistantStateBase::UpdateSettingsEnabled(bool enabled) {
+  settings_enabled_ = enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantSettingsEnabled(settings_enabled_.value());
+}
+
+void AssistantStateBase::UpdateHotwordEnabled(bool enabled) {
+  hotword_enabled_ = enabled;
+  for (auto& observer : observers_)
+    observer.OnAssistantHotwordEnabled(hotword_enabled_.value());
+}
+
+void AssistantStateBase::UpdateFeatureAllowedState(
+    mojom::AssistantAllowedState state) {
+  allowed_state_ = state;
+  for (auto& observer : observers_)
+    observer.OnAssistantFeatureAllowedChanged(allowed_state_.value());
+}
+
+void AssistantStateBase::UpdateLocale(const std::string& locale) {
+  locale_ = locale;
+  for (auto& observer : observers_)
+    observer.OnLocaleChanged(locale_.value());
+}
+
+void AssistantStateBase::UpdateArcPlayStoreEnabled(bool enabled) {
+  arc_play_store_enabled_ = enabled;
+  for (auto& observer : observers_)
+    observer.OnArcPlayStoreEnabledChanged(arc_play_store_enabled_.value());
+}
+
+void AssistantStateBase::UpdateLockedFullScreenState(bool enabled) {
+  locked_full_screen_enabled_ = enabled;
+  for (auto& observer : observers_) {
+    observer.OnLockedFullScreenStateChanged(
+        locked_full_screen_enabled_.value());
+  }
+}
+
 }  // namespace ash

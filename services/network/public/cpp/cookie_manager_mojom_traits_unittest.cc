@@ -22,43 +22,6 @@ bool SerializeAndDeserializeEnum(NativeType in, NativeType* out) {
   return mojo::EnumTraits<MojoType, NativeType>::FromMojom(intermediate, out);
 }
 
-TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatus) {
-  std::vector<net::CanonicalCookie::CookieInclusionStatus> statuses = {
-      net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_EXTENDED,
-      net::CanonicalCookie::CookieInclusionStatus::
-          EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
-      net::CanonicalCookie::CookieInclusionStatus::
-          EXCLUDE_SAMESITE_NONE_INSECURE,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR,
-  };
-
-  for (auto status : statuses) {
-    int32_t serialized = -1;
-    using CookieInclusionStatusSerializer =
-        mojo::internal::Serializer<mojom::CookieInclusionStatus,
-                                   net::CanonicalCookie::CookieInclusionStatus>;
-    CookieInclusionStatusSerializer::Serialize(status, &serialized);
-    EXPECT_EQ(static_cast<int>(status), serialized);
-    net::CanonicalCookie::CookieInclusionStatus deserialized;
-    CookieInclusionStatusSerializer::Deserialize(serialized, &deserialized);
-    EXPECT_EQ(serialized, static_cast<int>(deserialized));
-  }
-}
-
 TEST(CookieManagerTraitsTest, Roundtrips_CanonicalCookie) {
   net::CanonicalCookie original(
       "A", "B", "x.y", "/path", base::Time(), base::Time(), base::Time(), false,
@@ -93,13 +56,44 @@ TEST(CookieManagerTraitsTest, Roundtrips_CanonicalCookie) {
       &original, &copied));
 }
 
+TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatus) {
+  // This status + warning combo doesn't really make sense. It's just an
+  // arbitrary selection of values to test the serialization/deserialization.
+  net::CanonicalCookie::CookieInclusionStatus original =
+      net::CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
+          {net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
+           net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
+           net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY},
+          net::CanonicalCookie::CookieInclusionStatus::
+              WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
+
+  net::CanonicalCookie::CookieInclusionStatus copied;
+
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CookieInclusionStatus>(
+      &original, &copied));
+  EXPECT_TRUE(copied.HasExactlyExclusionReasonsForTesting(
+      {net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
+       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
+       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
+  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::
+                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+            copied.warning());
+
+  net::CanonicalCookie::CookieInclusionStatus invalid;
+  invalid.set_exclusion_reasons(~0u);
+
+  EXPECT_FALSE(
+      mojo::test::SerializeAndDeserialize<mojom::CookieInclusionStatus>(
+          &invalid, &copied));
+}
+
 TEST(CookieManagerTraitsTest, Roundtrips_CookieWithStatus) {
   net::CanonicalCookie original_cookie(
       "A", "B", "x.y", "/path", base::Time(), base::Time(), base::Time(), false,
       false, net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_LOW);
 
   net::CookieWithStatus original = {
-      original_cookie, net::CanonicalCookie::CookieInclusionStatus::INCLUDE};
+      original_cookie, net::CanonicalCookie::CookieInclusionStatus()};
 
   net::CookieWithStatus copied;
 
@@ -129,7 +123,9 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSite) {
                                                                    &roundtrip));
     EXPECT_EQ(cookie_state, roundtrip);
   }
+}
 
+TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContext) {
   for (net::CookieOptions::SameSiteCookieContext context_state :
        {net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
         net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
@@ -138,6 +134,23 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSite) {
     ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CookieSameSiteContext>(
         context_state, &roundtrip));
     EXPECT_EQ(context_state, roundtrip);
+  }
+}
+
+TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatusWarningReason) {
+  for (net::CanonicalCookie::CookieInclusionStatus::WarningReason warning :
+       {net::CanonicalCookie::CookieInclusionStatus::WarningReason::DO_NOT_WARN,
+        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+            WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+            WARN_SAMESITE_NONE_INSECURE,
+        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+            WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE}) {
+    net::CanonicalCookie::CookieInclusionStatus::WarningReason roundtrip;
+    ASSERT_TRUE(
+        SerializeAndDeserializeEnum<mojom::CookieInclusionStatusWarningReason>(
+            warning, &roundtrip));
+    EXPECT_EQ(warning, roundtrip);
   }
 }
 

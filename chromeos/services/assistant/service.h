@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback.h"
@@ -21,7 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/services/assistant/pref_connection_delegate.h"
+#include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
@@ -32,7 +31,6 @@
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class GoogleServiceAuthError;
-class PrefService;
 
 namespace base {
 class OneShotTimer;
@@ -51,6 +49,7 @@ namespace assistant {
 
 class AssistantManagerService;
 class AssistantSettingsManager;
+class PrefConnectionDelegate;
 
 // |AssistantManagerService|'s state won't update if it's currently in the
 // process of starting up. This is the delay before we will try to update
@@ -118,6 +117,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void SetPrefConnectionDelegateForTesting(
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
 
+  AssistantStateProxy* GetAssistantStateProxyForTesting();
+
  private:
   friend class AssistantServiceTest;
 
@@ -146,8 +147,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   void UpdateAssistantManagerState();
-
-  void OnPrefServiceConnected(std::unique_ptr<::PrefService> pref_service);
 
   identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
@@ -206,22 +205,16 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   mojom::AssistantControllerPtr assistant_controller_;
 
-  // NOTE: |pref_service_| is used by |assistant_state_| and must be declared
-  // before so it will be destructed after.
-  std::unique_ptr<PrefService> pref_service_;
-
   ash::mojom::AssistantAlarmTimerControllerPtr
       assistant_alarm_timer_controller_;
   ash::mojom::AssistantNotificationControllerPtr
       assistant_notification_controller_;
   ash::mojom::AssistantScreenContextControllerPtr
       assistant_screen_context_controller_;
-  ash::AssistantStateProxy assistant_state_;
+  AssistantStateProxy assistant_state_;
 
   // non-null until |assistant_manager_service_| is created.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
-
-  std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
 
   base::CancelableOnceClosure update_assistant_manager_callback_;
 

@@ -649,6 +649,8 @@ void ToolbarView::OnThemeChanged() {
 
   if (display_mode_ == DisplayMode::NORMAL)
     LoadImages();
+
+  SchedulePaint();
 }
 
 const char* ToolbarView::GetClassName() const {

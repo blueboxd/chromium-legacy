@@ -58,6 +58,7 @@ class CORE_EXPORT CSSNumericLiteralValue : public CSSPrimitiveValue {
       const CSSToLengthConversionData& conversion_data) const;
   bool AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const;
+  void AccumulateLengthUnitTypes(LengthTypeFlags& types) const;
 
   String CustomCSSText() const;
   bool Equals(const CSSNumericLiteralValue& other) const;

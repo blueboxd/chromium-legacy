@@ -19,10 +19,11 @@ using infobars::InfoBarDelegate;
 // static
 void SmsInfoBar::Create(content::WebContents* web_contents,
                         const url::Origin& origin,
+                        const std::string& one_time_code,
                         base::OnceClosure on_confirm,
                         base::OnceClosure on_cancel) {
   auto delegate = std::make_unique<SmsInfoBarDelegate>(
-      origin, std::move(on_confirm), std::move(on_cancel));
+      origin, one_time_code, std::move(on_confirm), std::move(on_cancel));
   auto infobar =
       std::make_unique<SmsInfoBar>(web_contents, std::move(delegate));
   auto* infobar_service = InfoBarService::FromWebContents(web_contents);

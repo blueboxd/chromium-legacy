@@ -377,8 +377,8 @@ void CryptAuthV2EnrollmentManagerImpl::OnGCMRegistrationResult(bool success) {
   CryptAuthAsyncTaskResult result = was_successful
                                         ? CryptAuthAsyncTaskResult::kSuccess
                                         : CryptAuthAsyncTaskResult::kError;
-  RecordGcmRegistrationMetrics(clock_->Now() - last_state_change_timestamp_,
-                               result);
+  RecordGcmRegistrationMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_, result);
 
   if (!was_successful) {
     OnEnrollmentFinished(CryptAuthEnrollmentResult(
@@ -405,7 +405,7 @@ void CryptAuthV2EnrollmentManagerImpl::OnClientAppMetadataFetched(
   CryptAuthAsyncTaskResult result = success ? CryptAuthAsyncTaskResult::kSuccess
                                             : CryptAuthAsyncTaskResult::kError;
   RecordClientAppMetadataFetchMetrics(
-      clock_->Now() - last_state_change_timestamp_, result);
+      base::TimeTicks::Now() - last_state_change_timestamp_, result);
 
   if (!success) {
     OnEnrollmentFinished(
@@ -499,7 +499,7 @@ void CryptAuthV2EnrollmentManagerImpl::SetState(State state) {
 
   PA_LOG(INFO) << "Transitioning from " << state_ << " to " << state;
   state_ = state;
-  last_state_change_timestamp_ = clock_->Now();
+  last_state_change_timestamp_ = base::TimeTicks::Now();
 
   base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
@@ -518,7 +518,8 @@ void CryptAuthV2EnrollmentManagerImpl::OnTimeout() {
       ResultCodeErrorFromTimeoutDuringState(state_);
   DCHECK(error_code);
 
-  base::TimeDelta execution_time = clock_->Now() - last_state_change_timestamp_;
+  base::TimeDelta execution_time =
+      base::TimeTicks::Now() - last_state_change_timestamp_;
   switch (state_) {
     case State::kWaitingForGcmRegistration:
       RecordGcmRegistrationMetrics(execution_time,

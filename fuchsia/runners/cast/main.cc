@@ -14,9 +14,13 @@ int main(int argc, char** argv) {
   base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::RunLoop run_loop;
 
+  constexpr fuchsia::web::ContextFeatureFlags kCastRunnerFeatures =
+      fuchsia::web::ContextFeatureFlags::NETWORK |
+      fuchsia::web::ContextFeatureFlags::AUDIO;
+
   CastRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
-      WebContentRunner::CreateIncognitoWebContext());
+      WebContentRunner::CreateIncognitoWebContext(kCastRunnerFeatures));
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()

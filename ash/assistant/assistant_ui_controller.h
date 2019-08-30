@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "ash/ash_export.h"
@@ -190,6 +191,12 @@ class ASH_EXPORT AssistantUiController
 
   // Whether the UI controller is observing changes to the usable work area.
   bool is_observing_usable_work_area_ = false;
+
+  // When proactive suggestions duplicate suppression is enabled, we won't show
+  // proactive suggestions that have been shown before. To accomplish this, we
+  // must cache proactive suggestions that have already been shown to the user.
+  // We cache a hash representation of the proactive suggestions to save space.
+  std::set<size_t> shown_proactive_suggestions_;
 
   base::WeakPtrFactory<AssistantUiController> weak_factory_{this};
 

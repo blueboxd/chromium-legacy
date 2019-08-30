@@ -1420,6 +1420,10 @@ bool Animation::Update(TimingUpdateReason reason) {
   if (!timeline_)
     return false;
 
+  ExecutionContext* context = GetExecutionContext();
+  if (!context || context->IsContextDestroyed())
+    return false;
+
   ClearOutdated();
   bool idle = CalculateAnimationPlayState() == kIdle;
 

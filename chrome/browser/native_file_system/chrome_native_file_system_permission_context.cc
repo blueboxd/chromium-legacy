@@ -145,7 +145,10 @@ const struct {
 
   // If this is set to true not only is the given path blocked, all the children
   // are blocked as well. When this is set to false only the path and its
-  // parents are blocked.
+  // parents are blocked. If a blocked path is a descendent of another blocked
+  // path, then it may override the child-blocking policy of its ancestor. For
+  // example, if /home blocks all children, but /home/downloads does not, then
+  // /home/downloads/file.ext should *not* be blocked.
   bool block_all_children;
 } kBlockedPaths[] = {
     // Don't allow users to share their entire home directory, entire desktop or
@@ -203,6 +206,9 @@ const struct {
 bool ShouldBlockAccessToPath(const base::FilePath& check_path) {
   DCHECK(!check_path.empty());
   DCHECK(check_path.IsAbsolute());
+
+  base::FilePath nearest_ancestor;
+  bool nearest_ancestor_blocks_all_children = false;
   for (const auto& block : kBlockedPaths) {
     base::FilePath blocked_path;
     if (block.base_path_key != kNoBasePathKey) {
@@ -218,10 +224,14 @@ bool ShouldBlockAccessToPath(const base::FilePath& check_path) {
     if (check_path == blocked_path || check_path.IsParent(blocked_path))
       return true;
 
-    if (block.block_all_children && blocked_path.IsParent(check_path))
-      return true;
+    if (blocked_path.IsParent(check_path) &&
+        (nearest_ancestor.empty() || nearest_ancestor.IsParent(blocked_path))) {
+      nearest_ancestor = blocked_path;
+      nearest_ancestor_blocks_all_children = block.block_all_children;
+    }
   }
-  return false;
+
+  return !nearest_ancestor.empty() && nearest_ancestor_blocks_all_children;
 }
 
 // Returns a callback that calls the passed in |callback| by posting a task to

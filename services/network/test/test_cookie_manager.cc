@@ -21,8 +21,8 @@ void TestCookieManager::SetCanonicalCookie(
     const net::CookieOptions& cookie_options,
     SetCanonicalCookieCallback callback) {
   if (callback) {
-    std::move(callback).Run(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+    std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus(
+        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
   }
 }
 

@@ -142,6 +142,70 @@ bool FragmentRequiresLegacyFallback(const NGPhysicalFragment& fragment) {
   return fragment.IsBlockFormattingContextRoot();
 }
 
+// Recursively build up backplates behind inline text boxes, each split at the
+// paragraph level. Store the results in paragraph_backplates.
+void BuildBackplate(const NGPaintFragment* line,
+                    const PhysicalOffset& paint_offset,
+                    PhysicalRect* current_backplate,
+                    int* consecutive_line_breaks,
+                    Vector<PhysicalRect>* paragraph_backplates) {
+  DCHECK(current_backplate && consecutive_line_breaks && paragraph_backplates);
+
+  // The number of consecutive forced breaks that split the backplate by
+  // paragraph.
+  static constexpr int kMaxConsecutiveLineBreaks = 2;
+
+  // Build up and paint backplates of all child inline text boxes. We are not
+  // able to simply use the linebox rect to compute the backplate because the
+  // backplate should only be painted for inline text and not for atomic
+  // inlines.
+  for (const NGPaintFragment* child : line->Children()) {
+    const NGPhysicalFragment& child_fragment = child->PhysicalFragment();
+    if (child_fragment.IsHiddenForPaint() || child_fragment.IsFloating())
+      continue;
+    if (auto* text_fragment =
+            DynamicTo<NGPhysicalTextFragment>(child_fragment)) {
+      if (text_fragment->IsLineBreak()) {
+        (*consecutive_line_breaks)++;
+        continue;
+      }
+
+      if (*consecutive_line_breaks >= kMaxConsecutiveLineBreaks) {
+        // This is a paragraph point.
+        paragraph_backplates->push_back(*current_backplate);
+        *current_backplate = PhysicalRect();
+      }
+      *consecutive_line_breaks = 0;
+      PhysicalRect box_rect(child->InlineOffsetToContainerBox() + paint_offset,
+                            child->Size());
+      current_backplate->Unite(box_rect);
+    }
+    if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox) {
+      // If a fragment box was reached, continue to recursively build
+      // up the backplate.
+      BuildBackplate(child, paint_offset, current_backplate,
+                     consecutive_line_breaks, paragraph_backplates);
+    }
+  }
+}
+
+// Returns a vector of backplates that surround the paragraphs of text within
+// line_boxes.
+Vector<PhysicalRect> BuildBackplate(const NGPaintFragment::ChildList line_boxes,
+                                    const PhysicalOffset& paint_offset) {
+  Vector<PhysicalRect> paragraph_backplates;
+  PhysicalRect current_backplate;
+  int consecutive_line_breaks = 0;
+  for (const NGPaintFragment* line : line_boxes) {
+    // Recursively build up and paint backplates for line boxes containing text.
+    BuildBackplate(line, paint_offset, &current_backplate,
+                   &consecutive_line_breaks, &paragraph_backplates);
+  }
+  if (!current_backplate.IsEmpty())
+    paragraph_backplates.push_back(current_backplate);
+  return paragraph_backplates;
+}
+
 }  // anonymous namespace
 
 const NGBorderEdges& NGBoxFragmentPainter::BorderEdges() const {
@@ -812,7 +876,7 @@ void NGBoxFragmentPainter::PaintInlineItems(
   // TODO(kojii): Copy more from |PaintLineBoxChildren|.
 
   NGInlineCursor cursor(*items_);
-  for (bool has_next = cursor.MoveToNext(); has_next;) {
+  while (cursor) {
     const NGFragmentItem* item = cursor.CurrentItem();
     DCHECK(item);
     switch (item->Type()) {
@@ -828,14 +892,14 @@ void NGBoxFragmentPainter::PaintInlineItems(
       case NGFragmentItem::kBox:
         if (const NGPhysicalBoxFragment* fragment = item->BoxFragment()) {
           if (fragment->HasSelfPaintingLayer()) {
-            has_next = cursor.MoveToNextSkippingChildren();
+            cursor.MoveToNextSkippingChildren();
             continue;
           }
           // TODO(kojii): Implement.
         }
         break;
     }
-    has_next = cursor.MoveToNext();
+    cursor.MoveToNext();
   }
 }
 
@@ -877,6 +941,9 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
                             .CurrentPaintChunkProperties());
     }
   }
+
+  if (layout_block.GetDocument().InForcedColorsMode())
+    PaintBackplate(line_boxes, paint_info, paint_offset);
 
   const bool is_horizontal = box_fragment_.Style().IsHorizontalWritingMode();
 
@@ -926,6 +993,30 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
 
     PaintInlineChildren(line->Children(), paint_info, child_offset);
   }
+}
+
+void NGBoxFragmentPainter::PaintBackplate(NGPaintFragment::ChildList line_boxes,
+                                          const PaintInfo& paint_info,
+                                          const PhysicalOffset& paint_offset) {
+  if (paint_info.phase != PaintPhase::kForeground)
+    return;
+
+  // Only paint backplates behind text when forced-color-adjust is auto.
+  const ComputedStyle& style = line_boxes.front().Style();
+  if (style.ForcedColorAdjust() == EForcedColorAdjust::kNone)
+    return;
+
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, GetDisplayItemClient(),
+          DisplayItem::kForcedColorsModeBackplate))
+    return;
+
+  DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
+                           DisplayItem::kForcedColorsModeBackplate);
+  Color backplate_color = style.ForcedBackplateColor();
+  const auto& backplates = BuildBackplate(line_boxes, paint_offset);
+  for (const auto backplate : backplates)
+    paint_info.context.FillRect(FloatRect(backplate), backplate_color);
 }
 
 void NGBoxFragmentPainter::PaintInlineChildren(

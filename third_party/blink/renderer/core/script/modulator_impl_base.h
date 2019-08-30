@@ -45,6 +45,8 @@ class ModulatorImplBase : public Modulator {
   bool BuiltInModuleEnabled(layered_api::Module) const override;
   void BuiltInModuleUseCount(layered_api::Module) const override;
 
+  static bool BuiltInModuleRequireSecureContext(layered_api::Module);
+
   ModuleRecordResolver* GetModuleRecordResolver() override {
     return module_record_resolver_.Get();
   }

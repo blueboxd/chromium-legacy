@@ -20,6 +20,7 @@ namespace device {
 
 class Dualshock4Controller;
 class HidHapticGamepad;
+class XboxHidController;
 
 // GamepadDeviceMac represents a single gamepad device. Gamepad enumeration
 // and state polling is handled through the raw HID interface, while haptics
@@ -110,6 +111,12 @@ class GamepadDeviceMac final : public AbstractHapticGamepad {
 
   // Dualshock4 functionality, if available.
   std::unique_ptr<Dualshock4Controller> dualshock4_;
+
+  // Xbox Wireless Controller behaves like a HID gamepad when connected over
+  // Bluetooth. In this mode, haptics functionality is provided by |xbox_hid_|.
+  // When connected over USB, Xbox Wireless Controller is supported through
+  // XboxDataFetcher.
+  std::unique_ptr<XboxHidController> xbox_hid_;
 
   // A controller that uses a HID output report for vibration effects.
   std::unique_ptr<HidHapticGamepad> hid_haptics_;

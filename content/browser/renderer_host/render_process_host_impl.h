@@ -60,6 +60,7 @@
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
@@ -136,7 +137,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       public ChildProcessLauncher::Client,
       public mojom::RouteProvider,
       public blink::mojom::AssociatedInterfaceProvider,
-      public mojom::RendererHost {
+      public mojom::RendererHost,
+      public memory_instrumentation::mojom::CoordinatorConnector {
  public:
   // Special depth used when there are no PriorityClients.
   static const unsigned int kMaxFrameDepthForPriority;
@@ -588,6 +590,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindWebDatabaseHostImpl(
       mojo::PendingReceiver<blink::mojom::WebDatabaseHost> receiver);
 
+  // memory_instrumentation::mojom::CoordinatorConnector implementation:
+  void RegisterCoordinatorClient(
+      mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator>
+          receiver,
+      mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess>
+          client_process) override;
+
   // Control message handlers.
   void OnUserMetricsRecordAction(const std::string& action);
   void OnCloseACK(int closed_widget_route_id);
@@ -913,6 +922,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;
   mojo::AssociatedBinding<mojom::RendererHost> renderer_host_binding_;
+  mojo::Receiver<memory_instrumentation::mojom::CoordinatorConnector>
+      coordinator_connector_receiver_{this};
 
   // Tracks active audio and video streams within the render process; used to
   // determine if if a process should be backgrounded.

@@ -47,10 +47,9 @@ namespace chromeos {
 
 namespace {
 
-// These names are used in histograms.
+// These names are used in histograms. Values should never be changed.
 constexpr char kDeviceAccountMigration[] = "DeviceAccountMigration";
 constexpr char kContentAreaAccountsMigration[] = "ContentAreaAccountsMigration";
-constexpr char kArcAccountsMigration[] = "ArcAccountsMigration";
 constexpr char kSuccessStorage[] = "SuccessStorage";
 constexpr char kMigrationResultMetricName[] =
     "AccountManager.Migrations.Result";
@@ -344,9 +343,10 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
   ArcAccountsMigration(AccountManager* account_manager,
                        signin::IdentityManager* identity_manager,
                        arc::ArcAuthService* arc_auth_service)
-      : AccountMigrationBaseStep(kArcAccountsMigration,
-                                 account_manager,
-                                 identity_manager),
+      : AccountMigrationBaseStep(
+            AccountManagerMigrator::kArcAccountsMigrationId,
+            account_manager,
+            identity_manager),
         arc_auth_service_(arc_auth_service) {}
   ~ArcAccountsMigration() override { Reset(); }
 
@@ -460,6 +460,11 @@ class SuccessStorage : public AccountMigrationRunner::Step {
 };
 
 }  // namespace
+
+// Used in histograms and elsewhere. Never change this value.
+// static
+const char AccountManagerMigrator::kArcAccountsMigrationId[] =
+    "ArcAccountsMigration";
 
 AccountManagerMigrator::AccountManagerMigrator(Profile* profile)
     : profile_(profile) {}

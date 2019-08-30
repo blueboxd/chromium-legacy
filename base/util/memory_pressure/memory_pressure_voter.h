@@ -59,7 +59,8 @@ class MemoryPressureVoteAggregator {
   // MemoryPressureLevel.
   MemoryPressureLevel EvaluateVotes() const;
 
-  MemoryPressureLevel current_pressure_level_;
+  MemoryPressureLevel current_pressure_level_ =
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 
   Delegate* const delegate_;
 
@@ -72,7 +73,7 @@ class MemoryPressureVoteAggregator {
   // MemoryPressureLevel system will be changing soon regardless.
   std::array<size_t,
              base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL + 1>
-      votes_;
+      votes_ = {};
 
   SEQUENCE_CHECKER(sequence_checker_);
 

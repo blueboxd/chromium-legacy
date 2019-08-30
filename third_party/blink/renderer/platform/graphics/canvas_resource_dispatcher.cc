@@ -91,9 +91,10 @@ void UpdatePlaceholderImage(
     viz::ResourceId resource_id) {
   DCHECK(IsMainThread());
   OffscreenCanvasPlaceholder* placeholder_canvas =
-      OffscreenCanvasPlaceholder::GetPlaceholderById(placeholder_canvas_id);
+      OffscreenCanvasPlaceholder::GetPlaceholderCanvasById(
+          placeholder_canvas_id);
   if (placeholder_canvas) {
-    placeholder_canvas->SetPlaceholderFrame(
+    placeholder_canvas->SetOffscreenCanvasFrame(
         std::move(canvas_resource), std::move(dispatcher),
         std::move(task_runner), resource_id);
   }

@@ -82,19 +82,34 @@ class LayerTestCommon {
                   std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink);
     ~LayerImplTest();
 
-    template <typename T>
-    T* AddChildToRoot() {
-      std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
+    template <typename T, typename... Args>
+    T* AddLayer(Args&&... args) {
+      return AddLayerInternal<T>(host_impl()->active_tree(),
+                                 std::forward<Args>(args)...);
     }
 
-    template <typename T>
-    T* AddChild(LayerImpl* parent) {
+    LayerImpl* EnsureRootLayerInPendingTree();
+
+    template <typename T, typename... Args>
+    T* AddLayerInPendingTree(Args&&... args) {
+      return AddLayerInternal<T>(host_impl()->pending_tree(),
+                                 std::forward<Args>(args)...);
+    }
+
+    // TODO(crbug.com/994361): Remove this function when all impl-side tests are
+    // converted into layer list mode.
+    template <typename T, typename... Args>
+    T* AddChildToRoot(Args&&... args) {
+      return AddLayer<T>(std::forward<Args>(args)...);
+    }
+
+    // TODO(crbug.com/994361): Remove this function when all impl-side tests are
+    // converted into layer list mode.
+    template <typename T, typename... Args>
+    T* AddChild(LayerImpl* parent, Args&&... args) {
       std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
+          T::Create(host_impl()->active_tree(), layer_impl_id_++,
+                    std::forward<Args>(args)...);
       T* ptr = layer.get();
       parent->test_properties()->AddChild(std::move(layer));
       return ptr;
@@ -103,82 +118,9 @@ class LayerTestCommon {
     template <typename T>
     T* AddMaskLayer(LayerImpl* origin) {
       std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
+          T::Create(host_impl()->active_tree(), layer_impl_id_++);
       T* ptr = layer.get();
       origin->test_properties()->SetMaskLayer(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T, typename A>
-    T* AddChildToRoot(const A& a) {
-      std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T, typename A, typename B>
-    T* AddChildToRoot(const A& a, const B& b) {
-      std::unique_ptr<T> layer =
-          T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a, b);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T, typename A, typename B, typename C>
-    T* AddChildToRoot(const A& a, const B& b, const C& c) {
-      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
-                                           layer_impl_id_++, a, b, c);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T, typename A, typename B, typename C, typename D>
-    T* AddChildToRoot(const A& a, const B& b, const C& c, const D& d) {
-      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
-                                           layer_impl_id_++, a, b, c, d);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T,
-              typename A,
-              typename B,
-              typename C,
-              typename D,
-              typename E>
-    T* AddChildToRoot(const A& a,
-                      const B& b,
-                      const C& c,
-                      const D& d,
-                      const E& e) {
-      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
-                                           layer_impl_id_++, a, b, c, d, e);
-      T* ptr = layer.get();
-      root_layer_for_testing()->test_properties()->AddChild(std::move(layer));
-      return ptr;
-    }
-
-    template <typename T,
-              typename A,
-              typename B,
-              typename C,
-              typename D,
-              typename E>
-    T* AddChild(LayerImpl* parent,
-                const A& a,
-                const B& b,
-                const C& c,
-                const D& d,
-                const E& e) {
-      std::unique_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
-                                           layer_impl_id_++, a, b, c, d, e);
-      T* ptr = layer.get();
-      parent->test_properties()->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -260,6 +202,16 @@ class LayerTestCommon {
     }
 
    private:
+    template <typename T, typename... Args>
+    T* AddLayerInternal(LayerTreeImpl* tree, Args&&... args) {
+      std::unique_ptr<T> layer =
+          T::Create(tree, layer_impl_id_++, std::forward<Args>(args)...);
+      T* ptr = layer.get();
+      tree->root_layer_for_testing()->test_properties()->AddChild(
+          std::move(layer));
+      return ptr;
+    }
+
     FakeLayerTreeHostClient client_;
     TestTaskGraphRunner task_graph_runner_;
     std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink_;

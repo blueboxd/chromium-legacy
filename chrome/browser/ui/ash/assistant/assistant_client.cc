@@ -99,7 +99,7 @@ void AssistantClient::MaybeInit(Profile* profile) {
 
   if (chromeos::assistant::features::IsProactiveSuggestionsEnabled()) {
     proactive_suggestions_client_ =
-        std::make_unique<ProactiveSuggestionsClientImpl>(this, profile_);
+        std::make_unique<ProactiveSuggestionsClientImpl>(profile_);
   }
 
   for (auto& receiver : pending_assistant_receivers_)

@@ -9,11 +9,6 @@
 namespace optimization_guide {
 namespace prefs {
 
-// A dictionary pref that stores counts for the number of times a hint was
-// attempted to be loaded and counts for the number of times a hint was actually
-// loaded, broken down by hint source.
-const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
-
 // A pref that stores the last time a hints fetch was attempted. This limits the
 // frequency that hints are fetched and prevents a crash loop that continually
 // fetches hints on startup.
@@ -48,7 +43,6 @@ const char kPendingHintsProcessingVersion[] =
     "optimization_guide.pending_hints_processing_version";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kHintLoadedCounts, PrefRegistry::LOSSY_PREF);
   registry->RegisterInt64Pref(
       kHintsFetcherLastFetchAttempt,
       base::Time().ToDeltaSinceWindowsEpoch().InMicroseconds(),

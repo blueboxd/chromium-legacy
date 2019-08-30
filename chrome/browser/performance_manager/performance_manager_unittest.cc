@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/callback.h"
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
@@ -38,8 +40,6 @@ class PerformanceManagerTest : public testing::Test {
 
     task_environment_.RunUntilIdle();
   }
-
-  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  protected:
   PerformanceManager* performance_manager() {
@@ -125,12 +125,19 @@ TEST_F(PerformanceManagerTest, CallOnGraph) {
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
                                             false, false);
-
-  PerformanceManager::GraphCallback graph_callback = base::BindLambdaForTesting(
-      [&page_node](GraphImpl* graph) { EXPECT_EQ(page_node->graph(), graph); });
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+  EXPECT_FALSE(performance_manager()->OnPMTaskRunnerForTesting());
+  PerformanceManager::GraphCallback graph_callback =
+      base::BindLambdaForTesting([&](GraphImpl* graph) {
+        EXPECT_TRUE(
+            PerformanceManager::GetInstance()->OnPMTaskRunnerForTesting());
+        EXPECT_EQ(page_node.get()->graph(), graph);
+        std::move(quit_closure).Run();
+      });
 
   performance_manager()->CallOnGraph(FROM_HERE, std::move(graph_callback));
-  RunUntilIdle();
+  run_loop.Run();
 
   performance_manager()->DeleteNode(std::move(page_node));
 }

@@ -383,7 +383,8 @@ bool PathProvider(int key, base::FilePath* result) {
               .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
       break;
 #endif  // BUILDFLAG(ENABLE_WIDEVINE) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    case chrome::FILE_RESOURCES_PACK:
+    case chrome::FILE_RESOURCES_PACK:  // Falls through.
+    case chrome::FILE_DEV_UI_RESOURCES_PACK:
 #if defined(OS_MACOSX)
       cur = base::mac::FrameworkBundlePath();
       cur = cur.Append(FILE_PATH_LITERAL("Resources"))
@@ -392,14 +393,21 @@ bool PathProvider(int key, base::FilePath* result) {
 #elif defined(OS_ANDROID)
       if (!base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &cur))
         return false;
+      if (key == chrome::FILE_DEV_UI_RESOURCES_PACK) {
+        cur = cur.Append(FILE_PATH_LITERAL("dev_ui_resources.pak"));
+      } else {
+        DCHECK_EQ(chrome::FILE_RESOURCES_PACK, key);
+        cur = cur.Append(FILE_PATH_LITERAL("resources.pak"));
+      }
 #else
       // If we're not bundled on mac or Android, resources.pak should be next
       // to the binary (e.g., for unit tests).
       if (!base::PathService::Get(base::DIR_MODULE, &cur))
         return false;
-#endif
       cur = cur.Append(FILE_PATH_LITERAL("resources.pak"));
+#endif
       break;
+
 #if defined(OS_CHROMEOS)
     case chrome::DIR_CHROMEOS_WALLPAPERS:
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))

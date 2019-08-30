@@ -36,6 +36,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
+#include "crypto/sha2.h"
 #include "net/base/layered_network_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -1905,16 +1906,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
       base::FeatureList::IsEnabled(features::kNetworkErrorLogging));
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-  if (params_->enforce_chrome_ct_policy) {
-    builder.set_ct_policy_enforcer(
-        std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>(
-            base::GetBuildTime(),
-            certificate_transparency::GetDisqualifiedLogs(),
-            certificate_transparency::GetLogsOperatedByGoogle()));
-  }
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
-
   net::HttpNetworkSession::Params session_params;
   bool is_quic_force_disabled = false;
   if (network_service_ && network_service_->quic_disabled())
@@ -1966,8 +1957,20 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
+  std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs;
+  std::vector<std::string> operated_by_google_logs;
+
   if (!params_->ct_logs.empty()) {
     for (const auto& log : params_->ct_logs) {
+      if (log->operated_by_google || log->disqualified_at) {
+        std::string log_id = crypto::SHA256HashString(log->public_key);
+        if (log->operated_by_google)
+          operated_by_google_logs.push_back(log_id);
+        if (log->disqualified_at) {
+          disqualified_logs.push_back(
+              std::make_pair(log_id, log->disqualified_at.value()));
+        }
+      }
       scoped_refptr<const net::CTLogVerifier> log_verifier =
           net::CTLogVerifier::Create(log->public_key, log->name);
       if (!log_verifier) {
@@ -1979,6 +1982,17 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     auto ct_verifier = std::make_unique<net::MultiLogCTVerifier>();
     ct_verifier->AddLogs(ct_logs);
     builder.set_ct_verifier(std::move(ct_verifier));
+  }
+
+  if (params_->enforce_chrome_ct_policy) {
+    std::sort(std::begin(operated_by_google_logs),
+              std::end(operated_by_google_logs));
+    std::sort(std::begin(disqualified_logs), std::end(disqualified_logs));
+
+    builder.set_ct_policy_enforcer(
+        std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>(
+            params_->ct_log_update_time, disqualified_logs,
+            operated_by_google_logs));
   }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 

@@ -295,9 +295,8 @@ std::vector<device::PublicKeyCredentialDescriptor> GetTestCredentials(
     base::flat_set<device::FidoTransportProtocol> transports{
         device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
         device::FidoTransportProtocol::kBluetoothLowEnergy};
-    device::PublicKeyCredentialDescriptor credential(
-        device::CredentialType::kPublicKey, id, transports);
-    descriptors.push_back(std::move(credential));
+    descriptors.emplace_back(device::CredentialType::kPublicKey, std::move(id),
+                             std::move(transports));
   }
   return descriptors;
 }
@@ -1689,6 +1688,7 @@ class TestAuthenticatorRequestDelegate
       override {
     ASSERT_TRUE(action_callbacks_registered_callback_)
         << "RegisterActionCallbacks called twice.";
+    cancel_callback_.emplace(std::move(cancel_callback));
     std::move(action_callbacks_registered_callback_).Run();
   }
 
@@ -1711,7 +1711,19 @@ class TestAuthenticatorRequestDelegate
 
   bool IsFocused() override { return is_focused_; }
 
+  void OnTransportAvailabilityEnumerated(
+      device::FidoRequestHandlerBase::TransportAvailabilityInfo transport_info)
+      override {
+    // Simulate the behaviour of Chrome's |AuthenticatorRequestDialogModel|
+    // which shows a specific error when no transports are available and lets
+    // the user cancel the request.
+    if (transport_info.available_transports.empty()) {
+      std::move(*cancel_callback_).Run();
+    }
+  }
+
   base::OnceClosure action_callbacks_registered_callback_;
+  base::Optional<base::OnceClosure> cancel_callback_;
   const IndividualAttestation individual_attestation_;
   const AttestationConsent attestation_consent_;
   const bool is_focused_;
@@ -2428,6 +2440,35 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   callback_receiver.WaitForCallback();
 
   EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest,
+       CableCredentialWithoutCableExtension) {
+  // Exercise the case where a credential is marked as "cable" but no caBLE
+  // extension is provided. The AuthenticatorRequestClientDelegate should see no
+  // transports, which triggers it to cancel the request. (Outside of a testing
+  // environment, Chrome's AuthenticatorRequestClientDelegate will show an
+  // informative error and wait for the user to cancel the request.)
+  EnableFeature(features::kWebAuthCable);
+  TestServiceManagerContext service_manager_context;
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  std::vector<uint8_t> id(32u, 1u);
+  base::flat_set<device::FidoTransportProtocol> transports{
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+  options->allow_credentials.clear();
+  options->allow_credentials.emplace_back(device::CredentialType::kPublicKey,
+                                          std::move(id), std::move(transports));
+
+  TestGetAssertionCallback callback_receiver;
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
 class MockAuthenticatorRequestDelegateObserver

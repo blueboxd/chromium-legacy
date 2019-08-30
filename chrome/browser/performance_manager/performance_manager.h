@@ -126,6 +126,12 @@ class PerformanceManager {
     return task_runner_;
   }
 
+  // Indicates whether or not the caller is currently running on the PM task
+  // runner.
+  bool OnPMTaskRunnerForTesting() const {
+    return task_runner_->RunsTasksInCurrentSequence();
+  }
+
  private:
   PerformanceManager();
   void PostBindInterface(const std::string& interface_name,

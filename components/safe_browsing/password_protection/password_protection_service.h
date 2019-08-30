@@ -203,8 +203,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Converts from password_manager::metrics_util::PasswordType
   // to PasswordReuseEvent::ReusedPasswordAccountType. |username| is only
   // used if |password_type| is OTHER_GAIA_PASSWORD because it needs to be
-  // compared to the list of signed in accounts. If |username| is empty, it
-  // uses |username_|.
+  // compared to the list of signed in accounts.
   ReusedPasswordAccountType GetPasswordProtectionReusedPasswordAccountType(
       PasswordType password_type,
       const std::string& username) const;
@@ -221,9 +220,26 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   bool IsSupportedPasswordTypeForModalWarning(
       ReusedPasswordAccountType password_type) const;
 
-  const std::string& username() const { return username_; }
+  const ReusedPasswordAccountType&
+  reused_password_account_type_for_last_shown_warning() const {
+    return reused_password_account_type_for_last_shown_warning_;
+  }
 #if defined(UNIT_TEST)
-  void set_username(const std::string& username) { username_ = username; }
+  void set_reused_password_account_type_for_last_shown_warning(
+      ReusedPasswordAccountType
+          reused_password_account_type_for_last_shown_warning) {
+    reused_password_account_type_for_last_shown_warning_ =
+        reused_password_account_type_for_last_shown_warning;
+  }
+#endif
+
+  const std::string& username_for_last_shown_warning() const {
+    return username_for_last_shown_warning_;
+  }
+#if defined(UNIT_TEST)
+  void set_username_for_last_shown_warning(const std::string& username) {
+    username_for_last_shown_warning_ = username;
+  }
 #endif
 
   virtual AccountInfo GetAccountInfo() const = 0;
@@ -388,10 +404,14 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       service_manager::InterfaceProvider* provider,
       mojom::PhishingDetectorPtr* phishing_detector);
 
-  // TODO(bdea): Store ReusedPasswordAccountType here instead.
   // The username of the account which password has been reused on. It is only
   // set once a modal warning or interstitial is verified to be shown.
-  std::string username_ = "";
+  std::string username_for_last_shown_warning_ = "";
+
+  // The last ReusedPasswordAccountType that was shown a warning or
+  // interstitial.
+  ReusedPasswordAccountType
+      reused_password_account_type_for_last_shown_warning_;
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 

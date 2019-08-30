@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/prefetched_signed_exchange_info.mojom.h"
@@ -99,6 +100,13 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
     DISALLOW_COPY_AND_ASSIGN(Entry);
   };
 
+  // A test observer to monitor the cache entry.
+  class TestObserver : public base::CheckedObserver {
+   public:
+    virtual void OnStored(PrefetchedSignedExchangeCache* cache,
+                          const GURL& outer_url) = 0;
+  };
+
   using EntryMap = std::map<GURL /* outer_url */, std::unique_ptr<const Entry>>;
 
   PrefetchedSignedExchangeCache();
@@ -113,6 +121,10 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
   const EntryMap& GetExchanges();
 
   void RecordHistograms();
+
+  // Adds/removes test observers.
+  void AddObserverForTesting(TestObserver* observer);
+  void RemoveObserverForTesting(const TestObserver* observer);
 
  private:
   friend class base::RefCountedThreadSafe<PrefetchedSignedExchangeCache>;
@@ -129,6 +141,8 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
       const base::Time& now);
 
   EntryMap exchanges_;
+
+  base::ObserverList<TestObserver> test_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchedSignedExchangeCache);
 };

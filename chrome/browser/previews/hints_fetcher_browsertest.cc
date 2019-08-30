@@ -32,6 +32,7 @@
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
+#include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"

@@ -150,11 +150,11 @@ class ShippingProfileViewController : public ProfileListViewController,
         /*on_edited=*/
         base::BindOnce(
             &PaymentRequestState::SetSelectedShippingProfile,
-            base::Unretained(state()), profile,
+            state()->AsWeakPtr(), profile,
             PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
-                       base::Unretained(state()), /*selected=*/true),
+                       state()->AsWeakPtr(), /*selected=*/true),
         profile);
   }
 
@@ -265,11 +265,11 @@ class ContactProfileViewController : public ProfileListViewController {
         /*on_edited=*/
         base::BindOnce(
             &PaymentRequestState::SetSelectedContactProfile,
-            base::Unretained(state()), profile,
+            state()->AsWeakPtr(), profile,
             PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::BindOnce(&PaymentRequestState::AddAutofillContactProfile,
-                       base::Unretained(state()), /*selected=*/true),
+                       state()->AsWeakPtr(), /*selected=*/true),
         profile);
   }
 

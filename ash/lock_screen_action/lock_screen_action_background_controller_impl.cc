@@ -7,7 +7,6 @@
 #include "ash/lock_screen_action/lock_screen_action_background_view.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -19,8 +18,7 @@ constexpr char kLockScreenActionBackgroundWidgetName[] =
 }  // namespace
 
 LockScreenActionBackgroundControllerImpl::
-    LockScreenActionBackgroundControllerImpl()
-    : widget_observer_(this) {}
+    LockScreenActionBackgroundControllerImpl() = default;
 
 LockScreenActionBackgroundControllerImpl::
     ~LockScreenActionBackgroundControllerImpl() {

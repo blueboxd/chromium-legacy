@@ -32,7 +32,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
     const PaymentRequestSpec* spec,
     std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
     PaymentRequestDelegate* payment_request_delegate,
-    IdentityObserver* identity_observer)
+    base::WeakPtr<IdentityObserver> identity_observer)
     : PaymentInstrument(0, PaymentInstrument::Type::SERVICE_WORKER_APP),
       browser_context_(browser_context),
       top_origin_(top_origin),
@@ -71,7 +71,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
     std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
     const std::string& enabled_method,
     PaymentRequestDelegate* payment_request_delegate,
-    IdentityObserver* identity_observer)
+    base::WeakPtr<IdentityObserver> identity_observer)
     : PaymentInstrument(0, PaymentInstrument::Type::SERVICE_WORKER_APP),
       top_origin_(top_origin),
       frame_origin_(frame_origin),
@@ -233,7 +233,7 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
         installable_web_app_info_->sw_use_cache, installable_enabled_method_,
         base::BindOnce(
             &IdentityObserver::SetInvokedServiceWorkerIdentity,
-            base::Unretained(identity_observer_),
+            identity_observer_,
             url::Origin::Create(GURL(installable_web_app_info_->sw_scope))),
         base::BindOnce(&ServiceWorkerPaymentInstrument::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -382,7 +382,9 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   if (needs_installation_)
     return installable_enabled_method_ == method;
 
-  if (!IsValidForPaymentMethodIdentifier(method))
+  bool is_valid = false;
+  IsValidForPaymentMethodIdentifier(method, &is_valid);
+  if (!is_valid)
     return false;
 
   // Return true if 'basic-card' is not the only matched payment method. This
@@ -440,11 +442,16 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   return i < stored_payment_app_info_->capabilities.size();
 }
 
-bool ServiceWorkerPaymentInstrument::IsValidForPaymentMethodIdentifier(
-    const std::string& payment_method_identifier) const {
+void ServiceWorkerPaymentInstrument::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier,
+    bool* is_valid) const {
   DCHECK(!needs_installation_);
-  return base::Contains(stored_payment_app_info_->enabled_methods,
-                        payment_method_identifier);
+  *is_valid = base::Contains(stored_payment_app_info_->enabled_methods,
+                             payment_method_identifier);
+}
+
+base::WeakPtr<PaymentInstrument> ServiceWorkerPaymentInstrument::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 gfx::ImageSkia ServiceWorkerPaymentInstrument::icon_image_skia() const {

@@ -495,7 +495,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
       ConvertJavaStringToUTF8(env, jmethod),
       base::BindOnce(
           &payments::PaymentHandlerHost::set_registration_id_for_logs,
-          base::Unretained(host)),
+          host->AsWeakPtr()),
       base::BindOnce(&OnPaymentAppInvoked,
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }

@@ -1000,7 +1000,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(crbug.com/977040): Remove when no longer needed.
   void AddSameSiteCookieDeprecationMessage(
       const std::string& cookie_url,
-      net::CanonicalCookie::CookieInclusionStatus status);
+      net::CanonicalCookie::CookieInclusionStatus::WarningReason warning);
 
   // Notify the scheduler that this frame used a feature which impacts the
   // scheduling policy (e.g. whether the frame can be frozen or put into the

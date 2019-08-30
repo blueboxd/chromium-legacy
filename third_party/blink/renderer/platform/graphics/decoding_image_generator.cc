@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {
 
@@ -220,18 +221,27 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
 
   // Convert the color type to the requested one if necessary
   if (decoded && target_info.colorType() != dst_info.colorType()) {
-    auto canvas = SkCanvas::MakeRasterDirect(dst_info, pixels, row_bytes);
-    DCHECK(canvas);
-    SkPaint paint;
-    if (dst_info.colorType() == kARGB_4444_SkColorType ||
-        dst_info.colorType() == kRGB_565_SkColorType) {
+    // Convert the color type by readPixels if dithering is not necessary
+    // (readPixels is potentially cheaper than a full-blown drawBitmap).
+    if (SkColorTypeBytesPerPixel(target_info.colorType()) <=
+        SkColorTypeBytesPerPixel(dst_info.colorType())) {
+      decoded = SkPixmap{target_info, memory, adjusted_row_bytes}.readPixels(
+          SkPixmap{dst_info, pixels, row_bytes});
+      DCHECK(decoded);
+    } else {  // Do dithering by drawBitmap() if dithering is necessary
+      auto canvas = SkCanvas::MakeRasterDirect(dst_info, pixels, row_bytes);
+      DCHECK(canvas);
+
+      SkPaint paint;
       paint.setDither(true);
+      paint.setBlendMode(SkBlendMode::kSrc);
+
+      SkBitmap bitmap;
+      decoded = bitmap.installPixels(target_info, memory, adjusted_row_bytes);
+      DCHECK(decoded);
+
+      canvas->drawBitmap(bitmap, 0, 0, &paint);
     }
-    paint.setBlendMode(SkBlendMode::kSrc);
-    SkBitmap bitmap;
-    decoded = bitmap.installPixels(target_info, memory, adjusted_row_bytes);
-    DCHECK(decoded);
-    canvas->drawBitmap(bitmap, 0, 0, &paint);
   }
   return decoded;
 }

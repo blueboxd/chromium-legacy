@@ -697,6 +697,12 @@ TEST_F(
           destination_store_test.TestNames.KioskModeSelectsFirstPrinter);
     });
 
+TEST_F(
+    'PrintPreviewDestinationStoreTest', 'LoadAndSelectDestination', function() {
+      this.runMochaTest(
+          destination_store_test.TestNames.LoadAndSelectDestination);
+    });
+
 GEN('#if defined(OS_CHROMEOS)');
 TEST_F('PrintPreviewDestinationStoreTest', 'NoPrintersShowsError', function() {
   this.runMochaTest(destination_store_test.TestNames.NoPrintersShowsError);

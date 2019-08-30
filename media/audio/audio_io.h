@@ -110,6 +110,9 @@ class MEDIA_EXPORT AudioOutputStream {
 
   // Close the stream.
   // After calling this method, the object should not be used anymore.
+  // After calling this method, no further AudioSourceCallback methods
+  // should be called on the callback object that was supplied to Start()
+  // by the AudioOutputStream implementation.
   virtual void Close() = 0;
 
   // Flushes the stream. This should only be called if the stream is not

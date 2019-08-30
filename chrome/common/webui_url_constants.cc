@@ -383,6 +383,7 @@ const char kChangePictureSubPage[] = "changePicture";
 // 'multidevice/features' is a child of the 'multidevice' route
 const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kCrostiniSharedUsbDevicesSubPage[] = "crostini/sharedUsbDevices";
+const char kCrostiniExportImportSubPage[] = "crostini/exportImport";
 const char kDateTimeSubPage[] = "dateTime";
 const char kDisplaySubPage[] = "display";
 const char kHelpSubPage[] = "help";

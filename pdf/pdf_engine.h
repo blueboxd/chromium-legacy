@@ -385,7 +385,7 @@ class PDFEngine {
 
   // Append blank pages to make a 1-page document to a |num_pages| document.
   // Always retain the first page data.
-  virtual void AppendBlankPages(int num_pages) = 0;
+  virtual void AppendBlankPages(size_t num_pages) = 0;
   // Append the first page of the document loaded with the |engine| to this
   // document at page |index|.
   virtual void AppendPage(PDFEngine* engine, int index) = 0;

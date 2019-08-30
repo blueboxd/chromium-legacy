@@ -128,36 +128,39 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
     client_->OnTransferSizeUpdated(transfer_size_diff);
   }
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override {
-    client_->OnReceiveResponse(head);
-    if (!devtools_enabled_)
-      return;
-    // Make a deep copy of ResourceResponseHead before passing it cross-thread.
-    auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
-    resource_response->head = head;
-    AddDevToolsCallback(
-        base::BindOnce(&NotifyNavigationPreloadResponseReceivedOnUI, url_,
-                       resource_response->DeepCopy()));
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
+    if (devtools_enabled_) {
+      // Make a deep copy of ResourceResponseHead before passing it
+      // cross-thread.
+      auto resource_response =
+          base::MakeRefCounted<network::ResourceResponse>();
+      resource_response->head = head.Clone();
+      AddDevToolsCallback(
+          base::BindOnce(&NotifyNavigationPreloadResponseReceivedOnUI, url_,
+                         resource_response->DeepCopy()));
+    }
+    client_->OnReceiveResponse(std::move(head));
   }
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override {
+                         network::mojom::URLResponseHeadPtr head) override {
+    if (devtools_enabled_) {
+      // Make a deep copy of ResourceResponseHead before passing it
+      // cross-thread.
+      auto resource_response =
+          base::MakeRefCounted<network::ResourceResponse>();
+      resource_response->head = head.Clone();
+      AddDevToolsCallback(
+          base::BindOnce(&NotifyNavigationPreloadResponseReceivedOnUI, url_,
+                         resource_response->DeepCopy()));
+      network::URLLoaderCompletionStatus status;
+      AddDevToolsCallback(
+          base::BindOnce(&NotifyNavigationPreloadCompletedOnUI, status));
+    }
     completed_ = true;
     // When the server returns a redirect response, we only send
     // OnReceiveRedirect IPC and don't send OnComplete IPC. The service worker
     // will clean up the preload request when OnReceiveRedirect() is called.
-    client_->OnReceiveRedirect(redirect_info, head);
-
-    if (!devtools_enabled_)
-      return;
-    // Make a deep copy of ResourceResponseHead before passing it cross-thread.
-    auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
-    resource_response->head = head;
-    AddDevToolsCallback(
-        base::BindOnce(&NotifyNavigationPreloadResponseReceivedOnUI, url_,
-                       resource_response->DeepCopy()));
-    network::URLLoaderCompletionStatus status;
-    AddDevToolsCallback(
-        base::BindOnce(&NotifyNavigationPreloadCompletedOnUI, status));
+    client_->OnReceiveRedirect(redirect_info, std::move(head));
   }
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {

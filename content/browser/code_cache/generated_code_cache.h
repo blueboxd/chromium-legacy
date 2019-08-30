@@ -47,7 +47,6 @@ class CONTENT_EXPORT GeneratedCodeCache {
       base::RepeatingCallback<void(const base::Time&,
                                    mojo_base::BigBuffer data)>;
   using GetBackendCallback = base::OnceCallback<void(disk_cache::Backend*)>;
-  static const int kResponseTimeSizeInBytes = sizeof(int64_t);
 
   // Cache type. Used for collecting statistics for JS and Wasm in separate
   // buckets.
@@ -152,6 +151,16 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void ReadDataComplete(const std::string& key,
                         ReadDataCallback callback,
                         scoped_refptr<net::IOBufferWithSize> buffer,
+                        int rv);
+  void ReadResponseTimeComplete(const std::string& key,
+                                ReadDataCallback callback,
+                                scoped_refptr<net::IOBufferWithSize> buffer,
+                                disk_cache::Entry* entry,
+                                int rv);
+  void ReadCodeComplete(const std::string& key,
+                        ReadDataCallback callback,
+                        scoped_refptr<net::IOBufferWithSize> buffer,
+                        int64_t raw_response_time,
                         int rv);
 
   // Delete entry from cache

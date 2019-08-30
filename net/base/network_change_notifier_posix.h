@@ -52,6 +52,14 @@ class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
  private:
   friend class NetworkChangeNotifierPosixTest;
 
+  // For testing purposes, allows specifying a SystemDnsConfigChangeNotifier.
+  // If |system_dns_config_notifier| is nullptr, NetworkChangeNotifier create a
+  // global one.
+  NetworkChangeNotifierPosix(
+      NetworkChangeNotifier::ConnectionType initial_connection_type,
+      NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype,
+      SystemDnsConfigChangeNotifier* system_dns_config_notifier);
+
   // Calculates parameters used for network change notifier online/offline
   // signals.
   static NetworkChangeNotifier::NetworkChangeCalculatorParams

@@ -105,7 +105,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
                            public ProcessManagerObserver {
  public:
   explicit ApiResourceManager(content::BrowserContext* context)
-      : data_(new ApiResourceData()),
+      : data_(base::MakeRefCounted<ApiResourceData>()),
         extension_registry_observer_(this),
         process_manager_observer_(this) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(context));

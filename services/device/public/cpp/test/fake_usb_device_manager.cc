@@ -50,7 +50,7 @@ void FakeUsbDeviceManager::GetDevices(mojom::UsbEnumerationOptionsPtr options,
 void FakeUsbDeviceManager::GetDevice(
     const std::string& guid,
     mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
-    mojom::UsbDeviceClientPtr device_client) {
+    mojo::PendingRemote<mojom::UsbDeviceClient> device_client) {
   auto it = devices_.find(guid);
   if (it == devices_.end())
     return;

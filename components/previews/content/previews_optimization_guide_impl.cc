@@ -80,7 +80,6 @@ PreviewsOptimizationGuideImpl::PreviewsOptimizationGuideImpl(
           std::make_unique<optimization_guide::HintCacheStore>(
               database_provider,
               profile_path,
-              pref_service,
               background_task_runner_))),
       top_host_provider_(top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),

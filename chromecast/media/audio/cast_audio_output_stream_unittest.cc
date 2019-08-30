@@ -315,6 +315,34 @@ class CastAudioOutputStreamTest : public ::testing::Test {
     audio_thread_.FlushForTesting();
   }
 
+  static void PauseAndWait(base::WaitableEvent* pause_event,
+                           base::WaitableEvent* resume_event) {
+    pause_event->Signal();
+    resume_event->Wait();
+  }
+
+  // Synchronously pause the audio thread. This function guarantees that
+  // the audio thread will be paused before it returns.
+  void PauseAudioThread() {
+    audio_thread_pause_ = std::make_unique<base::WaitableEvent>(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    audio_thread_resume_ = std::make_unique<base::WaitableEvent>(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    audio_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&PauseAndWait, audio_thread_pause_.get(),
+                                  audio_thread_resume_.get()));
+    audio_thread_pause_->Wait();
+  }
+
+  // Resume a paused audio thread by signalling to it.
+  void ResumeAudioThreadAsync() {
+    if (audio_thread_resume_) {
+      audio_thread_resume_->Signal();
+    }
+  }
+
   ::media::AudioParameters GetAudioParams() {
     return ::media::AudioParameters(format_, channel_layout_, sample_rate_,
                                     frames_per_buffer_);
@@ -332,6 +360,8 @@ class CastAudioOutputStreamTest : public ::testing::Test {
 
   base::Thread audio_thread_;
   base::test::TaskEnvironment task_environment_;
+  std::unique_ptr<base::WaitableEvent> audio_thread_pause_;
+  std::unique_ptr<base::WaitableEvent> audio_thread_resume_;
   std::unique_ptr<MockCmaBackendFactory> mock_backend_factory_;
 
   FakeCmaBackend* cma_backend_ = nullptr;
@@ -537,6 +567,32 @@ TEST_F(CastAudioOutputStreamTest, StopPreventsCallbacks) {
   // asynchronously.
   stream->Close();
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _)).Times(0);
+  RunThreadsUntilIdle();
+}
+
+TEST_F(CastAudioOutputStreamTest, ClosePreventsCallbacks) {
+  // Stream API details that Close is synchronous and prevents calls to
+  // callback.
+  ::media::AudioOutputStream* stream = CreateStream();
+  ASSERT_TRUE(stream);
+  ASSERT_TRUE(stream->Open());
+  RunThreadsUntilIdle();
+
+  ::media::MockAudioSourceCallback source_callback;
+  EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
+      .WillRepeatedly(Invoke(OnMoreData));
+  stream->Start(&source_callback);
+  RunThreadsUntilIdle();
+
+  // Pause the audio thread from running tasks before calling Close() to
+  // prevent it from processing OnMoreData() calls after setting the
+  // expectation and before calling Close().
+  PauseAudioThread();
+  // Once the audio thread resumes work, push/fill calls posted to the audio
+  // thread should no longer call OnMoreData().
+  EXPECT_CALL(source_callback, OnMoreData(_, _, _, _)).Times(0);
+  stream->Close();
+  ResumeAudioThreadAsync();
   RunThreadsUntilIdle();
 }
 

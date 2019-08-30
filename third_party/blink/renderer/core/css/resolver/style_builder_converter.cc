@@ -1858,4 +1858,16 @@ StyleBuilderConverter::CssToLengthConversionData(StyleResolverState& state) {
   return state.CssToLengthConversionData();
 }
 
+ContentSize StyleBuilderConverter::ConvertContentSize(StyleResolverState& state,
+                                                      const CSSValue& value) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
+    return ContentSize();
+
+  auto* pair = DynamicTo<CSSValuePair>(value);
+  DCHECK(pair);
+  return ContentSize(ConvertLength(state, pair->First()),
+                     ConvertLength(state, pair->Second()));
+}
+
 }  // namespace blink

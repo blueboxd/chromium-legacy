@@ -7,25 +7,34 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 
 namespace chromeos {
 
+namespace test {
+void WaitForSessionStart();
+}
+
 // Used to wait for session manager to get into a specific session state.
 class SessionStateWaiter : public session_manager::SessionManagerObserver {
  public:
-  explicit SessionStateWaiter(session_manager::SessionState target_state);
+  // If |target_state| is null, SessionStateWaiter will simply wait until a
+  // session starts.
+  explicit SessionStateWaiter(base::Optional<session_manager::SessionState>
+                                  target_state = base::nullopt);
   ~SessionStateWaiter() override;
 
   void Wait();
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+  void OnUserSessionStarted(bool is_primary_user) override;
 
  private:
-  session_manager::SessionState target_state_;
+  base::Optional<session_manager::SessionState> target_state_;
   base::OnceClosure session_state_callback_;
   ScopedObserver<session_manager::SessionManager, SessionStateWaiter>
       session_observer_{this};

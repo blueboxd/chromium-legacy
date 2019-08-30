@@ -28,3 +28,9 @@ test("chromeos_components_unittests") {
     "//mojo/core/embedder",
   ]
 }
+
+group("closure_compile") {
+  deps = [
+    "//chromeos/components/multidevice/debug_webui/resources:closure_compile",
+  ]
+}

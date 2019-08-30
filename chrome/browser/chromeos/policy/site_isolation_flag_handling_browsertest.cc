@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
@@ -42,12 +42,11 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
@@ -226,8 +225,6 @@ class SiteIsolationFlagHandlingTest
 
     OobeBaseTest::SetUpOnMainThread();
 
-    login_wait_loop_ = std::make_unique<base::RunLoop>();
-
     // Mock out chrome restart.
     test::UserSessionManagerTestApi session_manager_test_api(
         UserSessionManager::GetInstance());
@@ -237,12 +234,7 @@ class SiteIsolationFlagHandlingTest
             base::Unretained(this)));
 
     // Observe for user session start.
-    user_session_started_observer_ =
-        std::make_unique<content::WindowedNotificationObserver>(
-            chrome::NOTIFICATION_SESSION_STARTED,
-            base::BindRepeating(
-                &SiteIsolationFlagHandlingTest::UserSessionStarted,
-                base::Unretained(this)));
+    user_session_started_observer_ = std::make_unique<SessionStateWaiter>();
   }
 
   ChromeUserManagerImpl* GetChromeUserManager() const {
@@ -252,21 +244,9 @@ class SiteIsolationFlagHandlingTest
 
   bool HasAttemptRestartBeenCalled() const { return attempt_restart_called_; }
 
-  // Called when log-in was successful.
-  bool UserSessionStarted(const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-    login_wait_loop_->Quit();
-    return true;
-  }
-
-  // Used to wait until either login succeeds by starting a user session, or
-  // chrome requests a restart.
-  std::unique_ptr<base::RunLoop> login_wait_loop_;
-
- private:
   // Called when chrome requests a restarted.
   void AttemptRestartCalled() {
-    login_wait_loop_->Quit();
+    user_session_started_observer_.reset();
     attempt_restart_called_ = true;
   }
 
@@ -287,9 +267,9 @@ class SiteIsolationFlagHandlingTest
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
   // Observes for user session start.
-  std::unique_ptr<content::WindowedNotificationObserver>
-      user_session_started_observer_;
+  std::unique_ptr<SessionStateWaiter> user_session_started_observer_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationFlagHandlingTest);
 };
 
@@ -301,11 +281,7 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, PRE_FlagHandlingTest) {
       ->GetView<chromeos::GaiaScreenHandler>()
       ->ShowSigninScreenForTest(kTestUserAccountId, kTestUserPassword,
                                 kEmptyServices);
-
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources())
-      .Wait();
+  user_session_started_observer_->Wait();
 
   if (!GetParam().user_flag_internal_names.empty()) {
     Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
@@ -323,9 +299,8 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, PRE_FlagHandlingTest) {
 IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
   // Skip tests where expected_request_restart is true.
   // See crbug.com/990817 for more details.
-  if (GetParam().expected_request_restart) {
+  if (GetParam().expected_request_restart)
     return;
-  }
 
   // Start user sign-in. We can't use |LoginPolicyTestBase::LogIn|, because
   // it waits for a user session start unconditionally, which will not happen if
@@ -341,7 +316,7 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
 
   // Wait for either the user session to start, or for restart to be requested
   // (whichever happens first).
-  login_wait_loop_->Run();
+  user_session_started_observer_->Wait();
 
   EXPECT_EQ(GetParam().expected_request_restart, HasAttemptRestartBeenCalled());
 

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-
 'use strict';
 
 /**
  * Parses the open pdf parameters passed in the url to set initial viewport
  * settings for opening the pdf.
  */
-window.OpenPDFParamsParser = class {
+class OpenPdfParamsParser {
   /**
    * @param {function(Object)} postMessageCallback
    *     Function called to fetch information for a named destination.
@@ -206,6 +204,4 @@ window.OpenPDFParamsParser = class {
     }
     outstandingRequest.callback(outstandingRequest.params);
   }
-};
-
-}());
+}

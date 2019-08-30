@@ -12,7 +12,7 @@
 Polymer({
   is: 'settings-crostini-page',
 
-  behaviors: [I18nBehavior, PrefsBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
 
   properties: {
     /** Preferences state. */
@@ -49,6 +49,27 @@ Polymer({
         return map;
       },
     },
+
+    /**
+     * Whether the install option should be enabled.
+     * @private {boolean}
+     */
+    disableCrostiniInstall_: {
+      type: Boolean,
+    },
+  },
+
+  attached: function() {
+    if (!loadTimeData.getBoolean('allowCrostini')) {
+      this.disableCrostiniInstall_ = true;
+      return;
+    }
+    this.addWebUIListener(
+        'crostini-installer-status-changed', (installerShowing) => {
+          this.disableCrostiniInstall_ = installerShowing;
+        });
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .requestCrostiniInstallerStatus();
   },
 
   /**

@@ -719,14 +719,15 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "<input type='url'>"
       "<input type='week'>"
       "<meter></meter>"
-      "<output></output>");
+      "<output></output>"
+      "<time></time>");
 
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
   BrowserAccessibility* root = GetManager()->GetRoot();
   ASSERT_NE(nullptr, root);
-  ASSERT_EQ(14u, root->PlatformChildCount());
+  ASSERT_EQ(15u, root->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [root](int child_index,
@@ -754,6 +755,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedRoleDescription(11, base::ASCIIToUTF16("week picker"));
   TestLocalizedRoleDescription(12, base::ASCIIToUTF16("meter"));
   TestLocalizedRoleDescription(13, base::ASCIIToUTF16("output"));
+  TestLocalizedRoleDescription(14, base::ASCIIToUTF16("time"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,

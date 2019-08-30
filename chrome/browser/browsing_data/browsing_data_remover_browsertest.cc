@@ -268,8 +268,7 @@ bool SetGaiaCookieForProfile(Profile* profile) {
   base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
       callback = base::BindLambdaForTesting(
           [&success, &loop](net::CanonicalCookie::CookieInclusionStatus s) {
-            success =
-                (s == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            success = s.IsInclude();
             loop.Quit();
           });
   network::mojom::CookieManager* cookie_manager =

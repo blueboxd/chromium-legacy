@@ -9,6 +9,7 @@ include_rules = [
   "+services/media_session/public",
   "+services/metrics/public/cpp",
   "+services/network/public/cpp",
+  "+services/resource_coordinator/public",
   "+services/service_manager/sandbox",
   "+services/video_capture/public/mojom",
   "+services/viz/public/mojom",

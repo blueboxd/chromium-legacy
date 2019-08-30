@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -61,9 +62,9 @@ class SpeechRecognitionController final
   }
 
  private:
-  mojom::blink::SpeechRecognizer& GetSpeechRecognizer();
+  mojo::Remote<mojom::blink::SpeechRecognizer>& GetSpeechRecognizer();
 
-  mojom::blink::SpeechRecognizerPtr speech_recognizer_;
+  mojo::Remote<mojom::blink::SpeechRecognizer> speech_recognizer_;
 };
 
 MODULES_EXPORT void ProvideSpeechRecognitionTo(LocalFrame& frame);

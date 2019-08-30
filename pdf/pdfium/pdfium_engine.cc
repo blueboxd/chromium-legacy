@@ -699,7 +699,7 @@ void PDFiumEngine::FinishLoadingDocument() {
     if (pages_[i]->available())
       continue;
 
-    pages_[i]->set_available(true);
+    pages_[i]->MarkAvailable();
     // We still need to call IsPageAvail() even if the whole document is
     // already downloaded.
     FPDFAvail_IsPageAvail(fpdf_availability(), i, &download_hints);
@@ -2226,9 +2226,8 @@ bool PDFiumEngine::GetPageSizeAndUniformity(pp::Size* size) {
   return true;
 }
 
-// TODO(kmoon): Rewrite this to use DocumentLayout properly.
-void PDFiumEngine::AppendBlankPages(int num_pages) {
-  DCHECK_NE(num_pages, 0);
+void PDFiumEngine::AppendBlankPages(size_t num_pages) {
+  DCHECK_GT(num_pages, 0U);
 
   if (!doc())
     return;
@@ -2242,49 +2241,26 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
     FPDFPage_Delete(doc(), pages_.size());
   }
 
-  // Calculate document size and all page sizes.
-  std::vector<pp::Rect> page_rects;
-  pp::Size page_size = GetPageSize(0);
-  page_size.Enlarge(DocumentLayout::kSingleViewInsets.left +
-                        DocumentLayout::kSingleViewInsets.right,
-                    DocumentLayout::kSingleViewInsets.top +
-                        DocumentLayout::kSingleViewInsets.bottom);
-  pp::Size old_document_size = layout_.size();
-  layout_.set_size(pp::Size(page_size.width(), 0));
-  for (int i = 0; i < num_pages; ++i) {
-    if (i != 0) {
-      // Add space for bottom separator.
-      layout_.EnlargeHeight(DocumentLayout::kBottomSeparator);
-    }
+  // Create blank pages with the same size as the first page.
+  pp::Size page_0_size = GetPageSize(0);
+  double page_0_width_in_points =
+      ConvertUnitDouble(page_0_size.width(), kPixelsPerInch, kPointsPerInch);
+  double page_0_height_in_points =
+      ConvertUnitDouble(page_0_size.height(), kPixelsPerInch, kPointsPerInch);
 
-    pp::Rect rect(pp::Point(0, layout_.size().height()), page_size);
-    page_rects.push_back(rect);
-
-    layout_.EnlargeHeight(page_size.height());
-  }
-
-  // Create blank pages.
-  for (int i = 1; i < num_pages; ++i) {
-    pp::Rect page_rect(page_rects[i]);
-    page_rect.Inset(DocumentLayout::kSingleViewInsets.left,
-                    DocumentLayout::kSingleViewInsets.top,
-                    DocumentLayout::kSingleViewInsets.right,
-                    DocumentLayout::kSingleViewInsets.bottom);
-    double width_in_points =
-        ConvertUnitDouble(page_rect.width(), kPixelsPerInch, kPointsPerInch);
-    double height_in_points =
-        ConvertUnitDouble(page_rect.height(), kPixelsPerInch, kPointsPerInch);
+  for (size_t i = 1; i < num_pages; ++i) {
     {
       // Add a new page to the document, but delete the FPDF_PAGE object.
-      ScopedFPDFPage temp_page(
-          FPDFPage_New(doc(), i, width_in_points, height_in_points));
+      ScopedFPDFPage temp_page(FPDFPage_New(doc(), i, page_0_width_in_points,
+                                            page_0_height_in_points));
     }
-    pages_.push_back(std::make_unique<PDFiumPage>(this, i, page_rect, true));
+
+    auto page = std::make_unique<PDFiumPage>(this, i);
+    page->MarkAvailable();
+    pages_.push_back(std::move(page));
   }
 
-  CalculateVisiblePages();
-  if (layout_.size() != old_document_size)
-    client_->DocumentSizeUpdated(layout_.size());
+  LoadPageInfo(true);
 }
 
 void PDFiumEngine::LoadDocument() {
@@ -2386,32 +2362,25 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
     FinishLoadingDocument();
 }
 
-void PDFiumEngine::LoadPagesInCurrentLayout(std::vector<pp::Size> page_sizes,
-                                            bool reload) {
-  if (two_up_view_) {
-    layout_.ComputeTwoUpViewLayout(page_sizes);
-  } else {
-    layout_.ComputeSingleViewLayout(page_sizes);
-  }
-
-  ApplyCurrentLayoutToPages(reload);
-}
-
 // TODO(kmoon): This should be the only method that sets |PDFiumPage::rect_|.
 void PDFiumEngine::ApplyCurrentLayoutToPages(bool reload) {
   for (size_t i = 0; i < layout_.page_count(); ++i) {
     const pp::Rect& page_rect = layout_.page_bounds_rect(i);
     if (!reload) {
-      // The page is marked as not being available even if |doc_complete| is
+      // The page is not marked as being available even if |doc_complete| is
       // true because FPDFAvail_IsPageAvail() still has to be called for this
       // page, which will be done in FinishLoadingDocument().
-      pages_.push_back(std::make_unique<PDFiumPage>(this, i, page_rect, false));
+      auto page = std::make_unique<PDFiumPage>(this, i);
+      page->set_rect(page_rect);
+      pages_.push_back(std::move(page));
     } else if (i < pages_.size()) {
       pages_[i]->set_rect(page_rect);
     } else {
-      bool available = FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr);
-      pages_.push_back(
-          std::make_unique<PDFiumPage>(this, i, page_rect, available));
+      auto page = std::make_unique<PDFiumPage>(this, i);
+      page->set_rect(page_rect);
+      if (FPDFAvail_IsPageAvail(fpdf_availability(), i, nullptr))
+        page->MarkAvailable();
+      pages_.push_back(std::move(page));
     }
   }
 }
@@ -2452,7 +2421,13 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     page_sizes.push_back(size);
   }
 
-  LoadPagesInCurrentLayout(page_sizes, reload);
+  if (two_up_view_) {
+    layout_.ComputeTwoUpViewLayout(page_sizes);
+  } else {
+    layout_.ComputeSingleViewLayout(page_sizes);
+  }
+
+  ApplyCurrentLayoutToPages(reload);
 
   // Remove pages that do not exist anymore.
   if (pages_.size() > new_page_count) {
@@ -2607,7 +2582,7 @@ bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
   }
 
   if (index < num_pages)
-    pages_[index]->set_available(true);
+    pages_[index]->MarkAvailable();
   if (default_page_size_.IsEmpty())
     default_page_size_ = GetPageSize(index);
   return true;

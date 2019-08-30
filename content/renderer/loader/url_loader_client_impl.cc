@@ -15,6 +15,7 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -236,19 +237,20 @@ void URLLoaderClientImpl::Bind(
 }
 
 void URLLoaderClientImpl::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   has_received_response_head_ = true;
   if (NeedsStoringMessage()) {
     StoreAndDispatch(
         std::make_unique<DeferredOnReceiveResponse>(response_head));
   } else {
-    resource_dispatcher_->OnReceivedResponse(request_id_, response_head);
+    resource_dispatcher_->OnReceivedResponse(request_id_,
+                                             std::move(response_head));
   }
 }
 
 void URLLoaderClientImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK(!has_received_response_head_);
   if (!bypass_redirect_checks_ &&
       !IsRedirectSafe(last_loaded_url_, redirect_info.new_url)) {
@@ -261,8 +263,8 @@ void URLLoaderClientImpl::OnReceiveRedirect(
     StoreAndDispatch(std::make_unique<DeferredOnReceiveRedirect>(
         redirect_info, response_head, task_runner_));
   } else {
-    resource_dispatcher_->OnReceivedRedirect(request_id_, redirect_info,
-                                             response_head, task_runner_);
+    resource_dispatcher_->OnReceivedRedirect(
+        request_id_, redirect_info, std::move(response_head), task_runner_);
   }
 }
 

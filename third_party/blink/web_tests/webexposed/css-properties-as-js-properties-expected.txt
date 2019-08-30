@@ -119,6 +119,7 @@ columnWidth
 columns
 contain
 content
+contentSize
 counterIncrement
 counterReset
 cssFloat

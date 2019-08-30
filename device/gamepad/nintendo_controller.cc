@@ -886,6 +886,9 @@ bool NintendoController::IsNintendoController(uint16_t vendor_id,
 
 std::vector<std::unique_ptr<NintendoController>>
 NintendoController::Decompose() {
+  // Stop any ongoing vibration effects before decomposing the device.
+  SetZeroVibration();
+
   std::vector<std::unique_ptr<NintendoController>> decomposed_devices;
   if (composite_left_)
     decomposed_devices.push_back(std::move(composite_left_));
@@ -951,7 +954,7 @@ bool NintendoController::IsUsable() const {
   if (state_ != kInitialized)
     return false;
   if (is_composite_)
-    return true;
+    return composite_left_ && composite_right_;
   switch (gamepad_id_) {
     case GamepadId::kNintendoProduct2009:
     case GamepadId::kNintendoProduct2006:
@@ -968,10 +971,12 @@ bool NintendoController::IsUsable() const {
 }
 
 bool NintendoController::HasGuid(const std::string& guid) const {
-  if (is_composite_)
+  if (is_composite_) {
+    DCHECK(composite_left_);
+    DCHECK(composite_right_);
     return composite_left_->HasGuid(guid) || composite_right_->HasGuid(guid);
-  else
-    return device_info_->guid == guid;
+  }
+  return device_info_->guid == guid;
 }
 
 GamepadStandardMappingFunction NintendoController::GetMappingFunction() const {
@@ -1027,6 +1032,8 @@ void NintendoController::UpdatePadConnected() {
 
 void NintendoController::UpdateGamepadState(Gamepad& pad) const {
   if (is_composite_) {
+    DCHECK(composite_left_);
+    DCHECK(composite_right_);
     // If this is a composite device, update the gamepad state using the state
     // of the subcomponents.
     pad.connected = true;
@@ -1709,8 +1716,10 @@ void NintendoController::SetVibration(double strong_magnitude,
                                       double weak_magnitude) {
   if (is_composite_) {
     // Split the vibration effect between the left and right subdevices.
-    composite_left_->SetVibration(strong_magnitude, 0);
-    composite_right_->SetVibration(0, weak_magnitude);
+    if (composite_left_ && composite_right_) {
+      composite_left_->SetVibration(strong_magnitude, 0);
+      composite_right_->SetVibration(0, weak_magnitude);
+    }
   } else {
     RequestVibration(kVibrationFrequencyStrongRumble,
                      kVibrationAmplitudeStrongRumbleMax * strong_magnitude,

@@ -614,6 +614,11 @@ class NavigationManager {
     if (!removedByRWA && treeChange.target !== this.node_)
       return;
 
+    if (this.inSystemMenu_) {
+      // The node removed was the system menu.
+      this.inSystemMenu_ = false;
+    }
+
     this.focusRingManager.clearAll();
 
     // Current node not invalid until after treeChange callback, so move to

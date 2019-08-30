@@ -251,7 +251,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   if (current_request_uses_header_client_) {
     // Use the headers we got from OnHeadersReceived as that'll contain
     // Set-Cookie if it existed.
@@ -269,7 +269,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   if (redirect_url_ != redirect_info.new_url &&
       !IsRedirectSafe(request_.url, redirect_info.new_url)) {
     OnRequestError(

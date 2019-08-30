@@ -222,8 +222,17 @@
   <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_MESSAGE" desc="Message displayed under title in cellular setup when Chrome OS encounters an error preparing the cellular device for setup. Prompts user to insert SIM and try again.">
     Please insert your SIM and try again
   </message>
-  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_TITLE" desc="Title for cellular setup step in which the user uses the embedded carrier provisioning portal to make payment and activate the device." translateable="false">
-    Provisioning Page
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_LOADING_TITLE" desc="Title for cellular setup step which indicates that a connection is in progress to the user's mobile data provider (e.g., Verizon).">
+    Connecting to <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph>
+  </message>
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ERROR_TITLE" desc="Title for cellular setup step which indicates that the Chromebook was unable to establish a connection to the user's mobile data provider (e.g., Verizon).">
+    Couldn't connect to <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph>
+  </message>
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ERROR_MESSAGE" desc="Message for the cellular setup step which indicates that the Chromebook was unable to establish a connection to the user's mobile data provider (e.g., Verizon).">
+    Please try again. For technical support, contact <ph name="CARRIER_NAME">$1<ex>Google Fi</ex></ph>.
+  </message>
+  <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_ACTIVE_TITLE" desc="Title for cellular setup step which indicates that the Chromebook is in the process of connecting to a mobile network.">
+    Connect to mobile network
   </message>
   <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_TITLE" desc="Title for the final success screen of cellular setup that tells the user that setup is completed but service is being activated">
     Mobile data being activated

@@ -139,9 +139,12 @@ class ChromePromptChannelProtobuf : public ChromePromptChannel {
   static const char kErrorHistogramName[];
   static constexpr uint32_t kMaxMessageLength = 1 * 1024 * 1024;  // 1M bytes
 
-  // Values from this enum will serve as the high bits of the histogram values.
-  // We will be able to use them to separate the errors by category if we ever
-  // need to analyze them.
+  // Values from this enum will serve as the high bits of the sparse histogram
+  // values.  We will be able to use them to separate the errors by category if
+  // we ever need to analyze them.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class ErrorCategory : uint16_t {
     kCustomError = 1,
     kReadVersionWinError = 2,
@@ -152,6 +155,9 @@ class ChromePromptChannelProtobuf : public ChromePromptChannel {
   };
 
   // Code that describes the error precisely.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class CustomErrors : uint16_t {
     kWrongHandshakeVersion = 1,
     kRequestLengthShortRead = 2,
@@ -162,7 +168,7 @@ class ChromePromptChannelProtobuf : public ChromePromptChannel {
     kRequestUnknownField = 7,
     kUndisplayableFilePath = 8,
     kUndisplayableRegistryKey = 9,
-    kUndisplayableExtension = 9,
+    kUndisplayableExtension = 10,
   };
 
   static int32_t GetErrorCodeInt(ErrorCategory category,

@@ -126,8 +126,6 @@ class FakeFidoDiscoveryFactory : public device::FidoDiscoveryFactory {
   std::unique_ptr<FidoDiscoveryBase> Create(
       FidoTransportProtocol transport,
       ::service_manager::Connector* connector) override;
-  std::unique_ptr<FidoDiscoveryBase> CreateCable(
-      std::vector<CableDiscoveryData> cable_data) override;
 
  private:
   std::unique_ptr<FakeFidoDiscovery> next_hid_discovery_;

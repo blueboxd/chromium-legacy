@@ -482,28 +482,6 @@ ComputeSameSiteContextForSubresource(const GURL& url,
     return CookieOptions::SameSiteCookieContext::CROSS_SITE;
 }
 
-CanonicalCookie::CookieInclusionStatus CookieWouldBeExcludedDueToSameSite(
-    const CanonicalCookie& cookie,
-    const CookieOptions& options) {
-  // Check if cookie would be excluded under SameSiteByDefaultCookies.
-  bool cross_site_context = options.same_site_cookie_context() ==
-                            CookieOptions::SameSiteCookieContext::CROSS_SITE;
-  if (cross_site_context && cookie.SameSite() == CookieSameSite::UNSPECIFIED) {
-    DCHECK(cookie.IsEffectivelySameSiteNone());
-    return CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
-  }
-
-  // Check if cookie would be excluded under CookiesWithoutSameSiteMustBeSecure.
-  if (cookie.SameSite() == CookieSameSite::NO_RESTRICTION &&
-      !cookie.IsSecure()) {
-    return CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_NONE_INSECURE;
-  }
-
-  return CanonicalCookie::CookieInclusionStatus::INCLUDE;
-}
-
 bool IsSameSiteByDefaultCookiesEnabled() {
   return base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies);
 }
@@ -519,8 +497,7 @@ AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback) {
   return base::BindOnce(
       [](base::OnceCallback<void(bool)> inner_callback,
          const net::CanonicalCookie::CookieInclusionStatus status) {
-        bool success =
-            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+        bool success = status.IsInclude();
         std::move(inner_callback).Run(success);
       },
       std::move(callback));

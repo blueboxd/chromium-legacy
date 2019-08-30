@@ -147,6 +147,8 @@ class TRACING_EXPORT TraceStartupConfig {
   friend class content::CommandlineStartupTracingTest;
   friend class content::BackgroundStartupTracingTest;
 
+  constexpr static int kDefaultStartupDurationInSeconds = 5;
+
   TraceStartupConfig();
   ~TraceStartupConfig();
 
@@ -161,7 +163,7 @@ class TRACING_EXPORT TraceStartupConfig {
   bool is_enabled_ = false;
   bool enable_background_tracing_for_testing_ = false;
   base::trace_event::TraceConfig trace_config_;
-  int startup_duration_ = 0;
+  int startup_duration_in_seconds_ = kDefaultStartupDurationInSeconds;
   bool should_trace_to_result_file_ = false;
   base::FilePath result_file_;
   bool finished_writing_to_file_ = false;

@@ -6,7 +6,7 @@
 
 namespace notifications {
 
-NotificationData::Button::Button() = default;
+NotificationData::Button::Button() : type(ActionButtonType::kUnknownAction) {}
 NotificationData::Button::Button(const Button& other) = default;
 
 bool NotificationData::Button::operator==(const Button& other) const {

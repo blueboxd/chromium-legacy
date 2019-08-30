@@ -1243,8 +1243,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
   set_cookie_callback.WaitUntilDone();
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-            set_cookie_callback.result());
+  EXPECT_TRUE(set_cookie_callback.result().IsInclude());
 
   // Also insert a whole bunch of cookies to slow down the background loading of
   // all the cookies.
@@ -1261,8 +1260,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&set_cookie_callback2)));
     set_cookie_callback2.WaitUntilDone();
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-              set_cookie_callback2.result());
+    EXPECT_TRUE(set_cookie_callback2.result().IsInclude());
   }
 
   net::TestClosure flush_closure;
@@ -1317,8 +1315,7 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
   set_cookie_callback.WaitUntilDone();
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-            set_cookie_callback.result());
+  EXPECT_TRUE(set_cookie_callback.result().IsInclude());
 
   // Things should commit once going out of scope.
 }

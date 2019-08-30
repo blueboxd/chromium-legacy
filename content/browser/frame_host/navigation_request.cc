@@ -650,10 +650,11 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
           base::nullopt, override_user_agent,
-          std::vector<GURL>(),                           // redirects
-          std::vector<network::ResourceResponseHead>(),  // redirect_response
-          std::vector<net::RedirectInfo>(),              // redirect_infos
-          std::string(),                                 // post_content_type
+          std::vector<GURL>(),  // redirects
+          std::vector<
+              network::mojom::URLResponseHeadPtr>(),  // redirect_response
+          std::vector<net::RedirectInfo>(),           // redirect_infos
+          std::string(),                              // post_content_type
           common_params->url, common_params->method,
           false,                                // can_load_local_resources
           PageState(),                          // page_state
@@ -730,7 +731,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
           params.origin, params.is_overriding_user_agent, params.redirects,
-          std::vector<network::ResourceResponseHead>(),
+          std::vector<network::mojom::URLResponseHeadPtr>(),
           std::vector<net::RedirectInfo>(), std::string(),
           params.original_request_url, params.method,
           false /* can_load_local_resources */, params.page_state,

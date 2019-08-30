@@ -159,11 +159,16 @@ void ThreadGroup::ReEnqueueTaskSourceLockRequired(
     if (transaction_with_task_source.task_source->heap_handle().IsValid()) {
       workers_executor->ScheduleReleaseTaskSource(
           std::move(transaction_with_task_source.task_source));
-      return;
+    } else {
+      // If the TaskSource should be reenqueued in the current thread group,
+      // reenqueue it inside the scope of the lock.
+      priority_queue_.Push(std::move(transaction_with_task_source));
     }
-    // If the TaskSource should be reenqueued in the current thread group,
-    // reenqueue it inside the scope of the lock.
-    priority_queue_.Push(std::move(transaction_with_task_source));
+    // This is called unconditionally to ensure there are always workers to run
+    // task sources in the queue. Some ThreadGroup implementations only invoke
+    // TakeRegisteredTaskSource() once per wake up and hence this is required to
+    // avoid races that could leave a task source stranded in the queue with no
+    // active workers.
     EnsureEnoughWorkersLockRequired(workers_executor);
   } else {
     // Otherwise, schedule a reenqueue after releasing the lock.

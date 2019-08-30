@@ -131,6 +131,114 @@ class ItemsBuilderForMarkLineBoxesDirty {
   bool has_floating_or_out_of_flow_positioned_ = false;
 };
 
+// Wrapper over ShapeText that re-uses existing shape results for items that
+// haven't changed.
+class ReusingTextShaper final {
+ public:
+  ReusingTextShaper(NGInlineItemsData* data,
+                    const Vector<NGInlineItem>* reusable_items)
+      : data_(*data),
+        reusable_items_(reusable_items),
+        shaper_(data->text_content) {}
+
+  scoped_refptr<ShapeResult> Shape(const NGInlineItem& start_item,
+                                   unsigned end_offset) {
+    const unsigned start_offset = start_item.StartOffset();
+    DCHECK_LT(start_offset, end_offset);
+
+    if (!reusable_items_)
+      return Reshape(start_item, start_offset, end_offset);
+
+    // TODO(yosin): We should support segment text
+    if (data_.segments)
+      return Reshape(start_item, start_offset, end_offset);
+
+    const Vector<const ShapeResult*> reusable_shape_results =
+        CollectReusableShapeResults(start_offset, end_offset);
+    if (reusable_shape_results.IsEmpty())
+      return Reshape(start_item, start_offset, end_offset);
+
+    const scoped_refptr<ShapeResult> shape_result =
+        ShapeResult::CreateEmpty(*reusable_shape_results.front());
+    unsigned offset = start_offset;
+    for (const ShapeResult* reusable_shape_result : reusable_shape_results) {
+      DCHECK_LE(offset, reusable_shape_result->StartIndex());
+      if (offset < reusable_shape_result->StartIndex()) {
+        AppendShapeResult(
+            *Reshape(start_item, offset, reusable_shape_result->StartIndex()),
+            shape_result.get());
+        offset = shape_result->EndIndex();
+      }
+      DCHECK_EQ(offset, reusable_shape_result->StartIndex());
+      DCHECK(shape_result->NumCharacters() == 0 ||
+             shape_result->EndIndex() == offset);
+      reusable_shape_result->CopyRange(
+          offset, std::min(reusable_shape_result->EndIndex(), end_offset),
+          shape_result.get());
+      offset = shape_result->EndIndex();
+      if (offset == end_offset)
+        return shape_result;
+    }
+    DCHECK_LT(offset, end_offset);
+    AppendShapeResult(*Reshape(start_item, offset, end_offset),
+                      shape_result.get());
+    return shape_result;
+  }
+
+ private:
+  void AppendShapeResult(const ShapeResult& shape_result, ShapeResult* target) {
+    DCHECK(target->NumCharacters() == 0 ||
+           target->EndIndex() == shape_result.StartIndex());
+    shape_result.CopyRange(shape_result.StartIndex(), shape_result.EndIndex(),
+                           target);
+  }
+
+  Vector<const ShapeResult*> CollectReusableShapeResults(unsigned start_offset,
+                                                         unsigned end_offset) {
+    DCHECK_LT(start_offset, end_offset);
+    Vector<const ShapeResult*> shape_results;
+    if (!reusable_items_)
+      return shape_results;
+    for (const NGInlineItem *item = std::lower_bound(
+             reusable_items_->begin(), reusable_items_->end(), start_offset,
+             [](const NGInlineItem&item, unsigned offset) {
+               return item.EndOffset() <= offset;
+             });
+         item != reusable_items_->end(); ++item) {
+      DCHECK_LE(start_offset, item->StartOffset());
+      if (end_offset <= item->StartOffset())
+        break;
+      if (item->EndOffset() < start_offset)
+        continue;
+      if (!item->TextShapeResult())
+        continue;
+      shape_results.push_back(item->TextShapeResult());
+    }
+    return shape_results;
+  }
+
+  scoped_refptr<ShapeResult> Reshape(const NGInlineItem& start_item,
+                                     unsigned start_offset,
+                                     unsigned end_offset) {
+    DCHECK_LT(start_offset, end_offset);
+    const TextDirection direction = start_item.Direction();
+    const Font& font = start_item.Style()->GetFont();
+    if (data_.segments) {
+      return data_.segments->ShapeText(&shaper_, &font, direction, start_offset,
+                                       end_offset,
+                                       &start_item - data_.items.begin());
+    }
+    RunSegmenter::RunSegmenterRange range =
+        start_item.CreateRunSegmenterRange();
+    range.end = end_offset;
+    return shaper_.Shape(&font, direction, start_offset, end_offset, range);
+  }
+
+  NGInlineItemsData& data_;
+  const Vector<NGInlineItem>* const reusable_items_;
+  HarfBuzzShaper shaper_;
+};
+
 // The function is templated to indicate the purpose of collected inlines:
 // - With EmptyOffsetMappingBuilder: updating layout;
 // - With NGOffsetMappingBuilder: building offset mapping on clean layout.
@@ -366,7 +474,7 @@ void NGInlineNode::PrepareLayout(
   DCHECK(data);
   CollectInlines(data, previous_data.get(), dirty_lines);
   SegmentText(data);
-  ShapeText(data, previous_data.get());
+  ShapeText(data, &previous_data->text_content);
   ShapeTextForFirstLineIfNeeded(data);
   AssociateItemsWithInlines(data);
   DCHECK_EQ(data, MutableData());
@@ -382,6 +490,288 @@ void NGInlineNode::PrepareLayout(
   DCHECK(data->offset_mapping);
   data->offset_mapping.reset();
 #endif
+}
+
+// Building |NGInlineNodeData| for |LayoutText::SetTextWithOffset()| with
+// reusing data.
+class NGInlineNodeDataEditor final {
+  STACK_ALLOCATED();
+
+ public:
+  explicit NGInlineNodeDataEditor(const LayoutText& layout_text)
+      : block_flow_(layout_text.ContainingNGBlockFlow()),
+        layout_text_(layout_text) {
+    DCHECK(layout_text_.HasValidInlineItems());
+  }
+
+  LayoutBlockFlow* GetLayoutBlockFlow() const { return block_flow_; }
+
+  // Note: We can't use |Position| for |layout_text_.GetNode()| because |Text|
+  // node is already changed.
+  NGInlineNodeData* Prepare(unsigned offset, unsigned length) {
+    if (!block_flow_ || block_flow_->NeedsCollectInlines() ||
+        block_flow_->NeedsLayout() ||
+        block_flow_->GetDocument().NeedsLayoutTreeUpdate() ||
+        !block_flow_->GetNGInlineNodeData() ||
+        block_flow_->GetNGInlineNodeData()->text_content.IsNull())
+      return nullptr;
+
+    // Because of current text content has secured text, e.g. whole text is
+    // "***", all characters including collapsed white spaces are marker, and
+    // new text is original text, we can't reuse shape result.
+    if (layout_text_.StyleRef().TextSecurity() != ETextSecurity::kNone)
+      return nullptr;
+
+    // Note: We should compute offset mapping before calling
+    // |LayoutBlockFlow::TakeNGInlineNodeData()|
+    const NGOffsetMapping* const offset_mapping =
+        NGInlineNode::GetOffsetMapping(block_flow_);
+    DCHECK(offset_mapping);
+    const auto units =
+        offset_mapping->GetMappingUnitsForLayoutObject(layout_text_);
+    start_offset_ = ConvertDOMOffsetToTextContent(units, offset);
+    end_offset_ = ConvertDOMOffsetToTextContent(units, offset + length);
+    DCHECK_LE(start_offset_, end_offset_);
+    data_.reset(block_flow_->TakeNGInlineNodeData());
+    return data_.get();
+  }
+
+  void Run() {
+    const NGInlineNodeData& new_data = *block_flow_->GetNGInlineNodeData();
+    const int diff =
+        new_data.text_content.length() - data_->text_content.length();
+    // |inserted_text_length| can be negative when white space is collapsed
+    // after text change.
+    //  * "ab cd ef" => delete "cd" => "ab ef"
+    //    We should not reuse " " before "ef"
+    //  * "a bc" => delete "bc" => "a"
+    //    There are no spaces after "a".
+    const int inserted_text_length = end_offset_ - start_offset_ + diff;
+    DCHECK_GE(inserted_text_length, -1);
+    const unsigned start_offset =
+        inserted_text_length < 0 && end_offset_ == data_->text_content.length()
+            ? start_offset_ - 1
+            : start_offset_;
+    const unsigned end_offset =
+        inserted_text_length < 0 && start_offset_ == start_offset
+            ? end_offset_ + 1
+            : end_offset_;
+    DCHECK_LE(end_offset, data_->text_content.length());
+    DCHECK_LE(start_offset, end_offset);
+#if DCHECK_IS_ON()
+    if (start_offset_ != start_offset) {
+      DCHECK_EQ(data_->text_content[start_offset], ' ');
+      DCHECK_EQ(end_offset, end_offset_);
+    }
+    if (end_offset_ != end_offset) {
+      DCHECK_EQ(data_->text_content[end_offset_], ' ');
+      DCHECK_EQ(start_offset, start_offset_);
+    }
+#endif
+    Vector<NGInlineItem> items;
+    // +3 for before and after replaced text.
+    items.ReserveInitialCapacity(data_->items.size() + 3);
+
+    // Copy items before replaced range
+    auto* it = data_->items.begin();
+    while (it->end_offset_ < start_offset ||
+           it->layout_object_ != layout_text_) {
+      DCHECK(it != data_->items.end());
+      items.push_back(*it);
+      ++it;
+    }
+
+    DCHECK_EQ(it->layout_object_, layout_text_);
+
+    // Copy part of item before replaced range.
+    if (it->start_offset_ < start_offset)
+      items.push_back(CopyItemBefore(*it, start_offset));
+
+    // Skip items in replaced range.
+    while (it->end_offset_ < end_offset)
+      ++it;
+    DCHECK_EQ(it->layout_object_, layout_text_);
+
+    // Inserted text
+    if (inserted_text_length > 0) {
+      const unsigned inserted_start_offset =
+          items.IsEmpty() ? 0 : items.back().end_offset_;
+      const unsigned inserted_end_offset =
+          inserted_start_offset + inserted_text_length;
+      items.push_back(NGInlineItem(*it, inserted_start_offset,
+                                   inserted_end_offset, nullptr));
+    }
+
+    // Copy part of item after replaced range.
+    if (end_offset < it->end_offset_) {
+      items.push_back(CopyItemAfter(*it, end_offset));
+      ShiftItem(&items.back(), diff);
+    }
+
+    // Copy items after replaced range
+    ++it;
+    while (it != data_->items.end()) {
+      DCHECK_NE(it->layout_object_, layout_text_);
+      DCHECK_LE(end_offset, it->start_offset_);
+      items.push_back(*it);
+      ShiftItem(&items.back(), diff);
+      ++it;
+    }
+
+    VerifyItems(items);
+    data_->items = std::move(items);
+    data_->text_content = new_data.text_content;
+  }
+
+ private:
+  static unsigned AdjustOffset(unsigned offset, int delta) {
+    if (delta > 0)
+      return offset + delta;
+    return offset - (-delta);
+  }
+
+  static unsigned ConvertDOMOffsetToTextContent(
+      base::span<const NGOffsetMappingUnit> units,
+      unsigned offset) {
+    auto it = std::find_if(
+        units.begin(), units.end(), [offset](const NGOffsetMappingUnit& unit) {
+          return unit.DOMStart() <= offset && offset <= unit.DOMEnd();
+        });
+    DCHECK(it != units.end());
+    return it->ConvertDOMOffsetToTextContent(offset);
+  }
+
+  // Returns copy of |item| after |start_offset| (inclusive).
+  NGInlineItem CopyItemAfter(const NGInlineItem& item,
+                             unsigned start_offset) const {
+    DCHECK_LE(item.start_offset_, start_offset);
+    DCHECK_LT(start_offset, item.end_offset_);
+    DCHECK_EQ(item.layout_object_, layout_text_);
+    if (item.start_offset_ == start_offset)
+      return item;
+    const unsigned end_offset = item.end_offset_;
+    if (!item.shape_result_)
+      return NGInlineItem(item, start_offset, end_offset, nullptr);
+    // TODO(yosin): We should handle |shape_result| doesn't have safe-to-break
+    // at start and end, because of |ShapeText()| splits |ShapeResult| ignoring
+    // safe-to-break offset.
+    item.shape_result_->EnsurePositionData();
+    const unsigned safe_start_offset =
+        item.shape_result_->CachedNextSafeToBreakOffset(start_offset);
+    if (end_offset == safe_start_offset)
+      return NGInlineItem(item, start_offset, end_offset, nullptr);
+    return NGInlineItem(
+        item, start_offset, end_offset,
+        item.shape_result_->SubRange(safe_start_offset, end_offset));
+  }
+
+  // Returns copy of |item| before |end_offset| (exclusive).
+  NGInlineItem CopyItemBefore(const NGInlineItem& item,
+                              unsigned end_offset) const {
+    DCHECK_LT(item.start_offset_, end_offset);
+    DCHECK_LE(end_offset, item.end_offset_);
+    DCHECK_EQ(item.layout_object_, layout_text_);
+    if (item.end_offset_ == end_offset)
+      return item;
+    const unsigned start_offset = item.start_offset_;
+    if (!item.shape_result_)
+      return NGInlineItem(item, start_offset, end_offset, nullptr);
+    // TODO(yosin): We should handle |shape_result| doesn't have safe-to-break
+    // at start and end, because of |ShapeText()| splits |ShapeResult| ignoring
+    // safe-to-break offset.
+    item.shape_result_->EnsurePositionData();
+    const unsigned safe_end_offset =
+        item.shape_result_->CachedPreviousSafeToBreakOffset(end_offset);
+    if (start_offset == safe_end_offset)
+      return NGInlineItem(item, start_offset, end_offset, nullptr);
+    return NGInlineItem(
+        item, start_offset, end_offset,
+        item.shape_result_->SubRange(start_offset, safe_end_offset));
+  }
+
+  static void ShiftItem(NGInlineItem* item, int delta) {
+    if (delta == 0)
+      return;
+    item->start_offset_ = AdjustOffset(item->start_offset_, delta);
+    item->end_offset_ = AdjustOffset(item->end_offset_, delta);
+    if (!item->shape_result_)
+      return;
+    item->shape_result_ =
+        item->shape_result_->CopyAdjustedOffset(item->start_offset_);
+  }
+
+  void VerifyItems(const Vector<NGInlineItem>& items) const {
+#if DCHECK_IS_ON()
+    unsigned last_offset = items.front().start_offset_;
+    for (const NGInlineItem& item : items) {
+      DCHECK_LE(item.start_offset_, item.end_offset_);
+      DCHECK_EQ(last_offset, item.start_offset_);
+      last_offset = item.end_offset_;
+      if (!item.shape_result_ || item.layout_object_ != layout_text_)
+        continue;
+      DCHECK_LT(item.start_offset_, item.end_offset_);
+      if (item.shape_result_->StartIndex() == item.start_offset_) {
+        DCHECK_LE(item.shape_result_->EndIndex(), item.end_offset_);
+      } else {
+        DCHECK_LE(item.start_offset_, item.shape_result_->StartIndex());
+        DCHECK_EQ(item.end_offset_, item.shape_result_->EndIndex());
+      }
+    }
+    DCHECK_EQ(last_offset,
+              block_flow_->GetNGInlineNodeData()->text_content.length());
+#endif
+  }
+
+  std::unique_ptr<NGInlineNodeData> data_;
+  LayoutBlockFlow* const block_flow_;
+  const LayoutText& layout_text_;
+  unsigned start_offset_ = 0;
+  unsigned end_offset_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(NGInlineNodeDataEditor);
+};
+
+// static
+bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
+                                     scoped_refptr<StringImpl> new_text_in,
+                                     unsigned offset,
+                                     unsigned length) {
+  if (!layout_text->HasValidInlineItems() ||
+      !layout_text->IsInLayoutNGInlineFormattingContext())
+    return false;
+  const String old_text = layout_text->GetText();
+  if (offset == 0 && length == old_text.length()) {
+    // We'll run collect inline items since whole text of |layout_text| is
+    // changed.
+    return false;
+  }
+
+  NGInlineNodeDataEditor editor(*layout_text);
+  NGInlineNodeData* const previous_data = editor.Prepare(offset, length);
+  if (!previous_data)
+    return false;
+
+  String new_text(std::move(new_text_in));
+  layout_text->StyleRef().ApplyTextTransform(&new_text,
+                                             layout_text->PreviousCharacter());
+  layout_text->SetTextInternal(new_text.Impl());
+
+  NGInlineNode node(editor.GetLayoutBlockFlow());
+  NGInlineNodeData* data = node.MutableData();
+  data->items.ReserveCapacity(previous_data->items.size());
+  NGInlineItemsBuilder builder(&data->items, nullptr);
+  // TODO(yosin): We should reuse before/after |layout_text| during collecting
+  // inline items.
+  layout_text->ClearInlineItems();
+  CollectInlinesInternal(node.GetLayoutBlockFlow(), &builder, previous_data);
+  data->text_content = builder.ToString();
+  // Relocates |ShapeResult| in |previous_data| after |offset|+|length|
+  editor.Run();
+  node.SegmentText(data);
+  node.ShapeText(data, &previous_data->text_content, &previous_data->items);
+  node.ShapeTextForFirstLineIfNeeded(data);
+  node.AssociateItemsWithInlines(data);
+  return true;
 }
 
 const NGInlineNodeData& NGInlineNode::EnsureData() {
@@ -625,14 +1015,13 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
 }
 
 void NGInlineNode::ShapeText(NGInlineItemsData* data,
-                             NGInlineItemsData* previous_data) {
+                             const String* previous_text,
+                             const Vector<NGInlineItem>* previous_items) {
   const String& text_content = data->text_content;
   Vector<NGInlineItem>* items = &data->items;
-  const String* previous_text =
-      previous_data ? &previous_data->text_content : nullptr;
 
   // Provide full context of the entire node to the shaper.
-  HarfBuzzShaper shaper(text_content);
+  ReusingTextShaper shaper(data, previous_items);
   ShapeResultSpacing<String> spacing(text_content);
 
   DCHECK(!data->segments ||
@@ -717,43 +1106,35 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     }
 
     // Results may only be reused if all items in the range remain valid.
-    bool has_valid_shape_results = true;
-    for (unsigned item_index = index; item_index < end_index; item_index++) {
-      if (NeedsShaping((*items)[item_index])) {
-        has_valid_shape_results = false;
-        break;
+    if (previous_text) {
+      bool has_valid_shape_results = true;
+      for (unsigned item_index = index; item_index < end_index; item_index++) {
+        if (NeedsShaping((*items)[item_index])) {
+          has_valid_shape_results = false;
+          break;
+        }
+      }
+
+      // When shaping across multiple items checking whether the individual
+      // items has valid shape results isn't sufficient as items may have been
+      // re-ordered or removed.
+      // TODO(layout-dev): It would probably be faster to check for removed or
+      // moved items but for now comparing the string itself will do.
+      unsigned text_start = start_item.StartOffset();
+      DCHECK_GE(end_offset, text_start);
+      unsigned text_length = end_offset - text_start;
+      if (has_valid_shape_results && previous_text &&
+          end_offset <= previous_text->length() &&
+          StringView(text_content, text_start, text_length) ==
+              StringView(*previous_text, text_start, text_length)) {
+        index = end_index;
+        continue;
       }
     }
 
-    // When shaping across multiple items checking whether the individual
-    // items has valid shape results isn't sufficient as items may have been
-    // re-ordered or removed.
-    // TODO(layout-dev): It would probably be faster to check for removed or
-    // moved items but for now comparing the string itself will do.
-    unsigned text_start = start_item.StartOffset();
-    DCHECK_GE(end_offset, text_start);
-    unsigned text_length = end_offset - text_start;
-    if (has_valid_shape_results && previous_text &&
-        end_offset <= previous_text->length() &&
-        StringView(text_content, text_start, text_length) ==
-            StringView(*previous_text, text_start, text_length)) {
-      index = end_index;
-      continue;
-    }
-
     // Shape each item with the full context of the entire node.
-    scoped_refptr<ShapeResult> shape_result;
-    if (!data->segments) {
-      RunSegmenter::RunSegmenterRange range =
-          start_item.CreateRunSegmenterRange();
-      range.end = end_offset;
-      shape_result = shaper.Shape(&font, direction, start_item.StartOffset(),
-                                  end_offset, range);
-    } else {
-      shape_result = data->segments->ShapeText(
-          &shaper, &font, direction, start_item.StartOffset(), end_offset,
-          &start_item - items->begin());
-    }
+    scoped_refptr<ShapeResult> shape_result =
+        shaper.Shape(start_item, end_offset);
 
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription())))
       shape_result->ApplySpacing(spacing);

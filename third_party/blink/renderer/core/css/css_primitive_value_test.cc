@@ -30,6 +30,15 @@ CSSPrimitiveValue* CreateAddition(UnitValue a, UnitValue b) {
       CSSMathOperator::kAdd));
 }
 
+CSSPrimitiveValue* CreateNonNegativeSubtraction(UnitValue a, UnitValue b) {
+  return CSSMathFunctionValue::Create(
+      CSSMathExpressionBinaryOperation::Create(
+          CSSMathExpressionNumericLiteral::Create(Create(a)),
+          CSSMathExpressionNumericLiteral::Create(Create(b)),
+          CSSMathOperator::kSubtract),
+      kValueRangeNonNegative);
+}
+
 TEST(CSSPrimitiveValueTest, IsTime) {
   EXPECT_FALSE(Create({5.0, UnitType::kNumber})->IsTime());
   EXPECT_FALSE(Create({5.0, UnitType::kDegrees})->IsTime());
@@ -48,6 +57,18 @@ TEST(CSSPrimitiveValueTest, IsTimeCalc) {
     UnitValue b = {1000.0, UnitType::kGradians};
     EXPECT_FALSE(CreateAddition(a, b)->IsTime());
   }
+}
+
+TEST(CSSPrimitiveValueTest, ClampTimeToNonNegative) {
+  UnitValue a = {4926, UnitType::kMilliseconds};
+  UnitValue b = {5, UnitType::kSeconds};
+  EXPECT_EQ(0.0, CreateNonNegativeSubtraction(a, b)->ComputeSeconds());
+}
+
+TEST(CSSPrimitiveValueTest, ClampAngleToNonNegative) {
+  UnitValue a = {89, UnitType::kDegrees};
+  UnitValue b = {0.25, UnitType::kTurns};
+  EXPECT_EQ(0.0, CreateNonNegativeSubtraction(a, b)->ComputeDegrees());
 }
 
 TEST(CSSPrimitiveValueTest, IsResolution) {

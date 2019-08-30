@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -593,7 +594,7 @@ void ExternalProviderImpl::CreateExternalProviders(
     // them as built-in extensions. Extensions (not apps) installed through this
     // path will have type |TYPE_LOGIN_SCREE_EXTENSION| with limited API
     // capabilities.
-    external_loader = new ExternalPolicyLoader(
+    external_loader = base::MakeRefCounted<ExternalPolicyLoader>(
         profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::FORCED);
     auto signin_profile_provider = std::make_unique<ExternalProviderImpl>(
@@ -627,18 +628,18 @@ void ExternalProviderImpl::CreateExternalProviders(
       NOTREACHED();
     }
   } else {
-    external_loader = new ExternalPolicyLoader(
+    external_loader = base::MakeRefCounted<ExternalPolicyLoader>(
         profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::FORCED);
-    external_recommended_loader = new ExternalPolicyLoader(
+    external_recommended_loader = base::MakeRefCounted<ExternalPolicyLoader>(
         profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::RECOMMENDED);
   }
 #else
-  external_loader = new ExternalPolicyLoader(
+  external_loader = base::MakeRefCounted<ExternalPolicyLoader>(
       profile, ExtensionManagementFactory::GetForBrowserContext(profile),
       ExternalPolicyLoader::FORCED);
-  external_recommended_loader = new ExternalPolicyLoader(
+  external_recommended_loader = base::MakeRefCounted<ExternalPolicyLoader>(
       profile, ExtensionManagementFactory::GetForBrowserContext(profile),
       ExternalPolicyLoader::RECOMMENDED);
 #endif
@@ -731,8 +732,9 @@ void ExternalProviderImpl::CreateExternalProviders(
     pref_load_flags |= ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER;
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
-        new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                               pref_load_flags, profile),
+        base::MakeRefCounted<ExternalPrefLoader>(
+            chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, pref_load_flags,
+            profile),
         profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         bundled_extension_creation_flags));
 
@@ -766,9 +768,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 #elif defined(OS_LINUX)
   provider_list->push_back(std::make_unique<ExternalProviderImpl>(
       service,
-      new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                             ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER,
-                             profile),
+      base::MakeRefCounted<ExternalPrefLoader>(
+          chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+          ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER, profile),
       profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
       bundled_extension_creation_flags));
 #endif
@@ -784,8 +786,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 #else
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
-        new ExternalPrefLoader(chrome::DIR_EXTERNAL_EXTENSIONS,
-                               check_admin_permissions_on_mac, nullptr),
+        base::MakeRefCounted<ExternalPrefLoader>(
+            chrome::DIR_EXTERNAL_EXTENSIONS, check_admin_permissions_on_mac,
+            nullptr),
         profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         bundled_extension_creation_flags));
 
@@ -793,8 +796,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
-        new ExternalPrefLoader(chrome::DIR_USER_EXTERNAL_EXTENSIONS,
-                               ExternalPrefLoader::NONE, nullptr),
+        base::MakeRefCounted<ExternalPrefLoader>(
+            chrome::DIR_USER_EXTERNAL_EXTENSIONS, ExternalPrefLoader::NONE,
+            nullptr),
         profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         Extension::NO_FLAGS));
 #endif
@@ -805,8 +809,8 @@ void ExternalProviderImpl::CreateExternalProviders(
     // extension installer codeflow.
     provider_list->push_back(std::make_unique<default_apps::Provider>(
         profile, service,
-        new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
-                               ExternalPrefLoader::NONE, nullptr),
+        base::MakeRefCounted<ExternalPrefLoader>(
+            chrome::DIR_DEFAULT_APPS, ExternalPrefLoader::NONE, nullptr),
         Manifest::INTERNAL, Manifest::INTERNAL,
         Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
 #endif
@@ -814,8 +818,9 @@ void ExternalProviderImpl::CreateExternalProviders(
     std::unique_ptr<ExternalProviderImpl> drive_migration_provider(
         new ExternalProviderImpl(
             service,
-            new ExtensionMigrator(profile, extension_misc::kDriveHostedAppId,
-                                  extension_misc::kDocsOfflineExtensionId),
+            base::MakeRefCounted<ExtensionMigrator>(
+                profile, extension_misc::kDriveHostedAppId,
+                extension_misc::kDocsOfflineExtensionId),
             profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
             Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
     drive_migration_provider->set_auto_acknowledge(true);
@@ -823,7 +828,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   }
 
   provider_list->push_back(std::make_unique<ExternalProviderImpl>(
-      service, new ExternalComponentLoader(profile), profile,
+      service, base::MakeRefCounted<ExternalComponentLoader>(profile), profile,
       Manifest::INVALID_LOCATION, Manifest::EXTERNAL_COMPONENT,
       Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
 }

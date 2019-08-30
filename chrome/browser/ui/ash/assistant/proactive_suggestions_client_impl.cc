@@ -6,25 +6,16 @@
 
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 ProactiveSuggestionsClientImpl::ProactiveSuggestionsClientImpl(
-    AssistantClient* client,
     Profile* profile)
     : profile_(profile) {
-  // Initialize the Assistant state proxy.
-  mojo::PendingRemote<ash::mojom::AssistantStateController> controller;
-  client->RequestAssistantStateController(
-      controller.InitWithNewPipeAndPassReceiver());
-  assistant_state_.Init(std::move(controller));
-
   // We observe Assistant state to detect enabling/disabling of Assistant in
   // settings as well as enabling/disabling of screen context.
-  assistant_state_.AddObserver(this);
+  ash::AssistantState::Get()->AddObserver(this);
 
   // We observe the singleton BrowserList to receive events pertaining to the
   // currently active browser.
@@ -41,7 +32,7 @@ ProactiveSuggestionsClientImpl::~ProactiveSuggestionsClientImpl() {
     active_browser_->tab_strip_model()->RemoveObserver(this);
 
   BrowserList::RemoveObserver(this);
-  assistant_state_.RemoveObserver(this);
+  ash::AssistantState::Get()->RemoveObserver(this);
 }
 
 void ProactiveSuggestionsClientImpl::SetDelegate(Delegate* delegate) {
@@ -172,8 +163,8 @@ void ProactiveSuggestionsClientImpl::UpdateActiveState() {
   // We never observe browsers that are off the record and we never observe
   // browsers when the user has disabled either Assistant or screen context.
   if (active_browser_->profile()->IsOffTheRecord() ||
-      !assistant_state_.settings_enabled().value_or(false) ||
-      !assistant_state_.context_enabled().value_or(false)) {
+      !ash::AssistantState::Get()->settings_enabled().value_or(false) ||
+      !ash::AssistantState::Get()->context_enabled().value_or(false)) {
     tab_strip_model->RemoveObserver(this);
     SetActiveContents(nullptr);
     return;

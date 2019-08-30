@@ -167,12 +167,13 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // account from the options.
   void OnAccountSelected(device::AuthenticatorGetAssertionResponse response);
 
-  // Decides whether or not UI is present that needs to block on user
-  // acknowledgement before returning the error, and handles the error
-  // appropriately.
+  // Signals to the request delegate that the request has failed for |reason|.
+  // The request delegate decides whether to present the user with a visual
+  // error before the request is finally resolved with |status|.
   void SignalFailureToRequestDelegate(
       const ::device::FidoAuthenticator* authenticator,
-      AuthenticatorRequestClientDelegate::InterestingFailureReason reason);
+      AuthenticatorRequestClientDelegate::InterestingFailureReason reason,
+      blink::mojom::AuthenticatorStatus status);
 
   void InvokeCallbackAndCleanup(
       blink::mojom::Authenticator::MakeCredentialCallback callback,

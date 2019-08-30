@@ -48,9 +48,6 @@ class MultiSourceMemoryPressureMonitor
   void StartMetricsTimer();
   void StopMetricsTimer();
 
-  void UpdatePressureLevel(MemoryPressureLevel level);
-  void NotifyListeners();
-
  private:
   // Delegate implementation.
   void OnMemoryPressureLevelChanged(MemoryPressureLevel level) override;

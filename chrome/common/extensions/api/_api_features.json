@@ -236,6 +236,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      "chrome://cellular-setup/*",
       "chrome://chrome-signin/*",
       "chrome://discards/*",
       "chrome://hats/*",

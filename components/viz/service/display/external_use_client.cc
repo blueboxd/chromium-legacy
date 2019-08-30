@@ -18,4 +18,11 @@ ExternalUseClient::ImageContext::ImageContext(
 
 ExternalUseClient::ImageContext::~ImageContext() = default;
 
+void ExternalUseClient::ImageContext::SetImage(sk_sp<SkImage> image,
+                                               GrBackendFormat backend_format) {
+  DCHECK(!image_);
+  image_ = std::move(image);
+  backend_format_ = backend_format;
+}
+
 }  // namespace viz

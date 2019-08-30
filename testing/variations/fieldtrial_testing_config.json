@@ -4520,6 +4520,21 @@
             ]
         }
     ],
+    "PreventDownloadsWithSamePath": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PreventDownloadsWithSamePath"
+                    ]
+                }
+            ]
+        }
+    ],
     "PreviewsLitePageRedirect": [
         {
             "platforms": [

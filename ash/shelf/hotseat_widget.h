@@ -43,6 +43,10 @@ class ASH_EXPORT HotseatWidget : public views::Widget {
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;
 
+  ScrollableShelfView* scrollable_shelf_view() {
+    return scrollable_shelf_view_;
+  }
+
  private:
   class DelegateView;
 

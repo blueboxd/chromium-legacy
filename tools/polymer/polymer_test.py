@@ -59,6 +59,13 @@ class PolymerModulizerTest(unittest.TestCase):
         'dom-module', 'dom_module.html', 'dom_module_iife.js',
         'dom_module_iife.m.js', 'dom_module_iife_expected.js')
 
+  # Test case where HTML is extracted from a Polymer2 <dom-module> that is
+  # wrapped in an arrow IIFE function.
+  def testDomModuleIifeArrow(self):
+    self._run_test(
+        'dom-module', 'dom_module.html', 'dom_module_iife_arrow.js',
+        'dom_module_iife_arrow.m.js', 'dom_module_iife_expected.js')
+
   # Test case where HTML is extracted from a Polymer2 style module.
   def testStyleModule(self):
     self._run_test(

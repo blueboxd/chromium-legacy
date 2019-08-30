@@ -506,7 +506,7 @@ void PaymentSheetViewController::ButtonPressed(views::Button* sender,
           /*on_edited=*/base::OnceClosure(),  // This is always an add.
           /*on_added=*/
           base::BindOnce(&PaymentRequestState::AddAutofillShippingProfile,
-                         base::Unretained(state()), /*selected=*/true),
+                         state()->AsWeakPtr(), /*selected=*/true),
           nullptr);
       break;
 
@@ -523,7 +523,7 @@ void PaymentSheetViewController::ButtonPressed(views::Button* sender,
           /*on_edited=*/base::OnceClosure(),  // This is always an add.
           /*on_added=*/
           base::BindOnce(&PaymentRequestState::AddAutofillPaymentInstrument,
-                         base::Unretained(state()), /*selected=*/true),
+                         state()->AsWeakPtr(), /*selected=*/true),
           /*credit_card=*/nullptr);
 
       break;
@@ -540,7 +540,7 @@ void PaymentSheetViewController::ButtonPressed(views::Button* sender,
           /*on_edited=*/base::OnceClosure(),  // This is always an add.
           /*on_added=*/
           base::BindOnce(&PaymentRequestState::AddAutofillContactProfile,
-                         base::Unretained(state()), /*selected=*/true));
+                         state()->AsWeakPtr(), /*selected=*/true));
       break;
 
     case static_cast<int>(

@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::android::AttachCurrentThread;
+using ::testing::_;
 using ::testing::NiceMock;
 using url::Origin;
 
@@ -28,7 +29,10 @@ class MockObserver : public SmsProvider::Observer {
   MockObserver() = default;
   ~MockObserver() override = default;
 
-  MOCK_METHOD2(OnReceive, bool(const Origin&, const std::string& sms));
+  MOCK_METHOD3(OnReceive,
+               bool(const Origin&,
+                    const std::string& one_time_code,
+                    const std::string& sms));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
@@ -73,21 +77,22 @@ class SmsProviderAndroidTest : public RenderViewHostTestHarness {
 }  // namespace
 
 TEST_F(SmsProviderAndroidTest, Retrieve) {
-  std::string test_url = "https://www.google.com";
+  std::string test_url = "https://www.google.com?otp=123";
   std::string expected_sms = "Hi \nFor: " + test_url;
 
   EXPECT_CALL(*observer(),
-              OnReceive(Origin::Create(GURL(test_url)), expected_sms));
+              OnReceive(Origin::Create(GURL(test_url)), _, expected_sms));
   provider().Retrieve();
   TriggerSms(expected_sms);
 }
 
 TEST_F(SmsProviderAndroidTest, IgnoreBadSms) {
-  std::string test_url = "https://www.google.com";
+  std::string test_url = "https://www.google.com?otp=123";
   std::string good_sms = "Hi \nFor: " + test_url;
   std::string bad_sms = "Hi \nFor: http://b.com";
 
-  EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), good_sms));
+  EXPECT_CALL(*observer(),
+              OnReceive(Origin::Create(GURL(test_url)), _, good_sms));
 
   provider().Retrieve();
   TriggerSms(bad_sms);

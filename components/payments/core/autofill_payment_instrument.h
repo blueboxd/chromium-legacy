@@ -56,8 +56,10 @@ class AutofillPaymentInstrument
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
-  bool IsValidForPaymentMethodIdentifier(
-      const std::string& payment_method_identifier) const override;
+  void IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier,
+      bool* is_valid) const override;
+  base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
 
   // autofill::payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(

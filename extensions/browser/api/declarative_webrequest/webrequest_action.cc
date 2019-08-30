@@ -116,7 +116,7 @@ scoped_refptr<const WebRequestAction> CallConstructorFactoryMethod(
     const base::Value* value,
     std::string* error,
     bool* bad_message) {
-  return scoped_refptr<const WebRequestAction>(new T);
+  return base::MakeRefCounted<T>();
 }
 
 scoped_refptr<const WebRequestAction> CreateRedirectRequestAction(

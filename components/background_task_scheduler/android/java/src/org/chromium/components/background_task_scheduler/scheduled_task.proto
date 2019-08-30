@@ -11,4 +11,47 @@ package background_task_scheduler;
 option java_package = "org.chromium.components.background_task_scheduler";
 option java_outer_classname = "ScheduledTaskProto";
 
-message ScheduledTask {}
+message ScheduledTask {
+  enum Type {
+    ONE_OFF = 0;
+    PERIODIC = 1;
+    EXACT = 2;
+  }
+
+  // The type of the scheduled task.
+  Type type = 1;
+
+  // UTC timestamp at which an ExactTask will be triggered by AlarmManager.
+  int64 trigger_ms = 2;
+
+  message ExtraItem {
+    enum Type {
+      BOOLEAN = 0;
+      BOOLEAN_ARRAY = 1;
+      DOUBLE = 2;
+      DOUBLE_ARRAY = 3;
+      INT = 4;
+      INT_ARRAY = 5;
+      LONG = 6;
+      LONG_ARRAY = 7;
+      STRING = 8;
+      STRING_ARRAY = 9;
+    }
+
+    // The key set for this item in the extras.
+    string key = 1;
+
+    // The type of the value associated with this item.
+    Type type = 2;
+
+    // Serialized form of the value set for this item in the extras.
+    // Non-array types will store only one element in this repeated field.
+    // All the types supported in the extras field are serializable.
+    repeated string values = 3;
+  }
+
+  // Extras for the BackgroundTask, stored for an ExactTask. OneOffTask and
+  // PeriodicTask objects store their extras through their scheduling backend
+  // (JobScheduler and GcmNetworkManager).
+  repeated ExtraItem extras = 3;
+}

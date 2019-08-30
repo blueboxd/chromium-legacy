@@ -192,18 +192,19 @@ class SubresourceLoader : public network::mojom::URLLoader,
   // network::mojom::URLLoaderClient implementation
   // Called by either the appcache or network loader, whichever is in use.
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     // Don't MaybeFallback for appcache produced responses.
     if (appcache_loader_ || !handler_) {
-      remote_client_->OnReceiveResponse(response_head);
+      remote_client_->OnReceiveResponse(std::move(response_head));
       return;
     }
 
     did_receive_network_response_ = true;
     handler_->MaybeFallbackForSubresourceResponse(
-        response_head,
+        network::ResourceResponseHead(response_head),
         base::BindOnce(&SubresourceLoader::ContinueOnReceiveResponse,
-                       weak_factory_.GetWeakPtr(), response_head));
+                       weak_factory_.GetWeakPtr(),
+                       network::ResourceResponseHead(response_head)));
   }
 
   void ContinueOnReceiveResponse(
@@ -218,7 +219,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     DCHECK(network_loader_) << "appcache loader does not produce redirects";
     if (!redirect_limit_--) {
       OnComplete(
@@ -226,14 +227,16 @@ class SubresourceLoader : public network::mojom::URLLoader,
       return;
     }
     if (!handler_) {
-      remote_client_->OnReceiveRedirect(redirect_info_, response_head);
+      remote_client_->OnReceiveRedirect(redirect_info_,
+                                        std::move(response_head));
       return;
     }
     redirect_info_ = redirect_info;
     handler_->MaybeFallbackForSubresourceRedirect(
         redirect_info,
         base::BindOnce(&SubresourceLoader::ContinueOnReceiveRedirect,
-                       weak_factory_.GetWeakPtr(), response_head));
+                       weak_factory_.GetWeakPtr(),
+                       network::ResourceResponseHead(response_head)));
   }
 
   void ContinueOnReceiveRedirect(

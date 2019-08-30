@@ -91,11 +91,5 @@ std::unique_ptr<FidoDiscoveryBase> VirtualFidoDeviceFactory::Create(
       transport_, state_, supported_protocol_, ctap2_config_);
 }
 
-std::unique_ptr<FidoDiscoveryBase> VirtualFidoDeviceFactory::CreateCable(
-    std::vector<CableDiscoveryData> cable_data) {
-  return Create(FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
-                nullptr);
-}
-
 }  // namespace test
 }  // namespace device

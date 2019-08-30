@@ -336,5 +336,18 @@ crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.servicewo
 crbug.com/993953 [ Linux ] http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Timeout ]
 crbug.com/993953 [ Linux ] virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/dom/idlharness.any.serviceworker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/css/css-typed-om/idlharness.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/css/cssom-view/idlharness.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/css/cssom/idlharness.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/css/filter-effects/idlharness.any.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/css/filter-effects/idlharness.any.worker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/fetch/api/idlharness.any.worker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/mediasession/idlharness.window.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/blink-cors/external/wpt/fetch/api/idlharness.any.serviceworker.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/cascade/external/wpt/css/css-typed-om/idlharness.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/idlharness.any.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/idlharness.any.worker.html [ Pass Timeout ]
+
 
 # Note to sheriffs: Timeouts about "idlharness" or "interfaces" are usually crbug.com/856601.

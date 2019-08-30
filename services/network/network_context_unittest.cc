@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <string>
@@ -38,10 +39,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
+#include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -120,6 +123,11 @@
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
 #include "net/ftp/ftp_auth_cache.h"
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+#include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
+#include "services/network/public/mojom/ct_log_info.mojom.h"
+#endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
@@ -2081,8 +2089,7 @@ TEST_F(NetworkContextTest, ClearEmptyNetworkErrorLoggingWithNoService) {
 void SetCookieCallback(base::RunLoop* run_loop,
                        bool* result_out,
                        net::CanonicalCookie::CookieInclusionStatus result) {
-  *result_out =
-      (result == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  *result_out = result.IsInclude();
   run_loop->Quit();
 }
 
@@ -5726,6 +5733,72 @@ TEST_F(NetworkContextTest, AddFtpAuthCacheEntry) {
   EXPECT_EQ(base::ASCIIToUTF16(kPassword), entry->credentials.password());
 }
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+TEST_F(NetworkContextTest, CertificateTransparencyConfig) {
+  mojom::NetworkContextParamsPtr params = CreateContextParams();
+  params->enforce_chrome_ct_policy = true;
+  params->ct_log_update_time = base::Time::Now();
+
+  // The log public keys do not matter for the test, so invalid keys are used.
+  // However, because the log IDs are derived from the SHA-256 hash of the log
+  // key, the log keys are generated such that qualified logs are in the form
+  // of four digits (e.g. "0000", "1111"), while disqualified logs are in the
+  // form of four letters (e.g. "AAAA", "BBBB").
+
+  for (int i = 0; i < 6; ++i) {
+    network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+    // Shift to ASCII '0' (0x30)
+    log_info->public_key = std::string(4, 0x30 + static_cast<char>(i));
+    log_info->name = std::string(4, 0x30 + static_cast<char>(i));
+    log_info->operated_by_google = i % 2;
+
+    params->ct_logs.push_back(std::move(log_info));
+  }
+  for (int i = 0; i < 3; ++i) {
+    network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+    // Shift to ASCII 'A' (0x41)
+    log_info->public_key = std::string(4, 0x41 + static_cast<char>(i));
+    log_info->name = std::string(4, 0x41 + static_cast<char>(i));
+    log_info->operated_by_google = false;
+    log_info->disqualified_at = base::TimeDelta::FromSeconds(i);
+
+    params->ct_logs.push_back(std::move(log_info));
+  }
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(params));
+
+  net::CTPolicyEnforcer* request_enforcer =
+      network_context->url_request_context()->ct_policy_enforcer();
+  ASSERT_TRUE(request_enforcer);
+
+  // Completely unsafe if |enforce_chrome_ct_policy| is false.
+  certificate_transparency::ChromeCTPolicyEnforcer* policy_enforcer =
+      reinterpret_cast<certificate_transparency::ChromeCTPolicyEnforcer*>(
+          request_enforcer);
+
+  EXPECT_TRUE(std::is_sorted(
+      policy_enforcer->operated_by_google_logs_for_testing().begin(),
+      policy_enforcer->operated_by_google_logs_for_testing().end()));
+  EXPECT_TRUE(
+      std::is_sorted(policy_enforcer->disqualified_logs_for_testing().begin(),
+                     policy_enforcer->disqualified_logs_for_testing().end()));
+
+  EXPECT_THAT(
+      policy_enforcer->operated_by_google_logs_for_testing(),
+      ::testing::UnorderedElementsAreArray({crypto::SHA256HashString("1111"),
+                                            crypto::SHA256HashString("3333"),
+                                            crypto::SHA256HashString("5555")}));
+  EXPECT_THAT(policy_enforcer->disqualified_logs_for_testing(),
+              ::testing::UnorderedElementsAre(
+                  ::testing::Pair(crypto::SHA256HashString("AAAA"),
+                                  base::TimeDelta::FromSeconds(0)),
+                  ::testing::Pair(crypto::SHA256HashString("BBBB"),
+                                  base::TimeDelta::FromSeconds(1)),
+                  ::testing::Pair(crypto::SHA256HashString("CCCC"),
+                                  base::TimeDelta::FromSeconds(2))));
+}
+#endif
 
 TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   GURL url("http://example.test/");

@@ -67,9 +67,9 @@ class WebRequestProxyingURLLoaderFactory
     void ResumeReadingBodyFromNet() override;
 
     // network::mojom::URLLoaderClient:
-    void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+    void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
     void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                           const network::ResourceResponseHead& head) override;
+                           network::mojom::URLResponseHeadPtr head) override;
     void OnUploadProgress(int64_t current_position,
                           int64_t total_size,
                           OnUploadProgressCallback callback) override;

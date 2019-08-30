@@ -80,6 +80,10 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   Length ConvertToLength(
       const CSSToLengthConversionData& conversion_data) const;
 
+  void AccumulateLengthUnitTypes(LengthTypeFlags& types) const {
+    expression_->AccumulateLengthUnitTypes(types);
+  }
+
   String CustomCSSText() const;
   bool Equals(const CSSMathFunctionValue& other) const;
 

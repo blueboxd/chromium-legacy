@@ -43,7 +43,7 @@ void CreateCookieForTest(
                                false, same_site, net::COOKIE_PRIORITY_LOW),
           "https", options,
           base::BindLambdaForTesting([&](CookieInclusionStatus result) {
-            result_out = (result == CookieInclusionStatus::INCLUDE);
+            result_out = result.IsInclude();
             run_loop.Quit();
           }));
   run_loop.Run();

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/sharing/sharing_icon_view.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop.h"
 
@@ -17,15 +20,24 @@ constexpr int kIconTextSpacingTouch = 10;
 constexpr double kAnimationTextFullLengthShownProgressState = 0.5;
 }  // namespace
 
-SharingIconView::SharingIconView(PageActionIconView::Delegate* delegate)
+SharingIconView::SharingIconView(PageActionIconView::Delegate* delegate,
+                                 GetControllerCallback get_controller_callback,
+                                 GetBubbleCallback get_bubble_callback)
     : PageActionIconView(/*command_updater=*/nullptr,
                          /*command_id=*/0,
-                         delegate) {
+                         delegate),
+      get_controller_callback_(std::move(get_controller_callback)),
+      get_bubble_callback_(std::move(get_bubble_callback)) {
   SetVisible(false);
   SetUpForInOutAnimation();
 }
 
 SharingIconView::~SharingIconView() = default;
+
+SharingUiController* SharingIconView::GetController() const {
+  content::WebContents* web_contents = GetWebContents();
+  return web_contents ? get_controller_callback_.Run(web_contents) : nullptr;
+}
 
 void SharingIconView::StartLoadingAnimation() {
   if (loading_animation_)
@@ -156,4 +168,20 @@ void SharingIconView::OnExecuting(
 
 bool SharingIconView::IsLoadingAnimationVisible() {
   return loading_animation_;
+}
+
+views::BubbleDialogDelegateView* SharingIconView::GetBubble() const {
+  auto* controller = GetController();
+  return controller ? get_bubble_callback_.Run(controller->dialog()) : nullptr;
+}
+
+const gfx::VectorIcon& SharingIconView::GetVectorIcon() const {
+  auto* controller = GetController();
+  return controller ? controller->GetVectorIcon() : gfx::kNoneIcon;
+}
+
+base::string16 SharingIconView::GetTextForTooltipAndAccessibleName() const {
+  auto* controller = GetController();
+  return controller ? controller->GetTextForTooltipAndAccessibleName()
+                    : base::string16();
 }

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/files/file_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,7 +58,7 @@ RemovableStorageProvider::PopulateDeviceList() {
     return nullptr;
   }
 
-  scoped_refptr<StorageDeviceList> device_list(new StorageDeviceList());
+  auto device_list = base::MakeRefCounted<StorageDeviceList>();
   /* Create a list of the devices in the 'block' subsystem. */
   device::ScopedUdevEnumeratePtr enumerate(
       device::udev_enumerate_new(udev.get()));

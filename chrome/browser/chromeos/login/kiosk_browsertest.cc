@@ -1957,7 +1957,16 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
+// TODO(crbug.com/949490): PreserveLocalData is flaky ChromeOS rel (timeout).
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_PRE_PreserveLocalData DISABLED_PRE_PreserveLocalData
+#define MAYBE_PreserveLocalData DISABLED_PreserveLocalData
+#else
+#define MAYBE_PRE_PreserveLocalData PRE_PreserveLocalData
+#define MAYBE_PreserveLocalData PreserveLocalData
+#endif
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PRE_PreserveLocalData) {
   // Installs v1 app and writes some local data.
   set_test_app_id(kTestLocalFsKioskApp);
   set_test_app_version("1.0.0");
@@ -1971,7 +1980,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PreserveLocalData) {
   // Update existing v1 app installed in PRE_PreserveLocalData to v2
   // that reads and verifies the local data.
   set_test_app_id(kTestLocalFsKioskApp);
@@ -2077,13 +2086,27 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskRemoveOneApp) {
+// TODO(crbug.com/949490): UpdateMultiAppKioskRemoveOneApp is flaky ChromeOS rel
+// (timeout).
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp \
+  DISABLED_PRE_UpdateMultiAppKioskRemoveOneApp
+#define MAYBE_UpdateMultiAppKioskRemoveOneApp \
+  DISABLED_UpdateMultiAppKioskRemoveOneApp
+#else
+#define MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp \
+  PRE_UpdateMultiAppKioskRemoveOneApp
+#define MAYBE_UpdateMultiAppKioskRemoveOneApp UpdateMultiAppKioskRemoveOneApp
+#endif
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp) {
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
 // Update the primary app to version 2 which removes one of the secondary app
 // from its manifest.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_UpdateMultiAppKioskRemoveOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
   fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
                            std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",

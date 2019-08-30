@@ -75,7 +75,9 @@ void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
   sms_provider_->Retrieve();
 }
 
-bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
+bool SmsService::OnReceive(const url::Origin& origin,
+                           const std::string& one_time_code,
+                           const std::string& sms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (origin_ != origin)
     return false;
@@ -92,15 +94,19 @@ bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
   sms_ = sms;
   receive_time_ = base::TimeTicks::Now();
 
+  OpenInfoBar(one_time_code);
+
+  return true;
+}
+
+void SmsService::OpenInfoBar(const std::string& one_time_code) {
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
 
   web_contents->GetDelegate()->CreateSmsPrompt(
-      render_frame_host(), origin_,
+      render_frame_host(), origin_, one_time_code,
       base::BindOnce(&SmsService::OnConfirm, weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&SmsService::OnCancel, weak_ptr_factory_.GetWeakPtr()));
-
-  return true;
 }
 
 void SmsService::Process(blink::mojom::SmsStatus status,

@@ -61,7 +61,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -721,7 +720,7 @@ void CastBrowserMainParts::PostCreateThreads() {
       heap_profiling::Supervisor::GetInstance();
   supervisor->SetClientConnectionManagerConstructor(
       &CreateClientConnectionManager);
-  supervisor->Start(content::GetSystemConnector(), base::NullCallback());
+  supervisor->Start(base::NullCallback());
 #endif  // !defined(OS_FUCHSIA)
 }
 

@@ -312,6 +312,7 @@ void ConnectToQuarantineService(
             .WithDisplayName("Quarantine Service")
             .WithSandboxType(service_manager::SANDBOX_TYPE_NO_SANDBOX)
             .Pass());
+    return;
   }
 #endif
 

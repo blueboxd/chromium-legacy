@@ -285,6 +285,9 @@ extern const char kLearnMoreEnterpriseURL[];
 // The URL for the Learn More page about Linux for Chromebooks.
 extern const char kLinuxAppsLearnMoreURL[];
 
+// The URL for additional help that is given when Linux export/import fails.
+extern const char kLinuxExportImportHelpURL[];
+
 // Credits for Linux for Chromebooks.
 extern const char kLinuxCreditsPath[];
 

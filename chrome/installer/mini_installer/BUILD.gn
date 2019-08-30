@@ -47,6 +47,10 @@ source_set("lib") {
     "regkey.h",
   ]
 
+  deps = [
+    "//build:branding_buildflags",
+  ]
+
   if (skip_archive_compression) {
     defines = [ "SKIP_ARCHIVE_COMPRESSION" ]
   }
@@ -75,6 +79,7 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//build:branding_buildflags",
     "//chrome/install_static:install_static_util",
     "//chrome/installer/util:with_no_strings",
     "//testing/gtest",

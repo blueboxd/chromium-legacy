@@ -12,6 +12,9 @@
 #include "chrome/common/url_constants.h"
 #include "ui/android/window_android.h"
 
+using password_manager::metrics_util::LeakDialogDismissalReason;
+using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
+
 CredentialLeakControllerAndroid::CredentialLeakControllerAndroid(
     password_manager::CredentialLeakType leak_type,
     const GURL& origin,
@@ -25,12 +28,21 @@ void CredentialLeakControllerAndroid::ShowDialog() {
   dialog_view_->Show(window_android_);
 }
 
-void CredentialLeakControllerAndroid::OnDialogDismissRequested() {
+void CredentialLeakControllerAndroid::OnCancelDialog() {
+  LogLeakDialogTypeAndDismissalReason(
+      leak_dialog_utils::GetLeakDialogType(leak_type_),
+      LeakDialogDismissalReason::kClickedClose);
   delete this;
 }
 
-void CredentialLeakControllerAndroid::OnPasswordCheckTriggered() {
-  if (ShouldCheckPasswords()) {
+void CredentialLeakControllerAndroid::OnAcceptDialog() {
+  LogLeakDialogTypeAndDismissalReason(
+      leak_dialog_utils::GetLeakDialogType(leak_type_),
+      ShouldCheckPasswords() ? LeakDialogDismissalReason::kClickedCheckPasswords
+                             : LeakDialogDismissalReason::kClickedOk);
+
+  // |window_android_| might be null in tests.
+  if (window_android_ && ShouldCheckPasswords()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_PasswordCheckupLauncher_launchCheckup(
         env,
@@ -38,6 +50,14 @@ void CredentialLeakControllerAndroid::OnPasswordCheckTriggered() {
             env, leak_dialog_utils::GetPasswordCheckupURL().spec()),
         window_android_->GetJavaObject());
   }
+
+  delete this;
+}
+
+void CredentialLeakControllerAndroid::OnCloseDialog() {
+  LogLeakDialogTypeAndDismissalReason(
+      leak_dialog_utils::GetLeakDialogType(leak_type_),
+      LeakDialogDismissalReason::kNoDirectInteraction);
   delete this;
 }
 

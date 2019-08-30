@@ -751,7 +751,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
   mojom::CommitNavigationParamsPtr commit_params =
       mojom::CommitNavigationParams::New(
           origin_to_commit, GetIsOverridingUserAgent(), redirects,
-          std::vector<network::ResourceResponseHead>(),
+          std::vector<network::mojom::URLResponseHeadPtr>(),
           std::vector<net::RedirectInfo>(), std::string(), original_url,
           original_method, GetCanLoadLocalResources(), frame_entry.page_state(),
           GetUniqueID(), subframe_unique_names, intended_as_new_entry,

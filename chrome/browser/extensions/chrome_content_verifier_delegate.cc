@@ -136,18 +136,16 @@ ChromeContentVerifierDelegate::ChromeContentVerifierDelegate(
 ChromeContentVerifierDelegate::~ChromeContentVerifierDelegate() {
 }
 
-bool ChromeContentVerifierDelegate::ShouldBeChecked(
+ContentVerifierDelegate::VerifierSourceType
+ChromeContentVerifierDelegate::GetVerifierSourceType(
     const Extension& extension) {
-  // All policy-based extensions should have some checks.
-  return ShouldBeVerified(extension);
+  if (GetVerifyMode(extension) != NONE)
+    return VerifierSourceType::SIGNED_HASHES;
   // TODO(crbug.com/958794): After all preparations enable content checking for
   // all policy-based extension (even for self-hosted ones):
-  // || Manifest::IsPolicyLocation(extension.location());
-}
-
-bool ChromeContentVerifierDelegate::ShouldBeVerified(
-    const Extension& extension) {
-  return GetVerifyMode(extension) != NONE;
+  // if (Manifest::IsPolicyLocation(extension.location()))
+  //   return VerifierSourceType::UNSIGNED_HASHES;
+  return VerifierSourceType::NONE;
 }
 
 ContentVerifierKey ChromeContentVerifierDelegate::GetPublicKey() {

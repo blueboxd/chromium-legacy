@@ -17,6 +17,7 @@ import android.widget.PopupWindow;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -43,6 +44,7 @@ public class TabSwitcherActionMenuCoordinator {
 
     private ListView mListView;
     private AnchoredPopupWindow mPopup;
+    private View mContentView;
 
     /**
      * @param onItemClicked  The clicked listener handling clicks on TabSwitcherActionMenu
@@ -78,11 +80,12 @@ public class TabSwitcherActionMenuCoordinator {
      * @param listItems      The menu item models
      * @param onItemClicked  The clicked listener handling clicks on TabSwitcherActionMenu
      */
-    private void displayMenu(final Context context, View anchorView, ModelList listItems,
+    @VisibleForTesting
+    public void displayMenu(final Context context, View anchorView, ModelList listItems,
             Callback<Integer> onItemClicked) {
-        final View contentView = LayoutInflater.from(context).inflate(
+        mContentView = LayoutInflater.from(context).inflate(
                 R.layout.tab_switcher_action_menu_layout, null);
-        mListView = (ListView) contentView.findViewById(R.id.tab_switcher_action_menu_list);
+        mListView = (ListView) mContentView.findViewById(R.id.tab_switcher_action_menu_list);
 
         ModelListAdapter adapter = new ModelListAdapter(listItems) {
             @Override
@@ -119,7 +122,7 @@ public class TabSwitcherActionMenuCoordinator {
         // clang-format on
 
         mListView.setOnItemClickListener((p, v, pos, id) -> {
-            onItemClicked.onResult((int) id);
+            if (onItemClicked != null) onItemClicked.onResult((int) id);
             mPopup.dismiss();
         });
 
@@ -133,7 +136,7 @@ public class TabSwitcherActionMenuCoordinator {
         mPopup = new AnchoredPopupWindow(context, anchorView,
                 ApiCompatibilityUtils.getDrawable(
                         context.getResources(), R.drawable.popup_bg_tinted),
-                contentView, rectProvider);
+                mContentView, rectProvider);
         mPopup.setFocusable(true);
         mPopup.setAnimationStyle(R.style.OverflowMenuAnim);
 
@@ -143,7 +146,13 @@ public class TabSwitcherActionMenuCoordinator {
         mPopup.show();
     }
 
-    private ModelList buildMenuItems(Context context) {
+    @VisibleForTesting
+    public View getContentView() {
+        return mContentView;
+    }
+
+    @VisibleForTesting
+    public ModelList buildMenuItems(Context context) {
         ModelList itemList = new ModelList();
         itemList.add(new ListItem(ListItemType.MENU_ITEM,
                 buildPropertyModel(

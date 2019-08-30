@@ -77,7 +77,6 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
   }
 
   bool found_revocation_info = false;
-  bool failed_network_fetch = false;
 
   // Check OCSP.
   if (cert->has_authority_info_access()) {
@@ -126,10 +125,8 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
       std::vector<uint8_t> ocsp_response_bytes;
       net_ocsp_request->WaitForResult(&net_error, &ocsp_response_bytes);
 
-      if (net_error != OK) {
-        failed_network_fetch = true;
+      if (net_error != OK)
         continue;
-      }
 
       OCSPVerifyResult::ResponseStatus response_details;
 
@@ -199,10 +196,8 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
           std::vector<uint8_t> crl_response_bytes;
           net_crl_request->WaitForResult(&net_error, &crl_response_bytes);
 
-          if (net_error != OK) {
-            failed_network_fetch = true;
+          if (net_error != OK)
             continue;
-          }
 
           CRLRevocationStatus crl_status = CheckCRL(
               base::StringPiece(
@@ -241,9 +236,9 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
     }
   }
 
-  // In soft-fail mode permit failures due to network errors.
+  // In soft-fail mode permit other failures.
   // TODO(eroman): Add a warning to |cert_errors| indicating the failure.
-  if (failed_network_fetch && policy.allow_network_failure)
+  if (policy.allow_unable_to_check)
     return true;
 
   // Otherwise the policy doesn't allow revocation checking to fail.
@@ -259,7 +254,7 @@ RevocationPolicy::RevocationPolicy()
     : check_revocation(true),
       networking_allowed(false),
       allow_missing_info(false),
-      allow_network_failure(false) {}
+      allow_unable_to_check(false) {}
 
 void CheckValidatedChainRevocation(
     const ParsedCertificateList& certs,

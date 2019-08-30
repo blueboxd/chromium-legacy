@@ -20,6 +20,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites.h"
@@ -34,7 +35,6 @@ class FilePath;
 
 namespace history {
 
-class HistoryService;
 class TopSitesImplTest;
 
 // This class allows requests for most visited urls on any thread. All other
@@ -212,7 +212,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   static bool histogram_recorded_;
 
   ScopedObserver<HistoryService, HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesImpl);
 };

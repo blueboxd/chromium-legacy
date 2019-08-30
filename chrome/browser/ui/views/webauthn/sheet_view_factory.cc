@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/webauthn/sheet_view_factory.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_controller.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_ble_pin_entry_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_client_pin_entry_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_qr_sheet_view.h"
@@ -195,4 +196,10 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
 
   CHECK(sheet_view);
   return sheet_view;
+}
+
+std::unique_ptr<AuthenticatorRequestSheetView>
+CreateSheetViewForAutofillWebAuthn(
+    std::unique_ptr<autofill::WebauthnOfferDialogController> controller) {
+  return std::make_unique<AuthenticatorRequestSheetView>(std::move(controller));
 }

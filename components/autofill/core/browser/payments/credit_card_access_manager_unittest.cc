@@ -560,7 +560,12 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOTimeoutCVCFallback) {
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
 }
+#endif
 
+// TODO(crbug.com/991037): Add tests for desktop separately after the
+// WebauthnOfferDelegate functions are implemented since the flows are different
+// on desktop and Android.
+#if defined(OS_ANDROID)
 // Ensures that the WebAuthn enrollment prompt is invoked after user opts in.
 TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentSuccess) {
   CreateServerCard(kTestGUID, kTestNumber);

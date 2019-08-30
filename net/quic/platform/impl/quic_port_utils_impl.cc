@@ -9,7 +9,7 @@
 namespace quic {
 
 int QuicPickServerPortForTestsOrDieImpl() {
-  return 12345 + (QuicRandom::GetInstance()->RandUint64() % 20000);
+  return 0;  // Let the OS find an unused port.
 }
 
 void QuicRecyclePortImpl(int port) {}

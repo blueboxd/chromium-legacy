@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_refptr.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/pref_names.h"
@@ -12,7 +13,7 @@
 namespace extensions {
 
 ContentSettingsService::ContentSettingsService(content::BrowserContext* context)
-    : content_settings_store_(new ContentSettingsStore()),
+    : content_settings_store_(base::MakeRefCounted<ContentSettingsStore>()),
       scoped_observer_(this) {}
 
 ContentSettingsService::~ContentSettingsService() {}

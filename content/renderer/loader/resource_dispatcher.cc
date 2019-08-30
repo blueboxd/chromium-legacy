@@ -632,14 +632,15 @@ void ResourceDispatcher::ContinueForNavigation(int request_id) {
   DCHECK_EQ(response_override->redirect_responses.size(),
             response_override->redirect_infos.size());
   for (size_t i = 0; i < response_override->redirect_responses.size(); ++i) {
-    client_ptr->OnReceiveRedirect(response_override->redirect_infos[i],
-                                  response_override->redirect_responses[i]);
+    client_ptr->OnReceiveRedirect(
+        response_override->redirect_infos[i],
+        std::move(response_override->redirect_responses[i]));
     // The request might have been cancelled while processing the redirect.
     if (!GetPendingRequestInfo(request_id))
       return;
   }
 
-  client_ptr->OnReceiveResponse(response_override->response_head);
+  client_ptr->OnReceiveResponse(std::move(response_override->response_head));
 
   // Abort if the request is cancelled.
   if (!GetPendingRequestInfo(request_id))

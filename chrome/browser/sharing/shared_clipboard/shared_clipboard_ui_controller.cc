@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -45,7 +46,7 @@ base::string16 SharedClipboardUiController::GetTitle() {
 }
 
 PageActionIconType SharedClipboardUiController::GetIconType() {
-  return PageActionIconType::kSendTabToSelf;
+  return PageActionIconType::kSharedClipboard;
 }
 
 int SharedClipboardUiController::GetRequiredDeviceCapabilities() {
@@ -78,6 +79,16 @@ void SharedClipboardUiController::OnAppChosen(const App& app) {
 
 void SharedClipboardUiController::OnHelpTextClicked() {
   // No help text
+}
+
+const gfx::VectorIcon& SharedClipboardUiController::GetVectorIcon() const {
+  return kSendTabToSelfIcon;
+}
+
+base::string16 SharedClipboardUiController::GetTextForTooltipAndAccessibleName()
+    const {
+  // TODO(yasmo): Update the text after approval.
+  return base::string16();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SharedClipboardUiController)

@@ -38,6 +38,7 @@ namespace blink {
 class Element;
 class Document;
 class Page;
+class PointerLockOptions;
 class WebMouseEvent;
 
 // This class handles mouse pointer lock and unlock, and dispatching mouse
@@ -47,7 +48,8 @@ class CORE_EXPORT PointerLockController final
  public:
   explicit PointerLockController(Page*);
 
-  void RequestPointerLock(Element* target);
+  void RequestPointerLock(Element* target,
+                          const PointerLockOptions* options = nullptr);
   void RequestPointerUnlock();
   void ElementRemoved(Element*);
   void DocumentDetached(Document*);

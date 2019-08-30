@@ -20,6 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/same_site_data_remover.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
@@ -130,6 +131,7 @@ void CookiesViewHandler::OnJavascriptAllowed() {
 }
 
 void CookiesViewHandler::OnJavascriptDisallowed() {
+  callback_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void CookiesViewHandler::RegisterMessages() {
@@ -162,6 +164,10 @@ void CookiesViewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "localData.removeCookie",
       base::BindRepeating(&CookiesViewHandler::HandleRemove,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "localData.removeThirdPartyCookies",
+      base::BindRepeating(&CookiesViewHandler::HandleRemoveThirdParty,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "localData.reload",
@@ -244,6 +250,13 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
   }
 }
 
+void CookiesViewHandler::RecreateCookiesTreeModel() {
+  cookies_tree_model_.reset();
+  filter_.clear();
+  sorted_sites_.clear();
+  EnsureCookiesTreeModelCreated();
+}
+
 void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
   CHECK(request_.callback_id_.empty());
   CHECK_EQ(2U, args->GetSize());
@@ -306,10 +319,7 @@ void CookiesViewHandler::HandleReloadCookies(const base::ListValue* args) {
   CHECK(args->GetString(0, &request_.callback_id_));
 
   AllowJavascript();
-  cookies_tree_model_.reset();
-  filter_.clear();
-  sorted_sites_.clear();
-  EnsureCookiesTreeModelCreated();
+  RecreateCookiesTreeModel();
 }
 
 void CookiesViewHandler::HandleRemoveAll(const base::ListValue* args) {
@@ -333,6 +343,20 @@ void CookiesViewHandler::HandleRemove(const base::ListValue* args) {
     cookies_tree_model_->DeleteCookieNode(const_cast<CookieTreeNode*>(node));
     sorted_sites_.clear();
   }
+}
+
+void CookiesViewHandler::HandleRemoveThirdParty(const base::ListValue* args) {
+  CHECK(request_.callback_id_.empty());
+  CHECK_EQ(1U, args->GetSize());
+  CHECK(args->GetString(0, &request_.callback_id_));
+
+  AllowJavascript();
+  Profile* profile = Profile::FromWebUI(web_ui());
+  ClearSameSiteNoneData(
+      base::BindOnce(&CookiesViewHandler::RecreateCookiesTreeModel,
+                     callback_weak_ptr_factory_.GetWeakPtr()),
+      profile,
+      /* clear_storage */ true);
 }
 
 void CookiesViewHandler::HandleRemoveShownItems(const base::ListValue* args) {

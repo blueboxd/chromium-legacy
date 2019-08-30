@@ -326,16 +326,16 @@ Polymer({
       networkStates.forEach(state => {
         assert(state.type == mojom.NetworkType.kVPN);
         switch (state.vpn.type) {
-          case mojom.VPNType.kL2TPIPsec:
-          case mojom.VPNType.kOpenVPN:
+          case mojom.VpnType.kL2TPIPsec:
+          case mojom.VpnType.kOpenVPN:
             builtinNetworkStates.push(state);
             break;
-          case mojom.VPNType.kThirdPartyVPN:
+          case mojom.VpnType.kExtension:
             const providerName = state.vpn.providerName;
             thirdPartyVpns[providerName] = thirdPartyVpns[providerName] || [];
             thirdPartyVpns[providerName].push(state);
             break;
-          case mojom.VPNType.kArcVPN:
+          case mojom.VpnType.kArc:
             const arcProviderName = this.get('VPN.Host', state);
             if (OncMojo.connectionStateIsConnected(state.connectionState)) {
               arcVpns[arcProviderName] = arcVpns[arcProviderName] || [];

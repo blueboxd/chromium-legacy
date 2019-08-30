@@ -1625,6 +1625,33 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc2) {
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2));
 }
 
+// Regression test for https://crbug.com/994537. Having a ServerInfo entry
+// without a populated |alternative_services| value would cause
+// OnExpireBrokenAlternativeService() to hang..
+TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc3) {
+  // Add an altertive service entry.
+  const url::SchemeHostPort kServer1("https", "foo", 443);
+  const AlternativeService kAltService(kProtoQUIC, "bar", 443);
+  SetAlternativeService(kServer1, kAltService);
+  EXPECT_TRUE(HasAlternativeService(kServer1, NetworkIsolationKey()));
+
+  // Add an entry to ServerInfo for another server, without an alternative
+  // service value.
+  const url::SchemeHostPort kServer2("http", "bar", 80);
+  impl_.SetSupportsSpdy(kServer2, NetworkIsolationKey(), false);
+
+  // Mark kAltService as broken.
+  base::TimeTicks past =
+      test_tick_clock_->NowTicks() - base::TimeDelta::FromSeconds(42);
+  HttpServerPropertiesPeer::AddBrokenAlternativeServiceWithExpirationTime(
+      &impl_, kAltService, past);
+
+  // Expire brokenness of kAltService. This call should not hang.
+  HttpServerPropertiesPeer::ExpireBrokenAlternateProtocolMappings(&impl_);
+
+  EXPECT_FALSE(HasAlternativeService(kServer1, NetworkIsolationKey()));
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest,
        GetAlternativeServiceInfoAsValue) {
   base::Time::Exploded now_exploded;

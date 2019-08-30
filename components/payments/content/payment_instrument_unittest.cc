@@ -50,7 +50,7 @@ class PaymentInstrumentTest : public testing::Test,
     return std::make_unique<ServiceWorkerPaymentInstrument>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
-        std::move(stored_app), &delegate_, &identity_observer_);
+        std::move(stored_app), &delegate_, identity_observer_.AsWeakPtr());
   }
 
   autofill::CreditCard& local_credit_card() { return local_card_; }

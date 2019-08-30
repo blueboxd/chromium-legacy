@@ -71,6 +71,7 @@ class Locale;
 class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class PaintLayerScrollableArea;
+class PointerLockOptions;
 class PseudoElement;
 class PseudoStyleRequest;
 class ResizeObservation;
@@ -846,6 +847,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetIsInTopLayer(bool);
 
   void requestPointerLock();
+  void requestPointerLock(const PointerLockOptions*);
 
   bool IsSpellCheckingEnabled() const;
 

@@ -281,7 +281,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
   Init();
   base::RunLoop loop;
 
-  // Mock the notification guid to show.
+  // Mock the notification to show.
   auto entry =
       std::make_unique<NotificationEntry>(SchedulerClientType::kTest1, kGuid);
   EXPECT_CALL(
@@ -291,7 +291,10 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
   DisplayDecider::Results result({kGuid});
   EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
       .WillOnce(SetArgPointee<2>(result));
-  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _));
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_))
+      .WillOnce(InvokeWithoutArgs([&]() {
+        notification_manager_delegate()->DisplayNotification(std::move(entry));
+      }));
 
   EXPECT_CALL(*client(), BeforeShowNotification(_, _))
       .WillOnce(Invoke(
@@ -303,14 +306,42 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
             loop.Quit();
           }));
 
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _));
+  scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
+  loop.Run();
+}
+
+// Verifies the case that the client dropped the notification data.
+TEST_F(NotificationSchedulerTest, ClientDropNotification) {
+  Init();
+  base::RunLoop loop;
+
+  // Mock the notification to show.
+  auto entry =
+      std::make_unique<NotificationEntry>(SchedulerClientType::kTest1, kGuid);
+  DisplayDecider::Results result({kGuid});
+  EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
+      .WillOnce(SetArgPointee<2>(result));
   EXPECT_CALL(*notification_manager(), DisplayNotification(_))
       .WillOnce(InvokeWithoutArgs([&]() {
         notification_manager_delegate()->DisplayNotification(std::move(entry));
       }));
 
-  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
+  // The client drops the notification data before showing the notification.
+  EXPECT_CALL(*client(), BeforeShowNotification(_, _))
+      .WillOnce(Invoke(
+          [&](std::unique_ptr<NotificationData> notification_data,
+              NotificationSchedulerClient::NotificationDataCallback callback) {
+            std::move(callback).Run(nullptr);
+            loop.Quit();
+          }));
 
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _)).Times(0);
+  EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
+
+  scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
   loop.Run();
 }
 

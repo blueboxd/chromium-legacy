@@ -78,12 +78,12 @@ class FakeCookieManager : public network::TestCookieManager {
               !std::get<2>(params).exclude_httponly());
     EXPECT_EQ(expect_same_site_context,
               std::get<2>(params).same_site_cookie_context());
-    net::CanonicalCookie::CookieInclusionStatus status =
-        net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+    net::CanonicalCookie::CookieInclusionStatus status;
 
-    if (!success)
-      status =
-          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR;
+    if (!success) {
+      status.AddExclusionReason(
+          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+    }
 
     std::move(std::get<3>(params)).Run(status);
   }

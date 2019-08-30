@@ -1359,6 +1359,7 @@ jumbo_source_set("unit_tests") {
     "layout/ng/exclusions/ng_exclusion_space_test.cc",
     "layout/ng/geometry/ng_box_strut_test.cc",
     "layout/ng/geometry/ng_static_position_test.cc",
+    "layout/ng/inline/layout_ng_text_test.cc",
     "layout/ng/inline/ng_baseline_test.cc",
     "layout/ng/inline/ng_caret_position_test.cc",
     "layout/ng/inline/ng_fragment_item_test.cc",

@@ -30,6 +30,7 @@ class SmsInfoBar : public ConfirmInfoBar {
   // |infobar_service|.
   static void Create(content::WebContents* web_contents,
                      const url::Origin& origin,
+                     const std::string& one_time_code,
                      base::OnceCallback<void()> on_confirm,
                      base::OnceCallback<void()> on_cancel);
 

@@ -74,21 +74,58 @@ TEST(CredentialLeakDialogUtilsTest, GetCancelButtonLabel) {
   }
 }
 
-TEST(CredentialLeakDialogUtilsTest, GetDescription) {
+TEST(CredentialLeakDialogUtilsTest, GetCheckPasswordsDescription) {
   GURL origin("https://example.com");
   for (size_t i = 0; i < base::size(kLeakTypesTestCases); ++i) {
-    SCOPED_TRACE(testing::Message() << i);
-    auto expected_message =
-        kLeakTypesTestCases[i].leak_message_id ==
-                IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE
-            ? l10n_util::GetStringUTF16(kLeakTypesTestCases[i].leak_message_id)
-            : l10n_util::GetStringFUTF16(
-                  kLeakTypesTestCases[i].leak_message_id,
-                  url_formatter::FormatOriginForSecurityDisplay(
-                      url::Origin::Create(origin),
-                      url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
-    EXPECT_EQ(expected_message,
-              GetDescription(kLeakTypesTestCases[i].leak_type, origin));
+    if (kLeakTypesTestCases[i].leak_message_id ==
+        IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE) {
+      SCOPED_TRACE(testing::Message() << i);
+      base::string16 expected_message;
+      expected_message = l10n_util::GetStringUTF16(
+          IDS_CREDENTIAL_LEAK_CHECK_PASSWORDS_MESSAGE);
+      EXPECT_EQ(expected_message,
+                GetDescription(kLeakTypesTestCases[i].leak_type, origin));
+    }
+  }
+}
+
+TEST(CredentialLeakDialogUtilsTest, GetChangeAndCheckPasswordsDescription) {
+  GURL origin("https://example.com");
+  for (size_t i = 0; i < base::size(kLeakTypesTestCases); ++i) {
+    if (kLeakTypesTestCases[i].leak_message_id ==
+        IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE) {
+      SCOPED_TRACE(testing::Message() << i);
+      base::string16 expected_message;
+      expected_message = l10n_util::GetStringFUTF16(
+          IDS_CREDENTIAL_LEAK_CHANGE_AND_CHECK_PASSWORDS_MESSAGE,
+          url_formatter::FormatOriginForSecurityDisplay(
+              url::Origin::Create(origin),
+              url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
+      EXPECT_EQ(expected_message,
+                GetDescription(kLeakTypesTestCases[i].leak_type, origin));
+    }
+  }
+}
+
+TEST(CredentialLeakDialogUtilsTest, GetChangePasswordDescription) {
+  GURL origin("https://example.com");
+  for (size_t i = 0; i < base::size(kLeakTypesTestCases); ++i) {
+    if (kLeakTypesTestCases[i].leak_message_id ==
+        IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE) {
+      SCOPED_TRACE(testing::Message() << i);
+      base::string16 expected_message;
+      std::vector<size_t> offsets;
+      base::string16 bold_message = l10n_util::GetStringUTF16(
+          IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_BOLD_MESSAGE);
+      expected_message = l10n_util::GetStringFUTF16(
+          IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, bold_message,
+          url_formatter::FormatOriginForSecurityDisplay(
+              url::Origin::Create(origin),
+              url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS),
+          &offsets);
+      EXPECT_EQ(expected_message,
+                GetDescription(kLeakTypesTestCases[i].leak_type, origin));
+    }
   }
 }
 

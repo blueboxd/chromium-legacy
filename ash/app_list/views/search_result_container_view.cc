@@ -4,7 +4,6 @@
 
 #include "ash/app_list/views/search_result_container_view.h"
 
-#include "ash/app_list/views/search_result_base_view.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"

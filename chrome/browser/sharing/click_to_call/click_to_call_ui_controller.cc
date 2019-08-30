@@ -22,6 +22,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 
 using SharingMessage = chrome_browser_sharing::SharingMessage;
@@ -112,6 +113,16 @@ void ClickToCallUiController::OnHelpTextClicked() {
 
 SharingDialog* ClickToCallUiController::DoShowDialog(BrowserWindow* window) {
   return window->ShowClickToCallDialog(web_contents(), this);
+}
+
+const gfx::VectorIcon& ClickToCallUiController::GetVectorIcon() const {
+  return vector_icons::kCallIcon;
+}
+
+base::string16 ClickToCallUiController::GetTextForTooltipAndAccessibleName()
+    const {
+  return l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController)

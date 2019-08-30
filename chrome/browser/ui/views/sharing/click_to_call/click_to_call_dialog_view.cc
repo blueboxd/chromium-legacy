@@ -289,3 +289,9 @@ base::string16 ClickToCallDialogView::GetWindowTitle() const {
 void ClickToCallDialogView::WindowClosing() {
   controller_->OnDialogClosed(this);
 }
+
+// static
+views::BubbleDialogDelegateView* ClickToCallDialogView::GetAsBubble(
+    SharingDialog* dialog) {
+  return static_cast<ClickToCallDialogView*>(dialog);
+}

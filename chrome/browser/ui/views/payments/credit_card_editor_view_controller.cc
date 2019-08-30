@@ -615,7 +615,7 @@ void CreditCardEditorViewController::ButtonPressed(views::Button* sender,
         /*on_added=*/
         base::BindOnce(
             &CreditCardEditorViewController::AddAndSelectNewBillingAddress,
-            base::Unretained(this)),
+            weak_ptr_factory_.GetWeakPtr()),
         /*profile=*/nullptr);
   } else {
     EditorViewController::ButtonPressed(sender, event);

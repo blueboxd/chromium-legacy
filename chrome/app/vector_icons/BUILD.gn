@@ -16,6 +16,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "add.icon",
     "ads.icon",
     "apps.icon",
+    "autofill/webauthn_offer_dialog_header.icon",
+    "autofill/webauthn_offer_dialog_header_dark.icon",
     "blocked_badge.icon",
     "blocked_redirect.icon",
     "bluetooth.icon",

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/css_custom_list_interpolation_type.h"
 
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/underlying_length_checker.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -143,23 +143,14 @@ PairwiseInterpolationValue CSSCustomListInterpolationType::MaybeMergeSingles(
                          WTF::Unretained(inner_interpolation_type_.get())));
 }
 
-static bool VerifyNoNonInterpolableValues(const NonInterpolableValue* a,
-                                          const NonInterpolableValue* b) {
-  DCHECK(!a && !b);
-  return true;
-}
-
 ListInterpolationFunctions::NonInterpolableValuesAreCompatibleCallback
 CSSCustomListInterpolationType::GetNonInterpolableValuesAreCompatibleCallback()
     const {
-  if (syntax_type_ == CSSSyntaxType::kLengthPercentage) {
-    return WTF::BindRepeating(
-        LengthInterpolationFunctions::NonInterpolableValuesAreCompatible);
-  }
   // TODO(https://crbug.com/981537): Add support for <image> here.
   // TODO(https://crbug.com/981538): Add support for <transform-function> here.
   // TODO(https://crbug.com/981542): Add support for <transform-list> here.
-  return WTF::BindRepeating(VerifyNoNonInterpolableValues);
+  return WTF::BindRepeating(
+      ListInterpolationFunctions::VerifyNoNonInterpolableValues);
 }
 
 }  // namespace blink

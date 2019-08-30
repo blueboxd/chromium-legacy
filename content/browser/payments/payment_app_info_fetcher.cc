@@ -149,7 +149,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
     top_level_web_content->GetManifest(
         base::BindOnce(&PaymentAppInfoFetcher::SelfDeleteFetcher::
                            FetchPaymentAppManifestCallback,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -283,7 +283,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
       payments::IconSizeCalculator::IdealIconHeight(native_view),
       payments::IconSizeCalculator::MinimumIconHeight(),
       base::BindOnce(&PaymentAppInfoFetcher::SelfDeleteFetcher::OnIconFetched,
-                     base::Unretained(this)),
+                     weak_ptr_factory_.GetWeakPtr()),
       false /* square_only */);
   // |can_download| is false only if web contents are  null or the icon URL is
   // not valid. Both of these conditions are manually checked above, so

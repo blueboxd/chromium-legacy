@@ -73,11 +73,12 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   response_override_ = std::make_unique<NavigationResponseOverrideParameters>();
   response_override_->url_loader_client_endpoints =
       std::move(main_script_load_params->url_loader_client_endpoints);
-  response_override_->response_head = main_script_load_params->response_head;
+  response_override_->response_head =
+      std::move(main_script_load_params->response_head);
   response_override_->response_body =
       std::move(main_script_load_params->response_body);
   response_override_->redirect_responses =
-      main_script_load_params->redirect_response_heads;
+      std::move(main_script_load_params->redirect_response_heads);
   response_override_->redirect_infos = main_script_load_params->redirect_infos;
 
   // If the network service crashes, then self-destruct so clients don't get

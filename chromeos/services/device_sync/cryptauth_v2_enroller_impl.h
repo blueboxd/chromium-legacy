@@ -160,7 +160,7 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
   State state_ = State::kNotStarted;
 
   // The time of the last state change. Used for execution time metrics.
-  base::Time last_state_change_timestamp_;
+  base::TimeTicks last_state_change_timestamp_;
 
   // The new ClientDirective from SyncKeysResponse. This value is stored in the
   // CryptAuthEnrollmentResult which is passed to the

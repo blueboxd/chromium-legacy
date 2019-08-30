@@ -11,10 +11,7 @@
 namespace util {
 
 MemoryPressureVoteAggregator::MemoryPressureVoteAggregator(Delegate* delegate)
-    : current_pressure_level_(
-          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
-      delegate_(delegate),
-      votes_() {}
+    : delegate_(delegate) {}
 
 MemoryPressureVoteAggregator::~MemoryPressureVoteAggregator() {
   DCHECK_EQ(std::accumulate(votes_.begin(), votes_.end(), 0), 0);

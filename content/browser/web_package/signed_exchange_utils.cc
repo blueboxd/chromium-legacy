@@ -26,6 +26,10 @@
 namespace content {
 namespace signed_exchange_utils {
 
+namespace {
+base::Optional<base::Time> g_verification_time_for_testing;
+}  // namespace
+
 void ReportErrorAndTraceEvent(
     SignedExchangeDevToolsProxy* devtools_proxy,
     const std::string& error_message,
@@ -257,6 +261,17 @@ int MakeRequestID() {
   static base::NoDestructor<std::atomic_int> request_id(-1);
 
   return --*request_id;
+}
+
+base::Time GetVerificationTime() {
+  if (g_verification_time_for_testing)
+    return *g_verification_time_for_testing;
+  return base::Time::Now();
+}
+
+void SetVerificationTimeForTesting(
+    base::Optional<base::Time> verification_time_for_testing) {
+  g_verification_time_for_testing = verification_time_for_testing;
 }
 
 }  // namespace signed_exchange_utils

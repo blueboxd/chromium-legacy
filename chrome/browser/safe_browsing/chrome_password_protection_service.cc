@@ -1354,9 +1354,10 @@ std::string ChromePasswordProtectionService::GetOrganizationName(
     return std::string();
   }
 
-  std::string email = password_type.is_account_syncing()
-                          ? GetAccountInfo().email
-                          : GetSignedInNonSyncAccount(username()).email;
+  std::string email =
+      password_type.is_account_syncing()
+          ? GetAccountInfo().email
+          : GetSignedInNonSyncAccount(username_for_last_shown_warning()).email;
   return email.empty() ? std::string() : gaia::ExtractDomainName(email);
 }
 

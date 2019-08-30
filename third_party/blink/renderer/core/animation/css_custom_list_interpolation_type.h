@@ -22,7 +22,6 @@ class CSSCustomListInterpolationType : public CSSInterpolationType {
       CSSSyntaxRepeat syntax_repeat)
       : CSSInterpolationType(property, registration),
         inner_interpolation_type_(std::move(inner_interpolation_type)),
-        syntax_type_(syntax_type),
         syntax_repeat_(syntax_repeat) {
     DCHECK(property.IsCSSCustomProperty());
   }
@@ -82,7 +81,10 @@ class CSSCustomListInterpolationType : public CSSInterpolationType {
   // InterpolationType::Apply on inner_interpolation_type_.
   std::unique_ptr<CSSInterpolationType> inner_interpolation_type_;
 
-  const CSSSyntaxType syntax_type_;
+  // TODO(crbug.com/981537, 981538, 981542): Add support for <image>,
+  // <transform-function> and <transform-list> and make use of |syntax_type_|.
+  // CSSSyntaxType syntax_type_;
+
   const CSSSyntaxRepeat syntax_repeat_;
 };
 

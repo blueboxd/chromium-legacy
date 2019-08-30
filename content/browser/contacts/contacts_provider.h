@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_CONTACTS_CONTACTS_PROVIDER_H_
 #define CONTENT_BROWSER_CONTACTS_CONTACTS_PROVIDER_H_
 
+#include "content/public/browser/contacts_picker_properties_requested.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 
 namespace content {
@@ -14,7 +15,7 @@ class ContactsProvider {
   using ContactsSelectedCallback = base::OnceCallback<void(
       base::Optional<std::vector<blink::mojom::ContactInfoPtr>> contacts,
       int percentage_shared,
-      int properties_requested)>;
+      ContactsPickerPropertiesRequested properties_requested)>;
 
   ContactsProvider() = default;
   virtual ~ContactsProvider() = default;

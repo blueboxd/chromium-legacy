@@ -194,7 +194,7 @@ class CONTENT_EXPORT StoragePartitionImpl
                       const GURL& url,
                       bool first_auth_attempt,
                       const net::AuthChallengeInfo& auth_info,
-                      const base::Optional<network::ResourceResponseHead>& head,
+                      network::mojom::URLResponseHeadPtr head,
                       network::mojom::AuthChallengeResponderPtr
                           auth_challenge_responder) override;
   void OnCertificateRequested(

@@ -22,7 +22,16 @@ namespace net {
 NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
     NetworkChangeNotifier::ConnectionType initial_connection_type,
     NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype)
-    : NetworkChangeNotifier(NetworkChangeCalculatorParamsPosix()),
+    : NetworkChangeNotifierPosix(initial_connection_type,
+                                 initial_connection_subtype,
+                                 /*system_dns_config_notifier=*/nullptr) {}
+
+NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
+    NetworkChangeNotifier::ConnectionType initial_connection_type,
+    NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype,
+    SystemDnsConfigChangeNotifier* system_dns_config_notifier)
+    : NetworkChangeNotifier(NetworkChangeCalculatorParamsPosix(),
+                            system_dns_config_notifier),
       connection_type_(initial_connection_type),
       max_bandwidth_mbps_(
           NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -263,8 +264,7 @@ void RunFaviconCallbackAsync(favicon_base::FaviconResultsCallback callback,
       image.AsImageSkia().image_reps();
   for (size_t i = 0; i < image_reps.size(); ++i) {
     const gfx::ImageSkiaRep& image_rep = image_reps[i];
-    scoped_refptr<base::RefCountedBytes> bitmap_data(
-        new base::RefCountedBytes());
+    auto bitmap_data = base::MakeRefCounted<base::RefCountedBytes>();
     if (gfx::PNGCodec::EncodeBGRASkBitmap(image_rep.GetBitmap(), false,
                                           &bitmap_data->data())) {
       favicon_base::FaviconRawBitmapResult bitmap_result;

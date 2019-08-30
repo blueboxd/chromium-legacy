@@ -138,6 +138,11 @@ void AwAutofillClient::ShowLocalCardMigrationResults(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ShowWebauthnOfferDialog(
+    WebauthnOfferDialogCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ConfirmSaveAutofillProfile(
     const autofill::AutofillProfile& profile,
     base::OnceClosure callback) {

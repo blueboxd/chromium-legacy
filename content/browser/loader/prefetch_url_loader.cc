@@ -143,7 +143,7 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 }
 
 void PrefetchURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response) {
+    network::mojom::URLResponseHeadPtr response) {
   if (IsSignedExchangeHandlingEnabled() &&
       signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           resource_request_.url, response)) {
@@ -168,12 +168,12 @@ void PrefetchURLLoader::OnReceiveResponse(
     prefetched_signed_exchange_cache_adapter_->OnReceiveInnerResponse(response);
   }
 
-  forwarding_client_->OnReceiveResponse(response);
+  forwarding_client_->OnReceiveResponse(std::move(response));
 }
 
 void PrefetchURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   if (prefetched_signed_exchange_cache_adapter_ &&
       signed_exchange_prefetch_handler_) {
     prefetched_signed_exchange_cache_adapter_->OnReceiveRedirect(
@@ -187,7 +187,7 @@ void PrefetchURLLoader::OnReceiveRedirect(
   resource_request_.top_frame_origin = redirect_info.new_top_frame_origin;
   resource_request_.referrer = GURL(redirect_info.new_referrer);
   resource_request_.referrer_policy = redirect_info.new_referrer_policy;
-  forwarding_client_->OnReceiveRedirect(redirect_info, head);
+  forwarding_client_->OnReceiveRedirect(redirect_info, std::move(head));
 }
 
 void PrefetchURLLoader::OnUploadProgress(int64_t current_position,

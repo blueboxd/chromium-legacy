@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/message_loop/message_pump_type.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -169,7 +169,7 @@ void NetworkingPrivateLinux::Initialize() {
   dbus_options.connection_type = dbus::Bus::PRIVATE;
   dbus_options.dbus_task_runner = dbus_task_runner_;
 
-  dbus_ = new dbus::Bus(dbus_options);
+  dbus_ = base::MakeRefCounted<dbus::Bus>(dbus_options);
   network_manager_proxy_ = dbus_->GetObjectProxy(
       networking_private::kNetworkManagerNamespace,
       dbus::ObjectPath(networking_private::kNetworkManagerPath));

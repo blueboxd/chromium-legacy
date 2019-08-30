@@ -151,7 +151,7 @@ function PDFViewer(browserApi) {
   PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
 
   // Parse open pdf parameters.
-  this.paramsParser_ = new OpenPDFParamsParser(
+  this.paramsParser_ = new OpenPdfParamsParser(
       message => this.pluginController_.postMessage(message));
   const toolbarEnabled =
       this.paramsParser_.getUiUrlParams(this.originalUrl_).toolbar &&
@@ -293,8 +293,8 @@ function PDFViewer(browserApi) {
 
   document.body.addEventListener('navigate', e => {
     const disposition = e.detail.newtab ?
-        Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB :
-        Navigator.WindowOpenDisposition.CURRENT_TAB;
+        PdfNavigator.WindowOpenDisposition.NEW_BACKGROUND_TAB :
+        PdfNavigator.WindowOpenDisposition.CURRENT_TAB;
     this.navigator_.navigate(e.detail.uri, disposition);
   });
 
@@ -324,7 +324,7 @@ function PDFViewer(browserApi) {
       'contextmenu', e => this.handleContextMenuEvent_(e));
 
   const tabId = this.browserApi_.getStreamInfo().tabId;
-  this.navigator_ = new Navigator(
+  this.navigator_ = new PdfNavigator(
       this.originalUrl_, this.viewport_, this.paramsParser_,
       new NavigatorDelegate(tabId));
   this.viewportScroller_ =
@@ -1143,7 +1143,8 @@ PDFViewer.prototype = {
   handleNavigate: function(url, disposition) {
     // If in print preview, always open a new tab.
     if (this.isPrintPreview_) {
-      this.navigator_.navigate(url, Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB);
+      this.navigator_.navigate(
+          url, PdfNavigator.WindowOpenDisposition.NEW_BACKGROUND_TAB);
     } else {
       this.navigator_.navigate(url, disposition);
     }

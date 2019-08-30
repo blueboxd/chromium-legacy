@@ -12,6 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -180,6 +181,41 @@ bool IsPrimaryOrDeviceLocalAccount(
   return IsPrimaryGaiaAccount(gaia_id);
 }
 
+void TriggerAccountManagerMigrationsIfRequired(Profile* profile) {
+  if (!chromeos::IsAccountManagerAvailable(profile))
+    return;
+
+  chromeos::AccountManagerMigrator* const migrator =
+      chromeos::AccountManagerMigratorFactory::GetForBrowserContext(profile);
+  if (!migrator) {
+    // Migrator can be null for ephemeral and kiosk sessions. Ignore those cases
+    // since there are no accounts to be migrated in that case.
+    return;
+  }
+  const base::Optional<chromeos::AccountMigrationRunner::MigrationResult>
+      last_migration_run_result = migrator->GetLastMigrationRunResult();
+
+  if (!last_migration_run_result)
+    return;
+
+  if (last_migration_run_result->final_status !=
+      chromeos::AccountMigrationRunner::Status::kFailure) {
+    return;
+  }
+
+  if (last_migration_run_result->failed_step_id !=
+      chromeos::AccountManagerMigrator::kArcAccountsMigrationId) {
+    // Migrations failed but not because of ARC. ARC should not try to re-run
+    // migrations in this case.
+    return;
+  }
+
+  // Migrations are idempotent and safe to run multiple times. It may have
+  // happened that ARC migrations timed out at the start of the session. Give
+  // it a chance to run again.
+  migrator->Start();
+}
+
 }  // namespace
 
 // static
@@ -239,8 +275,10 @@ void ArcAuthService::OnConnectionReady() {
   // provisioning.
   // For the second and subsequent sessions,
   // |ArcSessionManager::Get()->IsArcProvisioned()| will be |true|.
-  if (arc::IsArcProvisioned(profile_))
+  if (arc::IsArcProvisioned(profile_)) {
+    TriggerAccountManagerMigrationsIfRequired(profile_);
     TriggerAccountsPushToArc();
+  }
 
   if (pending_get_arc_accounts_callback_)
     DispatchAccountsInArc(std::move(pending_get_arc_accounts_callback_));

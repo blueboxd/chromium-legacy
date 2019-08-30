@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +18,7 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
@@ -122,10 +122,10 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   bool has_error_ = false;
   webrtc::DecodedImageCallback* decode_complete_callback_ = nullptr;
   // Requests that have not been submitted to the decoder yet.
-  base::circular_deque<scoped_refptr<media::DecoderBuffer>> pending_buffers_;
+  WTF::Deque<scoped_refptr<media::DecoderBuffer>> pending_buffers_;
   // Record of timestamps that have been sent to be decoded. Removing a
   // timestamp will cause the frame to be dropped when it is output.
-  base::circular_deque<base::TimeDelta> decode_timestamps_;
+  WTF::Deque<base::TimeDelta> decode_timestamps_;
 
   // Thread management.
   SEQUENCE_CHECKER(worker_sequence_checker_);

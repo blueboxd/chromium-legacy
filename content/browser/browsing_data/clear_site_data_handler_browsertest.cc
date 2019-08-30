@@ -306,9 +306,9 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   // Callback handler for AddCookie().
   static void AddCookieCallback(
       base::OnceClosure callback,
-      net::CanonicalCookie::CookieInclusionStatus success) {
+      net::CanonicalCookie::CookieInclusionStatus status) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    ASSERT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE, success);
+    ASSERT_TRUE(status.IsInclude());
     std::move(callback).Run();
   }
 

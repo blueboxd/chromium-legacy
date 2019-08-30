@@ -4,8 +4,8 @@
 
 #include "chrome/installer/util/google_update_settings.h"
 
-#include <windows.h>
 #include <stddef.h>
+#include <windows.h>
 
 #include <memory>
 
@@ -17,6 +17,7 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "base/win/shlwapi.h"  // For SHDeleteKey.
+#include "build/branding_buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -454,7 +455,7 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyNoOverride) {
   EXPECT_FALSE(is_overridden);
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Test that the default override is returned if no app-specific override is
 // present.
@@ -661,7 +662,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdatesDisabledByTimeout) {
   EXPECT_TRUE(GoogleUpdateSettings::AreAutoupdatesEnabled());
 }
 
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 TEST_F(GoogleUpdateSettingsTest, ExperimentsLabelHelperSystem) {
   TestExperimentsLabelHelper(SYSTEM_INSTALL);

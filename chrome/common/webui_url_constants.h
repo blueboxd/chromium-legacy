@@ -339,6 +339,7 @@ extern const char kBluetoothSubPage[];
 extern const char kChangePictureSubPage[];
 extern const char kConnectedDevicesSubPage[];
 extern const char kCrostiniSharedUsbDevicesSubPage[];
+extern const char kCrostiniExportImportSubPage[];
 extern const char kDateTimeSubPage[];
 extern const char kDisplaySubPage[];
 extern const char kHelpSubPage[];

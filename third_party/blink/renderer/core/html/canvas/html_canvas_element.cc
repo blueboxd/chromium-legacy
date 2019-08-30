@@ -129,12 +129,12 @@ HTMLCanvasElement::~HTMLCanvasElement() {
 }
 
 void HTMLCanvasElement::Dispose() {
-  if (PlaceholderFrame()) {
-    ReleasePlaceholderFrame();
+  if (OffscreenCanvasFrame()) {
+    ReleaseOffscreenCanvasFrame();
   }
   // It's possible that the placeholder frame has been disposed but its ID still
   // exists. Make sure that it gets unregistered here
-  UnregisterPlaceholder();
+  UnregisterPlaceholderCanvas();
 
   // We need to drop frame dispatcher, to prevent mojo calls from completing.
   frame_dispatcher_ = nullptr;
@@ -191,7 +191,7 @@ Node::InsertionNotificationRequest HTMLCanvasElement::InsertedInto(
 
 void HTMLCanvasElement::setHeight(unsigned value,
                                   ExceptionState& exception_state) {
-  if (IsPlaceholderRegistered()) {
+  if (IsOffscreenCanvasRegistered()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot resize canvas after call to transferControlToOffscreen().");
@@ -202,7 +202,7 @@ void HTMLCanvasElement::setHeight(unsigned value,
 
 void HTMLCanvasElement::setWidth(unsigned value,
                                  ExceptionState& exception_state) {
-  if (IsPlaceholderRegistered()) {
+  if (IsOffscreenCanvasRegistered()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot resize canvas after call to transferControlToOffscreen().");
@@ -598,7 +598,7 @@ void HTMLCanvasElement::Reset() {
 }
 
 bool HTMLCanvasElement::PaintsIntoCanvasBuffer() const {
-  if (PlaceholderFrame())
+  if (OffscreenCanvasFrame())
     return false;
   DCHECK(context_);
   if (!context_->IsComposited())
@@ -695,7 +695,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
 
   // FIXME: crbug.com/438240; there is a bug with the new CSS blending and
   // compositing feature.
-  if (!context_ && !PlaceholderFrame())
+  if (!context_ && !OffscreenCanvasFrame())
     return;
 
   if (Is3d())
@@ -713,10 +713,10 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
       return;
   }
 
-  if (PlaceholderFrame()) {
+  if (OffscreenCanvasFrame()) {
     DCHECK(GetDocument().Printing());
     scoped_refptr<StaticBitmapImage> image_for_printing =
-        PlaceholderFrame()->Bitmap()->MakeUnaccelerated();
+        OffscreenCanvasFrame()->Bitmap()->MakeUnaccelerated();
     context.DrawImage(image_for_printing.get(), Image::kSyncDecode,
                       FloatRect(PixelSnappedIntRect(r)));
     return;
@@ -812,9 +812,9 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
     return nullptr;
 
   scoped_refptr<StaticBitmapImage> image_bitmap = nullptr;
-  if (PlaceholderFrame()) {  // Offscreen Canvas
-    DCHECK(PlaceholderFrame()->OriginClean());
-    image_bitmap = PlaceholderFrame()->Bitmap();
+  if (OffscreenCanvasFrame()) {  // Offscreen Canvas
+    DCHECK(OffscreenCanvasFrame()->OriginClean());
+    image_bitmap = OffscreenCanvasFrame()->Bitmap();
   } else if (Is3d()) {  // WebGL or WebGL2 canvas
     if (context_->CreationAttributes().premultiplied_alpha) {
       context_->PaintRenderingResultsToCanvas(source_buffer);
@@ -985,8 +985,8 @@ bool HTMLCanvasElement::OriginClean() const {
       GetDocument().GetSettings()->GetDisableReadingFromCanvas()) {
     return false;
   }
-  if (PlaceholderFrame())
-    return PlaceholderFrame()->OriginClean();
+  if (OffscreenCanvasFrame())
+    return OffscreenCanvasFrame()->OriginClean();
   return origin_clean_;
 }
 
@@ -1193,9 +1193,9 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     return nullptr;
   }
 
-  if (PlaceholderFrame()) {
+  if (OffscreenCanvasFrame()) {
     *status = kNormalSourceImageStatus;
-    return PlaceholderFrame()->Bitmap();
+    return OffscreenCanvasFrame()->Bitmap();
   }
 
   if (!context_) {
@@ -1249,8 +1249,8 @@ FloatSize HTMLCanvasElement::ElementSize(const FloatSize&) const {
       return FloatSize(image->width(), image->height());
     return FloatSize(0, 0);
   }
-  if (PlaceholderFrame())
-    return FloatSize(PlaceholderFrame()->Size());
+  if (OffscreenCanvasFrame())
+    return FloatSize(OffscreenCanvasFrame()->Size());
   return FloatSize(width(), height());
 }
 
@@ -1269,15 +1269,15 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
       script_state, ImageBitmap::Create(this, crop_rect, options));
 }
 
-void HTMLCanvasElement::SetPlaceholderFrame(
+void HTMLCanvasElement::SetOffscreenCanvasFrame(
     scoped_refptr<CanvasResource> image,
     base::WeakPtr<CanvasResourceDispatcher> dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     unsigned resource_id) {
-  OffscreenCanvasPlaceholder::SetPlaceholderFrame(
+  OffscreenCanvasPlaceholder::SetOffscreenCanvasFrame(
       std::move(image), std::move(dispatcher), std::move(task_runner),
       resource_id);
-  SetSize(PlaceholderFrame()->Size());
+  SetSize(OffscreenCanvasFrame()->Size());
   NotifyListenersCanvasChanged();
 }
 

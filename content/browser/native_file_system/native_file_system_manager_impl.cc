@@ -95,6 +95,16 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
                                    std::move(callback_runner));
 }
 
+bool HasTransientUserActivation(int render_process_id, int frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHost* rfh = RenderFrameHost::FromID(render_process_id, frame_id);
+
+  if (!rfh)
+    return false;
+
+  return rfh->HasTransientUserActivation();
+}
+
 }  // namespace
 
 NativeFileSystemManagerImpl::SharedHandleState::SharedHandleState(
@@ -318,10 +328,16 @@ NativeFileSystemManagerImpl::CreateFileWriter(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter> result;
-  writer_receivers_.Add(std::make_unique<NativeFileSystemFileWriterImpl>(
-                            this, binding_context, url, swap_url, handle_state),
-                        result.InitWithNewPipeAndPassReceiver());
+  mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
+      writer_receiver = result.InitWithNewPipeAndPassReceiver();
 
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&HasTransientUserActivation, binding_context.process_id,
+                     binding_context.frame_id),
+      base::BindOnce(&NativeFileSystemManagerImpl::CreateFileWriterImpl,
+                     weak_factory_.GetWeakPtr(), binding_context, url, swap_url,
+                     handle_state, std::move(writer_receiver)));
   return result;
 }
 
@@ -600,6 +616,20 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
           SharedHandleState(std::move(read_grant), std::move(write_grant),
                             std::move(url.file_system)))),
       url.base_name);
+}
+
+void NativeFileSystemManagerImpl::CreateFileWriterImpl(
+    const BindingContext& binding_context,
+    const storage::FileSystemURL& url,
+    const storage::FileSystemURL& swap_url,
+    const SharedHandleState& handle_state,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
+        writer_receiver,
+    bool has_transient_user_activation) {
+  writer_receivers_.Add(std::make_unique<NativeFileSystemFileWriterImpl>(
+                            this, binding_context, url, swap_url, handle_state,
+                            has_transient_user_activation),
+                        std::move(writer_receiver));
 }
 
 }  // namespace content

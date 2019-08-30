@@ -32,9 +32,7 @@ class WallpaperWidgetController::WidgetHandler
   WidgetHandler(WallpaperWidgetController* controller, views::Widget* widget)
       : controller_(controller),
         widget_(widget),
-        parent_window_(widget->GetNativeWindow()->parent()),
-        widget_observer_(this),
-        window_observer_(this) {
+        parent_window_(widget->GetNativeWindow()->parent()) {
     DCHECK(controller_);
     DCHECK(widget_);
     widget_observer_.Add(widget_);
@@ -150,8 +148,8 @@ class WallpaperWidgetController::WidgetHandler
   bool has_blur_cache_ = false;
   bool observing_implicit_animations_ = false;
 
-  ScopedObserver<views::Widget, WidgetHandler> widget_observer_;
-  ScopedObserver<aura::Window, WidgetHandler> window_observer_;
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WidgetHandler);
 };

@@ -9,10 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace heap_profiling {
 
@@ -63,9 +60,8 @@ class Supervisor {
   //   * Relying on the assumption that in all other cases, the object is either
   //     fully initialized or not initialized. There are DCHECKs to enforce this
   //     assumption.
-  void Start(service_manager::Connector* connector, base::OnceClosure callback);
-  void Start(service_manager::Connector* connector,
-             Mode mode,
+  void Start(base::OnceClosure callback);
+  void Start(Mode mode,
              mojom::StackMode stack_mode,
              uint32_t sampling_rate,
              base::OnceClosure callback);
@@ -104,7 +100,10 @@ class Supervisor {
 
   // Initialization stage 1: Start the Service on the IO thread.
   void StartServiceOnIOThread(
-      std::unique_ptr<service_manager::Connector> connector,
+      mojo::PendingReceiver<memory_instrumentation::mojom::HeapProfiler>
+          receiver,
+      mojo::PendingRemote<memory_instrumentation::mojom::HeapProfilerHelper>
+          remote_helper,
       Mode mode,
       mojom::StackMode stack_mode,
       uint32_t sampling_rate,

@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -113,6 +114,7 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
              const std::string& device_id,
              CmaBackendFactory* cma_backend_factory);
 
+  void SetRunning(bool running);
   void Initialize(const std::string& application_session_id,
                   chromecast::mojom::MultiroomInfoPtr multiroom_info);
   void Start(AudioSourceCallback* source_callback);
@@ -147,6 +149,8 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
   const std::string device_id_;
   CmaBackendFactory* const cma_backend_factory_;
 
+  base::Lock running_lock_;
+  bool running_ = true;
   AudioOutputState media_thread_state_;
   CmaBackendState cma_backend_state_ = CmaBackendState::kUinitialized;
   ::media::AudioTimestampHelper timestamp_helper_;
@@ -195,6 +199,11 @@ CastAudioOutputStream::CmaWrapper::CmaWrapper(
   encountered_error_ = false;
   audio_decoder_ = nullptr;
   source_callback_ = nullptr;
+}
+
+void CastAudioOutputStream::CmaWrapper::SetRunning(bool running) {
+  base::AutoLock lock(running_lock_);
+  running_ = running;
 }
 
 void CastAudioOutputStream::CmaWrapper::Initialize(
@@ -355,6 +364,15 @@ void CastAudioOutputStream::CmaWrapper::SetVolume(double volume) {
 void CastAudioOutputStream::CmaWrapper::PushBuffer() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
 
+  // Acquire running_lock_ for the scope of this push call to
+  // prevent the source callback from closing the output stream
+  // mid-push.
+  base::AutoLock lock(running_lock_);
+
+  // Do not fill more buffers if we have stopped running.
+  if (!running_)
+    return;
+
   // It is possible that this function is called when we are stopped.
   // Return quickly if so.
   if (!source_callback_ || encountered_error_ ||
@@ -480,6 +498,7 @@ class CastAudioOutputStream::MixerServiceWrapper
       MixerServiceConnectionFactory* mixer_service_connection_factory);
   ~MixerServiceWrapper() override = default;
 
+  void SetRunning(bool running);
   void Start(AudioSourceCallback* source_callback);
   void Stop();
   void Close(base::OnceClosure closure);
@@ -507,6 +526,8 @@ class CastAudioOutputStream::MixerServiceWrapper
   std::unique_ptr<media::MixerServiceConnection> mixer_connection_;
   double volume_;
 
+  base::Lock running_lock_;
+  bool running_ = true;
   // MixerServiceWrapper must run on an "io thread".
   base::Thread io_thread_;
   // Task runner on |io_thread_|.
@@ -535,6 +556,11 @@ CastAudioOutputStream::MixerServiceWrapper::MixerServiceWrapper(
   CHECK(io_thread_.StartWithOptions(options));
   io_task_runner_ = io_thread_.task_runner();
   DCHECK(io_task_runner_);
+}
+
+void CastAudioOutputStream::MixerServiceWrapper::SetRunning(bool running) {
+  base::AutoLock lock(running_lock_);
+  running_ = running;
 }
 
 void CastAudioOutputStream::MixerServiceWrapper::Start(
@@ -600,6 +626,16 @@ void CastAudioOutputStream::MixerServiceWrapper::FillNextBuffer(
     int frames,
     int64_t playout_timestamp) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+
+  // Acquire running_lock_ for the scope of this fill call to
+  // prevent the source callback from closing the output stream
+  // mid-fill.
+  base::AutoLock lock(running_lock_);
+
+  // Do not fill more buffers if we have stopped running.
+  if (!running_)
+    return;
+
   if (playout_timestamp < 0) {
     // Assume any negative timestamp is invalid.
     playout_timestamp = 0;
@@ -720,10 +756,16 @@ void CastAudioOutputStream::Close() {
       &CastAudioOutputStream::FinishClose, audio_weak_factory_.GetWeakPtr());
 
   if (mixer_service_wrapper_) {
+    // Synchronously set running to false to guarantee that
+    // AudioSourceCallback::OnMoreData() will not be called anymore.
+    mixer_service_wrapper_->SetRunning(false);
     POST_TO_MIXER_SERVICE_WRAPPER(
         Close, BindToTaskRunner(audio_manager_->GetTaskRunner(),
                                 std::move(finish_callback)));
   } else if (cma_wrapper_) {
+    // Synchronously set running to false to guarantee that
+    // AudioSourceCallback::OnMoreData() will not be called anymore.
+    cma_wrapper_->SetRunning(false);
     POST_TO_CMA_WRAPPER(Close, std::move(finish_callback));
   } else {
     std::move(finish_callback).Run();

@@ -16,6 +16,7 @@ cr.define('destination_store_test', function() {
     UnreachableRecentCloudPrinter: 'unreachable recent cloud printer',
     RecentSaveAsPdf: 'recent save as pdf',
     MultipleRecentDestinationsAccounts: 'multiple recent destinations accounts',
+    LoadAndSelectDestination: 'select loaded destination',
   };
 
   const suiteName = 'DestinationStoreTest';
@@ -401,6 +402,65 @@ cr.define('destination_store_test', function() {
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
             loadedPrintersAccount2[0].id);
       });
+    });
+
+    /**
+     * Tests that if the user has a single valid recent destination the
+     * destination is automatically reselected.
+     */
+    test(assert(TestNames.LoadAndSelectDestination), function() {
+      destinations = print_preview_test_utils.getDestinations(
+          nativeLayer, localDestinations);
+      initialSettings.printerName = '';
+      const id1 = 'ID1';
+      const name1 = 'One';
+      let destination = null;
+
+      return setInitialSettings()
+          .then(function(args) {
+            assertEquals(
+                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+                args.destinationId);
+            assertEquals(print_preview.PrinterType.LOCAL, args.type);
+            assertEquals(
+                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+                destinationStore.selectedDestination.id);
+            // Update destination with ID 1 so that it has policies.
+            const localDestinationInfo = {deviceName: id1, printerName: name1};
+            if (cr.isChromeOS) {
+              localDestinationInfo.policies = {
+                allowedColorModes: 0x1,
+                defaultColorMode: 0x1
+              };
+            }
+            nativeLayer.setLocalDestinationCapabilities({
+              printer: localDestinationInfo,
+              capabilities: print_preview_test_utils.getCddTemplate(id1, name1),
+            });
+            destinationStore.startLoadAllDestinations();
+            return nativeLayer.whenCalled('getPrinters');
+          })
+          .then(() => {
+            destination =
+                destinationStore.destinations().find(d => d.id === id1);
+            // No capabilities or policies yet.
+            assertFalse(!!destination.capabilities);
+            if (cr.isChromeOS) {
+              assertEquals(null, destination.policies);
+            }
+            destinationStore.selectDestination(destination);
+            return nativeLayer.whenCalled('getPrinterCapabilities');
+          })
+          .then(() => {
+            assertEquals(destination, destinationStore.selectedDestination);
+            // Capabilities are updated.
+            assertTrue(!!destination.capabilities);
+            // TODO (https://crbug.com/998103): Ensure that the destination
+            // policies are actually set.
+            if (cr.isChromeOS) {
+              assertEquals(null, destination.policies);
+            }
+          });
     });
   });
 

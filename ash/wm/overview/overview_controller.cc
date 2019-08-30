@@ -643,6 +643,21 @@ bool OverviewController::ToggleOverview(
       OnEndingAnimationComplete(/*canceled=*/true);
     delayed_animations_.clear();
 
+    // |should_focus_overview_| shall be true except when split view mode starts
+    // on transition between clamshell mode and tablet mode, on transition
+    // between user sessions, or on transition between virtual desks. Those are
+    // the cases where code arranges split view by first snapping a window on
+    // one side and then starting overview to be seen on the other side, meaning
+    // that the split view state here will be |SplitViewState::kLeftSnapped| or
+    // |SplitViewState::kRightSnapped|. We have to check the split view state
+    // before |SplitViewController::OnOverviewModeStarting|, because in case of
+    // |SplitViewState::kBothSnapped|, that function will insert one of the two
+    // snapped windows to overview.
+    const SplitViewState split_view_state =
+        Shell::Get()->split_view_controller()->state();
+    should_focus_overview_ = split_view_state == SplitViewState::kNoSnap ||
+                             split_view_state == SplitViewState::kBothSnapped;
+
     // Suspend occlusion tracker until the enter animation is complete.
     PauseOcclusionTracker();
 
@@ -706,8 +721,10 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
 
   for (auto& observer : observers_)
     observer.OnOverviewModeStartingAnimationComplete(canceled);
-  if (overview_session_)
-    overview_session_->OnStartingAnimationComplete(canceled);
+  if (overview_session_) {
+    overview_session_->OnStartingAnimationComplete(canceled,
+                                                   should_focus_overview_);
+  }
   UnpauseOcclusionTracker(kOcclusionPauseDurationForStartMs);
   TRACE_EVENT_ASYNC_END1("ui", "OverviewController::EnterOverview", this,
                          "canceled", canceled);

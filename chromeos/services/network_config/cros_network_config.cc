@@ -104,28 +104,28 @@ mojom::ConnectionStateType GetConnectionState(const NetworkState* network,
                             : mojom::ConnectionStateType::kNotConnected;
 }
 
-mojom::VPNType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
+mojom::VpnType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
   if (onc_vpn_type == ::onc::vpn::kTypeL2TP_IPsec)
-    return mojom::VPNType::kL2TPIPsec;
+    return mojom::VpnType::kL2TPIPsec;
   if (onc_vpn_type == ::onc::vpn::kOpenVPN)
-    return mojom::VPNType::kOpenVPN;
+    return mojom::VpnType::kOpenVPN;
   if (onc_vpn_type == ::onc::vpn::kThirdPartyVpn)
-    return mojom::VPNType::kThirdPartyVPN;
+    return mojom::VpnType::kExtension;
   if (onc_vpn_type == ::onc::vpn::kArcVpn)
-    return mojom::VPNType::kArcVPN;
+    return mojom::VpnType::kArc;
   NOTREACHED() << "Unsupported ONC VPN type: " << onc_vpn_type;
-  return mojom::VPNType::kOpenVPN;
+  return mojom::VpnType::kOpenVPN;
 }
 
-std::string MojoVpnTypeToOnc(mojom::VPNType mojo_vpn_type) {
+std::string MojoVpnTypeToOnc(mojom::VpnType mojo_vpn_type) {
   switch (mojo_vpn_type) {
-    case mojom::VPNType::kL2TPIPsec:
+    case mojom::VpnType::kL2TPIPsec:
       return ::onc::vpn::kTypeL2TP_IPsec;
-    case mojom::VPNType::kOpenVPN:
+    case mojom::VpnType::kOpenVPN:
       return ::onc::vpn::kOpenVPN;
-    case mojom::VPNType::kThirdPartyVPN:
+    case mojom::VpnType::kExtension:
       return ::onc::vpn::kThirdPartyVpn;
-    case mojom::VPNType::kArcVPN:
+    case mojom::VpnType::kArc:
       return ::onc::vpn::kArcVpn;
   }
   NOTREACHED();

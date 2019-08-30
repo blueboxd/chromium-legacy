@@ -14,6 +14,7 @@
 namespace content {
 
 namespace {
+
 constexpr char kPrefix[] = "_key";
 constexpr char kSeparator[] = " \n";
 
@@ -65,6 +66,45 @@ std::string GetCacheKey(const GURL& resource_url, const GURL& origin_lock) {
     key.append(net::SimplifyUrlForRequest(origin_lock).spec());
   return key;
 }
+
+constexpr int kResponseTimeSizeInBytes = sizeof(int64_t);
+
+static_assert(mojo_base::BigBuffer::kMaxInlineBytes >=
+                  2 * kResponseTimeSizeInBytes,
+              "Buffer may not be large enough for response time");
+static_assert(mojo_base::BigBuffer::kMaxInlineBytes <=
+                  std::numeric_limits<int>::max(),
+              "Buffer size calculations may overflow int");
+
+// The cutoff size for small code entries. Anything larger than this uses a
+// shared memory BigBuffer to read the entry.
+constexpr int kSmallCodeMaximumInBytes = mojo_base::BigBuffer::kMaxInlineBytes;
+
+// A net::IOBufferWithSize backed by a mojo_base::BigBuffer. For very large
+// code, using BigBuffer allows us to avoid slow data copies.
+class BigIOBuffer : public net::IOBufferWithSize {
+ public:
+  explicit BigIOBuffer(size_t size) : net::IOBufferWithSize(nullptr, size) {
+    DCHECK_GT(size, static_cast<size_t>(kSmallCodeMaximumInBytes));
+    buffer_ = mojo_base::BigBuffer(size);
+    data_ = reinterpret_cast<char*>(buffer_.data());
+    DCHECK(data_);
+  }
+  mojo_base::BigBuffer TakeBuffer() { return std::move(buffer_); }
+
+ protected:
+  ~BigIOBuffer() override {
+    // Storage is managed by BigBuffer. We must clear these before the base
+    // class destructor runs.
+    this->data_ = nullptr;
+    this->size_ = 0UL;
+  }
+
+ private:
+  mojo_base::BigBuffer buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BigIOBuffer);
+};
 
 }  // namespace
 
@@ -455,22 +495,42 @@ void GeneratedCodeCache::OpenCompleteForReadData(
     return;
   }
 
-  int result = net::ERR_FAILED;
-  scoped_refptr<net::IOBufferWithSize> buffer;
-  {
-    disk_cache::ScopedEntryPtr disk_entry(entry_result.ReleaseEntry());
-    // There should be a valid entry if the open was successful.
-    DCHECK(disk_entry);
-    int size = disk_entry->GetDataSize(kDataIndex);
-    buffer = base::MakeRefCounted<net::IOBufferWithSize>(size);
+  disk_cache::ScopedEntryPtr disk_entry(entry_result.ReleaseEntry());
+  // There should be a valid entry if the open was successful.
+  DCHECK(disk_entry);
+
+  int entry_size = disk_entry->GetDataSize(kDataIndex);
+  if (entry_size <= kSmallCodeMaximumInBytes) {
+    // This entry is small. Read response time and code together and separate
+    // them before we copy the buffer for transfer.
+    scoped_refptr<net::IOBufferWithSize> buffer =
+        base::MakeRefCounted<net::IOBufferWithSize>(entry_size);
     net::CompletionOnceCallback callback = base::BindOnce(
         &GeneratedCodeCache::ReadDataComplete, weak_ptr_factory_.GetWeakPtr(),
         key, read_data_callback, buffer);
-    result = disk_entry->ReadData(kDataIndex, 0, buffer.get(), size,
-                                  std::move(callback));
-  }
-  if (result != net::ERR_IO_PENDING) {
-    ReadDataComplete(key, read_data_callback, buffer, result);
+    int result = disk_entry->ReadData(kDataIndex, 0, buffer.get(), entry_size,
+                                      std::move(callback));
+    if (result != net::ERR_IO_PENDING) {
+      ReadDataComplete(key, read_data_callback, buffer, result);
+    }
+  } else {
+    // This entry is large. Use a BigIOBuffer backed by shared memory to read
+    // and transfer it without copying. We have to read the data in two parts,
+    // response time and code, since we can't trim the shared memory. Use the
+    // same buffer to read the response time and the code.
+    int code_size = entry_size - kResponseTimeSizeInBytes;
+    // Release the disk entry to pass it to |ReadResponseTimeComplete|.
+    disk_cache::Entry* entry = disk_entry.release();
+    scoped_refptr<net::IOBufferWithSize> buffer =
+        base::MakeRefCounted<BigIOBuffer>(static_cast<size_t>(code_size));
+    net::CompletionOnceCallback callback = base::BindOnce(
+        &GeneratedCodeCache::ReadResponseTimeComplete,
+        weak_ptr_factory_.GetWeakPtr(), key, read_data_callback, buffer, entry);
+    int result = entry->ReadData(kDataIndex, 0, buffer.get(),
+                                 kResponseTimeSizeInBytes, std::move(callback));
+    if (result != net::ERR_IO_PENDING) {
+      ReadResponseTimeComplete(key, read_data_callback, buffer, entry, result);
+    }
   }
 }
 
@@ -500,6 +560,52 @@ void GeneratedCodeCache::ReadDataComplete(
     base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromMicroseconds(raw_response_time));
     std::move(callback).Run(response_time, mojo_base::BigBuffer(data));
+  }
+  IssueQueuedOperationForEntry(key);
+}
+
+void GeneratedCodeCache::ReadResponseTimeComplete(
+    const std::string& key,
+    ReadDataCallback read_data_callback,
+    scoped_refptr<net::IOBufferWithSize> buffer,
+    disk_cache::Entry* entry,
+    int rv) {
+  DCHECK(entry);
+  disk_cache::ScopedEntryPtr disk_entry(entry);
+  if (rv != kResponseTimeSizeInBytes) {
+    CollectStatistics(CacheEntryStatus::kMiss);
+    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
+  } else {
+    // This is considered a cache hit, since response time was read.
+    CollectStatistics(CacheEntryStatus::kHit);
+    int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
+    net::CompletionOnceCallback callback = base::BindOnce(
+        &GeneratedCodeCache::ReadCodeComplete, weak_ptr_factory_.GetWeakPtr(),
+        key, read_data_callback, buffer, raw_response_time);
+    int result =
+        disk_entry->ReadData(kDataIndex, kResponseTimeSizeInBytes, buffer.get(),
+                             buffer->size(), std::move(callback));
+    if (result != net::ERR_IO_PENDING) {
+      ReadCodeComplete(key, read_data_callback, buffer, raw_response_time,
+                       result);
+    }
+  }
+}
+
+void GeneratedCodeCache::ReadCodeComplete(
+    const std::string& key,
+    ReadDataCallback callback,
+    scoped_refptr<net::IOBufferWithSize> buffer,
+    int64_t raw_response_time,
+    int rv) {
+  if (rv != buffer->size()) {
+    // If the buffer is invalid, return an empty one with no response time.
+    std::move(callback).Run(base::Time(), mojo_base::BigBuffer());
+  } else {
+    base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(raw_response_time));
+    std::move(callback).Run(
+        response_time, static_cast<BigIOBuffer*>(buffer.get())->TakeBuffer());
   }
   IssueQueuedOperationForEntry(key);
 }

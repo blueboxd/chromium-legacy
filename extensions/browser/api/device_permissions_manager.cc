@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -225,11 +226,11 @@ scoped_refptr<DevicePermissionEntry> ReadDevicePermissionEntry(
   }
 
   if (type == kDeviceTypeUsb) {
-    return new DevicePermissionEntry(
+    return base::MakeRefCounted<DevicePermissionEntry>(
         DevicePermissionEntry::Type::USB, vendor_id, product_id, serial_number,
         manufacturer_string, product_string, last_used);
   } else if (type == kDeviceTypeHid) {
-    return new DevicePermissionEntry(
+    return base::MakeRefCounted<DevicePermissionEntry>(
         DevicePermissionEntry::Type::HID, vendor_id, product_id, serial_number,
         base::string16(), product_string, last_used);
   }
@@ -562,8 +563,7 @@ void DevicePermissionsManager::AllowHidDevice(
   DCHECK(thread_checker_.CalledOnValidThread());
   DevicePermissions* device_permissions = GetForExtension(extension_id);
 
-  scoped_refptr<DevicePermissionEntry> device_entry(
-      new DevicePermissionEntry(device));
+  auto device_entry = base::MakeRefCounted<DevicePermissionEntry>(device);
 
   if (device_entry->IsPersistent()) {
     for (const auto& entry : device_permissions->entries()) {

@@ -208,8 +208,7 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
       "https", options,
       base::BindLambdaForTesting(
           [&](net::CanonicalCookie::CookieInclusionStatus result) {
-            result_out = (result ==
-                          net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            result_out = result.IsInclude();
             run_loop1.Quit();
           }));
   run_loop1.Run();
@@ -227,8 +226,7 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
       "https", options,
       base::BindLambdaForTesting(
           [&](net::CanonicalCookie::CookieInclusionStatus result) {
-            result_out = (result ==
-                          net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            result_out = result.IsInclude();
             run_loop2.Quit();
           }));
   run_loop2.Run();

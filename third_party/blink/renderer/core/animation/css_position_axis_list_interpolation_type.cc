@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/css_position_axis_list_interpolation_type.h"
 
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -16,18 +16,18 @@ InterpolationValue
 CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
     const CSSValue& value) {
   if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
-    InterpolationValue result =
-        LengthInterpolationFunctions::MaybeConvertCSSValue(pair->Second());
+    InterpolationValue result(
+        InterpolableLength::MaybeConvertCSSValue(pair->Second()));
     CSSValueID side = To<CSSIdentifierValue>(pair->First()).GetValueID();
     if (side == CSSValueID::kRight || side == CSSValueID::kBottom) {
-      LengthInterpolationFunctions::SubtractFromOneHundredPercent(
-          *result.interpolable_value);
+      To<InterpolableLength>(*result.interpolable_value)
+          .SubtractFromOneHundredPercent();
     }
     return result;
   }
 
   if (value.IsPrimitiveValue())
-    return LengthInterpolationFunctions::MaybeConvertCSSValue(value);
+    return InterpolationValue(InterpolableLength::MaybeConvertCSSValue(value));
 
   const auto* ident = DynamicTo<CSSIdentifierValue>(value);
   if (!ident)
@@ -36,15 +36,12 @@ CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
   switch (ident->GetValueID()) {
     case CSSValueID::kLeft:
     case CSSValueID::kTop:
-      return InterpolationValue(
-          LengthInterpolationFunctions::CreateInterpolablePercent(0));
+      return InterpolationValue(InterpolableLength::CreatePercent(0));
     case CSSValueID::kRight:
     case CSSValueID::kBottom:
-      return InterpolationValue(
-          LengthInterpolationFunctions::CreateInterpolablePercent(100));
+      return InterpolationValue(InterpolableLength::CreatePercent(100));
     case CSSValueID::kCenter:
-      return InterpolationValue(
-          LengthInterpolationFunctions::CreateInterpolablePercent(50));
+      return InterpolationValue(InterpolableLength::CreatePercent(50));
     default:
       NOTREACHED();
       return nullptr;

@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_undo_provider.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -329,9 +328,7 @@ int BookmarkReorderOperation::GetRedoLabelId() const {
 
 // BookmarkUndoService --------------------------------------------------------
 
-BookmarkUndoService::BookmarkUndoService()
-    : model_(nullptr), scoped_observer_(this) {
-}
+BookmarkUndoService::BookmarkUndoService() : model_(nullptr) {}
 
 BookmarkUndoService::~BookmarkUndoService() {
 }

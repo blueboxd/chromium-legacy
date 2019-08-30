@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/heap_profiling/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
-#include "content/public/browser/system_connector.h"
 
 namespace {
 
@@ -42,7 +41,6 @@ void ChromeBrowserMainExtraPartsProfiling::PostCreateThreads() {
   heap_profiling::Mode mode = heap_profiling::GetModeForStartup();
   if (mode != heap_profiling::Mode::kNone) {
     heap_profiling::Supervisor::GetInstance()->Start(
-        content::GetSystemConnector(),
         base::BindOnce(
             &heap_profiling::ProfilingProcessHost::Start,
             base::Unretained(

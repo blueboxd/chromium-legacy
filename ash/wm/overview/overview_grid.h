@@ -13,11 +13,13 @@
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -390,8 +392,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Vector containing all the windows in this grid.
   std::vector<std::unique_ptr<OverviewItem>> window_list_;
 
-  ScopedObserver<aura::Window, OverviewGrid> window_observer_;
-  ScopedObserver<WindowState, OverviewGrid> window_state_observer_;
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
+  ScopedObserver<WindowState, WindowStateObserver> window_state_observer_{this};
 
   // Widget that contains the DeskBarView contents when the Virtual Desks
   // feature is enabled.

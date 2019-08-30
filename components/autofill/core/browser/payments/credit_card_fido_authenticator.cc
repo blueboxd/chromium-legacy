@@ -55,6 +55,12 @@ CreditCardFIDOAuthenticator::CreditCardFIDOAuthenticator(AutofillDriver* driver,
 
 CreditCardFIDOAuthenticator::~CreditCardFIDOAuthenticator() {}
 
+void CreditCardFIDOAuthenticator::ShowWebauthnOfferDialog() {
+  autofill_client_->ShowWebauthnOfferDialog(base::BindRepeating(
+      &CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse,
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
 void CreditCardFIDOAuthenticator::Authenticate(
     const CreditCard* card,
     base::WeakPtr<Requester> requester,
@@ -223,6 +229,12 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
         autofill_client_->GetPrefs(), user_is_opted_in);
     current_flow_ = NONE_FLOW;
   }
+}
+
+void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse(
+    bool did_accept) {
+  // TODO(crbug.com/): Register and start fetching authentication challenge if
+  // |did_accept|, otherwise cancel any ongoing request.
 }
 
 void CreditCardFIDOAuthenticator::OnFullCardRequestSucceeded(

@@ -121,8 +121,7 @@ bool CookieDeletionInfo::Matches(const CanonicalCookie& cookie) const {
   }
 
   if (url.has_value() &&
-      cookie.IncludeForRequestURL(url.value(), cookie_options) !=
-          CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+      !cookie.IncludeForRequestURL(url.value(), cookie_options).IsInclude()) {
     return false;
   }
 

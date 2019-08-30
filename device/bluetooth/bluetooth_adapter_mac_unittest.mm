@@ -30,7 +30,6 @@
 #import "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #import "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>

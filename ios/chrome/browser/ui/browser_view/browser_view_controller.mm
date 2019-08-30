@@ -4161,7 +4161,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)reload {
-  if (self.currentWebState) {
+  if ([self isNTPActiveForCurrentWebState]) {
+    NewTabPageCoordinator* coordinator =
+        _ntpCoordinatorsForWebStates[self.currentWebState];
+    [coordinator reload];
+  } else if (self.currentWebState) {
     // |check_for_repost| is true because the reload is explicitly initiated
     // by the user.
     self.currentWebState->GetNavigationManager()->Reload(

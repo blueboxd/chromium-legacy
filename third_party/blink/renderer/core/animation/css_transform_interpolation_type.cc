@@ -222,27 +222,23 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
     ConversionCheckers& conversion_checkers) const {
   DCHECK(state);
   if (auto* list_value = DynamicTo<CSSValueList>(value)) {
-    CSSLengthArray length_array;
+    CSSPrimitiveValue::LengthTypeFlags types;
     for (const CSSValue* item : *list_value) {
       const auto& transform_function = To<CSSFunctionValue>(*item);
       if (transform_function.FunctionType() == CSSValueID::kMatrix ||
           transform_function.FunctionType() == CSSValueID::kMatrix3d) {
-        length_array.type_flags.set(CSSPrimitiveValue::kUnitTypePixels);
+        types.set(CSSPrimitiveValue::kUnitTypePixels);
         continue;
       }
       for (const CSSValue* argument : transform_function) {
         const auto& primitive_value = To<CSSPrimitiveValue>(*argument);
         if (!primitive_value.IsLength())
           continue;
-        if (!primitive_value.AccumulateLengthArray(length_array)) {
-          // TODO(crbug.com/991672): Implement interpolation when CSS comparison
-          // functions min/max are involved.
-          return nullptr;
-        }
+        primitive_value.AccumulateLengthUnitTypes(types);
       }
     }
     std::unique_ptr<InterpolationType::ConversionChecker> length_units_checker =
-        LengthUnitsChecker::MaybeCreate(std::move(length_array), *state);
+        LengthUnitsChecker::MaybeCreate(types, *state);
 
     if (length_units_checker)
       conversion_checkers.push_back(std::move(length_units_checker));

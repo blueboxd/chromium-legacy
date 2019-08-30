@@ -193,7 +193,7 @@ class CookieStoreTest : public testing::Test {
     cs->SetCanonicalCookieAsync(std::move(cookie), url.scheme(), options,
                                 callback.MakeCallback());
     callback.WaitUntilDone();
-    return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
+    return callback.result().IsInclude();
   }
 
   bool SetCanonicalCookie(CookieStore* cs,
@@ -210,7 +210,7 @@ class CookieStoreTest : public testing::Test {
     cs->SetCanonicalCookieAsync(std::move(cookie), std::move(source_scheme),
                                 options, callback.MakeCallback());
     callback.WaitUntilDone();
-    return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
+    return callback.result().IsInclude();
   }
 
   bool SetCookieWithServerTime(CookieStore* cs,
@@ -544,14 +544,16 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
       "http", true));
 
   // A secure source is required for setting secure cookies.
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
-            this->SetCanonicalCookieReturnStatus(
-                cs,
-                std::make_unique<CanonicalCookie>(
-                    "E", "F", http_foo_host, "/", base::Time(), base::Time(),
-                    base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
-                    COOKIE_PRIORITY_DEFAULT),
-                "http", true));
+  EXPECT_TRUE(
+      this->SetCanonicalCookieReturnStatus(
+              cs,
+              std::make_unique<CanonicalCookie>(
+                  "E", "F", http_foo_host, "/", base::Time(), base::Time(),
+                  base::Time(), true, false, CookieSameSite::NO_RESTRICTION,
+                  COOKIE_PRIORITY_DEFAULT),
+              "http", true)
+          .HasExclusionReason(
+              CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY));
 
   // A Secure cookie can be created from an insecure URL, but is rejected upon
   // setting.
@@ -560,10 +562,11 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
       this->http_www_foo_.url(), "foo=1; Secure", base::Time::Now(),
       base::nullopt /* server_time */, &status);
   EXPECT_TRUE(cookie->IsSecure());
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
-            this->SetCanonicalCookieReturnStatus(cs, std::move(cookie), "http",
-                                                 true));
+  EXPECT_TRUE(status.IsInclude());
+  EXPECT_TRUE(
+      this->SetCanonicalCookieReturnStatus(cs, std::move(cookie), "http", true)
+          .HasExclusionReason(
+              CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY));
 
   // A secure source is also required for overwriting secure cookies.  Writing
   // a secure cookie then overwriting it from a non-secure source should fail.
@@ -575,27 +578,31 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
           CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
       "https", true /* modify_http_only */));
 
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
-            this->SetCanonicalCookieReturnStatus(
-                cs,
-                std::make_unique<CanonicalCookie>(
-                    "E", "F", http_foo_host, "/", base::Time(), base::Time(),
-                    base::Time(), true /* secure */, false /* httponly */,
-                    CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
-                "http", true /* modify_http_only */));
+  EXPECT_TRUE(
+      this->SetCanonicalCookieReturnStatus(
+              cs,
+              std::make_unique<CanonicalCookie>(
+                  "E", "F", http_foo_host, "/", base::Time(), base::Time(),
+                  base::Time(), true /* secure */, false /* httponly */,
+                  CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
+              "http", true /* modify_http_only */)
+          .HasExclusionReason(
+              CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY));
 
   if (TypeParam::supports_http_only) {
     // Permission to modify http only cookies is required to set an
     // httponly cookie.
-    EXPECT_EQ(
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
+    EXPECT_TRUE(
         this->SetCanonicalCookieReturnStatus(
-            cs,
-            std::make_unique<CanonicalCookie>(
-                "G", "H", http_foo_host, "/unique", base::Time(), base::Time(),
-                base::Time(), false /* secure */, true /* httponly */,
-                CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
-            "http", false /* modify_http_only */));
+                cs,
+                std::make_unique<CanonicalCookie>(
+                    "G", "H", http_foo_host, "/unique", base::Time(),
+                    base::Time(), base::Time(), false /* secure */,
+                    true /* httponly */, CookieSameSite::NO_RESTRICTION,
+                    COOKIE_PRIORITY_DEFAULT),
+                "http", false /* modify_http_only */)
+            .HasExclusionReason(
+                CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY));
 
     // A HttpOnly cookie can be created, but is rejected
     // upon setting if the options do not specify include_httponly.
@@ -604,10 +611,12 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
                                      "bar=1; HttpOnly", base::Time::Now(),
                                      base::nullopt /* server_time */, &status);
     EXPECT_TRUE(c->IsHttpOnly());
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
-              this->SetCanonicalCookieReturnStatus(
-                  cs, std::move(c), "http", false /* can_modify_httponly */));
+    EXPECT_TRUE(status.IsInclude());
+    EXPECT_TRUE(
+        this->SetCanonicalCookieReturnStatus(cs, std::move(c), "http",
+                                             false /* can_modify_httponly */)
+            .HasExclusionReason(
+                CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY));
 
     // Permission to modify httponly cookies is also required to overwrite
     // an httponly cookie.
@@ -619,15 +628,17 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
             CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
         "http", true /* modify_http_only */));
 
-    EXPECT_EQ(
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
+    EXPECT_TRUE(
         this->SetCanonicalCookieReturnStatus(
-            cs,
-            std::make_unique<CanonicalCookie>(
-                "G", "H", http_foo_host, "/unique", base::Time(), base::Time(),
-                base::Time(), false /* secure */, true /* httponly */,
-                CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
-            "http", false /* modify_http_only */));
+                cs,
+                std::make_unique<CanonicalCookie>(
+                    "G", "H", http_foo_host, "/unique", base::Time(),
+                    base::Time(), base::Time(), false /* secure */,
+                    true /* httponly */, CookieSameSite::NO_RESTRICTION,
+                    COOKIE_PRIORITY_DEFAULT),
+                "http", false /* modify_http_only */)
+            .HasExclusionReason(
+                CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY));
   } else {
     // Leave store in same state as if the above tests had been run.
     EXPECT_TRUE(this->SetCanonicalCookie(

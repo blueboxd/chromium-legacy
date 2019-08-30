@@ -453,17 +453,21 @@ source_set("test_support") {
   ]
 }
 
-source_set("fuzzer_test_support") {
-  testonly = true
-  sources = [
-    "fuzzed_host_resolver_util.cc",
-    "fuzzed_host_resolver_util.h",
-  ]
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//net",
-  ]
+if (use_fuzzing_engine) {
+  # fuzzer_test targets are no-op when |use_fuzzing_engine| is false. Fuzzer
+  # support targets should be disabled too.
+  source_set("fuzzer_test_support") {
+    testonly = true
+    sources = [
+      "fuzzed_host_resolver_util.cc",
+      "fuzzed_host_resolver_util.h",
+    ]
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//net",
+    ]
+  }
 }
 
 fuzzer_test("net_dns_hosts_parse_fuzzer") {

@@ -228,7 +228,7 @@
       [_dispatcher closeCurrentTab];
     } break;
     case OverscrollAction::REFRESH:
-      [self.contentSuggestionsMediator.dataSink reloadAllData];
+      [self reload];
       break;
     case OverscrollAction::NONE:
       NOTREACHED();
@@ -284,6 +284,10 @@
 
 - (void)willUpdateSnapshot {
   [self.suggestionsViewController clearOverscroll];
+}
+
+- (void)reload {
+  [self.contentSuggestionsMediator.dataSink reloadAllData];
 }
 
 @end

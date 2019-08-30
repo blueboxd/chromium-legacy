@@ -13,11 +13,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 import java.io.File;
@@ -25,6 +27,7 @@ import java.io.File;
 /**
  * Test content URI can be generated correctly by {@link DownloadFileProvider}.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 public class DownloadFileProviderTest {
     private static final String PRIMARY_STORAGE_DOWNLOAD_DIRECTORY_PATH =
             "/storage/emulated/1234/Download";

@@ -2575,10 +2575,14 @@ Element* AXNodeObject::AnchorElement() const {
   // NOTE: this assumes that any non-image with an anchor is an
   // HTMLAnchorElement
   for (; node; node = node->parentNode()) {
-    if (IsA<HTMLAnchorElement>(*node) ||
-        (node->GetLayoutObject() &&
-         cache.GetOrCreate(node->GetLayoutObject())->IsAnchor()))
+    if (IsA<HTMLAnchorElement>(*node))
       return To<Element>(node);
+
+    if (LayoutObject* layout_object = node->GetLayoutObject()) {
+      AXObject* ax_object = cache.GetOrCreate(layout_object);
+      if (ax_object && ax_object->IsAnchor())
+        return To<Element>(node);
+    }
   }
 
   return nullptr;

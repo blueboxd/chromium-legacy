@@ -560,6 +560,12 @@ const char kEnableNoScriptPreviewsName[] = "NoScript previews";
 const char kEnableNoScriptPreviewsDescription[] =
     "Enable disabling JavaScript on some pages on slow networks.";
 
+const char kEnableRemovingAllThirdPartyCookiesName[] =
+    "Enable removing SameSite=None cookies";
+const char kEnableRemovingAllThirdPartyCookiesDescription[] =
+    "Enables UI on chrome://settings/siteData to remove all third-party "
+    "cookies and site data.";
+
 const char kDataReductionProxyServerAlternative1[] = "Use alt. server config 1";
 const char kDataReductionProxyServerAlternative2[] = "Use alt. server config 2";
 const char kDataReductionProxyServerAlternative3[] = "Use alt. server config 3";

@@ -67,6 +67,9 @@ class CreditCardFIDOAuthenticator
   CreditCardFIDOAuthenticator(AutofillDriver* driver, AutofillClient* client);
   ~CreditCardFIDOAuthenticator() override;
 
+  // Offer the option to use WebAuthn for authenticating future card unmasking.
+  void ShowWebauthnOfferDialog();
+
   // Authentication
   void Authenticate(const CreditCard* card,
                     base::WeakPtr<Requester> requester,
@@ -138,6 +141,10 @@ class CreditCardFIDOAuthenticator
   void OnDidGetOptChangeResult(AutofillClient::PaymentsRpcResult result,
                                bool user_is_opted_in,
                                base::Value creation_options = base::Value());
+
+  // The callback invoked from the WebAuthn offer dialog when it is accepted or
+  // declined/cancelled.
+  void OnWebauthnOfferDialogUserResponse(bool did_accept);
 
   // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/image_writer_private/destroy_partitions_operation.h"
@@ -85,10 +86,10 @@ void OperationManager::StartWriteFromUrl(
       ->GetURLLoaderFactoryForBrowserProcess()
       ->Clone(mojo::MakeRequest(&url_loader_factory_info));
 
-  scoped_refptr<Operation> operation(
-      new WriteFromUrlOperation(weak_factory_.GetWeakPtr(), extension_id,
-                                std::move(url_loader_factory_info), url, hash,
-                                device_path, GetAssociatedDownloadFolder()));
+  auto operation = base::MakeRefCounted<WriteFromUrlOperation>(
+      weak_factory_.GetWeakPtr(), extension_id,
+      std::move(url_loader_factory_info), url, hash, device_path,
+      GetAssociatedDownloadFolder());
   operations_[extension_id] = operation;
   operation->PostTask(base::BindOnce(&Operation::Start, operation));
 
@@ -112,9 +113,9 @@ void OperationManager::StartWriteFromFile(
     return;
   }
 
-  scoped_refptr<Operation> operation(
-      new WriteFromFileOperation(weak_factory_.GetWeakPtr(), extension_id, path,
-                                 device_path, GetAssociatedDownloadFolder()));
+  auto operation = base::MakeRefCounted<WriteFromFileOperation>(
+      weak_factory_.GetWeakPtr(), extension_id, path, device_path,
+      GetAssociatedDownloadFolder());
   operations_[extension_id] = operation;
   operation->PostTask(base::BindOnce(&Operation::Start, operation));
   std::move(callback).Run(true, "");
@@ -145,9 +146,9 @@ void OperationManager::DestroyPartitions(
     return;
   }
 
-  scoped_refptr<Operation> operation(new DestroyPartitionsOperation(
+  auto operation = base::MakeRefCounted<DestroyPartitionsOperation>(
       weak_factory_.GetWeakPtr(), extension_id, device_path,
-      GetAssociatedDownloadFolder()));
+      GetAssociatedDownloadFolder());
   operations_[extension_id] = operation;
   operation->PostTask(base::BindOnce(&Operation::Start, operation));
   std::move(callback).Run(true, "");

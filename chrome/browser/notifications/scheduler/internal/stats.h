@@ -8,6 +8,7 @@
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
 namespace notifications {
+struct NotificationData;
 namespace stats {
 
 // Events to track behavior of the background task used by notification
@@ -21,6 +22,19 @@ enum class BackgroundTaskEvent {
   // The background task is stopped by the OS without finishing the its job.
   kStopByOS = 2,
   kMaxValue = kStopByOS
+};
+
+// Used to log events for inline helpful/unhelful button events. Don't reuse or
+// delete values. Needs to match NotificationSchedulerActionButtonEvent in
+// enums.xml.
+enum class ActionButtonEvent {
+  // The notification is shown with IHNR buttons.
+  kShown = 0,
+  // Clicks on the helpful button.
+  kHelpfulClick = 1,
+  // Clicks on the unhelpful button.
+  kUnhelpfulClick = 2,
+  kMaxValue = kUnhelpfulClick
 };
 
 // Used to log events in impression tracker. Don't reuse or delete values. Needs
@@ -63,6 +77,10 @@ void LogNotificationDbInit(bool success, int entry_count);
 
 // Logs notification db operations result except the initialization.
 void LogNotificationDbOperation(bool success);
+
+// Logs metrics before showing the notification.
+void LogNotificationShow(const NotificationData& notification_data,
+                         SchedulerClientType client_type);
 
 // Logs png icon converter encode result.
 void LogPngIconConverterEncodeResult(bool success);

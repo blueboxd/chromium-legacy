@@ -132,12 +132,9 @@ void TestContentVerifyJobObserver::JobFinished(
 MockContentVerifierDelegate::MockContentVerifierDelegate() = default;
 MockContentVerifierDelegate::~MockContentVerifierDelegate() = default;
 
-bool MockContentVerifierDelegate::ShouldBeChecked(const Extension& extension) {
-  return true;
-}
-
-bool MockContentVerifierDelegate::ShouldBeVerified(const Extension& extension) {
-  return true;
+ContentVerifierDelegate::VerifierSourceType
+MockContentVerifierDelegate::GetVerifierSourceType(const Extension& extension) {
+  return VerifierSourceType::SIGNED_HASHES;
 }
 
 ContentVerifierKey MockContentVerifierDelegate::GetPublicKey() {

@@ -265,12 +265,14 @@ suite('settings-date-time-page', function() {
   test('auto-detect on', function(done) {
     const prefs = getFakePrefs();
     dateTime = initializeDateTime(prefs, false);
+    const resolveMethodDropdown = dateTime.$$('#timeZoneResolveMethodDropdown');
 
     setTimeout(function() {
       checkDateTimePageReadyCalled();
       assertFalse(getTimeZonesCalled);
 
       verifyAutoDetectSetting(true, false);
+      assertFalse(resolveMethodDropdown.disabled);
       verifyTimeZonesPopulated(false);
 
       clickDisableAutoDetect(dateTime);
@@ -279,6 +281,7 @@ suite('settings-date-time-page', function() {
 
     setTimeout(function() {
       verifyAutoDetectSetting(false, false);
+      assertTrue(resolveMethodDropdown.disabled);
       assertTrue(getTimeZonesCalled);
 
       verifyTimeZonesPopulated(true);
@@ -288,6 +291,8 @@ suite('settings-date-time-page', function() {
 
   test('auto-detect off', function(done) {
     dateTime = initializeDateTime(getFakePrefs(), false);
+    const resolveMethodDropdown = dateTime.$$('#timeZoneResolveMethodDropdown');
+
     setTimeout(function() {
       dateTime.set(
           'prefs.generated.resolve_timezone_by_geolocation_on_off.value',
@@ -302,6 +307,7 @@ suite('settings-date-time-page', function() {
       assertTrue(getTimeZonesCalled);
 
       verifyAutoDetectSetting(false, false);
+      assertTrue(resolveMethodDropdown.disabled);
       verifyTimeZonesPopulated(true);
 
       clickEnableAutoDetect(dateTime);
@@ -309,6 +315,7 @@ suite('settings-date-time-page', function() {
 
     setTimeout(function() {
       verifyAutoDetectSetting(true);
+      assertFalse(resolveMethodDropdown.disabled);
       done();
     });
   });
@@ -316,12 +323,14 @@ suite('settings-date-time-page', function() {
   test('auto-detect forced on', function(done) {
     const prefs = getFakePrefs();
     dateTime = initializeDateTime(prefs, true, true);
+    const resolveMethodDropdown = dateTime.$$('#timeZoneResolveMethodDropdown');
 
     setTimeout(function() {
       checkDateTimePageReadyCalled();
       assertFalse(getTimeZonesCalled);
 
       verifyAutoDetectSetting(true, true);
+      assertFalse(resolveMethodDropdown.disabled);
       verifyTimeZonesPopulated(false);
 
       // Cannot disable auto-detect.
@@ -330,6 +339,7 @@ suite('settings-date-time-page', function() {
 
     setTimeout(function() {
       verifyAutoDetectSetting(true, true);
+      assertFalse(resolveMethodDropdown.disabled);
       assertFalse(getTimeZonesCalled);
 
       // Update the policy: force auto-detect off.
@@ -337,6 +347,7 @@ suite('settings-date-time-page', function() {
     });
     setTimeout(function() {
       verifyAutoDetectSetting(false, true);
+      assertTrue(resolveMethodDropdown.disabled);
 
       assertTrue(getTimeZonesCalled);
       verifyTimeZonesPopulated(true);
@@ -347,12 +358,14 @@ suite('settings-date-time-page', function() {
   test('auto-detect forced off', function(done) {
     const prefs = getFakePrefs();
     dateTime = initializeDateTime(prefs, true, false);
+    const resolveMethodDropdown = dateTime.$$('#timeZoneResolveMethodDropdown');
 
     setTimeout(function() {
       checkDateTimePageReadyCalled();
       assertTrue(getTimeZonesCalled);
 
       verifyAutoDetectSetting(false, true);
+      assertTrue(resolveMethodDropdown.disabled);
       verifyTimeZonesPopulated(true);
 
       // Remove the policy so user's preference takes effect.
@@ -361,6 +374,7 @@ suite('settings-date-time-page', function() {
 
     setTimeout(function() {
       verifyAutoDetectSetting(true, false);
+      assertFalse(resolveMethodDropdown.disabled);
 
       // User can disable auto-detect.
       clickDisableAutoDetect(dateTime);

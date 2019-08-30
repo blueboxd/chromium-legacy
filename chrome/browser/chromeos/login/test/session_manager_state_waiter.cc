@@ -5,35 +5,52 @@
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 
 #include "base/run_loop.h"
-#include "components/session_manager/core/session_manager.h"
-#include "components/session_manager/core/session_manager_observer.h"
 
 namespace chromeos {
 
+namespace test {
+
+void WaitForSessionStart() {
+  SessionStateWaiter().Wait();
+}
+
+}  // namespace test
+
 SessionStateWaiter::SessionStateWaiter(
-    session_manager::SessionState target_state)
+    base::Optional<session_manager::SessionState> target_state)
     : target_state_(target_state) {}
 
 SessionStateWaiter::~SessionStateWaiter() = default;
 
 void SessionStateWaiter::Wait() {
+  if (!target_state_ &&
+      session_manager::SessionManager::Get()->IsSessionStarted()) {
+    return;
+  }
+
   if (session_manager::SessionManager::Get()->session_state() ==
       target_state_) {
     return;
   }
+
   session_observer_.Add(session_manager::SessionManager::Get());
 
   base::RunLoop run_loop;
   session_state_callback_ = run_loop.QuitClosure();
   run_loop.Run();
-
-  session_observer_.RemoveAll();
 }
 
 void SessionStateWaiter::OnSessionStateChanged() {
   if (session_manager::SessionManager::Get()->session_state() ==
-          target_state_ &&
-      session_state_callback_) {
+      target_state_) {
+    session_observer_.RemoveAll();
+    std::move(session_state_callback_).Run();
+  }
+}
+
+void SessionStateWaiter::OnUserSessionStarted(bool is_primary_user) {
+  if (!target_state_) {
+    session_observer_.RemoveAll();
     std::move(session_state_callback_).Run();
   }
 }

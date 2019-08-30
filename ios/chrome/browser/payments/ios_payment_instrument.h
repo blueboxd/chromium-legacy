@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/payments/core/payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -64,8 +65,10 @@ class IOSPaymentInstrument : public PaymentInstrument {
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
-  bool IsValidForPaymentMethodIdentifier(
-      const std::string& payment_method_identifier) const override;
+  void IsValidForPaymentMethodIdentifier(
+      const std::string& payment_method_identifier,
+      bool* is_valid) const override;
+  base::WeakPtr<PaymentInstrument> AsWeakPtr() override;
 
   // Given that the icon for the iOS payment instrument can only be determined
   // at run-time, the icon is obtained using this UIImage object rather than
@@ -79,6 +82,7 @@ class IOSPaymentInstrument : public PaymentInstrument {
   UIImage* icon_image_;
 
   id<PaymentRequestUIDelegate> payment_request_ui_delegate_;
+  base::WeakPtrFactory<IOSPaymentInstrument> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IOSPaymentInstrument);
 };

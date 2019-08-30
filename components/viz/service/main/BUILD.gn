@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//components/ui_devtools/devtools.gni")
 import("//testing/test.gni")
 
 source_set("main") {
@@ -49,9 +48,5 @@ source_set("main") {
 
   if (is_chromeos) {
     deps += [ "//media/gpu" ]
-  }
-
-  if (use_viz_devtools) {
-    defines += [ "USE_VIZ_DEVTOOLS" ]
   }
 }

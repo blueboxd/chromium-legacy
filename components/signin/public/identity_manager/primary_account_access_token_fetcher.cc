@@ -23,7 +23,6 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
       identity_manager_(identity_manager),
       scopes_(scopes),
       callback_(std::move(callback)),
-      identity_manager_observer_(this),
       access_token_retried_(false),
       mode_(mode) {
   if (mode_ == Mode::kImmediate || AreCredentialsAvailable()) {

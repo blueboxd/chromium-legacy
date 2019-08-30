@@ -251,10 +251,10 @@ void PreviewsLitePageServingURLLoader::SetUpForwardingClient(
 }
 
 void PreviewsLitePageServingURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   DCHECK(!forwarding_client_);
 
-  const net::HttpResponseHeaders* response_headers = head.headers.get();
+  const net::HttpResponseHeaders* response_headers = head->headers.get();
   // TODO: evaluate all the responses we allow, don't hard code 200.
   if (!response_headers) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -319,7 +319,7 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
 
 void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   DCHECK(!forwarding_client_);
 
   // Store head and pause new messages until the forwarding client is set up.
@@ -336,7 +336,7 @@ void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                               PreviewsLitePageNavigationThrottle::
                                   ServerResponse::kPreviewUnavailable);
-    const net::HttpResponseHeaders* response_headers = head.headers.get();
+    const net::HttpResponseHeaders* response_headers = head->headers.get();
 
     std::string chrome_proxy_header;
     bool blacklist_host =

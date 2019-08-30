@@ -25,7 +25,6 @@
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_db_task.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/browser/url_utils.h"
@@ -94,8 +93,7 @@ TopSitesImpl::TopSitesImpl(PrefService* pref_service,
       pref_service_(pref_service),
       history_service_(history_service),
       can_add_url_to_history_(can_add_url_to_history),
-      loaded_(false),
-      history_service_observer_(this) {
+      loaded_(false) {
   DCHECK(pref_service_);
   DCHECK(!can_add_url_to_history_.is_null());
 }

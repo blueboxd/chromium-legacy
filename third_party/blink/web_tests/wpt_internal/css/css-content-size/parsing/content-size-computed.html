@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CSS Content Size Test: content-size with computed values</title>
+<link rel="help" href="http://tabatkins.github.io/specs/css-content-size/">
+<meta name="assert" content="content-size supports the full grammar 'none | <length>{1,2}'.">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/css/support/computed-testcommon.js"></script>
+</head>
+<body>
+<div id=target></div>
+<div id=scratch></div>
+<script>
+
+function length_ref(length) {
+  document.getElementById("scratch").style.width = length;
+  return getComputedStyle(document.getElementById("scratch")).getPropertyValue("width");
+}
+
+test_computed_value("content-size", "none");
+test_computed_value("content-size", "1px");
+test_computed_value("content-size", "2vw 3px", length_ref("2vw") + " 3px");
+test_computed_value("content-size", "2px 3vh", "2px " + length_ref("3vh"));
+test_computed_value("content-size", "5px 5px", "5px");
+</script>
+</body>
+</html>
+

@@ -79,14 +79,11 @@ struct NET_EXPORT_PRIVATE RevocationPolicy {
   // mechanisms.
   bool allow_missing_info : 1;
 
-  // If set to true, failure to perform online revocation checks (due to a
-  // network level failure) is considered equivalent to a successful revocation
-  // check.
-  //
-  // TODO(649017): The "soft fail" expectations of consumers are more broad than
-  // this, and may also entail parsing failures and parsed non-success OCSP
-  // responses.
-  bool allow_network_failure : 1;
+  // If set to true, other failure to perform revocation checks (e.g. due to a
+  // network level failure, OCSP response error status, failure parsing or
+  // evaluating the OCSP/CRL response, etc) is considered equivalent to a
+  // successful revocation check.
+  bool allow_unable_to_check : 1;
 };
 
 // Checks the revocation status of |certs| according to |policy|, and adds

@@ -218,8 +218,8 @@ void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeImpl* tree_impl,
   }
 }
 
-CC_EXPORT PropertyTrees* GetPropertyTrees(Layer* layer);
-CC_EXPORT PropertyTrees* GetPropertyTrees(LayerImpl* layer);
+CC_EXPORT PropertyTrees* GetPropertyTrees(const Layer* layer);
+CC_EXPORT PropertyTrees* GetPropertyTrees(const LayerImpl* layer);
 
 }  // namespace cc
 

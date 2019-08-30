@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -163,6 +164,8 @@ class PaymentManifestDownloader {
   // collision between HEAD and GET requests.
   std::map<const network::SimpleURLLoader*, std::unique_ptr<Download>>
       downloads_;
+
+  base::WeakPtrFactory<PaymentManifestDownloader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestDownloader);
 };

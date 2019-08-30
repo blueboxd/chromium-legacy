@@ -22,6 +22,9 @@
 -keep public class android.support.v7.preference.PreferenceCategory {
     public <init>(android.content.Context, android.util.AttributeSet);
 }
+-keep public class android.support.v7.preference.ListPreference {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
 
 # These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
 # referenced, and we look up these services by appending a number onto the name

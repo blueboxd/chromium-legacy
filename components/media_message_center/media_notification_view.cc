@@ -441,7 +441,7 @@ bool MediaNotificationView::IsActuallyExpanded() const {
 
 void MediaNotificationView::UpdateForegroundColor() {
   const SkColor background =
-      GetMediaNotificationBackground()->GetBackgroundColor();
+      GetMediaNotificationBackground()->GetBackgroundColor(*this);
   const SkColor foreground =
       GetMediaNotificationBackground()->GetForegroundColor(*this);
 

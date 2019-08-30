@@ -291,8 +291,7 @@ class RemoveCookieTester {
         *cookie, "http", net::CookieOptions(),
         base::BindLambdaForTesting(
             [&](net::CanonicalCookie::CookieInclusionStatus result) {
-              EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,
-                        result);
+              EXPECT_TRUE(result.IsInclude());
               run_loop.Quit();
             }));
     run_loop.Run();

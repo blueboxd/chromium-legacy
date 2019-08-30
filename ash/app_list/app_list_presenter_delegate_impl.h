@@ -9,10 +9,12 @@
 
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/ash_export.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_handler.h"
 
 namespace app_list {
@@ -21,10 +23,6 @@ class AppListView;
 class AppListViewDelegate;
 }  // namespace app_list
 
-namespace display {
-class Screen;
-}  // namespace display
-
 namespace ui {
 class LocatedEvent;
 }  // namespace ui
@@ -32,7 +30,6 @@ class LocatedEvent;
 namespace ash {
 
 class AppListControllerImpl;
-class Shelf;
 
 // Responsible for laying out the app list UI as well as updating the Shelf
 // launch icon as the state of the app list changes. Listens to shell events
@@ -93,10 +90,11 @@ class ASH_EXPORT AppListPresenterDelegateImpl
   AppListControllerImpl* const controller_ = nullptr;
 
   // An observer that notifies AppListView when the display has changed.
-  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
+  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_{
+      this};
 
   // An observer that notifies AppListView when the shelf state has changed.
-  ScopedObserver<Shelf, AppListPresenterDelegateImpl> shelf_observer_;
+  ScopedObserver<Shelf, ShelfObserver> shelf_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateImpl);
 };

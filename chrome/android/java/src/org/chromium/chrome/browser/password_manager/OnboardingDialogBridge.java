@@ -48,12 +48,15 @@ public class OnboardingDialogBridge {
         mOnboardingDialog.dismissDialog(DialogDismissalCause.DISMISSED_BY_NATIVE);
     }
 
-    private void onClick(boolean ok) {
+    private void onClick(@DialogDismissalCause int dismissalCause) {
         if (mNativeOnboardingDialogView == 0) return;
-        if (ok) {
-            nativeOnboardingAccepted(mNativeOnboardingDialogView);
-        } else {
-            nativeOnboardingRejected(mNativeOnboardingDialogView);
+        switch (dismissalCause) {
+            case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
+                nativeOnboardingAccepted(mNativeOnboardingDialogView);
+                return;
+
+            default:
+                nativeOnboardingRejected(mNativeOnboardingDialogView);
         }
     }
 

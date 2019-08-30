@@ -227,6 +227,15 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const base::FilePath& file_path,
       NativeFileSystemPermissionContext::UserAction user_action);
 
+  void CreateFileWriterImpl(
+      const BindingContext& binding_context,
+      const storage::FileSystemURL& url,
+      const storage::FileSystemURL& swap_url,
+      const SharedHandleState& handle_state,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
+          writer_receiver,
+      bool has_transient_user_activation);
+
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;
   std::unique_ptr<storage::FileSystemOperationRunner> operation_runner_;

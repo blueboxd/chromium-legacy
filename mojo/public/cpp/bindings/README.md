@@ -1493,8 +1493,7 @@ Let's look at each of the variables above:
       `base::Optional<CppType>`. If this attribute is set, the `base::Optional`
       wrapper is omitted for nullable `MojomType?` values, but the
       `StructTraits` definition for this type mapping must define additional
-      `IsNull` and `SetToNull` methods. See
-      [Specializing Nullability](#Specializing-Nullability) below.
+      `IsNull` and `SetToNull` methods.
     * `force_serialize`: The typemap is incompatible with lazy serialization
       (e.g. consider a typemap to a `base::StringPiece`, where retaining a
       copy is unsafe). Any messages carrying the type will be forced down the
@@ -1558,6 +1557,7 @@ to valid getter return types:
 | `FooEnum`                    | Value of any type that has an appropriate `EnumTraits` specialization defined. By default this inlcudes only the generated `FooEnum` type.
 | `FooStruct`                  | Value or reference to any type that has an appropriate `StructTraits` specialization defined. By default this includes only the generated `FooStructPtr` type.
 | `FooUnion`                   | Value of reference to any type that has an appropriate `UnionTraits` specialization defined. By default this includes only the generated `FooUnionPtr` type.
+| `Foo?`                       | `base::Optional<CppType>`, where `CppType` is the value type defined by the appropriate traits class specialization (e.g. `StructTraits`, `mojo::MapTraits`, etc.). This may be customized by the [typemapping](#Enabling-a-New-Type-Mapping).
 
 ### Using Generated DataView Types
 

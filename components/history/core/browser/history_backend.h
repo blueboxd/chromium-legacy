@@ -60,6 +60,7 @@ struct HistoryDatabaseParams;
 class HistoryDBTask;
 class InMemoryHistoryBackend;
 class HistoryBackendHelper;
+class TypedURLSyncBridge;
 class URLDatabase;
 
 // The maximum number of bitmaps for a single icon URL which can be stored in

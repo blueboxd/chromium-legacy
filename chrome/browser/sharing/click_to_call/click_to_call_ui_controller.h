@@ -41,6 +41,8 @@ class ClickToCallUiController
   int GetRequiredDeviceCapabilities() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetTextForTooltipAndAccessibleName() const override;
 
   // Called by the ClickToCallDialogView when the help text got clicked.
   void OnHelpTextClicked();

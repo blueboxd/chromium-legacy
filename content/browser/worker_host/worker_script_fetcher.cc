@@ -102,7 +102,7 @@ void WorkerScriptFetcher::Start(
 }
 
 void WorkerScriptFetcher::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   response_head_ = response_head;
 }
@@ -170,7 +170,7 @@ void WorkerScriptFetcher::OnStartLoadingResponseBody(
 
 void WorkerScriptFetcher::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   redirect_infos_.push_back(redirect_info);
   redirect_response_heads_.push_back(response_head);

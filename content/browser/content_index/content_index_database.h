@@ -80,28 +80,30 @@ class CONTENT_EXPORT ContentIndexDatabase {
                            BlockedOriginsCannotRegisterContent);
   FRIEND_TEST_ALL_PREFIXES(ContentIndexDatabaseTest, UmaRecorded);
 
-  // public method IO counterparts.
-  void AddEntryOnIO(int64_t service_worker_registration_id,
-                    const url::Origin& origin,
-                    blink::mojom::ContentDescriptionPtr description,
-                    const std::vector<SkBitmap>& icons,
-                    const GURL& launch_url,
-                    blink::mojom::ContentIndexService::AddCallback callback);
-  void DeleteEntryOnIO(
+  // public method service worker core thread counterparts.
+  void AddEntryOnCoreThread(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin,
+      blink::mojom::ContentDescriptionPtr description,
+      const std::vector<SkBitmap>& icons,
+      const GURL& launch_url,
+      blink::mojom::ContentIndexService::AddCallback callback);
+  void DeleteEntryOnCoreThread(
       int64_t service_worker_registration_id,
       const url::Origin& origin,
       const std::string& entry_id,
       blink::mojom::ContentIndexService::DeleteCallback callback);
-  void GetDescriptionsOnIO(
+  void GetDescriptionsOnCoreThread(
       int64_t service_worker_registration_id,
       blink::mojom::ContentIndexService::GetDescriptionsCallback callback);
-  void GetIconsOnIO(int64_t service_worker_registration_id,
-                    const std::string& description_id,
-                    ContentIndexContext::GetIconsCallback callback);
-  void GetAllEntriesOnIO(ContentIndexContext::GetAllEntriesCallback callback);
-  void GetEntryOnIO(int64_t service_worker_registration_id,
-                    const std::string& description_id,
-                    ContentIndexContext::GetEntryCallback callback);
+  void GetIconsOnCoreThread(int64_t service_worker_registration_id,
+                            const std::string& description_id,
+                            ContentIndexContext::GetIconsCallback callback);
+  void GetAllEntriesOnCoreThread(
+      ContentIndexContext::GetAllEntriesCallback callback);
+  void GetEntryOnCoreThread(int64_t service_worker_registration_id,
+                            const std::string& description_id,
+                            ContentIndexContext::GetEntryCallback callback);
 
   // Add Callbacks.
   void DidSerializeIcons(
@@ -179,11 +181,11 @@ class CONTENT_EXPORT ContentIndexDatabase {
   ContentIndexProvider* provider_;
 
   // A map from origins to how many times it's been blocked.
-  // Must be used on the IO thread.
+  // Must be used on the service worker core thread.
   base::flat_map<url::Origin, int> blocked_origins_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_io_{this};
+  base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_core_{this};
   base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_ui_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexDatabase);

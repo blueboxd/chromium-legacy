@@ -227,8 +227,8 @@ class QuicProxyClientSocketTest
         /*default_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
         quic::QuicTime::Delta::FromMilliseconds(
             kDefaultRetransmittableOnWireTimeout.InMilliseconds()),
-        /*migrate_idle_session=*/true, kDefaultIdleSessionMigrationPeriod,
-        kMaxTimeOnNonDefaultNetwork,
+        /*migrate_idle_session=*/true, /*allow_port_migration=*/false,
+        kDefaultIdleSessionMigrationPeriod, kMaxTimeOnNonDefaultNetwork,
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         kQuicYieldAfterPacketsRead,

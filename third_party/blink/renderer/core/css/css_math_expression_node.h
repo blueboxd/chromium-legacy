@@ -89,6 +89,8 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual double ComputeLengthPx(const CSSToLengthConversionData&) const = 0;
   virtual bool AccumulateLengthArray(CSSLengthArray&,
                                      double multiplier) const = 0;
+  virtual void AccumulateLengthUnitTypes(
+      CSSPrimitiveValue::LengthTypeFlags& types) const = 0;
   virtual scoped_refptr<const CalculationExpressionNode>
   ToCalculationExpression(const CSSToLengthConversionData&) const = 0;
 
@@ -167,6 +169,8 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
       const CSSToLengthConversionData& conversion_data) const final;
   bool AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
+  void AccumulateLengthUnitTypes(
+      CSSPrimitiveValue::LengthTypeFlags& types) const final;
   bool IsComputationallyIndependent() const final;
   bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
@@ -220,6 +224,8 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
       const CSSToLengthConversionData& conversion_data) const final;
   bool AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
+  void AccumulateLengthUnitTypes(
+      CSSPrimitiveValue::LengthTypeFlags& types) const final;
   bool IsComputationallyIndependent() const final;
   String CustomCSSText() const final;
   bool operator==(const CSSMathExpressionNode& exp) const final;
@@ -285,6 +291,8 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
       const CSSToLengthConversionData& conversion_data) const final;
   bool AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
+  void AccumulateLengthUnitTypes(
+      CSSPrimitiveValue::LengthTypeFlags& types) const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
   bool IsComputationallyIndependent() const final;
   bool operator==(const CSSMathExpressionNode& other) const final;

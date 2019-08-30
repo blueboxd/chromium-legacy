@@ -105,7 +105,8 @@ ExtensionSystemImpl::Shared::~Shared() {
 }
 
 void ExtensionSystemImpl::Shared::InitPrefs() {
-  store_factory_ = new ValueStoreFactoryImpl(profile_->GetPath());
+  store_factory_ =
+      base::MakeRefCounted<ValueStoreFactoryImpl>(profile_->GetPath());
 
   // Two state stores. The latter, which contains declarative rules, must be
   // loaded immediately so that the rules are ready before we issue network
@@ -326,7 +327,7 @@ ExtensionSystemImpl::Shared::shared_user_script_master() {
 
 InfoMap* ExtensionSystemImpl::Shared::info_map() {
   if (!extension_info_map_.get())
-    extension_info_map_ = new InfoMap();
+    extension_info_map_ = base::MakeRefCounted<InfoMap>();
   return extension_info_map_.get();
 }
 

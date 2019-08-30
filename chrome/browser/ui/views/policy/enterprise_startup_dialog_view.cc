@@ -178,9 +178,12 @@ std::unique_ptr<views::View> EnterpriseStartupDialogView::CreateExtraView() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Show Google Chrome Enterprise logo only for official build.
   auto logo_image = std::make_unique<views::ImageView>();
-  logo_image->SetImage(ui::ResourceBundle::GetSharedInstance()
-                           .GetImageNamed(IDR_PRODUCT_LOGO_ENTERPRISE)
-                           .AsImageSkia());
+  logo_image->SetImage(
+      ui::ResourceBundle::GetSharedInstance()
+          .GetImageNamed((logo_image->GetNativeTheme()->ShouldUseDarkColors())
+                             ? IDR_PRODUCT_LOGO_ENTERPRISE_WHITE
+                             : IDR_PRODUCT_LOGO_ENTERPRISE)
+          .AsImageSkia());
   logo_image->set_tooltip_text(
       l10n_util::GetStringUTF16(IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT));
   gfx::Rect logo_bounds = logo_image->GetImageBounds();

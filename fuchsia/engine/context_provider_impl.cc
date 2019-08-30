@@ -16,10 +16,12 @@
 #include <unistd.h>
 #include <zircon/processargs.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/base_paths_fuchsia.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
@@ -28,12 +30,16 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
 #include "fuchsia/engine/common.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
+#include "ui/gl/gl_switches.h"
 
 namespace {
 
@@ -53,6 +59,45 @@ zx::channel ValidateDirectoryAndTakeChannel(
 
   // Not a directory.
   return zx::channel();
+}
+
+// Populates a CommandLine with content directory name/handle pairs.
+bool SetContentDirectoriesInCommandLine(
+    std::vector<fuchsia::web::ContentDirectoryProvider> directories,
+    base::CommandLine* command_line,
+    base::LaunchOptions* launch_options) {
+  DCHECK(command_line);
+  DCHECK(launch_options);
+
+  std::vector<std::string> directory_pairs;
+  for (size_t i = 0; i < directories.size(); ++i) {
+    fuchsia::web::ContentDirectoryProvider& directory = directories[i];
+
+    if (directory.name().find('=') != std::string::npos ||
+        directory.name().find(',') != std::string::npos) {
+      DLOG(ERROR) << "Invalid character in directory name: "
+                  << directory.name();
+      return false;
+    }
+
+    if (!directory.directory().is_valid()) {
+      DLOG(ERROR) << "Service directory handle not valid for directory: "
+                  << directory.name();
+      return false;
+    }
+
+    uint32_t directory_handle_id = base::LaunchOptions::AddHandleToTransfer(
+        &launch_options->handles_to_transfer,
+        directory.mutable_directory()->TakeChannel().release());
+    directory_pairs.emplace_back(
+        base::StrCat({directory.name().c_str(), "=",
+                      base::NumberToString(directory_handle_id)}));
+  }
+
+  command_line->AppendSwitchASCII(kContentDirectories,
+                                  base::JoinString(directory_pairs, ","));
+
+  return true;
 }
 
 }  // namespace
@@ -151,14 +196,21 @@ void ContextProviderImpl::Create(
                                       base::JoinString(handles_ids, ","));
   }
 
-#if defined(WEB_ENGINE_ENABLE_VULKAN)
-  // TODO(fbx/35009): Add a flag in CreateContextParams to enable/disable Vulkan
-  // and use it here.
-  launch_command.AppendSwitchASCII(
-      "--enable-features", "DefaultEnableOopRasterization,UseSkiaRenderer");
-  launch_command.AppendSwitch("--use-vulkan");
-  launch_command.AppendSwitchASCII("--use-gl", "stub");
-#endif  // WEB_ENGINE_ENABLE_VULKAN
+  fuchsia::web::ContextFeatureFlags features = {};
+  if (params.has_features())
+    features = params.features();
+
+  bool enable_vulkan = (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
+                       fuchsia::web::ContextFeatureFlags::VULKAN;
+
+  if (enable_vulkan) {
+    launch_command.AppendSwitch(switches::kUseVulkan);
+    launch_command.AppendSwitchASCII(switches::kEnableFeatures,
+                                     features::kUseSkiaRenderer.name);
+    launch_command.AppendSwitch(switches::kEnableOopRasterization);
+    launch_command.AppendSwitchASCII(switches::kUseGL,
+                                     gl::kGLImplementationStubName);
+  }
 
   // Validate embedder-supplied product, and optional version, and pass it to
   // the Context to include in the UserAgent.
@@ -181,6 +233,14 @@ void ContextProviderImpl::Create(
                                       std::move(product_tag));
   } else if (params.has_user_agent_version()) {
     DLOG(ERROR) << "Embedder version without product.";
+    context_request.Close(ZX_ERR_INVALID_ARGS);
+    return;
+  }
+
+  if (params.has_content_directories() &&
+      !SetContentDirectoriesInCommandLine(
+          std::move(*params.mutable_content_directories()), &launch_command,
+          &launch_options)) {
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }

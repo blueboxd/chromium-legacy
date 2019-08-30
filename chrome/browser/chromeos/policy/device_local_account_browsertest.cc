@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
@@ -735,8 +736,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     if (IsSessionStarted())
       return;
     chromeos::WizardController::SkipPostLoginScreensForTesting();
-    content::WindowedNotificationObserver(chrome::NOTIFICATION_SESSION_STARTED,
-                                          base::Bind(IsSessionStarted)).Wait();
+    chromeos::test::WaitForSessionStart();
   }
 
   void WaitUntilLocalStateChanged() {

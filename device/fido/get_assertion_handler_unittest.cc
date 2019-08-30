@@ -466,41 +466,6 @@ TEST_F(FidoGetAssertionHandlerTest,
                               FidoTransportProtocol::kNearFieldCommunication});
 }
 
-TEST_F(FidoGetAssertionHandlerTest,
-       CableDisabledIfAllowCredentialsListUndefinedButCableExtensionMissing) {
-  CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataJson);
-  ASSERT_FALSE(!!request.cable_extension);
-  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
-  auto request_handler =
-      CreateGetAssertionHandlerWithRequest(std::move(request));
-  ExpectAllowedTransportsForRequestAre(
-      request_handler.get(), {FidoTransportProtocol::kBluetoothLowEnergy,
-                              FidoTransportProtocol::kUsbHumanInterfaceDevice,
-                              FidoTransportProtocol::kNearFieldCommunication,
-                              FidoTransportProtocol::kInternal});
-}
-
-TEST_F(FidoGetAssertionHandlerTest,
-       CableDisabledIfExplicitlyAllowedButCableExtensionMissing) {
-  CtapGetAssertionRequest request(test_data::kRelyingPartyId,
-                                  test_data::kClientDataJson);
-  ASSERT_FALSE(!!request.cable_extension);
-  request.allow_list = {
-      PublicKeyCredentialDescriptor(
-          CredentialType::kPublicKey,
-          fido_parsing_utils::Materialize(
-              test_data::kTestGetAssertionCredentialId),
-          {FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy,
-           FidoTransportProtocol::kUsbHumanInterfaceDevice}),
-  };
-
-  auto request_handler =
-      CreateGetAssertionHandlerWithRequest(std::move(request));
-  ExpectAllowedTransportsForRequestAre(
-      request_handler.get(), {FidoTransportProtocol::kUsbHumanInterfaceDevice});
-}
-
 TEST_F(FidoGetAssertionHandlerTest, SupportedTransportsAreOnlyBleAndNfc) {
   const base::flat_set<FidoTransportProtocol> kBleAndNfc = {
       FidoTransportProtocol::kBluetoothLowEnergy,

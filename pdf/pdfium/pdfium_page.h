@@ -31,7 +31,7 @@ class PDFiumEngine;
 // Wrapper around a page from the document.
 class PDFiumPage {
  public:
-  PDFiumPage(PDFiumEngine* engine, int i, const pp::Rect& r, bool available);
+  PDFiumPage(PDFiumEngine* engine, int i);
   PDFiumPage(PDFiumPage&& that);
   ~PDFiumPage();
 
@@ -123,10 +123,15 @@ class PDFiumPage {
   const PDFEngine::PageFeatures* GetPageFeatures();
 
   int index() const { return index_; }
+
   const pp::Rect& rect() const { return rect_; }
   void set_rect(const pp::Rect& r) { rect_ = r; }
+
+  // Availability is a one-way transition: A page can become available, but it
+  // cannot become unavailable (unless deleted entirely).
   bool available() const { return available_; }
-  void set_available(bool available) { available_ = available; }
+  void MarkAvailable() { available_ = true; }
+
   void set_calculated_links(bool calculated_links) {
     calculated_links_ = calculated_links;
   }

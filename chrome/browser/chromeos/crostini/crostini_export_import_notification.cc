@@ -11,6 +11,11 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -251,6 +256,25 @@ void CrostiniExportImportNotification::Click(
       if (type_ == ExportImportType::EXPORT) {
         platform_util::ShowItemInFolder(profile_, path_);
       }
+      return;
+    case Status::FAILED_UNKNOWN_REASON:
+      DCHECK(!button_index);
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile_, chrome::kCrostiniExportImportSubPage);
+      return;
+    case Status::FAILED_ARCHITECTURE_MISMATCH: {
+      DCHECK(!button_index);
+      NavigateParams params(profile_, GURL(chrome::kLinuxExportImportHelpURL),
+                            ui::PAGE_TRANSITION_LINK);
+      params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      params.window_action = NavigateParams::SHOW_WINDOW;
+      Navigate(&params);
+    }
+      return;
+    case Status::FAILED_INSUFFICIENT_SPACE:
+      DCHECK(!button_index);
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile_, chrome::kStorageSubPage);
       return;
     default:
       DCHECK(!button_index);

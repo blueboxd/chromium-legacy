@@ -462,7 +462,6 @@ public class CompositorView
     @CalledByNative
     private void notifyWillUseSurfaceControl() {
         mIsSurfaceControlEnabled = true;
-        mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
     }
 
     /**

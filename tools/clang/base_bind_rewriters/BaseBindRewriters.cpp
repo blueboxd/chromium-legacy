@@ -131,8 +131,8 @@ class PassedToMoveRewriter : public MatchFinder::MatchCallback,
   Replacements* replacements_;
 };
 
-// Replace base::Bind() to base::BindOnce() where resulting base::Callback is
-// implicitly converted into base::OnceCallback.
+// Replace base::Bind() and base::BindRepeating() to base::BindOnce() where
+// resulting callbacks are implicitly converted into base::OnceCallback.
 // Example:
 //   // Before
 //   base::PostTask(FROM_HERE, base::Bind(&Foo));
@@ -154,7 +154,9 @@ class BindOnceRewriter : public MatchFinder::MatchCallback, public Rewriter {
             hasName("::base::RepeatingCallback")))));
 
     auto bind_call =
-        callExpr(callee(namedDecl(hasName("::base::Bind")))).bind("target");
+        callExpr(callee(namedDecl(anyOf(hasName("::base::Bind"),
+                                        hasName("::base::BindRepeating")))))
+            .bind("target");
     auto parameter_construction =
         cxxConstructExpr(is_repeating_callback, argumentCountIs(1),
                          hasArgument(0, ignoringImplicit(bind_call)));

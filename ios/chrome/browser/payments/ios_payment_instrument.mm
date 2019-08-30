@@ -112,9 +112,14 @@ bool IOSPaymentInstrument::IsValidForModifier(
   return method_name_ == method;
 }
 
-bool IOSPaymentInstrument::IsValidForPaymentMethodIdentifier(
-    const std::string& payment_method_identifier) const {
-  return method_name_ == payment_method_identifier;
+void IOSPaymentInstrument::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier,
+    bool* is_valid) const {
+  *is_valid = method_name_ == payment_method_identifier;
+}
+
+base::WeakPtr<PaymentInstrument> IOSPaymentInstrument::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace payments

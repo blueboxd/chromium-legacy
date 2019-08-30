@@ -85,6 +85,8 @@ component("gamepad") {
     "xbox_controller_mac.mm",
     "xbox_data_fetcher_mac.cc",
     "xbox_data_fetcher_mac.h",
+    "xbox_hid_controller.cc",
+    "xbox_hid_controller.h",
     "xinput_haptic_gamepad_win.cc",
     "xinput_haptic_gamepad_win.h",
   ]

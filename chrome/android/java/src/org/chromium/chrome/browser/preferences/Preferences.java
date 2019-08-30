@@ -13,6 +13,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.nfc.NfcAdapter;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -30,10 +31,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.ui.UiUtils;
 
 /**
  * The Chrome settings activity.
@@ -133,6 +137,8 @@ public class Preferences extends ChromeBaseAppCompatActivity
         ApiCompatibilityUtils.setTaskDescription(this, res.getString(R.string.app_name),
                 BitmapFactory.decodeResource(res, R.mipmap.app_icon),
                 ApiCompatibilityUtils.getColor(res, R.color.default_primary_color));
+
+        setStatusBarColor();
     }
 
     // OnPreferenceStartFragmentCallback:
@@ -292,5 +298,34 @@ public class Preferences extends ChromeBaseAppCompatActivity
             // Something terribly wrong has happened.
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Set device status bar to match the activity background color, if supported.
+     */
+    private void setStatusBarColor() {
+        // On O+, the status bar color is already set via the XML theme. We avoid setting status bar
+        // color via XML pre-O due to: https://crbug.com/884144.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
+
+        // Kill switch included due to past crashes when programmatically setting status bar color:
+        // https://crbug.com/880694.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SETTINGS_MODERN_STATUS_BAR)) return;
+
+        if (UiUtils.isSystemUiThemingDisabled()) return;
+
+        // Dark status icons only supported on M+.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+
+        // Use background color as status bar color.
+        int statusBarColor =
+                ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color);
+        ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
+
+        // Set status bar icon color according to background color.
+        boolean needsDarkStatusBarIcons =
+                !ColorUtils.shouldUseLightForegroundOnBackground(statusBarColor);
+        ApiCompatibilityUtils.setStatusBarIconColor(
+                getWindow().getDecorView().getRootView(), needsDarkStatusBarIcons);
     }
 }

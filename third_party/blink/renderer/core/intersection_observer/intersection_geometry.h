@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -39,8 +40,20 @@ class CORE_EXPORT IntersectionGeometry {
     kIsVisible = 1 << 6
   };
 
-  IntersectionGeometry(Element* root,
-                       Element& target,
+  struct RootGeometry {
+    STACK_ALLOCATED();
+
+   public:
+    RootGeometry(const LayoutObject* root, const Vector<Length>& margin);
+
+    float zoom;
+    // The root object's content rect in the root object's own coordinate system
+    PhysicalRect local_root_rect;
+    TransformationMatrix root_to_document_transform;
+  };
+
+  IntersectionGeometry(const Element* root,
+                       const Element& target,
                        const Vector<Length>& root_margin,
                        const Vector<float>& thresholds,
                        unsigned flags);
@@ -76,18 +89,14 @@ class CORE_EXPORT IntersectionGeometry {
   bool IsVisible() const { return flags_ & kIsVisible; }
 
  private:
-  void ComputeGeometry(Element* root_element,
-                       Element& target_element,
-                       const Vector<Length>& root_margin,
+  void ComputeGeometry(const RootGeometry& root_geometry,
+                       const LayoutObject* root,
+                       const LayoutObject* target,
                        const Vector<float>& thresholds);
-  PhysicalRect InitializeTargetRect(LayoutObject* target);
-  PhysicalRect InitializeRootRect(LayoutObject* root,
-                                  const Vector<Length>& margin);
-  void ApplyRootMargin(PhysicalRect& rect,
-                       const Vector<Length>& margin,
-                       float zoom);
-  bool ClipToRoot(LayoutObject* root,
-                  LayoutObject* target,
+  // Map intersection_rect from the coordinate system of the target to the
+  // coordinate system of the root, applying intervening clips.
+  bool ClipToRoot(const LayoutObject* root,
+                  const LayoutObject* target,
                   const PhysicalRect& root_rect,
                   PhysicalRect& intersection_rect);
   unsigned FirstThresholdGreaterThan(float ratio,

@@ -79,7 +79,7 @@ void TryCreateSharedMemory(
 // static
 constexpr size_t BigBuffer::kMaxInlineBytes;
 
-BigBuffer::BigBuffer() : storage_type_(StorageType::kBytes) {}
+BigBuffer::BigBuffer() : storage_type_(StorageType::kBytes), bytes_size_(0) {}
 
 BigBuffer::BigBuffer(BigBuffer&& other) = default;
 
@@ -99,7 +99,8 @@ BigBuffer::BigBuffer(size_t size) {
   if (storage_type_ == BigBuffer::StorageType::kBytes) {
     // Either |size| is small enough or shared memory allocation failed, and
     // fallback to inline allocation is feasible.
-    bytes_ = std::vector<uint8_t>(size);
+    bytes_ = std::make_unique<uint8_t[]>(size);
+    bytes_size_ = size;
   }
 }
 
@@ -114,7 +115,7 @@ uint8_t* BigBuffer::data() {
 const uint8_t* BigBuffer::data() const {
   switch (storage_type_) {
     case StorageType::kBytes:
-      return bytes_.data();
+      return bytes_.get();
     case StorageType::kSharedMemory:
       DCHECK(shared_memory_->buffer_mapping_);
       return static_cast<const uint8_t*>(
@@ -132,7 +133,7 @@ const uint8_t* BigBuffer::data() const {
 size_t BigBuffer::size() const {
   switch (storage_type_) {
     case StorageType::kBytes:
-      return bytes_.size();
+      return bytes_size_;
     case StorageType::kSharedMemory:
       return shared_memory_->size();
     case StorageType::kInvalidBuffer:
@@ -199,8 +200,9 @@ BigBuffer BigBufferView::ToBigBuffer(BigBufferView view) {
   BigBuffer buffer;
   buffer.storage_type_ = view.storage_type_;
   if (view.storage_type_ == BigBuffer::StorageType::kBytes) {
-    std::copy(view.bytes_.begin(), view.bytes_.end(),
-              std::back_inserter(buffer.bytes_));
+    buffer.bytes_ = std::make_unique<uint8_t[]>(view.bytes_.size());
+    buffer.bytes_size_ = view.bytes_.size();
+    std::copy(view.bytes_.begin(), view.bytes_.end(), buffer.bytes_.get());
   } else if (view.storage_type_ == BigBuffer::StorageType::kSharedMemory) {
     buffer.shared_memory_ = std::move(*view.shared_memory_);
   }

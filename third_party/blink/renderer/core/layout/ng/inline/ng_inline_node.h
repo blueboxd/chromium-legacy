@@ -78,6 +78,15 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   static void ClearAssociatedFragments(const NGPhysicalFragment& fragment,
                                        const NGBlockBreakToken* break_token);
 
+  // Returns true if we don't need to collect inline items after replacing
+  // |layout_text| after deleting replacing subtext from |offset| to |length|
+  // |new_text| is new text of |layout_text|.
+  // This is optimized version of |PrepareLayout()|.
+  static bool SetTextWithOffset(LayoutText* layout_text,
+                                scoped_refptr<StringImpl> new_text,
+                                unsigned offset,
+                                unsigned length);
+
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.
   // This funciton must be called with clean layout.
@@ -124,7 +133,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void SegmentFontOrientation(NGInlineNodeData*);
   void SegmentBidiRuns(NGInlineNodeData*);
   void ShapeText(NGInlineItemsData*,
-                 NGInlineItemsData* previous_data = nullptr);
+                 const String* previous_text = nullptr,
+                 const Vector<NGInlineItem>* previous_items = nullptr);
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
   void AssociateItemsWithInlines(NGInlineNodeData*);
 

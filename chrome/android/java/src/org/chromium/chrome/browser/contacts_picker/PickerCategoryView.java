@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.content.browser.contacts.ContactsPickerPropertiesRequested;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.UiUtils;
 
@@ -49,15 +50,6 @@ public class PickerCategoryView extends RelativeLayout
     private static final int ACTION_CANCEL = 0;
     private static final int ACTION_CONTACTS_SELECTED = 1;
     private static final int ACTION_BOUNDARY = 2;
-
-    // These values are written to logs as bitmasks (combination of names/emails and/or telephones).
-    // New enum values can be added, but existing enums must never be renumbered or deleted and
-    // reused.
-    private static final int PROPERTIES_NONE = 0;
-    private static final int PROPERTIES_TELS = 1 << 0;
-    private static final int PROPERTIES_EMAILS = 1 << 1;
-    private static final int PROPERTIES_NAMES = 1 << 2;
-    private static final int PROPERTIES_BOUNDARY = 1 << 3;
 
     // Constants for the RoundedIconGenerator.
     private static final int ICON_SIZE_DP = 36;
@@ -384,10 +376,12 @@ public class PickerCategoryView extends RelativeLayout
         int contactCount = mPickerAdapter.getAllContacts().size();
         int percentageShared = (100 * selectCount) / contactCount;
 
-        int propertiesRequested = PROPERTIES_NONE;
-        if (includeNames) propertiesRequested |= PROPERTIES_NAMES;
-        if (includeEmails) propertiesRequested |= PROPERTIES_EMAILS;
-        if (includeTel) propertiesRequested |= PROPERTIES_TELS;
+        int propertiesRequested = ContactsPickerPropertiesRequested.PROPERTIES_NONE;
+        if (includeNames) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_NAMES;
+        if (includeEmails) {
+            propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_EMAILS;
+        }
+        if (includeTel) propertiesRequested |= ContactsPickerPropertiesRequested.PROPERTIES_TELS;
 
         mListener.onContactsPickerUserAction(
                 action, contacts, percentageShared, propertiesRequested);
@@ -414,7 +408,7 @@ public class PickerCategoryView extends RelativeLayout
         RecordHistogram.recordPercentageHistogram(
                 "Android.ContactsPicker.SelectPercentage", percentageShared);
         RecordHistogram.recordEnumeratedHistogram("Android.ContactsPicker.PropertiesRequested",
-                propertiesRequested, PROPERTIES_BOUNDARY);
+                propertiesRequested, ContactsPickerPropertiesRequested.PROPERTIES_BOUNDARY);
     }
 
     @VisibleForTesting

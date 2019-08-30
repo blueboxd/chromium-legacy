@@ -28,7 +28,8 @@
     <div id="container">
       <cr-input label="[[label]]" value="{{value}}"
           hidden="[[hidden]]" readonly="[[readonly]]"
-          disabled="[[getDisabled_(disabled, property)]]">
+          disabled="[[getDisabled_(disabled, property)]]"
+          on-keypress="onKeypress_">
       </cr-input>
       <cr-policy-network-indicator
           property="[[property]]" tooltip-position="left">

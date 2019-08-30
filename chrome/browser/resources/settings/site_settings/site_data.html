@@ -42,6 +42,11 @@
           on-click="onRemoveShowingSitesTap_" hidden$="[[!sites.length]]">
         [[computeRemoveLabel_(filter)]]
       </cr-button>
+      <cr-button disabled$="[[isLoading_]]" id="removeThirdPartyCookies"
+          on-click="onRemoveThirdPartyCookiesTap_"
+          hidden$="[[!enableRemovingAllThirdPartyCookies_]]">
+          $i18n{siteSettingsCookieRemoveAllThirdParty}
+      </cr-button>
     </div>
     <iron-list id="list" items="[[sites]]" preserve-focus
         scroll-target="[[subpageScrollTarget]]" class="cr-separators">
@@ -71,6 +76,26 @@
         </cr-button>
       </div>
     </cr-dialog>
+
+    <!-- Confirm Delete Third Party Cookies dialog -->
+    <cr-dialog id="confirmDeleteThirdPartyDialog" close-text="$i18n{close}"
+        on-close="onConfirmDeleteThirdPartyDialogClosed_">
+      <div slot="title">
+        $i18n{siteSettingsCookieRemoveThirdPartyDialogTitle}
+      </div>
+      <div slot="body">
+        $i18n{siteSettingsCookieRemoveThirdPartyConfirmation}
+      </div>
+      <div slot="button-container">
+        <cr-button class="cancel-button" on-click="onCloseThirdPartyDialog_">
+          $i18n{cancel}
+        </cr-button>
+        <cr-button class="action-button" on-click="onConfirmThirdPartyDelete_">
+          $i18n{siteSettingsCookiesClearThirdParty}
+        </cr-button>
+      </div>
+    </cr-dialog>
+
   </template>
   <script src="site_data.js"></script>
 </dom-module>

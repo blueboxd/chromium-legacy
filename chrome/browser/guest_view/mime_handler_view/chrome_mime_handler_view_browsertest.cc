@@ -152,8 +152,9 @@ class ChromeMimeHandlerViewTestBase : public extensions::ExtensionApiTest {
     *view_id = base::GenerateGUID();
     auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
     transferrable_loader->url = url;
-    transferrable_loader->head.mime_type = "application/pdf";
-    transferrable_loader->head.headers =
+    transferrable_loader->head = network::mojom::URLResponseHead::New();
+    transferrable_loader->head->mime_type = "application/pdf";
+    transferrable_loader->head->headers =
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/2 200 OK");
     return std::make_unique<extensions::StreamContainer>(
         0 /* tab_id */, false /* embedded */,

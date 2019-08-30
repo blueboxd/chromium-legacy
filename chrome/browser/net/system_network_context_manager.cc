@@ -4,11 +4,13 @@
 
 #include "chrome/browser/net/system_network_context_manager.h"
 
+#include <algorithm>
 #include <set>
 #include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -52,6 +54,7 @@
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
+#include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
@@ -83,6 +86,20 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 namespace {
+
+constexpr bool kCertificateTransparencyEnabled =
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD) && \
+    !defined(OS_ANDROID)
+    // Certificate Transparency is only enabled if:
+    //   - Desktop (!OS_ANDROID); OS_IOS does not use this file
+    //   - base::GetBuildTime() is deterministic to the source (OFFICIAL_BUILD)
+    //   - The build in reliably updatable (GOOGLE_CHROME_BRANDING)
+    true;
+#else
+    false;
+#endif
+
+bool g_enable_certificate_transparency = kCertificateTransparencyEnabled;
 
 // The global instance of the SystemNetworkContextmanager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
@@ -690,14 +707,35 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
 
   bool http_09_on_non_default_ports_enabled = false;
 #if !defined(OS_ANDROID)
-  // CT is only enabled on Desktop platforms for now.
-  network_context_params->enforce_chrome_ct_policy = true;
-  for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
-    // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
-    network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
-    log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
-    log_info->name = ct_log.log_name;
-    network_context_params->ct_logs.push_back(std::move(log_info));
+
+  if (g_enable_certificate_transparency) {
+    network_context_params->enforce_chrome_ct_policy = true;
+    network_context_params->ct_log_update_time = base::GetBuildTime();
+
+    std::vector<std::string> operated_by_google_logs =
+        certificate_transparency::GetLogsOperatedByGoogle();
+    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
+        certificate_transparency::GetDisqualifiedLogs();
+    for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
+      // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
+      network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+      log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+      log_info->name = ct_log.log_name;
+
+      std::string log_id = crypto::SHA256HashString(log_info->public_key);
+      log_info->operated_by_google =
+          std::binary_search(std::begin(operated_by_google_logs),
+                             std::end(operated_by_google_logs), log_id);
+      auto it = std::lower_bound(
+          std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
+          [](const auto& disqualified_log, const std::string& log_id) {
+            return disqualified_log.first < log_id;
+          });
+      if (it != std::end(disqualified_logs) && it->first == log_id) {
+        log_info->disqualified_at = it->second;
+      }
+      network_context_params->ct_logs.push_back(std::move(log_info));
+    }
   }
 
   const base::Value* value =
@@ -755,6 +793,12 @@ SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting() {
 network::mojom::HttpAuthDynamicParamsPtr
 SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting() {
   return CreateHttpAuthDynamicParams(g_browser_process->local_state());
+}
+
+void SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+    base::Optional<bool> enabled) {
+  g_enable_certificate_transparency =
+      enabled.value_or(kCertificateTransparencyEnabled);
 }
 
 network::mojom::NetworkContextParamsPtr

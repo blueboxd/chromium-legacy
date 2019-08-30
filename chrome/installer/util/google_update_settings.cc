@@ -19,6 +19,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
+#include "build/branding_buildflags.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
@@ -41,11 +42,11 @@ const int GoogleUpdateSettings::kCheckPeriodOverrideMinutesMax =
     60 * 24 * 7 * 6;
 
 const GoogleUpdateSettings::UpdatePolicy
-GoogleUpdateSettings::kDefaultUpdatePolicy =
-#if defined(GOOGLE_CHROME_BUILD)
-    GoogleUpdateSettings::AUTOMATIC_UPDATES;
+    GoogleUpdateSettings::kDefaultUpdatePolicy =
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+        GoogleUpdateSettings::AUTOMATIC_UPDATES;
 #else
-    GoogleUpdateSettings::UPDATES_DISABLED;
+        GoogleUpdateSettings::UPDATES_DISABLED;
 #endif
 
 namespace {
@@ -148,7 +149,7 @@ bool InitChannelInfo(bool system_install,
   return channel_info->Initialize(key);
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Populates |update_policy| with the UpdatePolicy enum value corresponding to a
 // DWORD read from the registry and returns true if |value| is within range.
 // If |value| is out of range, returns false without modifying |update_policy|.
@@ -167,7 +168,7 @@ bool GetUpdatePolicyFromDword(
   }
   return false;
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Returns the stats consent tristate held in the registry keys given by the two
 // functions |state_key_fn_ptr| and |state_medium_key_fn_ptr|. The state is read
@@ -509,7 +510,7 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
   bool found_override = false;
   UpdatePolicy update_policy = kDefaultUpdatePolicy;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   DCHECK(!app_guid.empty());
   RegKey policy_key;
 
@@ -531,7 +532,7 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
       GetUpdatePolicyFromDword(value, &update_policy);
     }
   }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   if (is_overridden != NULL)
     *is_overridden = found_override;
@@ -541,7 +542,7 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
 
 // static
 bool GoogleUpdateSettings::AreAutoupdatesEnabled() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Check the auto-update check period override. If it is 0 or exceeds the
   // maximum timeout, then for all intents and purposes auto updates are
   // disabled.
@@ -558,15 +559,15 @@ bool GoogleUpdateSettings::AreAutoupdatesEnabled() {
   UpdatePolicy app_policy =
       GetAppUpdatePolicy(install_static::GetAppGuid(), nullptr);
   return app_policy == AUTOMATIC_UPDATES || app_policy == AUTO_UPDATES_ONLY;
-#else  // defined(GOOGLE_CHROME_BUILD)
+#else   // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Chromium does not auto update.
   return false;
-#endif  // !defined(GOOGLE_CHROME_BUILD)
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 // static
 bool GoogleUpdateSettings::ReenableAutoupdates() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   int needs_reset_count = 0;
   int did_reset_count = 0;
 

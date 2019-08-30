@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "components/ui_devtools/buildflags.h"
 #include "components/viz/service/main/viz_compositor_thread_runner.h"
 
 namespace base {
@@ -56,7 +57,7 @@ class VizCompositorThreadRunnerWebView : public viz::VizCompositorThreadRunner {
   void CreateFrameSinkManager(viz::mojom::FrameSinkManagerParamsPtr params,
                               gpu::CommandBufferTaskExecutor* task_executor,
                               viz::GpuServiceImpl* gpu_service) override;
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
   void CreateVizDevTools(viz::mojom::VizDevToolsParamsPtr params) override;
 #endif
   void CleanupForShutdown(base::OnceClosure cleanup_finished_callback) override;

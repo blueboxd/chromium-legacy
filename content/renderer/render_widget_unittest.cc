@@ -472,9 +472,8 @@ class PopupRenderWidget : public RenderWidget {
   void Shutdown(std::unique_ptr<RenderWidget> widget) {
     shutdown_ = true;
 
-    // OnClose takes ownership and destroys the widget.
-    widget->OnClose();
-    widget.release();
+    widget->PrepareForClose();
+    widget->Close(std::move(widget));
   }
 
  protected:

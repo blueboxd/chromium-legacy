@@ -16,7 +16,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/web_usb_chooser.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -27,8 +26,6 @@
 namespace content {
 class RenderFrameHost;
 }
-
-using DeviceClientBindings = mojo::BindingSet<device::mojom::UsbDeviceClient>;
 
 class UsbChooserContext;
 
@@ -94,8 +91,10 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   mojo::AssociatedInterfacePtrSet<device::mojom::UsbDeviceManagerClient>
       clients_;
 
-  // Tracks DeviceClient bindings for each device (by GUID).
-  std::unordered_map<std::string, DeviceClientBindings> device_client_bindings_;
+  // Tracks DeviceClient receivers for each device (by GUID).
+  std::unordered_map<std::string,
+                     mojo::ReceiverSet<device::mojom::UsbDeviceClient>>
+      device_client_receivers_;
 
   ScopedObserver<UsbChooserContext, UsbChooserContext::DeviceObserver>
       device_observer_;

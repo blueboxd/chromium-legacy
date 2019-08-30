@@ -15,11 +15,7 @@
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/optimization_guide_features.h"
-#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/scoped_user_pref_update.h"
-#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -150,9 +146,7 @@ class HintCacheStoreTest : public testing::Test {
     auto db = std::make_unique<FakeDB<StoreEntry>>(&db_store_);
     db_ = db.get();
 
-    optimization_guide::prefs::RegisterProfilePrefs(pref_service_.registry());
-    hint_store_ =
-        std::make_unique<HintCacheStore>(std::move(db), &pref_service_);
+    hint_store_ = std::make_unique<HintCacheStore>(std::move(db));
   }
 
   void InitializeDatabase(bool success, bool purge_existing_data = false) {
@@ -316,18 +310,12 @@ class HintCacheStoreTest : public testing::Test {
     last_loaded_hint_ = std::move(loaded_hint);
   }
 
-  const base::DictionaryValue* hint_loaded_counts_pref() {
-    return pref_service_.GetDictionary(
-        optimization_guide::prefs::kHintLoadedCounts);
-  }
-
   MOCK_METHOD0(OnInitialized, void());
   MOCK_METHOD0(OnUpdateHints, void());
 
  private:
   FakeDB<proto::StoreEntry>* db_;
   StoreEntryMap db_store_;
-  TestingPrefServiceSimple pref_service_;
   std::unique_ptr<HintCacheStore> hint_store_;
 
   HintCacheStore::EntryKey last_loaded_hint_entry_key_;
@@ -1477,120 +1465,6 @@ TEST_F(HintCacheStoreTest, FetchHintsPurgeExpiredFetchedHints) {
   EXPECT_FALSE(hint_store()->FindHintEntryKey("domain5.org", &hint_entry_key));
   EXPECT_TRUE(hint_store()->FindHintEntryKey("domain2.org", &hint_entry_key));
   EXPECT_TRUE(hint_store()->FindHintEntryKey("domain3.org", &hint_entry_key));
-}
-
-TEST_F(HintCacheStoreTest, LoadingHintUpdatesPrefCorrectly) {
-  base::HistogramTester histogram_tester;
-
-  // Update component with some hints.
-  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
-  size_t initial_hint_count = 10;
-  size_t update_hint_count = 5;
-  SeedInitialData(schema_state, initial_hint_count);
-  CreateDatabase();
-  InitializeStore(schema_state);
-
-  std::unique_ptr<HintUpdateData> update_data =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
-          base::Version(kUpdateComponentVersion));
-  ASSERT_TRUE(update_data);
-  SeedComponentUpdateData(update_data.get(), update_hint_count);
-  UpdateComponentHints(std::move(update_data));
-
-  // Also seed a fetched hint into the store.
-  update_data = hint_store()->CreateUpdateDataForFetchedHints(
-      base::Time().Now(),
-      base::Time().Now() +
-          optimization_guide::features::StoredFetchedHintsFreshnessDuration());
-  proto::Hint hint;
-  hint.set_key("domain2.org");
-  hint.set_key_representation(proto::HOST_SUFFIX);
-  update_data->MoveHintIntoUpdateData(std::move(hint));
-  UpdateFetchedHints(std::move(update_data));
-
-  // Load hint for component host suffix.
-  std::string host_suffix1 = GetHostSuffix(0);
-  HintCacheStore::EntryKey hint_entry_key1;
-  if (!hint_store()->FindHintEntryKey(host_suffix1, &hint_entry_key1)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix1;
-  }
-  hint_store()->LoadHint(hint_entry_key1,
-                         base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
-                                        base::Unretained(this)));
-  db()->GetCallback(true);
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("Total"));
-  EXPECT_EQ(1, hint_loaded_counts_pref()->FindIntKey("Total").value());
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("ComponentHint"));
-  EXPECT_EQ(1, hint_loaded_counts_pref()->FindIntKey("ComponentHint").value());
-
-  // Load another component hint.
-  std::string host_suffix2 = GetHostSuffix(1);
-  HintCacheStore::EntryKey hint_entry_key2;
-  if (!hint_store()->FindHintEntryKey(host_suffix2, &hint_entry_key2)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix2;
-  }
-  hint_store()->LoadHint(hint_entry_key2,
-                         base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
-                                        base::Unretained(this)));
-  db()->GetCallback(true);
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("Total"));
-  EXPECT_EQ(2, hint_loaded_counts_pref()->FindIntKey("Total").value());
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("ComponentHint"));
-  EXPECT_EQ(2, hint_loaded_counts_pref()->FindIntKey("ComponentHint").value());
-
-  // Load hint for a fetched hint.
-  std::string fetched_host_suffix = "host.domain2.org";
-  HintCacheStore::EntryKey fetched_hint_entry_key;
-  if (!hint_store()->FindHintEntryKey(fetched_host_suffix,
-                                      &fetched_hint_entry_key)) {
-    FAIL() << "Hint entry not found for host suffix: " << fetched_host_suffix;
-  }
-  hint_store()->LoadHint(fetched_hint_entry_key,
-                         base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
-                                        base::Unretained(this)));
-  db()->GetCallback(true);
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("Total"));
-  EXPECT_EQ(3, hint_loaded_counts_pref()->FindIntKey("Total").value());
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("ComponentHint"));
-  EXPECT_EQ(2, hint_loaded_counts_pref()->FindIntKey("ComponentHint").value());
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("FetchedHint"));
-  EXPECT_EQ(1, hint_loaded_counts_pref()->FindIntKey("FetchedHint").value());
-
-  // Load hint for a hint entry we do not have.
-  hint_store()->LoadHint("doesnotexist",
-                         base::BindOnce(&HintCacheStoreTest::OnHintLoaded,
-                                        base::Unretained(this)));
-  db()->GetCallback(true);
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("Total"));
-  EXPECT_EQ(4, hint_loaded_counts_pref()->FindIntKey("Total").value());
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("ComponentHint"));
-  EXPECT_EQ(2, hint_loaded_counts_pref()->FindIntKey("ComponentHint").value());
-  EXPECT_TRUE(hint_loaded_counts_pref()->HasKey("FetchedHint"));
-  EXPECT_EQ(1, hint_loaded_counts_pref()->FindIntKey("FetchedHint").value());
-
-  // Now update the component with a new version.
-  std::unique_ptr<HintUpdateData> update_data2 =
-      hint_store()->MaybeCreateUpdateDataForComponentHints(
-          base::Version("100.0.0"));
-  ASSERT_TRUE(update_data2);
-  SeedComponentUpdateData(update_data2.get(), update_hint_count);
-  UpdateComponentHints(std::move(update_data2));
-
-  histogram_tester.ExpectTotalCount("OptimizationGuide.HintsLoadedPercentage",
-                                    1);
-  histogram_tester.ExpectUniqueSample("OptimizationGuide.HintsLoadedPercentage",
-                                      75, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsLoadedPercentage.ComponentHint", 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsLoadedPercentage.ComponentHint", 50, 1);
-  histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.HintsLoadedPercentage.FetchedHint", 1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.HintsLoadedPercentage.FetchedHint", 25, 1);
-
-  // Ensure that pref has been cleared.
-  EXPECT_TRUE(hint_loaded_counts_pref()->empty());
 }
 
 TEST_F(HintCacheStoreTest, FetchedHintsLoadExpiredHint) {

@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
@@ -47,10 +46,8 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
  public:
   ResetPasswordHandlerImpl(
       content::WebContents* web_contents,
-      PasswordType password_type,
       mojo::InterfaceRequest<mojom::ResetPasswordHandler> request)
       : web_contents_(web_contents),
-        password_type_(password_type),
         binding_(this, std::move(request)) {
     DCHECK(web_contents);
   }
@@ -66,8 +63,7 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
     if (service) {
       service->OnUserAction(
           web_contents_,
-          service->GetPasswordProtectionReusedPasswordAccountType(
-              password_type_, service->username()),
+          service->reused_password_account_type_for_last_shown_warning(),
           RequestOutcome::UNKNOWN,
           LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
           /*verdict_token=*/"", safe_browsing::WarningUIType::INTERSTITIAL,
@@ -77,7 +73,6 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
 
  private:
   content::WebContents* web_contents_;
-  PasswordType password_type_;
   mojo::Binding<mojom::ResetPasswordHandler> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetPasswordHandlerImpl);
@@ -133,15 +128,14 @@ ResetPasswordUI::~ResetPasswordUI() {}
 void ResetPasswordUI::BindResetPasswordHandler(
     mojom::ResetPasswordHandlerRequest request) {
   ui_handler_ = std::make_unique<ResetPasswordHandlerImpl>(
-      web_ui()->GetWebContents(), password_type_, std::move(request));
+      web_ui()->GetWebContents(), std::move(request));
 }
 
 base::DictionaryValue ResetPasswordUI::PopulateStrings() const {
   auto* service = safe_browsing::ChromePasswordProtectionService::
       GetPasswordProtectionService(Profile::FromWebUI(web_ui()));
   std::string org_name = service->GetOrganizationName(
-      service->GetPasswordProtectionReusedPasswordAccountType(
-          password_type_, service->username()));
+      service->reused_password_account_type_for_last_shown_warning());
   bool known_password_type =
       password_type_ != PasswordType::PASSWORD_TYPE_UNKNOWN;
 

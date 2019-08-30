@@ -17,7 +17,6 @@
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"

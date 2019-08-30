@@ -1872,6 +1872,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     mAppMenuPropertiesDelegate.setBookmarkBridge(mBookmarkBridge);
                 }
                 mLocationBar.setAutocompleteProfile(profile);
+                mLocationBar.setShowIconsWhenUrlFocused(
+                        SearchEngineLogoUtils.shouldShowSearchEngineLogo());
             }
             mCurrentProfile = profile;
         }

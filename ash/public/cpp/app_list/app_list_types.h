@@ -32,6 +32,26 @@ constexpr int kMouseDragThreshold = 2;
 // Id of OEM folder in app list.
 ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
 
+// App list config types supported by AppListConfig.
+enum class AppListConfigType {
+  // Config type used for all screens when app_list_features::ScalableAppList
+  // feature is disabled. (Note that two configs having this type can differ, in
+  // case one of them is scaled down).
+  kShared,
+
+  // Config used on large screens when app_list_features::ScalableAppList
+  // feature is enabled.
+  kLarge,
+
+  // Config used on medium sized screens when app_list_features::ScalableAppList
+  // feature is enabled.
+  kMedium,
+
+  // Config used on small screens when app_list_features::ScalableAppList
+  // feature is enabled.
+  kSmall
+};
+
 // A structure holding the common information which is sent between ash and,
 // chrome representing an app list item.
 struct ASH_PUBLIC_EXPORT AppListItemMetadata {

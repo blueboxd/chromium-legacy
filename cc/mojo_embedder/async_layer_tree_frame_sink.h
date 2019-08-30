@@ -92,7 +92,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
         synthetic_begin_frame_source;
     std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider;
     UnboundMessagePipes pipes;
-    bool enable_surface_synchronization = false;
     bool wants_animate_only_begin_frames = false;
     const char* client_name = nullptr;
   };

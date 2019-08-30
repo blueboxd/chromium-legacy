@@ -218,7 +218,7 @@ void DevToolsBackgroundServicesContextImpl::ClearLoggedBackgroundServiceEvents(
 void DevToolsBackgroundServicesContextImpl::
     ClearLoggedBackgroundServiceEventsOnCoreThread(
         devtools::proto::BackgroundService service) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   service_worker_context_->ClearUserDataForAllRegistrationsByKeyPrefix(
       CreateEntryKeyPrefix(service), base::BindOnce(&DidClearServiceEvents));

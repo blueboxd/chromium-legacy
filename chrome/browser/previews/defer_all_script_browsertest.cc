@@ -43,6 +43,15 @@
 
 namespace {
 
+// Expected console output when defer preview is not applied to the test
+// webpage.
+static const char kNonDeferredPageExpectedOutput[] =
+    "ScriptLog:_InlineScript_SyncScript_BodyEnd_DeveloperDeferScript_OnLoad";
+
+// Expected console output when defer preview is applied to the test webpage.
+static const char kDeferredPageExpectedOutput[] =
+    "ScriptLog:_BodyEnd_InlineScript_SyncScript_DeveloperDeferScript_OnLoad";
+
 // Retries fetching |histogram_name| until it contains at least |count| samples.
 void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
                                         const std::string& histogram_name,
@@ -112,6 +121,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
     server_redirect_base_redirect_to_final_server_redirect_url_ =
         https_server_->GetURL(
             "/server_redirect_base_redirect_to_final_server_redirect.html");
+    server_denylist_url_ = https_server_->GetURL("/login.html");
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -182,6 +192,8 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
     return server_redirect_base_redirect_to_final_server_redirect_url_;
   }
 
+  const GURL& server_denylist_url() const { return server_denylist_url_; }
+
   std::string GetScriptLog() {
     std::string script_log;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
@@ -209,6 +221,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
   GURL client_redirect_url_;
   GURL client_redirect_url_target_url_;
   GURL server_redirect_url_;
+  GURL server_denylist_url_;
 
   GURL server_redirect_base_redirect_to_final_server_redirect_url_;
 
@@ -244,9 +257,7 @@ IN_PROC_BROWSER_TEST_P(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(
-      "ScriptLog:_BodyEnd_InlineScript_SyncScript_DeveloperDeferScript_OnLoad",
-      GetScriptLog());
+  EXPECT_EQ(kDeferredPageExpectedOutput, GetScriptLog());
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
@@ -270,6 +281,29 @@ IN_PROC_BROWSER_TEST_P(
       entry, UkmDeferEntry::kforce_deferred_scripts_mainframe_externalName, 1);
 }
 
+// Defer should not be used on a webpage whose URL matches the denylist regex.
+IN_PROC_BROWSER_TEST_P(
+    DeferAllScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelistedDenylistURL)) {
+  // Whitelist DeferAllScript for any path for the url's host.
+  SetDeferAllScriptHintWithPageWithPattern(server_denylist_url(), "*");
+
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  ui_test_utils::NavigateToURL(browser(), server_denylist_url());
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
+      1);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "Previews.DeferAllScript.DenyListMatch", 1);
+  histogram_tester.ExpectUniqueSample("Previews.DeferAllScript.DenyListMatch",
+                                      true, 1);
+
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
+}
+
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsNotWhitelisted)) {
@@ -288,9 +322,7 @@ IN_PROC_BROWSER_TEST_P(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(
-      "ScriptLog:_InlineScript_SyncScript_BodyEnd_DeveloperDeferScript_OnLoad",
-      GetScriptLog());
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
@@ -327,9 +359,7 @@ IN_PROC_BROWSER_TEST_P(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(
-      "ScriptLog:_InlineScript_SyncScript_BodyEnd_DeveloperDeferScript_OnLoad",
-      GetScriptLog());
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",

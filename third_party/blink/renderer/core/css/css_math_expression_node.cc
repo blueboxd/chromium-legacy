@@ -239,6 +239,11 @@ bool CSSMathExpressionNumericLiteral::AccumulateLengthArray(
   return value_->AccumulateLengthArray(length_array, multiplier);
 }
 
+void CSSMathExpressionNumericLiteral::AccumulateLengthUnitTypes(
+    CSSPrimitiveValue::LengthTypeFlags& types) const {
+  value_->AccumulateLengthUnitTypes(types);
+}
+
 bool CSSMathExpressionNumericLiteral::operator==(
     const CSSMathExpressionNode& other) const {
   if (!other.IsNumericLiteral())
@@ -587,6 +592,12 @@ bool CSSMathExpressionBinaryOperation::AccumulateLengthArray(
   }
 }
 
+void CSSMathExpressionBinaryOperation::AccumulateLengthUnitTypes(
+    CSSPrimitiveValue::LengthTypeFlags& types) const {
+  left_side_->AccumulateLengthUnitTypes(types);
+  right_side_->AccumulateLengthUnitTypes(types);
+}
+
 bool CSSMathExpressionBinaryOperation::IsComputationallyIndependent() const {
   if (Category() != kCalcLength && Category() != kCalcPercentLength)
     return true;
@@ -840,6 +851,12 @@ bool CSSMathExpressionVariadicOperation::AccumulateLengthArray(CSSLengthArray&,
   // TODO(crbug.com/991672): We need a more general length interpolation
   // implemetation that doesn't rely on CSSLengthArray.
   return false;
+}
+
+void CSSMathExpressionVariadicOperation::AccumulateLengthUnitTypes(
+    CSSPrimitiveValue::LengthTypeFlags& types) const {
+  for (const auto& operand : operands_)
+    operand->AccumulateLengthUnitTypes(types);
 }
 
 bool CSSMathExpressionVariadicOperation::IsComputationallyIndependent() const {

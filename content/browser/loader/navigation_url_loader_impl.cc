@@ -779,7 +779,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
  private:
   // network::mojom::URLLoaderClient implementation:
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override {
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
     // When NavigationImmediateResponseBody is enabled, wait for
     // OnStartLoadingResponseBody() before sending anything to the renderer
     // process.
@@ -811,8 +811,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // This needs to be after the URLLoader has been moved to
     // |url_loader_client_endpoints| in order to abort the request, to avoid
     // receiving unexpected call.
-    if (head.headers &&
-        head.headers->response_code() == net::HTTP_NOT_MODIFIED) {
+    if (head->headers &&
+        head->headers->response_code() == net::HTTP_NOT_MODIFIED) {
       // Call CancelWithError instead of OnComplete so that if there is an
       // intercepting URLLoaderFactory it gets notified.
       url_loader_->CancelWithError(
@@ -823,12 +823,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     bool is_download;
 
-    bool must_download =
-        download_utils::MustDownload(url_, head.headers.get(), head.mime_type);
-    bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
+    bool must_download = download_utils::MustDownload(url_, head->headers.get(),
+                                                      head->mime_type);
+    bool known_mime_type = blink::IsSupportedMimeType(head->mime_type);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-    if (!head.intercepted_by_plugin && !must_download && !known_mime_type) {
+    if (!head->intercepted_by_plugin && !must_download && !known_mime_type) {
       // No plugin throttles intercepted the response. Ask if the plugin
       // registered to PluginService wants to handle the request.
       CheckPluginAndContinueOnReceiveResponse(
@@ -841,7 +841,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     // When a plugin intercepted the response, we don't want to download it.
     is_download =
-        !head.intercepted_by_plugin && (must_download || !known_mime_type);
+        !head->intercepted_by_plugin && (must_download || !known_mime_type);
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
                            is_download);
@@ -895,7 +895,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override {
+                         network::mojom::URLResponseHeadPtr head) override {
     if (!bypass_redirect_checks_ &&
         !IsRedirectSafe(url_, redirect_info.new_url, browser_context_)) {
       // Call CancelWithError instead of OnComplete so that if there is an

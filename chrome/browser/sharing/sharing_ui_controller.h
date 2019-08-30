@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
-#include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "components/sync_device_info/device_info.h"
@@ -55,16 +54,14 @@ class SharingUiController {
 
   // Title of the dialog.
   virtual base::string16 GetTitle() = 0;
-
   // Called when user chooses a synced device to complete the task.
   virtual void OnDeviceChosen(const syncer::DeviceInfo& device) = 0;
-
   // Called when user chooses a local app to complete the task.
   virtual void OnAppChosen(const App& app) = 0;
-
   virtual PageActionIconType GetIconType() = 0;
-
   virtual int GetRequiredDeviceCapabilities() = 0;
+  virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
+  virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
 
   // Called by the SharingDialog when it is being closed.
   void OnDialogClosed(SharingDialog* dialog);
@@ -98,12 +95,10 @@ class SharingUiController {
       std::vector<std::unique_ptr<syncer::DeviceInfo>> devices) {
     devices_ = std::move(devices);
   }
-
   void MaybeShowErrorDialog();
 
  protected:
   virtual SharingDialog* DoShowDialog(BrowserWindow* window) = 0;
-
   virtual void DoUpdateApps(UpdateAppsCallback callback) = 0;
 
   void SendMessageToDevice(

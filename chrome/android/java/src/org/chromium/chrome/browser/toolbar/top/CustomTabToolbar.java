@@ -829,6 +829,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         public void setAutocompleteProfile(Profile profile) {}
 
         @Override
+        public void setShowIconsWhenUrlFocused(boolean showIcon) {}
+
+        @Override
         public int getUrlContainerMarginEnd() {
             return 0;
         }

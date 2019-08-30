@@ -2073,7 +2073,22 @@ void TabDragController::UpdateGroupForDraggedTabs(int to_index) {
   // If the tab hasn't moved, there is no need to update tab group membership.
   if (current_index == to_index)
     return;
-  if (!GetTabGroupForTargetIndex(current_index, to_index).has_value()) {
+  base::Optional<TabGroupId> updated_group =
+      GetTabGroupForTargetIndex(current_index, to_index);
+  base::Optional<TabGroupId> current_selected_group =
+      attached_model->GetTabGroupForTab(current_index);
+
+  // If the dragging all tabs in the group, we will not do anything since the
+  // group membership will not change.
+  // TODO(crbug.com/978609): Support multi-select drag case.
+  if (current_selected_group.has_value() && updated_group.has_value() &&
+      current_selected_group.value() == updated_group.value()) {
+    return;
+  }
+  if (updated_group.has_value()) {
+    attached_model->MoveTabsIntoGroup({current_index}, to_index,
+                                      updated_group.value());
+  } else {
     attached_model->RemoveFromGroup({current_index});
   }
 }
@@ -2084,13 +2099,6 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
   TabStripModel* attached_model = attached_context_->GetTabStripModel();
   base::Optional<TabGroupId> current_group =
       attached_model->GetTabGroupForTab(current_index);
-
-  // Keep tab in tab group if dragging all tabs in the tab group.
-  // TODO(crbug.com/978609): Handle multi-select drag case.
-  if ((current_group.has_value() &&
-       attached_model->ListTabsInGroup(current_group.value()).size() == 1)) {
-    return attached_model->GetTabGroupForTab(current_index);
-  }
 
   // For the currently dragged tab, find the tab index of the tab to the left
   // (|left_tab_index|) and right (|right_tab_index|)) after this current move
@@ -2107,11 +2115,26 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
   base::Optional<TabGroupId> right_group = attached_model->GetTabGroupForTab(
       right_tab_index(current_index, to_index));
 
-  // If the currently dragged tab will end up without either adjacent tab
-  // sharing its group, ungroup it.
-  return (left_group != current_group && right_group != current_group)
-             ? base::nullopt
-             : current_group;
+  // First check if the tab bring dragged should join another group to ensure
+  // tab contiguity. This should happen if tabs to the immediate left and right
+  // of the tab are the same, the tab being dragged should match that. Next
+  // check if the tab being dragged contains all tabs of a particular group. If
+  // so, those tabs should remain in their tab group. If exactly one of the
+  // neighboring tabs is in the same group as the tab being dragged, the tab
+  // will remain in the group. Otherwise, the dragged tab will be ungrouped.
+  base::Optional<TabGroupId> updated_group = base::nullopt;
+  if (left_group == right_group && left_group.has_value()) {
+    updated_group = left_group;
+  } else if (current_group.has_value() &&
+             attached_model->ListTabsInGroup(current_group.value()).size() ==
+                 1) {
+    // Keep tab in tab group if dragging all tabs in the tab group.
+    // TODO(crbug.com/978609): Handle multi-select drag case.
+    return attached_model->GetTabGroupForTab(current_index);
+  } else if (left_group == current_group || right_group == current_group) {
+    updated_group = current_group;
+  }
+  return updated_group;
 }
 
 bool TabDragController::ShouldDisallowDrag(gfx::NativeWindow window) {

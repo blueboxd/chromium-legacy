@@ -17,6 +17,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -69,11 +70,9 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
 
     bool has_image() { return !!image_; }
     sk_sp<SkImage> image() { return image_; }
-    void set_image(sk_sp<SkImage> image) {
-      DCHECK(!image_);
-      image_ = std::move(image);
-    }
+    void SetImage(sk_sp<SkImage> image, GrBackendFormat backend_format);
     void clear_image() { image_.reset(); }
+    const GrBackendFormat& backend_format() { return backend_format_; }
 
    private:
     gpu::MailboxHolder mailbox_holder_;
@@ -91,6 +90,7 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
 
     // The promise image which is used on display thread.
     sk_sp<SkImage> image_;
+    GrBackendFormat backend_format_;
 
     DISALLOW_COPY_AND_ASSIGN(ImageContext);
   };

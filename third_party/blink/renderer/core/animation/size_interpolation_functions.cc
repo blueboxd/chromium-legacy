@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/size_interpolation_functions.h"
 
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/underlying_value_owner.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -56,6 +56,9 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSSizeNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSSizeNonInterpolableValue);
 
+// TODO(xiaochengh): Clean up. With |InterpolableLength| introduced and
+// |LengthNonInterpolableValue| removed, the following no longer makes sense.
+//
 // A wrapper for the UnderlyingValue passed to
 // SizeInterpolationFunctions::Composite which can be forwarded to
 // LengthInterpolationFunctions::Composite.
@@ -119,8 +122,8 @@ InterpolationValue SizeInterpolationFunctions::ConvertFillSizeSide(
           convert_width ? fill_size.size.Width() : fill_size.size.Height();
       if (side.IsAuto())
         return ConvertKeyword(CSSValueID::kAuto);
-      return WrapConvertedLength(
-          LengthInterpolationFunctions::MaybeConvertLength(side, zoom));
+      return WrapConvertedLength(InterpolationValue(
+          InterpolableLength::MaybeConvertLength(side, zoom)));
     }
     case EFillSizeType::kContain:
       return ConvertKeyword(CSSValueID::kContain);
@@ -143,7 +146,7 @@ InterpolationValue SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
         side_identifier_value->GetValueID() == CSSValueID::kAuto)
       return ConvertKeyword(CSSValueID::kAuto);
     return WrapConvertedLength(
-        LengthInterpolationFunctions::MaybeConvertCSSValue(side));
+        InterpolationValue(InterpolableLength::MaybeConvertCSSValue(side)));
   }
 
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
@@ -153,9 +156,10 @@ InterpolationValue SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
     return ConvertKeyword(identifier_value->GetValueID());
 
   // A single length is equivalent to "<length> auto".
-  if (convert_width)
+  if (convert_width) {
     return WrapConvertedLength(
-        LengthInterpolationFunctions::MaybeConvertCSSValue(value));
+        InterpolationValue(InterpolableLength::MaybeConvertCSSValue(value)));
+  }
   return ConvertKeyword(CSSValueID::kAuto);
 }
 
@@ -175,8 +179,8 @@ InterpolationValue SizeInterpolationFunctions::CreateNeutralValue(
   auto& size = ToCSSSizeNonInterpolableValue(*non_interpolable_value);
   if (size.IsKeyword())
     return ConvertKeyword(size.Keyword());
-  return WrapConvertedLength(InterpolationValue(
-      LengthInterpolationFunctions::CreateNeutralInterpolableValue()));
+  return WrapConvertedLength(
+      InterpolationValue(InterpolableLength::CreateNeutral()));
 }
 
 bool SizeInterpolationFunctions::NonInterpolableValuesAreCompatible(
@@ -201,9 +205,8 @@ void SizeInterpolationFunctions::Composite(
   if (size_non_interpolable_value.IsKeyword())
     return;
   UnderlyingSizeAsLengthValue underlying_size_as_length(underlying_value);
-  LengthInterpolationFunctions::Composite(
-      underlying_size_as_length, underlying_fraction, interpolable_value,
-      size_non_interpolable_value.LengthNonInterpolableValue());
+  underlying_size_as_length.MutableInterpolableValue().ScaleAndAdd(
+      underlying_fraction, interpolable_value);
 }
 
 static Length CreateLength(
@@ -214,9 +217,8 @@ static Length CreateLength(
     DCHECK_EQ(non_interpolable_value.Keyword(), CSSValueID::kAuto);
     return Length::Auto();
   }
-  return LengthInterpolationFunctions::CreateLength(
-      interpolable_value, non_interpolable_value.LengthNonInterpolableValue(),
-      conversion_data, kValueRangeNonNegative);
+  return To<InterpolableLength>(interpolable_value)
+      .CreateLength(conversion_data, kValueRangeNonNegative);
 }
 
 FillSize SizeInterpolationFunctions::CreateFillSize(

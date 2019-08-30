@@ -10,15 +10,11 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/undo/undo_manager.h"
-
-namespace bookmarks {
-class BookmarkModel;
-class BookmarkModelObserver;
-}
 
 // BookmarkUndoService --------------------------------------------------------
 
@@ -75,7 +71,7 @@ class BookmarkUndoService : public bookmarks::BaseBookmarkModelObserver,
   bookmarks::BookmarkUndoProvider* undo_provider_;
   UndoManager undo_manager_;
   ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
-      scoped_observer_;
+      scoped_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkUndoService);
 };

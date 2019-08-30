@@ -81,35 +81,27 @@ void FidoRequestHandlerBase::InitDiscoveries(
 
   transport_availability_info_.available_transports = available_transports;
   for (const auto transport : available_transports) {
-    // Construction of CaBleDiscovery is handled by the implementing class as it
-    // requires an extension passed on from the relying party.
-    if (transport == FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)
-      continue;
-
     std::unique_ptr<FidoDiscoveryBase> discovery =
         fido_discovery_factory_->Create(transport, connector_);
-    if (transport == FidoTransportProtocol::kInternal) {
-      if (discovery) {
-        ++transport_info_callback_count;
-      } else {
-        // The platform authenticator is not configured for this request.
-        transport_availability_info_.available_transports.erase(
-            FidoTransportProtocol::kInternal);
-      }
-    }
     if (discovery == nullptr) {
       // This can occur in tests when a ScopedVirtualU2fDevice is in effect and
-      // HID transports are not configured.
+      // HID transports are not configured or when caBLE discovery data isn't
+      // available.
+      transport_availability_info_.available_transports.erase(transport);
       continue;
+    }
+
+    if (transport == FidoTransportProtocol::kInternal) {
+      ++transport_info_callback_count;
     }
 
     discovery->set_observer(this);
     discoveries_.push_back(std::move(discovery));
   }
 
-  if (base::Contains(available_transports,
+  if (base::Contains(transport_availability_info_.available_transports,
                      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) ||
-      base::Contains(available_transports,
+      base::Contains(transport_availability_info_.available_transports,
                      FidoTransportProtocol::kBluetoothLowEnergy)) {
     ++transport_info_callback_count;
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -157,9 +149,10 @@ void FidoRequestHandlerBase::InitDiscoveriesWin(
   // caBLE). Otherwise, do not instantiate any other transports.
   base::flat_set<FidoTransportProtocol> other_transports = {};
   if (base::Contains(available_transports,
-                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy))
+                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     other_transports = {
         FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+  }
 
   InitDiscoveries(other_transports);
 }

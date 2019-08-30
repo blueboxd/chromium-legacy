@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "net/base/load_flags.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace net {
 class HttpRequestHeaders;

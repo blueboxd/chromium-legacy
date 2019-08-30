@@ -89,7 +89,7 @@ void OnIsochronousTransferOut(
 // static
 void DeviceImpl::Create(scoped_refptr<device::UsbDevice> device,
                         mojo::PendingReceiver<mojom::UsbDevice> receiver,
-                        mojom::UsbDeviceClientPtr client) {
+                        mojo::PendingRemote<mojom::UsbDeviceClient> client) {
   auto* device_impl = new DeviceImpl(std::move(device), std::move(client));
   device_impl->receiver_ = mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(device_impl), std::move(receiver));
@@ -100,13 +100,13 @@ DeviceImpl::~DeviceImpl() {
 }
 
 DeviceImpl::DeviceImpl(scoped_refptr<device::UsbDevice> device,
-                       mojom::UsbDeviceClientPtr client)
+                       mojo::PendingRemote<mojom::UsbDeviceClient> client)
     : device_(std::move(device)), observer_(this), client_(std::move(client)) {
   DCHECK(device_);
   observer_.Add(device_.get());
 
   if (client_) {
-    client_.set_connection_error_handler(base::BindOnce(
+    client_.set_disconnect_handler(base::BindOnce(
         &DeviceImpl::OnClientConnectionError, weak_factory_.GetWeakPtr()));
   }
 }

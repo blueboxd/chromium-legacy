@@ -93,6 +93,7 @@ public class LensUtils {
                     IntentHandler.PACKAGE_GSA, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         Intent intent = new Intent(Intent.ACTION_VIEW).setData(lensUri);
+        intent.setPackage(IntentHandler.PACKAGE_GSA);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         return intent;
     }

@@ -36,6 +36,28 @@
 
 namespace {
 
+// Returns the list of regular expressions that need to be matched against the
+// webpage URL. If there is a partial match, then the webpage is ineligible for
+// DeferAllScript preview.
+// TODO(tbansal): Consider detecting form elements within Chrome and
+// automatically reloading the webpage without preview when a form element is
+// detected.
+std::unique_ptr<previews::RegexpList> GetDenylistRegexpsForDeferAllScript() {
+  if (!previews::params::IsDeferAllScriptPreviewsEnabled())
+    return nullptr;
+
+  std::unique_ptr<previews::RegexpList> regexps =
+      std::make_unique<previews::RegexpList>();
+  // Regexes of webpages for which previews are generally not shown. Taken from
+  // http://shortn/_bGb5REgTFD.
+  regexps->emplace_back(
+      std::make_unique<re2::RE2>("(?i)(log|sign)[-_]?(in|out)"));
+  regexps->emplace_back(std::make_unique<re2::RE2>("(?i)/banking"));
+  DCHECK(regexps->back()->ok());
+
+  return regexps;
+}
+
 // Returns true if previews can be shown for |type|.
 bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
   bool server_previews_enabled =
@@ -155,7 +177,9 @@ PreviewsService::PreviewsService(content::BrowserContext* browser_context)
               ->GetURLLoaderFactoryForBrowserProcess()),
       // Set cache size to 25 entries.  This should be sufficient since the
       // redirect loop cache is needed for only one navigation.
-      redirect_history_(25u) {
+      redirect_history_(25u),
+      defer_all_script_denylist_regexps_(
+          GetDenylistRegexpsForDeferAllScript()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -247,4 +271,23 @@ bool PreviewsService::IsUrlEligibleForDeferAllScriptPreview(
   DCHECK(previews::params::IsDeferAllScriptPreviewsEnabled());
 
   return !HasURLRedirectCycle(url, redirect_history_);
+}
+
+bool PreviewsService::MatchesDeferAllScriptDenyListRegexp(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!defer_all_script_denylist_regexps_)
+    return false;
+
+  if (!url.is_valid())
+    return false;
+
+  std::string clean_url = base::ToLowerASCII(url.GetAsReferrer().spec());
+  for (auto& regexp : *defer_all_script_denylist_regexps_) {
+    if (re2::RE2::PartialMatch(clean_url, *regexp))
+      return true;
+  }
+
+  return false;
 }

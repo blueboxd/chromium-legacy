@@ -10,7 +10,8 @@
 namespace password_manager {
 
 extern const base::FilePath::CharType kAffiliationDatabaseFileName[];
-extern const base::FilePath::CharType kLoginDataFileName[];
+extern const base::FilePath::CharType kLoginDataForProfileFileName[];
+extern const base::FilePath::CharType kLoginDataForAccountFileName[];
 
 // URL to the password manager account dashboard.
 extern const char kPasswordManagerAccountDashboardURL[];

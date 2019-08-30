@@ -17,7 +17,6 @@
 #include "ash/wm/window_util.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/wm/public/activation_client.h"
@@ -135,8 +134,6 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowTitleChanged(
 
 ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
     : model_(model),
-      container_window_observer_(this),
-      user_window_observer_(this),
       observed_container_windows_(&container_window_observer_),
       observed_user_windows_(&user_window_observer_) {
   Shell::Get()->activation_client()->AddObserver(this);

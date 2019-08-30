@@ -29,6 +29,7 @@ struct BrowserInfo {
   int build_no;
   int blink_revision;
   bool is_android;
+  bool is_headless;
 };
 
 Status ParseBrowserInfo(const std::string& data,

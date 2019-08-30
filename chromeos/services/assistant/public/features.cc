@@ -25,6 +25,9 @@ const base::Feature kAssistantAppSupport{"AssistantAppSupport",
 const base::Feature kAssistantProactiveSuggestions{
     "AssistantProactiveSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::FeatureParam<bool> kAssistantProactiveSuggestionsSuppressDuplicates{
+    &kAssistantProactiveSuggestions, "suppress-duplicates", true};
+
 const base::Feature kAssistantRoutines{"AssistantRoutines",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -105,6 +108,10 @@ bool IsPowerManagerEnabled() {
 
 bool IsProactiveSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(kAssistantProactiveSuggestions);
+}
+
+bool IsProactiveSuggestionsSuppressDuplicatesEnabled() {
+  return kAssistantProactiveSuggestionsSuppressDuplicates.Get();
 }
 
 bool IsRoutinesEnabled() {

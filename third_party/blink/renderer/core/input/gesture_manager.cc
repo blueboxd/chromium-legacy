@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/input/gesture_manager.h"
 
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -468,9 +469,9 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
   // The Browser may do additional trigger-filtering.
   if (should_trigger) {
     // Start setting up the Mojo interface connection.
-    mojom::blink::UnhandledTapNotifierPtr provider;
+    mojo::Remote<mojom::blink::UnhandledTapNotifier> provider;
     frame_->Client()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&provider));
+        provider.BindNewPipeAndPassReceiver());
 
     // Extract text run-length.
     int text_run_length = 0;

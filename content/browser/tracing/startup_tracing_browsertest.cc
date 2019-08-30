@@ -164,7 +164,7 @@ class BackgroundStartupTracingTest : public ContentBrowserTest {
     auto* startup_config = tracing::TraceStartupConfig::GetInstance();
     startup_config->enable_background_tracing_for_testing_ = true;
     startup_config->EnableFromBackgroundTracing();
-    startup_config->startup_duration_ = 3;
+    startup_config->startup_duration_in_seconds_ = 3;
     tracing::EnableStartupTracingIfNeeded();
     command_line->AppendSwitchASCII(switches::kPerfettoOutputFile,
                                     temp_file_path_.AsUTF8Unsafe());

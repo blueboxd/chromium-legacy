@@ -17,13 +17,18 @@ namespace net {
 class NetworkChangeNotifierPosixTest : public testing::Test {
  public:
   NetworkChangeNotifierPosixTest()
-      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        notifier_(new NetworkChangeNotifierPosix(
-            NetworkChangeNotifier::CONNECTION_UNKNOWN,
-            NetworkChangeNotifier::SUBTYPE_UNKNOWN)) {
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+    // Create a SystemDnsConfigChangeNotifier instead of letting
+    // NetworkChangeNotifier create a global one, otherwise the global one will
+    // hold a TaskRunner handle to |task_environment_| and crash if any
+    // subsequent tests use it.
+    dns_config_notifier_ = std::make_unique<SystemDnsConfigChangeNotifier>();
+    notifier_.reset(new NetworkChangeNotifierPosix(
+        NetworkChangeNotifier::CONNECTION_UNKNOWN,
+        NetworkChangeNotifier::SUBTYPE_UNKNOWN, dns_config_notifier_.get()));
     auto dns_config_service = std::make_unique<TestDnsConfigService>();
     dns_config_service_ = dns_config_service.get();
-    notifier_->system_dns_config_notifier()->SetDnsConfigServiceForTesting(
+    dns_config_notifier_->SetDnsConfigServiceForTesting(
         std::move(dns_config_service));
   }
 
@@ -37,6 +42,7 @@ class NetworkChangeNotifierPosixTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   net::NetworkChangeNotifier::DisableForTest mock_notifier_disabler_;
+  std::unique_ptr<SystemDnsConfigChangeNotifier> dns_config_notifier_;
   std::unique_ptr<NetworkChangeNotifierPosix> notifier_;
   TestDnsConfigService* dns_config_service_;
 };

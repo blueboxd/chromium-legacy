@@ -440,14 +440,19 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // If a cookie is deleted, and its value matches |ecc|'s value, then
   // |creation_date_to_inherit| will be set to that cookie's creation date.
   //
+  // The cookie will not be deleted if |*status| is not "include" when calling
+  // the function. The function will update |*status| with exclusion reasons if
+  // a secure cookie was skipped or an httponly cookie was skipped.
+  //
   // NOTE: There should never be more than a single matching equivalent cookie.
-  CanonicalCookie::CookieInclusionStatus DeleteAnyEquivalentCookie(
+  void MaybeDeleteEquivalentCookieAndUpdateStatus(
       const std::string& key,
       const CanonicalCookie& ecc,
       bool source_secure,
       bool skip_httponly,
       bool already_expired,
-      base::Time* creation_date_to_inherit);
+      base::Time* creation_date_to_inherit,
+      CanonicalCookie::CookieInclusionStatus* status);
 
   // Inserts |cc| into cookies_. Returns an iterator that points to the inserted
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.

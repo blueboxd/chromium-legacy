@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/public/cpp/assistant/assistant_state_proxy.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class AssistantClient;
 class ProactiveSuggestionsLoader;
 class Profile;
 
@@ -28,7 +27,7 @@ class ProactiveSuggestionsClientImpl : public ash::ProactiveSuggestionsClient,
                                        public content::WebContentsObserver,
                                        public ash::AssistantStateObserver {
  public:
-  ProactiveSuggestionsClientImpl(AssistantClient* client, Profile* profile);
+  explicit ProactiveSuggestionsClientImpl(Profile* profile);
   ~ProactiveSuggestionsClientImpl() override;
 
   // ash::ProactiveSuggestionsClient:
@@ -63,7 +62,6 @@ class ProactiveSuggestionsClientImpl : public ash::ProactiveSuggestionsClient,
   void UpdateActiveState();
 
   Profile* const profile_;
-  ash::AssistantStateProxy assistant_state_;
 
   Delegate* delegate_ = nullptr;
 

@@ -17,7 +17,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
@@ -1012,8 +1011,7 @@ void TabletModeController::FinishInitTabletMode() {
   const auto state = Shell::Get()->split_view_controller()->state();
   if (state == SplitViewState::kLeftSnapped ||
       state == SplitViewState::kRightSnapped) {
-    Shell::Get()->overview_controller()->StartOverview(
-        OverviewSession::EnterExitOverviewType::kStartUnfocused);
+    Shell::Get()->overview_controller()->StartOverview();
   }
 
   UpdateInternalInputDevicesEventBlocker();

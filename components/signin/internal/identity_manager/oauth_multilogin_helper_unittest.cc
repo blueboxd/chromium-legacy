@@ -139,7 +139,7 @@ void RunSetCookieCallbackWithSuccess(
     const std::string&,
     const net::CookieOptions&,
     network::mojom::CookieManager::SetCanonicalCookieCallback callback) {
-  std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus());
 }
 
 class MockCookieManager

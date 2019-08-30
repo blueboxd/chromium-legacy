@@ -172,7 +172,8 @@ void PaymentRequest::Init(
       web_contents_, top_level_origin_, frame_origin_, spec_.get(),
       /*delegate=*/this, delegate_->GetApplicationLocale(),
       delegate_->GetPersonalDataManager(), delegate_.get(),
-      /*sw_identity_observer=*/this, &journey_logger_);
+      /*sw_identity_observer=*/weak_ptr_factory_.GetWeakPtr(),
+      &journey_logger_);
 
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
@@ -328,7 +329,7 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
         PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
             details, base::BindRepeating(
                          &PaymentInstrument::IsValidForPaymentMethodIdentifier,
-                         base::Unretained(state()->selected_instrument()))));
+                         state()->selected_instrument()->AsWeakPtr())));
   }
 
   bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();

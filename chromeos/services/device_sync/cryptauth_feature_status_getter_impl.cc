@@ -14,6 +14,7 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
+#include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_better_together_feature_types.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 
@@ -24,9 +25,11 @@ namespace device_sync {
 namespace {
 
 // Timeout value for asynchronous operation.
-// TODO(https://crbug.com/933656): Tune this value.
+// TODO(https://crbug.com/933656): Use async execution time metric to tune this
+// timeout value. For now, set the timeout to the max execution time recorded by
+// the metrics.
 constexpr base::TimeDelta kWaitingForBatchGetFeatureStatusesResponseTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 
 constexpr std::array<multidevice::SoftwareFeature, 8> kAllSoftwareFeatures = {
     multidevice::SoftwareFeature::kBetterTogetherHost,
@@ -127,6 +130,13 @@ ConvertFeatureStatusesToSoftwareFeatureMap(
   return feature_states;
 }
 
+void RecordGetFeatureStatusesMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.FeatureStatusGetter.ExecutionTime."
+      "GetFeatureStatuses",
+      execution_time);
+}
+
 }  // namespace
 
 // static
@@ -177,6 +187,8 @@ void CryptAuthFeatureStatusGetterImpl::OnAttemptStarted(
   *request.mutable_feature_types() = {GetBetterTogetherFeatureTypes().begin(),
                                       GetBetterTogetherFeatureTypes().end()};
 
+  start_get_feature_statuses_timestamp_ = base::TimeTicks::Now();
+
   // TODO(https://crbug.com/936273): Add metrics to track failure rates due to
   // async timeouts.
   timer_->Start(
@@ -200,6 +212,9 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
     const base::flat_set<std::string>& input_device_ids,
     const cryptauthv2::BatchGetFeatureStatusesResponse& feature_response) {
   DCHECK(id_to_feature_status_map_.empty());
+
+  RecordGetFeatureStatusesMetrics(base::TimeTicks::Now() -
+                                  start_get_feature_statuses_timestamp_);
 
   bool did_non_fatal_error_occur = false;
   for (const cryptauthv2::DeviceFeatureStatus& device_feature_status :
@@ -246,10 +261,16 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
 
 void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesFailure(
     NetworkRequestError error) {
+  RecordGetFeatureStatusesMetrics(base::TimeTicks::Now() -
+                                  start_get_feature_statuses_timestamp_);
+
   FinishAttempt(BatchGetFeatureStatusesNetworkRequestErrorToResultCode(error));
 }
 
 void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesTimeout() {
+  RecordGetFeatureStatusesMetrics(base::TimeTicks::Now() -
+                                  start_get_feature_statuses_timestamp_);
+
   FinishAttempt(CryptAuthDeviceSyncResult::ResultCode::
                     kErrorTimeoutWaitingForBatchGetFeatureStatusesResponse);
 }

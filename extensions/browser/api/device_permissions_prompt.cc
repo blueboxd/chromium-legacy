@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/message_formatter.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -367,8 +368,8 @@ void DevicePermissionsPrompt::AskForUsbDevices(
     bool multiple,
     std::vector<UsbDeviceFilterPtr> filters,
     const UsbDevicesCallback& callback) {
-  prompt_ = new UsbDevicePermissionsPrompt(extension, context, multiple,
-                                           std::move(filters), callback);
+  prompt_ = base::MakeRefCounted<UsbDevicePermissionsPrompt>(
+      extension, context, multiple, std::move(filters), callback);
   ShowDialog();
 }
 
@@ -378,8 +379,8 @@ void DevicePermissionsPrompt::AskForHidDevices(
     bool multiple,
     const std::vector<HidDeviceFilter>& filters,
     const HidDevicesCallback& callback) {
-  prompt_ = new HidDevicePermissionsPrompt(extension, context, multiple,
-                                           filters, callback);
+  prompt_ = base::MakeRefCounted<HidDevicePermissionsPrompt>(
+      extension, context, multiple, filters, callback);
   ShowDialog();
 }
 

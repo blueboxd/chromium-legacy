@@ -479,7 +479,7 @@ void UsbChooserContext::GetDevices(
 void UsbChooserContext::GetDevice(
     const std::string& guid,
     mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
-    device::mojom::UsbDeviceClientPtr device_client) {
+    mojo::PendingRemote<device::mojom::UsbDeviceClient> device_client) {
   EnsureConnectionWithDeviceManager();
   device_manager_->GetDevice(guid, std::move(device_receiver),
                              std::move(device_client));

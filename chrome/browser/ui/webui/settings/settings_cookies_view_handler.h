@@ -49,6 +49,9 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated();
 
+  // Resets the CookiesTreeModel, the current |filter_|, and the site list.
+  void RecreateCookiesTreeModel();
+
   // Set |filter_| and get a portion (or all) of the list items.
   void HandleGetDisplayList(const base::ListValue* args);
 
@@ -69,6 +72,9 @@ class CookiesViewHandler : public SettingsPageUIHandler,
 
   // Remove selected sites data.
   void HandleRemove(const base::ListValue* args);
+
+  // Removes cookies and site data available in third-party contexts.
+  void HandleRemoveThirdParty(const base::ListValue* args);
 
   // Get children nodes data and pass it to 'CookiesView.loadChildren' to
   // update the WebUI.
@@ -110,6 +116,9 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   std::vector<LabelAndIndex> sorted_sites_;
 
   std::unique_ptr<CookiesTreeModelUtil> model_util_;
+
+  // Used to cancel callbacks when JavaScript becomes disallowed.
+  base::WeakPtrFactory<CookiesViewHandler> callback_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CookiesViewHandler);
 };

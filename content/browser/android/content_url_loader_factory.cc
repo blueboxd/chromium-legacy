@@ -25,6 +25,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 // TODO(eroman): Add unit-tests for "X-Chrome-intent-type"

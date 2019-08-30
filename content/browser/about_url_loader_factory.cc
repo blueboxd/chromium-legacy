@@ -4,6 +4,7 @@
 
 #include "content/browser/about_url_loader_factory.h"
 
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {

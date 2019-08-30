@@ -2121,9 +2121,6 @@
       },
       'GPU Linux Builder': {},
       'GPU Linux Builder (dbg)': {},
-      # TODO(crbug.com/930364): Remove once linux-coverage-rel is folded into
-      # linux-rel or ended up not being able to fold.
-      'GPU Linux Builder Code Coverage': {},
       'GPU Mac Builder': {},
       'GPU Mac Builder (dbg)': {},
       'Linux Debug (NVIDIA)': {
@@ -2142,20 +2139,6 @@
         'os_type': 'linux',
         'mixins': [
           'linux_nvidia_quadro_p400',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_desktop_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
-        },
-      },
-      # TODO(crbug.com/930364): Remove once linux-coverage-rel is folded into
-      # linux-rel or ended up not being able to fold.
-      'Linux Release Code Coverage (NVIDIA)': {
-        'browser_config': 'release',
-        'os_type': 'linux',
-        'mixins': [
-          'linux_nvidia_quadro_p400',
-          'code-coverage',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
@@ -3340,19 +3323,6 @@
           'sync_integration_tests'
         ]
       },
-      # TODO(crbug.com/930364): Remove once linux-coverage-rel is folded into
-      # linux-rel or ended up not being able to fold.
-      'Linux Builder Code Coverage': {
-        'mixins': [
-          'code-coverage',
-        ],
-        'additional_compile_targets': [
-          'all'
-        ],
-        'test_suites': {
-          'scripts': 'check_network_annotations_script',
-        }
-      },
       'Linux Tests': {
         'mixins': [
           'code-coverage',
@@ -3371,19 +3341,6 @@
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
           'isolated_scripts': 'chromium_linux_dbg_isolated_scripts',
-        },
-      },
-      # TODO(crbug.com/930364): Remove once linux-coverage-rel is folded into
-      # linux-rel or ended up not being able to fold.
-      'Linux Tests Code Coverage': {
-        'mixins': [
-          'linux-xenial',
-          'code-coverage',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
         },
       },
       'fuchsia-arm64-cast': {
@@ -4356,21 +4313,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'os_type': 'android',
-      },
-    },
-  },
-  {
-    'name': 'tryserver.chromium.linux',
-    'machines': {
-      'linux-coverage-rel': {
-        'mixins': [
-          'code-coverage',
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_coverage_gtests',
-          'isolated_scripts': 'chromium_code_coverage_isolated_scripts',
-        },
       },
     },
   },

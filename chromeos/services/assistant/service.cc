@@ -27,7 +27,6 @@
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
-#include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_service.h"
@@ -72,8 +71,7 @@ Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
     : receiver_(this, std::move(receiver)),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      url_loader_factory_info_(std::move(url_loader_factory_info)),
-      pref_connection_delegate_(std::make_unique<PrefConnectionDelegate>()) {
+      url_loader_factory_info_(std::move(url_loader_factory_info)) {
   // TODO(xiaohuic): in MASH we will need to setup the dbus client if assistant
   // service runs in its own process.
   chromeos::PowerManagerClient* power_manager_client =
@@ -134,9 +132,8 @@ void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
   token_refresh_timer_ = std::move(timer);
 }
 
-void Service::SetPrefConnectionDelegateForTesting(
-    std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate) {
-  pref_connection_delegate_ = std::move(pref_connection_delegate);
+AssistantStateProxy* Service::GetAssistantStateProxyForTesting() {
+  return &assistant_state_;
 }
 
 void Service::Init(mojom::ClientPtr client,
@@ -147,21 +144,8 @@ void Service::Init(mojom::ClientPtr client,
   client_ = std::move(client);
   device_actions_ = std::move(device_actions);
 
-  // TODO(b/138679823): Moving the logics into AssistantStateProxy.
-  mojo::PendingRemote<ash::mojom::AssistantStateController> remote_controller;
-  client_->RequestAssistantStateController(
-      remote_controller.InitWithNewPipeAndPassReceiver());
-  assistant_state_.Init(std::move(remote_controller));
+  assistant_state_.Init(client_.get());
   assistant_state_.AddObserver(this);
-
-  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-  prefs::RegisterProfilePrefsForeign(pref_registry.get());
-  mojo::PendingRemote<::prefs::mojom::PrefStoreConnector> remote_connector;
-  client_->RequestPrefStoreConnector(
-      remote_connector.InitWithNewPipeAndPassReceiver());
-  pref_connection_delegate_->ConnectToPrefService(
-      std::move(remote_connector), std::move(pref_registry),
-      base::Bind(&Service::OnPrefServiceConnected, base::Unretained(this)));
 
   DCHECK(!assistant_manager_service_);
 
@@ -269,9 +253,6 @@ void Service::OnLockedFullScreenStateChanged(bool enabled) {
 void Service::UpdateAssistantManagerState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!pref_service_)
-    return;
-
   if (!assistant_state_.hotword_enabled().has_value() ||
       !assistant_state_.settings_enabled().has_value() ||
       !assistant_state_.locale().has_value() ||
@@ -324,18 +305,6 @@ void Service::UpdateAssistantManagerState() {
       }
       break;
   }
-}
-
-void Service::OnPrefServiceConnected(
-    std::unique_ptr<::PrefService> pref_service) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(b/110211045): Add testing support for Assistant prefs.
-  if (!pref_service)
-    return;
-
-  pref_service_ = std::move(pref_service);
-  assistant_state_.RegisterPrefChanges(pref_service_.get());
 }
 
 identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {

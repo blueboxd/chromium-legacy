@@ -130,17 +130,21 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     kLengthUnitTypeCount,
   };
 
+  using LengthTypeFlags = std::bitset<kLengthUnitTypeCount>;
   struct CSSLengthArray {
     CSSLengthArray() : values(kLengthUnitTypeCount) {
     }
 
     Vector<double, CSSPrimitiveValue::kLengthUnitTypeCount> values;
-    std::bitset<kLengthUnitTypeCount> type_flags;
+    LengthTypeFlags type_flags;
   };
 
   // Returns false if the value cannot be represented as a length array, which
   // happens when comparisons are involved (e.g., max(10px, 10%)).
   bool AccumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
+
+  // Returns all types of length units involved in this value.
+  void AccumulateLengthUnitTypes(LengthTypeFlags& types) const;
 
   enum UnitCategory {
     kUNumber,

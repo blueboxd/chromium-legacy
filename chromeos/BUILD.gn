@@ -241,6 +241,10 @@ if (is_cros_chrome_sdk) {
     tast_disabled_tests = []
   }
 
+  tast_test("chrome_all_tast_tests_informational") {
+    enable_tast_informational_tests = true
+  }
+
   group("cros_chrome_deploy") {
     # The following run-time dependencies are needed to deploy chrome to a
     # ChromeOS device. See the link for the full list:

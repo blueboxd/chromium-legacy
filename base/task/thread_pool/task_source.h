@@ -160,6 +160,14 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
   TaskShutdownBehavior shutdown_behavior() const {
     return traits_.shutdown_behavior();
   }
+  // Returns a racy priority of the TaskSource. Can be accessed without a
+  // Transaction but may return an outdated result.
+  TaskPriority priority_racy() const {
+    return priority_racy_.load(std::memory_order_relaxed);
+  }
+  // Returns the thread policy of the TaskSource. Can be accessed without a
+  // Transaction because it is never mutated.
+  ThreadPolicy thread_policy() const { return traits_.thread_policy(); }
 
   // A reference to TaskRunner is only retained between PushTask() and when
   // DidProcessTask() returns false, guaranteeing it is safe to dereference this
@@ -192,6 +200,9 @@ class BASE_EXPORT TaskSource : public RefCountedThreadSafe<TaskSource> {
 
   // The TaskTraits of all Tasks in the TaskSource.
   TaskTraits traits_;
+
+  // The cached priority for atomic access.
+  std::atomic<TaskPriority> priority_racy_;
 
   // Synchronizes access to all members.
   mutable CheckedLock lock_{UniversalPredecessor()};

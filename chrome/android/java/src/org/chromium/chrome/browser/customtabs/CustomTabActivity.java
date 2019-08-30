@@ -77,6 +77,8 @@ import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
+import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
+import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -290,7 +292,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Override
     protected NightModeStateProvider createNightModeStateProvider() {
-        mNightModeStateController = new CustomTabNightModeStateController(getLifecycleDispatcher());
+        // This is called before Dagger component is created, so using getInstance() directly.
+        mNightModeStateController = new CustomTabNightModeStateController(getLifecycleDispatcher(),
+                SystemNightModeMonitor.getInstance(),
+                PowerSavingModeMonitor.getInstance());
         return mNightModeStateController;
     }
 

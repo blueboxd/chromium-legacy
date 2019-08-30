@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_ecies_encryptor_impl.h"
 #include "chromeos/services/device_sync/cryptauth_feature_status_getter_impl.h"
@@ -30,11 +31,29 @@ namespace {
 const cryptauthv2::KeyType kGroupKeyType = cryptauthv2::KeyType::P256;
 
 // Timeout values for asynchronous operations.
-// TODO(https://crbug.com/933656): Tune these values.
+// TODO(https://crbug.com/933656): Use async execution time metrics to tune
+// these timeout values. For now, set these timeouts to the max execution time
+// recorded by the metrics.
 constexpr base::TimeDelta kWaitingForEncryptedGroupPrivateKeyProcessingTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 constexpr base::TimeDelta kWaitingForEncryptedDeviceMetadataProcessingTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
+
+void RecordGroupPrivateKeyDecryptionMetrics(
+    const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.DeviceSyncer.ExecutionTime."
+      "GroupPrivateKeyDecryption",
+      execution_time);
+}
+
+void RecordDeviceMetadataDecryptionMetrics(
+    const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.DeviceSyncer.ExecutionTime."
+      "DeviceMetadataDecryption",
+      execution_time);
+}
 
 }  // namespace
 
@@ -154,6 +173,7 @@ void CryptAuthDeviceSyncerImpl::SetState(State state) {
 
   PA_LOG(INFO) << "Transitioning from " << state_ << " to " << state;
   state_ = state;
+  last_state_change_timestamp_ = base::TimeTicks::Now();
 
   base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
@@ -171,6 +191,19 @@ void CryptAuthDeviceSyncerImpl::OnTimeout() {
   base::Optional<CryptAuthDeviceSyncResult::ResultCode> error_code =
       ResultCodeErrorFromTimeoutDuringState(state_);
   DCHECK(error_code);
+
+  base::TimeDelta execution_time =
+      base::TimeTicks::Now() - last_state_change_timestamp_;
+  switch (state_) {
+    case State::kWaitingForEncryptedGroupPrivateKeyProcessing:
+      RecordGroupPrivateKeyDecryptionMetrics(execution_time);
+      break;
+    case State::kWaitingForEncryptedDeviceMetadataProcessing:
+      RecordDeviceMetadataDecryptionMetrics(execution_time);
+      break;
+    default:
+      NOTREACHED();
+  }
 
   FinishAttempt(*error_code);
 }
@@ -401,6 +434,9 @@ void CryptAuthDeviceSyncerImpl::OnGroupPrivateKeyDecrypted(
     const base::Optional<std::string>& group_private_key_from_cryptauth) {
   DCHECK_EQ(State::kWaitingForEncryptedGroupPrivateKeyProcessing, state_);
 
+  RecordGroupPrivateKeyDecryptionMetrics(base::TimeTicks::Now() -
+                                         last_state_change_timestamp_);
+
   if (!group_private_key_from_cryptauth) {
     FinishAttempt(
         CryptAuthDeviceSyncResult::ResultCode::kErrorDecryptingGroupPrivateKey);
@@ -471,6 +507,9 @@ void CryptAuthDeviceSyncerImpl::OnDeviceMetadataDecrypted(
     const CryptAuthEciesEncryptor::IdToOutputMap&
         id_to_decrypted_metadata_map) {
   DCHECK_EQ(State::kWaitingForEncryptedDeviceMetadataProcessing, state_);
+
+  RecordDeviceMetadataDecryptionMetrics(base::TimeTicks::Now() -
+                                        last_state_change_timestamp_);
 
   AddDecryptedMetadataToNewDeviceRegistry(id_to_decrypted_metadata_map);
 

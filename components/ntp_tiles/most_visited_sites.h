@@ -24,6 +24,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/ntp_tiles/custom_links_manager.h"
 #include "components/ntp_tiles/ntp_tile.h"
@@ -33,10 +34,6 @@
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "url/gurl.h"
-
-namespace history {
-class TopSites;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -364,7 +361,7 @@ class MostVisitedSites : public history::TopSitesObserver,
       suggestions_subscription_;
 
   ScopedObserver<history::TopSites, history::TopSitesObserver>
-      top_sites_observer_;
+      top_sites_observer_{this};
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       custom_links_subscription_;

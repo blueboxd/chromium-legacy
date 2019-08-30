@@ -10,13 +10,14 @@
 #include "base/files/file_util.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"
+#include "build/branding_buildflags.h"
 
 namespace chrome_launcher_support {
 
 namespace {
 
 // TODO(huangs) Refactor the constants: http://crbug.com/148538
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const wchar_t kInstallationRegKey[] =
     L"Software\\Google\\Update\\ClientState";
 
@@ -76,7 +77,7 @@ base::FilePath GetSetupExeFromRegistry(InstallationLevel level,
 // be found via the registry.
 base::FilePath GetSetupExeForInstallationLevel(InstallationLevel level) {
   base::FilePath setup_exe_path;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Look in the registry for Chrome Binaries first.
   setup_exe_path = GetSetupExeFromRegistry(level, kBinariesAppGuid);
   // If the above fails, look in the registry for Chrome next.
@@ -118,7 +119,7 @@ base::FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
 base::FilePath GetChromePathForInstallationLevel(InstallationLevel level,
                                                  bool is_sxs) {
   if (is_sxs) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     return FindExeRelativeToSetupExe(
         GetSetupExeFromRegistry(level, kSxSBrowserAppGuid), kChromeExe);
 #else

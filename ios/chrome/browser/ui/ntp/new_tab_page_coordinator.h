@@ -71,6 +71,9 @@ class WebState;
 // The content offset of the scroll view.
 - (CGPoint)contentOffset;
 
+// Reloads the content of the NewTabPage.
+- (void)reload;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_COORDINATOR_H_

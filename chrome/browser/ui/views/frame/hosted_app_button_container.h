@@ -29,6 +29,7 @@ class HostedAppNonClientFrameViewAshTest;
 
 class AppMenuButton;
 class BrowserView;
+class ExtensionsToolbarContainer;
 class HostedAppOriginText;
 class HostedAppMenuButton;
 
@@ -183,6 +184,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
       nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
+  ExtensionsToolbarContainer* extensions_container_ = nullptr;
   HostedAppMenuButton* app_menu_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppButtonContainer);

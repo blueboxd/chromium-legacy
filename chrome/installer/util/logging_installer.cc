@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
-#include <stdint.h>
-
 #include "chrome/installer/util/logging_installer.h"
+
+#include <stdint.h>
+#include <windows.h>
 
 #include "base/command_line.h"
 #include "base/files/file.h"
@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
+#include "build/branding_buildflags.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
@@ -115,7 +116,7 @@ base::FilePath GetLogFilePath(const installer::MasterPreferences& prefs) {
     return base::FilePath(base::UTF8ToWide(path));
 
   static const base::FilePath::CharType kLogFilename[] =
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       FILE_PATH_LITERAL("chrome_installer.log");
 #else  // BUILDFLAG(CHROMIUM_BRANDING)
       FILE_PATH_LITERAL("chromium_installer.log");

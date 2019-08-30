@@ -17,8 +17,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -28,6 +30,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -166,16 +169,6 @@ class SignedExchangeRequestHandlerBrowserTestBase
     sxg_test_helper_.InstallMockCertChainInterceptor();
   }
 
-  void TriggerPrefetch(const GURL& url, bool expect_success) {
-    const GURL prefetch_html_url = embedded_test_server()->GetURL(
-        std::string("/sxg/prefetch.html#") + url.spec());
-    base::string16 expected_title =
-        base::ASCIIToUTF16(expect_success ? "OK" : "FAIL");
-    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-    NavigateToURL(shell(), prefetch_html_url);
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
-
   // Returns false if we cannot override accept languages. It happens only on
   // Android Kitkat or older systems.
   bool SetAcceptLangs(const std::string langs) {
@@ -204,16 +197,15 @@ class SignedExchangeRequestHandlerBrowserTestBase
 
 class SignedExchangeRequestHandlerBrowserTest
     : public testing::WithParamInterface<
-          std::tuple<bool /* prefetch_enabled */,
+          std::tuple<bool /* use_prefetch */,
                      bool /* sxg_subresource_prefetch_enabled */>>,
       public SignedExchangeRequestHandlerBrowserTestBase {
  public:
   SignedExchangeRequestHandlerBrowserTest() {
-    bool sxg_subresource_prefetch_enabled;
-    std::tie(prefetch_enabled_, sxg_subresource_prefetch_enabled) = GetParam();
+    std::tie(use_prefetch_, sxg_subresource_prefetch_enabled_) = GetParam();
     std::vector<base::Feature> enable_features;
     std::vector<base::Feature> disabled_features;
-    if (sxg_subresource_prefetch_enabled) {
+    if (sxg_subresource_prefetch_enabled_) {
       enable_features.push_back(features::kSignedExchangeSubresourcePrefetch);
     } else {
       disabled_features.push_back(features::kSignedExchangeSubresourcePrefetch);
@@ -223,10 +215,65 @@ class SignedExchangeRequestHandlerBrowserTest
   ~SignedExchangeRequestHandlerBrowserTest() = default;
 
  protected:
-  bool PrefetchIsEnabled() const { return prefetch_enabled_; }
+  bool UsePrefetch() const { return use_prefetch_; }
+  bool SXGPrefetchCacheIsEnabled() const {
+    return sxg_subresource_prefetch_enabled_;
+  }
+
+  void MaybeTriggerPrefetchSXG(const GURL& url, bool expect_success) {
+    if (!UsePrefetch())
+      return;
+    const GURL prefetch_html_url = embedded_test_server()->GetURL(
+        std::string("/sxg/prefetch.html#") + url.spec());
+    base::string16 expected_title =
+        base::ASCIIToUTF16(expect_success ? "OK" : "FAIL");
+    TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+    NavigateToURL(shell(), prefetch_html_url);
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+    if (SXGPrefetchCacheIsEnabled() && expect_success)
+      WaitUntilSXGIsCached(url);
+  }
 
  private:
-  bool prefetch_enabled_ = false;
+  class CacheObserver : public PrefetchedSignedExchangeCache::TestObserver {
+   public:
+    CacheObserver(const GURL& outer_url, base::OnceClosure quit_closure)
+        : outer_url_(outer_url), quit_closure_(std::move(quit_closure)) {}
+    ~CacheObserver() override = default;
+
+    void OnStored(PrefetchedSignedExchangeCache* cache,
+                  const GURL& outer_url) override {
+      if (quit_closure_ && (outer_url_ == outer_url)) {
+        std::move(quit_closure_).Run();
+      }
+    }
+
+   private:
+    const GURL outer_url_;
+    base::OnceClosure quit_closure_;
+
+    DISALLOW_COPY_AND_ASSIGN(CacheObserver);
+  };
+
+  void WaitUntilSXGIsCached(const GURL& url) {
+    scoped_refptr<PrefetchedSignedExchangeCache> cache =
+        static_cast<RenderFrameHostImpl*>(
+            shell()->web_contents()->GetRenderViewHost()->GetMainFrame())
+            ->EnsurePrefetchedSignedExchangeCache();
+
+    if (cache->GetExchanges().find(url) != cache->GetExchanges().end())
+      return;
+    base::RunLoop run_loop;
+    auto observer =
+        std::make_unique<CacheObserver>(url, run_loop.QuitClosure());
+    cache->AddObserverForTesting(observer.get());
+    run_loop.Run();
+    cache->RemoveObserverForTesting(observer.get());
+  }
+
+  bool use_prefetch_ = false;
+  bool sxg_subresource_prefetch_enabled_ = false;
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTest);
@@ -239,8 +286,14 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
-  if (PrefetchIsEnabled())
-    TriggerPrefetch(url, true);
+
+  MaybeTriggerPrefetchSXG(url, true);
+
+  if (!UsePrefetch()) {
+    // Need to be in a page to execute JavaScript to trigger renderer initiated
+    // navigation.
+    NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));
+  }
 
   base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
   TitleWatcher title_watcher(shell()->web_contents(), title);
@@ -248,7 +301,11 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   AssertNavigationHandleFlagObserver assert_navigation_handle_flag_observer(
       shell()->web_contents());
 
-  NavigateToURL(shell(), url);
+  // PrefetchedSignedExchangeCache is used only for renderer initiated
+  // navigation. So use JavaScript to trigger renderer initiated navigation.
+  EXPECT_TRUE(ExecuteScript(
+      shell()->web_contents(),
+      base::StringPrintf("location.href = '%s';", url.spec().c_str())));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   EXPECT_EQ(303, redirect_observer.response_code());
 
@@ -271,19 +328,24 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
       net::X509Certificate::CalculateFingerprint256(
           original_cert->cert_buffer());
   EXPECT_EQ(original_fingerprint, fingerprint);
-  histogram_tester_.ExpectUniqueSample(kLoadResultHistogram,
-                                       SignedExchangeLoadResult::kSuccess,
-                                       PrefetchIsEnabled() ? 2 : 1);
+  histogram_tester_.ExpectUniqueSample(
+      kLoadResultHistogram, SignedExchangeLoadResult::kSuccess,
+      (UsePrefetch() && !SXGPrefetchCacheIsEnabled()) ? 2 : 1);
   histogram_tester_.ExpectTotalCount(
       "SignedExchange.Time.CertificateFetch.Success",
-      PrefetchIsEnabled() ? 2 : 1);
-  if (PrefetchIsEnabled()) {
+      (UsePrefetch() && !SXGPrefetchCacheIsEnabled()) ? 2 : 1);
+  if (UsePrefetch()) {
     histogram_tester_.ExpectUniqueSample(kPrefetchResultHistogram,
                                          SignedExchangeLoadResult::kSuccess, 1);
-    histogram_tester_.ExpectUniqueSample(
-        "SignedExchange.Prefetch.Recall.30Seconds", true, 1);
-    histogram_tester_.ExpectUniqueSample(
-        "SignedExchange.Prefetch.Precision.30Seconds", true, 1);
+    if (SXGPrefetchCacheIsEnabled()) {
+      histogram_tester_.ExpectTotalCount("PrefetchedSignedExchangeCache.Count",
+                                         1);
+    } else {
+      histogram_tester_.ExpectUniqueSample(
+          "SignedExchange.Prefetch.Recall.30Seconds", true, 1);
+      histogram_tester_.ExpectUniqueSample(
+          "SignedExchange.Prefetch.Precision.30Seconds", true, 1);
+    }
   } else {
     histogram_tester_.ExpectUniqueSample(
         "SignedExchange.Prefetch.Recall.30Seconds", false, 1);
@@ -300,18 +362,32 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
+
   GURL url =
       embedded_test_server()->GetURL("/sxg/test.example.org_fr_variant.sxg");
-  if (PrefetchIsEnabled())
-    TriggerPrefetch(url, true);
+  MaybeTriggerPrefetchSXG(url, true);
+
+  if (!UsePrefetch()) {
+    // Need to be in a page to execute JavaScript to trigger renderer initiated
+    // navigation.
+    NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));
+  }
 
   base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
   TitleWatcher title_watcher(shell()->web_contents(), title);
-  NavigateToURL(shell(), url);
+  // PrefetchedSignedExchangeCache is used only for renderer initiated
+  // navigation. So use JavaScript to trigger renderer initiated navigation.
+  EXPECT_TRUE(ExecuteScript(
+      shell()->web_contents(),
+      base::StringPrintf("location.href = '%s';", url.spec().c_str())));
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-  histogram_tester_.ExpectUniqueSample(kLoadResultHistogram,
-                                       SignedExchangeLoadResult::kSuccess,
-                                       PrefetchIsEnabled() ? 2 : 1);
+  histogram_tester_.ExpectUniqueSample(
+      kLoadResultHistogram, SignedExchangeLoadResult::kSuccess,
+      (UsePrefetch() && !SXGPrefetchCacheIsEnabled()) ? 2 : 1);
+  if ((UsePrefetch() && SXGPrefetchCacheIsEnabled())) {
+    histogram_tester_.ExpectTotalCount("PrefetchedSignedExchangeCache.Count",
+                                       1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
@@ -329,8 +405,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url =
       embedded_test_server()->GetURL("/sxg/test.example.org_fr_variant.sxg");
-  if (PrefetchIsEnabled())
-    TriggerPrefetch(url, false);
+  MaybeTriggerPrefetchSXG(url, false);
 
   base::string16 title = base::ASCIIToUTF16("Fallback URL response");
   TitleWatcher title_watcher(shell()->web_contents(), title);
@@ -338,7 +413,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   histogram_tester_.ExpectUniqueSample(
       kLoadResultHistogram, SignedExchangeLoadResult::kVariantMismatch,
-      PrefetchIsEnabled() ? 2 : 1);
+      UsePrefetch() ? 2 : 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
@@ -351,8 +426,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL(
       "/sxg/test.example.org_test_missing_nosniff.sxg");
-  if (PrefetchIsEnabled())
-    TriggerPrefetch(url, false);
+  MaybeTriggerPrefetchSXG(url, false);
 
   base::string16 title = base::ASCIIToUTF16("Fallback URL response");
   TitleWatcher title_watcher(shell()->web_contents(), title);
@@ -362,7 +436,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_EQ(303, redirect_observer.response_code());
   histogram_tester_.ExpectUniqueSample(
       kLoadResultHistogram, SignedExchangeLoadResult::kSXGServedWithoutNosniff,
-      PrefetchIsEnabled() ? 2 : 1);
+      UsePrefetch() ? 2 : 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
@@ -376,8 +450,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL(
       "/sxg/test.example.org_test_invalid_content_type.sxg");
-  if (PrefetchIsEnabled())
-    TriggerPrefetch(url, false);
+  MaybeTriggerPrefetchSXG(url, false);
 
   base::string16 title = base::ASCIIToUTF16("Fallback URL response");
   TitleWatcher title_watcher(shell()->web_contents(), title);
@@ -387,11 +460,11 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_EQ(303, redirect_observer.response_code());
   histogram_tester_.ExpectUniqueSample(
       kLoadResultHistogram, SignedExchangeLoadResult::kVersionMismatch,
-      PrefetchIsEnabled() ? 2 : 1);
+      UsePrefetch() ? 2 : 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Expired) {
-  SignedExchangeHandler::SetVerificationTimeForTesting(
+  signed_exchange_utils::SetVerificationTimeForTesting(
       base::Time::UnixEpoch() +
       base::TimeDelta::FromSeconds(
           SignedExchangeBrowserTestHelper::kSignatureHeaderExpires + 1));
@@ -438,8 +511,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
 
     GURL url = embedded_test_server()->GetURL(broken_exchange);
 
-    if (PrefetchIsEnabled())
-      TriggerPrefetch(url, false);
+    MaybeTriggerPrefetchSXG(url, false);
 
     base::string16 title = base::ASCIIToUTF16("Fallback URL response");
     TitleWatcher title_watcher(shell()->web_contents(), title);
@@ -447,13 +519,13 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   }
   histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
-                                     PrefetchIsEnabled() ? 4 : 2);
+                                     UsePrefetch() ? 4 : 2);
   histogram_tester_.ExpectBucketCount(
       kLoadResultHistogram, SignedExchangeLoadResult::kVersionMismatch,
-      PrefetchIsEnabled() ? 2 : 1);
+      UsePrefetch() ? 2 : 1);
   histogram_tester_.ExpectBucketCount(
       kLoadResultHistogram, SignedExchangeLoadResult::kHeaderParseError,
-      PrefetchIsEnabled() ? 2 : 1);
+      UsePrefetch() ? 2 : 1);
 }
 
 #if defined(OS_ANDROID)
@@ -472,8 +544,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, MAYBE_BadMICE) {
   GURL url =
       embedded_test_server()->GetURL("/sxg/test.example.org_test_bad_mice.sxg");
 
-  if (PrefetchIsEnabled())
-    TriggerPrefetch(url, false);
+  MaybeTriggerPrefetchSXG(url, false);
 
   const base::string16 title_good = base::ASCIIToUTF16("Reached End: false");
   const base::string16 title_bad = base::ASCIIToUTF16("Reached End: true");
@@ -483,13 +554,13 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, MAYBE_BadMICE) {
   EXPECT_EQ(title_good, title_watcher.WaitAndGetTitle());
 
   histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
-                                     PrefetchIsEnabled() ? 2 : 1);
+                                     UsePrefetch() ? 2 : 1);
   {
     SCOPED_TRACE(testing::Message()
                  << "testing SignedExchangeLoadResult::kMerkleIntegrityError");
     histogram_tester_.ExpectBucketCount(
         kLoadResultHistogram, SignedExchangeLoadResult::kMerkleIntegrityError,
-        PrefetchIsEnabled() ? 2 : 1);
+        UsePrefetch() ? 2 : 1);
   }
 }
 
@@ -503,21 +574,20 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, BadMICESmall) {
   GURL url = embedded_test_server()->GetURL(
       "/sxg/test.example.org_test_bad_mice_small.sxg");
 
-  if (PrefetchIsEnabled())
-    TriggerPrefetch(url, false);
+  MaybeTriggerPrefetchSXG(url, false);
 
   // Note: TitleWatcher is not needed. NavigateToURL waits until navigation
   // complete.
   NavigateToURL(shell(), url);
 
   histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
-                                     PrefetchIsEnabled() ? 2 : 1);
+                                     UsePrefetch() ? 2 : 1);
   {
     SCOPED_TRACE(testing::Message()
                  << "testing SignedExchangeLoadResult::kMerkleIntegrityError");
     histogram_tester_.ExpectBucketCount(
         kLoadResultHistogram, SignedExchangeLoadResult::kMerkleIntegrityError,
-        PrefetchIsEnabled() ? 2 : 1);
+        UsePrefetch() ? 2 : 1);
   }
 }
 
@@ -531,8 +601,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
 
-  if (PrefetchIsEnabled())
-    TriggerPrefetch(url, false);
+  MaybeTriggerPrefetchSXG(url, false);
 
   base::string16 title = base::ASCIIToUTF16("Fallback URL response");
   TitleWatcher title_watcher(shell()->web_contents(), title);
@@ -540,10 +609,9 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   histogram_tester_.ExpectUniqueSample(
       kLoadResultHistogram, SignedExchangeLoadResult::kCertFetchError,
-      PrefetchIsEnabled() ? 2 : 1);
+      UsePrefetch() ? 2 : 1);
   histogram_tester_.ExpectTotalCount(
-      "SignedExchange.Time.CertificateFetch.Failure",
-      PrefetchIsEnabled() ? 2 : 1);
+      "SignedExchange.Time.CertificateFetch.Failure", UsePrefetch() ? 2 : 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(,

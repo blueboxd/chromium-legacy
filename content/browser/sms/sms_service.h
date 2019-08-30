@@ -46,12 +46,15 @@ class CONTENT_EXPORT SmsService
   ~SmsService() override;
 
   // content::SmsProvider::Observer:
-  bool OnReceive(const url::Origin&, const std::string& message) override;
+  bool OnReceive(const url::Origin&,
+                 const std::string& one_time_code,
+                 const std::string& sms) override;
 
   // blink::mojom::SmsReceiver:
   void Receive(base::TimeDelta timeout, ReceiveCallback) override;
 
  private:
+  void OpenInfoBar(const std::string& one_time_code);
   void Process(blink::mojom::SmsStatus, base::Optional<std::string> sms);
   void CleanUp();
 

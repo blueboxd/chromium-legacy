@@ -15,8 +15,6 @@
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
 
 namespace optimization_guide {
 
@@ -43,8 +41,6 @@ constexpr char kKeySectionDelimiter = '_';
 
 // Realistic minimum length of a host suffix.
 const int kMinHostSuffix = 6;  // eg., abc.tv
-
-constexpr char kHintLoadedPercentageTotalKey[] = "Total";
 
 // Enumerates the possible outcomes of loading metadata. Used in UMA histograms,
 // so the order of enumerators should not be changed.
@@ -94,44 +90,12 @@ bool DatabasePrefixFilter(const std::string& key_prefix,
   return base::StartsWith(key, key_prefix, base::CompareCase::SENSITIVE);
 }
 
-std::string GetStringNameForStoreEntryType(
-    HintCacheStore::StoreEntryType store_entry_type) {
-  switch (store_entry_type) {
-    case HintCacheStore::StoreEntryType::kEmpty:
-      return "Empty";
-    case HintCacheStore::StoreEntryType::kMetadata:
-      return "Metadata";
-    case HintCacheStore::StoreEntryType::kComponentHint:
-      return "ComponentHint";
-    case HintCacheStore::StoreEntryType::kFetchedHint:
-      return "FetchedHint";
-  }
-  NOTREACHED();
-  return std::string();
-}
-
-void IncrementHintLoadedCountsPrefForKey(PrefService* pref_service,
-                                         const std::string& key) {
-  if (!pref_service)
-    return;
-
-  DictionaryPrefUpdate pref(pref_service, prefs::kHintLoadedCounts);
-  base::Optional<int> maybe_val = pref->FindIntKey(key);
-  if (maybe_val.has_value()) {
-    pref->SetIntKey(key, maybe_val.value() + 1);
-  } else {
-    pref->SetIntKey(key, 1);
-  }
-}
-
 }  // namespace
 
 HintCacheStore::HintCacheStore(
     leveldb_proto::ProtoDatabaseProvider* database_provider,
     const base::FilePath& database_dir,
-    PrefService* pref_service,
-    scoped_refptr<base::SequencedTaskRunner> store_task_runner)
-    : pref_service_(pref_service) {
+    scoped_refptr<base::SequencedTaskRunner> store_task_runner) {
   base::FilePath hint_store_dir =
       database_dir.AppendASCII(kHintCacheStoreFolder);
   database_ = database_provider->GetDB<proto::StoreEntry>(
@@ -142,9 +106,8 @@ HintCacheStore::HintCacheStore(
 }
 
 HintCacheStore::HintCacheStore(
-    std::unique_ptr<leveldb_proto::ProtoDatabase<proto::StoreEntry>> database,
-    PrefService* pref_service)
-    : database_(std::move(database)), pref_service_(pref_service) {
+    std::unique_ptr<leveldb_proto::ProtoDatabase<proto::StoreEntry>> database)
+    : database_(std::move(database)) {
   RecordStatusChange(status_);
 }
 
@@ -248,39 +211,6 @@ void HintCacheStore::UpdateComponentHints(
   EntryKeyPrefix retain_prefix =
       GetComponentHintEntryKeyPrefix(component_version_.value());
   EntryKeyPrefix filter_prefix = GetComponentHintEntryKeyPrefixWithoutVersion();
-
-  // Received a new component version, report how many unique hints were used
-  // and clear the pref afterwards.
-  if (pref_service_) {
-    const base::DictionaryValue* hint_loaded_counts =
-        pref_service_->GetDictionary(prefs::kHintLoadedCounts);
-    if (hint_loaded_counts) {
-      base::Optional<int> maybe_total_load_attempts =
-          hint_loaded_counts->FindIntKey(kHintLoadedPercentageTotalKey);
-      if (maybe_total_load_attempts.has_value() &&
-          maybe_total_load_attempts.value() > 0) {
-        const int total_load_attempts = maybe_total_load_attempts.value();
-        int total_hints_loaded = 0;
-        for (const auto& it : hint_loaded_counts->DictItems()) {
-          // Skip over the total since we already extracted the value.
-          if (it.first == kHintLoadedPercentageTotalKey) {
-            continue;
-          }
-          const int val = it.second.GetInt();
-          total_hints_loaded += val;
-          base::UmaHistogramPercentage(
-              base::StrCat(
-                  {"OptimizationGuide.HintsLoadedPercentage.", it.first}),
-              100 * val / total_load_attempts);
-        }
-
-        base::UmaHistogramPercentage(
-            "OptimizationGuide.HintsLoadedPercentage",
-            100 * total_hints_loaded / total_load_attempts);
-      }
-    }
-    pref_service_->ClearPref(prefs::kHintLoadedCounts);
-  }
 
   // Add the new component data and purge any old component hints from the db.
   // After processing finishes, OnUpdateHints() is called, which loads
@@ -438,9 +368,6 @@ void HintCacheStore::LoadHint(const EntryKey& hint_entry_key,
     std::move(callback).Run(hint_entry_key, nullptr);
     return;
   }
-
-  IncrementHintLoadedCountsPrefForKey(pref_service_,
-                                      kHintLoadedPercentageTotalKey);
 
   database_->GetEntry(hint_entry_key,
                       base::BindOnce(&HintCacheStore::OnLoadHint,
@@ -834,9 +761,6 @@ void HintCacheStore::OnLoadHint(const std::string& entry_key,
       static_cast<StoreEntryType>(entry->entry_type());
   UMA_HISTOGRAM_ENUMERATION("OptimizationGuide.HintCache.HintType.Loaded",
                             store_entry_type);
-
-  IncrementHintLoadedCountsPrefForKey(
-      pref_service_, GetStringNameForStoreEntryType(store_entry_type));
 
   if (store_entry_type == StoreEntryType::kFetchedHint) {
     UMA_HISTOGRAM_CUSTOM_TIMES(

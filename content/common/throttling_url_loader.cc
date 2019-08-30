@@ -519,7 +519,7 @@ void ThrottlingURLLoader::RestartWithURLResetAndFlags(
 }
 
 void ThrottlingURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
   DCHECK(deferring_throttles_.empty());
@@ -576,7 +576,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
 
 void ThrottlingURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
   DCHECK(deferring_throttles_.empty());
@@ -634,7 +634,8 @@ void ThrottlingURLLoader::OnReceiveRedirect(
   // redirect or if it will be cancelled. FollowRedirect would be a more
   // suitable place to set this URL but there we do not have the data.
   response_url_ = redirect_info.new_url;
-  forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
+  forwarding_client_->OnReceiveRedirect(redirect_info,
+                                        std::move(response_head));
 }
 
 void ThrottlingURLLoader::OnUploadProgress(

@@ -120,7 +120,7 @@ void VizCompositorThreadRunnerWebView::BindFrameSinkManagerOnViz(
           std::move(params->frame_sink_manager_client)));
 }
 
-#if defined(USE_VIZ_DEVTOOLS)
+#if BUILDFLAG(USE_VIZ_DEVTOOLS)
 void VizCompositorThreadRunnerWebView::CreateVizDevTools(
     viz::mojom::VizDevToolsParamsPtr params) {
   NOTIMPLEMENTED();

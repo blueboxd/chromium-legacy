@@ -35,6 +35,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 
 class LocationBarViewBrowserTest : public InProcessBrowserTest {

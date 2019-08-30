@@ -58,6 +58,8 @@ class ClickToCallDialogView : public SharingDialog,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
+  static views::BubbleDialogDelegateView* GetAsBubble(SharingDialog* dialog);
+
  private:
   friend class ClickToCallDialogViewTest;
   FRIEND_TEST_ALL_PREFIXES(ClickToCallDialogViewTest, PopulateDialogView);

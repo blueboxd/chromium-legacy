@@ -23,7 +23,11 @@
         selected="[[selectedPageName_]]"
         selected-item="{{selectedPage_}}">
       <sim-detect-page show-error="[[showError_]]"></sim-detect-page>
-      <provisioning-page show-error="[[showError_]]"></provisioning-page>
+      <provisioning-page show-error="{{showError_}}"
+          cellular-metadata="[[cellularMetadata_]]"
+          on-carrier-portal-loaded="onCarrierPortalLoaded_"
+          on-carrier-portal-result="onCarrierPortalResult_">
+      </provisioning-page>
       <final-page show-error="[[showError_]]"></final-page>
     </iron-pages>
     <button-bar show-try-again-button="[[showTryAgainButton_]]"

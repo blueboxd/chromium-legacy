@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/animation/css_color_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 #include "third_party/blink/renderer/core/animation/non_interpolable_value.h"
 #include "third_party/blink/renderer/core/animation/underlying_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -72,18 +72,14 @@ InterpolationValue ShadowInterpolationFunctions::ConvertShadowData(
     double zoom) {
   auto interpolable_list =
       std::make_unique<InterpolableList>(kShadowComponentIndexCount);
-  interpolable_list->Set(kShadowX,
-                         LengthInterpolationFunctions::CreateInterpolablePixels(
-                             shadow_data.X() / zoom));
-  interpolable_list->Set(kShadowY,
-                         LengthInterpolationFunctions::CreateInterpolablePixels(
-                             shadow_data.Y() / zoom));
-  interpolable_list->Set(kShadowBlur,
-                         LengthInterpolationFunctions::CreateInterpolablePixels(
-                             shadow_data.Blur() / zoom));
-  interpolable_list->Set(kShadowSpread,
-                         LengthInterpolationFunctions::CreateInterpolablePixels(
-                             shadow_data.Spread() / zoom));
+  interpolable_list->Set(
+      kShadowX, InterpolableLength::CreatePixels(shadow_data.X() / zoom));
+  interpolable_list->Set(
+      kShadowY, InterpolableLength::CreatePixels(shadow_data.Y() / zoom));
+  interpolable_list->Set(
+      kShadowBlur, InterpolableLength::CreatePixels(shadow_data.Blur() / zoom));
+  interpolable_list->Set(kShadowSpread, InterpolableLength::CreatePixels(
+                                            shadow_data.Spread() / zoom));
   interpolable_list->Set(kShadowColor,
                          CSSColorInterpolationType::CreateInterpolableColor(
                              shadow_data.GetColor()));
@@ -120,15 +116,14 @@ InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
   };
   for (wtf_size_t i = 0; i < base::size(lengths); i++) {
     if (lengths[i]) {
-      InterpolationValue length_field =
-          LengthInterpolationFunctions::MaybeConvertCSSValue(*lengths[i]);
+      InterpolationValue length_field(
+          InterpolableLength::MaybeConvertCSSValue(*lengths[i]));
       if (!length_field)
         return nullptr;
       DCHECK(!length_field.non_interpolable_value);
       interpolable_list->Set(i, std::move(length_field.interpolable_value));
     } else {
-      interpolable_list->Set(
-          i, LengthInterpolationFunctions::CreateInterpolablePixels(0));
+      interpolable_list->Set(i, InterpolableLength::CreatePixels(0));
     }
   }
 
@@ -178,18 +173,16 @@ ShadowData ShadowInterpolationFunctions::CreateShadowData(
       ToShadowNonInterpolableValue(*non_interpolable_value);
   const CSSToLengthConversionData& conversion_data =
       state.CssToLengthConversionData();
-  Length shadow_x = LengthInterpolationFunctions::CreateLength(
-      *interpolable_list.Get(kShadowX), nullptr, conversion_data,
-      kValueRangeAll);
-  Length shadow_y = LengthInterpolationFunctions::CreateLength(
-      *interpolable_list.Get(kShadowY), nullptr, conversion_data,
-      kValueRangeAll);
-  Length shadow_blur = LengthInterpolationFunctions::CreateLength(
-      *interpolable_list.Get(kShadowBlur), nullptr, conversion_data,
-      kValueRangeNonNegative);
-  Length shadow_spread = LengthInterpolationFunctions::CreateLength(
-      *interpolable_list.Get(kShadowSpread), nullptr, conversion_data,
-      kValueRangeAll);
+  Length shadow_x = To<InterpolableLength>(*interpolable_list.Get(kShadowX))
+                        .CreateLength(conversion_data, kValueRangeAll);
+  Length shadow_y = To<InterpolableLength>(*interpolable_list.Get(kShadowY))
+                        .CreateLength(conversion_data, kValueRangeAll);
+  Length shadow_blur =
+      To<InterpolableLength>(*interpolable_list.Get(kShadowBlur))
+          .CreateLength(conversion_data, kValueRangeNonNegative);
+  Length shadow_spread =
+      To<InterpolableLength>(*interpolable_list.Get(kShadowSpread))
+          .CreateLength(conversion_data, kValueRangeAll);
   DCHECK(shadow_x.IsFixed() && shadow_y.IsFixed() && shadow_blur.IsFixed() &&
          shadow_spread.IsFixed());
   return ShadowData(FloatPoint(shadow_x.Value(), shadow_y.Value()),

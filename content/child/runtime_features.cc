@@ -574,6 +574,9 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
     WebRuntimeFeatures::EnableFeatureFromString("StorageAccessAPI", true);
   }
+
+  WebRuntimeFeatures::EnablePointerLockOptions(
+      base::FeatureList::IsEnabled(features::kPointerLockOptions));
 }
 
 }  // namespace

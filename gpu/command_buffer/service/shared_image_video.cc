@@ -113,6 +113,7 @@ void DestroyVkPromiseTexture(viz::VulkanContextProvider* context_provider,
 
 SharedImageVideo::SharedImageVideo(
     const Mailbox& mailbox,
+    const gfx::Size& size,
     const gfx::ColorSpace color_space,
     scoped_refptr<StreamTextureSharedImageInterface> stream_texture_sii,
     std::unique_ptr<gles2::AbstractTexture> abstract_texture,
@@ -121,12 +122,11 @@ SharedImageVideo::SharedImageVideo(
     : SharedImageBacking(
           mailbox,
           viz::RGBA_8888,
-          stream_texture_sii->GetSize(),
+          size,
           color_space,
           (SHARED_IMAGE_USAGE_DISPLAY | SHARED_IMAGE_USAGE_GLES2),
-          viz::ResourceSizes::UncheckedSizeInBytes<size_t>(
-              stream_texture_sii->GetSize(),
-              viz::RGBA_8888),
+          viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size,
+                                                           viz::RGBA_8888),
           is_thread_safe),
       stream_texture_sii_(std::move(stream_texture_sii)),
       abstract_texture_(std::move(abstract_texture)),

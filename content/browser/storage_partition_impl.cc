@@ -351,18 +351,24 @@ void DeprecateSameSiteCookies(int process_id,
                                             excluded_cookie.cookie.IsSecure())
             .possibly_invalid_spec();
 
-    if (excluded_cookie.status ==
-        net::CanonicalCookie::CookieInclusionStatus::
-            EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
-      samesite_treated_as_lax_cookies = true;
+    net::CanonicalCookie::CookieInclusionStatus::WarningReason warning =
+        excluded_cookie.status.warning();
+    switch (warning) {
+      case net::CanonicalCookie::CookieInclusionStatus::
+          WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT:
+        samesite_treated_as_lax_cookies = true;
+        break;
+      case net::CanonicalCookie::CookieInclusionStatus::
+          WARN_SAMESITE_NONE_INSECURE:
+        samesite_none_insecure_cookies = true;
+        break;
+      // TODO(crbug.com/990439): Add messages for Lax-Allow-Unsafe intervention.
+      default:
+        break;
     }
-    if (excluded_cookie.status == net::CanonicalCookie::CookieInclusionStatus::
-                                      EXCLUDE_SAMESITE_NONE_INSECURE) {
-      samesite_none_insecure_cookies = true;
-    }
+
     if (emit_messages) {
-      root_frame_host->AddSameSiteCookieDeprecationMessage(
-          cookie_url, excluded_cookie.status);
+      root_frame_host->AddSameSiteCookieDeprecationMessage(cookie_url, warning);
     }
   }
 
@@ -388,32 +394,28 @@ void ReportCookiesChangedOnUI(
   }
 
   for (const auto& cookie_and_status : cookie_list) {
-    switch (cookie_and_status.status) {
-      case net::CanonicalCookie::CookieInclusionStatus::
-          EXCLUDE_USER_PREFERENCES:
-        for (const GlobalFrameRoutingId& id : destinations) {
-          WebContents* web_contents = GetWebContentsForStoragePartition(
-              id.child_id, id.frame_routing_id);
-          if (!web_contents)
-            continue;
-          web_contents->OnCookieChange(url, site_for_cookies,
-                                       cookie_and_status.cookie,
-                                       /* blocked_by_policy =*/true);
-        }
-        break;
-      case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
-        for (const GlobalFrameRoutingId& id : destinations) {
-          WebContents* web_contents = GetWebContentsForStoragePartition(
-              id.child_id, id.frame_routing_id);
-          if (!web_contents)
-            continue;
-          web_contents->OnCookieChange(url, site_for_cookies,
-                                       cookie_and_status.cookie,
-                                       /* blocked_by_policy =*/false);
-        }
-        break;
-      default:
-        break;
+    if (cookie_and_status.status.HasExclusionReason(
+            net::CanonicalCookie::CookieInclusionStatus::
+                EXCLUDE_USER_PREFERENCES)) {
+      for (const GlobalFrameRoutingId& id : destinations) {
+        WebContents* web_contents =
+            GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
+        if (!web_contents)
+          continue;
+        web_contents->OnCookieChange(url, site_for_cookies,
+                                     cookie_and_status.cookie,
+                                     /* blocked_by_policy =*/true);
+      }
+    } else if (cookie_and_status.status.IsInclude()) {
+      for (const GlobalFrameRoutingId& id : destinations) {
+        WebContents* web_contents =
+            GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
+        if (!web_contents)
+          continue;
+        web_contents->OnCookieChange(url, site_for_cookies,
+                                     cookie_and_status.cookie,
+                                     /* blocked_by_policy =*/false);
+      }
     }
   }
 }
@@ -431,16 +433,12 @@ void ReportCookiesReadOnUI(
 
   net::CookieList accepted, blocked;
   for (auto& cookie_and_status : cookie_list) {
-    switch (cookie_and_status.status) {
-      case net::CanonicalCookie::CookieInclusionStatus::
-          EXCLUDE_USER_PREFERENCES:
-        blocked.push_back(std::move(cookie_and_status.cookie));
-        break;
-      case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
-        accepted.push_back(std::move(cookie_and_status.cookie));
-        break;
-      default:
-        break;
+    if (cookie_and_status.status.HasExclusionReason(
+            net::CanonicalCookie::CookieInclusionStatus::
+                EXCLUDE_USER_PREFERENCES)) {
+      blocked.push_back(std::move(cookie_and_status.cookie));
+    } else if (cookie_and_status.status.IsInclude()) {
+      accepted.push_back(std::move(cookie_and_status.cookie));
     }
   }
 
@@ -629,7 +627,7 @@ void OnAuthRequiredContinuation(
     bool is_request_for_main_frame,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::URLResponseHeadPtr head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
     base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
   if (!web_contents_getter) {
@@ -667,7 +665,7 @@ void OnAuthRequiredContinuationForWindowId(
     const GURL& url,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::URLResponseHeadPtr head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
     FrameTreeNodeIdRegistry::IsMainFrameGetter is_main_frame_getter) {
   if (!is_main_frame_getter) {
@@ -686,7 +684,7 @@ void OnAuthRequiredContinuationForWindowId(
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
                                *is_main_frame_opt, first_auth_attempt,
-                               auth_info, head,
+                               auth_info, std::move(head),
                                std::move(auth_challenge_responder),
                                GetWebContentsFromRegistry(window_id));
   } else {
@@ -695,7 +693,8 @@ void OnAuthRequiredContinuationForWindowId(
         base::BindOnce(&GetWebContentsFromRegistry, window_id),
         base::BindOnce(&OnAuthRequiredContinuation, process_id, routing_id,
                        request_id, url, *is_main_frame_opt, first_auth_attempt,
-                       auth_info, head, std::move(auth_challenge_responder)));
+                       auth_info, std::move(head),
+                       std::move(auth_challenge_responder)));
   }
 }
 
@@ -1592,13 +1591,13 @@ void StoragePartitionImpl::OnAuthRequired(
     const GURL& url,
     bool first_auth_attempt,
     const net::AuthChallengeInfo& auth_info,
-    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::URLResponseHeadPtr head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   if (window_id) {
     if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
       OnAuthRequiredContinuationForWindowId(
           *window_id, process_id, routing_id, request_id, url,
-          first_auth_attempt, auth_info, head,
+          first_auth_attempt, auth_info, std::move(head),
           std::move(auth_challenge_responder),
           GetIsMainFrameFromRegistry(*window_id));
     } else {
@@ -1607,14 +1606,14 @@ void StoragePartitionImpl::OnAuthRequired(
           base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
           base::BindOnce(&OnAuthRequiredContinuationForWindowId, *window_id,
                          process_id, routing_id, request_id, url,
-                         first_auth_attempt, auth_info, head,
+                         first_auth_attempt, auth_info, std::move(head),
                          std::move(auth_challenge_responder)));
     }
     return;
   }
   OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
                              IsMainFrameRequest(process_id, routing_id),
-                             first_auth_attempt, auth_info, head,
+                             first_auth_attempt, auth_info, std::move(head),
                              std::move(auth_challenge_responder), {});
 }
 

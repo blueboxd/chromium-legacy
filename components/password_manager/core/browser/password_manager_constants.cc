@@ -8,8 +8,10 @@ namespace password_manager {
 
 const base::FilePath::CharType kAffiliationDatabaseFileName[] =
     FILE_PATH_LITERAL("Affiliation Database");
-const base::FilePath::CharType kLoginDataFileName[] =
+const base::FilePath::CharType kLoginDataForProfileFileName[] =
     FILE_PATH_LITERAL("Login Data");
+const base::FilePath::CharType kLoginDataForAccountFileName[] =
+    FILE_PATH_LITERAL("Login Data For Account");
 
 const char kPasswordManagerAccountDashboardURL[] =
     "https://passwords.google.com";

@@ -2187,10 +2187,14 @@ Element* AXLayoutObject::AnchorElement() const {
   if (!node)
     return nullptr;
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*node)) {
-    if (IsA<HTMLAnchorElement>(runner) ||
-        (runner.GetLayoutObject() &&
-         cache.GetOrCreate(runner.GetLayoutObject())->IsAnchor()))
+    if (IsA<HTMLAnchorElement>(runner))
       return To<Element>(&runner);
+
+    if (LayoutObject* layout_object = runner.GetLayoutObject()) {
+      AXObject* ax_object = cache.GetOrCreate(layout_object);
+      if (ax_object && ax_object->IsAnchor())
+        return To<Element>(&runner);
+    }
   }
 
   return nullptr;

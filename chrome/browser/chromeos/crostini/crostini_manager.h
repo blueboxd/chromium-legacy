@@ -121,6 +121,10 @@ class CrostiniManager : public KeyedService,
  public:
   using CrostiniResultCallback =
       base::OnceCallback<void(CrostiniResult result)>;
+  using ExportLxdContainerResultCallback =
+      base::OnceCallback<void(CrostiniResult result,
+                              uint64_t container_size,
+                              uint64_t compressed_size)>;
   // Callback indicating success or failure
   using BoolCallback = base::OnceCallback<void(bool success)>;
 
@@ -258,7 +262,7 @@ class CrostiniManager : public KeyedService,
   void ExportLxdContainer(std::string vm_name,
                           std::string container_name,
                           base::FilePath export_path,
-                          CrostiniResultCallback callback);
+                          ExportLxdContainerResultCallback callback);
 
   // Checks the arguments for importing an Lxd container via
   // CiceroneClient::ImportLxdContainer. |callback| is called immediately if the
@@ -690,6 +694,10 @@ class CrostiniManager : public KeyedService,
       ListUsbDevicesCallback callback,
       base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response);
 
+  // Callback for
+  // CrostiniAnsibleManagementService::InstallAnsibleInDefaultContainer
+  void OnAnsibleInDefaultContainerInstalled(bool success);
+
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
   // check for file paths and registered components.
   static void CheckPathsAndComponents();
@@ -724,7 +732,8 @@ class CrostiniManager : public KeyedService,
   std::multimap<ContainerId, CrostiniResultCallback>
       create_lxd_container_callbacks_;
   std::multimap<ContainerId, BoolCallback> delete_lxd_container_callbacks_;
-  std::map<ContainerId, CrostiniResultCallback> export_lxd_container_callbacks_;
+  std::map<ContainerId, ExportLxdContainerResultCallback>
+      export_lxd_container_callbacks_;
   std::map<ContainerId, CrostiniResultCallback> import_lxd_container_callbacks_;
 
   // Callbacks to run after Tremplin is started, keyed by vm_name. These are

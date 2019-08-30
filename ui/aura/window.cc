@@ -1167,7 +1167,6 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
       Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
-  params.enable_surface_synchronization = true;
   params.client_name = kExo;
   bool root_accepts_events =
       (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||

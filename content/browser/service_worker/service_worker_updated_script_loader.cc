@@ -267,13 +267,13 @@ void ServiceWorkerUpdatedScriptLoader::ResumeReadingBodyFromNet() {
 // URLLoaderClient for network loader ------------------------------------------
 
 void ServiceWorkerUpdatedScriptLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   NOTREACHED();
 }
 
 void ServiceWorkerUpdatedScriptLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   NOTREACHED();
 }
 

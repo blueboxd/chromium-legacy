@@ -96,8 +96,12 @@ void HotseatWidget::OnGestureEvent(ui::GestureEvent* event) {
 bool HotseatWidget::OnNativeWidgetActivationChanged(bool active) {
   if (!Widget::OnNativeWidgetActivationChanged(active))
     return false;
-  if (active)
+
+  if (IsScrollableShelfEnabled())
+    scrollable_shelf_view_->OnFocusRingActivationChanged(active);
+  else if (active)
     GetShelfView()->SetPaneFocusAndFocusDefault();
+
   return true;
 }
 

@@ -64,6 +64,11 @@ class CORE_EXPORT ListInterpolationFunctions {
                         LengthMatchingStrategy,
                         NonInterpolableValuesAreCompatibleCallback,
                         CompositeItemCallback);
+
+  // We are moving towards elimination of |NonInterpolableValue|, and expect
+  // more clients to assert no more usage with this function.
+  static bool VerifyNoNonInterpolableValues(const NonInterpolableValue* a,
+                                            const NonInterpolableValue* b);
 };
 
 class CORE_EXPORT NonInterpolableList : public NonInterpolableValue {

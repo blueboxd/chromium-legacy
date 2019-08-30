@@ -167,7 +167,6 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
           std::make_unique<optimization_guide::HintCacheStore>(
               database_provider,
               profile_path,
-              pref_service_,
               background_task_runner_))),
       top_host_provider_(top_host_provider),
       url_loader_factory_(url_loader_factory),

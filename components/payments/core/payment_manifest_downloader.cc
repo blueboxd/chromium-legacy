@@ -326,11 +326,11 @@ void PaymentManifestDownloader::InitiateDownload(
                                        traffic_annotation);
   loader->SetOnRedirectCallback(
       base::BindRepeating(&PaymentManifestDownloader::OnURLLoaderRedirect,
-                          base::Unretained(this), loader.get()));
+                          weak_ptr_factory_.GetWeakPtr(), loader.get()));
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&PaymentManifestDownloader::OnURLLoaderComplete,
-                     base::Unretained(this), loader.get()));
+                     weak_ptr_factory_.GetWeakPtr(), loader.get()));
 
   auto download = std::make_unique<Download>();
   download->method = method;

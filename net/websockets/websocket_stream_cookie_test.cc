@@ -89,7 +89,7 @@ class WebSocketStreamClientUseCookieTest
       base::WeakPtr<bool> weak_result,
       CanonicalCookie::CookieInclusionStatus status) {
     *weak_is_called = true;
-    *weak_result = (status == CanonicalCookie::CookieInclusionStatus::INCLUDE);
+    *weak_result = status.IsInclude();
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
   }
 };

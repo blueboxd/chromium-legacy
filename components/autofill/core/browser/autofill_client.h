@@ -213,6 +213,11 @@ class AutofillClient : public RiskDataLoader {
   typedef base::RepeatingCallback<void(const std::string&)>
       MigrationDeleteCardCallback;
 
+  // Callback to run if the OK button or the cancel button in the
+  // WebauthnOfferDialog is clicked. Will pass to CreditCardFIDOAuthenticator a
+  // bool indicating if offer was accepted or declined.
+  typedef base::RepeatingCallback<void(bool)> WebauthnOfferDialogCallback;
+
   ~AutofillClient() override {}
 
   // Returns the channel for the installation. In branded builds, this will be
@@ -298,6 +303,13 @@ class AutofillClient : public RiskDataLoader {
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) = 0;
+
+  // Will show a dialog offering the option to use device's platform
+  // authenticator in the future instead of CVC to verify the card being
+  // unmasked. Runs |callback| is the OK button or the cancel button in the
+  // dialog is clicked. This is only implemented on desktop.
+  virtual void ShowWebauthnOfferDialog(
+      WebauthnOfferDialogCallback callback) = 0;
 
   // Runs |callback| if the |profile| should be imported as personal data.
   virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,

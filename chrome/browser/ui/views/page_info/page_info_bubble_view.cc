@@ -45,7 +45,6 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -917,8 +916,7 @@ void PageInfoBubbleView::DidChangeVisibleSecurityState() {
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 std::unique_ptr<PageInfoUI::SecurityDescription>
-PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
-    PasswordType password_type) const {
+PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse() const {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
       new PageInfoUI::SecurityDescription());
   security_description->summary_style = SecuritySummaryColor::RED;
@@ -926,28 +924,8 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
   auto* service = safe_browsing::ChromePasswordProtectionService::
       GetPasswordProtectionService(profile_);
-  password_manager::metrics_util::PasswordType metrics_password_type;
-  switch (password_type) {
-    case (PasswordType::NON_GAIA_ENTERPRISE):
-      metrics_password_type =
-          password_manager::metrics_util::PasswordType::ENTERPRISE_PASSWORD;
-      break;
-    case (PasswordType::SYNC_GAIA):
-      metrics_password_type = password_manager::metrics_util::PasswordType::
-          PRIMARY_ACCOUNT_PASSWORD;
-      break;
-    case (PasswordType::NON_SYNC_GAIA):
-      metrics_password_type =
-          password_manager::metrics_util::PasswordType::OTHER_GAIA_PASSWORD;
-      break;
-    default:
-      metrics_password_type =
-          password_manager::metrics_util::PasswordType::PASSWORD_TYPE_UNKNOWN;
-  }
-
   security_description->details = service->GetWarningDetailText(
-      service->GetPasswordProtectionReusedPasswordAccountType(
-          metrics_password_type, service->username()));
+      service->reused_password_account_type_for_last_shown_warning());
   return security_description;
 }
 #endif

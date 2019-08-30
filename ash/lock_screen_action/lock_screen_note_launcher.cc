@@ -6,14 +6,11 @@
 
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/shell.h"
-#include "ash/tray_action/tray_action.h"
 #include "base/bind.h"
 
 namespace ash {
 
-LockScreenNoteLauncher::LockScreenNoteLauncher()
-    : tray_action_observer_(this) {}
-
+LockScreenNoteLauncher::LockScreenNoteLauncher() = default;
 LockScreenNoteLauncher::~LockScreenNoteLauncher() = default;
 
 // static

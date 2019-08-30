@@ -1467,18 +1467,6 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 }
 
-// Test that it is okay to write code that first starts split view by snapping a
-// window on one side, and then starts overview to be seen on the other side.
-TEST_F(TabletModeControllerTest,
-       ProgrammaticallyStartSplitViewAndThenOverview) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  tablet_mode_controller()->SetEnabledForTest(true);
-  std::unique_ptr<aura::Window> window = CreateTestWindow();
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->StartOverview());
-}
-
 // Test that tablet mode controller does not respond to the input device changes
 // during its suspend.
 TEST_F(TabletModeControllerTest, DoNotObserverInputDeviceChangeDuringSuspend) {

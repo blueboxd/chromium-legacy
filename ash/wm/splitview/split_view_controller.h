@@ -337,10 +337,11 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // Restores |window| transform to identity transform if applicable.
   void RestoreTransformIfApplicable(aura::Window* window);
 
-  // Activates the snapped window |window| and stacks the other snapped window
-  // below |window| so that the two snapped windows are always the top two
-  // windows when split view mode is active.
-  void ActivateAndStackSnappedWindow(aura::Window* window);
+  // Activates the newly snapped window |window| and updates window stacking. In
+  // clamshell mode, if there is only one overview window and you drag and snap
+  // it to enter split view, then this function is called after split view mode
+  // has already been ended. Then it just activates |window|.
+  void ActivateSnappedWindowAndUpdateStacking(aura::Window* window);
 
   // During resizing, it's possible that the resizing bounds of the snapped
   // window is smaller than its minimum bounds, in this case we apply a

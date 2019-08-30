@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
@@ -149,8 +149,7 @@ static std::unique_ptr<InterpolableValue> ConvertClipComponent(
     double zoom) {
   if (length.IsAuto())
     return std::make_unique<InterpolableList>(0);
-  return LengthInterpolationFunctions::MaybeConvertLength(length, zoom)
-      .interpolable_value;
+  return InterpolableLength::MaybeConvertLength(length, zoom);
 }
 
 static InterpolationValue CreateClipValue(const LengthBox& clip, double zoom) {
@@ -207,8 +206,7 @@ static std::unique_ptr<InterpolableValue> ConvertClipComponent(
     const CSSValue& length) {
   if (IsCSSAuto(length))
     return std::make_unique<InterpolableList>(0);
-  return LengthInterpolationFunctions::MaybeConvertCSSValue(length)
-      .interpolable_value;
+  return InterpolableLength::MaybeConvertCSSValue(length);
 }
 
 InterpolationValue CSSClipInterpolationType::MaybeConvertValue(
@@ -281,9 +279,8 @@ void CSSClipInterpolationType::ApplyStandardPropertyValue(
   const auto& convert_index = [&list, &state](bool is_auto, wtf_size_t index) {
     if (is_auto)
       return Length::Auto();
-    return LengthInterpolationFunctions::CreateLength(
-        *list.Get(index), nullptr, state.CssToLengthConversionData(),
-        kValueRangeAll);
+    return To<InterpolableLength>(*list.Get(index))
+        .CreateLength(state.CssToLengthConversionData(), kValueRangeAll);
   };
   state.Style()->SetClip(
       LengthBox(convert_index(autos.is_top_auto, kClipTop),

@@ -101,6 +101,8 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
   // Callback for when |decryptor_| loses connectivity.
   void OnDecryptorConnectionError();
 
+  bool has_initialize_been_called_ = false;
+
   CdmFactory* cdm_factory_;
   MojoCdmServiceContext* const context_ = nullptr;
   scoped_refptr<::media::ContentDecryptionModule> cdm_;

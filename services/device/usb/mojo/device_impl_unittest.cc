@@ -24,8 +24,8 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/usb/mock_usb_device.h"
 #include "services/device/usb/mock_usb_device_handle.h"
 #include "services/device/usb/usb_descriptors.h"
@@ -146,20 +146,18 @@ void ExpectTransferStatusAndThen(mojom::UsbTransferStatus expected_status,
 
 class MockUsbDeviceClient : public mojom::UsbDeviceClient {
  public:
-  MockUsbDeviceClient() : binding_(this) {}
+  MockUsbDeviceClient() = default;
   ~MockUsbDeviceClient() override = default;
 
-  mojom::UsbDeviceClientPtr CreateInterfacePtrAndBind() {
-    mojom::UsbDeviceClientPtr client;
-    binding_.Bind(mojo::MakeRequest(&client));
-    return client;
+  mojo::PendingRemote<mojom::UsbDeviceClient> CreateInterfacePtrAndBind() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   MOCK_METHOD0(OnDeviceOpened, void());
   MOCK_METHOD0(OnDeviceClosed, void());
 
  private:
-  mojo::Binding<mojom::UsbDeviceClient> binding_;
+  mojo::Receiver<mojom::UsbDeviceClient> receiver_{this};
 };
 
 class USBDeviceImplTest : public testing::Test {
@@ -188,7 +186,7 @@ class USBDeviceImplTest : public testing::Test {
       const std::string& manufacturer,
       const std::string& product,
       const std::string& serial,
-      mojom::UsbDeviceClientPtr client) {
+      mojo::PendingRemote<mojom::UsbDeviceClient> client) {
     mock_device_ =
         new MockUsbDevice(vendor_id, product_id, manufacturer, product, serial);
     mock_handle_ = new MockUsbDeviceHandle(mock_device_.get());
@@ -228,13 +226,13 @@ class USBDeviceImplTest : public testing::Test {
   }
 
   mojo::Remote<mojom::UsbDevice> GetMockDeviceProxy(
-      mojom::UsbDeviceClientPtr client) {
+      mojo::PendingRemote<mojom::UsbDeviceClient> client) {
     return GetMockDeviceProxy(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF",
                               std::move(client));
   }
 
   mojo::Remote<mojom::UsbDevice> GetMockDeviceProxy() {
-    return GetMockDeviceProxy(nullptr);
+    return GetMockDeviceProxy(mojo::NullRemote());
   }
 
   void AddMockConfig(mojom::UsbConfigurationInfoPtr config) {

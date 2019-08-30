@@ -70,8 +70,6 @@ component("cpp") {
     "assistant/assistant_state.h",
     "assistant/assistant_state_base.cc",
     "assistant/assistant_state_base.h",
-    "assistant/assistant_state_proxy.cc",
-    "assistant/assistant_state_proxy.h",
     "assistant/proactive_suggestions.cc",
     "assistant/proactive_suggestions.h",
     "assistant/proactive_suggestions_client.cc",

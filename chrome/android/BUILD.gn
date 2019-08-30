@@ -443,6 +443,7 @@ android_library("chrome_java") {
     "//components/security_state/core:security_state_enums_java",
     "//components/signin/core/browser:signin_enums_javagen",
     "//components/ui_metrics:ui_metrics_enums_java",
+    "//content/public/browser:contacts_picker_properties_requested_javagen",
     "//net:effective_connection_type_java",
     ":vr_build_config",
   ]
@@ -1594,6 +1595,7 @@ template("chrome_public_apk_or_module_tmpl") {
     forward_variables_from(invoker,
                            [
                              "apk_name",
+                             "bundle_target",
                              "is_base_module",
                              "jni_registration_header",
                              "is_modern",
@@ -1651,6 +1653,7 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_base_bundle_module") {
   module_name = "ChromeModernPublicBase"
   is_base_module = true
   is_modern = true
+  bundle_target = ":chrome_modern_public_bundle"
 }
 
 android_library("monochrome_java") {
@@ -1724,6 +1727,7 @@ template("monochrome_public_apk_or_module_tmpl") {
     forward_variables_from(invoker,
                            [
                              "apk_name",
+                             "bundle_target",
                              "include_32_bit_webview",
                              "is_64_bit_browser",
                              "is_base_module",
@@ -2255,6 +2259,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
                              "use_trichrome_library",
                            ])
     module_name = _bundle_name + "Base"
+    bundle_target = ":${invoker.target_name}"
     target_type = "android_app_bundle_module"
     is_base_module = true
     version_code = _version_code

@@ -178,6 +178,9 @@ struct NET_EXPORT QuicParams {
   // If true, an idle session will be migrated within the idle migration
   // period.
   bool migrate_idle_sessions = false;
+  // If true, sessions with open streams will attempt to migrate to a different
+  // port when the current path is poor.
+  bool allow_port_migration = false;
   // A session can be migrated if its idle time is within this period.
   base::TimeDelta idle_session_migration_period =
       kDefaultIdleSessionMigrationPeriod;

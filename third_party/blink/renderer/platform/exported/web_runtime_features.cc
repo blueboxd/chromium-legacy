@@ -349,6 +349,10 @@ void WebRuntimeFeatures::EnablePictureInPictureAPI(bool enable) {
   RuntimeEnabledFeatures::SetPictureInPictureAPIEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePointerLockOptions(bool enable) {
+  RuntimeEnabledFeatures::SetPointerLockOptionsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePortals(bool enable) {
   RuntimeEnabledFeatures::SetPortalsEnabled(enable);
 }

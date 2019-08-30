@@ -184,7 +184,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // This ID is incremented whenever a new tracing session is started.
   static constexpr uint32_t kInvalidSessionID = 0;
   static constexpr uint32_t kFirstSessionID = 1;
-  base::TimeDelta startup_tracing_timeout_ = base::TimeDelta::FromSeconds(10);
+  base::TimeDelta startup_tracing_timeout_ = base::TimeDelta::FromSeconds(60);
   std::atomic<uint32_t> session_id_{kInvalidSessionID};
 
   // To avoid lock-order inversion, this lock should not be held while making

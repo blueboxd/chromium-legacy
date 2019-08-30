@@ -8,7 +8,6 @@ import android.content.res.Configuration;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeApplication;
 
 /**
@@ -76,10 +75,5 @@ public class SystemNightModeMonitor {
                 ContextUtils.getApplicationContext().getResources().getConfiguration().uiMode;
         mSystemNightModeOn =
                 (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-    }
-
-    @VisibleForTesting
-    void notifyObserversForTesting() {
-        for (Observer observer : mObservers) observer.onSystemNightModeChanged();
     }
 }

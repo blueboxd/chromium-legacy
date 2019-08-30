@@ -1042,6 +1042,8 @@ int CertVerifyProcWin::VerifyInternal(
 
   if (chain_context->TrustStatus.dwErrorStatus &
       CERT_TRUST_IS_NOT_VALID_FOR_USAGE) {
+    // Could not verify the cert with the EV policy. Remove the EV policy and
+    // try again.
     ev_policy_oid = nullptr;
     chain_para.RequestedIssuancePolicy.Usage.cUsageIdentifier = 0;
     chain_para.RequestedIssuancePolicy.Usage.rgpszUsageIdentifier = nullptr;
@@ -1078,11 +1080,6 @@ int CertVerifyProcWin::VerifyInternal(
       return MapSecurityError(GetLastError());
     }
     GetCertChainInfo(chain_context, verify_result);
-
-    if (chain_context->TrustStatus.dwErrorStatus &
-        CERT_TRUST_IS_OFFLINE_REVOCATION) {
-      verify_result->cert_status |= CERT_STATUS_REVOKED;
-    }
   }
 
   ScopedPCCERT_CHAIN_CONTEXT scoped_chain_context(chain_context);
@@ -1129,16 +1126,14 @@ int CertVerifyProcWin::VerifyInternal(
         MapSecurityError(policy_status.dwError));
   }
 
-  // TODO(wtc): Suppress CERT_STATUS_NO_REVOCATION_MECHANISM for now to be
-  // compatible with WinHTTP, which doesn't report this error (bug 3004).
-  verify_result->cert_status &= ~CERT_STATUS_NO_REVOCATION_MECHANISM;
-
-  if (!rev_checking_enabled) {
-    // If we didn't do online revocation checking then Windows will report
-    // CERT_UNABLE_TO_CHECK_REVOCATION unless it had cached OCSP or CRL
-    // information for every certificate. We only want to put up revoked
-    // statuses from the offline checks so we squash this error.
-    verify_result->cert_status &= ~CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
+  // Mask off revocation checking failures unless hard-fail revocation checking
+  // for local anchors is enabled and the chain is issued by a local root.
+  // (CheckEV will still check chain_context->TrustStatus.dwErrorStatus directly
+  // so as to not mark as EV if revocation information was not available.)
+  if (!(!verify_result->is_issued_by_known_root &&
+        (flags & VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS))) {
+    verify_result->cert_status &= ~(CERT_STATUS_NO_REVOCATION_MECHANISM |
+                                    CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
   }
 
   AppendPublicKeyHashesAndUpdateKnownRoot(

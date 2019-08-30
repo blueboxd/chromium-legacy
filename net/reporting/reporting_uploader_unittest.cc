@@ -449,8 +449,7 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
       std::move(cookie), url.scheme(), CookieOptions(),
       cookie_callback.MakeCallback());
   cookie_callback.WaitUntilDone();
-  ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-            cookie_callback.result());
+  ASSERT_TRUE(cookie_callback.result().IsInclude());
 
   TestUploadCallback upload_callback;
   uploader_->StartUpload(kOrigin, server_.GetURL("/"), kUploadBody, 0,

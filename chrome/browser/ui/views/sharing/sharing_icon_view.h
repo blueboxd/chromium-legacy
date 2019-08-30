@@ -13,7 +13,15 @@
 // The location bar icon to show the sharing features bubble.
 class SharingIconView : public PageActionIconView {
  public:
-  explicit SharingIconView(PageActionIconView::Delegate* delegate);
+  using GetControllerCallback =
+      base::RepeatingCallback<SharingUiController*(content::WebContents*)>;
+
+  using GetBubbleCallback =
+      base::RepeatingCallback<views::BubbleDialogDelegateView*(SharingDialog*)>;
+
+  explicit SharingIconView(PageActionIconView::Delegate* delegate,
+                           GetControllerCallback get_controller,
+                           GetBubbleCallback get_bubble);
   ~SharingIconView() override;
 
   void StartLoadingAnimation();
@@ -25,23 +33,27 @@ class SharingIconView : public PageActionIconView {
   bool IsTriggerableEvent(const ui::Event& event) override;
   double WidthMultiplier() const override;
   const gfx::VectorIcon& GetVectorIconBadge() const override;
+  views::BubbleDialogDelegateView* GetBubble() const override;
   bool Update() override;
+  const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetTextForTooltipAndAccessibleName() const override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
+  SharingUiController* GetController() const;
+
   void UpdateInkDrop(bool activate);
   void UpdateOpacity();
   bool IsLoadingAnimationVisible();
-
-  // Get the supporting controller for this icon view.
-  virtual SharingUiController* GetController() const = 0;
 
  private:
   SharingUiController* last_controller_ = nullptr;
   bool loading_animation_ = false;
   bool should_show_error_ = false;
+  GetControllerCallback get_controller_callback_;
+  GetBubbleCallback get_bubble_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SharingIconView);
 };

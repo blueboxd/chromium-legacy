@@ -60,6 +60,9 @@ class WebState;
 // The current NTP view.
 - (UIView*)view;
 
+// Reloads the suggestions.
+- (void)reload;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COORDINATOR_H_

@@ -167,11 +167,11 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
   response_override_for_main_script_->url_loader_client_endpoints =
       std::move(main_script_load_params->url_loader_client_endpoints);
   response_override_for_main_script_->response_head =
-      main_script_load_params->response_head;
+      std::move(main_script_load_params->response_head);
   response_override_for_main_script_->response_body =
       std::move(main_script_load_params->response_body);
   response_override_for_main_script_->redirect_responses =
-      main_script_load_params->redirect_response_heads;
+      std::move(main_script_load_params->redirect_response_heads);
   response_override_for_main_script_->redirect_infos =
       main_script_load_params->redirect_infos;
 

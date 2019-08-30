@@ -10,12 +10,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
-declare_args() {
-  # Enables Vulkan in WebEngine (has effect only for context instances that have
-  # Vulkan loader service in the service directory).
-  web_engine_enable_vulkan = false
-}
-
 config("web_engine_implementation") {
   defines = [ "WEB_ENGINE_IMPLEMENTATION" ]
 }
@@ -54,6 +48,7 @@ repack("web_engine_pak") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/browser/tracing:resources",
+    "//gpu/command_buffer/service",
     "//mojo/public/js:resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
@@ -80,6 +75,7 @@ component("web_engine_core") {
     "//fuchsia/base",
     "//fuchsia/base:message_port",
     "//fuchsia/base:modular",
+    "//gpu/command_buffer/service",
     "//media/fuchsia/cdm/service",
     "//media/fuchsia/mojom",
     "//mojo/public/cpp/bindings",
@@ -111,6 +107,8 @@ component("web_engine_core") {
   ]
   configs += [ ":web_engine_implementation" ]
   sources = [
+    "browser/content_directory_loader_factory.cc",
+    "browser/content_directory_loader_factory.h",
     "browser/context_impl.cc",
     "browser/context_impl.h",
     "browser/cookie_manager_impl.cc",
@@ -161,9 +159,6 @@ component("web_engine_core") {
     ":*",
     "//fuchsia/runners:cast_runner_browsertests__exec",
   ]
-  if (web_engine_enable_vulkan) {
-    defines = [ "WEB_ENGINE_ENABLE_VULKAN" ]
-  }
 }
 
 executable("web_engine_exe") {
@@ -218,6 +213,7 @@ source_set("browsertest_core") {
 
 test("web_engine_browsertests") {
   sources = [
+    "browser/content_directory_browsertest.cc",
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
   ]

@@ -50,7 +50,7 @@ RevocationPolicy NoRevocationChecking() {
   policy.check_revocation = false;
   policy.networking_allowed = false;
   policy.allow_missing_info = true;
-  policy.allow_network_failure = true;
+  policy.allow_unable_to_check = true;
   return policy;
 }
 
@@ -213,15 +213,8 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
       RevocationPolicy policy;
       policy.check_revocation = true;
       policy.networking_allowed = true;
-      policy.allow_missing_info = true;
-      policy.allow_network_failure = false;
-
-      // In practice EV verification won't succeed for local anchors. For
-      // completeness though use all the strictness of EV if this is an EV
-      // attempt.
-      if (verification_type_ == VerificationType::kEV)
-        policy.allow_missing_info = false;
-
+      policy.allow_missing_info = false;
+      policy.allow_unable_to_check = false;
       return policy;
     }
 
@@ -234,7 +227,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
       policy.check_revocation = true;
       policy.networking_allowed = true;
       policy.allow_missing_info = false;
-      policy.allow_network_failure = false;
+      policy.allow_unable_to_check = false;
       return policy;
     }
 
@@ -244,7 +237,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
       policy.check_revocation = true;
       policy.networking_allowed = true;
       policy.allow_missing_info = true;
-      policy.allow_network_failure = true;
+      policy.allow_unable_to_check = true;
       return policy;
     }
 

@@ -18097,6 +18097,14 @@ Called by update_net_error_codes.py.-->
              or the account id was invalid"/>
 </enum>
 
+<enum name="EnterpriseSystemLogUploadResult">
+  <summary>Result of system log upload attempt.</summary>
+  <int value="0" label="Log upload succeeded"/>
+  <int value="1" label="Zipped log upload succeeded"/>
+  <int value="3" label="Log upload failed"/>
+  <int value="4" label="Zipped log upload failed"/>
+</enum>
+
 <enum name="EnterpriseUploadJobSuccess">
   <summary>
     Number of UploadJob retries as defined in
@@ -35006,6 +35014,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
+  <int value="-1297079591" label="EnableRemovingAllThirdPartyCookies:disabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1292615467"
       label="OmniboxSuggestionTransparencyOptions:disabled"/>
@@ -35749,6 +35758,7 @@ from previous Chrome versions.
   <int value="-297716805"
       label="CrossOriginMediaPlaybackRequiresUserGesture:disabled"/>
   <int value="-296179618" label="CookiesWithoutSameSiteMustBeSecure:enabled"/>
+  <int value="-295237704" label="EnableRemovingAllThirdPartyCookies:enabled"/>
   <int value="-290672626" label="enable-asm-wasm"/>
   <int value="-290329565" label="CrosVmCupsProxy:disabled"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
@@ -38878,6 +38888,7 @@ Called by update_use_counter_css.py.-->
   <int value="643" label="syntax"/>
   <int value="644" label="overscroll-behavior-inline"/>
   <int value="645" label="overscroll-behavior-block"/>
+  <int value="646" label="content-size"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -43500,6 +43511,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Launch id empty"/>
   <int value="4" label="AllowSetForegroundWindow call failed"/>
   <int value="5" label="Chrome process launch failed"/>
+</enum>
+
+<enum name="NotificationSchedulerActionButtonEvent">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Helpful"/>
+  <int value="2" label="Unhelpful"/>
 </enum>
 
 <enum name="NotificationSchedulerBackgroundTaskEvent">
@@ -55818,6 +55835,39 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Used, relocked"/>
 </enum>
 
+<enum name="SoftwareReporterChromePromptChannelError">
+<!-- Custom errors: (1 shiftleft 16) + error code -->
+
+  <int value="65537" label="Custom | WrongHandshakeVersion"/>
+  <int value="65538" label="Custom | RequestLengthShortRead"/>
+  <int value="65539" label="Custom | RequestShortRead"/>
+  <int value="65540" label="Custom | RequestInvalidSize"/>
+  <int value="65541" label="Custom | RequestContentInvalid"/>
+  <int value="65542" label="Custom | RequestUnknown"/>
+  <int value="65543" label="Custom | RequestUnknownField"/>
+  <int value="65544" label="Custom | UndisplayableFilePath"/>
+  <int value="65545" label="Custom | UndisplayableRegistryKey"/>
+  <int value="65546" label="Custom | UndisplayableExtension"/>
+<!-- Common errors for ReadVersion operation: (2 shiftleft 16) + Windows error -->
+
+  <int value="131181" label="ReadVersion | ERROR_BROKEN_PIPE"/>
+  <int value="131306" label="ReadVersion | ERROR_MORE_DATA"/>
+<!-- Common errors for ReadRequestLength operation: (3 shiftleft 16) + Windows error -->
+
+  <int value="196717" label="ReadRequestLength | ERROR_BROKEN_PIPE"/>
+  <int value="196842" label="ReadRequestLength | ERROR_MORE_DATA"/>
+<!-- Common errors for ReadRequest operation: (4 shiftleft 16) + Windows error -->
+
+  <int value="262253" label="ReadRequest | ERROR_BROKEN_PIPE"/>
+  <int value="262378" label="ReadRequest | ERROR_MORE_DATA"/>
+<!-- Common error for WriteResponse operation: (5 shiftleft 16) + Windows error -->
+
+  <int value="327789" label="WriteResponse | ERROR_BROKEN_PIPE"/>
+<!-- Common error for WriteResponseLength operation: (6 shiftleft 16) + Windows error -->
+
+  <int value="393325" label="WriteResponseLength | ERROR_BROKEN_PIPE"/>
+</enum>
+
 <enum name="SoftwareReporterCleanerDownloadStatus">
   <int value="0" label="Succeeded"/>
   <int value="1" label="Other failure"/>
@@ -65476,6 +65526,26 @@ Full version information for the fingerprint enum values:
   </int>
   <int value="2" label="Generally ineligible in current context">
     No URL can be sent to the suggest server at this time.
+  </int>
+</enum>
+
+<enum name="ZeroSuggestEligibleOnFocusForRemoteNoUrlOnNTP">
+  <int value="0" label="Eligible"/>
+  <int value="1" label="Ineligible: Off the Record">
+    The user is in incognito mode.
+  </int>
+  <int value="2" label="Ineligible: Suggestions disabled">
+    Suggestion mechanism is disabled by user.
+  </int>
+  <int value="3" label="Ineligible: User not authenticated">
+    User is not signed in.
+  </int>
+  <int value="4" label="Ineligible: Unsupported suggestion server">
+    User is using an unsupported search engine.
+  </int>
+  <int value="5" label="Ineligible: Not participating">
+    User is not participating in an experiment that enables RemoteNoURL
+    suggestions on the NTP.
   </int>
 </enum>
 

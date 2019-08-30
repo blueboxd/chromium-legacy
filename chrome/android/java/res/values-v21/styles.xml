@@ -17,10 +17,11 @@
     <style name="Base.Theme.Chromium" parent="Base.V21.Theme.Chromium" />
 
     <!-- Preferences -->
-    <style name="Theme.Chromium.Preferences" parent="Base.Theme.Chromium.Preferences">
+    <style name="Base.V21.Theme.Chromium.Preferences" parent="Base.Theme.Chromium.Preferences">
         <item name="alertDialogTheme">@style/Theme.Chromium.Preferences.AlertDialog</item>
-        <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>
+
+    <style name="Theme.Chromium.Preferences" parent="Base.V21.Theme.Chromium.Preferences" />
 
     <style name="Theme.Chromium.PreferenceFragment">
         <item name="android:divider">?android:attr/listDivider</item>

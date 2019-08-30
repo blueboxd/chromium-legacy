@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/length_property_functions.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
@@ -53,8 +53,7 @@ class InheritedLengthChecker
 InterpolationValue CSSLengthInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(
-      LengthInterpolationFunctions::CreateNeutralInterpolableValue());
+  return InterpolationValue(InterpolableLength::CreateNeutral());
 }
 
 InterpolationValue CSSLengthInterpolationType::MaybeConvertInitial(
@@ -63,7 +62,8 @@ InterpolationValue CSSLengthInterpolationType::MaybeConvertInitial(
   Length initial_length;
   if (!LengthPropertyFunctions::GetInitialLength(CssProperty(), initial_length))
     return nullptr;
-  return LengthInterpolationFunctions::MaybeConvertLength(initial_length, 1);
+  return InterpolationValue(
+      InterpolableLength::MaybeConvertLength(initial_length, 1));
 }
 
 InterpolationValue CSSLengthInterpolationType::MaybeConvertInherit(
@@ -81,8 +81,8 @@ InterpolationValue CSSLengthInterpolationType::MaybeConvertInherit(
     // will invalidate the interpolation's cache.
     return nullptr;
   }
-  return LengthInterpolationFunctions::MaybeConvertLength(
-      inherited_length, EffectiveZoom(*state.ParentStyle()));
+  return InterpolationValue(InterpolableLength::MaybeConvertLength(
+      inherited_length, EffectiveZoom(*state.ParentStyle())));
 }
 
 InterpolationValue CSSLengthInterpolationType::MaybeConvertValue(
@@ -95,18 +95,17 @@ InterpolationValue CSSLengthInterpolationType::MaybeConvertValue(
     if (!LengthPropertyFunctions::GetPixelsForKeyword(CssProperty(), value_id,
                                                       pixels))
       return nullptr;
-    return InterpolationValue(
-        LengthInterpolationFunctions::CreateInterpolablePixels(pixels));
+    return InterpolationValue(InterpolableLength::CreatePixels(pixels));
   }
 
-  return LengthInterpolationFunctions::MaybeConvertCSSValue(value);
+  return InterpolationValue(InterpolableLength::MaybeConvertCSSValue(value));
 }
 
 PairwiseInterpolationValue CSSLengthInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  return LengthInterpolationFunctions::MergeSingles(std::move(start),
-                                                    std::move(end));
+  return InterpolableLength::MergeSingles(std::move(start.interpolable_value),
+                                          std::move(end.interpolable_value));
 }
 
 InterpolationValue
@@ -116,26 +115,16 @@ CSSLengthInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
   if (!LengthPropertyFunctions::GetLength(CssProperty(), style,
                                           underlying_length))
     return nullptr;
-  return LengthInterpolationFunctions::MaybeConvertLength(underlying_length,
-                                                          EffectiveZoom(style));
+  return InterpolationValue(InterpolableLength::MaybeConvertLength(
+      underlying_length, EffectiveZoom(style)));
 }
 
 const CSSValue* CSSLengthInterpolationType::CreateCSSValue(
     const InterpolableValue& interpolable_value,
-    const NonInterpolableValue* non_interpolable_value,
+    const NonInterpolableValue*,
     const StyleResolverState&) const {
-  return LengthInterpolationFunctions::CreateCSSValue(
-      interpolable_value, non_interpolable_value, value_range_);
-}
-
-void CSSLengthInterpolationType::Composite(
-    UnderlyingValueOwner& underlying_value_owner,
-    double underlying_fraction,
-    const InterpolationValue& value,
-    double interpolation_fraction) const {
-  LengthInterpolationFunctions::Composite(
-      underlying_value_owner, underlying_fraction, *value.interpolable_value,
-      value.non_interpolable_value.get());
+  return To<InterpolableLength>(interpolable_value)
+      .CreateCSSValue(value_range_);
 }
 
 void CSSLengthInterpolationType::ApplyStandardPropertyValue(
@@ -146,9 +135,8 @@ void CSSLengthInterpolationType::ApplyStandardPropertyValue(
   float zoom = EffectiveZoom(style);
   CSSToLengthConversionData conversion_data = state.CssToLengthConversionData();
   conversion_data.SetZoom(zoom);
-  Length length = LengthInterpolationFunctions::CreateLength(
-      interpolable_value, non_interpolable_value, conversion_data,
-      value_range_);
+  Length length = To<InterpolableLength>(interpolable_value)
+                      .CreateLength(conversion_data, value_range_);
   if (LengthPropertyFunctions::SetLength(CssProperty(), style, length)) {
 #if DCHECK_IS_ON()
     // Assert that setting the length on ComputedStyle directly is identical to

@@ -32,7 +32,8 @@ fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryOrFail(
 }
 
 fuchsia::web::ContextPtr CreateWebContextWithDataDirectory(
-    fidl::InterfaceHandle<fuchsia::io::Directory> data_directory) {
+    fidl::InterfaceHandle<fuchsia::io::Directory> data_directory,
+    fuchsia::web::ContextFeatureFlags features) {
   auto web_context_provider = base::fuchsia::ComponentContextForCurrentProcess()
                                   ->svc()
                                   ->Connect<fuchsia::web::ContextProvider>();
@@ -44,6 +45,8 @@ fuchsia::web::ContextPtr CreateWebContextWithDataDirectory(
       base::FilePath(base::fuchsia::kServiceDirectoryPath)));
   if (data_directory)
     create_params.set_data_directory(std::move(data_directory));
+
+  create_params.set_features(features);
 
   // Set |remote_debugging_port| on the context, if set.
   if (BUILDFLAG(ENABLE_REMOTE_DEBUGGING_ON_PORT) != 0) {
@@ -66,15 +69,19 @@ fuchsia::web::ContextPtr CreateWebContextWithDataDirectory(
 }  // namespace
 
 // static
-fuchsia::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
-  return CreateWebContextWithDataDirectory(OpenDirectoryOrFail(
-      base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)));
+fuchsia::web::ContextPtr WebContentRunner::CreateDefaultWebContext(
+    fuchsia::web::ContextFeatureFlags features) {
+  return CreateWebContextWithDataDirectory(
+      OpenDirectoryOrFail(
+          base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)),
+      features);
 }
 
 // static
-fuchsia::web::ContextPtr WebContentRunner::CreateIncognitoWebContext() {
+fuchsia::web::ContextPtr WebContentRunner::CreateIncognitoWebContext(
+    fuchsia::web::ContextFeatureFlags features) {
   return CreateWebContextWithDataDirectory(
-      fidl::InterfaceHandle<fuchsia::io::Directory>());
+      fidl::InterfaceHandle<fuchsia::io::Directory>(), features);
 }
 
 WebContentRunner::WebContentRunner(sys::OutgoingDirectory* outgoing_directory,

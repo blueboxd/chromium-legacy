@@ -94,9 +94,13 @@ enum {
   DIR_PNACL_COMPONENT,              // Full path to the latest PNaCl version
                                     // (subdir of DIR_PNACL_BASE).
   FILE_WIDEVINE_CDM,                // Full path to the Widevine CDM.
-  FILE_RESOURCES_PACK,              // Full path to the .pak file containing
-                                    // binary data (e.g., html files and images
-                                    // used by internal pages).
+  FILE_RESOURCES_PACK,  // Full path to the .pak file containing binary data.
+                        // This includes data for internal pages (e.g., html
+                        // files and images), unless these resources are
+                        // purposefully split into a separate file.
+  FILE_DEV_UI_RESOURCES_PACK,  // Full path to the .pak file containing
+                               // binary data for internal pages (e.g., html
+                               // files and images).
 #if defined(OS_CHROMEOS)
   DIR_CHROMEOS_WALLPAPERS,            // Directory where downloaded chromeos
                                       // wallpapers reside.

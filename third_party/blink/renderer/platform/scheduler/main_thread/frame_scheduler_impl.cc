@@ -1207,5 +1207,9 @@ FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
   return QueueTraits().SetShouldUseVirtualTime(false);
 }
 
+void FrameSchedulerImpl::SetPausedForCooperativeScheduling(Paused paused) {
+  // TODO(keishi): Stop all task queues
+}
+
 }  // namespace scheduler
 }  // namespace blink

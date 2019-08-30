@@ -22,7 +22,7 @@ class NGInlineCursorTest : public NGLayoutTest,
  protected:
   Vector<String> ToDebugStringList(NGInlineCursor* cursor) {
     Vector<String> list;
-    while (cursor->MoveToNext())
+    for (; *cursor; cursor->MoveToNext())
       list.push_back(ToDebugString(*cursor));
     return list;
   }
@@ -98,12 +98,16 @@ TEST_P(NGInlineCursorTest, NextSkippingChildren) {
   LayoutBlockFlow* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
   NGInlineCursor cursor(*block_flow);
-  for (unsigned i = 0; i < 4; ++i)
+  for (unsigned i = 0; i < 3; ++i)
     cursor.MoveToNext();
   EXPECT_EQ("text2", ToDebugString(cursor));
   Vector<String> list;
-  while (cursor.MoveToNextSkippingChildren())
+  while (true) {
+    cursor.MoveToNextSkippingChildren();
+    if (!cursor)
+      break;
     list.push_back(ToDebugString(cursor));
+  }
   EXPECT_THAT(list, ElementsAre("#span2", "text4", "text5"));
 }
 

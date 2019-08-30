@@ -34,7 +34,7 @@ import("//testing/test.gni")
 # config (.options file) file would be generated or modified in root output
 # dir (next to test).
 template("fuzzer_test") {
-  if (!disable_libfuzzer && (use_fuzzing_engine || is_linux)) {
+  if (!disable_libfuzzer && use_fuzzing_engine) {
     assert(defined(invoker.sources), "Need sources in $target_name.")
 
     test_deps = [ "//testing/libfuzzer:libfuzzer_main" ]

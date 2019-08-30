@@ -303,8 +303,9 @@ TEST_F(SharedImageBackingFactoryAHBTest, EstimatedSize) {
   shared_image.reset();
 }
 
+// TODO(crbug/994720): Failing on Android builders.
 // Test to check that only one context can write at a time
-TEST_F(SharedImageBackingFactoryAHBTest, OnlyOneWriter) {
+TEST_F(SharedImageBackingFactoryAHBTest, DISABLED_OnlyOneWriter) {
   if (!base::AndroidHardwareBufferCompat::IsSupportAvailable())
     return;
 

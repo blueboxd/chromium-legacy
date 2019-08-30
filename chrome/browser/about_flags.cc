@@ -58,6 +58,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/browser_sync/browser_sync_switches.h"
+#include "components/browsing_data/core/features.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/contextual_search/core/browser/public.h"
@@ -4100,6 +4101,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSameSiteByDefaultCookiesName,
      flag_descriptions::kSameSiteByDefaultCookiesDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kSameSiteByDefaultCookies)},
+
+    {"enable-removing-all-third-party-cookies",
+     flag_descriptions::kEnableRemovingAllThirdPartyCookiesName,
+     flag_descriptions::kEnableRemovingAllThirdPartyCookiesDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         browsing_data::features::kEnableRemovingAllThirdPartyCookies)},
 
     {"enable-send-tab-to-self-broadcast",
      flag_descriptions::kSendTabToSelfBroadcastName,

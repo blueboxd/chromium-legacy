@@ -10,6 +10,7 @@
 #include "net/http/http_util.h"
 #include "services/network/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {

@@ -107,11 +107,7 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
     : WebContentsObserver(
           content::WebContents::FromRenderFrameHost(render_frame_host)),
       render_frame_host_(render_frame_host),
-      // TODO(https://crbug.com/846392): render_frame_host can be null because
-      // of a test, not because a VRServiceImpl can be created without it.
-      in_focused_frame_(render_frame_host
-                            ? render_frame_host->GetView()->HasFocus()
-                            : false) {
+      in_focused_frame_(render_frame_host->GetView()->HasFocus()) {
   DCHECK(render_frame_host_);
 
   runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
@@ -124,7 +120,8 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
 }
 
 // Constructor for testing.
-VRServiceImpl::VRServiceImpl() : render_frame_host_(nullptr) {
+VRServiceImpl::VRServiceImpl(util::PassKey<XRRuntimeManagerTest>)
+    : render_frame_host_(nullptr) {
   runtime_manager_ = XRRuntimeManager::GetOrCreateInstance();
   runtime_manager_->AddService(this);
 }
@@ -212,7 +209,19 @@ void VRServiceImpl::OnWebContentsFocusChanged(content::RenderWidgetHost* host,
       render_frame_host_->GetView()->GetRenderWidgetHost() != host) {
     return;
   }
-  SetInFocusedFrame(focused);
+
+  in_focused_frame_ = focused;
+  if (ListeningForActivate()) {
+    BrowserXRRuntime* immersive_runtime =
+        runtime_manager_->GetImmersiveRuntime();
+    if (immersive_runtime)
+      immersive_runtime->UpdateListeningForActivate(this);
+  }
+
+  magic_window_controllers_.ForAllPtrs(
+      [focused](device::mojom::XRSessionController* controller) {
+        controller->SetFrameDataRestricted(!focused);
+      });
 }
 
 // static
@@ -302,6 +311,14 @@ void VRServiceImpl::RequestSession(
     device::mojom::VRService::RequestSessionCallback callback) {
   DCHECK(options);
 
+  // Queue the request to get to when initialization has completed.
+  if (!initialization_complete_) {
+    pending_requests_.push_back(
+        base::BindOnce(&VRServiceImpl::RequestSession, base::Unretained(this),
+                       std::move(options), std::move(callback)));
+    return;
+  }
+
   // Check that the request satisfies secure context requirements.
   if (!IsSecureContextRequirementSatisfied()) {
     std::move(callback).Run(
@@ -324,14 +341,6 @@ void VRServiceImpl::RequestSession(
     std::move(callback).Run(
         device::mojom::RequestSessionResult::NewFailureReason(
             device::mojom::RequestSessionError::EXISTING_IMMERSIVE_SESSION));
-    return;
-  }
-
-  // Queue the request to get to when initialization has completed.
-  if (!initialization_complete_) {
-    pending_requests_.push_back(
-        base::BindOnce(&VRServiceImpl::RequestSession, base::Unretained(this),
-                       std::move(options), std::move(callback)));
     return;
   }
 
@@ -371,6 +380,10 @@ void VRServiceImpl::ShowConsentPrompt(
   DCHECK(options);
   DCHECK(runtime);
 
+#if defined(OS_WIN)
+  DCHECK(!options->environment_integration);
+#endif
+
   // WebVR did not require permissions.
   // TODO(crbug.com/968221): Address privacy requirements for inline sessions
   if (options->is_legacy_webvr) {
@@ -385,7 +398,8 @@ void VRServiceImpl::ShowConsentPrompt(
   // Skip the consent prompt if the user has already consented for this device,
   // or if consent is not needed.
   if (consent_level == XrConsentPromptLevel::kNone ||
-      IsConsentGrantedForDevice(runtime->GetId(), consent_level)) {
+      IsConsentGrantedForDevice(runtime->GetId(), consent_level) ||
+      IsXrDeviceConsentPromptDisabledForTesting()) {
     DoRequestSession(std::move(options), std::move(callback),
                      std::move(requested_features));
     return;
@@ -393,75 +407,40 @@ void VRServiceImpl::ShowConsentPrompt(
 
   // TODO(crbug.com/968233): Unify the below consent flow.
 #if defined(OS_ANDROID)
-
   if (options->environment_integration) {
 #if BUILDFLAG(ENABLE_ARCORE)
-    if (!render_frame_host_) {
-      // Reject promise.
-      std::move(callback).Run(
-          device::mojom::RequestSessionResult::NewFailureReason(
-              device::mojom::RequestSessionError::INVALID_CLIENT));
-    } else {
-      if (IsXrDeviceConsentPromptDisabledForTesting()) {
-        DoRequestSession(std::move(options), std::move(callback),
-                         std::move(requested_features));
-      } else {
-        ArCoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
-            render_frame_host_->GetProcess()->GetID(),
-            render_frame_host_->GetRoutingID(),
-            base::BindOnce(&VRServiceImpl::OnConsentResult,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                           std::move(callback), std::move(requested_features),
-                           consent_level));
-      }
-    }
+    ArCoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
+        render_frame_host_->GetProcess()->GetID(),
+        render_frame_host_->GetRoutingID(),
+        base::BindOnce(&VRServiceImpl::OnConsentResult,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                       std::move(callback), std::move(requested_features),
+                       consent_level));
+    return;
 #else
     std::move(callback).Run(nullptr);
-#endif
     return;
+#endif
   } else {
     // GVR.
-    if (!render_frame_host_) {
-      // Reject promise.
-      std::move(callback).Run(
-          device::mojom::RequestSessionResult::NewFailureReason(
-              device::mojom::RequestSessionError::INVALID_CLIENT));
-    } else {
-      if (IsXrDeviceConsentPromptDisabledForTesting()) {
-        DoRequestSession(std::move(options), std::move(callback),
-                         std::move(requested_features));
-      } else {
-        GvrConsentHelper::GetInstance()->PromptUserAndGetConsent(
-            render_frame_host_->GetProcess()->GetID(),
-            render_frame_host_->GetRoutingID(), consent_level,
-            base::BindOnce(&VRServiceImpl::OnConsentResult,
-                           weak_ptr_factory_.GetWeakPtr(), std::move(options),
-                           std::move(callback), std::move(requested_features)));
-      }
-    }
-    return;
-  }
-
-#elif defined(OS_WIN)
-
-  DCHECK(!options->environment_integration);
-  if (IsXrDeviceConsentPromptDisabledForTesting()) {
-    DoRequestSession(std::move(options), std::move(callback),
-                     std::move(requested_features));
-  } else {
-    XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
-        GetWebContents(), consent_level,
+    GvrConsentHelper::GetInstance()->PromptUserAndGetConsent(
+        render_frame_host_->GetProcess()->GetID(),
+        render_frame_host_->GetRoutingID(), consent_level,
         base::BindOnce(&VRServiceImpl::OnConsentResult,
                        weak_ptr_factory_.GetWeakPtr(), std::move(options),
                        std::move(callback), std::move(requested_features)));
+    return;
   }
+#elif defined(OS_WIN)
+  XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
+      GetWebContents(), consent_level,
+      base::BindOnce(&VRServiceImpl::OnConsentResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                     std::move(callback), std::move(requested_features)));
   return;
-
-#else
+#endif
 
   NOTREACHED();
-
-#endif
 }
 
 void VRServiceImpl::OnConsentResult(
@@ -521,12 +500,6 @@ void VRServiceImpl::DoRequestSession(
 
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARCORE)
   if (session_runtime_id == device::mojom::XRDeviceId::ARCORE_DEVICE_ID) {
-    if (!render_frame_host_) {
-      std::move(callback).Run(
-          device::mojom::RequestSessionResult::NewFailureReason(
-              device::mojom::RequestSessionError::INVALID_CLIENT));
-      return;
-    }
     runtime_options->render_process_id =
         render_frame_host_->GetProcess()->GetID();
     runtime_options->render_frame_id = render_frame_host_->GetRoutingID();
@@ -600,21 +573,6 @@ void VRServiceImpl::GetImmersiveVRDisplayInfo(
   std::move(callback).Run(nullptr);
 }
 
-void VRServiceImpl::SetInFocusedFrame(bool in_focused_frame) {
-  in_focused_frame_ = in_focused_frame;
-  if (ListeningForActivate()) {
-    BrowserXRRuntime* immersive_runtime =
-        runtime_manager_->GetImmersiveRuntime();
-    if (immersive_runtime)
-      immersive_runtime->UpdateListeningForActivate(this);
-  }
-
-  magic_window_controllers_.ForAllPtrs(
-      [&in_focused_frame](device::mojom::XRSessionController* controller) {
-        controller->SetFrameDataRestricted(!in_focused_frame);
-      });
-}
-
 void VRServiceImpl::OnExitPresent() {
   session_clients_.ForAllPtrs(
       [](device::mojom::XRSessionClient* client) { client->OnExitPresent(); });
@@ -646,14 +604,7 @@ void VRServiceImpl::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
 }
 
 content::WebContents* VRServiceImpl::GetWebContents() {
-  if (render_frame_host_ != nullptr) {
-    return content::WebContents::FromRenderFrameHost(render_frame_host_);
-  }
-
-  // We should only have a null render_frame_host_ for some unittests, for which
-  // we don't actually expect to get here.
-  NOTREACHED();
-  return nullptr;
+  return content::WebContents::FromRenderFrameHost(render_frame_host_);
 }
 
 bool VRServiceImpl::IsSecureContextRequirementSatisfied() {

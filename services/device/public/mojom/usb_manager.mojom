@@ -21,7 +21,7 @@ interface UsbDeviceManager {
 
   // Requests a device by guid.
   GetDevice(string guid, pending_receiver<UsbDevice> device_receiver,
-            UsbDeviceClient? device_client);
+            pending_remote<UsbDeviceClient>? device_client);
 
   // Check Android permissions to access the device identified by |guid|. If
   // necessary the user is prompted to grant this access. If access is granted

@@ -72,7 +72,7 @@ void SpeechRecognitionController::Start(
   msg_params->client = std::move(session_client);
   msg_params->session_request = std::move(session_request);
 
-  GetSpeechRecognizer().Start(std::move(msg_params));
+  GetSpeechRecognizer()->Start(std::move(msg_params));
 }
 
 void ProvideSpeechRecognitionTo(LocalFrame& frame) {
@@ -80,13 +80,13 @@ void ProvideSpeechRecognitionTo(LocalFrame& frame) {
       frame, SpeechRecognitionController::Create(frame));
 }
 
-mojom::blink::SpeechRecognizer&
+mojo::Remote<mojom::blink::SpeechRecognizer>&
 SpeechRecognitionController::GetSpeechRecognizer() {
   if (!speech_recognizer_) {
     GetSupplementable()->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&speech_recognizer_));
+        speech_recognizer_.BindNewPipeAndPassReceiver());
   }
-  return *speech_recognizer_;
+  return speech_recognizer_;
 }
 
 }  // namespace blink

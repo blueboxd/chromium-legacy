@@ -15,7 +15,7 @@ TestURLLoaderClient::TestURLLoaderClient() : binding_(this) {}
 TestURLLoaderClient::~TestURLLoaderClient() {}
 
 void TestURLLoaderClient::OnReceiveResponse(
-    const ResourceResponseHead& response_head) {
+    mojom::URLResponseHeadPtr response_head) {
   EXPECT_FALSE(has_received_response_);
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(has_received_completion_);
@@ -27,7 +27,7 @@ void TestURLLoaderClient::OnReceiveResponse(
 
 void TestURLLoaderClient::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& response_head) {
+    mojom::URLResponseHeadPtr response_head) {
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(response_body_.is_valid());
   EXPECT_FALSE(has_received_response_);

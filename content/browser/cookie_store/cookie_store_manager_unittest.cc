@@ -328,9 +328,8 @@ class CookieStoreManagerTest
     cookie_manager_->SetCanonicalCookie(
         cookie, "https", options,
         base::BindLambdaForTesting(
-            [&](net::CanonicalCookie::CookieInclusionStatus service_success) {
-              success = (service_success ==
-                         net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            [&](net::CanonicalCookie::CookieInclusionStatus service_status) {
+              success = service_status.IsInclude();
               run_loop.Quit();
             }));
     run_loop.Run();

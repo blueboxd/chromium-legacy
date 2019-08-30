@@ -27,7 +27,7 @@ namespace content {
 
 namespace {
 
-void TerminateServiceWorkerOnIO(
+void TerminateServiceWorkerOnCoreThread(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id) {
   if (ServiceWorkerContextCore* context = context_weak.get()) {
@@ -36,7 +36,7 @@ void TerminateServiceWorkerOnIO(
   }
 }
 
-void SetDevToolsAttachedOnIO(
+void SetDevToolsAttachedOnCoreThread(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
     bool attached) {
@@ -46,7 +46,7 @@ void SetDevToolsAttachedOnIO(
   }
 }
 
-void UpdateLoaderFactoriesOnIO(
+void UpdateLoaderFactoriesOnCoreThread(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle,
@@ -111,9 +111,9 @@ void ServiceWorkerDevToolsAgentHost::Reload() {
 }
 
 bool ServiceWorkerDevToolsAgentHost::Close() {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&TerminateServiceWorkerOnIO, context_weak_, version_id_));
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                        base::BindOnce(&TerminateServiceWorkerOnCoreThread,
+                                       context_weak_, version_id_));
   return true;
 }
 
@@ -192,9 +192,9 @@ void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
 }
 
 void ServiceWorkerDevToolsAgentHost::UpdateIsAttached(bool attached) {
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_,
-                                version_id_, attached));
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                        base::BindOnce(&SetDevToolsAttachedOnCoreThread,
+                                       context_weak_, version_id_, attached));
 }
 
 void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
@@ -211,11 +211,20 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
   auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       rph, worker_route_id_, origin,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&UpdateLoaderFactoriesOnIO, context_weak_, version_id_,
-                     std::move(script_bundle), std::move(subresource_bundle)),
-      std::move(callback));
+
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    UpdateLoaderFactoriesOnCoreThread(context_weak_, version_id_,
+                                      std::move(script_bundle),
+                                      std::move(subresource_bundle));
+    std::move(callback).Run();
+  } else {
+    base::PostTaskAndReply(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&UpdateLoaderFactoriesOnCoreThread, context_weak_,
+                       version_id_, std::move(script_bundle),
+                       std::move(subresource_bundle)),
+        std::move(callback));
+  }
 }
 
 }  // namespace content

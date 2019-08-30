@@ -225,7 +225,7 @@ void SignedExchangeCertFetcher::OnDataComplete() {
 
 // network::mojom::URLLoaderClient
 void SignedExchangeCertFetcher::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnReceiveResponse");
   if (devtools_proxy_) {
@@ -235,13 +235,13 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   }
 
   if (reporter_)
-    reporter_->set_cert_server_ip_address(head.remote_endpoint.address());
+    reporter_->set_cert_server_ip_address(head->remote_endpoint.address());
 
   // |headers| is null when loading data URL.
-  if (head.headers && head.headers->response_code() != net::HTTP_OK) {
+  if (head->headers && head->headers->response_code() != net::HTTP_OK) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_, base::StringPrintf("Invalid reponse code: %d",
-                                            head.headers->response_code()));
+                                            head->headers->response_code()));
     Abort();
     return;
   }
@@ -249,37 +249,37 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
   // "The resource at a signature's cert-url MUST have the
   // application/cert-chain+cbor content type" [spec text]
-  if (head.mime_type != kCertChainMimeType) {
+  if (head->mime_type != kCertChainMimeType) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_,
         base::StringPrintf(
             "Content type of cert-url must be application/cert-chain+cbor. "
             "Actual content type: %s",
-            head.mime_type.c_str()));
+            head->mime_type.c_str()));
     Abort();
     return;
   }
 
-  if (head.content_length > 0) {
-    if (base::checked_cast<size_t>(head.content_length) >
+  if (head->content_length > 0) {
+    if (base::checked_cast<size_t>(head->content_length) >
         g_max_cert_size_for_signed_exchange) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy_,
           base::StringPrintf("Invalid content length: %" PRIu64,
-                             head.content_length));
+                             head->content_length));
       Abort();
       return;
     }
-    body_string_.reserve(head.content_length);
+    body_string_.reserve(head->content_length);
   }
 
   UMA_HISTOGRAM_BOOLEAN("SignedExchange.CertificateFetch.CacheHit",
-                        head.was_fetched_via_cache);
+                        head->was_fetched_via_cache);
 }
 
 void SignedExchangeCertFetcher::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnReceiveRedirect");
   // Currently the cert fetcher doesn't allow any redirects.

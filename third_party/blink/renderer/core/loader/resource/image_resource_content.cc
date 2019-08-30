@@ -119,6 +119,14 @@ ImageResourceContent* ImageResourceContent::CreateLoaded(
   return content;
 }
 
+ImageResourceContent* ImageResourceContent::CreateLazyImagePlaceholder() {
+  ImageResourceContent* content = MakeGarbageCollected<ImageResourceContent>();
+  content->content_status_ = ResourceStatus::kCached;
+  content->image_ =
+      PlaceholderImage::CreateForLazyImages(content, IntSize(1, 1));
+  return content;
+}
+
 ImageResourceContent* ImageResourceContent::Fetch(FetchParameters& params,
                                                   ResourceFetcher* fetcher) {
   // TODO(hiroshige): Remove direct references to ImageResource by making

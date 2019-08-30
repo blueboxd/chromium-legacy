@@ -99,11 +99,6 @@ class DocumentLayout final {
   // TODO(kmoon): Control layout type using an option.
   void ComputeTwoUpViewLayout(const std::vector<pp::Size>& page_sizes);
 
-  // Increases the layout's total height by |height|.
-  //
-  // TODO(kmoon): Delete or make this private.
-  void EnlargeHeight(int height);
-
  private:
   // Layout of a single page.
   struct PageLayout {

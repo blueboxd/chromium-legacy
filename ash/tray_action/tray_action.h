@@ -13,10 +13,10 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ui {
-class DeviceDataManager;
 enum class StylusState;
 }  // namespace ui
 
@@ -98,7 +98,7 @@ class ASH_EXPORT TrayAction : public mojom::TrayAction,
   mojom::TrayActionClientPtr tray_action_client_;
 
   ScopedObserver<ui::DeviceDataManager, ui::InputDeviceEventObserver>
-      stylus_observer_;
+      stylus_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TrayAction);
 };

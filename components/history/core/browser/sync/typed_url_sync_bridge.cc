@@ -10,7 +10,6 @@
 #include "base/big_endian.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/history/core/browser/history_backend.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/sync_metadata_store_change_list.h"
 #include "net/base/url_util.h"
@@ -87,8 +86,7 @@ TypedURLSyncBridge::TypedURLSyncBridge(
       processing_syncer_changes_(false),
       sync_metadata_database_(sync_metadata_database),
       num_db_accesses_(0),
-      num_db_errors_(0),
-      history_backend_observer_(this) {
+      num_db_errors_(0) {
   DCHECK(history_backend_);
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }

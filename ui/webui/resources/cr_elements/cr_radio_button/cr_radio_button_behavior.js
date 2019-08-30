@@ -6,6 +6,10 @@
  * @fileoverview Behavior for cr-radio-button-like elements.
  */
 
+// clang-format off
+// #import {PaperRippleBehavior} from 'chrome://resources/polymer/v3_0/paper-behaviors/paper-ripple-behavior.js'
+// clang-format on
+
 /** @polymerBehavior */
 const CrRadioButtonBehaviorImpl = {
   properties: {
@@ -89,7 +93,7 @@ const CrRadioButtonBehaviorImpl = {
 
 
 /** @polymerBehavior */
-const CrRadioButtonBehavior = [
+/* #export */ const CrRadioButtonBehavior = [
   Polymer.PaperRippleBehavior,
   CrRadioButtonBehaviorImpl,
 ];

@@ -179,6 +179,7 @@
           <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_NAME_22" file="google_chrome/product_logo_name_22.png" />
         </if>
         <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_ENTERPRISE" file="google_chrome/product_logo_enterprise.png" />
+        <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO_ENTERPRISE_WHITE" file="google_chrome/product_logo_enterprise_white.png" />
       </if>
       <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_0" file="common/profile_avatar_generic.png" />

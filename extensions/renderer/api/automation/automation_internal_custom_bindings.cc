@@ -1445,7 +1445,8 @@ void AutomationInternalCustomBindings::StartCachingAccessibilityTrees(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         context()->web_frame()->GetTaskRunner(
             blink::TaskType::kInternalDefault);
-    message_filter_ = new AutomationMessageFilter(this, std::move(task_runner));
+    message_filter_ = base::MakeRefCounted<AutomationMessageFilter>(
+        this, std::move(task_runner));
   }
 }
 
@@ -1845,15 +1846,15 @@ void AutomationInternalCustomBindings::RouteTreeIDFunction(
 void AutomationInternalCustomBindings::RouteNodeIDFunction(
     const std::string& name,
     NodeIDFunction callback) {
-  scoped_refptr<NodeIDWrapper> wrapper = new NodeIDWrapper(this, callback);
+  auto wrapper = base::MakeRefCounted<NodeIDWrapper>(this, callback);
   RouteHandlerFunction(name, base::BindRepeating(&NodeIDWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::RouteNodeIDPlusAttributeFunction(
     const std::string& name,
     NodeIDPlusAttributeFunction callback) {
-  scoped_refptr<NodeIDPlusAttributeWrapper> wrapper =
-      new NodeIDPlusAttributeWrapper(this, callback);
+  auto wrapper =
+      base::MakeRefCounted<NodeIDPlusAttributeWrapper>(this, callback);
   RouteHandlerFunction(
       name, base::BindRepeating(&NodeIDPlusAttributeWrapper::Run, wrapper));
 }
@@ -1861,8 +1862,7 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusAttributeFunction(
 void AutomationInternalCustomBindings::RouteNodeIDPlusRangeFunction(
     const std::string& name,
     NodeIDPlusRangeFunction callback) {
-  scoped_refptr<NodeIDPlusRangeWrapper> wrapper =
-      new NodeIDPlusRangeWrapper(this, callback);
+  auto wrapper = base::MakeRefCounted<NodeIDPlusRangeWrapper>(this, callback);
   RouteHandlerFunction(
       name, base::BindRepeating(&NodeIDPlusRangeWrapper::Run, wrapper));
 }
@@ -1870,8 +1870,8 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusRangeFunction(
 void AutomationInternalCustomBindings::RouteNodeIDPlusStringBoolFunction(
     const std::string& name,
     NodeIDPlusStringBoolFunction callback) {
-  scoped_refptr<NodeIDPlusStringBoolWrapper> wrapper =
-      new NodeIDPlusStringBoolWrapper(this, callback);
+  auto wrapper =
+      base::MakeRefCounted<NodeIDPlusStringBoolWrapper>(this, callback);
   RouteHandlerFunction(
       name, base::BindRepeating(&NodeIDPlusStringBoolWrapper::Run, wrapper));
 }
@@ -1879,8 +1879,8 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusStringBoolFunction(
 void AutomationInternalCustomBindings::RouteNodeIDPlusDimensionsFunction(
     const std::string& name,
     NodeIDPlusDimensionsFunction callback) {
-  scoped_refptr<NodeIDPlusDimensionsWrapper> wrapper =
-      new NodeIDPlusDimensionsWrapper(this, callback);
+  auto wrapper =
+      base::MakeRefCounted<NodeIDPlusDimensionsWrapper>(this, callback);
   RouteHandlerFunction(
       name, base::BindRepeating(&NodeIDPlusDimensionsWrapper::Run, wrapper));
 }

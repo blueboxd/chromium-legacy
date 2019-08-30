@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Checks that background color alpha channels are preserved in forced colors mode.
-Harness: the test ran to completion.
-

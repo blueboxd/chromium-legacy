@@ -85,9 +85,17 @@ void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
   }
 }
 
-std::unique_ptr<LoginDatabase> CreateLoginDatabase(
+std::unique_ptr<LoginDatabase> CreateLoginDatabaseForProfileStorage(
     const base::FilePath& profile_path) {
-  base::FilePath login_db_file_path = profile_path.Append(kLoginDataFileName);
+  base::FilePath login_db_file_path =
+      profile_path.Append(kLoginDataForProfileFileName);
+  return std::make_unique<LoginDatabase>(login_db_file_path);
+}
+
+std::unique_ptr<LoginDatabase> CreateLoginDatabaseForAccountStorage(
+    const base::FilePath& profile_path) {
+  base::FilePath login_db_file_path =
+      profile_path.Append(kLoginDataForAccountFileName);
   return std::make_unique<LoginDatabase>(login_db_file_path);
 }
 

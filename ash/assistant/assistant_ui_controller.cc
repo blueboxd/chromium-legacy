@@ -25,6 +25,7 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "base/bind.h"
 #include "base/optional.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -152,13 +153,39 @@ void AssistantUiController::OnMicStateChanged(MicState mic_state) {
 
 void AssistantUiController::OnProactiveSuggestionsChanged(
     scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {
-  // When proactive suggestions are present, we show the associated view if it
-  // isn't showing already. If it's already showing, no action need be taken.
-  if (proactive_suggestions) {
+  const bool should_suppress_duplicates = chromeos::assistant::features::
+      IsProactiveSuggestionsSuppressDuplicatesEnabled();
+
+  // When proactive suggestions duplicate suppression is enabled, we'll need to
+  // check if a set of proactive suggestions has already been shown before
+  // showing it to the user. Per UX requirement, proactive suggestions are
+  // considered duplicates for purposes of suppression if they share the same
+  // content |description|, regardless of whether or not their respective |html|
+  // matches. Note that we only calculate the hash here if needed.
+  const size_t proactive_suggestions_hash =
+      proactive_suggestions && should_suppress_duplicates
+          ? base::FastHash(proactive_suggestions->description())
+          : static_cast<size_t>(0);
+
+  bool should_show = !!proactive_suggestions;
+  if (should_show && should_suppress_duplicates) {
+    should_show = !base::Contains(shown_proactive_suggestions_,
+                                  proactive_suggestions_hash);
+  }
+
+  // When proactive suggestions need to be shown, we show the associated view if
+  // it isn't showing already. If it's already showing, no action need be taken.
+  if (should_show) {
     if (!proactive_suggestions_view_) {
       CreateProactiveSuggestionsView();
       proactive_suggestions_view_->GetWidget()->ShowInactive();
     }
+
+    // When suppressing duplicates, we need to cache the hash for the proactive
+    // suggestions that are being shown so that we don't show them again.
+    if (should_suppress_duplicates)
+      shown_proactive_suggestions_.emplace(proactive_suggestions_hash);
+
     // The proactive suggestions widget will automatically be closed if the user
     // doesn't interact with it within a fixed interval.
     auto_close_proactive_suggestions_timer_.Start(
@@ -168,7 +195,7 @@ void AssistantUiController::OnProactiveSuggestionsChanged(
             weak_factory_.GetWeakPtr()));
     return;
   }
-  // When proactive suggestions are absent, we need to ensure that the
+  // When proactive suggestions should not be shown, we need to ensure that the
   // associated view is absent if it isn't already.
   if (proactive_suggestions_view_) {
     ResetProactiveSuggestionsView();

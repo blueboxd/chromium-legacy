@@ -512,7 +512,7 @@ void PaymentRequest::CreateNativeAppPaymentMethods() {
       ios_instrument_finder_.CreateIOSPaymentInstrumentsForMethods(
           url_payment_method_identifiers_,
           base::BindOnce(&PaymentRequest::PopulatePaymentMethodCache,
-                         base::Unretained(this)));
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PaymentRequest::PopulatePaymentMethodCache(

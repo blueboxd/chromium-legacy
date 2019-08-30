@@ -29,7 +29,7 @@ namespace network {
 
 // NOTE: when modifying this structure, also update ResourceResponse::DeepCopy
 // in resource_response.cc.
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
+struct COMPONENT_EXPORT(NETWORK_CPP) ResourceResponseInfo {
   ResourceResponseInfo();
   ResourceResponseInfo(const ResourceResponseInfo& other);
   ~ResourceResponseInfo();

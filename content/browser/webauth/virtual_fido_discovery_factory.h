@@ -70,8 +70,6 @@ class CONTENT_EXPORT VirtualFidoDiscoveryFactory
   std::unique_ptr<::device::FidoDiscoveryBase> Create(
       device::FidoTransportProtocol transport,
       ::service_manager::Connector* connector) override;
-  std::unique_ptr<::device::FidoDiscoveryBase> CreateCable(
-      std::vector<device::CableDiscoveryData> cable_data) override;
 
  protected:
   // blink::test::mojom::VirtualAuthenticatorManager:

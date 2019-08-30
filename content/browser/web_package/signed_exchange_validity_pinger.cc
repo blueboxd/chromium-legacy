@@ -108,11 +108,11 @@ void SignedExchangeValidityPinger::Start(
 SignedExchangeValidityPinger::~SignedExchangeValidityPinger() = default;
 
 void SignedExchangeValidityPinger::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {}
+    network::mojom::URLResponseHeadPtr head) {}
 
 void SignedExchangeValidityPinger::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   DCHECK(callback_);
   // Currently it doesn't support redirects, so just bail out.
   url_loader_.reset();

@@ -441,8 +441,6 @@ class Driver(object):
             # Add a delay to allow process to finish post-run hooks, such as dumping code coverage data.
             timeout_secs = self._port.get_option('driver_kill_timeout_secs')
 
-        print self._server_process
-
         if self._server_process:
             self._server_process.stop(timeout_secs)
             self._server_process = None

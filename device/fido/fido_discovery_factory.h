@@ -34,17 +34,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   FidoDiscoveryFactory();
   virtual ~FidoDiscoveryFactory();
 
-  // Instantiates a FidoDiscoveryBase for all protocols except caBLE and
-  // internal/platform.
+  // Instantiates a FidoDiscoveryBase for the given transport.
   //
   // FidoTransportProtocol::kUsbHumanInterfaceDevice requires specifying a
   // valid |connector| on Desktop, and is not valid on Android.
   virtual std::unique_ptr<FidoDiscoveryBase> Create(
       FidoTransportProtocol transport,
       ::service_manager::Connector* connector);
-  // Instantiates a FidoDiscovery for caBLE.
-  virtual std::unique_ptr<FidoDiscoveryBase> CreateCable(
-      std::vector<CableDiscoveryData> cable_data);
+
+  // set_cable_data configures caBLE obtained via a WebAuthn extension.
+  void set_cable_data(std::vector<CableDiscoveryData> cable_data);
 
 #if defined(OS_MACOSX)
   // Configures the Touch ID authenticator. Set to base::nullopt to disable it.
@@ -64,6 +63,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 #if defined(OS_MACOSX)
   base::Optional<fido::mac::AuthenticatorConfig> mac_touch_id_config_;
 #endif  // defined(OS_MACOSX)
+  base::Optional<std::vector<CableDiscoveryData>> cable_data_;
 };
 
 }  // namespace device

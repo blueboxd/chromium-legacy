@@ -45,40 +45,17 @@ void SetSuspendAnimation(
 namespace blink {
 
 OffscreenCanvasPlaceholder::~OffscreenCanvasPlaceholder() {
-  UnregisterPlaceholder();
+  UnregisterPlaceholderCanvas();
 }
 
-OffscreenCanvasPlaceholder* OffscreenCanvasPlaceholder::GetPlaceholderById(
-    unsigned placeholder_id) {
-  PlaceholderIdMap::iterator it = placeholderRegistry().find(placeholder_id);
-  if (it == placeholderRegistry().end())
-    return nullptr;
-  return it->value;
-}
-
-void OffscreenCanvasPlaceholder::RegisterPlaceholder(unsigned placeholder_id) {
-  DCHECK(!placeholderRegistry().Contains(placeholder_id));
-  DCHECK(!IsPlaceholderRegistered());
-  placeholderRegistry().insert(placeholder_id, this);
-  placeholder_id_ = placeholder_id;
-}
-
-void OffscreenCanvasPlaceholder::UnregisterPlaceholder() {
-  if (!IsPlaceholderRegistered())
-    return;
-  DCHECK(placeholderRegistry().find(placeholder_id_)->value == this);
-  placeholderRegistry().erase(placeholder_id_);
-  placeholder_id_ = kNoPlaceholderId;
-}
-
-void OffscreenCanvasPlaceholder::SetPlaceholderFrame(
+void OffscreenCanvasPlaceholder::SetOffscreenCanvasFrame(
     scoped_refptr<CanvasResource> new_frame,
     base::WeakPtr<CanvasResourceDispatcher> dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     viz::ResourceId resource_id) {
-  DCHECK(IsPlaceholderRegistered());
+  DCHECK(IsOffscreenCanvasRegistered());
   DCHECK(new_frame);
-  ReleasePlaceholderFrame();
+  ReleaseOffscreenCanvasFrame();
   placeholder_frame_ = std::move(new_frame);
   frame_dispatcher_ = std::move(dispatcher);
   frame_dispatcher_task_runner_ = std::move(task_runner);
@@ -95,8 +72,8 @@ void OffscreenCanvasPlaceholder::SetPlaceholderFrame(
   }
 }
 
-void OffscreenCanvasPlaceholder::ReleasePlaceholderFrame() {
-  DCHECK(IsPlaceholderRegistered());
+void OffscreenCanvasPlaceholder::ReleaseOffscreenCanvasFrame() {
+  DCHECK(IsOffscreenCanvasRegistered());
   if (placeholder_frame_) {
     DCHECK(frame_dispatcher_task_runner_);
     placeholder_frame_->Transfer();
@@ -142,6 +119,30 @@ void OffscreenCanvasPlaceholder::SetSuspendOffscreenCanvasAnimation(
     default:
       NOTREACHED();
   }
+}
+
+OffscreenCanvasPlaceholder*
+OffscreenCanvasPlaceholder::GetPlaceholderCanvasById(unsigned placeholder_id) {
+  PlaceholderIdMap::iterator it = placeholderRegistry().find(placeholder_id);
+  if (it == placeholderRegistry().end())
+    return nullptr;
+  return it->value;
+}
+
+void OffscreenCanvasPlaceholder::RegisterPlaceholderCanvas(
+    unsigned placeholder_id) {
+  DCHECK(!placeholderRegistry().Contains(placeholder_id));
+  DCHECK(!IsOffscreenCanvasRegistered());
+  placeholderRegistry().insert(placeholder_id, this);
+  placeholder_id_ = placeholder_id;
+}
+
+void OffscreenCanvasPlaceholder::UnregisterPlaceholderCanvas() {
+  if (!IsOffscreenCanvasRegistered())
+    return;
+  DCHECK(placeholderRegistry().find(placeholder_id_)->value == this);
+  placeholderRegistry().erase(placeholder_id_);
+  placeholder_id_ = kNoPlaceholderId;
 }
 
 bool OffscreenCanvasPlaceholder::PostSetSuspendAnimationToOffscreenCanvasThread(

@@ -222,12 +222,14 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
                 std::end(kDummyCharsData));
 
   ppapi::PdfAccessibilityLinkInfo link;
+  link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
   link.url = "www.cs.chromium.org";
   link.text_run_index = 0;
   link.text_run_count = 1;
   links_.push_back(link);
 
   ppapi::PdfAccessibilityImageInfo image;
+  image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
   image.alt_text = "Alternate text for image";
   image.text_run_index = 2;
   images_.push_back(image);
@@ -300,8 +302,7 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
             image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }
 
-// The test is failing, see: https://crbug.com/999076
-TEST_F(PdfAccessibilityTreeTest, DISABLED_TestPreviousNextOnLine) {
+TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   text_runs_.emplace_back(kFirstRunMultiLine);
   text_runs_.emplace_back(kSecondRunMultiLine);
   text_runs_.emplace_back(kThirdRunMultiLine);
@@ -310,6 +311,7 @@ TEST_F(PdfAccessibilityTreeTest, DISABLED_TestPreviousNextOnLine) {
                 std::end(kDummyCharsData));
 
   ppapi::PdfAccessibilityLinkInfo link;
+  link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
   link.url = "www.cs.chromium.org";
   link.text_run_index = 2;
   link.text_run_count = 2;
@@ -453,6 +455,7 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedLinkVector) {
                 std::end(kDummyCharsData));
 
   ppapi::PdfAccessibilityLinkInfo link;
+  link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
   // Add first link in the vector.
   link.text_run_index = 2;
   link.text_run_count = 0;
@@ -492,6 +495,7 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundLink) {
                 std::end(kDummyCharsData));
 
   ppapi::PdfAccessibilityLinkInfo link;
+  link.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
   link.text_run_index = 3;
   link.text_run_count = 0;
   links_.push_back(link);
@@ -525,6 +529,7 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedImageVector) {
                 std::end(kDummyCharsData));
 
   ppapi::PdfAccessibilityImageInfo image;
+  image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
   // Add first image to the vector.
   image.text_run_index = 1;
   images_.push_back(image);
@@ -562,6 +567,7 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundImage) {
                 std::end(kDummyCharsData));
 
   ppapi::PdfAccessibilityImageInfo image;
+  image.bounds = PP_MakeFloatRectFromXYWH(0.0f, 0.0f, 0.0f, 0.0f);
   image.text_run_index = 3;
   images_.push_back(image);
 

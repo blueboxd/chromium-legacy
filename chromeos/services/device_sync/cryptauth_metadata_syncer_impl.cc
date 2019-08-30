@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_ecies_encryptor_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
@@ -25,15 +26,17 @@ namespace {
 const cryptauthv2::KeyType kGroupKeyType = cryptauthv2::KeyType::P256;
 
 // Timeout values for asynchronous operations.
-// TODO(https://crbug.com/933656): Tune these values.
+// TODO(https://crbug.com/933656): Use async execution time metrics to tune
+// these timeout values. For now, set these timeouts to the max execution time
+// recorded by the metrics.
 constexpr base::TimeDelta kWaitingForGroupKeyCreationTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 constexpr base::TimeDelta kWaitingForLocalDeviceMetadataEncryptionTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 constexpr base::TimeDelta kWaitingForFirstSyncMetadataResponseTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 constexpr base::TimeDelta kWaitingForSecondSyncMetadataResponseTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 
 CryptAuthDeviceSyncResult::ResultCode
 SyncMetadataNetworkRequestErrorToResultCode(NetworkRequestError error) {
@@ -60,6 +63,32 @@ SyncMetadataNetworkRequestErrorToResultCode(NetworkRequestError error) {
       return CryptAuthDeviceSyncResult::ResultCode::
           kErrorSyncMetadataApiCallUnknownError;
   }
+}
+
+void RecordGroupKeyCreationMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime.GroupKeyCreation",
+      execution_time);
+}
+
+void RecordLocalDeviceMetadataEncryptionMetrics(
+    const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime."
+      "LocalDeviceMetadataEncryption",
+      execution_time);
+}
+
+void RecordFirstSyncMetadataMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime.FirstSyncMetadata",
+      execution_time);
+}
+
+void RecordSecondSyncMetadataMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.MetadataSyncer.ExecutionTime.SecondSyncMetadata",
+      execution_time);
 }
 
 }  // namespace
@@ -161,6 +190,7 @@ void CryptAuthMetadataSyncerImpl::SetState(State state) {
 
   PA_LOG(INFO) << "Transitioning from " << state_ << " to " << state;
   state_ = state;
+  last_state_change_timestamp_ = base::TimeTicks::Now();
 
   base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
@@ -178,6 +208,25 @@ void CryptAuthMetadataSyncerImpl::OnTimeout() {
   base::Optional<CryptAuthDeviceSyncResult::ResultCode> error_code =
       ResultCodeErrorFromTimeoutDuringState(state_);
   DCHECK(error_code);
+
+  base::TimeDelta execution_time =
+      base::TimeTicks::Now() - last_state_change_timestamp_;
+  switch (state_) {
+    case State::kWaitingForGroupKeyCreation:
+      RecordGroupKeyCreationMetrics(execution_time);
+      break;
+    case State::kWaitingForLocalDeviceMetadataEncryption:
+      RecordLocalDeviceMetadataEncryptionMetrics(execution_time);
+      break;
+    case State::kWaitingForFirstSyncMetadataResponse:
+      RecordFirstSyncMetadataMetrics(execution_time);
+      break;
+    case State::kWaitingForSecondSyncMetadataResponse:
+      RecordSecondSyncMetadataMetrics(execution_time);
+      break;
+    default:
+      NOTREACHED();
+  }
 
   FinishAttempt(*error_code);
 }
@@ -281,6 +330,24 @@ void CryptAuthMetadataSyncerImpl::EncryptLocalDeviceMetadata() {
           base::Unretained(this)));
 }
 
+void CryptAuthMetadataSyncerImpl::OnLocalDeviceMetadataEncrypted(
+    const base::Optional<std::string>& encrypted_metadata) {
+  DCHECK_EQ(State::kWaitingForLocalDeviceMetadataEncryption, state_);
+
+  RecordLocalDeviceMetadataEncryptionMetrics(base::TimeTicks::Now() -
+                                             last_state_change_timestamp_);
+
+  if (!encrypted_metadata) {
+    FinishAttempt(
+        CryptAuthDeviceSyncResult::ResultCode::kErrorEncryptingDeviceMetadata);
+    return;
+  }
+
+  encrypted_local_device_metadata_ = encrypted_metadata;
+
+  AttemptNextStep();
+}
+
 void CryptAuthMetadataSyncerImpl::CreateGroupKey() {
   SetState(State::kWaitingForGroupKeyCreation);
 
@@ -299,25 +366,13 @@ void CryptAuthMetadataSyncerImpl::OnGroupKeyCreated(
     const base::Optional<CryptAuthKey>& client_ephemeral_dh) {
   DCHECK_EQ(State::kWaitingForGroupKeyCreation, state_);
 
+  RecordGroupKeyCreationMetrics(base::TimeTicks::Now() -
+                                last_state_change_timestamp_);
+
   const auto it = new_keys.find(
       CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey);
   DCHECK(it != new_keys.end());
   new_group_key_ = std::make_unique<CryptAuthKey>(it->second);
-
-  AttemptNextStep();
-}
-
-void CryptAuthMetadataSyncerImpl::OnLocalDeviceMetadataEncrypted(
-    const base::Optional<std::string>& encrypted_metadata) {
-  DCHECK_EQ(State::kWaitingForLocalDeviceMetadataEncryption, state_);
-
-  if (!encrypted_metadata) {
-    FinishAttempt(
-        CryptAuthDeviceSyncResult::ResultCode::kErrorEncryptingDeviceMetadata);
-    return;
-  }
-
-  encrypted_local_device_metadata_ = encrypted_metadata;
 
   AttemptNextStep();
 }
@@ -359,8 +414,14 @@ void CryptAuthMetadataSyncerImpl::MakeSyncMetadataCall() {
 
 void CryptAuthMetadataSyncerImpl::OnSyncMetadataSuccess(
     const cryptauthv2::SyncMetadataResponse& response) {
-  DCHECK(state_ == State::kWaitingForFirstSyncMetadataResponse ||
-         state_ == State::kWaitingForSecondSyncMetadataResponse);
+  base::TimeDelta execution_time =
+      base::TimeTicks::Now() - last_state_change_timestamp_;
+  if (state_ == State::kWaitingForFirstSyncMetadataResponse)
+    RecordFirstSyncMetadataMetrics(execution_time);
+  else if (state_ == State::kWaitingForSecondSyncMetadataResponse)
+    RecordSecondSyncMetadataMetrics(execution_time);
+  else
+    NOTREACHED();
 
   sync_metadata_response_ = response;
 
@@ -369,8 +430,14 @@ void CryptAuthMetadataSyncerImpl::OnSyncMetadataSuccess(
 
 void CryptAuthMetadataSyncerImpl::OnSyncMetadataFailure(
     NetworkRequestError error) {
-  DCHECK(state_ == State::kWaitingForFirstSyncMetadataResponse ||
-         state_ == State::kWaitingForSecondSyncMetadataResponse);
+  base::TimeDelta execution_time =
+      base::TimeTicks::Now() - last_state_change_timestamp_;
+  if (state_ == State::kWaitingForFirstSyncMetadataResponse)
+    RecordFirstSyncMetadataMetrics(execution_time);
+  else if (state_ == State::kWaitingForSecondSyncMetadataResponse)
+    RecordSecondSyncMetadataMetrics(execution_time);
+  else
+    NOTREACHED();
 
   FinishAttempt(SyncMetadataNetworkRequestErrorToResultCode(error));
 }

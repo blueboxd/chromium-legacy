@@ -50,6 +50,12 @@ public interface LocationBar extends UrlBarDelegate {
     void setAutocompleteProfile(Profile profile);
 
     /**
+     * Specify whether location bar should present icons when focused.
+     * @param showIcon True if we should show the icons when the url is focused.
+     */
+    void setShowIconsWhenUrlFocused(boolean showIcon);
+
+    /**
      * Call to force the UI to update the state of various buttons based on whether or not the
      * current tab is incognito.
      */

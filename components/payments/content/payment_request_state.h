@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/payments/content/initialization_task.h"
@@ -115,7 +116,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
       const std::string& app_locale,
       autofill::PersonalDataManager* personal_data_manager,
       ContentPaymentRequestDelegate* payment_request_delegate,
-      ServiceWorkerPaymentInstrument::IdentityObserver* sw_identity_observer,
+      base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver>
+          sw_identity_observer,
       JourneyLogger* journey_logger);
   ~PaymentRequestState() override;
 
@@ -262,6 +264,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // Selects the default shipping address.
   void SelectDefaultShippingAddressAndNotifyObservers();
 
+  base::WeakPtr<PaymentRequestState> AsWeakPtr();
+
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,
   // and stores copies of them, owned by this PaymentRequestState, in
@@ -376,7 +380,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   std::vector<std::unique_ptr<PaymentInstrument>> available_instruments_;
 
   ContentPaymentRequestDelegate* payment_request_delegate_;
-  ServiceWorkerPaymentInstrument::IdentityObserver* sw_identity_observer_;
+  base::WeakPtr<ServiceWorkerPaymentInstrument::IdentityObserver>
+      sw_identity_observer_;
 
   std::unique_ptr<PaymentResponseHelper> response_helper_;
 

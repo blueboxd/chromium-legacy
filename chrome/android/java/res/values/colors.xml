@@ -172,6 +172,10 @@
     <color name="payments_section_edit_background">@color/modern_secondary_color</color>
     <color name="payments_section_chevron">#B2B2B2</color>
 
+    <!-- History Navigation UI colors -->
+    <color name="navigation_bubble_background_color">@color/default_bg_color_elev_2</color>
+    <color name="navigation_bubble_arrow">@android:color/black</color>
+
     <!-- Scrollbar colors -->
     <color name="default_scroll_thumb">@color/modern_grey_800_alpha_38</color>
 

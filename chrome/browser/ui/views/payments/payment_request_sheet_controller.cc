@@ -46,7 +46,7 @@ class DummyEvent : public ui::Event {
 class SheetView : public views::View, public views::FocusTraversable {
  public:
   explicit SheetView(
-      const base::Callback<bool()>& enter_key_accelerator_callback)
+      const base::Callback<void(bool*)>& enter_key_accelerator_callback)
       : first_focusable_(nullptr),
         focus_search_(std::make_unique<views::FocusSearch>(this, true, false)),
         enter_key_accelerator_(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)),
@@ -107,7 +107,9 @@ class SheetView : public views::View, public views::FocusTraversable {
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     if (accelerator == enter_key_accelerator_ &&
         enter_key_accelerator_callback_) {
-      return enter_key_accelerator_callback_.Run();
+      bool is_enabled = false;
+      enter_key_accelerator_callback_.Run(&is_enabled);
+      return is_enabled;
     }
     return views::View::AcceleratorPressed(accelerator);
   }
@@ -121,7 +123,7 @@ class SheetView : public views::View, public views::FocusTraversable {
   views::View* first_focusable_;
   std::unique_ptr<views::FocusSearch> focus_search_;
   ui::Accelerator enter_key_accelerator_;
-  base::Callback<bool()> enter_key_accelerator_callback_;
+  base::Callback<void(bool*)> enter_key_accelerator_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SheetView);
 };
@@ -210,8 +212,8 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
       primary_button_
           ? base::Bind(
                 &PaymentRequestSheetController::PerformPrimaryButtonAction,
-                base::Unretained(this))
-          : base::Callback<bool()>());
+                weak_ptr_factory_.GetWeakPtr())
+          : base::Callback<void(bool*)>());
 
   DialogViewID sheet_id;
   if (GetSheetId(&sheet_id))
@@ -494,14 +496,19 @@ bool PaymentRequestSheetController::DisplayDynamicBorderForHiddenContents() {
   return true;
 }
 
-bool PaymentRequestSheetController::PerformPrimaryButtonAction() {
-  // Return "true" to prevent other views from handling the event.
-  if (!dialog()->IsInteractive())
-    return true;
+void PaymentRequestSheetController::PerformPrimaryButtonAction(
+    bool* is_enabled) {
+  if (!dialog()->IsInteractive()) {
+    // Set |is_enabled| to "true" to prevent other views from handling the
+    // event.
+    *is_enabled = true;
+    return;
+  }
 
   if (primary_button_ && primary_button_->GetEnabled())
     ButtonPressed(primary_button_, DummyEvent());
-  return true;
+
+  *is_enabled = true;
 }
 
 void PaymentRequestSheetController::AddPrimaryButton(views::View* container) {

@@ -24,6 +24,7 @@ namespace device {
 
 class Dualshock4Controller;
 class HidHapticGamepad;
+class XboxHidController;
 
 // GamepadDeviceLinux represents a single gamepad device which may be accessed
 // through multiple host interfaces. Gamepad button and axis state are queried
@@ -187,6 +188,12 @@ class GamepadDeviceLinux final : public AbstractHapticGamepad {
 
   // Dualshock4 functionality, if available.
   std::unique_ptr<Dualshock4Controller> dualshock4_;
+
+  // Xbox Wireless Controller behaves like a HID gamepad when connected over
+  // Bluetooth. In this mode, haptics functionality is provided by |xbox_hid_|.
+  // When connected over USB, Xbox Wireless Controller is supported through the
+  // platform driver (xpad).
+  std::unique_ptr<XboxHidController> xbox_hid_;
 
   // A controller that uses a HID output report for vibration effects.
   std::unique_ptr<HidHapticGamepad> hid_haptics_;

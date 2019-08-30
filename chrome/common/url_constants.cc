@@ -339,6 +339,9 @@ const char kLearnMoreEnterpriseURL[] =
 const char kLinuxAppsLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_linuxapps";
 
+const char kLinuxExportImportHelpURL[] =
+    "https://support.google.com/chromebook?p=linux_backup_restore";
+
 const char kLinuxCreditsPath[] =
     "/opt/google/chrome/resources/linux_credits.html";
 

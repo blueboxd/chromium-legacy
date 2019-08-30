@@ -6,6 +6,7 @@ module network.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
+import "services/network/public/mojom/http_raw_request_response_info.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/load_timing_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
@@ -13,9 +14,6 @@ import "services/network/public/mojom/network_types.mojom";
 import "services/network/public/mojom/origin_policy_manager.mojom";
 import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "url/mojom/url.mojom";
-
-[Native]
-struct HttpRawRequestResponseInfo;
 
 struct URLResponseHead {
   // The time at which the request was made that resulted in this response.
@@ -68,7 +66,7 @@ struct URLResponseHead {
   // Actual request and response headers, as obtained from the network stack.
   // Only present if the renderer set report_raw_headers to true and had the
   // CanReadRawCookies permission.
-  HttpRawRequestResponseInfo raw_request_response_info;
+  HttpRawRequestResponseInfo? raw_request_response_info;
 
   // True if the response was delivered using SPDY.
   bool was_fetched_via_spdy = false;

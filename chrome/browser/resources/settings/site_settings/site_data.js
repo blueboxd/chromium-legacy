@@ -75,6 +75,15 @@ Polymer({
 
     /** @private */
     listBlurred_: Boolean,
+
+    /** @private */
+    enableRemovingAllThirdPartyCookies_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
+            (this.sites.length > 0);
+      }
+    },
   },
 
   /** @private {settings.LocalDataBrowserProxy} */
@@ -201,8 +210,18 @@ Polymer({
   },
 
   /** @private */
+  onCloseThirdPartyDialog_: function() {
+    this.$.confirmDeleteThirdPartyDialog.close();
+  },
+
+  /** @private */
   onConfirmDeleteDialogClosed_: function() {
     cr.ui.focusWithoutInk(assert(this.$.removeShowingSites));
+  },
+
+  /** @private */
+  onConfirmDeleteThirdPartyDialogClosed_: function() {
+    cr.ui.focusWithoutInk(assert(this.$.removeAllThirdPartyCookies));
   },
 
   /**
@@ -213,6 +232,16 @@ Polymer({
   onRemoveShowingSitesTap_: function(e) {
     e.preventDefault();
     this.$.confirmDeleteDialog.showModal();
+  },
+
+  /**
+   * Shows a dialog to confirm the deletion of cookies available
+   * in third-party contexts and associated site data.
+   * @private
+   */
+  onRemoveThirdPartyCookiesTap_: function(e) {
+    e.preventDefault();
+    this.$.confirmDeleteThirdPartyDialog.showModal();
   },
 
   /**
@@ -230,6 +259,18 @@ Polymer({
       // We just deleted all items found by the filter, let's reset the filter.
       this.fire('clear-subpage-search');
     }
+  },
+
+  /**
+   * Called when deletion of all third-party cookies and site data has been
+   * confirmed.
+   * @private
+   */
+  onConfirmThirdPartyDelete_: function() {
+    this.$.confirmDeleteThirdPartyDialog.close();
+    this.browserProxy_.removeAllThirdPartyCookies().then(() => {
+      this.updateSiteList_();
+    });
   },
 
   /**

@@ -6,6 +6,7 @@
 
 #include "content/browser/blob_storage/blob_internals_url_loader.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "storage/browser/blob/view_blob_internals_job.h"
 
 namespace content {

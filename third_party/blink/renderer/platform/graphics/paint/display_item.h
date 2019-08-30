@@ -65,6 +65,7 @@ class PLATFORM_EXPORT DisplayItem {
     kDragImage,
     kDragCaret,
     kEmptyContentForFilters,
+    kForcedColorsModeBackplate,
     kSVGImage,
     kLinkHighlight,
     kImageAreaFocusRing,

@@ -43,6 +43,11 @@ ReputationWebContentsObserver::GetSafetyTipStatusForVisibleNavigation() const {
              : security_state::SafetyTipStatus::kNone;
 }
 
+void ReputationWebContentsObserver::RegisterReputationCheckCallbackForTesting(
+    base::OnceClosure callback) {
+  reputation_check_callback_for_testing_ = std::move(callback);
+}
+
 ReputationWebContentsObserver::ReputationWebContentsObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
@@ -72,12 +77,14 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     bool user_ignored,
     const GURL& url) {
   if (safety_tip_status == security_state::SafetyTipStatus::kNone) {
+    MaybeCallReputationCheckCallback();
     return;
   }
 
   // TODO(crbug/987754): Record metrics here.
 
   if (user_ignored) {
+    MaybeCallReputationCheckCallback();
     return;
   }
   // Set this field independent of whether the feature to show the UI is
@@ -89,10 +96,18 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   last_safety_tip_navigation_entry_id_ =
       web_contents()->GetController().GetLastCommittedEntry()->GetUniqueID();
 
+  MaybeCallReputationCheckCallback();
+
   if (!base::FeatureList::IsEnabled(features::kSafetyTipUI)) {
     return;
   }
   ShowSafetyTipDialog(web_contents(), safety_tip_status, url);
+}
+
+void ReputationWebContentsObserver::MaybeCallReputationCheckCallback() {
+  if (reputation_check_callback_for_testing_.is_null())
+    return;
+  std::move(reputation_check_callback_for_testing_).Run();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ReputationWebContentsObserver)

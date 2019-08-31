@@ -3448,6 +3448,188 @@ TEST_F(HttpStreamFactoryTest, MultiIPAliases) {
              HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct())));
 }
 
+class ProcessAlternativeServicesTest : public TestWithTaskEnvironment {
+ public:
+  ProcessAlternativeServicesTest() {
+    session_params_.enable_quic = true;
+
+    session_context_.proxy_resolution_service = proxy_resolution_service_.get();
+    session_context_.host_resolver = &host_resolver_;
+    session_context_.cert_verifier = &cert_verifier_;
+    session_context_.transport_security_state = &transport_security_state_;
+    session_context_.cert_transparency_verifier = &ct_verifier_;
+    session_context_.client_socket_factory = &socket_factory_;
+    session_context_.ct_policy_enforcer = &ct_policy_enforcer_;
+    session_context_.ssl_config_service = &ssl_config_service_;
+    session_context_.http_server_properties = &http_server_properties_;
+  }
+
+ protected:
+  HttpNetworkSession::Params session_params_;
+  HttpNetworkSession::Context session_context_;
+  std::unique_ptr<HttpNetworkSession> session_;
+  HttpServerProperties http_server_properties_;
+
+ private:
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_ =
+      ProxyResolutionService::CreateDirect();
+  SSLConfigServiceDefaults ssl_config_service_;
+  MockClientSocketFactory socket_factory_;
+  MockHostResolver host_resolver_;
+  MockCertVerifier cert_verifier_;
+  TransportSecurityState transport_security_state_;
+  MultiLogCTVerifier ct_verifier_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
+};
+
+TEST_F(ProcessAlternativeServicesTest, ProcessEmptyAltSvc) {
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin;
+  NetworkIsolationKey network_isolation_key;
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  EXPECT_TRUE(alternatives.empty());
+}
+
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
+  ;
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+
+  http_server_properties_.SetAlternativeServices(
+      origin, network_isolation_key,
+      {AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          {kProtoQUIC, "", 443},
+          base::Time::Now() + base::TimeDelta::FromSeconds(30),
+          quic::AllSupportedVersions())});
+
+  EXPECT_FALSE(http_server_properties_
+                   .GetAlternativeServiceInfos(origin, network_isolation_key)
+                   .empty());
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader("alt-svc: clear");
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  EXPECT_TRUE(alternatives.empty());
+}
+
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
+  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
+
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader("alt-svc: quic=\":443\"; v=\"99,48,47,46,43,39\"");
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  ASSERT_EQ(1u, alternatives.size());
+  EXPECT_EQ(kProtoQUIC, alternatives[0].protocol());
+  EXPECT_EQ(HostPortPair("example.com", 443), alternatives[0].host_port_pair());
+  EXPECT_EQ(quic::AllSupportedVersions().size(),
+            alternatives[0].advertised_versions().size());
+  for (quic::ParsedQuicVersion version : quic::AllSupportedVersions()) {
+    EXPECT_TRUE(base::Contains(alternatives[0].advertised_versions(), version))
+        << version;
+  }
+}
+
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
+  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
+
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader(
+      "alt-svc: "
+      "h3-Q099=\":443\",h3-Q048=\":443\",h3-Q047=\":443\",h3-Q043=\":443\",h3-"
+      "Q039=\":443\"");
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  quic::ParsedQuicVersionVector versions = {
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_99},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_48},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_47},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_43},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_39},
+  };
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  ASSERT_EQ(versions.size(), alternatives.size());
+  for (size_t i = 0; i < alternatives.size(); ++i) {
+    EXPECT_EQ(kProtoQUIC, alternatives[i].protocol());
+    EXPECT_EQ(HostPortPair("example.com", 443),
+              alternatives[i].host_port_pair());
+    EXPECT_EQ(1u, alternatives[i].advertised_versions().size());
+    EXPECT_EQ(versions[i], alternatives[i].advertised_versions()[0]);
+  }
+}
+
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcHttp2) {
+  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
+
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader("alt-svc: h2=\"other.example.com:443\"");
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  ASSERT_EQ(1u, alternatives.size());
+  EXPECT_EQ(kProtoHTTP2, alternatives[0].protocol());
+  EXPECT_EQ(HostPortPair("other.example.com", 443),
+            alternatives[0].host_port_pair());
+  EXPECT_EQ(0u, alternatives[0].advertised_versions().size());
+}
+
 }  // namespace
 
 }  // namespace net

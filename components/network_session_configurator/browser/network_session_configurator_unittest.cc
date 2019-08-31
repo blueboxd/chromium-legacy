@@ -508,6 +508,19 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
   EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
 }
 
+TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParamsAlpn) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["quic_version"] = "h3-T048";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  quic::ParsedQuicVersionVector supported_versions = {
+      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_48}};
+  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
+}
+
 TEST_F(NetworkSessionConfiguratorTest,
        MultipleQuicVersionFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
@@ -701,6 +714,18 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersion) {
     EXPECT_EQ(version,
               params_.quic_params.supported_versions[0].transport_version);
   }
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicVersionAlpn) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(switches::kQuicVersion, "h3-T048");
+
+  ParseCommandLineAndFieldTrials(command_line);
+
+  quic::ParsedQuicVersionVector supported_versions = {
+      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_48}};
+  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn) {

@@ -37,7 +37,10 @@ class ReputationService : public KeyedService {
 
   // Calculate the overall reputation status of the given URL, and
   // asynchronously call |callback| with the results. See
-  // ReputationCheckCallback above for details on what's returned.
+  // ReputationCheckCallback above for details on what's returned. |callback|
+  // will be called regardless of whether |url| is flagged or
+  // not. (Specifically, |callback| will be called with SafetyTipStatus::kNone
+  // if the url is not flagged).
   void GetReputationStatus(const GURL& url, ReputationCheckCallback callback);
 
   // Tells the service that the user has explicitly ignored the warning.

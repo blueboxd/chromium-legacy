@@ -22,7 +22,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -34,7 +34,6 @@ using base::BindLambdaForTesting;
 using base::Optional;
 using base::TimeDelta;
 using blink::mojom::SmsReceiver;
-using blink::mojom::SmsReceiverPtr;
 using blink::mojom::SmsStatus;
 using std::string;
 using ::testing::_;
@@ -55,7 +54,7 @@ const char kTestUrl[] = "https://www.google.com";
 
 // Service encapsulates a SmsService endpoint, with all of its dependencies
 // mocked out (and the common plumbing needed to inject them), and a
-// SmsReceiverPtr endpoint that tests can use to make requests.
+// mojo::Remote<SmsReceiver> endpoint that tests can use to make requests.
 // It exposes some common methods, like MakeRequest and NotifyReceive, but it
 // also exposes the low level mocks that enables tests to set expectations and
 // control the testing environment.
@@ -65,9 +64,9 @@ class Service {
     WebContentsImpl* web_contents_impl =
         reinterpret_cast<WebContentsImpl*>(web_contents);
     web_contents_impl->SetDelegate(&delegate_);
-    service_ = std::make_unique<SmsService>(&provider_, origin,
-                                            web_contents->GetMainFrame(),
-                                            mojo::MakeRequest(&service_ptr_));
+    service_ = std::make_unique<SmsService>(
+        &provider_, origin, web_contents->GetMainFrame(),
+        service_remote_.BindNewPipeAndPassReceiver());
   }
 
   Service(WebContents* web_contents)
@@ -93,7 +92,7 @@ class Service {
   }
 
   void MakeRequest(TimeDelta timeout, SmsReceiver::ReceiveCallback callback) {
-    service_ptr_->Receive(timeout, std::move(callback));
+    service_remote_->Receive(timeout, std::move(callback));
   }
 
   void NotifyReceive(const GURL& url, const string& message) {
@@ -103,7 +102,7 @@ class Service {
  private:
   NiceMock<MockSmsWebContentsDelegate> delegate_;
   NiceMock<MockSmsProvider> provider_;
-  blink::mojom::SmsReceiverPtr service_ptr_;
+  mojo::Remote<blink::mojom::SmsReceiver> service_remote_;
   std::unique_ptr<SmsService> service_;
 };
 
@@ -353,8 +352,9 @@ TEST_F(SmsServiceTest, CleansUp) {
   web_contents_impl->SetDelegate(&delegate);
 
   NiceMock<MockSmsProvider> provider;
-  blink::mojom::SmsReceiverPtr service_ptr;
-  SmsService::Create(&provider, main_rfh(), mojo::MakeRequest(&service_ptr));
+  mojo::Remote<blink::mojom::SmsReceiver> service;
+  SmsService::Create(&provider, main_rfh(),
+                     service.BindNewPipeAndPassReceiver());
 
   base::RunLoop navigate;
 
@@ -364,7 +364,7 @@ TEST_F(SmsServiceTest, CleansUp) {
 
   base::RunLoop reload;
 
-  service_ptr->Receive(
+  service->Receive(
       base::TimeDelta::FromSeconds(10),
       base::BindLambdaForTesting(
           [&reload](SmsStatus status, const base::Optional<std::string>& sms) {

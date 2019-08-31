@@ -278,7 +278,7 @@ crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/sh
 crbug.com/angleproject/2909 [ win nvidia vulkan passthrough ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
 crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-attachment-formats.html [ Failure ]
 crbug.com/angleproject/2722 [ win nvidia vulkan passthrough ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
-crbug.com/angleproject/2987 [ win7 nvidia vulkan passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
+crbug.com/angleproject/3883 [ win nvidia vulkan passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2722 [ win amd vulkan passthrough ] conformance/rendering/clipping-wide-points.html [ Failure ]

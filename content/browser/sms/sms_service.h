@@ -15,7 +15,7 @@
 #include "content/browser/sms/sms_provider.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "url/origin.h"
 
@@ -36,13 +36,15 @@ class CONTENT_EXPORT SmsService
  public:
   static void Create(SmsProvider*,
                      RenderFrameHost*,
-                     blink::mojom::SmsReceiverRequest);
+                     mojo::PendingReceiver<blink::mojom::SmsReceiver>);
 
-  SmsService(SmsProvider*, RenderFrameHost*, blink::mojom::SmsReceiverRequest);
+  SmsService(SmsProvider*,
+             RenderFrameHost*,
+             mojo::PendingReceiver<blink::mojom::SmsReceiver>);
   SmsService(SmsProvider*,
              const url::Origin&,
              RenderFrameHost*,
-             blink::mojom::SmsReceiverRequest);
+             mojo::PendingReceiver<blink::mojom::SmsReceiver>);
   ~SmsService() override;
 
   // content::SmsProvider::Observer:

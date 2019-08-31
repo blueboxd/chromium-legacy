@@ -237,6 +237,15 @@ TEST_F(DataOfferTest, ReceiveString) {
   data.SetString(base::ASCIIToUTF16("Test data"));
   data_offer.SetDropData(&file_helper, data);
 
+  base::ScopedFD read_pipe;
+  base::ScopedFD write_pipe;
+  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
+
+  data_offer.Receive("text/plain", std::move(write_pipe));
+  std::string result;
+  ASSERT_TRUE(ReadString(std::move(read_pipe), &result));
+  EXPECT_EQ("Test data", result);
+
   base::ScopedFD read_pipe_16;
   base::ScopedFD write_pipe_16;
   ASSERT_TRUE(base::CreatePipe(&read_pipe_16, &write_pipe_16));

@@ -20,21 +20,23 @@ using blink::mojom::SmsStatus;
 
 namespace content {
 
-SmsService::SmsService(SmsProvider* provider,
-                       const url::Origin& origin,
-                       RenderFrameHost* host,
-                       blink::mojom::SmsReceiverRequest request)
-    : FrameServiceBase(host, std::move(request)),
+SmsService::SmsService(
+    SmsProvider* provider,
+    const url::Origin& origin,
+    RenderFrameHost* host,
+    mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
+    : FrameServiceBase(host, std::move(receiver)),
       sms_provider_(provider),
       origin_(origin) {}
 
-SmsService::SmsService(SmsProvider* provider,
-                       RenderFrameHost* host,
-                       blink::mojom::SmsReceiverRequest request)
+SmsService::SmsService(
+    SmsProvider* provider,
+    RenderFrameHost* host,
+    mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
     : SmsService(provider,
                  host->GetLastCommittedOrigin(),
                  host,
-                 std::move(request)) {}
+                 std::move(receiver)) {}
 
 SmsService::~SmsService() {
   if (callback_)
@@ -42,15 +44,16 @@ SmsService::~SmsService() {
 }
 
 // static
-void SmsService::Create(SmsProvider* provider,
-                        RenderFrameHost* host,
-                        blink::mojom::SmsReceiverRequest request) {
+void SmsService::Create(
+    SmsProvider* provider,
+    RenderFrameHost* host,
+    mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
   DCHECK(host);
 
   // SmsService owns itself. It will self-destruct when a mojo interface
   // error occurs, the render frame host is deleted, or the render frame host
   // navigates to a new document.
-  new SmsService(provider, host, std::move(request));
+  new SmsService(provider, host, std::move(receiver));
 }
 
 void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {

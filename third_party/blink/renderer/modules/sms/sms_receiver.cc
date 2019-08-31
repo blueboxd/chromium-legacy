@@ -65,8 +65,8 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
 
   if (!service_) {
     GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&service_, task_runner));
-    service_.set_connection_error_handler(WTF::Bind(
+        service_.BindNewPipeAndPassReceiver(task_runner));
+    service_.set_disconnect_handler(WTF::Bind(
         &SMSReceiver::OnSMSReceiverConnectionError, WrapWeakPersistent(this)));
   }
 

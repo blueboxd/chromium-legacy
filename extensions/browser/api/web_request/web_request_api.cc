@@ -712,10 +712,9 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
               browser_context_));
   WebRequestProxyingURLLoaderFactory::StartProxying(
       browser_context, is_navigation ? -1 : render_process_id,
-      type == URLLoaderFactoryType::kDownload, request_id_generator_,
-      std::move(navigation_ui_data), std::move(proxied_receiver),
-      std::move(target_factory_info), std::move(header_client_receiver),
-      proxies_.get());
+      request_id_generator_, std::move(navigation_ui_data),
+      std::move(proxied_receiver), std::move(target_factory_info),
+      std::move(header_client_receiver), proxies_.get(), type);
   return true;
 }
 

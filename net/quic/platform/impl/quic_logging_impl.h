@@ -68,6 +68,7 @@
 #endif
 
 #define QUIC_PREDICT_FALSE_IMPL(x) x
+#define QUIC_PREDICT_TRUE_IMPL(x) x
 
 #define QUIC_NOTREACHED_IMPL() NOTREACHED()
 

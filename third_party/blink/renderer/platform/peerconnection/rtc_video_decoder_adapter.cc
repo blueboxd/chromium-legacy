@@ -28,7 +28,6 @@
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
-#include "third_party/blink/public/platform/modules/peerconnection/web_rtc_video_frame_adapter_factory.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_utils.h"
@@ -121,12 +120,6 @@ void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
 }
 
 }  // namespace
-
-std::unique_ptr<webrtc::VideoDecoder> CreateRTCVideoDecoderAdapter(
-    media::GpuVideoAcceleratorFactories* gpu_factories,
-    const webrtc::SdpVideoFormat& format) {
-  return RTCVideoDecoderAdapter::Create(gpu_factories, format);
-}
 
 // static
 std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(

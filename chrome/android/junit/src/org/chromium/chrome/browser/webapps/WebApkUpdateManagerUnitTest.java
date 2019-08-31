@@ -896,6 +896,17 @@ public class WebApkUpdateManagerUnitTest {
         assertTrue(checkUpdateNeededForFetchedManifest(fetchedV1ShareTarget, oldNoShareTarget));
     }
 
+    /** Test that an upgrade is requested when the Web Manifest 'scope' changes. */
+    @Test
+    public void testManifestScopeChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        // webapk_installer.cc sets the scope to the default scope if the scope is empty.
+        oldData.scopeUrl = "/scope1/";
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.scopeUrl = "/scope2/";
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
     /**
      * Test that an upgrade is not requested when the Web Manifest did not change and the Web
      * Manifest scope is empty.
@@ -1039,6 +1050,62 @@ public class WebApkUpdateManagerUnitTest {
         assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));
     }
 
+    /** Test that an upgrade is requested when the Web Manifest 'short_name' changes. */
+    @Test
+    public void testManifestShortNameChangedShouldUpgrade() {
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.shortName = SHORT_NAME + "2";
+        assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'name' changes. */
+    @Test
+    public void testManifestNameChangedShouldUpgrade() {
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.name = NAME + "2";
+        assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'display' changes. */
+    @Test
+    public void testManifestDisplayModeChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.displayMode = WebDisplayMode.STANDALONE;
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.displayMode = WebDisplayMode.FULLSCREEN;
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'orientation' changes. */
+    @Test
+    public void testManifestOrientationChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.orientation = ScreenOrientationValues.LANDSCAPE;
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.orientation = ScreenOrientationValues.PORTRAIT;
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'theme_color' changes. */
+    @Test
+    public void testManifestThemeColorChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.themeColor = 1L;
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.themeColor = 2L;
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'background_color' changes. */
+    @Test
+    public void testManifestBackgroundColorChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.backgroundColor = 1L;
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.backgroundColor = 2L;
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
     /**
      * Test that an upgrade is not requested if the AndroidManifest does not have a valid background
      * color and the default background color in the WebAPK's resources is different than
@@ -1046,7 +1113,7 @@ public class WebApkUpdateManagerUnitTest {
      * {@link SplashLayout#getDefaultBackgroundColor()} in a new Chrome version).
      */
     @Test
-    public void testDefaultBackgroundColorHasChangedShouldUpgrade() {
+    public void testDefaultBackgroundColorHasChangedShouldNotUpgrade() {
         int oldDefaultBackgroundColor = 3;
         int splashLayoutDefaultBackgroundColor =
                 SplashLayout.getDefaultBackgroundColor(RuntimeEnvironment.application);
@@ -1061,6 +1128,16 @@ public class WebApkUpdateManagerUnitTest {
         fetchedManifestData.defaultBackgroundColor = splashLayoutDefaultBackgroundColor;
 
         assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'start_url' changes. */
+    @Test
+    public void testManifestStartUrlChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.startUrl = "/old_start_url.html";
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.startUrl = "/new_start_url.html";
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
     }
 
     /**

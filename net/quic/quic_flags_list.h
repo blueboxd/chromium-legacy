@@ -182,7 +182,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 
 // If true, enable QUIC version 48.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_48_2, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_48_2, true)
 
 // If true, disable QUIC version 39.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)

@@ -117,7 +117,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   // Trigger the UpdateCheckType::kAllScriptsBeforeStartWorker type check if
   // ServiceWorkerImportedScriptUpdateCheck is enabled.
   void TriggerUpdateCheckInBrowser(
-      ServiceWorkerUpdateChecker::UpdateStatusCallback callback);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   // When ServiceWorkerImportedScriptUpdateCheck is enabled, returns
   // UpdateCheckType::kAllScriptsBeforeStartWorker, otherwise, returns

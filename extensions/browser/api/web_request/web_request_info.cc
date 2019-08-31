@@ -161,7 +161,8 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
     int32_t routing_id,
     const network::ResourceRequest& request,
     bool is_download,
-    bool is_async)
+    bool is_async,
+    bool is_service_worker_script)
     : id(request_id),
       url(request.url),
       site_for_cookies(request.site_for_cookies),
@@ -173,7 +174,8 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
       initiator(request.request_initiator),
       type(static_cast<content::ResourceType>(request.resource_type)),
       is_async(is_async),
-      extra_request_headers(request.headers) {
+      extra_request_headers(request.headers),
+      is_service_worker_script(is_service_worker_script) {
   if (url.SchemeIsWSOrWSS())
     web_request_type = WebRequestResourceType::WEB_SOCKET;
   else if (is_download)
@@ -236,7 +238,8 @@ WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
       is_web_view(params.is_web_view),
       web_view_instance_id(params.web_view_instance_id),
       web_view_rules_registry_id(params.web_view_rules_registry_id),
-      web_view_embedder_process_id(params.web_view_embedder_process_id) {}
+      web_view_embedder_process_id(params.web_view_embedder_process_id),
+      is_service_worker_script(params.is_service_worker_script) {}
 
 WebRequestInfo::~WebRequestInfo() = default;
 

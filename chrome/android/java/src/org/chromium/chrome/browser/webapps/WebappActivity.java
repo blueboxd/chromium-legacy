@@ -159,7 +159,7 @@ public class WebappActivity extends SingleTabActivity {
 
         super.onNewIntent(intent);
 
-        WebappInfo newWebappInfo = popWebappInfo(WebappInfo.idFromIntent(intent));
+        WebappInfo newWebappInfo = popWebappInfo(WebappIntentDataProvider.idFromIntent(intent));
         if (newWebappInfo == null) newWebappInfo = createWebappInfo(intent);
 
         if (newWebappInfo == null) {
@@ -263,7 +263,7 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void performPreInflationStartup() {
         Intent intent = getIntent();
-        String id = WebappInfo.idFromIntent(intent);
+        String id = WebappIntentDataProvider.idFromIntent(intent);
         WebappInfo info = popWebappInfo(id);
         // When WebappActivity is killed by the Android OS, and an entry stays in "Android Recents"
         // (The user does not swipe it away), when WebappActivity is relaunched it is relaunched

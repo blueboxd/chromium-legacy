@@ -115,8 +115,8 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
 
   void Load(CanonicalCookieVector* cookies) {
     EXPECT_FALSE(loaded_event_.IsSignaled());
-    store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                            base::Unretained(this)),
+    store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
+                                base::Unretained(this)),
                  net_log_.bound());
     loaded_event_.Wait();
     cookies->swap(cookies_);
@@ -126,7 +126,7 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     store_->Flush(
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
+        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
     event.Wait();
   }
 
@@ -323,15 +323,15 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
-  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)),
+  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
+                              base::Unretained(this)),
                NetLogWithSource());
   t += base::TimeDelta::FromMicroseconds(10);
   AddCookieWithExpiration("A", "B", "c.com", "/", t, base::Time());
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   store_->Flush(
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
 
   // Now the DB-thread queue contains:
   // (active:)
@@ -352,8 +352,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   store_ = new SQLitePersistentCookieStore(
       temp_dir_.GetPath().Append(kCookieFilename), client_task_runner_,
       background_task_runner_, true, nullptr);
-  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)),
+  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
+                              base::Unretained(this)),
                NetLogWithSource());
   loaded_event_.Wait();
   ASSERT_EQ(4u, cookies_.size());
@@ -389,14 +389,15 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
   BoundTestNetLog net_log;
-  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)),
+  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
+                              base::Unretained(this)),
                net_log.bound());
   base::RunLoop run_loop;
   net_log.SetObserverCaptureMode(NetLogCaptureMode::kDefault);
   store_->LoadCookiesForKey(
-      "aaa.com", base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
-                            base::Unretained(this), run_loop.QuitClosure()));
+      "aaa.com",
+      base::BindOnce(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
+                     base::Unretained(this), run_loop.QuitClosure()));
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));

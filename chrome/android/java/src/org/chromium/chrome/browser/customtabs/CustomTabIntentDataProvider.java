@@ -187,6 +187,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             + "To make locally-built Chrome a first-party app, sign with release-test "
             + "signing keys and run on userdebug devices. See use_signing_keys GN arg.";
 
+    private final Intent mIntent;
     private final CustomTabsSessionToken mSession;
     private final boolean mIsTrustedIntent;
     private final Intent mKeepAliveServiceIntent;
@@ -270,8 +271,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      * CustomTabIntentDataProvider object must be created.
      */
     public CustomTabIntentDataProvider(Intent intent, Context context, int colorScheme) {
-        super(intent);
         if (intent == null) assert false;
+        mIntent = intent;
 
         mSession = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         mIsTrustedIntent = IntentHandler.notSecureIsIntentChromeOrFirstParty(intent);
@@ -626,6 +627,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
 
         return url;
+    }
+
+    @Override
+    @Nullable
+    public Intent getIntent() {
+        return mIntent;
     }
 
     @Override

@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/callback_forward.h"
 #include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
 #include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "components/security_state/core/security_state.h"
@@ -41,6 +42,10 @@ class ReputationWebContentsObserver
   security_state::SafetyTipStatus GetSafetyTipStatusForVisibleNavigation()
       const;
 
+  // Allows tests to register a callback to be called when the next reputation
+  // check finishes.
+  void RegisterReputationCheckCallbackForTesting(base::OnceClosure callback);
+
  private:
   friend class content::WebContentsUserData<ReputationWebContentsObserver>;
 
@@ -56,6 +61,10 @@ class ReputationWebContentsObserver
       bool user_ignored,
       const GURL& url);
 
+  // A helper method that calls and resets
+  // |reputation_check_callback_for_testing_| if it is set.
+  void MaybeCallReputationCheckCallback();
+
   Profile* profile_;
   // Used to cache the last safety tip type (and associated navigation entry ID)
   // so that Page Info can fetch this information without performing a
@@ -64,6 +73,8 @@ class ReputationWebContentsObserver
   security_state::SafetyTipStatus last_navigation_safety_tip_status_ =
       security_state::SafetyTipStatus::kNone;
   int last_safety_tip_navigation_entry_id_ = 0;
+
+  base::OnceClosure reputation_check_callback_for_testing_;
 
   base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

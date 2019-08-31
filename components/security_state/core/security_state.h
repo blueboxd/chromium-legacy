@@ -210,6 +210,10 @@ bool IsSslCertificateValid(security_state::SecurityLevel security_level);
 std::string GetSecurityLevelHistogramName(
     const std::string& prefix, security_state::SecurityLevel level);
 
+// Returns the given prefix suffixed with a dot and the given Safety Tip status.
+std::string GetSafetyTipHistogramName(const std::string& prefix,
+                                      SafetyTipStatus safety_tip_status);
+
 bool IsSHA1InChain(const VisibleSecurityState& visible_security_state);
 
 }  // namespace security_state

@@ -1920,6 +1920,91 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> ServiceWorkerContextWrapper::
   return factory_bundle;
 }
 
+void ServiceWorkerContextWrapper::GetLoaderFactoryForUpdateCheck(
+    const GURL& scope,
+    base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
+        callback) {
+  DCHECK_CURRENTLY_ON(GetCoreThreadId());
+
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI,
+          this, scope,
+          base::BindOnce(
+              &ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck,
+              this, std::move(callback))));
+}
+
+void ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI(
+    const GURL& scope,
+    base::OnceCallback<
+        void(mojo::PendingRemote<network::mojom::URLLoaderFactory>,
+             mojo::PendingReceiver<network::mojom::URLLoaderFactory>,
+             bool)> setup_complete_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> remote;
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver =
+      remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+      default_header_client;
+  bool bypass_redirect_checks = false;
+
+  if (storage_partition_) {
+    GetContentClient()->browser()->WillCreateURLLoaderFactory(
+        storage_partition_->browser_context(), /*frame=*/nullptr,
+        ChildProcessHost::kInvalidUniqueID,
+        ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
+        url::Origin::Create(scope), &pending_receiver, &default_header_client,
+        &bypass_redirect_checks);
+  }
+
+  RunOrPostTaskOnThread(
+      FROM_HERE, GetCoreThreadId(),
+      base::BindOnce(std::move(setup_complete_callback), std::move(remote),
+                     std::move(pending_receiver), bypass_redirect_checks));
+}
+
+void ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck(
+    base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
+        callback,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> remote,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
+    bool bypass_redirect_checks) {
+  DCHECK_CURRENTLY_ON(GetCoreThreadId());
+
+  // Set up a Mojo connection to the network loader factory.
+  if (IsServiceWorkerOnUIEnabled()) {
+    if (!storage_partition_) {
+      std::move(callback).Run(nullptr);
+      return;
+    }
+    scoped_refptr<network::SharedURLLoaderFactory> network_factory =
+        storage_partition_->GetURLLoaderFactoryForBrowserProcess();
+    network_factory->Clone(std::move(pending_receiver));
+  } else {
+    context()->loader_factory_getter()->CloneNetworkFactory(
+        std::move(pending_receiver));
+  }
+
+  // Clone context()->loader_factory_bundle_for_update_check() and set up the
+  // default factory.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+      loader_factory_bundle_info =
+          context()->loader_factory_bundle_for_update_check()->Clone();
+  static_cast<blink::URLLoaderFactoryBundleInfo*>(
+      loader_factory_bundle_info.get())
+      ->pending_default_factory() = std::move(remote);
+  static_cast<blink::URLLoaderFactoryBundleInfo*>(
+      loader_factory_bundle_info.get())
+      ->set_bypass_redirect_checks(bypass_redirect_checks);
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory =
+      network::SharedURLLoaderFactory::Create(
+          std::move(loader_factory_bundle_info));
+  std::move(callback).Run(std::move(loader_factory));
+}
+
 bool ServiceWorkerContextWrapper::HasRegistrationForOrigin(
     const GURL& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

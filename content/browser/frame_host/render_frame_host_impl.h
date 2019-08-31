@@ -1520,7 +1520,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
 
-  void BindSmsReceiverRequest(blink::mojom::SmsReceiverRequest request);
+  void BindSmsReceiverReceiver(
+      mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,

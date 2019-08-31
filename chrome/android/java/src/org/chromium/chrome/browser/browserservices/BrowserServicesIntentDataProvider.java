@@ -19,6 +19,8 @@ import androidx.browser.trusted.sharing.ShareData;
 import androidx.browser.trusted.sharing.ShareTarget;
 
 import org.chromium.chrome.browser.customtabs.CustomButtonParams;
+import org.chromium.chrome.browser.webapps.WebApkExtras;
+import org.chromium.chrome.browser.webapps.WebappExtras;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -46,19 +48,12 @@ public class BrowserServicesIntentDataProvider {
         int OFFLINE_PAGE = 6;
     }
 
-    private final Intent mIntent;
-
-    public BrowserServicesIntentDataProvider(Intent intent) {
-        mIntent = intent;
-    }
-
     /**
      * @return the Intent this instance was created with.
-     *
-     * Not final so that it can be mocked in JUnit tests.
      */
+    @Nullable
     public Intent getIntent() {
-        return mIntent;
+        return null;
     }
 
     /**
@@ -381,6 +376,22 @@ public class BrowserServicesIntentDataProvider {
      */
     @Nullable
     public ShareData getShareData() {
+        return null;
+    }
+
+    /**
+     * Returns {@link WebappExtras} if the intent targets a webapp, and null otherwise.
+     */
+    @Nullable
+    public WebappExtras getWebappExtras() {
+        return null;
+    }
+
+    /**
+     * Returns {@link WebApkExtras} if the intent targets a WebAPK, and null otherwise.
+     */
+    @Nullable
+    public WebApkExtras getWebApkExtras() {
         return null;
     }
 

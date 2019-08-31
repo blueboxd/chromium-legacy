@@ -66,11 +66,19 @@ SecurityStatePageLoadMetricsObserver::GetEngagementFinalHistogramNameForTesting(
 }
 
 // static
-std::string
-SecurityStatePageLoadMetricsObserver::GetPageEndReasonHistogramNameForTesting(
-    security_state::SecurityLevel level) {
+std::string SecurityStatePageLoadMetricsObserver::
+    GetSecurityLevelPageEndReasonHistogramNameForTesting(
+        security_state::SecurityLevel level) {
   return security_state::GetSecurityLevelHistogramName(
       kPageEndReasonPrefix, level);
+}
+
+// static
+std::string SecurityStatePageLoadMetricsObserver::
+    GetSafetyTipPageEndReasonHistogramNameForTesting(
+        security_state::SafetyTipStatus safety_tip_status) {
+  return security_state::GetSafetyTipHistogramName(kPageEndReasonPrefix,
+                                                   safety_tip_status);
 }
 
 SecurityStatePageLoadMetricsObserver::SecurityStatePageLoadMetricsObserver(
@@ -111,6 +119,8 @@ SecurityStatePageLoadMetricsObserver::OnCommit(
       SecurityStateTabHelper::FromWebContents(web_contents);
   initial_security_level_ = security_state_tab_helper_->GetSecurityLevel();
   current_security_level_ = initial_security_level_;
+  current_safety_tip_status_ =
+      security_state_tab_helper_->GetVisibleSecurityState()->safety_tip_status;
 
   base::UmaHistogramEnumeration(kSecurityLevelOnCommit, initial_security_level_,
                                 security_state::SECURITY_LEVEL_COUNT);
@@ -154,6 +164,7 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
         final_engagement_score, 100);
   }
 
+  // Record security level UMA histograms.
   base::UmaHistogramEnumeration(
       security_state::GetSecurityLevelHistogramName(kPageEndReasonPrefix,
                                                     current_security_level_),
@@ -167,10 +178,24 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
   base::UmaHistogramEnumeration(kSecurityLevelOnComplete,
                                 current_security_level_,
                                 security_state::SECURITY_LEVEL_COUNT);
+
+  // Record Safety Tip UMA histograms.
+  base::UmaHistogramEnumeration(
+      security_state::GetSafetyTipHistogramName(kPageEndReasonPrefix,
+                                                current_safety_tip_status_),
+      GetDelegate().GetPageEndReason(),
+      page_load_metrics::PAGE_END_REASON_COUNT);
+  base::UmaHistogramCustomTimes(
+      security_state::GetSafetyTipHistogramName(kTimeOnPagePrefix,
+                                                current_safety_tip_status_),
+      GetDelegate().GetVisibilityTracker().GetForegroundDuration(),
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
 }
 
 void SecurityStatePageLoadMetricsObserver::DidChangeVisibleSecurityState() {
   if (!security_state_tab_helper_)
     return;
   current_security_level_ = security_state_tab_helper_->GetSecurityLevel();
+  current_safety_tip_status_ =
+      security_state_tab_helper_->GetVisibleSecurityState()->safety_tip_status;
 }

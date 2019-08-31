@@ -280,20 +280,16 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     return loader_factory_getter_.get();
   }
 
+  const scoped_refptr<blink::URLLoaderFactoryBundle>&
+  loader_factory_bundle_for_update_check() {
+    return loader_factory_bundle_for_update_check_;
+  }
+
   base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
   int GetNextEmbeddedWorkerId();
-
-  // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
-  // Returns a factory bundle suitable for the browser process to use to fetch
-  // a non-installed service worker main script or imported script during an
-  // update check. It must not be sent to a renderer process. The bundle does
-  // not support reconnection to the network service, so it should be used for
-  // only a single service worker update check.
-  scoped_refptr<blink::URLLoaderFactoryBundle>
-  GetLoaderFactoryBundleForUpdateCheck();
 
  private:
   friend class ServiceWorkerContextCoreTest;

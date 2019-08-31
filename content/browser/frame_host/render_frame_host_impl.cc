@@ -4476,7 +4476,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     registry_->AddInterface(base::BindRepeating(
-        &RenderFrameHostImpl::BindSmsReceiverRequest, base::Unretained(this)));
+        &RenderFrameHostImpl::BindSmsReceiverReceiver, base::Unretained(this)));
   }
 }
 
@@ -6313,14 +6313,14 @@ blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
   return chooser;
 }
 
-void RenderFrameHostImpl::BindSmsReceiverRequest(
-    blink::mojom::SmsReceiverRequest request) {
+void RenderFrameHostImpl::BindSmsReceiverReceiver(
+    mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
   if (GetParent()) {
     mojo::ReportBadMessage("Must be in top-level browser context.");
     return;
   }
   auto* provider = BrowserMainLoop::GetInstance()->GetSmsProvider();
-  SmsService::Create(provider, this, std::move(request));
+  SmsService::Create(provider, this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetInterface(

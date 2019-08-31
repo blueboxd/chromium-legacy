@@ -370,10 +370,10 @@ public class WebApkInfoTest {
         String name = "WebAPK name";
         String shortName = "WebAPK short name";
         FakeResources res = new FakeResources();
-        res.addStringForTesting(WebApkInfo.RESOURCE_NAME, WebApkInfo.RESOURCE_STRING_TYPE,
-                WEBAPK_PACKAGE_NAME, 1, name);
-        res.addStringForTesting(WebApkInfo.RESOURCE_SHORT_NAME, WebApkInfo.RESOURCE_STRING_TYPE,
-                WEBAPK_PACKAGE_NAME, 2, shortName);
+        res.addStringForTesting(WebApkIntentDataProvider.RESOURCE_NAME,
+                WebApkIntentDataProvider.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 1, name);
+        res.addStringForTesting(WebApkIntentDataProvider.RESOURCE_SHORT_NAME,
+                WebApkIntentDataProvider.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 2, shortName);
         WebApkTestHelper.setResource(WEBAPK_PACKAGE_NAME, res);
 
         Intent intent = new Intent();

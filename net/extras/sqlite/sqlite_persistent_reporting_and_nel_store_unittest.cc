@@ -120,7 +120,7 @@ class SQLitePersistentReportingAndNelStoreTest
   void LoadNelPolicies(
       std::vector<NetworkErrorLoggingService::NelPolicy>* policies_out) {
     base::RunLoop run_loop;
-    store_->LoadNelPolicies(base::BindRepeating(
+    store_->LoadNelPolicies(base::BindOnce(
         &SQLitePersistentReportingAndNelStoreTest::OnNelPoliciesLoaded,
         base::Unretained(this), &run_loop, policies_out));
     run_loop.Run();
@@ -138,7 +138,7 @@ class SQLitePersistentReportingAndNelStoreTest
       std::vector<ReportingEndpoint>* endpoints_out,
       std::vector<CachedReportingEndpointGroup>* groups_out) {
     base::RunLoop run_loop;
-    store_->LoadReportingClients(base::BindRepeating(
+    store_->LoadReportingClients(base::BindOnce(
         &SQLitePersistentReportingAndNelStoreTest::OnReportingClientsLoaded,
         base::Unretained(this), &run_loop, endpoints_out, groups_out));
     run_loop.Run();

@@ -1240,6 +1240,7 @@ jumbo_component("platform") {
     "peerconnection/rtc_stats_response_base.h",
     "peerconnection/rtc_video_decoder_adapter.cc",
     "peerconnection/rtc_video_decoder_adapter.h",
+    "peerconnection/rtc_video_decoder_factory.cc",
     "peerconnection/rtc_video_encoder.cc",
     "peerconnection/rtc_video_encoder.h",
     "peerconnection/rtc_void_request.h",

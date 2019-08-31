@@ -114,8 +114,8 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   void StartTimer() {
     timer_->Start(FROM_HERE, policy().delivery_interval,
-                  base::BindRepeating(&ReportingDeliveryAgentImpl::OnTimerFired,
-                                      base::Unretained(this)));
+                  base::BindOnce(&ReportingDeliveryAgentImpl::OnTimerFired,
+                                 base::Unretained(this)));
   }
 
   void OnTimerFired() {

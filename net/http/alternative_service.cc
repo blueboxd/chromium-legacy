@@ -38,6 +38,16 @@ AlternativeProxyUsage ConvertProtocolUsageToProxyUsage(
   }
 }
 
+quic::ParsedQuicVersion ParsedQuicVersionFromAlpn(
+    base::StringPiece str,
+    quic::ParsedQuicVersionVector supported_versions) {
+  for (const quic::ParsedQuicVersion version : supported_versions) {
+    if (AlpnForVersion(version) == str)
+      return version;
+  }
+  return {quic::PROTOCOL_UNSUPPORTED, quic::QUIC_VERSION_UNSUPPORTED};
+}
+
 }  // anonymous namespace
 
 void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
@@ -173,22 +183,38 @@ AlternativeServiceInfoVector ProcessAlternativeServices(
   AlternativeServiceInfoVector alternative_service_info_vector;
   for (const spdy::SpdyAltSvcWireFormat::AlternativeService&
            alternative_service_entry : alternative_service_vector) {
+    if (!IsPortValid(alternative_service_entry.port))
+      continue;
+
     NextProto protocol =
         NextProtoFromString(alternative_service_entry.protocol_id);
-    if (!IsAlternateProtocolValid(protocol) ||
-        !IsProtocolEnabled(protocol, is_http2_enabled, is_quic_enabled) ||
-        !IsPortValid(alternative_service_entry.port)) {
-      continue;
-    }
     // Check if QUIC version is supported. Filter supported QUIC versions.
     quic::ParsedQuicVersionVector advertised_versions;
-    if (protocol == kProtoQUIC && !alternative_service_entry.version.empty()) {
-      advertised_versions = FilterSupportedAltSvcVersions(
-          alternative_service_entry, supported_quic_versions,
-          support_ietf_format_quic_altsvc);
-      if (advertised_versions.empty())
+    if (protocol == kProtoQUIC) {
+      if (!IsProtocolEnabled(protocol, is_http2_enabled, is_quic_enabled))
         continue;
+      if (!alternative_service_entry.version.empty()) {
+        advertised_versions = FilterSupportedAltSvcVersions(
+            alternative_service_entry, supported_quic_versions,
+            support_ietf_format_quic_altsvc);
+        if (advertised_versions.empty())
+          continue;
+      }
+    } else if (!IsAlternateProtocolValid(protocol)) {
+      quic::ParsedQuicVersion version = ParsedQuicVersionFromAlpn(
+          alternative_service_entry.protocol_id, supported_quic_versions);
+      if (version.handshake_protocol == quic::PROTOCOL_UNSUPPORTED ||
+          version.transport_version == quic::QUIC_VERSION_UNSUPPORTED) {
+        continue;
+      }
+      protocol = kProtoQUIC;
+      advertised_versions = {version};
     }
+    if (!IsAlternateProtocolValid(protocol) ||
+        !IsProtocolEnabled(protocol, is_http2_enabled, is_quic_enabled)) {
+      continue;
+    }
+
     AlternativeService alternative_service(protocol,
                                            alternative_service_entry.host,
                                            alternative_service_entry.port);

@@ -275,12 +275,13 @@ void DataOffer::SetDropData(FileHelper* file_helper,
     data_.emplace(utf16_mime_type,
                   EncodeAsRefCountedString(string_content, kUTF16));
     delegate_->OnOffer(utf16_mime_type);
-    // TODO(crbug.com/981247) Arc treates "text/plain" as UTF-16, which is in
-    // volation of the spec. We will temporarily continue to advertise UTF-16
-    // data as "text/plain". Once arc is fixed, we will convert it to ascii.
     const std::string text_plain_mime_type = std::string(ui::kMimeTypeText);
+    // The MIME type standard says that new text/ subtypes should default to a
+    // UTF-8 encoding, but that old ones, including text/plain, keep ASCII as
+    // the default. Nonetheless, we use UTF8 here because it is a superset of
+    // ASCII and the defacto standard text encoding.
     data_.emplace(text_plain_mime_type,
-                  EncodeAsRefCountedString(string_content, kUTF16));
+                  EncodeAsRefCountedString(string_content, kUTF8));
     delegate_->OnOffer(text_plain_mime_type);
   }
 

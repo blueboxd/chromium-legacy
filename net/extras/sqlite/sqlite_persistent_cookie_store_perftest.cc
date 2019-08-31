@@ -66,8 +66,8 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   }
 
   void Load() {
-    store_->Load(base::Bind(&SQLitePersistentCookieStorePerfTest::OnLoaded,
-                            base::Unretained(this)),
+    store_->Load(base::BindOnce(&SQLitePersistentCookieStorePerfTest::OnLoaded,
+                                base::Unretained(this)),
                  NetLogWithSource());
     loaded_event_.Wait();
   }
@@ -162,8 +162,8 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadForKeyPerformance) {
     StartPerfMeasurement();
     store_->LoadCookiesForKey(
         domain_name,
-        base::Bind(&SQLitePersistentCookieStorePerfTest::OnKeyLoaded,
-                   base::Unretained(this)));
+        base::BindOnce(&SQLitePersistentCookieStorePerfTest::OnKeyLoaded,
+                       base::Unretained(this)));
     key_loaded_event_.Wait();
     EndPerfMeasurement();
 

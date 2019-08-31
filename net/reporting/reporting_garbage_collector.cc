@@ -44,10 +44,9 @@ class ReportingGarbageCollectorImpl : public ReportingGarbageCollector,
     if (timer_->IsRunning())
       return;
 
-    timer_->Start(
-        FROM_HERE, context_->policy().garbage_collection_interval,
-        base::BindRepeating(&ReportingGarbageCollectorImpl::CollectGarbage,
-                            base::Unretained(this)));
+    timer_->Start(FROM_HERE, context_->policy().garbage_collection_interval,
+                  base::BindOnce(&ReportingGarbageCollectorImpl::CollectGarbage,
+                                 base::Unretained(this)));
   }
 
  private:

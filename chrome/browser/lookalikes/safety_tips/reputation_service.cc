@@ -202,6 +202,8 @@ void ReputationService::GetReputationStatusWithEngagedSites(
                              engaged_domain.domain_and_registry);
                    });
   if (already_engaged != engaged_sites.end()) {
+    std::move(callback).Run(security_state::SafetyTipStatus::kNone,
+                            IsIgnored(url), url);
     return;
   }
 
@@ -216,6 +218,8 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   // Empty domain_and_registry happens on private domains.
   if (navigated_domain.domain_and_registry.empty() ||
       lookalikes::IsTopDomain(navigated_domain)) {
+    std::move(callback).Run(security_state::SafetyTipStatus::kNone,
+                            IsIgnored(url), url);
     return;
   }
 
@@ -228,6 +232,8 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   }
 
   // TODO(crbug/984725): 5. Additional client-side heuristics
+  std::move(callback).Run(security_state::SafetyTipStatus::kNone,
+                          IsIgnored(url), url);
 }
 
 security_state::SafetyTipStatus GetUrlBlockType(const GURL& url) {

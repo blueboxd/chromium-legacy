@@ -9,9 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/media/webrtc/rtc_video_decoder_factory.h"
 #include "content/renderer/media/webrtc/rtc_video_encoder_factory.h"
 #include "media/base/media_switches.h"
+#include "third_party/blink/public/platform/modules/peerconnection/rtc_video_decoder_factory.h"
 #include "third_party/webrtc/api/video_codecs/video_decoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/media/base/codec.h"
@@ -199,7 +199,7 @@ std::unique_ptr<webrtc::VideoDecoderFactory> CreateWebrtcVideoDecoderFactory(
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (gpu_factories && gpu_factories->IsGpuVideoAcceleratorEnabled() &&
       !cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding)) {
-    decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
+    decoder_factory.reset(new blink::RTCVideoDecoderFactory(gpu_factories));
   }
 
   return std::make_unique<DecoderAdapter>(std::move(decoder_factory));

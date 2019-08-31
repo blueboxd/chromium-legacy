@@ -5,72 +5,21 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.text.TextUtils;
+import android.support.annotation.NonNull;
 
-import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.webapk.lib.common.splash.SplashLayout;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 
 /**
  * Stores info about a web app.
  */
 public class WebappInfo {
-    private static final String TAG = "WebappInfo";
-
-    private String mId;
-    private WebappIcon mIcon;
-    private String mUrl;
-    private String mScopeUrl;
-    private String mName;
-    private String mShortName;
-    private @WebDisplayMode int mDisplayMode;
-    private int mOrientation;
-    private int mSource;
-    private long mThemeColor;
-    private long mBackgroundColor;
-    private int mDefaultBackgroundColor;
-    private boolean mIsIconGenerated;
-    private boolean mIsIconAdaptive;
-    private boolean mForceNavigation;
+    protected final BrowserServicesIntentDataProvider mProvider;
 
     public static WebappInfo createEmpty() {
-        return new WebappInfo();
-    }
-
-    protected static String urlFromIntent(Intent intent) {
-        return IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-    }
-
-    protected static int sourceFromIntent(Intent intent) {
-        int source = IntentUtils.safeGetIntExtra(
-                intent, ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
-        if (source >= ShortcutSource.COUNT) {
-            source = ShortcutSource.UNKNOWN;
-        }
-        return source;
-    }
-
-    private static String titleFromIntent(Intent intent) {
-        // The reference to title has been kept for reasons of backward compatibility. For intents
-        // and shortcuts which were created before we utilized the concept of name and shortName,
-        // we set the name and shortName to be the title.
-        String title = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_TITLE);
-        return title == null ? "" : title;
-    }
-
-    private static String nameFromIntent(Intent intent) {
-        String name = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_NAME);
-        return name == null ? titleFromIntent(intent) : name;
-    }
-
-    private static String shortNameFromIntent(Intent intent) {
-        String shortName = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_SHORT_NAME);
-        return shortName == null ? titleFromIntent(intent) : shortName;
+        return new WebappInfo(WebappIntentDataProvider.createEmpty());
     }
 
     /**
@@ -78,96 +27,20 @@ public class WebappInfo {
      * @param intent Intent containing info about the app.
      */
     public static WebappInfo create(Intent intent) {
-        String id = idFromIntent(intent);
-        String url = urlFromIntent(intent);
-        if (id == null || url == null) {
-            Log.e(TAG, "Incomplete data provided: " + id + ", " + url);
-            return null;
-        }
-
-        String icon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
-        String scope = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_SCOPE);
-        @WebDisplayMode
-        int displayMode = IntentUtils.safeGetIntExtra(
-                intent, ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.STANDALONE);
-        int orientation = IntentUtils.safeGetIntExtra(
-                intent, ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
-        int source = sourceFromIntent(intent);
-        long themeColor = IntentUtils.safeGetLongExtra(intent,
-                ShortcutHelper.EXTRA_THEME_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        long backgroundColor = IntentUtils.safeGetLongExtra(intent,
-                ShortcutHelper.EXTRA_BACKGROUND_COLOR,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
-        boolean isIconGenerated = IntentUtils.safeGetBooleanExtra(intent,
-                ShortcutHelper.EXTRA_IS_ICON_GENERATED, false);
-        boolean isIconAdaptive = IntentUtils.safeGetBooleanExtra(intent,
-                ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, false);
-        boolean forceNavigation = IntentUtils.safeGetBooleanExtra(
-                intent, ShortcutHelper.EXTRA_FORCE_NAVIGATION, false);
-
-        String name = nameFromIntent(intent);
-        String shortName = shortNameFromIntent(intent);
-
-        int defaultBackgroundColor =
-                SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
-        return new WebappInfo(id, url, scope, new WebappIcon(icon), name, shortName, displayMode,
-                orientation, source, themeColor, backgroundColor, defaultBackgroundColor,
-                isIconGenerated, isIconAdaptive, forceNavigation);
+        WebappIntentDataProvider provider = WebappIntentDataProvider.create(intent);
+        return (provider == null) ? null : new WebappInfo(provider);
     }
 
-    /**
-     * Construct a WebappInfo.
-     * @param id              ID for the webapp.
-     * @param url             URL for the webapp.
-     * @param scope           Scope for the webapp.
-     * @param icon            Icon to show for the webapp.
-     * @param name            Name of the webapp.
-     * @param shortName       The short name of the webapp.
-     * @param displayMode     Display mode of the webapp.
-     * @param orientation     Orientation of the webapp.
-     * @param source          Source where the webapp was added from.
-     * @param themeColor      The theme color of the webapp.
-     * @param backgroundColor The background color of the webapp.
-     * @param isIconGenerated Whether the |icon| was generated by Chromium.
-     * @param isIconAdaptive  Whether the Icon is an Android Adaptive Icon.
-     * @param forceNavigation Whether the webapp should navigate to {@link url} if the
-     *                        webapp is already open.
-     */
-    protected WebappInfo(String id, String url, String scope, WebappIcon icon, String name,
-            String shortName, @WebDisplayMode int displayMode, int orientation, int source,
-            long themeColor, long backgroundColor, int defaultBackgroundColor,
-            boolean isIconGenerated, boolean isIconAdaptive, boolean forceNavigation) {
-        if (TextUtils.isEmpty(scope)) {
-            scope = ShortcutHelper.getScopeFromUrl(url);
-        }
-
-        mIcon = (icon != null) ? icon : new WebappIcon();
-        mId = id;
-        mName = name;
-        mShortName = shortName;
-        mUrl = url;
-        mScopeUrl = scope;
-        mDisplayMode = displayMode;
-        mOrientation = orientation;
-        mSource = source;
-        mThemeColor = themeColor;
-        mBackgroundColor = backgroundColor;
-        mDefaultBackgroundColor = defaultBackgroundColor;
-        mIsIconGenerated = isIconGenerated;
-        mIsIconAdaptive = isIconAdaptive;
-        mForceNavigation = forceNavigation;
-    }
-
-    protected WebappInfo() {
+    protected WebappInfo(@NonNull BrowserServicesIntentDataProvider provider) {
+        mProvider = provider;
     }
 
     public String id() {
-        return mId;
+        return getWebappExtras().id;
     }
 
     public String url() {
-        return mUrl;
+        return getWebappExtras().url;
     }
 
     /**
@@ -175,25 +48,23 @@ public class WebappInfo {
      * Chrome receives a ACTION_START_WEBAPP intent.
      */
     public boolean shouldForceNavigation() {
-        return mForceNavigation;
+        return getWebappExtras().shouldForceNavigation;
     }
 
-    // TODO(yusufo) : Plumb the scope for the Webapp through the support library/client Android
-    // manifest for TrustedWebActivity.
     public String scopeUrl() {
-        return mScopeUrl;
+        return getWebappExtras().scopeUrl;
     }
 
     public String name() {
-        return mName;
+        return getWebappExtras().name;
     }
 
     public String shortName() {
-        return mShortName;
+        return getWebappExtras().shortName;
     }
 
     public @WebDisplayMode int displayMode() {
-        return mDisplayMode;
+        return getWebappExtras().displayMode;
     }
 
     public boolean isForWebApk() {
@@ -205,11 +76,11 @@ public class WebappInfo {
     }
 
     public int orientation() {
-        return mOrientation;
+        return getWebappExtras().orientation;
     }
 
     public int source() {
-        return mSource;
+        return getWebappExtras().source;
     }
 
     /**
@@ -218,15 +89,14 @@ public class WebappInfo {
      * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
      */
     public long themeColor() {
-        return mThemeColor;
+        return WebappIntentDataProvider.longColorFromIntegerColor(getWebappExtras().themeColor);
     }
 
     /**
      * Returns whether the theme color specified in the Intent is valid.
-     * A theme color isn't valid if its value is ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
      */
     public boolean hasValidThemeColor() {
-        return mThemeColor != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+        return getWebappExtras().themeColor != null;
     }
 
     /**
@@ -235,16 +105,15 @@ public class WebappInfo {
      * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
      */
     public long backgroundColor() {
-        return mBackgroundColor;
+        return WebappIntentDataProvider.longColorFromIntegerColor(
+                getWebappExtras().backgroundColor);
     }
 
     /**
      * Returns whether the background color specified in the Intent is valid.
-     * A background color isn't valid if its value is
-     * ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
      */
     public boolean hasValidBackgroundColor() {
-        return mBackgroundColor != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+        return getWebappExtras().backgroundColor != null;
     }
 
     /**
@@ -252,28 +121,30 @@ public class WebappInfo {
      * the value is valid. Returns the webapp's default background color otherwise.
      */
     public int backgroundColorFallbackToDefault() {
-        return hasValidBackgroundColor() ? (int) mBackgroundColor : mDefaultBackgroundColor;
+        Integer backgroundColor = getWebappExtras().backgroundColor;
+        return (backgroundColor == null) ? getWebappExtras().defaultBackgroundColor
+                                         : backgroundColor.intValue();
     }
 
     /**
      * Returns the icon.
      */
     public WebappIcon icon() {
-        return mIcon;
+        return getWebappExtras().icon;
     }
 
     /**
      * Returns whether the {@link #icon} should be used as an Android Adaptive Icon.
      */
     public boolean isIconAdaptive() {
-        return mIsIconAdaptive;
+        return getWebappExtras().isIconAdaptive;
     }
 
     /**
      * Returns whether the icon was generated by Chromium.
      */
     public boolean isIconGenerated() {
-        return mIsIconGenerated;
+        return getWebappExtras().isIconGenerated;
     }
 
     /**
@@ -306,9 +177,6 @@ public class WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, isIconAdaptive());
     }
 
-    public static String idFromIntent(Intent intent) {
-        return IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
-    }
     /**
      * Returns true if the WebappInfo was created for an Intent fired from a launcher shortcut (as
      * opposed to an intent from a push notification or other internal source).
@@ -319,5 +187,11 @@ public class WebappInfo {
                 && source != ShortcutSource.EXTERNAL_INTENT_FROM_CHROME
                 && source != ShortcutSource.WEBAPK_SHARE_TARGET
                 && source != ShortcutSource.WEBAPK_SHARE_TARGET_FILE;
+    }
+
+    private WebappExtras getWebappExtras() {
+        WebappExtras extras = mProvider.getWebappExtras();
+        assert extras != null;
+        return extras;
     }
 }

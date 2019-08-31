@@ -71,6 +71,22 @@ std::string GetHistogramSuffixForSecurityLevel(
   }
 }
 
+std::string GetHistogramSuffixForSafetyTipStatus(
+    security_state::SafetyTipStatus safety_tip_status) {
+  switch (safety_tip_status) {
+    case security_state::SafetyTipStatus::kUnknown:
+      return "SafetyTip_Unknown";
+    case security_state::SafetyTipStatus::kNone:
+      return "SafetyTip_None";
+    case security_state::SafetyTipStatus::kBadReputation:
+      return "SafetyTip_BadReputation";
+    case security_state::SafetyTipStatus::kLookalike:
+      return "SafetyTip_Lookalike";
+  };
+  NOTREACHED();
+  return std::string();
+}
+
 }  // namespace
 
 SecurityLevel GetSecurityLevel(
@@ -229,6 +245,11 @@ std::string GetSecurityLevelHistogramName(
     const std::string& prefix,
     security_state::SecurityLevel level) {
   return prefix + "." + GetHistogramSuffixForSecurityLevel(level);
+}
+
+std::string GetSafetyTipHistogramName(const std::string& prefix,
+                                      SafetyTipStatus safety_tip_status) {
+  return prefix + "." + GetHistogramSuffixForSafetyTipStatus(safety_tip_status);
 }
 
 bool IsSHA1InChain(const VisibleSecurityState& visible_security_state) {

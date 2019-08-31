@@ -480,8 +480,8 @@ TEST_F(ReportingUploaderTest, DontSaveCookies) {
   GetCookieListCallback cookie_callback;
   context_.cookie_store()->GetCookieListWithOptionsAsync(
       server_.GetURL("/"), CookieOptions(),
-      base::BindRepeating(&GetCookieListCallback::Run,
-                          base::Unretained(&cookie_callback)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&cookie_callback)));
   cookie_callback.WaitUntilDone();
 
   EXPECT_TRUE(cookie_callback.cookies().empty());

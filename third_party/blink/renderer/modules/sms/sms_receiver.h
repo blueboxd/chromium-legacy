@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SMS_SMS_RECEIVER_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -41,7 +42,7 @@ class SMSReceiver final : public ScriptWrappable, public ContextClient {
 
   void OnSMSReceiverConnectionError();
 
-  mojom::blink::SmsReceiverPtr service_;
+  mojo::Remote<mojom::blink::SmsReceiver> service_;
 
   DISALLOW_COPY_AND_ASSIGN(SMSReceiver);
 };

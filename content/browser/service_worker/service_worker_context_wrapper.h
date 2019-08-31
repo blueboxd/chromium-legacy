@@ -318,6 +318,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   bool HasRegistrationForOrigin(const GURL& origin) const;
   void WaitForRegistrationsInitializedForTest();
 
+  // This must be called on the core thread, and the |callback| also runs on
+  // the core thread which can be called with nullptr on failure.
+  void GetLoaderFactoryForUpdateCheck(
+      const GURL& scope,
+      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
+          callback);
+
  private:
   friend class BackgroundSyncManagerTest;
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
@@ -435,6 +442,24 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
   CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
       BrowserContext* browser_context);
+
+  void SetUpLoaderFactoryForUpdateCheckOnUI(
+      const GURL& scope,
+      base::OnceCallback<
+          void(mojo::PendingRemote<network::mojom::URLLoaderFactory>,
+               mojo::PendingReceiver<network::mojom::URLLoaderFactory>,
+               bool)> setup_complete_callback);
+
+  // This method completes the remaining work of
+  // SetUpLoaderFactoryForUpdateCheckOnUI() on Core thread: Binds the pending
+  // network factory receiver and creates the loader factory bundle for update
+  // check.
+  void DidSetUpLoaderFactoryForUpdateCheck(
+      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>
+          callback,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> remote,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
+      bool bypass_redirect_checks);
 
   // Called when the stored registrations are loaded, and each time a new
   // service worker is registered.
